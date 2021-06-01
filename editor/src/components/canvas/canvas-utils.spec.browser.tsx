@@ -2,6 +2,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithProjectContent,
   TestAppUID,
   TestScenePath,
   TestSceneUID,
@@ -10,9 +11,14 @@ import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
-import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/action-creators'
+import {
+  selectComponents,
+  setCanvasFrames,
+  unwrapGroupOrView,
+  wrapInView,
+} from '../editor/actions/action-creators'
 import { reparentComponents } from '../navigator/actions'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import {
   pinFrameChange,
   pinMoveChange,
@@ -26,6 +32,17 @@ import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as Prettier from 'prettier'
 import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
+import { contentsToTree } from '../assets'
+import { createCodeFile } from '../custom-code/code-file.test-utils'
+import { DefaultPackageJson, StoryboardFilePath } from '../editor/store/editor-state'
+import { directory } from '../../core/model/project-file-utils'
+import {
+  ProjectContents,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../core/shared/project-file-types'
 
 const NewUID = 'catdog'
 
@@ -44,7 +61,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -75,7 +92,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -106,7 +123,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -137,7 +154,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -168,7 +185,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -200,7 +217,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -231,7 +248,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -265,7 +282,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -296,7 +313,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -327,7 +344,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 20,
       y: 20,
     } as CanvasVector)
@@ -358,7 +375,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 20,
       y: 20,
     } as CanvasVector)
@@ -389,7 +406,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 20,
       y: 20,
     } as CanvasVector)
@@ -420,7 +437,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 0,
       y: 20,
     } as CanvasVector)
@@ -451,7 +468,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       `),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -482,7 +499,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       `),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: 45,
     } as CanvasVector)
@@ -513,7 +530,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -544,7 +561,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 20,
       y: 65,
     } as CanvasVector)
@@ -582,7 +599,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       `),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -628,7 +645,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -663,7 +680,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
     )
 
     const pinChange = pinSizeChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
       null,
     )
@@ -695,7 +712,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
     )
 
     const pinChange = pinSizeChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
       null,
     )
@@ -729,7 +746,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
     )
 
     const pinChange = pinSizeChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
       null,
     )
@@ -764,7 +781,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: -20, y: -10 } as CanvasVector,
     )
@@ -795,7 +812,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 0, y: 0 } as EdgePosition,
       { x: 50, y: 60 } as CanvasVector,
     )
@@ -830,7 +847,7 @@ describe('moveTemplate', () => {
       `),
     )
 
-    const targets = [TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
+    const targets = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
     await renderResult.dispatch([wrapInView(targets)], true)
@@ -882,8 +899,8 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'fff', 'ggg']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'fff', 'ggg']),
     ]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
@@ -939,8 +956,8 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
     ]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
@@ -967,6 +984,163 @@ describe('moveTemplate', () => {
       `),
     )
   })
+  it('wraps in 1 non-storyboard element', async () => {
+    const appFilePath = '/src/app.js'
+    let projectContents: ProjectContents = {
+      '/package.json': textFile(
+        textFileContents(
+          JSON.stringify(DefaultPackageJson, null, 2),
+          unparsed,
+          RevisionsState.BothMatch,
+        ),
+        null,
+        0,
+      ),
+      '/src': directory(),
+      '/utopia': directory(),
+      [StoryboardFilePath]: createCodeFile(
+        StoryboardFilePath,
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  import { App } from '/src/app.js'
+
+  export var storyboard = (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        data-uid='${TestSceneUID}'
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      >
+        <App data-uid='${TestAppUID}' />
+      </Scene>
+    </Storyboard>
+  )`,
+      ),
+      [appFilePath]: createCodeFile(
+        appFilePath,
+        `
+  import * as React from 'react'
+  export var App = (props) => {
+    return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
+      <div data-uid='app-inner-div' style={{ width: 50, height: 100 }}><span data-uid='app-inner-span'>hello</span></div>
+    </div>
+  }`,
+      ),
+    }
+    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])
+
+    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+
+    await renderResult.dispatch([wrapInView([targetPath])], true)
+    expect(getPrintedUiJsCode(renderResult.getEditorState(), appFilePath)).toEqual(
+      Prettier.format(
+        `
+    import * as React from 'react'
+    import { View } from 'utopia-api'
+    export var App = (props) => {
+      return (
+        <div
+          data-uid='app-outer-div'
+          style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+        >
+          <View
+            style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 100 }}
+            data-uid='${NewUID}'
+          >
+            <div
+              data-uid='app-inner-div'
+              style={{ width: 50, height: 100, left: 0, top: 0, position: 'absolute' }}
+            >
+              <span data-uid='app-inner-span'>hello</span>
+            </div>
+          </View>
+        </div>
+      )
+    }`,
+        PrettierConfig,
+      ),
+    )
+  })
+  it('unwraps 1 non-storyboard element', async () => {
+    const appFilePath = '/src/app.js'
+    let projectContents: ProjectContents = {
+      '/package.json': textFile(
+        textFileContents(
+          JSON.stringify(DefaultPackageJson, null, 2),
+          unparsed,
+          RevisionsState.BothMatch,
+        ),
+        null,
+        0,
+      ),
+      '/src': directory(),
+      '/utopia': directory(),
+      [StoryboardFilePath]: createCodeFile(
+        StoryboardFilePath,
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  import { App } from '/src/app.js'
+
+  export var storyboard = (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        data-uid='${TestSceneUID}'
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      >
+        <App data-uid='${TestAppUID}' />
+      </Scene>
+    </Storyboard>
+  )`,
+      ),
+      [appFilePath]: createCodeFile(
+        appFilePath,
+        `
+  import * as React from 'react'
+  import { View } from 'utopia-api'
+  export var App = (props) => {
+    return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
+      <View data-uid='app-wrapper-view'>
+        <div data-uid='app-inner-div' style={{ width: 50, height: 100 }}><span data-uid='app-inner-span'>hello</span></div>
+      </View>
+    </div>
+  }`,
+      ),
+    }
+    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-wrapper-view'])
+    const selectionAfterUnwrap = EP.appendNewElementPath(TestScenePath, [
+      'app-outer-div',
+      'app-inner-div',
+    ])
+
+    await renderResult.dispatch([unwrapGroupOrView(targetPath)], true)
+    expect(getPrintedUiJsCode(renderResult.getEditorState(), appFilePath)).toEqual(
+      Prettier.format(
+        `
+    import * as React from 'react'
+    import { View } from 'utopia-api'
+    export var App = (props) => {
+      return (
+        <div
+          data-uid='app-outer-div'
+          style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+        >
+          <div
+            data-uid='app-inner-div'
+            style={{ width: 50, height: 100 }}
+          >
+            <span data-uid='app-inner-span'>hello</span>
+          </div>
+        </div>
+      )
+    }`,
+        PrettierConfig,
+      ),
+    )
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([selectionAfterUnwrap])
+  })
   it('reparents multiselected elements', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -989,13 +1163,13 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'hhh']),
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'fff', 'ggg']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'hhh']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'fff', 'ggg']),
     ]
 
     await renderResult.dispatch(
-      [reparentComponents(targets, TP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
+      [reparentComponents(targets, EP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
       true,
     )
 
@@ -1037,12 +1211,12 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
     ]
 
     await renderResult.dispatch(
-      [reparentComponents(targets, TP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
+      [reparentComponents(targets, EP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
       true,
     )
 
@@ -1081,12 +1255,12 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc', 'ddd']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc', 'ddd']),
     ]
 
     await renderResult.dispatch(
-      [reparentComponents(targets, TP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
+      [reparentComponents(targets, EP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
       true,
     )
 
@@ -1126,8 +1300,8 @@ describe('moveTemplate', () => {
     await renderResult.dispatch(
       [
         reparentComponents(
-          [TP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])],
-          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+          [EP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])],
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
         ),
       ],
       true,
@@ -1172,7 +1346,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])], false)],
       false,
     )
 
@@ -1304,7 +1478,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.templatePath([[BakedInStoryboardUID, 'orphan-bbb']])], false)],
+      [selectComponents([EP.elementPath([[BakedInStoryboardUID, 'orphan-bbb']])], false)],
       false,
     )
 
@@ -1464,7 +1638,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -1596,7 +1770,7 @@ describe('moveTemplate', () => {
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -1686,6 +1860,9 @@ describe('moveTemplate', () => {
         </div>
       `),
     )
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', NewUID]),
+    ])
   })
 
   it('inserting a new element as an orphan', async () => {
@@ -1823,6 +2000,9 @@ describe('moveTemplate', () => {
         PrettierConfig,
       ),
     )
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.elementPath([['storyboard', NewUID]]),
+    ])
   })
 
   it('reparents an element while dragging', async () => {
@@ -1841,7 +2021,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])], false)],
       false,
     )
 
@@ -1957,7 +2137,7 @@ describe('moveTemplate', () => {
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 

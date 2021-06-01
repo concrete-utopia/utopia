@@ -1,9 +1,9 @@
 import {
   id,
-  TemplatePath,
   ElementPath,
+  ElementPathPart,
+  StaticElementPathPart,
   StaticElementPath,
-  StaticTemplatePath,
 } from './project-file-types'
 import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
@@ -15,19 +15,19 @@ import { forceNotNull } from './optional-utils'
 export const toComponentId = toString
 
 // Probably KILLME too
-export function toVarSafeComponentId(path: TemplatePath): string {
+export function toVarSafeComponentId(path: ElementPath): string {
   const asStr = toString(path)
   return replaceAll(asStr, '-', '_')
 }
 
-interface TemplatePathCache {
-  cached: TemplatePath | null
+interface ElementPathCache {
+  cached: ElementPath | null
   cachedToString: string | null
-  childCaches: { [key: string]: TemplatePathCache }
-  rootElementCaches: { [key: string]: TemplatePathCache }
+  childCaches: { [key: string]: ElementPathCache }
+  rootElementCaches: { [key: string]: ElementPathCache }
 }
 
-function emptyTemplatePathCache(): TemplatePathCache {
+function emptyElementPathCache(): ElementPathCache {
   return {
     cached: null,
     cachedToString: null,
@@ -36,22 +36,30 @@ function emptyTemplatePathCache(): TemplatePathCache {
   }
 }
 
-let globalPathStringToPathCache: { [key: string]: TemplatePath } = {}
-let globalTemplatePathCache: TemplatePathCache = emptyTemplatePathCache()
+let dynamicToStaticPathCache: Map<ElementPath, StaticElementPath> = new Map()
+let dynamicElementPathToStaticElementPathCache: Map<
+  ElementPathPart,
+  StaticElementPathPart
+> = new Map()
 
-export function clearTemplatePathCache() {
+let globalPathStringToPathCache: { [key: string]: ElementPath } = {}
+let globalElementPathCache: ElementPathCache = emptyElementPathCache()
+
+export function clearElementPathCache() {
   globalPathStringToPathCache = {}
-  globalTemplatePathCache = emptyTemplatePathCache()
+  globalElementPathCache = emptyElementPathCache()
+  dynamicToStaticPathCache = new Map()
+  dynamicElementPathToStaticElementPathCache = new Map()
 }
 
-function getTemplatePathCache(fullElementPath: ElementPath[]): TemplatePathCache {
-  let workingPathCache: TemplatePathCache = globalTemplatePathCache
+function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCache {
+  let workingPathCache: ElementPathCache = globalElementPathCache
 
-  fastForEach(fullElementPath, (elementPath) => {
-    fastForEach(elementPath, (pathPart, index) => {
+  fastForEach(fullElementPath, (elementPathPart) => {
+    fastForEach(elementPathPart, (pathPart, index) => {
       const cacheToUse = index === 0 ? 'rootElementCaches' : 'childCaches'
       if (workingPathCache[cacheToUse][pathPart] == null) {
-        workingPathCache[cacheToUse][pathPart] = emptyTemplatePathCache()
+        workingPathCache[cacheToUse][pathPart] = emptyElementPathCache()
       }
 
       workingPathCache = workingPathCache[cacheToUse][pathPart]
@@ -64,7 +72,7 @@ function getTemplatePathCache(fullElementPath: ElementPath[]): TemplatePathCache
 const SceneSeparator = ':'
 const ElementSeparator = '/'
 
-export function elementPathToString(path: ElementPath): string {
+export function elementPathPartToString(path: ElementPathPart): string {
   let result: string = ''
   const elementsLength = path.length
   fastForEach(path, (elem, index) => {
@@ -76,93 +84,96 @@ export function elementPathToString(path: ElementPath): string {
   return result
 }
 
-export function toString(target: TemplatePath): string {
-  const pathCache = getTemplatePathCache(target.parts)
+export function toString(target: ElementPath): string {
+  const pathCache = getElementPathCache(target.parts)
   if (pathCache.cachedToString == null) {
-    pathCache.cachedToString = target.parts.map(elementPathToString).join(SceneSeparator)
+    pathCache.cachedToString = target.parts.map(elementPathPartToString).join(SceneSeparator)
   }
 
   return pathCache.cachedToString
 }
 
-export const emptyElementPath: StaticElementPath = staticElementPath([])
-export const emptyTemplatePath: StaticTemplatePath = newTemplatePath([])
+export const emptyElementPathPart: StaticElementPathPart = staticElementPath([])
+export const emptyElementPath: StaticElementPath = newElementPath([])
 
-export function staticElementPath(elements: string[]): StaticElementPath {
-  return elements as StaticElementPath
+export function staticElementPath(elements: string[]): StaticElementPathPart {
+  return elements as StaticElementPathPart
 }
 
-function isEmptyElementPathsArray(elementPaths: ElementPath[]): boolean {
-  return elementPaths.length === 0 || (elementPaths.length === 1 && elementPaths[0].length === 0)
+function isEmptyElementPathsArray(elementPathParts: ElementPathPart[]): boolean {
+  return (
+    elementPathParts.length === 0 ||
+    (elementPathParts.length === 1 && elementPathParts[0].length === 0)
+  )
 }
 
-export function isEmptyPath(path: TemplatePath): boolean {
+export function isEmptyPath(path: ElementPath): boolean {
   return isEmptyElementPathsArray(path.parts)
 }
 
-function newTemplatePath(fullElementPath: StaticElementPath[]): StaticTemplatePath
-function newTemplatePath(fullElementPath: ElementPath[]): TemplatePath
-function newTemplatePath(fullElementPath: ElementPath[]): TemplatePath {
+function newElementPath(fullElementPath: StaticElementPathPart[]): StaticElementPath
+function newElementPath(fullElementPath: ElementPathPart[]): ElementPath
+function newElementPath(fullElementPath: ElementPathPart[]): ElementPath {
   return {
-    type: 'templatepath',
+    type: 'elementpath',
     parts: fullElementPath,
   }
 }
 
-export function templatePath(fullElementPath: StaticElementPath[]): StaticTemplatePath
-export function templatePath(fullElementPath: ElementPath[]): TemplatePath
-export function templatePath(fullElementPath: ElementPath[]): TemplatePath {
+export function elementPath(fullElementPath: StaticElementPathPart[]): StaticElementPath
+export function elementPath(fullElementPath: ElementPathPart[]): ElementPath
+export function elementPath(fullElementPath: ElementPathPart[]): ElementPath {
   if (isEmptyElementPathsArray(fullElementPath)) {
-    return emptyTemplatePath
+    return emptyElementPath
   }
 
-  const pathCache = getTemplatePathCache(fullElementPath)
+  const pathCache = getElementPathCache(fullElementPath)
   if (pathCache.cached == null) {
-    pathCache.cached = newTemplatePath(fullElementPath)
+    pathCache.cached = newElementPath(fullElementPath)
   }
 
   return pathCache.cached
 }
 
-export function asStatic(path: TemplatePath): StaticTemplatePath {
-  return path as StaticTemplatePath
+export function asStatic(path: ElementPath): StaticElementPath {
+  return path as StaticElementPath
 }
 
-export function isTemplatePath(path: unknown): path is TemplatePath {
-  return (path as any)?.type === 'templatepath'
+export function isElementPath(path: unknown): path is ElementPath {
+  return (path as any)?.type === 'elementpath'
 }
 
-export function isRootElementOfInstance(path: TemplatePath): boolean {
+export function isRootElementOfInstance(path: ElementPath): boolean {
   return path.parts.length > 1 && last(path.parts)!.length === 1
 }
 
-export function isStoryboardPath(path: TemplatePath): boolean {
+export function isStoryboardPath(path: ElementPath): boolean {
   return path.parts.length === 1 && path.parts[0].length === 1
 }
 
-export function isStoryboardDescendant(path: TemplatePath): boolean {
+export function isStoryboardDescendant(path: ElementPath): boolean {
   return path.parts.length === 1 && path.parts[0].length > 1
 }
 
-export function isStoryboardChild(path: TemplatePath): boolean {
+export function isStoryboardChild(path: ElementPath): boolean {
   return path.parts.length === 1 && path.parts[0].length === 2
 }
 
-export function lastElementPathForPath(path: StaticTemplatePath): StaticElementPath | null
-export function lastElementPathForPath(path: TemplatePath): ElementPath | null
-export function lastElementPathForPath(path: TemplatePath): ElementPath | null {
+export function lastElementPathForPath(path: StaticElementPath): StaticElementPathPart | null
+export function lastElementPathForPath(path: ElementPath): ElementPathPart | null
+export function lastElementPathForPath(path: ElementPath): ElementPathPart | null {
   return last(path.parts) ?? null
 }
 
-function fromStringUncached(path: string): TemplatePath {
-  const elementPathStrings = path.split(SceneSeparator)
-  const fullElementPath = elementPathStrings.map((pathString) =>
+function fromStringUncached(path: string): ElementPath {
+  const elementPathPartStrings = path.split(SceneSeparator)
+  const fullElementPath = elementPathPartStrings.map((pathString) =>
     pathString.split(ElementSeparator).filter((str) => str.trim().length > 0),
   )
-  return templatePath(fullElementPath)
+  return elementPath(fullElementPath)
 }
 
-export function fromString(path: string): TemplatePath {
+export function fromString(path: string): ElementPath {
   let fromPathStringCache = globalPathStringToPathCache[path]
   if (fromPathStringCache == null) {
     const result = fromStringUncached(path)
@@ -173,10 +184,10 @@ export function fromString(path: string): TemplatePath {
   }
 }
 
-function allElementPaths(fullPath: ElementPath[]): Array<ElementPath[]> {
-  let paths: Array<ElementPath[]> = []
+function allElementPaths(fullPath: ElementPathPart[]): Array<ElementPathPart[]> {
+  let paths: Array<ElementPathPart[]> = []
   for (var index = 1; index < fullPath.length; index++) {
-    const prefix: ElementPath[] = fullPath.slice(0, index)
+    const prefix: ElementPathPart[] = fullPath.slice(0, index)
     const suffixes = allElementPathsForPart(fullPath[index])
     fastForEach(suffixes, (suffix) => paths.push(prefix.concat(suffix)))
   }
@@ -184,93 +195,97 @@ function allElementPaths(fullPath: ElementPath[]): Array<ElementPath[]> {
   return paths
 }
 
-function allElementPathsForPart(path: ElementPath): Array<ElementPath> {
-  let paths: Array<ElementPath> = []
+function allElementPathsForPart(path: ElementPathPart): Array<ElementPathPart> {
+  let paths: Array<ElementPathPart> = []
   for (var size = 1; size <= path.length; size++) {
     paths.push(path.slice(0, size))
   }
   return paths
 }
 
-export function allPathsForLastPart(path: TemplatePath | null): Array<TemplatePath> {
+export function allPathsForLastPart(path: ElementPath | null): Array<ElementPath> {
   if (path == null || isEmptyPath(path)) {
     return []
   } else {
     const prefix = dropLast(path.parts)
     const lastPart = last(path.parts)!
-    const toTemplatePath = (elementPath: ElementPath) => templatePath([...prefix, elementPath])
-    return [templatePath(prefix), ...allElementPathsForPart(lastPart).map(toTemplatePath)]
+    const toElementPath = (elementPathPart: ElementPathPart) =>
+      elementPath([...prefix, elementPathPart])
+    return [elementPath(prefix), ...allElementPathsForPart(lastPart).map(toElementPath)]
   }
 }
 
-export function depth(path: TemplatePath): number {
+export function depth(path: ElementPath): number {
   return 1 + path.parts.length
 }
 
-export function navigatorDepth(path: TemplatePath): number {
+export function navigatorDepth(path: ElementPath): number {
   return path.parts.reduce((working, next) => working + next.length, -2)
 }
 
-export function isInsideFocusedComponent(path: TemplatePath): boolean {
+export function isInsideFocusedComponent(path: ElementPath): boolean {
   return path.parts.length > 2
 }
 
-function fullElementPathParent(path: StaticElementPath[]): StaticElementPath[]
-function fullElementPathParent(path: ElementPath[]): ElementPath[]
-function fullElementPathParent(path: ElementPath[]): ElementPath[] {
+function fullElementPathParent(path: StaticElementPathPart[]): StaticElementPathPart[]
+function fullElementPathParent(path: ElementPathPart[]): ElementPathPart[]
+function fullElementPathParent(path: ElementPathPart[]): ElementPathPart[] {
   const prefix = dropLast(path)
   const lastPart = last(path)
   if (lastPart != null && lastPart.length > 1) {
-    return [...prefix, elementPathParent(lastPart)]
+    return [...prefix, elementPathPartParent(lastPart)]
   } else {
     return prefix
   }
 }
 
-export function elementPathParent(path: StaticElementPath): StaticElementPath
-export function elementPathParent(path: ElementPath): ElementPath
-export function elementPathParent(path: ElementPath): ElementPath {
+export function elementPathPartParent(path: StaticElementPathPart): StaticElementPathPart
+export function elementPathPartParent(path: ElementPathPart): ElementPathPart
+export function elementPathPartParent(path: ElementPathPart): ElementPathPart {
   return path.slice(0, path.length - 1)
 }
 
-export function parentPath(path: StaticTemplatePath): StaticTemplatePath
-export function parentPath(path: TemplatePath): TemplatePath
-export function parentPath(path: TemplatePath): TemplatePath {
+export function parentPath(path: StaticElementPath): StaticElementPath
+export function parentPath(path: ElementPath): ElementPath
+export function parentPath(path: ElementPath): ElementPath {
   const parentFullElementPath = fullElementPathParent(path.parts)
-  return templatePath(parentFullElementPath)
+  return elementPath(parentFullElementPath)
 }
 
-export function isParentOf(maybeParent: TemplatePath, maybeChild: TemplatePath): boolean {
+export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
   return pathsEqual(parentPath(maybeChild), maybeParent)
 }
 
-export function elementPathToUID(path: ElementPath): id {
+export function elementPathPartToUID(path: ElementPathPart): id {
   return forceNotNull('Attempting to get the UID of an empty ElementPath', last(path))
 }
 
-function lastElementPathPart(path: TemplatePath): ElementPath {
-  return last(path.parts) ?? emptyElementPath
+function lastElementPathPart(path: ElementPath): ElementPathPart {
+  return last(path.parts) ?? emptyElementPathPart
 }
 
-export function toUid(path: TemplatePath): id {
-  const elementPathToUse = lastElementPathPart(path)
-  return elementPathToUID(elementPathToUse)
+export function toUid(path: ElementPath): id {
+  const elementPathPartToUse = lastElementPathPart(path)
+  return elementPathPartToUID(elementPathPartToUse)
 }
 
-export function toStaticUid(path: TemplatePath): id {
+export function toStaticUid(path: ElementPath): id {
   return extractOriginalUidFromIndexedUid(toUid(path))
 }
 
 export function appendToElementPath(
-  path: StaticElementPath,
+  path: StaticElementPathPart,
   next: id | Array<id>,
-): StaticElementPath
-export function appendToElementPath(path: ElementPath, next: id | Array<id>): ElementPath
-export function appendToElementPath(path: ElementPath, next: id | Array<id>): ElementPath {
+): StaticElementPathPart
+export function appendToElementPath(path: ElementPathPart, next: id | Array<id>): ElementPathPart
+export function appendToElementPath(path: ElementPathPart, next: id | Array<id>): ElementPathPart {
   return path.concat(next)
 }
 
-function appendToElementPathArray(pathArray: ElementPath[], next: id | ElementPath): ElementPath[] {
+function appendToElementPathArray(
+  pathArray: ElementPathPart[],
+  next: id | ElementPathPart,
+): ElementPathPart[] {
   if (isEmptyElementPathsArray(pathArray)) {
     return [Array.isArray(next) ? next : [next]]
   } else {
@@ -282,30 +297,30 @@ function appendToElementPathArray(pathArray: ElementPath[], next: id | ElementPa
 }
 
 export function appendNewElementPath(
-  path: TemplatePath,
-  next: StaticElementPath,
-): StaticTemplatePath
-export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): TemplatePath
-export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): TemplatePath {
+  path: ElementPath,
+  next: StaticElementPathPart,
+): StaticElementPath
+export function appendNewElementPath(path: ElementPath, next: id | ElementPathPart): ElementPath
+export function appendNewElementPath(path: ElementPath, next: id | ElementPathPart): ElementPath {
   const toAppend = Array.isArray(next) ? next : [next]
-  return templatePath([...path.parts, toAppend])
+  return elementPath([...path.parts, toAppend])
 }
 
 export function appendToPath(
-  path: StaticTemplatePath,
-  next: id | StaticElementPath,
-): StaticTemplatePath
-export function appendToPath(path: TemplatePath, next: id | ElementPath): TemplatePath
-export function appendToPath(path: TemplatePath, next: id | ElementPath): TemplatePath {
+  path: StaticElementPath,
+  next: id | StaticElementPathPart,
+): StaticElementPath
+export function appendToPath(path: ElementPath, next: id | ElementPathPart): ElementPath
+export function appendToPath(path: ElementPath, next: id | ElementPathPart): ElementPath {
   const updatedPathParts = appendToElementPathArray(path.parts, next)
-  return templatePath(updatedPathParts)
+  return elementPath(updatedPathParts)
 }
 
-export function notNullPathsEqual(l: TemplatePath, r: TemplatePath): boolean {
+export function notNullPathsEqual(l: ElementPath, r: ElementPath): boolean {
   return pathsEqual(l, r)
 }
 
-function elementPathsEqual(l: ElementPath, r: ElementPath): boolean {
+function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
   if (l === r) {
     return true
   } else {
@@ -313,11 +328,11 @@ function elementPathsEqual(l: ElementPath, r: ElementPath): boolean {
   }
 }
 
-function fullElementPathsEqual(l: ElementPath[], r: ElementPath[]): boolean {
-  return l === r || arrayEquals(l, r, elementPathsEqual)
+function fullElementPathsEqual(l: ElementPathPart[], r: ElementPathPart[]): boolean {
+  return l === r || arrayEquals(l, r, elementPathPartsEqual)
 }
 
-export function pathsEqual(l: TemplatePath | null, r: TemplatePath | null): boolean {
+export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolean {
   if (l == null) {
     return r == null
   } else if (r == null) {
@@ -329,19 +344,16 @@ export function pathsEqual(l: TemplatePath | null, r: TemplatePath | null): bool
   }
 }
 
-export function containsPath(path: TemplatePath | null, paths: Array<TemplatePath>): boolean {
-  const matchesPath = (p: TemplatePath) => pathsEqual(path, p)
+export function containsPath(path: ElementPath | null, paths: Array<ElementPath>): boolean {
+  const matchesPath = (p: ElementPath) => pathsEqual(path, p)
   return paths.some(matchesPath)
 }
 
-export function filterPaths(paths: TemplatePath[], pathsToFilter: TemplatePath[]): TemplatePath[] {
+export function filterPaths(paths: ElementPath[], pathsToFilter: ElementPath[]): ElementPath[] {
   return paths.filter((path) => !containsPath(path, pathsToFilter))
 }
 
-export function addPathIfMissing(
-  path: TemplatePath,
-  paths: Array<TemplatePath>,
-): Array<TemplatePath> {
+export function addPathIfMissing(path: ElementPath, paths: Array<ElementPath>): Array<ElementPath> {
   if (containsPath(path, paths)) {
     return paths
   } else {
@@ -350,9 +362,9 @@ export function addPathIfMissing(
 }
 
 export function addPathsIfMissing(
-  existingPaths: Array<TemplatePath>,
-  pathsToAdd: Array<TemplatePath>,
-): Array<TemplatePath> {
+  existingPaths: Array<ElementPath>,
+  pathsToAdd: Array<ElementPath>,
+): Array<ElementPath> {
   if (pathsToAdd.length === 0) {
     return existingPaths
   } else if (existingPaths.length === 0) {
@@ -362,7 +374,7 @@ export function addPathsIfMissing(
   }
 }
 
-export function isChildOf(path: TemplatePath | null, parent: TemplatePath | null): boolean {
+export function isChildOf(path: ElementPath | null, parent: ElementPath | null): boolean {
   if (path == null || parent == null) {
     return false
   } else {
@@ -370,46 +382,46 @@ export function isChildOf(path: TemplatePath | null, parent: TemplatePath | null
   }
 }
 
-export function isSiblingOf(l: TemplatePath | null, r: TemplatePath | null): boolean {
+export function isSiblingOf(l: ElementPath | null, r: ElementPath | null): boolean {
   return l != null && r != null && pathsEqual(parentPath(l), parentPath(r))
 }
 
-function slicedPathsEqual(l: ElementPath, r: ElementPath): boolean {
+function slicedPathsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
   const slicedL = l.slice(0, r.length)
-  return elementPathsEqual(slicedL, r)
+  return elementPathPartsEqual(slicedL, r)
 }
 
-function elementIsDescendant(l: ElementPath, r: ElementPath): boolean {
+function elementIsDescendant(l: ElementPathPart, r: ElementPathPart): boolean {
   return l.length > r.length && slicedPathsEqual(l, r)
 }
 
-function elementIsDescendantOrEqualTo(l: ElementPath, r: ElementPath): boolean {
+function elementIsDescendantOrEqualTo(l: ElementPathPart, r: ElementPathPart): boolean {
   return l.length >= r.length && slicedPathsEqual(l, r)
 }
 
 export function isDescendantOfOrEqualTo(
-  target: TemplatePath,
-  maybeAncestorOrEqual: TemplatePath,
+  target: ElementPath,
+  maybeAncestorOrEqual: ElementPath,
 ): boolean {
   return pathsEqual(target, maybeAncestorOrEqual) || isDescendantOf(target, maybeAncestorOrEqual)
 }
 
-export function isDescendantOf(target: TemplatePath, maybeAncestor: TemplatePath): boolean {
+export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath): boolean {
   const targetElementPath = target.parts
   const maybeAncestorElementPath = maybeAncestor.parts
   if (targetElementPath.length >= maybeAncestorElementPath.length) {
     const partsToCheck = targetElementPath.slice(0, maybeAncestorElementPath.length)
-    return partsToCheck.every((elementPath, i) => {
+    return partsToCheck.every((elementPathPart, i) => {
       // all parts up to the last must match, and the last must be a descendant
       if (i < maybeAncestorElementPath.length - 1) {
-        return elementPathsEqual(elementPath, maybeAncestorElementPath[i])
+        return elementPathPartsEqual(elementPathPart, maybeAncestorElementPath[i])
       } else {
         const finalPartComparison =
           targetElementPath.length === maybeAncestorElementPath.length
             ? elementIsDescendant
             : elementIsDescendantOrEqualTo
 
-        return finalPartComparison(elementPath, maybeAncestorElementPath[i])
+        return finalPartComparison(elementPathPart, maybeAncestorElementPath[i])
       }
     })
   } else {
@@ -417,13 +429,13 @@ export function isDescendantOf(target: TemplatePath, maybeAncestor: TemplatePath
   }
 }
 
-export function getAncestorsForLastPart(path: TemplatePath): TemplatePath[] {
+export function getAncestorsForLastPart(path: ElementPath): ElementPath[] {
   return allPathsForLastPart(path).slice(0, -1)
 }
 
-function dropFromElementPaths(elementPaths: ElementPath[], n: number): ElementPath[] {
-  const prefix = dropLast(elementPaths)
-  const lastPart = last(elementPaths)
+function dropFromElementPaths(elementPathParts: ElementPathPart[], n: number): ElementPathPart[] {
+  const prefix = dropLast(elementPathParts)
+  const lastPart = last(elementPathParts)
   if (lastPart == null) {
     return []
   } else {
@@ -436,18 +448,18 @@ function dropFromElementPaths(elementPaths: ElementPath[], n: number): ElementPa
   }
 }
 
-function dropFromPath(path: TemplatePath, n: number): TemplatePath {
+function dropFromPath(path: ElementPath, n: number): ElementPath {
   const updatedPathParts = dropFromElementPaths(path.parts, n)
-  return updatedPathParts.length > 0 ? templatePath(updatedPathParts) : emptyTemplatePath
+  return updatedPathParts.length > 0 ? elementPath(updatedPathParts) : emptyElementPath
 }
 
 export const getNthParent = dropFromPath
 
 export function replaceIfAncestor(
-  path: TemplatePath,
-  replaceSearch: TemplatePath,
-  replaceWith: TemplatePath | null,
-): TemplatePath | null {
+  path: ElementPath,
+  replaceSearch: ElementPath,
+  replaceWith: ElementPath | null,
+): ElementPath | null {
   // A/B/C -> A/B -> G/H -> G/H/C
   if (isDescendantOf(path, replaceSearch) || pathsEqual(path, replaceSearch)) {
     const oldParts = path.parts
@@ -457,7 +469,7 @@ export function replaceIfAncestor(
     const trimmedOverlappingPart =
       overlappingPart == null ? null : drop(lastReplaceSearchPartLength, overlappingPart)
 
-    let prefix: ElementPath[]
+    let prefix: ElementPathPart[]
     if (trimmedOverlappingPart == null) {
       prefix = replaceWith == null ? [] : replaceWith.parts
     } else if (replaceWith == null) {
@@ -467,26 +479,26 @@ export function replaceIfAncestor(
     }
 
     const updatedPathParts = [...prefix, ...suffix]
-    return templatePath(updatedPathParts)
+    return elementPath(updatedPathParts)
   } else {
     return null
   }
 }
 
 export function replaceOrDefault(
-  path: TemplatePath,
-  replaceSearch: TemplatePath,
-  replaceWith: TemplatePath | null,
-): TemplatePath {
+  path: ElementPath,
+  replaceSearch: ElementPath,
+  replaceWith: ElementPath | null,
+): ElementPath {
   return replaceIfAncestor(path, replaceSearch, replaceWith) ?? path
 }
 
 export function closestSharedAncestor(
-  l: TemplatePath | null,
-  r: TemplatePath | null,
+  l: ElementPath | null,
+  r: ElementPath | null,
   includePathsEqual: boolean,
-): TemplatePath | null {
-  const toTargetPath: (p: TemplatePath) => TemplatePath | null = includePathsEqual
+): ElementPath | null {
+  const toTargetPath: (p: ElementPath) => ElementPath | null = includePathsEqual
     ? identity
     : parentPath
 
@@ -501,7 +513,7 @@ export function closestSharedAncestor(
     const fullyMatchedElementPathParts = longestCommonArray(
       lTarget.parts,
       rTarget.parts,
-      elementPathsEqual,
+      elementPathPartsEqual,
     )
     const nextLPart = lTarget.parts[fullyMatchedElementPathParts.length]
     const nextRPart = rTarget.parts[fullyMatchedElementPathParts.length]
@@ -512,19 +524,19 @@ export function closestSharedAncestor(
         ? [...fullyMatchedElementPathParts, nextMatchedElementPath]
         : fullyMatchedElementPathParts
 
-    return totalMatchedParts.length > 0 ? templatePath(totalMatchedParts) : null
+    return totalMatchedParts.length > 0 ? elementPath(totalMatchedParts) : null
   }
 }
 
 export function getCommonParent(
-  paths: Array<TemplatePath>,
+  paths: Array<ElementPath>,
   includeSelf: boolean = false,
-): TemplatePath | null {
+): ElementPath | null {
   if (paths.length === 0) {
     return null
   } else {
     const parents = includeSelf ? paths : paths.map(parentPath)
-    return parents.reduce<TemplatePath | null>(
+    return parents.reduce<ElementPath | null>(
       (l, r) => closestSharedAncestor(l, r, true),
       parents[0],
     )
@@ -538,7 +550,7 @@ export interface ElementsTransformResult<T> {
 
 export function findAndTransformAtPath<T>(
   elements: Array<T>,
-  path: ElementPath,
+  path: ElementPathPart,
   getChildren: (t: T) => Array<T> | null,
   getElementID: (element: T) => string,
   transform: (t: T) => T,
@@ -605,7 +617,7 @@ export function findAndTransformAtPath<T>(
 
 export function transformAtPath<T>(
   elements: Array<T>,
-  path: ElementPath,
+  path: ElementPathPart,
   getChildren: (t: T) => Array<T> | null,
   getElementID: (element: T) => string,
   transform: (t: T) => T,
@@ -618,7 +630,7 @@ export function transformAtPath<T>(
     transform,
   )
   if (transformResult.transformedElement == null) {
-    throw new Error(`Did not find element to transform ${elementPathToString(path)}`)
+    throw new Error(`Did not find element to transform ${elementPathPartToString(path)}`)
   } else {
     return transformResult.elements
   }
@@ -626,7 +638,7 @@ export function transformAtPath<T>(
 
 export function findAtElementPath<T>(
   elements: Array<T>,
-  path: ElementPath,
+  path: ElementPathPart,
   getChildren: (t: T) => Array<T> | null,
   getElementID: (element: T) => string,
 ): T | null {
@@ -673,11 +685,11 @@ export function findAtElementPath<T>(
   return foundElement
 }
 
-function dropLastPathPart(path: TemplatePath): TemplatePath {
-  return templatePath(dropLast(path.parts))
+function dropLastPathPart(path: ElementPath): ElementPath {
+  return elementPath(dropLast(path.parts))
 }
 
-export function areAllElementsInSameInstance(paths: TemplatePath[]): boolean {
+export function areAllElementsInSameInstance(paths: ElementPath[]): boolean {
   if (paths.length === 0) {
     return true
   } else {
@@ -686,51 +698,65 @@ export function areAllElementsInSameInstance(paths: TemplatePath[]): boolean {
   }
 }
 
-export function isFromSameInstanceAs(a: TemplatePath, b: TemplatePath): boolean {
+export function isFromSameInstanceAs(a: ElementPath, b: ElementPath): boolean {
   return pathsEqual(dropLastPathPart(a), dropLastPathPart(b))
 }
 
-function dynamicElementPathToStaticElementPath(element: ElementPath): StaticElementPath {
-  return element.map(extractOriginalUidFromIndexedUid) as StaticElementPath
+function dynamicElementPathToStaticElementPath(element: ElementPathPart): StaticElementPathPart {
+  const existing = dynamicElementPathToStaticElementPathCache.get(element)
+  if (existing == null) {
+    const result = element.map(extractOriginalUidFromIndexedUid) as StaticElementPathPart
+    dynamicElementPathToStaticElementPathCache.set(element, result)
+    return result
+  } else {
+    return existing
+  }
 }
 
-export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath {
-  return templatePath(path.parts.map(dynamicElementPathToStaticElementPath))
+export function dynamicPathToStaticPath(path: ElementPath): StaticElementPath {
+  const existing = dynamicToStaticPathCache.get(path)
+  if (existing == null) {
+    const result = elementPath(path.parts.map(dynamicElementPathToStaticElementPath))
+    dynamicToStaticPathCache.set(path, result)
+    return result
+  } else {
+    return existing
+  }
 }
 
-export function makeLastPartOfPathStatic(path: TemplatePath): TemplatePath {
+export function makeLastPartOfPathStatic(path: ElementPath): ElementPath {
   const dynamicLastPart = last(path.parts)
   if (dynamicLastPart == null) {
     return path
   } else {
     const staticLastPart = dynamicElementPathToStaticElementPath(dynamicLastPart)
-    return templatePath([...dropLast(path.parts), staticLastPart])
+    return elementPath([...dropLast(path.parts), staticLastPart])
   }
 }
 
 export function pathUpToElementPath(
-  fullPath: TemplatePath,
-  elementPath: ElementPath,
+  fullPath: ElementPath,
+  elementPathPart: ElementPathPart,
   convertToStatic: 'dynamic-path' | 'static-path',
-): TemplatePath | null {
+): ElementPath | null {
   const fullElementPath = fullPath.parts
   const pathToUse =
     convertToStatic === 'static-path'
       ? fullElementPath.map(dynamicElementPathToStaticElementPath)
       : fullElementPath
   const foundIndex = pathToUse.findIndex((pathPart) => {
-    return elementPathsEqual(pathPart, elementPath)
+    return elementPathPartsEqual(pathPart, elementPathPart)
   })
-  return foundIndex === -1 ? null : templatePath(fullElementPath.slice(0, foundIndex + 1))
+  return foundIndex === -1 ? null : elementPath(fullElementPath.slice(0, foundIndex + 1))
 }
 
 interface DropFirstPathElementResultType {
-  newPath: StaticTemplatePath | null
-  droppedPathElements: StaticElementPath | null
+  newPath: StaticElementPath | null
+  droppedPathElements: StaticElementPathPart | null
 }
 
 export function dropFirstPathElement(
-  path: StaticTemplatePath | null,
+  path: StaticElementPath | null,
 ): DropFirstPathElementResultType {
   if (path == null) {
     return {
@@ -741,7 +767,7 @@ export function dropFirstPathElement(
     const fullElementPath = path.parts
     if (fullElementPath.length > 1) {
       return {
-        newPath: templatePath(drop(1, fullElementPath)),
+        newPath: elementPath(drop(1, fullElementPath)),
         droppedPathElements: fullElementPath[0],
       }
     } else {
@@ -753,12 +779,12 @@ export function dropFirstPathElement(
   }
 }
 
-export function createBackwardsCompatibleScenePath(path: TemplatePath): TemplatePath {
-  const firstPart = path.parts[0] ?? emptyElementPath
-  return templatePath([firstPart.slice(0, 2)]) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
+export function createBackwardsCompatibleScenePath(path: ElementPath): ElementPath {
+  const firstPart = path.parts[0] ?? emptyElementPathPart
+  return elementPath([firstPart.slice(0, 2)]) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
 }
 
-export function isFocused(focusedElementPath: TemplatePath | null, path: TemplatePath): boolean {
+export function isFocused(focusedElementPath: ElementPath | null, path: ElementPath): boolean {
   const lastPart = lastElementPathForPath(path)
   if (focusedElementPath == null || lastPart == null || isStoryboardDescendant(path)) {
     return false

@@ -1,11 +1,11 @@
 import {
   PropertyPath,
   PropertyPathPart,
-  StaticElementPath,
-  TemplatePath,
+  StaticElementPathPart,
+  ElementPath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
-import { Either, isLeft } from './either'
+import { Either, isLeft, left, right } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
@@ -13,10 +13,9 @@ import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api'
 import { fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
-import { parseUID } from './uid-utils'
 import { CSSPosition } from '../../components/inspector/common/css-utils'
 import { ModifiableAttribute } from './jsx-attributes'
-import * as TP from './template-path'
+import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import {
@@ -26,6 +25,7 @@ import {
 } from '../workers/parser-printer/parser-printer-comments'
 import { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
+import { string } from 'fast-check/*'
 
 interface BaseComment {
   comment: string
@@ -328,6 +328,12 @@ export function clearJSXAttributeOtherJavaScriptUniqueIDs(
   }
 }
 
+export function simplifyAttributesIfPossible(attributes: JSXAttributes): JSXAttributes {
+  return attributes.map(({ key, value, comments }) =>
+    jsxAttributesEntry(key, simplifyAttributeIfPossible(value), comments),
+  )
+}
+
 export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribute {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
@@ -628,16 +634,17 @@ export function setJSXAttributesAttribute(
   value: JSXAttribute,
 ): JSXAttributes {
   let updatedExistingField: boolean = false
+  const simplifiedValue = simplifyAttributeIfPossible(value)
   let result: JSXAttributes = attributes.map((attr) => {
     if (attr.key === key) {
       updatedExistingField = true
-      return jsxAttributesEntry(key, value, attr.comments)
+      return jsxAttributesEntry(key, simplifiedValue, attr.comments)
     } else {
       return attr
     }
   })
   if (!updatedExistingField) {
-    result.push(jsxAttributesEntry(key, value, emptyComments))
+    result.push(jsxAttributesEntry(key, simplifiedValue, emptyComments))
   }
   return result
 }
@@ -762,6 +769,13 @@ export interface JSXElement {
   name: JSXElementName
   props: JSXAttributes
   children: JSXElementChildren
+  uid: string
+}
+
+export interface JSXElementWithoutUID {
+  name: JSXElementName
+  props: JSXAttributes
+  children: JSXElementChildren
 }
 
 export type ElementsWithin = { [uid: string]: JSXElement }
@@ -880,12 +894,14 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
 
 export function jsxElement(
   name: JSXElementName | string,
+  uid: string,
   props: JSXAttributes,
   children: JSXElementChildren,
 ): JSXElement {
   return {
     type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
+    uid: uid,
     props: props,
     children: children,
   }
@@ -899,9 +915,22 @@ export function jsxTestElement(
 ): JSXElement {
   return jsxElement(
     name,
+    uid,
     setJSXAttributesAttribute(props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
     children,
   )
+}
+
+export function jsxElementWithoutUID(
+  name: JSXElementName | string,
+  props: JSXAttributes,
+  children: JSXElementChildren,
+): JSXElementWithoutUID {
+  return {
+    name: typeof name === 'string' ? jsxElementName(name, []) : name,
+    props: props,
+    children: children,
+  }
 }
 
 export function utopiaJSXComponent(
@@ -1267,39 +1296,65 @@ export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntr
 export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadata }
 export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
+export type FoundImportInfo = {
+  variableName: string
+  originalName: string | null
+  path: string
+}
+
+export type ImportInfo = Either<'NOT_IMPORTED', FoundImportInfo>
+
+export function createImportedFrom(
+  variableName: string,
+  originalName: string | null,
+  path: string,
+): ImportInfo {
+  return right({
+    variableName: variableName,
+    originalName: originalName,
+    path: path,
+  })
+}
+
+export function createNotImported(): ImportInfo {
+  return left('NOT_IMPORTED')
+}
+
 export interface ElementInstanceMetadata {
-  templatePath: TemplatePath
+  elementPath: ElementPath
   element: Either<string, JSXElementChild>
   props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
-  children: Array<TemplatePath>
-  rootElements: Array<TemplatePath>
+  children: Array<ElementPath>
+  rootElements: Array<ElementPath>
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
   attributeMetadatada: StyleAttributeMetadata | null
   label: string | null
+  importInfo: ImportInfo | null
 }
 
 export function elementInstanceMetadata(
-  templatePath: TemplatePath,
+  elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
-  children: Array<TemplatePath>,
-  rootElements: Array<TemplatePath>,
+  children: Array<ElementPath>,
+  rootElements: Array<ElementPath>,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
   attributeMetadatada: StyleAttributeMetadata | null,
   label: string | null,
+  importInfo: ImportInfo | null,
 ): ElementInstanceMetadata {
   return {
-    templatePath: templatePath,
+    elementPath: elementPath,
     element: element,
     props: props,
     globalFrame: globalFrame,
@@ -1312,6 +1367,7 @@ export function elementInstanceMetadata(
     computedStyle: computedStyle,
     attributeMetadatada: attributeMetadatada,
     label: label,
+    importInfo: importInfo,
   }
 }
 
@@ -1418,15 +1474,15 @@ export type ElementsByUID = { [uid: string]: JSXElement }
 
 export function walkElement(
   element: JSXElementChild,
-  parentPath: StaticElementPath,
+  parentPath: StaticElementPathPart,
   depth: number,
-  forEach: (e: JSXElementChild, path: StaticElementPath, depth: number) => void,
+  forEach: (e: JSXElementChild, path: StaticElementPathPart, depth: number) => void,
 ): void {
   switch (element.type) {
     case 'JSX_ELEMENT':
       const uidAttr = getJSXAttribute(element.props, 'data-uid')
       if (uidAttr != null && isJSXAttributeValue(uidAttr) && typeof uidAttr.value === 'string') {
-        const path = TP.appendToElementPath(parentPath, uidAttr.value)
+        const path = EP.appendToElementPath(parentPath, uidAttr.value)
         forEach(element, path, depth)
         fastForEach(element.children, (child) => walkElement(child, path, depth + 1, forEach))
       }
@@ -1452,9 +1508,9 @@ export function walkElement(
 
 export function walkElements(
   topLevelElements: Array<TopLevelElement>,
-  forEach: (element: JSXElementChild, path: StaticElementPath) => void,
+  forEach: (element: JSXElementChild, path: StaticElementPathPart) => void,
 ): void {
-  const emptyPath = ([] as any) as StaticElementPath // Oh my word
+  const emptyPath = ([] as any) as StaticElementPathPart // Oh my word
   fastForEach(topLevelElements, (rootComponent) => {
     if (isUtopiaJSXComponent(rootComponent)) {
       walkElement(rootComponent.rootElement, emptyPath, 0, forEach)

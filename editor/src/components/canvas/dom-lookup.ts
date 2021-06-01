@@ -1,5 +1,4 @@
-import * as R from 'ramda'
-import { last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
+import { intersection, last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
@@ -12,16 +11,16 @@ import {
   windowPoint,
   WindowPoint,
 } from '../../core/shared/math-utils'
-import { TemplatePath } from '../../core/shared/project-file-types'
-import * as TP from '../../core/shared/template-path'
+import { ElementPath } from '../../core/shared/project-file-types'
+import * as EP from '../../core/shared/element-path'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 
-export function findParentSceneValidPaths(target: Element): Array<TemplatePath> | null {
+export function findParentSceneValidPaths(target: Element): Array<ElementPath> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
   if (validPaths != null) {
-    return validPaths.split(' ').map(TP.fromString)
+    return validPaths.split(' ').map(EP.fromString)
   } else {
     if (target.parentElement != null) {
       return findParentSceneValidPaths(target.parentElement)
@@ -31,47 +30,48 @@ export function findParentSceneValidPaths(target: Element): Array<TemplatePath> 
   }
 }
 
-export function findFirstParentWithValidTemplatePath(
-  validDynamicTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
+export function findFirstParentWithValidElementPath(
+  validDynamicElementPathsForLookup: Array<ElementPath> | 'no-filter',
   target: Element,
-): TemplatePath | null {
-  const dynamicTemplatePaths = getPathsOnDomElement(target)
-  const validStaticTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
-  const validStaticTemplatePaths =
-    validDynamicTemplatePathsForLookup === 'no-filter'
-      ? validStaticTemplatePathsForScene
-      : R.intersection(
-          validDynamicTemplatePathsForLookup.map(TP.makeLastPartOfPathStatic),
-          validStaticTemplatePathsForScene,
+): ElementPath | null {
+  const dynamicElementPaths = getPathsOnDomElement(target)
+  const validStaticElementPathsForScene = findParentSceneValidPaths(target) ?? []
+  const validStaticElementPaths =
+    validDynamicElementPathsForLookup === 'no-filter'
+      ? validStaticElementPathsForScene
+      : intersection(
+          validDynamicElementPathsForLookup.map(EP.makeLastPartOfPathStatic),
+          validStaticElementPathsForScene,
+          EP.pathsEqual,
         )
 
-  const filteredValidPathsMappedToDynamic = mapDropNulls((validPath: TemplatePath) => {
-    return dynamicTemplatePaths.find((tp) => {
-      const templatePathWithStaticElementPart = TP.makeLastPartOfPathStatic(tp)
-      return TP.pathsEqual(validPath, templatePathWithStaticElementPart)
+  const filteredValidPathsMappedToDynamic = mapDropNulls((validPath: ElementPath) => {
+    return dynamicElementPaths.find((tp) => {
+      const elementPathWithStaticElementPart = EP.makeLastPartOfPathStatic(tp)
+      return EP.pathsEqual(validPath, elementPathWithStaticElementPart)
     })
-  }, validStaticTemplatePaths)
+  }, validStaticElementPaths)
 
   if (filteredValidPathsMappedToDynamic.length > 0) {
     return last(filteredValidPathsMappedToDynamic) ?? null
   } else {
-    if (target.parentElement != null) {
-      return findFirstParentWithValidTemplatePath(validStaticTemplatePaths, target.parentElement)
-    } else {
+    if (target.parentElement == null) {
       return null
+    } else {
+      return findFirstParentWithValidElementPath(validStaticElementPaths, target.parentElement)
     }
   }
 }
 
 export function getValidTargetAtPoint(
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
-  hiddenInstances: Array<TemplatePath>,
-  validTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
-): TemplatePath | null {
+): ElementPath | null {
   if (point == null) {
     return null
   }
@@ -80,7 +80,7 @@ export function getValidTargetAtPoint(
       componentMetadata,
       selectedViews,
       hiddenInstances,
-      validTemplatePathsForLookup,
+      validElementPathsForLookup,
       point,
       canvasScale,
       canvasOffset,
@@ -90,13 +90,13 @@ export function getValidTargetAtPoint(
 
 export function getAllTargetsAtPoint(
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
-  hiddenInstances: Array<TemplatePath>,
-  validTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
+  validElementPathsForLookup: Array<ElementPath> | 'no-filter',
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
-): Array<TemplatePath> {
+): Array<ElementPath> {
   if (point == null) {
     return []
   }
@@ -113,12 +113,12 @@ export function getAllTargetsAtPoint(
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidtemplatePath = findFirstParentWithValidTemplatePath(
-        validTemplatePathsForLookup,
+      const foundValidelementPath = findFirstParentWithValidElementPath(
+        validElementPathsForLookup,
         element,
       )
-      if (foundValidtemplatePath != null) {
-        return foundValidtemplatePath
+      if (foundValidelementPath != null) {
+        return foundValidelementPath
       } else {
         return null
       }
@@ -130,10 +130,10 @@ export function getAllTargetsAtPoint(
       if (!foundElement.canBeFilteredOut) {
         return true
       } else {
-        return elementsFromDOM.some((e) => TP.pathsEqual(e, foundElement.templatePath))
+        return elementsFromDOM.some((e) => EP.pathsEqual(e, foundElement.elementPath))
       }
     })
-    .map((e) => e.templatePath)
+    .map((e) => e.elementPath)
 }
 
 export function windowToCanvasCoordinates(

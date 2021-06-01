@@ -2,7 +2,7 @@ import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { Either } from '../core/shared/either'
 import { ElementInstanceMetadataMap, isIntrinsicHTMLElement } from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
-import { NodeModules, TemplatePath } from '../core/shared/project-file-types'
+import { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
@@ -15,10 +15,7 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import {
-  getJSXComponentsAndImportsForPathInnerComponent,
-  TransientFilesState,
-} from './editor/store/editor-state'
+import { TransientFilesState } from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -39,14 +36,13 @@ export interface ContextMenuItem<T> {
 
 export interface CanvasData {
   canvasOffset: CanvasPoint
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
-  currentFilePath: string | null
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
   transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
-  hiddenInstances: TemplatePath[]
+  hiddenInstances: ElementPath[]
   scale: number
 }
 
@@ -142,33 +138,13 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
 export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   name: 'Edit Component',
   enabled: (data) => {
-    if (data.currentFilePath == null) {
-      return false
-    } else {
-      return data.selectedViews.every((view) => {
-        const { components, imports } = getJSXComponentsAndImportsForPathInnerComponent(
-          view,
-          data.currentFilePath,
-          data.projectContents,
-          data.nodeModules,
-          data.transientFilesState,
-          data.resolve,
-        )
-        return MetadataUtils.isFocusableComponent(view, components, data.jsxMetadata, imports)
-      })
-    }
+    return data.selectedViews.every((view) => {
+      return MetadataUtils.isFocusableComponent(view, data.jsxMetadata)
+    })
   },
   isHidden: (data) => {
     return data.selectedViews.every((view) => {
-      const { components } = getJSXComponentsAndImportsForPathInnerComponent(
-        view,
-        data.currentFilePath,
-        data.projectContents,
-        data.nodeModules,
-        data.transientFilesState,
-        data.resolve,
-      )
-      const elementName = MetadataUtils.getJSXElementName(view, components)
+      const elementName = MetadataUtils.getJSXElementFromMetadata(data.jsxMetadata, view)
       return elementName != null ? isIntrinsicHTMLElement(elementName) : true
     })
   },

@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import {
   FramePoint,
   HorizontalFramePointsExceptSize,
@@ -43,6 +42,12 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   setJSXAttributesAttribute,
+  ArbitraryJSBlock,
+  TopLevelElement,
+  getJSXElementNameAsString,
+  isJSXArbitraryBlock,
+  isJSXFragment,
+  isUtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -53,6 +58,7 @@ import {
   transformJSXComponentAtPath,
   findJSXElementChildAtPath,
   transformJSXComponentAtElementPath,
+  isSceneElement,
 } from '../../core/model/element-template-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -70,13 +76,14 @@ import {
   ParsedTextFile,
   ParseSuccess,
   RevisionsState,
-  TemplatePath,
+  ElementPath,
   importAlias,
   PropertyPath,
   foldParsedTextFile,
   textFile,
   textFileContents,
   isParseSuccess,
+  isTextFile,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -93,6 +100,7 @@ import {
   isRight,
   right,
   isLeft,
+  Either,
 } from '../../core/shared/either'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
@@ -117,7 +125,7 @@ import {
   TransientCanvasState,
   transientCanvasState,
   transientFileState,
-  getStoryboardTemplatePathFromEditorState,
+  getStoryboardElementPathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
   StoryboardFilePath,
@@ -133,7 +141,7 @@ import {
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
 import Canvas, { TargetSearchType } from './canvas'
 import {
@@ -173,37 +181,43 @@ import { getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
-import { addFileToProjectContents, contentsToTree, ProjectContentTreeRoot } from '../assets'
+import {
+  addFileToProjectContents,
+  contentsToTree,
+  getContentsTreeFileFromString,
+  ProjectContentTreeRoot,
+} from '../assets'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from './dom-lookup'
-import { WindowMousePositionRaw } from '../../templates/editor-canvas'
 import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
-import { addToMapOfArraysUnique } from '../../core/shared/array-utils'
+import { addToMapOfArraysUnique, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { emptySet } from '../../core/shared/set-utils'
+import { WindowMousePositionRaw } from '../../utils/global-positions'
+import { importedFromWhere } from '../editor/import-utils'
 
 export function getOriginalFrames(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<OriginalCanvasAndLocalFrame> {
   let originalFrames: Array<OriginalCanvasAndLocalFrame> = []
-  function includeChildren(view: TemplatePath): Array<TemplatePath> {
+  function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
       ...MetadataUtils.getChildrenHandlingGroups(componentMetadata, view, true).map(
-        (child) => child.templatePath,
+        (child) => child.elementPath,
       ),
     ]
   }
   Utils.fastForEach(
     extendSelectedViewsForInteraction(selectedViews, componentMetadata),
     (selectedView) => {
-      const allPaths = Utils.flatMapArray(includeChildren, TP.allPathsForLastPart(selectedView))
+      const allPaths = Utils.flatMapArray(includeChildren, EP.allPathsForLastPart(selectedView))
       Utils.fastForEach(allPaths, (path) => {
         let alreadyAdded = false
         Utils.fastForEach(originalFrames, (originalFrame) => {
-          if (TP.pathsEqual(originalFrame.target, path)) {
+          if (EP.pathsEqual(originalFrame.target, path)) {
             alreadyAdded = true
           }
         })
@@ -236,29 +250,29 @@ export function getOriginalFrames(
 }
 
 export function getOriginalCanvasFrames(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<CanvasFrameAndTarget> {
   const originalFrames: Array<CanvasFrameAndTarget> = []
-  function includeChildren(view: TemplatePath): Array<TemplatePath> {
+  function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
       ...MetadataUtils.getChildrenHandlingGroups(componentMetadata, view, true).map(
-        (child) => child.templatePath,
+        (child) => child.elementPath,
       ),
     ]
   }
   Utils.fastForEach(selectedViews, (selectedView) => {
     const selectedAndChildren = Utils.flatMapArray(
       includeChildren,
-      TP.allPathsForLastPart(selectedView),
+      EP.allPathsForLastPart(selectedView),
     )
-    const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(TP.parentPath)]
-    const allPaths = R.uniqBy(TP.toComponentId, Utils.stripNulls(includingParents))
+    const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(EP.parentPath)]
+    const allPaths = uniqBy(Utils.stripNulls(includingParents), EP.pathsEqual)
     Utils.fastForEach(allPaths, (path) => {
       let alreadyAdded = false
       Utils.fastForEach(originalFrames, (originalFrame) => {
-        if (TP.pathsEqual(originalFrame.target, path)) {
+        if (EP.pathsEqual(originalFrame.target, path)) {
           alreadyAdded = true
         }
       })
@@ -338,7 +352,7 @@ export function updateFramesOfScenesAndComponents(
     const target = frameAndTarget.target
     // Realign to aim at the static version, not the dynamic one.
     const originalTarget = target
-    const staticTarget = TP.dynamicPathToStaticPath(target)
+    const staticTarget = EP.dynamicPathToStaticPath(target)
     if (staticTarget == null) {
       return
     }
@@ -353,7 +367,7 @@ export function updateFramesOfScenesAndComponents(
       throw new Error(`Unexpected result when looking for element: ${element}`)
     }
 
-    const staticParentPath = TP.parentPath(staticTarget)
+    const staticParentPath = EP.parentPath(staticTarget)
     const parentElement = withUnderlyingTargetFromEditorState(
       staticParentPath,
       workingEditorState,
@@ -908,10 +922,10 @@ function extendPartialFramePointsForResize(frameProps: FramePoint[], edgePositio
 
 export function getOriginalFrameInCanvasCoords(
   originalFrames: Array<OriginalCanvasAndLocalFrame>,
-  target: TemplatePath,
+  target: ElementPath,
 ): CanvasRectangle | null {
   for (const originalFrame of originalFrames || []) {
-    if (TP.pathsEqual(target, originalFrame.target)) {
+    if (EP.pathsEqual(target, originalFrame.target)) {
       if (originalFrame.canvasFrame != null) {
         return originalFrame.canvasFrame
       }
@@ -958,7 +972,7 @@ export const SnappingThreshold = 5
 
 export function collectGuidelines(
   metadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   scale: number,
   draggedPoint: CanvasPoint | null,
   resizingFromPosition: EdgePosition | null,
@@ -975,7 +989,7 @@ export function collectGuidelines(
         return
       }
 
-      const instance = MetadataUtils.findElementByTemplatePath(metadata, selectedView)
+      const instance = MetadataUtils.findElementByElementPath(metadata, selectedView)
       if (instance != null && MetadataUtils.isImg(instance) && instance.localFrame != null) {
         const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(instance)
@@ -1321,7 +1335,7 @@ function getTransientCanvasStateFromFrameChanges(
   editorState: EditorState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   preventAnimations: boolean,
-  elementsToTarget: Array<TemplatePath>,
+  elementsToTarget: Array<ElementPath>,
 ): TransientCanvasState {
   let workingEditorState: EditorState = editorState
   let successByFilename: { [filename: string]: ParseSuccess } = {}
@@ -1492,7 +1506,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 }
 
 export function produceCanvasTransientState(
-  previousCanvasTransientSelectedViews: Array<TemplatePath>,
+  previousCanvasTransientSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   preventAnimations: boolean,
 ): TransientCanvasState {
@@ -1606,7 +1620,7 @@ export function createDuplicationNewUIDsFromEditorState(
 }
 
 export function createDuplicationNewUIDs(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
 ): Array<DuplicateNewUID> {
@@ -1636,11 +1650,11 @@ export const SkipFrameChange = 'skipFrameChange'
 
 function getReparentTargetAtPosition(
   componentMeta: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
-  hiddenInstances: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
   canvasScale: number,
   canvasOffset: CanvasVector,
-): TemplatePath | undefined {
+): ElementPath | undefined {
   const allTargets = getAllTargetsAtPoint(
     componentMeta,
     selectedViews,
@@ -1651,19 +1665,17 @@ function getReparentTargetAtPosition(
     canvasOffset,
   )
   // filtering for non-selected views from alltargets
-  return R.head(
-    allTargets.filter((target) => selectedViews.every((view) => !TP.pathsEqual(view, target))),
-  )
+  return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
 }
 
 export function getReparentTarget(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   editorState: EditorState,
-  toReparent: Array<TemplatePath>,
+  toReparent: Array<ElementPath>,
   position: CanvasPoint,
 ): {
   shouldReparent: boolean
-  newParent: TemplatePath | null
+  newParent: ElementPath | null
 } {
   const result = getReparentTargetAtPosition(
     editorState.jsxMetadata,
@@ -1678,23 +1690,13 @@ export function getReparentTarget(
   )
   let parentSupportsChild = true
   if (possibleNewParent != null) {
-    parentSupportsChild = withUnderlyingTarget(
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(
+      editorState.jsxMetadata,
       possibleNewParent,
-      editorState.projectContents,
-      editorState.nodeModules.files,
-      editorState.canvas.openFile?.filename,
-      false,
-      (success) => {
-        return MetadataUtils.targetSupportsChildren(
-          success.imports,
-          editorState.jsxMetadata,
-          possibleNewParent,
-        )
-      },
     )
   } else {
     // a null template path means Canvas, let's translate that to the storyboard component
-    const storyboardComponent = getStoryboardTemplatePathFromEditorState(editorState)
+    const storyboardComponent = getStoryboardElementPathFromEditorState(editorState)
     return {
       shouldReparent: storyboardComponent != null,
       newParent: storyboardComponent,
@@ -1704,7 +1706,7 @@ export function getReparentTarget(
     parentSupportsChild &&
     ((currentParents.length === 0 && possibleNewParent != null) ||
       (currentParents.length > 0 &&
-        currentParents.every((parent) => !TP.pathsEqual(possibleNewParent, parent.templatePath))))
+        currentParents.every((parent) => !EP.pathsEqual(possibleNewParent, parent.elementPath))))
   ) {
     return {
       shouldReparent: true,
@@ -1720,11 +1722,11 @@ export function getReparentTarget(
 
 export interface MoveTemplateResult {
   updatedEditorState: EditorState
-  newPath: TemplatePath | null
+  newPath: ElementPath | null
 }
 
 export function getFrameChange(
-  target: TemplatePath,
+  target: ElementPath,
   newFrame: CanvasRectangle,
   isParentFlex: boolean,
 ): PinOrFlexFrameChange {
@@ -1736,16 +1738,16 @@ export function getFrameChange(
 }
 
 export function moveTemplate(
-  target: TemplatePath,
-  originalPath: TemplatePath,
+  target: ElementPath,
+  originalPath: ElementPath,
   newFrame: CanvasRectangle | typeof SkipFrameChange | null,
   indexPosition: IndexPosition,
-  newParentPath: TemplatePath | null,
+  newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editorState: EditorState,
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
-  highlightedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
+  highlightedViews: Array<ElementPath>,
   newParentLayoutSystem: LayoutSystem | null,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
@@ -1755,10 +1757,10 @@ export function moveTemplate(
     }
   }
   let newIndex: number = 0
-  let newPath: TemplatePath | null = null
+  let newPath: ElementPath | null = null
   let flexContextChanged: boolean = false
 
-  const targetID = TP.toUid(target)
+  const targetID = EP.toUid(target)
   if (newParentPath == null) {
     // TODO Scene Implementation
     return noChanges()
@@ -1859,11 +1861,11 @@ export function moveTemplate(
                 }
               }
 
-              newPath = TP.appendToPath(newParentPath, targetID)
+              newPath = EP.appendToPath(newParentPath, targetID)
 
               let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
               // Need to make these changes ahead of updating the frame.
-              const elementMetadata = MetadataUtils.findElementByTemplatePath(
+              const elementMetadata = MetadataUtils.findElementByElementPath(
                 updatedComponentMetadata,
                 target,
               )
@@ -1911,7 +1913,7 @@ export function moveTemplate(
               }
 
               const newSelectedViews = selectedViews.map((v) => {
-                if (TP.pathsEqual(v, target)) {
+                if (EP.pathsEqual(v, target)) {
                   return newPath
                 } else {
                   return v
@@ -1920,7 +1922,7 @@ export function moveTemplate(
 
               const newHighlightedViews =
                 newParentPath == null
-                  ? highlightedViews.map((t) => (TP.pathsEqual(t, target) ? newPath : t))
+                  ? highlightedViews.map((t) => (EP.pathsEqual(t, target) ? newPath : t))
                   : [newParentPath]
 
               const updatedEditorState: EditorState = {
@@ -1941,13 +1943,10 @@ export function moveTemplate(
   }
 }
 
-function preventAnimationsOnTargets(
-  editorState: EditorState,
-  targets: TemplatePath[],
-): EditorState {
+function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPath[]): EditorState {
   let workingEditorState = editorState
   Utils.fastForEach(targets, (target) => {
-    const staticPath = TP.dynamicPathToStaticPath(target)
+    const staticPath = EP.dynamicPathToStaticPath(target)
     if (staticPath != null) {
       workingEditorState = modifyUnderlyingForOpenFile(
         staticPath,
@@ -1977,12 +1976,12 @@ function preventAnimationsOnTargets(
 }
 
 function produceMoveTransientCanvasState(
-  previousCanvasTransientSelectedViews: Array<TemplatePath>,
+  previousCanvasTransientSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   dragState: MoveDragState,
   preventAnimations: boolean,
 ): TransientCanvasState {
-  let selectedViews: Array<TemplatePath> = dragState.draggedElements
+  let selectedViews: Array<ElementPath> = dragState.draggedElements
   let originalFrames: Array<CanvasFrameAndTarget> = dragState.originalFrames
 
   let elementsToTarget = determineElementsToOperateOnForDragging(
@@ -2009,7 +2008,7 @@ function produceMoveTransientCanvasState(
     if (reparentTarget.shouldReparent) {
       elementsToTarget = elementsToTarget.map((target) => {
         const frame = originalFrames.find((originalFrameAndTarget) => {
-          return TP.pathsEqual(originalFrameAndTarget.target, target)
+          return EP.pathsEqual(originalFrameAndTarget.target, target)
         })?.frame
         const reparentResult = moveTemplate(
           target,
@@ -2027,7 +2026,7 @@ function produceMoveTransientCanvasState(
         selectedViews = reparentResult.updatedEditorState.selectedViews
         // As it has moved, we need to synchronise the paths.
         originalFrames = originalFrames.map((originalFrame) => {
-          if (reparentResult.newPath != null && TP.pathsEqual(originalFrame.target, target)) {
+          if (reparentResult.newPath != null && EP.pathsEqual(originalFrame.target, target)) {
             return {
               ...originalFrame,
               target: reparentResult.newPath,
@@ -2098,7 +2097,7 @@ export function getCanvasOffset(
   previousScale: number,
   scale: number,
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: TemplatePath[],
+  selectedViews: ElementPath[],
   focusPoint: CanvasPoint | null,
   isFirstLoad: boolean,
 ): CanvasPoint {
@@ -2175,7 +2174,7 @@ export function getCanvasOffset(
 }
 
 export function focusPointForZoom(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   scale: number,
   previousScale: number,
   componentMetadata: ElementInstanceMetadataMap,
@@ -2213,8 +2212,8 @@ export interface DuplicateResult {
 }
 
 export function duplicate(
-  paths: Array<TemplatePath>,
-  newParentPath: TemplatePath | null,
+  paths: Array<ElementPath>,
+  newParentPath: ElementPath | null,
   editor: EditorState,
 ): DuplicateResult | null {
   let duplicateNewUIDs: Array<DuplicateNewUID> = []
@@ -2228,7 +2227,7 @@ export function duplicate(
     newOriginalFrames = editor.canvas.dragState.originalFrames
   }
 
-  let newSelectedViews: Array<TemplatePath> = []
+  let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
   const existingIDs = getAllUniqueUids(editor.projectContents)
   for (const path of paths) {
@@ -2248,11 +2247,11 @@ export function duplicate(
         )
         let uid: string
         if (jsxElement == null) {
-          console.warn(`Could not find element ${TP.toVarSafeComponentId(path)}`)
+          console.warn(`Could not find element ${EP.toVarSafeComponentId(path)}`)
           return success
         } else {
           const duplicateNewUID: DuplicateNewUID | undefined = duplicateNewUIDs.find((entry) =>
-            TP.pathsEqual(entry.originalPath, path),
+            EP.pathsEqual(entry.originalPath, path),
           )
           if (duplicateNewUID === undefined) {
             newElement = guaranteeUniqueUids([jsxElement], existingIDs)[0]
@@ -2272,23 +2271,23 @@ export function duplicate(
             }
             uid = duplicateNewUID.newUID
           }
-          let newPath: TemplatePath
+          let newPath: ElementPath
           if (newParentPath == null) {
             const storyboardUID = Utils.forceNotNull(
               'Could not find storyboard element',
               getStoryboardUID(utopiaComponents),
             )
-            newPath = TP.templatePath([[storyboardUID, uid]])
+            newPath = EP.elementPath([[storyboardUID, uid]])
           } else {
-            newPath = TP.appendToPath(newParentPath, uid)
+            newPath = EP.appendToPath(newParentPath, uid)
           }
           // Update the original frames to be the duplicate ones.
           if (newOriginalFrames != null && newPath != null) {
             newOriginalFrames = newOriginalFrames.map((originalFrame) => {
-              if (TP.pathsEqual(originalFrame.target, path)) {
+              if (EP.pathsEqual(originalFrame.target, path)) {
                 return {
                   frame: originalFrame.frame,
-                  target: newPath as TemplatePath,
+                  target: newPath as ElementPath,
                 }
               } else {
                 return originalFrame
@@ -2306,7 +2305,7 @@ export function duplicate(
           )
 
           if (newElement == null) {
-            console.warn(`Could not duplicate ${TP.toVarSafeComponentId(path)}`)
+            console.warn(`Could not duplicate ${EP.toVarSafeComponentId(path)}`)
             return success
           } else {
             newSelectedViews.push(newPath)
@@ -2351,12 +2350,12 @@ export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
-  target: TemplatePath,
+  target: ElementPath,
   newIndex: number,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
-  const parentPath = TP.parentPath(target)
+  const parentPath = EP.parentPath(target)
   const jsxElement = findElementAtPath(target, workingComponents)
 
   if (jsxElement != null) {
@@ -2415,11 +2414,11 @@ export function cullSpyCollector(
   // Collate all the valid paths.
   let elementPaths: Set<string> = Utils.emptySet()
   fastForEach(domMetadata, (element) => {
-    let workingPath: TemplatePath | null = element.templatePath
-    while (workingPath != null && !TP.isEmptyPath(workingPath)) {
-      const pathAsString = TP.toString(workingPath)
+    let workingPath: ElementPath | null = element.elementPath
+    while (workingPath != null && !EP.isEmptyPath(workingPath)) {
+      const pathAsString = EP.toString(workingPath)
       elementPaths.add(pathAsString)
-      workingPath = TP.parentPath(workingPath)
+      workingPath = EP.parentPath(workingPath)
     }
   })
   // Eliminate the element paths which are invalid.
@@ -2428,4 +2427,211 @@ export function cullSpyCollector(
       delete spyCollector.current.spyValues.metadata[elementPath]
     }
   })
+}
+
+export interface GetParseSuccessOrTransientResult {
+  topLevelElements: Array<TopLevelElement>
+  imports: Imports
+  jsxFactoryFunction: string | null
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+}
+
+const EmptyResult: GetParseSuccessOrTransientResult = {
+  topLevelElements: [],
+  imports: {},
+  jsxFactoryFunction: null,
+  combinedTopLevelArbitraryBlock: null,
+}
+
+export function getParseSuccessOrTransientForFilePath(
+  filePath: string,
+  projectContents: ProjectContentTreeRoot,
+  transientFilesState: TransientFilesState | null,
+): GetParseSuccessOrTransientResult {
+  const projectFile = getContentsTreeFileFromString(projectContents, filePath)
+  if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+    const parseSuccess = projectFile.fileContents.parsed
+    const targetTransientFileState: TransientFileState | null =
+      transientFilesState == null ? null : transientFilesState[filePath] ?? null
+    if (targetTransientFileState == null) {
+      return {
+        topLevelElements: parseSuccess.topLevelElements,
+        imports: parseSuccess.imports,
+        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
+        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+      }
+    } else {
+      return {
+        topLevelElements: targetTransientFileState.topLevelElementsIncludingScenes,
+        imports: targetTransientFileState.imports,
+        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
+        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+      }
+    }
+  } else {
+    return EmptyResult
+  }
+}
+
+export function getValidElementPaths(
+  focusedElementPath: ElementPath | null,
+  topLevelElementName: string | null,
+  instancePath: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  filePath: string,
+  transientFilesState: TransientFilesState | null,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+): Array<ElementPath> {
+  if (topLevelElementName == null) {
+    return []
+  }
+  const { topLevelElements, imports } = getParseSuccessOrTransientForFilePath(
+    filePath,
+    projectContents,
+    transientFilesState,
+  )
+  const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
+  if (importSource != null) {
+    const resolvedImportSource = resolve(filePath, importSource)
+    if (isRight(resolvedImportSource)) {
+      const resolvedFilePath = resolvedImportSource.value
+      const { topLevelElements: resolvedTopLevelElements } = getParseSuccessOrTransientForFilePath(
+        resolvedFilePath,
+        projectContents,
+        transientFilesState,
+      )
+      const topLevelElement = resolvedTopLevelElements.find(
+        (element): element is UtopiaJSXComponent =>
+          isUtopiaJSXComponent(element) && element.name === topLevelElementName,
+      )
+      if (topLevelElement != null) {
+        return getValidElementPathsFromElement(
+          focusedElementPath,
+          topLevelElement.rootElement,
+          instancePath,
+          projectContents,
+          resolvedFilePath,
+          false,
+          true,
+          transientFilesState,
+          resolve,
+        )
+      }
+    }
+  }
+  return []
+}
+
+export function getValidElementPathsFromElement(
+  focusedElementPath: ElementPath | null,
+  element: JSXElementChild,
+  parentPath: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  filePath: string,
+  parentIsScene: boolean,
+  parentIsInstance: boolean,
+  transientFilesState: TransientFilesState | null,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+): Array<ElementPath> {
+  if (isJSXElement(element)) {
+    const isScene = isSceneElement(element, filePath, projectContents)
+    const uid = getUtopiaID(element)
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, uid)
+      : EP.appendToPath(parentPath, uid)
+    let paths = [path]
+    fastForEach(element.children, (c) =>
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          c,
+          path,
+          projectContents,
+          filePath,
+          isScene,
+          false,
+          transientFilesState,
+          resolve,
+        ),
+      ),
+    )
+
+    const name = getJSXElementNameAsString(element.name)
+    const lastElementPathPart = EP.lastElementPathForPath(path)
+    const matchingFocusedPathPart =
+      focusedElementPath == null || lastElementPathPart == null
+        ? null
+        : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
+
+    const isFocused = parentIsScene || matchingFocusedPathPart != null
+    if (isFocused) {
+      paths = [
+        ...paths,
+        ...getValidElementPaths(
+          focusedElementPath,
+          name,
+          matchingFocusedPathPart ?? path,
+          projectContents,
+          filePath,
+          transientFilesState,
+          resolve,
+        ),
+      ]
+    }
+
+    return paths
+  } else if (isJSXArbitraryBlock(element)) {
+    // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
+    // The paths this will generate will only be correct if the elements from `elementsWithin`
+    // are used at the same level at which they're defined.
+    // This will work fine:
+    // export var SameFileApp = (props) => {
+    //   const AppAsVariable = App
+    //   return <AppAsVariable />
+    // }
+    // This will not:
+    // export var SameFileApp = (props) => {
+    //   const AppAsVariable = App
+    //   return <div data-uid='same-file-app-div' style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}>
+    //     <AppAsVariable />
+    //   </div>
+    // }
+    let paths: Array<ElementPath> = []
+    fastForEach(Object.values(element.elementsWithin), (e) =>
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          e,
+          parentPath,
+          projectContents,
+          filePath,
+          parentIsScene,
+          parentIsInstance,
+          transientFilesState,
+          resolve,
+        ),
+      ),
+    )
+    return paths
+  } else if (isJSXFragment(element)) {
+    let paths: Array<ElementPath> = []
+    fastForEach(Object.values(element.children), (e) =>
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          e,
+          parentPath,
+          projectContents,
+          filePath,
+          parentIsScene,
+          parentIsInstance,
+          transientFilesState,
+          resolve,
+        ),
+      ),
+    )
+    return paths
+  } else {
+    return []
+  }
 }

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { render, fireEvent, act } from '@testing-library/react'
 
-import * as TP from '../../../../core/shared/template-path'
+import * as EP from '../../../../core/shared/element-path'
 
 import { getStoreHook, TestInspectorContextProvider } from '../../common/inspector.test-utils'
 import utils from '../../../../utils/utils'
@@ -23,7 +23,7 @@ describe('Component Section', () => {
     const storeHookForTest = getStoreHook(utils.NO_OP)
     storeHookForTest.updateStoreWithImmer((store) => {
       store.editor.selectedViews = [
-        TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'mycomponent']),
+        EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'mycomponent']),
       ] // TODO add a Component instance to the test file and select that!
       store.editor.codeResultCache = {
         propertyControlsInfo: {

@@ -35,8 +35,8 @@ import {
   NodeModules,
   ParseSuccess,
   ProjectContents,
-  StaticTemplatePath,
-  TemplatePath,
+  StaticElementPath,
+  ElementPath,
 } from '../shared/project-file-types'
 import {
   getOpenUIJSFileKey,
@@ -356,7 +356,7 @@ export function getControlsForExternalDependencies(
 }
 
 export function getPropertyControlsForTargetFromEditor(
-  target: TemplatePath,
+  target: ElementPath,
   editor: EditorState,
 ): PropertyControls | null {
   const openFilePath = getOpenUIJSFileKey(editor)
@@ -370,7 +370,7 @@ export function getPropertyControlsForTargetFromEditor(
 }
 
 export function getPropertyControlsForTarget(
-  target: TemplatePath,
+  target: ElementPath,
   propertyControlsInfo: PropertyControlsInfo,
   openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
@@ -385,7 +385,7 @@ export function getPropertyControlsForTarget(
     (
       success: ParseSuccess,
       element: JSXElement,
-      underlyingTarget: StaticTemplatePath,
+      underlyingTarget: StaticElementPath,
       underlyingFilePath: string,
     ) => {
       const importedFrom = importedFromWhere(

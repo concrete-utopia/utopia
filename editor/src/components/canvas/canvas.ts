@@ -1,10 +1,9 @@
-import * as R from 'ramda'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
-import { TemplatePath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import { KeyCharacter } from '../../utils/keyboard'
 import Utils from '../../utils/utils'
 import {
@@ -16,7 +15,7 @@ import {
 import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { DerivedState, EditorState } from '../editor/store/editor-state'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 
 export const enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -28,7 +27,7 @@ export const enum TargetSearchType {
 }
 
 type FrameWithPath = {
-  path: TemplatePath
+  path: ElementPath
   frame: CanvasRectangle
 }
 
@@ -65,7 +64,7 @@ const Canvas = {
         children,
         unfurledComponents,
       } = MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
-        component.templatePath,
+        component.elementPath,
         metadata,
       )
       const childFrames = children.map((child) => {
@@ -83,14 +82,14 @@ const Canvas = {
       if (allFrames.length > 0 && allChildrenBounds != null) {
         const allChildrenFrames = Utils.pluck(allFrames, 'frames').flat()
         const boundingRect = Utils.boundingRectangle(globalFrame, allChildrenBounds)
-        const toAppend: FrameWithPath = { path: component.templatePath, frame: boundingRect }
+        const toAppend: FrameWithPath = { path: component.elementPath, frame: boundingRect }
         return {
           boundingRect: boundingRect,
           frames: [toAppend].concat(allChildrenFrames),
         }
       } else {
         const boundingRect = globalFrame
-        const toAppend = { path: component.templatePath, frame: boundingRect }
+        const toAppend = { path: component.elementPath, frame: boundingRect }
         return { boundingRect: boundingRect, frames: [toAppend] }
       }
     }
@@ -100,14 +99,14 @@ const Canvas = {
       return recurseChildren(storyboardChild).frames
     })
   },
-  jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
+  jumpToParent(selectedViews: Array<ElementPath>): ElementPath | 'CLEAR' | null {
     switch (selectedViews.length) {
       case 0:
         // Nothing is selected, so do nothing.
         return null
       case 1:
         // Only a single element is selected...
-        const parentPath = TP.parentPath(selectedViews[0])
+        const parentPath = EP.parentPath(selectedViews[0])
         if (parentPath == null) {
           // ...the selected element is a top level one, so deselect.
           return 'CLEAR'
@@ -117,12 +116,16 @@ const Canvas = {
         }
       default:
         // Multiple elements are selected so select the topmost element amongst them.
-        const newSelection: TemplatePath | null = selectedViews.reduce(
-          (working: TemplatePath | null, selectedView) => {
+        const newSelection: ElementPath | null = selectedViews.reduce(
+          (working: ElementPath | null, selectedView) => {
             if (working == null) {
               return selectedView
             } else {
-              return R.minBy(TP.depth, selectedView, working)
+              if (EP.depth(selectedView) < EP.depth(working)) {
+                return selectedView
+              } else {
+                return working
+              }
             }
           },
           null,
@@ -131,29 +134,35 @@ const Canvas = {
     }
   },
   jumpToSibling(
-    selectedViews: Array<TemplatePath>,
+    selectedViews: Array<ElementPath>,
     components: ElementInstanceMetadataMap,
     forwards: boolean,
-  ): TemplatePath | null {
+  ): ElementPath | null {
     switch (selectedViews.length) {
       case 0:
         return null
       case 1:
         const singleSelectedElement = selectedViews[0]
         const siblings = MetadataUtils.getSiblings(components, singleSelectedElement)
-        const pathsToStep = siblings.map((s) => s.templatePath)
-        return Utils.stepInArray(TP.pathsEqual, forwards ? 1 : -1)(
+        const pathsToStep = siblings.map((s) => s.elementPath)
+        return Utils.stepInArray(
+          EP.pathsEqual,
+          forwards ? 1 : -1,
           pathsToStep,
           singleSelectedElement,
         )
       default:
         // Multiple elements are selected so select the topmost element amongst them.
-        const newSelection: TemplatePath | null = selectedViews.reduce(
-          (working: TemplatePath | null, selectedView) => {
+        const newSelection: ElementPath | null = selectedViews.reduce(
+          (working: ElementPath | null, selectedView) => {
             if (working == null) {
               return selectedView
             } else {
-              return R.minBy(TP.depth, selectedView, working)
+              if (EP.depth(selectedView) < EP.depth(working)) {
+                return selectedView
+              } else {
+                return working
+              }
             }
           },
           null,
@@ -162,66 +171,66 @@ const Canvas = {
     }
   },
   getFirstChild(
-    selectedViews: Array<TemplatePath>,
+    selectedViews: Array<ElementPath>,
     components: ElementInstanceMetadataMap,
-  ): TemplatePath | null {
+  ): ElementPath | null {
     if (selectedViews.length !== 1) {
       return null
     } else {
       const children = MetadataUtils.getImmediateChildren(components, selectedViews[0])
-      return children.length > 0 ? children[0].templatePath : null
+      return children.length > 0 ? children[0].elementPath : null
     }
   },
   targetFilter(
-    selectedViews: Array<TemplatePath>,
+    selectedViews: Array<ElementPath>,
     searchTypes: Array<TargetSearchType>,
-  ): Array<(path: TemplatePath) => boolean> {
+  ): Array<(path: ElementPath) => boolean> {
     return searchTypes.map((searchType) => {
       switch (searchType) {
         case TargetSearchType.ParentsOfSelected:
-          return (path: TemplatePath) => {
+          return (path: ElementPath) => {
             for (const selectedView of selectedViews) {
-              if (TP.isDescendantOfOrEqualTo(selectedView, path)) {
+              if (EP.isDescendantOfOrEqualTo(selectedView, path)) {
                 return true
               }
             }
             return false
           }
         case TargetSearchType.ChildrenOfSelected:
-          return (path: TemplatePath) => {
+          return (path: ElementPath) => {
             for (const selectedView of selectedViews) {
-              if (TP.isChildOf(path, selectedView)) {
+              if (EP.isChildOf(path, selectedView)) {
                 return true
               }
             }
             return false
           }
         case TargetSearchType.SiblingsOfSelected:
-          return (path: TemplatePath) => {
+          return (path: ElementPath) => {
             for (const selectedView of selectedViews) {
-              if (TP.isSiblingOf(selectedView, path) && !TP.containsPath(path, selectedViews)) {
+              if (EP.isSiblingOf(selectedView, path) && !EP.containsPath(path, selectedViews)) {
                 return true
               }
             }
             return false
           }
         case TargetSearchType.TopLevelElements:
-          return (path: TemplatePath) => {
+          return (path: ElementPath) => {
             // TODO Scene Implementation
-            if (TP.depth(path) === 2) {
+            if (EP.depth(path) === 2) {
               return true
             }
             return false
           }
         case TargetSearchType.SelectedElements:
-          return (path: TemplatePath) => {
-            if (TP.containsPath(path, selectedViews)) {
+          return (path: ElementPath) => {
+            if (EP.containsPath(path, selectedViews)) {
               return true
             }
             return false
           }
         case TargetSearchType.All:
-          return (path: TemplatePath) => {
+          return (path: ElementPath) => {
             return true
           }
         default:
@@ -232,13 +241,13 @@ const Canvas = {
   },
   getAllTargetsAtPoint(
     componentMetadata: ElementInstanceMetadataMap,
-    selectedViews: Array<TemplatePath>,
-    hiddenInstances: Array<TemplatePath>,
+    selectedViews: Array<ElementPath>,
+    hiddenInstances: Array<ElementPath>,
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
-  ): Array<{ templatePath: TemplatePath; canBeFilteredOut: boolean }> {
+  ): Array<{ elementPath: ElementPath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5
     const targetFilters = Canvas.targetFilter(selectedViews, searchTypes)
     const framesWithPaths = Canvas.getFramesInCanvasContext(componentMetadata, useBoundingFrames)
@@ -248,7 +257,7 @@ const Canvas = {
         (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
 
       return targetFilters.some((filter) => filter(frameWithPath.path)) &&
-        !hiddenInstances.some((hidden) => TP.isDescendantOfOrEqualTo(frameWithPath.path, hidden)) &&
+        !hiddenInstances.some((hidden) => EP.isDescendantOfOrEqualTo(frameWithPath.path, hidden)) &&
         shouldUseLooseTargeting
         ? rectangleIntersection(
             canvasRectangle({
@@ -271,21 +280,18 @@ const Canvas = {
     const targets = filteredFrames.map((filteredFrame) => {
       const zeroSized = filteredFrame.frame.width === 0 || filteredFrame.frame.height === 0
       return {
-        templatePath: filteredFrame.path,
+        elementPath: filteredFrame.path,
         canBeFilteredOut: !zeroSized,
       }
     })
     return targets
   },
-  getNextTarget(
-    current: Array<TemplatePath>,
-    targetStack: Array<TemplatePath>,
-  ): TemplatePath | null {
+  getNextTarget(current: Array<ElementPath>, targetStack: Array<ElementPath>): ElementPath | null {
     if (current.length <= 1) {
       const currentIndex =
         current.length === 0
           ? -1
-          : R.findIndex((target) => TP.pathsEqual(target, current[0]), targetStack)
+          : targetStack.findIndex((target) => EP.pathsEqual(target, current[0]))
       const endOrNotFound = currentIndex === -1 || currentIndex === targetStack.length - 1
       if (endOrNotFound) {
         return targetStack[0]

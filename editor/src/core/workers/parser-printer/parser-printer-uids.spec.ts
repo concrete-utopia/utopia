@@ -105,6 +105,7 @@ export var app = (props) => {
                 const updatedElementsWithin = {
                   [firstKey]: jsxElement(
                     firstElementWithin.name,
+                    firstKey,
                     updatedAttributes,
                     firstElementWithin.children,
                   ),
@@ -117,9 +118,12 @@ export var app = (props) => {
                   firstChild.sourceMap,
                   updatedElementsWithin,
                 )
-                const updatedRootElement = jsxElement(rootElement.name, rootElement.props, [
-                  updatedFirstChild,
-                ])
+                const updatedRootElement = jsxElement(
+                  rootElement.name,
+                  rootElement.uid,
+                  rootElement.props,
+                  [updatedFirstChild],
+                )
                 const updatedComponent = utopiaJSXComponent(
                   tle.name,
                   tle.isFunction,

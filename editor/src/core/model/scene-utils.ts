@@ -1,7 +1,6 @@
-import * as R from 'ramda'
 import {
   SceneMetadata,
-  StaticTemplatePath,
+  StaticElementPath,
   PropertyPath,
   isTextFile,
   isParseSuccess,
@@ -23,7 +22,7 @@ import {
   jsxAttributesFromMap,
   ElementInstanceMetadata,
 } from '../shared/element-template'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import {
   eitherToMaybe,
@@ -80,7 +79,7 @@ export function mapScene(scene: SceneMetadata): JSXElement {
     'data-uid': jsxAttributeValue(scene.uid, emptyComments),
     'data-label': jsxAttributeValue(scene.label, emptyComments),
   })
-  return jsxElement('Scene', sceneProps, [])
+  return jsxElement('Scene', scene.uid, sceneProps, [])
 }
 
 export function unmapScene(element: JSXElementChild): SceneMetadata | null {
@@ -131,6 +130,7 @@ export function convertScenesToUtopiaCanvasComponent(
     [],
     jsxElement(
       'Storyboard',
+      BakedInStoryboardUID,
       jsxAttributesFromMap({ 'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments) }),
       scenes.map(mapScene),
     ),
@@ -161,14 +161,14 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
       emptyComments,
     ),
   })
-  return jsxElement('Scene', sceneProps, [])
+  return jsxElement('Scene', uid, sceneProps, [])
 }
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
   const storyboardProps = jsxAttributesFromMap({
     [UTOPIA_UIDS_KEY]: jsxAttributeValue(uid, emptyComments),
   })
-  return jsxElement('Storyboard', storyboardProps, scenes)
+  return jsxElement('Storyboard', uid, storyboardProps, scenes)
 }
 
 export function convertUtopiaCanvasComponentToScenes(
@@ -206,26 +206,6 @@ export function convertScenesAndTopLevelElementsToUtopiaCanvasComponent(
   topLevelElements: Array<TopLevelElement>,
 ): Array<TopLevelElement> {
   return convertScenesAndTopLevelElementsToUtopiaCanvasComponentMemoized(scenes, topLevelElements)
-}
-
-export function convertTopLevelElementsBackToScenesAndTopLevelElements_FOR_PP_ONLY(
-  topLevelElements: Array<UtopiaJSXComponent>,
-): { topLevelElements: Array<UtopiaJSXComponent>; utopiaCanvas: UtopiaJSXComponent | null }
-export function convertTopLevelElementsBackToScenesAndTopLevelElements_FOR_PP_ONLY(
-  topLevelElements: Array<TopLevelElement>,
-): { topLevelElements: Array<TopLevelElement>; utopiaCanvas: UtopiaJSXComponent | null }
-export function convertTopLevelElementsBackToScenesAndTopLevelElements_FOR_PP_ONLY(
-  topLevelElements: Array<TopLevelElement>,
-): { topLevelElements: Array<TopLevelElement>; utopiaCanvas: UtopiaJSXComponent | null } {
-  const [[utopiaCanvas], filteredTopLevelElements] = R.partition(
-    (e): e is UtopiaJSXComponent =>
-      isUtopiaJSXComponent(e) && e.name === BakedInStoryboardVariableName,
-    topLevelElements,
-  )
-  return {
-    topLevelElements: filteredTopLevelElements,
-    utopiaCanvas: utopiaCanvas as UtopiaJSXComponent | null,
-  }
 }
 
 export function fishOutUtopiaCanvasFromTopLevelElements(
@@ -289,7 +269,7 @@ export function isSceneChildWidthHeightPercentage(
 ): boolean {
   // FIXME ASAP This is reproducing logic that should stay in MetadataUtils, but importing that
   // imports the entire editor into the worker threads, including modules that require window and document
-  const rootElements = scene.rootElements.map((path) => metadata[TP.toString(path)])
+  const rootElements = scene.rootElements.map((path) => metadata[EP.toString(path)])
   const rootElementSizes = rootElements.map((element) => {
     return {
       width: element.props?.style?.width,
@@ -319,10 +299,10 @@ export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string |
   return null
 }
 
-export function getStoryboardTemplatePath(
+export function getStoryboardElementPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-): StaticTemplatePath | null {
+): StaticElementPath | null {
   if (openFile != null) {
     const file = getContentsTreeFileFromString(projectContents, openFile)
     if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
@@ -331,7 +311,7 @@ export function getStoryboardTemplatePath(
       )
       if (possiblyStoryboard != null) {
         const uid = getUtopiaID(possiblyStoryboard.rootElement)
-        return TP.templatePath([TP.staticElementPath([uid])])
+        return EP.elementPath([EP.staticElementPath([uid])])
       }
     }
   }

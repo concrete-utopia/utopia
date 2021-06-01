@@ -1,30 +1,23 @@
 import * as TS from 'typescript'
 import { NormalisedFrame } from 'utopia-api'
-import { ParsedComments } from '../workers/parser-printer/parser-printer-comments'
-import {
-  ArbitraryJSBlock,
-  Comment,
-  TopLevelElement,
-  UtopiaJSXComponent,
-  WithComments,
-} from './element-template'
+import { ArbitraryJSBlock, ImportStatement, TopLevelElement } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
 export type id = string
 enum StaticModifier {}
 
-export type StaticElementPath = StaticModifier & Array<id>
-export type ElementPath = Array<id> | StaticElementPath
+export type StaticElementPathPart = StaticModifier & Array<id>
+export type ElementPathPart = Array<id> | StaticElementPathPart
 
-export interface StaticTemplatePath {
-  type: 'templatepath'
-  parts: Array<StaticElementPath>
+export interface StaticElementPath {
+  type: 'elementpath'
+  parts: Array<StaticElementPathPart>
 }
 
-export interface TemplatePath {
-  type: 'templatepath'
-  parts: Array<ElementPath>
+export interface ElementPath {
+  type: 'elementpath'
+  parts: Array<ElementPathPart>
 }
 
 export type PropertyPathPart = string | number
@@ -47,12 +40,12 @@ export type BaseTemplateName =
   | 'code-component'
 export type SvgTemplateName = 'arc' | 'circle' | 'ellipse' | 'path' | 'polygon' | 'rect'
 
-export type TemplatePropertyPath = {
-  templatePath: TemplatePath
+export type ElementPropertyPath = {
+  elementPath: ElementPath
   propertyPath: PropertyPath
 }
 
-export type Dependencies = { [key: string]: TemplatePropertyPath }
+export type Dependencies = { [key: string]: ElementPropertyPath }
 
 export const enum PinType {
   Absolute = 'absolute',
@@ -98,6 +91,39 @@ export function importDetails(
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
+  }
+}
+
+export function importStatementFromImportDetails(
+  moduleName: string,
+  details: ImportDetails,
+): ImportStatement {
+  let importParts: Array<string> = []
+  if (details.importedWithName != null) {
+    importParts.push(details.importedWithName)
+  }
+  if (details.importedAs != null) {
+    importParts.push(`* as ${details.importedAs}`)
+  }
+  if (details.importedFromWithin.length > 0) {
+    let importedFromWithinParts: Array<string> = []
+    for (const fromWithin of details.importedFromWithin) {
+      if (fromWithin.name === fromWithin.alias) {
+        importedFromWithinParts.push(fromWithin.name)
+      } else {
+        importedFromWithinParts.push(`${fromWithin.name} as ${fromWithin.alias}`)
+      }
+      importParts.push(`{ ${importedFromWithinParts.join(', ')} }`)
+    }
+  }
+  const rawCode = `import ${importParts.join(', ')} from '${moduleName}'`
+  return {
+    type: 'IMPORT_STATEMENT',
+    rawCode: rawCode,
+    importStarAs: details.importedAs != null,
+    importWithName: details.importedWithName != null,
+    imports: details.importedFromWithin.map((i) => i.name),
+    module: moduleName,
   }
 }
 
@@ -537,5 +563,3 @@ export function isUnknownOrGeneratedElement(elementOriginType: ElementOriginType
     elementOriginType === 'generated-static-definition-present'
   )
 }
-
-export type LayoutWrapper = 'Layoutable' | 'Positionable' | 'Resizeable'

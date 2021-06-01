@@ -5,7 +5,7 @@ import {
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/action-creators'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
@@ -23,13 +23,13 @@ describe('React Render Count Tests - ', () => {
       `),
     )
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -38,7 +38,7 @@ describe('React Render Count Tests - ', () => {
     await renderResult.dispatch(
       [
         setProp_UNSAFE(
-          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           PP.create(['style', 'opacity']),
           jsxAttributeValue(0.3, emptyComments),
         ),
@@ -58,8 +58,8 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(705) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(715)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(275) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(285)
   })
 
   it('Changing the selected view', async () => {
@@ -78,20 +78,20 @@ describe('React Render Count Tests - ', () => {
       `),
     )
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
     const renderCountBefore = renderResult.getNumberOfRenders()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
       false,
     )
 
@@ -111,7 +111,7 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(440) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(450)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(465) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(475)
   })
 })

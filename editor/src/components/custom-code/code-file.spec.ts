@@ -1,6 +1,8 @@
 import {
   generateCodeResultCache,
+  incorporateBuildResult,
   normalisePathEndsAtDependency,
+  normalisePathImportNotFound,
   normalisePathSuccess,
   normalisePathToUnderlyingTarget,
   normalisePathUnableToProceed,
@@ -20,12 +22,13 @@ import { NO_OP, fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
 import { objectMap } from '../../core/shared/object-utils'
 import { StoryboardFilePath } from '../editor/store/editor-state'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import {
   defaultProjectContentsForNormalising,
   getTextFileByPath,
   SampleNodeModules,
 } from './code-file.test-utils'
+import { NodeModules } from '../../core/shared/project-file-types'
 
 function transpileCode(
   rootFilenames: Array<string>,
@@ -445,6 +448,17 @@ describe('Creating require function', () => {
   })
 })
 
+describe('incorporateBuildResult', () => {
+  it('should remove a value if there is no transpiled code', () => {
+    let nodeModules: NodeModules = {}
+    incorporateBuildResult(nodeModules, SampleSingleFileBuildResult)
+    incorporateBuildResult(nodeModules, {
+      ['/app.js']: { errors: [], transpiledCode: null, sourceMap: null },
+    })
+    expect(nodeModules).toMatchInlineSnapshot(`Object {}`)
+  })
+})
+
 describe('normalisePathToUnderlyingTarget', () => {
   const projectContents = defaultProjectContentsForNormalising()
   it('handles finding the target within the same file', () => {
@@ -452,10 +466,10 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       StoryboardFilePath,
-      TP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(TP.fromString('same-file-app-div')),
+      EP.dynamicPathToStaticPath(EP.fromString('same-file-app-div')),
       StoryboardFilePath,
       getTextFileByPath(projectContents, StoryboardFilePath),
     )
@@ -466,12 +480,12 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       StoryboardFilePath,
-      TP.fromString(
+      EP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(TP.fromString('card-outer-div/card-inner-div')),
+      EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
     )
@@ -482,10 +496,10 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       '/src/card.js',
-      TP.fromString('card-outer-div/card-inner-div'),
+      EP.fromString('card-outer-div/card-inner-div'),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(TP.fromString('card-outer-div/card-inner-div')),
+      EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
     )
@@ -496,21 +510,21 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       '/src/nonexistant.js',
-      TP.fromString('card-outer-div/card-inner-div'),
+      EP.fromString('card-outer-div/card-inner-div'),
     )
     const expectedResult = normalisePathUnableToProceed('/src/nonexistant.js')
     expect(actualResult).toEqual(expectedResult)
   })
-  it('skips attempting to traverse when confronted with an unparsed code file', () => {
+  it('returns existing parse result for unparsed code file', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
       SampleNodeModules,
       '/utopia/unparsedstoryboard.js',
-      TP.fromString(
+      EP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
-    const expectedResult = normalisePathUnableToProceed('/utopia/unparsedstoryboard.js')
+    const expectedResult = normalisePathImportNotFound('app-entity')
     expect(actualResult).toEqual(expectedResult)
   })
   it('handles hitting an external dependency', () => {
@@ -518,7 +532,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       StoryboardFilePath,
-      TP.fromString(
+      EP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
       ),
     )

@@ -1,71 +1,69 @@
 import * as Chai from 'chai'
-import * as TP from './template-path'
+import * as EP from './element-path'
 import { BakedInStoryboardUID } from '../model/scene-utils'
 const chaiExpect = Chai.expect
 
 describe('serialization', () => {
   it('path survives serialization', () => {
-    const path = TP.templatePath([
+    const path = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['VIEW1', 'VIEW2'],
     ])
-    const pathString = TP.toComponentId(path)
-    const restoredPath = TP.fromString(pathString)
+    const pathString = EP.toComponentId(path)
+    const restoredPath = EP.fromString(pathString)
     chaiExpect(restoredPath).to.deep.equal(path)
   })
 
   it('empty path survives serialization', () => {
-    const path = TP.templatePath([])
-    const pathString = TP.toComponentId(path)
-    const restoredPath = TP.fromString(pathString)
+    const path = EP.elementPath([])
+    const pathString = EP.toComponentId(path)
+    const restoredPath = EP.fromString(pathString)
     chaiExpect(restoredPath).to.deep.equal(path)
   })
 })
 
 describe('factory function', () => {
   it('caches results', () => {
-    const first = TP.templatePath([['A', '1'], ['B', '2'], ['C']])
-    const second = TP.templatePath([['A', '1'], ['B', '2'], ['C']])
+    const first = EP.elementPath([['A', '1'], ['B', '2'], ['C']])
+    const second = EP.elementPath([['A', '1'], ['B', '2'], ['C']])
     expect(first === second).toBeTruthy()
   })
 })
 
 describe('isStoryboardPath', () => {
   it('returns true for the storyboard', () => {
-    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID]]))).toBeTruthy()
+    expect(EP.isStoryboardPath(EP.elementPath([[BakedInStoryboardUID]]))).toBeTruthy()
   })
   it('returns false for any other path', () => {
-    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']]))).toBeFalsy()
+    expect(EP.isStoryboardPath(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa']]))).toBeFalsy()
 
     expect(
-      TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+      EP.isStoryboardPath(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
     ).toBeFalsy()
 
-    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
+    expect(EP.isStoryboardPath(EP.elementPath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
 
     expect(
-      TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+      EP.isStoryboardPath(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
     ).toBeFalsy()
   })
 })
 
 describe('isStoryboardChild', () => {
   it('returns true for a child of the storyboard', () => {
-    expect(
-      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
-    ).toBeTruthy()
+    expect(EP.isStoryboardChild(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa']]))).toBeTruthy()
   })
   it('returns false for any other path', () => {
-    expect(TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+    expect(EP.isStoryboardChild(EP.elementPath([[BakedInStoryboardUID]]))).toBeFalsy()
 
     expect(
-      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+      EP.isStoryboardChild(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
     ).toBeFalsy()
 
-    expect(TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
+    expect(EP.isStoryboardChild(EP.elementPath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
 
     expect(
-      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+      EP.isStoryboardChild(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
     ).toBeFalsy()
   })
 })
@@ -73,22 +71,20 @@ describe('isStoryboardChild', () => {
 describe('isStoryboardDescendant', () => {
   it('returns true for any direct descendant of the storyboard', () => {
     expect(
-      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
+      EP.isStoryboardDescendant(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa']])),
     ).toBeTruthy()
 
     expect(
-      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+      EP.isStoryboardDescendant(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
     ).toBeTruthy()
   })
   it('returns false for any other path', () => {
-    expect(TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+    expect(EP.isStoryboardDescendant(EP.elementPath([[BakedInStoryboardUID]]))).toBeFalsy()
+
+    expect(EP.isStoryboardDescendant(EP.elementPath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
 
     expect(
-      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID], ['app']])),
-    ).toBeFalsy()
-
-    expect(
-      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+      EP.isStoryboardDescendant(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
     ).toBeFalsy()
   })
 })
@@ -96,50 +92,50 @@ describe('isStoryboardDescendant', () => {
 describe('isRootElementOfInstance', () => {
   it('returns true for any root element of an instance', () => {
     expect(
-      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID], ['app']])),
+      EP.isRootElementOfInstance(EP.elementPath([[BakedInStoryboardUID], ['app']])),
     ).toBeTruthy()
 
     expect(
-      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+      EP.isRootElementOfInstance(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
     ).toBeTruthy()
   })
   it('returns false for any other path', () => {
-    expect(TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+    expect(EP.isRootElementOfInstance(EP.elementPath([[BakedInStoryboardUID]]))).toBeFalsy()
 
     expect(
-      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
+      EP.isRootElementOfInstance(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa']])),
     ).toBeFalsy()
 
     expect(
-      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+      EP.isRootElementOfInstance(EP.elementPath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
     ).toBeFalsy()
   })
 })
 
 describe('appending to a path', () => {
   it('appendToPath appends to the last part', () => {
-    const start = TP.templatePath([
+    const start = EP.elementPath([
       ['A', 'B'],
       ['C', 'D'],
     ])
-    const singleElementAdded = TP.appendToPath(start, 'E')
-    const singleElementAddedViaArray = TP.appendToPath(start, ['E'])
-    const multipleElementsAdded = TP.appendToPath(start, ['E', 'F'])
+    const singleElementAdded = EP.appendToPath(start, 'E')
+    const singleElementAddedViaArray = EP.appendToPath(start, ['E'])
+    const multipleElementsAdded = EP.appendToPath(start, ['E', 'F'])
 
     expect(singleElementAdded).toEqual(
-      TP.templatePath([
+      EP.elementPath([
         ['A', 'B'],
         ['C', 'D', 'E'],
       ]),
     )
     expect(singleElementAddedViaArray).toEqual(
-      TP.templatePath([
+      EP.elementPath([
         ['A', 'B'],
         ['C', 'D', 'E'],
       ]),
     )
     expect(multipleElementsAdded).toEqual(
-      TP.templatePath([
+      EP.elementPath([
         ['A', 'B'],
         ['C', 'D', 'E', 'F'],
       ]),
@@ -147,29 +143,29 @@ describe('appending to a path', () => {
   })
 
   it('appendToPath works with an empty path', () => {
-    const start = TP.emptyTemplatePath
-    const singleElementAdded = TP.appendToPath(start, 'E')
-    const singleElementAddedViaArray = TP.appendToPath(start, ['E'])
-    const multipleElementsAdded = TP.appendToPath(start, ['E', 'F'])
+    const start = EP.emptyElementPath
+    const singleElementAdded = EP.appendToPath(start, 'E')
+    const singleElementAddedViaArray = EP.appendToPath(start, ['E'])
+    const multipleElementsAdded = EP.appendToPath(start, ['E', 'F'])
 
-    expect(singleElementAdded).toEqual(TP.templatePath([['E']]))
-    expect(singleElementAddedViaArray).toEqual(TP.templatePath([['E']]))
-    expect(multipleElementsAdded).toEqual(TP.templatePath([['E', 'F']]))
+    expect(singleElementAdded).toEqual(EP.elementPath([['E']]))
+    expect(singleElementAddedViaArray).toEqual(EP.elementPath([['E']]))
+    expect(multipleElementsAdded).toEqual(EP.elementPath([['E', 'F']]))
   })
 
   it('appendNewElementPath appends a new element path array', () => {
-    const start = TP.templatePath([
+    const start = EP.elementPath([
       ['A', 'B'],
       ['C', 'D'],
     ])
-    const singleElementAdded = TP.appendNewElementPath(start, 'E')
-    const singleElementAddedViaArray = TP.appendNewElementPath(start, ['E'])
-    const multipleElementsAdded = TP.appendNewElementPath(start, ['E', 'F'])
+    const singleElementAdded = EP.appendNewElementPath(start, 'E')
+    const singleElementAddedViaArray = EP.appendNewElementPath(start, ['E'])
+    const multipleElementsAdded = EP.appendNewElementPath(start, ['E', 'F'])
 
-    expect(singleElementAdded).toEqual(TP.templatePath([['A', 'B'], ['C', 'D'], ['E']]))
-    expect(singleElementAddedViaArray).toEqual(TP.templatePath([['A', 'B'], ['C', 'D'], ['E']]))
+    expect(singleElementAdded).toEqual(EP.elementPath([['A', 'B'], ['C', 'D'], ['E']]))
+    expect(singleElementAddedViaArray).toEqual(EP.elementPath([['A', 'B'], ['C', 'D'], ['E']]))
     expect(multipleElementsAdded).toEqual(
-      TP.templatePath([
+      EP.elementPath([
         ['A', 'B'],
         ['C', 'D'],
         ['E', 'F'],
@@ -178,112 +174,112 @@ describe('appending to a path', () => {
   })
 
   it('appendNewElementPath works with an empty path', () => {
-    const start = TP.emptyTemplatePath
-    const singleElementAdded = TP.appendNewElementPath(start, 'E')
-    const singleElementAddedViaArray = TP.appendNewElementPath(start, ['E'])
-    const multipleElementsAdded = TP.appendNewElementPath(start, ['E', 'F'])
+    const start = EP.emptyElementPath
+    const singleElementAdded = EP.appendNewElementPath(start, 'E')
+    const singleElementAddedViaArray = EP.appendNewElementPath(start, ['E'])
+    const multipleElementsAdded = EP.appendNewElementPath(start, ['E', 'F'])
 
-    expect(singleElementAdded).toEqual(TP.templatePath([['E']]))
-    expect(singleElementAddedViaArray).toEqual(TP.templatePath([['E']]))
-    expect(multipleElementsAdded).toEqual(TP.templatePath([['E', 'F']]))
+    expect(singleElementAdded).toEqual(EP.elementPath([['E']]))
+    expect(singleElementAddedViaArray).toEqual(EP.elementPath([['E']]))
+    expect(multipleElementsAdded).toEqual(EP.elementPath([['E', 'F']]))
   })
 })
 
 describe('pathsEqual', () => {
   it('returns true for empty paths', () => {
-    const l = TP.templatePath([])
-    const r = TP.templatePath([])
-    expect(TP.pathsEqual(l, r)).toBeTruthy()
+    const l = EP.elementPath([])
+    const r = EP.elementPath([])
+    expect(EP.pathsEqual(l, r)).toBeTruthy()
   })
 
   it('returns true for matching single length paths', () => {
-    const l = TP.templatePath([['A', 'B']])
-    const r = TP.templatePath([['A', 'B']])
-    expect(TP.pathsEqual(l, r)).toBeTruthy()
+    const l = EP.elementPath([['A', 'B']])
+    const r = EP.elementPath([['A', 'B']])
+    expect(EP.pathsEqual(l, r)).toBeTruthy()
   })
 
   it('returns true for matching longer paths', () => {
-    const l = TP.templatePath([['A', 'B'], ['C'], ['D']])
-    const r = TP.templatePath([['A', 'B'], ['C'], ['D']])
-    expect(TP.pathsEqual(l, r)).toBeTruthy()
+    const l = EP.elementPath([['A', 'B'], ['C'], ['D']])
+    const r = EP.elementPath([['A', 'B'], ['C'], ['D']])
+    expect(EP.pathsEqual(l, r)).toBeTruthy()
   })
 
   it('returns false for non-matching single length paths', () => {
-    const l = TP.templatePath([['A', 'B']])
-    const r = TP.templatePath([['C', 'D']])
-    expect(TP.pathsEqual(l, r)).toBeFalsy()
+    const l = EP.elementPath([['A', 'B']])
+    const r = EP.elementPath([['C', 'D']])
+    expect(EP.pathsEqual(l, r)).toBeFalsy()
   })
 
   it('returns false for non-matching longer paths', () => {
-    const l = TP.templatePath([['A', 'B'], ['C'], ['D']])
-    const r = TP.templatePath([['A', 'B'], ['C'], ['F']])
-    expect(TP.pathsEqual(l, r)).toBeFalsy()
+    const l = EP.elementPath([['A', 'B'], ['C'], ['D']])
+    const r = EP.elementPath([['A', 'B'], ['C'], ['F']])
+    expect(EP.pathsEqual(l, r)).toBeFalsy()
   })
 
   it('returns false for non-matching paths of different lengths', () => {
-    const l = TP.templatePath([['A', 'B'], ['C'], ['D']])
-    const r = TP.templatePath([['A', 'B'], ['C'], ['D', 'E']])
-    const r2 = TP.templatePath([['A', 'B'], ['C'], ['D'], ['E']])
+    const l = EP.elementPath([['A', 'B'], ['C'], ['D']])
+    const r = EP.elementPath([['A', 'B'], ['C'], ['D', 'E']])
+    const r2 = EP.elementPath([['A', 'B'], ['C'], ['D'], ['E']])
 
-    expect(TP.pathsEqual(l, r)).toBeFalsy()
-    expect(TP.pathsEqual(l, r2)).toBeFalsy()
+    expect(EP.pathsEqual(l, r)).toBeFalsy()
+    expect(EP.pathsEqual(l, r2)).toBeFalsy()
   })
 })
 
 describe('isDescendantOf', () => {
   it('returns true if it is a descendant from the same instance', () => {
-    const result = TP.isDescendantOf(
-      TP.templatePath([
+    const result = EP.isDescendantOf(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['X', 'Y'],
       ]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
     )
     chaiExpect(result).to.be.true
   })
 
   it('returns true if it is a descendant from a higher instance', () => {
-    const result = TP.isDescendantOf(
-      TP.templatePath([
+    const result = EP.isDescendantOf(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['X', 'Y'],
       ]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']]),
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa']]),
     )
     chaiExpect(result).to.be.true
   })
 
   it('returns true if it is a descendant of a descendant from a higher instance', () => {
-    const result = TP.isDescendantOf(
-      TP.templatePath([
+    const result = EP.isDescendantOf(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['X', 'Y'],
       ]),
-      TP.templatePath([[BakedInStoryboardUID]]),
+      EP.elementPath([[BakedInStoryboardUID]]),
     )
     chaiExpect(result).to.be.true
   })
 
   it('returns false if it is the same path', () => {
-    const result = TP.isDescendantOf(
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
+    const result = EP.isDescendantOf(
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
     )
     chaiExpect(result).to.be.false
   })
 
   it('returns false if not a descendant', () => {
-    const result = TP.isDescendantOf(
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['Y']]),
+    const result = EP.isDescendantOf(
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['Y']]),
     )
     chaiExpect(result).to.be.false
   })
 
   it('returns false if it is a parent of the target', () => {
-    const result = TP.isDescendantOf(
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      TP.templatePath([
+    const result = EP.isDescendantOf(
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['X', 'Y'],
       ]),
@@ -294,75 +290,75 @@ describe('isDescendantOf', () => {
 
 describe('replaceIfAncestor', () => {
   it('where the path does not match', () => {
-    const result = TP.replaceIfAncestor(
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['B']]),
+    const result = EP.replaceIfAncestor(
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['B']]),
     )
     chaiExpect(result).to.be.null
   })
   it('where the path matches exactly', () => {
-    const result = TP.replaceIfAncestor(
-      TP.templatePath([
+    const result = EP.replaceIfAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['C', 'D'],
       ]),
     )
     expect(result).toEqual(
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['C', 'D'],
       ]),
     )
   })
   it('where the path is an ancestor', () => {
-    const result = TP.replaceIfAncestor(
-      TP.templatePath([
+    const result = EP.replaceIfAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B', 'X'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['C', 'D'],
       ]),
     )
     chaiExpect(result).to.deep.equal(
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['C', 'D', 'X'],
       ]),
     )
   })
   it('where the path is an ancestor of a longer path', () => {
-    const result = TP.replaceIfAncestor(
-      TP.templatePath([
+    const result = EP.replaceIfAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
         ['E', 'F'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['C', 'D'],
       ]),
     )
     expect(result).toEqual(
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['C', 'D'],
         ['E', 'F'],
@@ -370,20 +366,20 @@ describe('replaceIfAncestor', () => {
     )
   })
   it('where the path is an ancestor of part of a longer path', () => {
-    const result = TP.replaceIfAncestor(
-      TP.templatePath([
+    const result = EP.replaceIfAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
         ['E', 'F'],
       ]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
-      TP.templatePath([
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['C', 'D'],
       ]),
     )
     expect(result).toEqual(
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['C', 'D', 'B'],
         ['E', 'F'],
@@ -391,108 +387,108 @@ describe('replaceIfAncestor', () => {
     )
   })
   it('where the path is an ancestor of a longer path and the replacement is null', () => {
-    const result = TP.replaceIfAncestor(
-      TP.templatePath([
+    const result = EP.replaceIfAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
         ['E', 'F'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
       ]),
       null,
     )
-    expect(result).toEqual(TP.templatePath([['E', 'F']]))
+    expect(result).toEqual(EP.elementPath([['E', 'F']]))
   })
   it('where the path is an ancestor of part of a longer path and the replacement is null', () => {
-    const result = TP.replaceIfAncestor(
-      TP.templatePath([
+    const result = EP.replaceIfAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['A', 'B'],
         ['E', 'F'],
       ]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
+      EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
       null,
     )
-    expect(result).toEqual(TP.templatePath([['B'], ['E', 'F']]))
+    expect(result).toEqual(EP.elementPath([['B'], ['E', 'F']]))
   })
 })
 
 describe('fromString', () => {
   it('parses a simple path correctly', () => {
-    const expectedResult = TP.templatePath([
+    const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['A', 'B', 'C'],
     ])
-    const actualResult = TP.fromString(TP.toComponentId(expectedResult))
+    const actualResult = EP.fromString(EP.toComponentId(expectedResult))
     chaiExpect(actualResult).to.deep.equal(expectedResult)
   })
 })
 
 describe('closestSharedAncestor', () => {
   it('returns the original path for equal paths when includePathsEqual is true', () => {
-    const actualResult = TP.closestSharedAncestor(
-      TP.templatePath([
+    const actualResult = EP.closestSharedAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c'],
       ]),
       true,
     )
-    const expectedResult = TP.templatePath([
+    const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['a', 'b', 'c'],
     ])
     expect(actualResult).toEqual(expectedResult)
   })
   it('returns the original path parent for equal paths when includePathsEqual is false', () => {
-    const actualResult = TP.closestSharedAncestor(
-      TP.templatePath([
+    const actualResult = EP.closestSharedAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c'],
       ]),
       false,
     )
-    const expectedResult = TP.templatePath([
+    const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['a', 'b'],
     ])
     expect(actualResult).toEqual(expectedResult)
   })
   it('returns the common parent for simple cases', () => {
-    const actualResult = TP.closestSharedAncestor(
-      TP.templatePath([
+    const actualResult = EP.closestSharedAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'd'],
       ]),
       false,
     )
-    const expectedResult = TP.templatePath([
+    const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['a', 'b'],
     ])
     expect(actualResult).toEqual(expectedResult)
   })
   it('returns the common ancestor for more complex cases', () => {
-    const actualResult = TP.closestSharedAncestor(
-      TP.templatePath([
+    const actualResult = EP.closestSharedAncestor(
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b'],
         ['x', 'y', 'z'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c', 'd'],
         ['e', 'f'],
@@ -500,19 +496,19 @@ describe('closestSharedAncestor', () => {
       ]),
       false,
     )
-    const expectedResult = TP.templatePath([
+    const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['a', 'b'],
     ])
     expect(actualResult).toEqual(expectedResult)
   })
   it('returns null when there are no shared ancestors', () => {
-    const actualResult = TP.closestSharedAncestor(
-      TP.templatePath([
+    const actualResult = EP.closestSharedAncestor(
+      EP.elementPath([
         ['a', 'b'],
         ['x', 'y', 'z'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         ['e', 'f'],
         ['g', 'h'],
       ]),
@@ -524,101 +520,101 @@ describe('closestSharedAncestor', () => {
 
 describe('getCommonParent', () => {
   it('empty array returns null', () => {
-    const actualResult = TP.getCommonParent([])
+    const actualResult = EP.getCommonParent([])
     expect(actualResult).toBeNull()
   })
   it('single element returns the parent', () => {
-    const actualResult = TP.getCommonParent([
-      TP.templatePath([
+    const actualResult = EP.getCommonParent([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b'],
       ]),
     ])
-    const expectedResult = TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['a']])
+    const expectedResult = EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['a']])
     expect(actualResult).toEqual(expectedResult)
   })
   it('for two elements returns the common parent', () => {
-    const actualResult = TP.getCommonParent([
-      TP.templatePath([
+    const actualResult = EP.getCommonParent([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'd'],
       ]),
     ])
-    const expectedResult = TP.templatePath([
+    const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['a', 'b'],
     ])
     expect(actualResult).toEqual(expectedResult)
   })
   it('for three elements with a common parent returns that', () => {
-    const actualResult = TP.getCommonParent([
-      TP.templatePath([
+    const actualResult = EP.getCommonParent([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b'],
         ['x', 'y', 'z'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c', 'd'],
         ['e', 'f'],
         ['g', 'h'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c'],
         ['h', 'i', 'j'],
       ]),
     ])
-    const expectedResult = TP.templatePath([
+    const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['a', 'b'],
     ])
     expect(actualResult).toEqual(expectedResult)
   })
   it('for three elements without a common parent returns null', () => {
-    const actualResult = TP.getCommonParent([
-      TP.templatePath([['scene-aaa'], ['a', 'b', 'c']]),
-      TP.templatePath([['scene-bbb'], ['a', 'b', 'd']]),
-      TP.templatePath([['scene-ccc'], ['x', 'b', 'd']]),
+    const actualResult = EP.getCommonParent([
+      EP.elementPath([['scene-aaa'], ['a', 'b', 'c']]),
+      EP.elementPath([['scene-bbb'], ['a', 'b', 'd']]),
+      EP.elementPath([['scene-ccc'], ['x', 'b', 'd']]),
     ])
     expect(actualResult).toBeNull()
   })
   it('returns one of the passed paths if it is a common parent of the rest and includeSelf is set to true', () => {
-    const actualResult = TP.getCommonParent(
+    const actualResult = EP.getCommonParent(
       [
-        TP.templatePath([
+        EP.elementPath([
           [BakedInStoryboardUID, 'scene-aaa'],
           ['a', 'b'],
         ]),
-        TP.templatePath([
+        EP.elementPath([
           [BakedInStoryboardUID, 'scene-aaa'],
           ['a', 'b', 'd'],
         ]),
       ],
       true,
     )
-    const expectedResult = TP.templatePath([
+    const expectedResult = EP.elementPath([
       [BakedInStoryboardUID, 'scene-aaa'],
       ['a', 'b'],
     ])
     expect(actualResult).toEqual(expectedResult)
   })
   it('does not return one of the passed paths if it is a common parent of the rest and includeSelf is not set', () => {
-    const actualResult = TP.getCommonParent([
-      TP.templatePath([
+    const actualResult = EP.getCommonParent([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b'],
       ]),
-      TP.templatePath([
+      EP.elementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'd'],
       ]),
     ])
-    const expectedResult = TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['a']])
+    const expectedResult = EP.elementPath([[BakedInStoryboardUID, 'scene-aaa'], ['a']])
     expect(actualResult).toEqual(expectedResult)
   })
 })

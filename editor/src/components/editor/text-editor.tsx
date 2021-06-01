@@ -1,6 +1,5 @@
 import { Component as ReactComponent, RefObject } from 'react'
 import * as React from 'react'
-import * as R from 'ramda'
 
 import * as EditorActions from './actions/action-creators'
 import { EditorDispatch, EditorAction } from './action-types'
@@ -16,7 +15,7 @@ import {
   DraftHandleValue,
 } from 'draft-js'
 import Keyboard from '../../utils/keyboard'
-import { TemplatePath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import { WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
 import {
@@ -32,7 +31,7 @@ import { TextSizing } from 'utopia-api'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export interface TextEditorProps {
-  target: TemplatePath
+  target: ElementPath
   dispatch: EditorDispatch
   triggerMousePosition: WindowPoint | null // stores the original mouse event which triggered the selection/editing of this text (if there is one)
   text: RawDraftContentState | string
@@ -273,36 +272,36 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
   // keyboard shortcuts
   keyBindingFn = (event: any): string | null => {
     const { character, modifiers } = Keyboard.keyFromEvent(event)
-    if (character === 'enter' && R.contains('cmd', modifiers)) {
+    if (character === 'enter' && modifiers.includes('cmd')) {
       return 'exit-text-edit'
     }
-    if (character === 'l' && R.contains('cmd', modifiers) && R.contains('shift', modifiers)) {
+    if (character === 'l' && modifiers.includes('cmd') && modifiers.includes('shift')) {
       return 'align-left'
     }
-    if (character === 'e' && R.contains('cmd', modifiers) && R.contains('shift', modifiers)) {
+    if (character === 'e' && modifiers.includes('cmd') && modifiers.includes('shift')) {
       return 'align-center'
     }
-    if (character === 'r' && R.contains('cmd', modifiers) && R.contains('shift', modifiers)) {
+    if (character === 'r' && modifiers.includes('cmd') && modifiers.includes('shift')) {
       return 'align-right'
     }
-    if (character === 'u' && R.contains('cmd', modifiers) && R.contains('shift', modifiers)) {
+    if (character === 'u' && modifiers.includes('cmd') && modifiers.includes('shift')) {
       return 'toggle-unordered-list'
     }
-    if (character === 'o' && R.contains('cmd', modifiers) && R.contains('shift', modifiers)) {
+    if (character === 'o' && modifiers.includes('cmd') && modifiers.includes('shift')) {
       return 'toggle-ordered-list'
     }
-    if (character === 'comma' && R.contains('cmd', modifiers) && R.contains('shift', modifiers)) {
+    if (character === 'comma' && modifiers.includes('cmd') && modifiers.includes('shift')) {
       return 'decrease-font-size'
     }
-    if (character === 'period' && R.contains('cmd', modifiers) && R.contains('shift', modifiers)) {
+    if (character === 'period' && modifiers.includes('cmd') && modifiers.includes('shift')) {
       return 'increase-font-size'
     }
     // up, down, left and right shortcuts need to call handleKeyCommand manually
-    if (character === 'up' && R.contains('alt', modifiers)) {
+    if (character === 'up' && modifiers.includes('alt')) {
       event.preventDefault()
       return this.handleKeyCommand('increase-line-height', this.state.editorState)
     }
-    if (character === 'down' && R.contains('alt', modifiers)) {
+    if (character === 'down' && modifiers.includes('alt')) {
       event.preventDefault()
       return this.handleKeyCommand('decrease-line-height', this.state.editorState)
     }

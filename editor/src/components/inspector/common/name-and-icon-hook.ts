@@ -1,79 +1,58 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  JSXElementName,
-  ElementInstanceMetadataMap,
-  UtopiaJSXComponent,
-} from '../../../core/shared/element-template'
-import * as TP from '../../../core/shared/template-path'
-import * as PP from '../../../core/shared/property-path'
-import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
+import { JSXElementName, ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
-import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
-import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
+import {
+  NameAndIconResultArrayKeepDeepEquality,
+  NameAndIconResultKeepDeepEquality,
+} from '../../../utils/deep-equality-instances'
 
 export interface NameAndIconResult {
-  path: TemplatePath
+  path: ElementPath
   name: JSXElementName | null
   label: string
   iconProps: IcnProps
 }
 
-export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
+export function useNameAndIcon(path: ElementPath): NameAndIconResult {
   return useEditorState(
     (store) => {
       const metadata = store.editor.jsxMetadata
-      const { components, imports } = getJSXComponentsAndImportsForPathFromState(
-        path,
-        store.editor,
-        store.derived,
-      )
-      return getNameAndIconResult(path, components, metadata, imports)
+      return getNameAndIconResult(path, metadata)
     },
     'useNameAndIcon',
     (oldResult, newResult) => {
-      const pathEquals = TP.pathsEqual(oldResult.path, newResult.path)
-      const labelEquals = oldResult.label === newResult.label
-      const iconPropsEqual = shallowEqual(oldResult.iconProps, newResult.iconProps)
-      const oldNamePath = oldResult.name?.propertyPath != null ? oldResult.name?.propertyPath : null
-      const newNamePath = newResult.name?.propertyPath != null ? newResult.name?.propertyPath : null
-      const namePathEquals = PP.pathsEqual(oldNamePath, newNamePath)
-      const nameVariableEquals = oldResult.name?.baseVariable === newResult.name?.baseVariable
-      return pathEquals && labelEquals && iconPropsEqual && namePathEquals && nameVariableEquals
+      return NameAndIconResultKeepDeepEquality(oldResult, newResult).areEqual
     },
   )
 }
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadata,
-    'useNamesAndIconsAllPaths metadata',
+  return useEditorState(
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      return MetadataUtils.getAllPaths(metadata).map((path) => {
+        return getNameAndIconResult(path, metadata)
+      })
+    },
+    'useNamesAndIconsAllPaths',
+    (oldResult, newResult) => {
+      return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
+    },
   )
-  const editor = useEditorState((store) => store.editor, 'useNamesAndIconsAllPaths editor')
-  const derived = useEditorState((store) => store.derived, 'useNamesAndIconsAllPaths derived')
-
-  return MetadataUtils.getAllPaths(metadata).map((path) => {
-    const { components, imports } = getJSXComponentsAndImportsForPathFromState(
-      path,
-      editor,
-      derived,
-    )
-    return getNameAndIconResult(path, components, metadata, imports)
-  })
 }
 
 function getNameAndIconResult(
-  path: TemplatePath,
-  components: UtopiaJSXComponent[],
+  path: ElementPath,
   metadata: ElementInstanceMetadataMap,
-  imports: Imports,
 ): NameAndIconResult {
-  const elementName = MetadataUtils.getJSXElementName(path, components)
+  const elementName = MetadataUtils.getJSXElementFromMetadata(metadata, path)
   return {
     path: path,
     name: elementName,
     label: MetadataUtils.getElementLabel(path, metadata),
-    iconProps: createComponentOrElementIconProps(path, components, metadata, imports),
+    iconProps: createComponentOrElementIconProps(path, metadata),
   }
 }

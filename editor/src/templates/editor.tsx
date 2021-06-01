@@ -15,6 +15,7 @@ import { CodeResultCache, generateCodeResultCache } from '../components/custom-c
 import { getAllErrorsFromBuildResult } from '../components/custom-code/custom-code-utils'
 import {
   DebugDispatch,
+  DispatchPriority,
   EditorAction,
   EditorDispatch,
   isLoggedIn,
@@ -41,6 +42,7 @@ import {
   getLoginState,
   getUserConfiguration,
   isRequestFailure,
+  startPollingLoginState,
 } from '../components/editor/server'
 import {
   DispatchResult,
@@ -91,6 +93,7 @@ import {
   isUpdatePropertyControlsInfo,
 } from '../components/editor/actions/actions'
 import { updateCssVars, UtopiaStyles } from '../uuiui'
+import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -110,7 +113,6 @@ export class Editor {
   utopiaStoreHook: UtopiaStoreHook
   utopiaStoreApi: UtopiaStoreAPI
   updateStore: (partialState: EditorStore) => void
-  boundDispatch: DebugDispatch = this.dispatch.bind(this)
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   constructor() {
@@ -140,6 +142,7 @@ export class Editor {
         watchdogWorker,
       ),
       dispatch: this.boundDispatch,
+      alreadySaved: false,
     }
 
     const storeHook = create<EditorStore>((set) => this.storedState)
@@ -147,6 +150,8 @@ export class Editor {
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
     this.utopiaStoreApi = storeHook
+
+    reduxDevtoolsSendInitialState(this.storedState)
 
     const handleWorkerMessage = (msg: OutgoingWorkerMessage) => {
       switch (msg.type) {
@@ -211,7 +216,8 @@ export class Editor {
       handleHeartbeatRequestMessage(e.data),
     )
 
-    getLoginState().then((loginState) => {
+    getLoginState('cache').then((loginState) => {
+      startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
       getUserConfiguration(loginState).then((shortcutConfiguration) => {
         this.storedState.userState = {
@@ -351,11 +357,12 @@ export class Editor {
     )
   }
 
-  dispatch(
+  boundDispatch = (
     dispatchedActions: readonly EditorAction[],
+    priority?: DispatchPriority,
   ): {
     entireUpdateFinished: Promise<any>
-  } {
+  } => {
     const runDispatch = () => {
       const result = editorDispatch(
         this.boundDispatch,

@@ -6,19 +6,16 @@ import {
   isJSXElement,
   JSXElementName,
 } from '../../../core/shared/element-template'
-import { ElementOriginType, TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementOriginType, ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
-import {
-  ElementWarnings,
-  getJSXComponentsAndImportsForPathInnerComponentFromState,
-} from '../../editor/store/editor-state'
+import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import {
   betterReactMemo,
@@ -28,8 +25,6 @@ import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isSceneElementIgnoringImports } from '../../../core/model/scene-utils'
-import { isRight } from '../../../core/shared/either'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -38,14 +33,14 @@ interface ComputedLook {
 
 export const BasePaddingUnit = 20
 
-export function getElementPadding(templatePath: TemplatePath): number {
-  return TP.navigatorDepth(templatePath) * BasePaddingUnit
+export function getElementPadding(elementPath: ElementPath): number {
+  return EP.navigatorDepth(elementPath) * BasePaddingUnit
 }
 
 export interface NavigatorItemInnerProps {
-  templatePath: TemplatePath
+  elementPath: ElementPath
   index: number
-  getSelectedViewsInRange: (i: number) => Array<TemplatePath> // TODO KILLME
+  getSelectedViewsInRange: (i: number) => Array<ElementPath> // TODO KILLME
   noOfChildren: number
   label: string
   staticElementName: JSXElementName | null
@@ -53,7 +48,7 @@ export interface NavigatorItemInnerProps {
   isHighlighted: boolean
   collapsed: boolean
   isElementVisible: boolean
-  renamingTarget: TemplatePath | null
+  renamingTarget: ElementPath | null
   selected: boolean
   elementOriginType: ElementOriginType
   elementWarnings: ElementWarnings
@@ -61,8 +56,8 @@ export interface NavigatorItemInnerProps {
 
 function selectItem(
   dispatch: EditorDispatch,
-  getSelectedViewsInRange: (i: number) => Array<TemplatePath>,
-  templatePath: TemplatePath,
+  getSelectedViewsInRange: (i: number) => Array<ElementPath>,
+  elementPath: ElementPath,
   index: number,
   selected: boolean,
   event: React.MouseEvent<HTMLDivElement>,
@@ -70,20 +65,20 @@ function selectItem(
   if (!selected) {
     if (event.metaKey && !event.shiftKey) {
       // adds to selection
-      dispatch([EditorActions.selectComponents([templatePath], true)], 'leftpane')
+      dispatch([EditorActions.selectComponents([elementPath], true)], 'leftpane')
     } else if (event.shiftKey) {
       // selects range of items
       const targets = getSelectedViewsInRange(index)
       dispatch([EditorActions.selectComponents(targets, false)], 'leftpane')
     } else {
-      dispatch([EditorActions.selectComponents([templatePath], false)], 'leftpane')
+      dispatch([EditorActions.selectComponents([elementPath], false)], 'leftpane')
     }
   }
 }
 
 const highlightItem = (
   dispatch: EditorDispatch,
-  templatePath: TemplatePath,
+  elementPath: ElementPath,
   selected: boolean,
   highlighted: boolean,
 ) => {
@@ -91,17 +86,17 @@ const highlightItem = (
     if (selected) {
       dispatch([EditorActions.clearHighlightedViews()], 'leftpane')
     } else {
-      dispatch([EditorActions.setHighlightedView(templatePath)], 'leftpane')
+      dispatch([EditorActions.setHighlightedView(elementPath)], 'leftpane')
     }
   }
 }
 
 const collapseItem = (
   dispatch: EditorDispatch,
-  templatePath: TemplatePath,
+  elementPath: ElementPath,
   e: React.MouseEvent<HTMLDivElement>,
 ) => {
-  dispatch([EditorActions.toggleCollapse(templatePath)], 'leftpane')
+  dispatch([EditorActions.toggleCollapse(elementPath)], 'leftpane')
   e.stopPropagation()
 }
 
@@ -190,41 +185,41 @@ const computeResultingStyle = (
   return result
 }
 
-function useStyleFullyVisible(path: TemplatePath): boolean {
+function useStyleFullyVisible(path: ElementPath): boolean {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
     const selectedViews = store.editor.selectedViews
-    const isSelected = selectedViews.some((selected) => TP.pathsEqual(path, selected))
-    const isParentOfSelected = selectedViews.some((selected) => TP.isParentOf(path, selected))
+    const isSelected = selectedViews.some((selected) => EP.pathsEqual(path, selected))
+    const isParentOfSelected = selectedViews.some((selected) => EP.isParentOf(path, selected))
 
-    const isStoryboardChild = TP.isStoryboardChild(path)
+    const isStoryboardChild = EP.isStoryboardChild(path)
 
     const isContainingBlockAncestor = selectedViews.some((selected) => {
-      return TP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
+      return EP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
     })
 
     const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
-      const selectedSizeMeasurements = MetadataUtils.findElementByTemplatePath(metadata, selected)
+      const selectedSizeMeasurements = MetadataUtils.findElementByElementPath(metadata, selected)
         ?.specialSizeMeasurements
-      const parentPath = TP.parentPath(selected)
+      const parentPath = EP.parentPath(selected)
       if (
         selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
         !isParentOfSelected &&
-        TP.isDescendantOfOrEqualTo(selected, path) &&
+        EP.isDescendantOfOrEqualTo(selected, path) &&
         parentPath != null
       ) {
         const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
           metadata,
           parentPath,
         )
-        return TP.pathsEqual(flexDirectionChange, path)
+        return EP.pathsEqual(flexDirectionChange, path)
       } else {
         return false
       }
     })
 
     let isInsideFocusedComponent =
-      TP.isFocused(store.editor.focusedElementPath, path) || TP.isInsideFocusedComponent(path)
+      EP.isFocused(store.editor.focusedElementPath, path) || EP.isInsideFocusedComponent(path)
 
     return (
       isStoryboardChild ||
@@ -237,22 +232,9 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
   }, 'NavigatorItem useStyleFullyVisible')
 }
 
-export function isProbablySceneFromMetadata(
-  jsxMetadata: ElementInstanceMetadataMap,
-  path: TemplatePath,
-): boolean {
-  const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
-  return (
-    elementMetadata != null &&
-    isRight(elementMetadata.element) &&
-    isJSXElement(elementMetadata.element.value) &&
-    isSceneElementIgnoringImports(elementMetadata.element.value)
-  )
-}
-
-function useIsProbablyScene(path: TemplatePath): boolean {
+function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
-    (store) => isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
+    (store) => MetadataUtils.isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
 }
@@ -261,15 +243,13 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   'NavigatorItem',
   (props) => {
     const {
-      label,
       dispatch,
       isHighlighted,
       isElementVisible,
-      renamingTarget,
       selected,
       collapsed,
       elementOriginType,
-      templatePath,
+      elementPath,
       getSelectedViewsInRange,
       index,
       elementWarnings,
@@ -277,22 +257,12 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 
     const domElementRef = useScrollToThisIfSelected(selected)
     const isFocusedComponent = useEditorState(
-      (store) => TP.isFocused(store.editor.focusedElementPath, templatePath),
+      (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
       'NavigatorItem isFocusedComponent',
     )
 
     const isFocusableComponent = useEditorState((store) => {
-      const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-        templatePath,
-        store.editor,
-        store.derived,
-      )
-      return MetadataUtils.isFocusableComponent(
-        templatePath,
-        components,
-        store.editor.jsxMetadata,
-        imports,
-      )
+      return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
     }, 'NavigatorItem isFocusable')
 
     const childComponentCount = props.noOfChildren
@@ -301,9 +271,9 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       elementOriginType === 'unknown-element' ||
       elementOriginType === 'generated-static-definition-present'
 
-    const isInsideComponent = TP.isInsideFocusedComponent(templatePath) || isFocusedComponent
-    const fullyVisible = useStyleFullyVisible(templatePath)
-    const isProbablyScene = useIsProbablyScene(templatePath)
+    const isInsideComponent = EP.isInsideFocusedComponent(elementPath) || isFocusedComponent
+    const fullyVisible = useStyleFullyVisible(elementPath)
+    const isProbablyScene = useIsProbablyScene(elementPath)
 
     const resultingStyle = computeResultingStyle(
       selected,
@@ -324,18 +294,18 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
     }
 
-    const collapse = React.useCallback(
-      (event: any) => collapseItem(dispatch, templatePath, event),
-      [dispatch, templatePath],
-    )
+    const collapse = React.useCallback((event: any) => collapseItem(dispatch, elementPath, event), [
+      dispatch,
+      elementPath,
+    ])
     const select = React.useCallback(
       (event: any) =>
-        selectItem(dispatch, getSelectedViewsInRange, templatePath, index, selected, event),
-      [dispatch, getSelectedViewsInRange, templatePath, index, selected],
+        selectItem(dispatch, getSelectedViewsInRange, elementPath, index, selected, event),
+      [dispatch, getSelectedViewsInRange, elementPath, index, selected],
     )
     const highlight = React.useCallback(
-      () => highlightItem(dispatch, templatePath, selected, isHighlighted),
-      [dispatch, templatePath, selected, isHighlighted],
+      () => highlightItem(dispatch, elementPath, selected, isHighlighted),
+      [dispatch, elementPath, selected, isHighlighted],
     )
     const containerStyle: React.CSSProperties = React.useMemo(() => {
       return {
@@ -347,7 +317,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     }, [isElementVisible])
 
     const rowStyle = useKeepReferenceEqualityIfPossible({
-      paddingLeft: getElementPadding(templatePath),
+      paddingLeft: getElementPadding(elementPath),
       height: UtopiaTheme.layout.rowHeight.smaller,
       ...resultingStyle.style,
     })
@@ -371,7 +341,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
           />
         </FlexRow>
         <NavigatorItemActionSheet
-          templatePath={templatePath}
+          elementPath={elementPath}
           selected={selected}
           highlighted={isHighlighted}
           isVisibleOnCanvas={isElementVisible}
@@ -396,7 +366,7 @@ const NavigatorRowLabel = (props: NavigatorRowProps) => {
     <React.Fragment>
       <LayoutIcon
         key={`layout-type-${props.label}`}
-        path={props.templatePath}
+        path={props.elementPath}
         color={props.iconColor}
         warningText={props.warningText}
       />
@@ -405,15 +375,15 @@ const NavigatorRowLabel = (props: NavigatorRowProps) => {
         testId={`navigator-item-label-${props.label}`}
         name={props.label}
         isDynamic={props.isDynamic}
-        target={props.templatePath}
+        target={props.elementPath}
         canRename={props.selected}
         dispatch={props.dispatch}
-        inputVisible={TP.pathsEqual(props.renamingTarget, props.templatePath)}
+        inputVisible={EP.pathsEqual(props.renamingTarget, props.elementPath)}
         elementOriginType={props.elementOriginType}
       />
       <ComponentPreview
         key={`preview-${props.label}`}
-        path={props.templatePath}
+        path={props.elementPath}
         color={props.iconColor}
       />
     </React.Fragment>

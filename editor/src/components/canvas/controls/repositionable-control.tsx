@@ -1,10 +1,9 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import Utils from '../../../utils/utils'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
-import { getJSXComponentsAndImportsForPathInnerComponent } from '../../editor/store/editor-state'
 
 const Size = 6
 
@@ -19,25 +18,15 @@ export class RepositionableControl extends React.Component<ControlProps> {
         return
       }
 
-      const { components, imports } = getJSXComponentsAndImportsForPathInnerComponent(
-        selectedView,
-        this.props.openFile,
-        this.props.projectContents,
-        this.props.nodeModules,
-        this.props.transientState.filesState,
-        this.props.resolve,
-      )
       const selectionColor = getSelectionColor(
         selectedView,
-        components,
         this.props.componentMetadata,
-        imports,
         this.props.focusedElementPath,
       )
 
       indicators.push(
         <div
-          key={TP.toComponentId(selectedView)}
+          key={EP.toComponentId(selectedView)}
           className='role-outline'
           style={{
             position: 'absolute',

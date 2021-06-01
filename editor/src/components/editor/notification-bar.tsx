@@ -14,7 +14,7 @@ export const BrowserInfoBar = betterReactMemo('EditorOfflineBar', () => {
   )
 })
 
-export const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
+const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
   return (
     <NotificationBar
       level='ERROR'
@@ -25,22 +25,45 @@ export const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
 
 export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
   const loginState = useEditorState((store) => store.userState.loginState, 'LoginStatusBar')
+  const saveError = useEditorState(
+    (store) => store.editor.saveError,
+    'EditorComponentInner saveError',
+  )
 
-  const onClickCallback = React.useCallback(() => {
-    setRedirectUrl(window.top.location.pathname).then(() => window.top.location.replace(auth0Url))
+  const onClickLoginNewTab = React.useCallback(() => {
+    window.open(auth0Url('auto-close'), '_blank')
   }, [])
 
-  if (isLoggedIn(loginState)) {
-    return null
-  } else {
-    return (
-      <NotificationBar
-        level='PRIMARY'
-        message={'Welcome to Utopia. Click here to sign in and save your projects.'}
-        onClick={onClickCallback}
-        style={{ cursor: 'pointer' }}
-      />
-    )
+  if (saveError) {
+    return <EditorOfflineBar />
+  }
+
+  switch (loginState.type) {
+    case 'LOGGED_IN':
+      return null
+    case 'OFFLINE_STATE':
+      return <EditorOfflineBar />
+    case 'NOT_LOGGED_IN':
+      return (
+        <NotificationBar
+          level='PRIMARY'
+          message={'Welcome to Utopia. Click here to sign in and save your projects.'}
+          onClick={onClickLoginNewTab}
+          style={{ cursor: 'pointer' }}
+        />
+      )
+    case 'LOGIN_LOST':
+      return (
+        <NotificationBar
+          level='ERROR'
+          message={'You have been logged out. Click here to log in again and save your changes.'}
+          onClick={onClickLoginNewTab}
+          style={{ cursor: 'pointer' }}
+        />
+      )
+    default:
+      const _exhaustiveCheck: never = loginState
+      throw new Error(`Unhandled login state ${loginState}`)
   }
 })
 LoginStatusBar.displayName = 'LoginStatusBar'

@@ -5,9 +5,7 @@ import { createContext, useContextSelector } from 'use-context-selector'
 import { PropertyControls } from 'utopia-api'
 import {
   forUnderlyingTargetFromEditorState,
-  getOpenUtopiaJSXComponentsFromStateMultifile,
   withUnderlyingTarget,
-  withUnderlyingTargetFromEditorState,
 } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
 import {
@@ -89,9 +87,9 @@ import {
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
-import type { PropertyPath, TemplatePath } from '../../../core/shared/project-file-types'
+import type { PropertyPath, ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import {
@@ -104,7 +102,7 @@ import { ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
 
 export interface InspectorPropsContextData {
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   editedMultiSelectedProps: readonly JSXAttributes[]
   targetPath: readonly string[]
   spiedProps: ReadonlyArray<{ [key: string]: any }>
@@ -113,7 +111,7 @@ export interface InspectorPropsContextData {
 }
 
 export interface InspectorCallbackContextData {
-  selectedViewsRef: ReadonlyRef<Array<TemplatePath>>
+  selectedViewsRef: ReadonlyRef<Array<ElementPath>>
   onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
   onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void
 }
@@ -246,9 +244,13 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
         }
       },
     )
-    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiselectAtProps, multiselectLength, selectedProps, selectedComputedStyles])
+  }, [
+    multiselectAtProps,
+    multiselectLength,
+    selectedProps,
+    selectedComputedStyles,
+    selectedAttributeMetadatas,
+  ])
 }
 
 // FIXME: copy pasted for component prop section
@@ -560,8 +562,6 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
         }
       })
     },
-    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
   )
 }

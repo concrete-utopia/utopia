@@ -1,6 +1,7 @@
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import {
   assetURL,
+  getLoginState,
   HEADERS,
   MODE,
   projectURL,
@@ -14,6 +15,11 @@ import { LoginState } from '../../uuiui-deps'
 import urljoin = require('url-join')
 import * as JSZip from 'jszip'
 import { addFileToProjectContents, walkContentsTree } from '../assets'
+import { isLoginLost, isNotLoggedIn } from '../../common/user'
+import { notice } from '../common/notice'
+import { EditorDispatch, isLoggedIn } from './action-types'
+import { setLoginState, showToast, removeToast } from './actions/action-creators'
+import { isLocal, isSafeToClose } from './persistence'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -341,6 +347,8 @@ export async function getUserConfiguration(loginState: LoginState): Promise<User
         throw new Error(`server responded with ${response.status} ${response.statusText}`)
       }
     case 'NOT_LOGGED_IN':
+    case 'LOGIN_LOST':
+    case 'OFFLINE_STATE':
       return emptyUserConfiguration()
     default:
       const _exhaustiveCheck: never = loginState
@@ -385,4 +393,47 @@ export async function downloadGithubRepo(
       `Download github repo request failed: ${response.statusText}`,
     )
   }
+}
+
+const loginLostNoticeID: string = 'login-lost-notice'
+
+export function startPollingLoginState(
+  dispatch: EditorDispatch,
+  initialLoginState: LoginState,
+): void {
+  let previousLoginState: LoginState = initialLoginState
+  setInterval(async () => {
+    const loginState = await getLoginState('no-cache')
+    if (previousLoginState.type !== loginState.type) {
+      dispatch([setLoginState(loginState)])
+      if (isLoginLost(loginState)) {
+        dispatch([
+          showToast(
+            notice(
+              `You have been logged out. You can continue working, but your work won't be saved until you log in again.`,
+              'ERROR',
+              true,
+              loginLostNoticeID,
+            ),
+          ),
+        ])
+      }
+
+      if (isLoggedIn(loginState)) {
+        if (isLoginLost(previousLoginState)) {
+          // Login was lost and subsequently regained so remove the persistent toast.
+          dispatch([removeToast(loginLostNoticeID)])
+        }
+        if (isNotLoggedIn(previousLoginState)) {
+          if (isLocal() && isSafeToClose()) {
+            // The handling of local file uploading is done on load currently.
+            // Since there's implications around the project ID from that, it's
+            // likely vastly easier to just reload the page here.
+            window.location.reload()
+          }
+        }
+      }
+    }
+    previousLoginState = loginState
+  }, 5000)
 }

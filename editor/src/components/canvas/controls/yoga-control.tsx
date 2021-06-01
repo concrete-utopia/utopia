@@ -3,24 +3,19 @@ import { FlexStretch, Sides } from 'utopia-api'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { defaultEither, mapEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { ResizeDragState } from '../canvas-types'
 import { getOriginalFrames } from '../canvas-utils'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
-import {
-  getJSXComponentsAndImportsForPathInnerComponent,
-  withUnderlyingTarget,
-} from '../../editor/store/editor-state'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
-  target: TemplatePath
+  target: ElementPath
   color: string
   dragState: ResizeDragState | null
 }
@@ -28,8 +23,8 @@ interface YogaResizeControlProps extends ControlProps {
 class YogaResizeControl extends React.Component<YogaResizeControlProps> {
   getTargetStretch = (): FlexStretch => {
     const target = this.props.targetElement
-    const parentPath = TP.parentPath(this.props.target)
-    const sceneMetadataOrElementMetadata = MetadataUtils.findElementByTemplatePath(
+    const parentPath = EP.parentPath(this.props.target)
+    const sceneMetadataOrElementMetadata = MetadataUtils.findElementByElementPath(
       this.props.componentMetadata,
       parentPath,
     )
@@ -46,19 +41,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
 
   getYogaSize = (visualSize: CanvasRectangle): CanvasRectangle => {
     const childStretch = this.getTargetStretch()
-    const { components } = getJSXComponentsAndImportsForPathInnerComponent(
-      this.props.target,
-      this.props.openFile,
-      this.props.projectContents,
-      this.props.nodeModules,
-      this.props.transientState.filesState,
-      this.props.resolve,
-    )
-    const yogaSize = MetadataUtils.getYogaSizeProps(
-      this.props.target,
-      this.props.componentMetadata,
-      components,
-    )
+    const yogaSize = MetadataUtils.getYogaSizeProps(this.props.target, this.props.componentMetadata)
 
     return canvasRectangle({
       x: visualSize.x,
@@ -103,7 +86,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         getOriginalFrames={this.obtainOriginalFrames}
         metadata={this.props.componentMetadata}
         onResizeStart={Utils.NO_OP}
-        testID={`component-resize-control-${TP.toComponentId(this.props.target)}-0`}
+        testID={`component-resize-control-${EP.toComponentId(this.props.target)}-0`}
         maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
       />
     )
@@ -137,21 +120,10 @@ export class YogaControls extends React.Component<YogaControlsProps> {
     let color: string = ''
     if (showResizeControl && targets.length > 0) {
       const selectedView = targets[0]
-      color = withUnderlyingTarget<string>(
+      color = getSelectionColor(
         selectedView,
-        this.props.projectContents,
-        this.props.nodeModules,
-        this.props.openFile,
-        '',
-        (success, element, underlyingTarget, underlyingFilePath) => {
-          return getSelectionColor(
-            underlyingTarget,
-            getUtopiaJSXComponentsFromSuccess(success),
-            this.props.componentMetadata,
-            success.imports,
-            this.props.focusedElementPath,
-          )
-        },
+        this.props.componentMetadata,
+        this.props.focusedElementPath,
       )
     }
 
@@ -162,7 +134,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
             {...this.props}
             target={targets[0]}
             targetElement={
-              MetadataUtils.findElementByTemplatePath(this.props.componentMetadata, targets[0])!
+              MetadataUtils.findElementByElementPath(this.props.componentMetadata, targets[0])!
             }
             color={color}
           />

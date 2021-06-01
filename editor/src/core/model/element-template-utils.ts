@@ -4,7 +4,6 @@ import {
   walkContentsTree,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
 import { Either, isRight } from '../shared/either'
@@ -31,11 +30,11 @@ import {
   Imports,
   isParseSuccess,
   isTextFile,
+  StaticElementPathPart,
   StaticElementPath,
-  StaticTemplatePath,
-  TemplatePath,
+  ElementPath,
 } from '../shared/project-file-types'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import {
   fixUtopiaElement,
   generateUID,
@@ -49,7 +48,8 @@ import {
   isGivenUtopiaAPIElement,
   isSceneAgainstImports,
 } from './project-file-utils'
-import { getStoryboardTemplatePath } from './scene-utils'
+import { getStoryboardElementPath } from './scene-utils'
+import { TransientFilesState } from '../../components/editor/store/editor-state'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -106,7 +106,7 @@ export function guaranteeUniqueUids(
   return elements.map((element) => fixUtopiaElement(element, existingIDs))
 }
 
-function isSceneElement(
+export function isSceneElement(
   element: JSXElementChild,
   filePath: string,
   projectContents: ProjectContentTreeRoot,
@@ -116,148 +116,6 @@ function isSceneElement(
     return isSceneAgainstImports(element, file.fileContents.parsed.imports)
   } else {
     return false
-  }
-}
-
-export function getValidTemplatePaths(
-  focusedElementPath: TemplatePath | null,
-  topLevelElementName: string | null,
-  instancePath: TemplatePath,
-  projectContents: ProjectContentTreeRoot,
-  filePath: string,
-  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-): Array<TemplatePath> {
-  if (topLevelElementName == null) {
-    return []
-  }
-  const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    const importSource = importedFromWhere(
-      filePath,
-      topLevelElementName,
-      file.fileContents.parsed.topLevelElements,
-      file.fileContents.parsed.imports,
-    )
-    if (importSource != null) {
-      const resolvedImportSource = resolve(filePath, importSource)
-      if (isRight(resolvedImportSource)) {
-        const resolvedFilePath = resolvedImportSource.value
-        const importSourceFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-        if (isTextFile(importSourceFile) && isParseSuccess(importSourceFile.fileContents.parsed)) {
-          const topLevelElement = importSourceFile.fileContents.parsed.topLevelElements.find(
-            (element): element is UtopiaJSXComponent =>
-              isUtopiaJSXComponent(element) && element.name === topLevelElementName,
-          )
-          if (topLevelElement != null) {
-            return getValidTemplatePathsFromElement(
-              focusedElementPath,
-              topLevelElement.rootElement,
-              instancePath,
-              projectContents,
-              resolvedFilePath,
-              false,
-              true,
-              resolve,
-            )
-          }
-        }
-      }
-    }
-  }
-  return []
-}
-
-export function getValidTemplatePathsFromElement(
-  focusedElementPath: TemplatePath | null,
-  element: JSXElementChild,
-  parentPath: TemplatePath,
-  projectContents: ProjectContentTreeRoot,
-  filePath: string,
-  parentIsScene: boolean,
-  parentIsInstance: boolean,
-  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-): Array<TemplatePath> {
-  if (isJSXElement(element)) {
-    const isScene = isSceneElement(element, filePath, projectContents)
-    const uid = getUtopiaID(element)
-    const path = parentIsInstance
-      ? TP.appendNewElementPath(parentPath, uid)
-      : TP.appendToPath(parentPath, uid)
-    let paths = [path]
-    fastForEach(element.children, (c) =>
-      paths.push(
-        ...getValidTemplatePathsFromElement(
-          focusedElementPath,
-          c,
-          path,
-          projectContents,
-          filePath,
-          isScene,
-          false,
-          resolve,
-        ),
-      ),
-    )
-
-    const name = getJSXElementNameAsString(element.name)
-    const lastElementPathPart = TP.lastElementPathForPath(path)
-    const matchingFocusedPathPart =
-      focusedElementPath == null || lastElementPathPart == null
-        ? null
-        : TP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
-
-    const isFocused = parentIsScene || matchingFocusedPathPart != null
-    if (isFocused) {
-      paths = [
-        ...paths,
-        ...getValidTemplatePaths(
-          focusedElementPath,
-          name,
-          matchingFocusedPathPart ?? path,
-          projectContents,
-          filePath,
-          resolve,
-        ),
-      ]
-    }
-
-    return paths
-  } else if (isJSXArbitraryBlock(element)) {
-    let paths: Array<TemplatePath> = []
-    fastForEach(Object.values(element.elementsWithin), (e) =>
-      paths.push(
-        ...getValidTemplatePathsFromElement(
-          focusedElementPath,
-          e,
-          parentPath,
-          projectContents,
-          filePath,
-          parentIsScene,
-          parentIsInstance,
-          resolve,
-        ),
-      ),
-    )
-    return paths
-  } else if (isJSXFragment(element)) {
-    let paths: Array<TemplatePath> = []
-    fastForEach(Object.values(element.children), (e) =>
-      paths.push(
-        ...getValidTemplatePathsFromElement(
-          focusedElementPath,
-          e,
-          parentPath,
-          projectContents,
-          filePath,
-          parentIsScene,
-          parentIsInstance,
-          resolve,
-        ),
-      ),
-    )
-    return paths
-  } else {
-    return []
   }
 }
 
@@ -280,7 +138,7 @@ function isUtopiaJSXTextBlock(
 function isElementInstanceMetadata(
   element: JSXElementChild | ElementInstanceMetadata,
 ): element is ElementInstanceMetadata {
-  return (element as any).templatePath != null
+  return (element as any).elementPath != null
 }
 
 export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementChild {
@@ -299,7 +157,7 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   } else if (isUtopiaJSXTextBlock(element)) {
     return element.uniqueID
   } else if (isElementInstanceMetadata(element)) {
-    return TP.toUid(element.templatePath)
+    return EP.toUid(element.elementPath)
   } else if (isJSXFragment(element)) {
     return element.uniqueID
   }
@@ -321,10 +179,10 @@ export function elementSupportsChildren(imports: Imports, element: JSXElementChi
 
 export function transformJSXComponentAtPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticTemplatePath,
+  path: StaticElementPath,
   transform: (elem: JSXElement) => JSXElement,
 ): Array<UtopiaJSXComponent> {
-  const lastElementPathPart = TP.lastElementPathForPath(path)
+  const lastElementPathPart = EP.lastElementPathForPath(path)
   return lastElementPathPart == null
     ? components
     : transformJSXComponentAtElementPath(components, lastElementPathPart, transform)
@@ -332,13 +190,13 @@ export function transformJSXComponentAtPath(
 
 export function transformJSXComponentAtElementPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticElementPath,
+  path: StaticElementPathPart,
   transform: (elem: JSXElement) => JSXElement,
 ): Array<UtopiaJSXComponent> {
   const transformResult = transformAtPathOptionally(components, path, transform)
 
   if (transformResult.transformedElement == null) {
-    throw new Error(`Did not find element to transform ${TP.elementPathToString(path)}`)
+    throw new Error(`Did not find element to transform ${EP.elementPathPartToString(path)}`)
   } else {
     return transformResult.elements
   }
@@ -346,9 +204,9 @@ export function transformJSXComponentAtElementPath(
 
 function transformAtPathOptionally(
   components: Array<UtopiaJSXComponent>,
-  path: StaticElementPath,
+  path: StaticElementPathPart,
   transform: (elem: JSXElement) => JSXElement,
-): TP.ElementsTransformResult<UtopiaJSXComponent> {
+): EP.ElementsTransformResult<UtopiaJSXComponent> {
   function findAndTransformAtPathInner(
     element: JSXElementChild,
     workingPath: string[],
@@ -436,7 +294,7 @@ function transformAtPathOptionally(
 
 export function findJSXElementChildAtPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticTemplatePath,
+  path: StaticElementPath,
 ): JSXElementChild | null {
   function findAtPathInner(
     element: JSXElementChild,
@@ -481,7 +339,7 @@ export function findJSXElementChildAtPath(
     return null
   }
 
-  const pathElements = TP.lastElementPathForPath(path)
+  const pathElements = EP.lastElementPathForPath(path)
   for (const component of components) {
     const topLevelResult =
       pathElements == null ? null : findAtPathInner(component.rootElement, pathElements)
@@ -495,7 +353,7 @@ export function findJSXElementChildAtPath(
 
 export function findJSXElementAtStaticPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticTemplatePath,
+  path: StaticElementPath,
 ): JSXElement | null {
   const foundElement = findJSXElementChildAtPath(components, path)
   if (foundElement != null && isJSXElement(foundElement)) {
@@ -506,11 +364,11 @@ export function findJSXElementAtStaticPath(
 }
 
 export function removeJSXElementChild(
-  target: StaticTemplatePath,
+  target: StaticElementPath,
   rootElements: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
-  const parentPath = TP.parentPath(target)
-  const targetID = TP.toUid(target)
+  const parentPath = EP.parentPath(target)
+  const targetID = EP.toUid(target)
   // Remove it from where it used to be.
 
   function removeRelevantChild<T extends JSXElementChild>(
@@ -542,7 +400,7 @@ export function removeJSXElementChild(
     }
   }
 
-  const lastElementPathPart = TP.lastElementPathForPath(parentPath)
+  const lastElementPathPart = EP.lastElementPathForPath(parentPath)
   return lastElementPathPart == null
     ? rootElements
     : transformAtPathOptionally(rootElements, lastElementPathPart, (parentElement: JSXElement) => {
@@ -553,7 +411,7 @@ export function removeJSXElementChild(
 export function insertJSXElementChild(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: StaticTemplatePath | null,
+  targetParent: StaticElementPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
@@ -563,7 +421,7 @@ export function insertJSXElementChild(
     throw new Error('Should not attempt to create empty elements.')
   }
   const targetParentIncludingStoryboardRoot =
-    targetParent ?? getStoryboardTemplatePath(projectContents, openFile)
+    targetParent ?? getStoryboardElementPath(projectContents, openFile)
   if (targetParentIncludingStoryboardRoot == null) {
     return components
   } else {
@@ -597,15 +455,15 @@ export function insertJSXElementChild(
 
 export function getZIndexOfElement(
   topLevelElements: Array<TopLevelElement>,
-  target: StaticTemplatePath,
+  target: StaticElementPath,
 ): number {
-  const parentPath = TP.parentPath(target)
+  const parentPath = EP.parentPath(target)
   const parentElement = findJSXElementAtStaticPath(
     getComponentsFromTopLevelElements(topLevelElements),
     parentPath,
   )
   if (parentElement != null) {
-    const elementUID = TP.toUid(target)
+    const elementUID = EP.toUid(target)
     return parentElement.children.findIndex((child) => {
       return isJSXElement(child) && getUtopiaID(child) === elementUID
     })

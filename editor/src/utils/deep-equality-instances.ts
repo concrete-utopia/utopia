@@ -1,30 +1,33 @@
 import {
   arrayDeepEquality,
   combine2EqualityCalls,
+  combine4EqualityCalls,
   createCallFromEqualsFunction,
+  createCallWithShallowEquals,
   createCallWithTripleEquals,
   KeepDeepEqualityCall,
   KeepDeepEqualityResult,
   keepDeepEqualityResult,
   mapKeepDeepEqualityResult,
 } from './deep-equality'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
 import { HigherOrderControl } from '../components/canvas/canvas-types'
 import { JSXElementName } from '../core/shared/element-template'
-import { TemplatePath, PropertyPath } from '../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../core/shared/project-file-types'
 import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
+import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
 
-export const TemplatePathKeepDeepEquality: KeepDeepEqualityCall<TemplatePath> = createCallFromEqualsFunction(
-  (oldPath: TemplatePath, newPath: TemplatePath) => {
-    return TP.pathsEqual(oldPath, newPath)
+export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> = createCallFromEqualsFunction(
+  (oldPath: ElementPath, newPath: ElementPath) => {
+    return EP.pathsEqual(oldPath, newPath)
   },
 )
 
-export const TemplatePathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  TemplatePath
->> = arrayDeepEquality(TemplatePathKeepDeepEquality)
+export const ElementPathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
+  ElementPath
+>> = arrayDeepEquality(ElementPathKeepDeepEquality)
 
 export const PropertyPathKeepDeepEquality: KeepDeepEqualityCall<PropertyPath> = createCallFromEqualsFunction(
   (oldPath: PropertyPath, newPath: PropertyPath) => {
@@ -86,3 +89,26 @@ export function EitherKeepDeepEquality<L, R>(
     )
   }
 }
+
+export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIconResult> = combine4EqualityCalls(
+  (result) => result.path,
+  ElementPathKeepDeepEquality,
+  (result) => result.name,
+  createCallWithTripleEquals(),
+  (result) => result.label,
+  createCallWithTripleEquals(),
+  (result) => result.iconProps,
+  createCallWithShallowEquals(),
+  (path, name, label, iconProps) => {
+    return {
+      path: path,
+      name: name,
+      label: label,
+      iconProps: iconProps,
+    }
+  },
+)
+
+export const NameAndIconResultArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
+  NameAndIconResult
+>> = arrayDeepEquality(NameAndIconResultKeepDeepEquality)

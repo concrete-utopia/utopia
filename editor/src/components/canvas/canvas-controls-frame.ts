@@ -1,4 +1,4 @@
-import { PinType, TemplatePath } from '../../core/shared/project-file-types'
+import { PinType, ElementPath } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import { LocalRectangle, Vector } from '../../core/shared/math-utils'
 import { OriginalFrame } from '../editor/store/editor-state'
@@ -25,7 +25,7 @@ export function togglePinType(pinType: PinType): PinType {
 
 export function getOriginalFrame(
   originalFrames: Array<OriginalFrame>,
-  target: TemplatePath,
+  target: ElementPath,
 ): LocalRectangle {
   throw new Error(`This code path should be dead - getOriginalFrame`)
 }

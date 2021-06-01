@@ -23,33 +23,13 @@ describe('roundAttributeLayoutValues', () => {
     })
     const actualResult = roundAttributeLayoutValues(attributes)
     const expectedResult: JSXAttributes = jsxAttributesFromMap({
-      style: jsxAttributeNestedObject(
-        [
-          jsxPropertyAssignment(
-            'left',
-            jsxAttributeValue(0, emptyComments),
-            emptyComments,
-            emptyComments,
-          ),
-          jsxPropertyAssignment(
-            'top',
-            jsxAttributeValue('0%', emptyComments),
-            emptyComments,
-            emptyComments,
-          ),
-          jsxPropertyAssignment(
-            'width',
-            jsxAttributeValue(141, emptyComments),
-            emptyComments,
-            emptyComments,
-          ),
-          jsxPropertyAssignment(
-            'height',
-            jsxAttributeValue('65.5%', emptyComments),
-            emptyComments,
-            emptyComments,
-          ),
-        ],
+      style: jsxAttributeValue(
+        {
+          left: 0,
+          top: '0%',
+          width: 141,
+          height: '65.5%',
+        },
         emptyComments,
       ),
     })
@@ -89,33 +69,13 @@ describe('roundAttributeLayoutValues', () => {
     })
     const actualResult = roundAttributeLayoutValues(attributes)
     const expectedResult: JSXAttributes = jsxAttributesFromMap({
-      style: jsxAttributeNestedObject(
-        [
-          jsxPropertyAssignment(
-            'left',
-            jsxAttributeValue(0, emptyComments),
-            emptyComments,
-            emptyComments,
-          ),
-          jsxPropertyAssignment(
-            'top',
-            jsxAttributeValue('0%', emptyComments),
-            emptyComments,
-            emptyComments,
-          ),
-          jsxPropertyAssignment(
-            'width',
-            jsxAttributeValue(141, emptyComments),
-            emptyComments,
-            emptyComments,
-          ),
-          jsxPropertyAssignment(
-            'height',
-            jsxAttributeValue('65.5%', emptyComments),
-            emptyComments,
-            emptyComments,
-          ),
-        ],
+      style: jsxAttributeValue(
+        {
+          left: 0,
+          top: '0%',
+          width: 141,
+          height: '65.5%',
+        },
         emptyComments,
       ),
     })

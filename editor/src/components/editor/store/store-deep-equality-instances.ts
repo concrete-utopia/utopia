@@ -55,6 +55,9 @@ import {
   SpecialSizeMeasurements,
   JSXAttributesEntry,
   jsxAttributesEntry,
+  ImportInfo,
+  createImportedFrom,
+  FoundImportInfo,
 } from '../../../core/shared/element-template'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
 import {
@@ -80,11 +83,12 @@ import {
   combine13EqualityCalls,
   combine11EqualityCalls,
   combine1EqualityCall,
+  combine14EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
-  TemplatePathArrayKeepDeepEquality,
+  ElementPathArrayKeepDeepEquality,
   HigherOrderControlArrayKeepDeepEquality,
-  TemplatePathKeepDeepEquality,
+  ElementPathKeepDeepEquality,
   EitherKeepDeepEquality,
   JSXElementNameKeepDeepEqualityCall,
 } from '../../../utils/deep-equality-instances'
@@ -99,9 +103,9 @@ import {
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
   return combine3EqualityCalls(
     (state) => state.selectedViews,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.filesState,
     createCallFromIntrospectiveKeepDeep<TransientFilesState | null>(),
     transientCanvasState,
@@ -111,11 +115,11 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
   return combine6EqualityCalls(
     (state) => state.navigatorTargets,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.visibleNavigatorTargets,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.canvas.descendantsOfHiddenInstances,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.canvas.controls,
     HigherOrderControlArrayKeepDeepEquality,
     (state) => state.canvas.transientState,
@@ -385,9 +389,11 @@ export function JSXAttributesKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAtt
 }
 
 export function JSXElementKeepDeepEquality(): KeepDeepEqualityCall<JSXElement> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (element) => element.name,
     JSXElementNameKeepDeepEqualityCall(),
+    (element) => element.uid,
+    createCallWithTripleEquals(),
     (element) => element.props,
     JSXAttributesKeepDeepEqualityCall(),
     (element) => element.children,
@@ -555,6 +561,28 @@ export function SidesKeepDeepEquality(
   }
 }
 
+export const ImportInfoKeepDeepEquality: KeepDeepEqualityCall<ImportInfo> = EitherKeepDeepEquality<
+  'NOT_IMPORTED',
+  FoundImportInfo
+>(
+  createCallWithTripleEquals(),
+  combine3EqualityCalls(
+    (i) => i.variableName,
+    createCallWithTripleEquals(),
+    (info) => info.originalName,
+    createCallWithTripleEquals(),
+    (info) => info.path,
+    createCallWithTripleEquals(),
+    (variableName, originalName, path): FoundImportInfo => {
+      return {
+        variableName: variableName,
+        originalName: originalName,
+        path: path,
+      }
+    },
+  ),
+)
+
 export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
   SpecialSizeMeasurements
 > {
@@ -639,9 +667,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
-  return combine13EqualityCalls(
-    (metadata) => metadata.templatePath,
-    TemplatePathKeepDeepEquality,
+  return combine14EqualityCalls(
+    (metadata) => metadata.elementPath,
+    ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.props,
@@ -651,9 +679,9 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.localFrame,
     nullableDeepEquality(LocalRectangleKeepDeepEquality),
     (metadata) => metadata.children,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (metadata) => metadata.rootElements,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
     (metadata) => metadata.isEmotionOrStyledComponent,
@@ -666,6 +694,8 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
     (metadata) => metadata.label,
     nullableDeepEquality(createCallWithTripleEquals()),
+    (metadata) => metadata.importInfo,
+    nullableDeepEquality(ImportInfoKeepDeepEquality),
     elementInstanceMetadata,
   )
 }

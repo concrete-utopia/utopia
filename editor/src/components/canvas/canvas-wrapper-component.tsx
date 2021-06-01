@@ -13,6 +13,7 @@ import {
   getAllCodeEditorErrors,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
+  LeftPaneDefaultWidth,
   parseFailureAsErrorMessages,
   TransientCanvasState,
 } from '../editor/store/editor-state'
@@ -24,10 +25,10 @@ import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
 import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { TemplatePath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
-import { LeftPaneDefaultWidth } from '../navigator/left-pane'
+import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 
 interface CanvasWrapperComponentProps {}
 
@@ -60,6 +61,7 @@ export const CanvasWrapperComponent = betterReactMemo(
           justifyContent: 'stretch',
           alignItems: 'stretch',
           flexGrow: 1,
+          height: '100%',
           // ^ prevents Monaco from pushing the inspector out
         }}
       >
@@ -97,7 +99,13 @@ const ErrorOverlayComponent = betterReactMemo(
     const overlayErrors = React.useMemo(() => {
       return runtimeErrors.map((runtimeError) => {
         const stackFrames =
-          runtimeError.error.stackFrames != null ? runtimeError.error.stackFrames : []
+          runtimeError.error.stackFrames != null
+            ? runtimeError.error.stackFrames
+            : [
+                new StackFrame(
+                  'WARNING: This error has no Stack Frames, it might be coming from Utopia itself!',
+                ),
+              ]
         return {
           error: runtimeError.error,
           unhandledRejection: false,

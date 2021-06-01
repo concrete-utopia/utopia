@@ -10,7 +10,6 @@ import {
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
-import { TemplatePath } from '../core/shared/project-file-types'
 import { Icons } from '../uuiui'
 
 export interface ContextMenuWrapperProps<T> {
@@ -23,13 +22,6 @@ export interface ContextMenuWrapperProps<T> {
   innerClassName?: string
   style?: React.CSSProperties
   providerStyle?: React.CSSProperties
-}
-
-export function openMenu(id: string, nativeEvent: MouseEvent) {
-  contextMenu.show({
-    id: id,
-    event: nativeEvent,
-  })
 }
 
 export interface ContextMenuProps<T> {

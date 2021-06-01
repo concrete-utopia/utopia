@@ -2,7 +2,7 @@ import * as React from 'react'
 import { MapLike } from 'typescript'
 // Inject the babel helpers into the global scope
 import '../../bundled-dependencies/babelHelpers'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import {
   ArbitraryJSBlock,
   ElementInstanceMetadata,
@@ -11,10 +11,9 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
-import { getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
   Imports,
-  TemplatePath,
+  ElementPath,
   isParseSuccess,
   isTextFile,
 } from '../../core/shared/project-file-types'
@@ -74,10 +73,10 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
-import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
+import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 
 applyUIDMonkeyPatch()
 
@@ -111,18 +110,18 @@ UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
 export interface UiJsxCanvasProps {
   offset: CanvasVector
   scale: number
-  uiFileCode: string
   uiFilePath: string
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   requireFn: UtopiaRequireFn
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
-  hiddenInstances: TemplatePath[]
-  editedTextElement: TemplatePath | null
+  hiddenInstances: ElementPath[]
+  editedTextElement: ElementPath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
+  domWalkerInvalidateCount: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<TemplatePath>,
+    cachedPaths: Array<ElementPath>,
   ) => void
   walkDOM: boolean
   imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
@@ -131,7 +130,7 @@ export interface UiJsxCanvasProps {
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
-  focusedElementPath: TemplatePath | null
+  focusedElementPath: ElementPath | null
   projectContents: ProjectContentTreeRoot
   transientFilesState: TransientFilesState | null
   scrollAnimation: boolean
@@ -156,7 +155,7 @@ export function pickUiJsxCanvasProps(
   walkDOM: boolean,
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<TemplatePath>,
+    cachedPaths: Array<ElementPath>,
   ) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
@@ -184,7 +183,7 @@ export function pickUiJsxCanvasProps(
     }
 
     const editedTextElement = Utils.optionalMap(
-      (textEd) => textEd.templatePath,
+      (textEd) => textEd.elementPath,
       editor.canvas.textEditor,
     )
 
@@ -195,7 +194,6 @@ export function pickUiJsxCanvasProps(
     return {
       offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
-      uiFileCode: uiFile.fileContents.code,
       uiFilePath: uiFilePath,
       selectedViews: editor.selectedViews,
       requireFn: requireFn,
@@ -204,6 +202,7 @@ export function pickUiJsxCanvasProps(
       editedTextElement: editedTextElement,
       base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
+      domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
       onDomReport: onDomReport,
       walkDOM: walkDOM,
       imports_KILLME: imports_KILLME,
@@ -259,6 +258,11 @@ export const UiJsxCanvas = betterReactMemo(
     clearConsoleLogs()
     proxyConsole(console, addToConsoleLogs)
 
+    if (clearErrors != null) {
+      // a new canvas render, a new chance at having no errors
+      clearErrors()
+    }
+
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
     // Handle the imports changing, this needs to run _before_ any require function
@@ -275,46 +279,47 @@ export const UiJsxCanvas = betterReactMemo(
       MapLike<MapLike<ComponentRendererComponent>>
     >({})
 
-    if (clearErrors != null) {
-      // a new canvas render, a new chance at having no errors
-      // FIXME This is illegal! The line below is triggering a re-render
-      clearErrors()
-    }
-
     // TODO after merge requireFn can never be null
     if (requireFn != null) {
+      let resolvedFiles: string[] = []
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
           const filePathResolveResult = resolve(importOrigin, toImport)
           const resolvedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
             (resolvedFilePath) => {
-              const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-              if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-                const { scope } = createExecutionScope(
-                  resolvedFilePath,
-                  customRequire,
-                  mutableContextRef,
-                  topLevelComponentRendererComponents,
-                  projectContents,
-                  uiFilePath,
-                  transientFilesState,
-                  base64FileBlobs,
-                  hiddenInstances,
-                  metadataContext,
-                  shouldIncludeCanvasRootInTheSpy,
-                )
-                const exportsDetail = projectFile.fileContents.parsed.exportsDetail
-                let filteredScope: MapLike<any> = {}
-                for (const s of Object.keys(scope)) {
-                  if (s in exportsDetail.namedExports) {
-                    filteredScope[s] = scope[s]
-                  } else if (s === exportsDetail.defaultExport?.name) {
-                    filteredScope[s] = scope[s]
-                  }
-                }
-                return right(filteredScope)
+              if (resolvedFiles.includes(resolvedFilePath)) {
+                // We're inside a cyclic dependency, so bail and the outer call will create the execution scope
+                return left('Ignoring inner cyclic dependency')
               } else {
-                return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+                resolvedFiles.push(resolvedFilePath)
+                const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+                if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+                  const { scope } = createExecutionScope(
+                    resolvedFilePath,
+                    customRequire,
+                    mutableContextRef,
+                    topLevelComponentRendererComponents,
+                    projectContents,
+                    uiFilePath,
+                    transientFilesState,
+                    base64FileBlobs,
+                    hiddenInstances,
+                    metadataContext,
+                    shouldIncludeCanvasRootInTheSpy,
+                  )
+                  const exportsDetail = projectFile.fileContents.parsed.exportsDetail
+                  let filteredScope: MapLike<any> = {}
+                  for (const s of Object.keys(scope)) {
+                    if (s in exportsDetail.namedExports) {
+                      filteredScope[s] = scope[s]
+                    } else if (s === exportsDetail.defaultExport?.name) {
+                      filteredScope[s] = scope[s]
+                    }
+                  }
+                  return right(filteredScope)
+                } else {
+                  return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+                }
               }
             },
             filePathResolveResult,
@@ -335,6 +340,7 @@ export const UiJsxCanvas = betterReactMemo(
         [
           requireFn,
           resolve,
+          resolvedFiles,
           projectContents,
           transientFilesState,
           uiFilePath,
@@ -374,6 +380,7 @@ export const UiJsxCanvas = betterReactMemo(
         executionScope,
         projectContents,
         uiFilePath,
+        transientFilesState,
         resolve,
       )
 
@@ -402,19 +409,21 @@ export const UiJsxCanvas = betterReactMemo(
               >
                 <CanvasContainer
                   mountCount={props.mountCount}
+                  domWalkerInvalidateCount={props.domWalkerInvalidateCount}
                   walkDOM={walkDOM}
                   selectedViews={props.selectedViews}
                   scale={scale}
                   offset={offset}
                   onDomReport={onDomReport}
                   validRootPaths={rootValidPaths}
-                  canvasRootElementTemplatePath={storyboardRootElementPath}
+                  canvasRootElementElementPath={storyboardRootElementPath}
                   scrollAnimation={props.scrollAnimation}
+                  canvasInteractionHappening={props.transientFilesState != null}
                 >
                   <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
                     <ParentLevelUtopiaContext.Provider
                       value={{
-                        templatePath: storyboardRootElementPath,
+                        elementPath: storyboardRootElementPath,
                       }}
                     >
                       {StoryboardRootComponent == null ? null : (
@@ -437,17 +446,18 @@ export const UiJsxCanvas = betterReactMemo(
 )
 
 function useGetStoryboardRoot(
-  focusedElementPath: TemplatePath | null,
+  focusedElementPath: ElementPath | null,
   topLevelElementsMap: Map<string, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
+  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
-  storyboardRootElementPath: TemplatePath
-  rootValidPaths: Array<TemplatePath>
-  rootInstancePath: TemplatePath
+  storyboardRootElementPath: ElementPath
+  rootValidPaths: Array<ElementPath>
+  rootInstancePath: ElementPath
 } {
   const StoryboardRootComponent = executionScope[BakedInStoryboardVariableName] as
     | ComponentRendererComponent
@@ -457,12 +467,13 @@ function useGetStoryboardRoot(
   const validPaths =
     storyboardRootJsxComponent == null
       ? []
-      : getValidTemplatePaths(
+      : getValidElementPaths(
           focusedElementPath,
           BakedInStoryboardVariableName,
-          TP.emptyTemplatePath,
+          EP.emptyElementPath,
           projectContents,
           uiFilePath,
+          transientFilesState,
           resolve,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
@@ -471,23 +482,25 @@ function useGetStoryboardRoot(
     StoryboardRootComponent: StoryboardRootComponent,
     storyboardRootElementPath: storyboardRootElementPath,
     rootValidPaths: validPaths,
-    rootInstancePath: TP.emptyTemplatePath,
+    rootInstancePath: EP.emptyElementPath,
   }
 }
 
 export interface CanvasContainerProps {
   walkDOM: boolean
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   scale: number
   offset: CanvasVector
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<TemplatePath>,
+    cachedPaths: Array<ElementPath>,
   ) => void
-  canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<TemplatePath>
+  canvasRootElementElementPath: ElementPath
+  validRootPaths: Array<ElementPath>
   mountCount: number
+  domWalkerInvalidateCount: number
   scrollAnimation: boolean
+  canvasInteractionHappening: boolean
 }
 
 const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (
@@ -505,7 +518,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
         all: 'initial',
         position: 'absolute',
       }}
-      data-utopia-valid-paths={props.validRootPaths.map(TP.toString).join(' ')}
+      data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
     >
       {props.children}
     </div>

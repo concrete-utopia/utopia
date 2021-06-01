@@ -16,10 +16,11 @@ import {
   getMissingPropertyControlsWarning,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
-import { foldEither } from '../../../../core/shared/either'
+import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
-import { PropertyPath } from '../../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import * as EP from '../../../../core/shared/element-path'
 import {
   betterReactMemo,
   useKeepReferenceEqualityIfPossible,
@@ -36,11 +37,22 @@ import {
   Icn,
   PopupList,
   FunctionIcons,
+  Icons,
+  LargerIcons,
+  Section,
+  SectionBodyArea,
+  FlexColumn,
+  paddingTop,
+  Subdued,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import { showContextMenu } from '../../../editor/actions/action-creators'
+import {
+  openCodeEditorFile,
+  setFocusedElement,
+  showContextMenu,
+} from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import { InstanceContextMenu } from '../../common/instance-context-menu'
@@ -72,6 +84,17 @@ import {
   ControlForSliderProp,
   ControlForStringProp,
 } from './property-control-controls'
+import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
+import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { getJSXElementNameAsString, isJSXElement } from '../../../../core/shared/element-template'
+import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
+import { usePackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
+import { importedFromWhere } from '../../../editor/import-utils'
+import {
+  isAnimatedElement,
+  isImportedComponentNPM,
+} from '../../../../core/model/project-file-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -116,9 +139,9 @@ const ControlForProp = betterReactMemo(
           return <ControlForSliderProp {...props} controlDescription={controlDescription} />
         case 'string':
           return <ControlForStringProp {...props} controlDescription={controlDescription} />
-        case 'styleobject':
+        // case 'styleobject':
         default:
-          return <div>Not yet implemented control type.</div>
+          return null
       }
     }
   },
@@ -382,12 +405,15 @@ const RowForObjectControl = betterReactMemo(
         {mapToArray((innerControl: ControlDescription, prop: string) => {
           const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
           return (
-            <RowForControl
-              key={`object-control-row-${PP.toString(innerPropPath)}`}
-              controlDescription={innerControl}
-              isScene={isScene}
-              propPath={innerPropPath}
-            />
+            <>
+              {innerControl.type}
+              <RowForControl
+                key={`object-control-row-${PP.toString(innerPropPath)}`}
+                controlDescription={innerControl}
+                isScene={isScene}
+                propPath={innerPropPath}
+              />
+            </>
           )
         }, controlDescription.object)}
       </>
@@ -488,6 +514,29 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
   }
 })
 
+function useComponentType(path: ElementPath): string | null {
+  return useEditorState((store) => {
+    const metadata = store.editor.jsxMetadata
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+    if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
+      return 'Scene'
+    }
+    if (MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {
+      return 'Styled Component'
+    }
+    const isAnimatedComponent = isAnimatedElement(elementMetadata)
+    if (isAnimatedComponent) {
+      return 'Animated Component'
+    }
+    const isImported = isImportedComponentNPM(elementMetadata)
+    if (isImported) {
+      return 'Component'
+    }
+    const isComponent = MetadataUtils.isFocusableComponent(path, metadata)
+    return isComponent ? 'Component' : null
+  }, 'useComponentType')
+}
+
 export interface ComponentSectionProps {
   isScene: boolean
 }
@@ -500,94 +549,218 @@ export const ComponentSectionInner = betterReactMemo(
       useUsedPropsWithoutControls(),
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
-    const onResetClicked = React.useCallback(
-      (event: React.MouseEvent<HTMLElement>) => {
-        dispatch(
-          [showContextMenu('context-menu-instance-inspector', event.nativeEvent)],
-          'everyone',
-        )
-      },
-      [dispatch],
-    )
+
     const propsUsedWithoutDefaults = useKeepReferenceEqualityIfPossible(
       useUsedPropsWithoutDefaults(),
     )
     const missingControlsWarning = getMissingPropertyControlsWarning(propsUsedWithoutControls)
     const missingDefaultsWarning = getMissingDefaultsWarning(propsUsedWithoutDefaults)
-    return foldEither(
-      (rootParseError) => {
-        return (
-          <>
-            <InspectorSectionHeader>Component props</InspectorSectionHeader>
-            <ParseErrorControl parseError={rootParseError} />
-          </>
-        )
-      },
-      (rootParseSuccess) => {
-        const propNames = Object.keys(rootParseSuccess)
-        if (propNames.length > 0 || propsUsedWithoutControls.length > 0) {
-          return (
-            <>
-              <InspectorSectionHeader>
-                <SimpleFlexRow style={{ flexGrow: 1 }}>Component props</SimpleFlexRow>
-                <SquareButton highlight onClick={onResetClicked}>
-                  <InstanceContextMenu
-                    propNames={propNames}
-                    contextMenuInstance={'context-menu-instance-inspector'}
-                  />
-                  <FunctionIcons.Reset />
-                </SquareButton>
-              </InspectorSectionHeader>
-              {missingControlsWarning == null ? null : (
-                <InfoBox message={'Missing Property Controls'}>{missingControlsWarning}</InfoBox>
-              )}
-              {missingDefaultsWarning == null ? null : (
-                <InfoBox message={'Missing Default Properties'}>{missingDefaultsWarning}</InfoBox>
-              )}
-              {propNames.map((propName) => {
-                const propertyControl = rootParseSuccess[propName]
-                if (propertyControl == null) {
-                  return null
-                } else {
-                  return foldEither(
-                    (propertyError) => {
-                      return (
-                        <RowForInvalidControl
-                          key={propName}
-                          title={propName}
-                          propName={propName}
-                          propertyError={propertyError}
-                        />
+
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'ComponentSectionInner selectedViews',
+    )
+
+    const focusedElementPath = useEditorState(
+      (store) => store.editor.focusedElementPath,
+      'ComponentSectionInner focusedElementPath',
+    )
+
+    const target = selectedViews[0]
+
+    const isFocused = EP.isFocused(focusedElementPath, target)
+
+    const toggleFocusMode = React.useCallback(() => {
+      dispatch([setFocusedElement(isFocused ? null : target)])
+    }, [dispatch, isFocused, target])
+
+    const locationOfComponentInstance = useEditorState((state) => {
+      const underlyingTarget = normalisePathToUnderlyingTarget(
+        state.editor.projectContents,
+        state.editor.nodeModules.files,
+        state.editor.canvas.openFile?.filename ?? '',
+        selectedViews[0],
+      )
+
+      return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
+    }, 'ComponentSectionInner locationOfComponentInstance')
+
+    const componentPackageName = useEditorState((state) => {
+      const componentMetadata = MetadataUtils.findElementByElementPath(
+        state.editor.jsxMetadata,
+        target,
+      )
+      return maybeEitherToMaybe(componentMetadata?.importInfo)?.path
+    }, 'ComponentSectionInner componentPackageName')
+
+    const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
+
+    const isFocusable = useEditorState((state) => {
+      return MetadataUtils.isFocusableComponent(target, state.editor.jsxMetadata)
+    }, 'ComponentSectionInner isFocusable')
+    const isImportedComponent = useEditorState((state) => {
+      const componentMetadata = MetadataUtils.findElementByElementPath(
+        state.editor.jsxMetadata,
+        target,
+      )
+      return isImportedComponentNPM(componentMetadata)
+    }, 'ComponentSectionInner isImportedComponent')
+
+    const componentType = useComponentType(target)
+
+    const OpenFile = React.useCallback(
+      () => dispatch([openCodeEditorFile(locationOfComponentInstance, true)]),
+      [dispatch, locationOfComponentInstance],
+    )
+
+    return (
+      <>
+        <InspectorSectionHeader>
+          <UIGridRow
+            padded
+            variant='|--32px--|<--------auto-------->'
+            style={{ flexGrow: 1, color: colorTheme.primary.value }}
+          >
+            Component
+          </UIGridRow>
+        </InspectorSectionHeader>
+
+        {/* Information about the component as a whole */}
+        {isImportedComponent ? (
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <LargerIcons.NpmLogo />
+            </span>
+            <p>
+              {`This ${componentType} is imported from `}
+              <InlineLink href={componentPackageMgrLink}>
+                {`${componentPackageName}`}
+              </InlineLink>{' '}
+              via NPM.
+            </p>
+          </UIGridRow>
+        ) : isFocusable && !isFocused ? (
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconToggleButton
+                value={false}
+                srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
+                srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
+                onToggle={toggleFocusMode}
+              />
+            </span>
+            <p>
+              {`This ${componentType} is imported from `}
+              <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
+              <InlineButton onClick={toggleFocusMode}>Edit it</InlineButton>
+            </p>
+          </UIGridRow>
+        ) : isFocusable && isFocused ? (
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            <IconToggleButton
+              value={true}
+              srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
+              srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
+              onToggle={toggleFocusMode}
+            />
+            <p>
+              {`This ${componentType} is imported from `}
+              <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
+              <InlineButton onClick={toggleFocusMode}>Exit Editing</InlineButton>
+            </p>
+          </UIGridRow>
+        ) : null}
+
+        {/* List of component props with controls */}
+        {foldEither(
+          (rootParseError) => {
+            return <ParseErrorControl parseError={rootParseError} />
+          },
+          (rootParseSuccess) => {
+            const propNames = Object.keys(rootParseSuccess)
+
+            // TODO FIX ME
+            if (Math.random() > 0) {
+              return (
+                <>
+                  {missingControlsWarning == null ? null : (
+                    <InfoBox message={'Missing Property Controls'}>
+                      {missingControlsWarning}
+                    </InfoBox>
+                  )}
+                  {missingDefaultsWarning == null ? null : (
+                    <InfoBox message={'Missing Default Properties'}>
+                      {missingDefaultsWarning}
+                    </InfoBox>
+                  )}
+                  {propNames.map((propName) => {
+                    const propertyControl = rootParseSuccess[propName]
+                    if (propertyControl == null) {
+                      return `${propName} has no property control`
+                    } else {
+                      return foldEither(
+                        (propertyError) => {
+                          return (
+                            <RowForInvalidControl
+                              key={propName}
+                              title={propName}
+                              propName={propName}
+                              propertyError={propertyError}
+                            />
+                          )
+                        },
+                        (controlDescription) => {
+                          return (
+                            <UIGridRow
+                              padded
+                              tall={false}
+                              variant='<-------------1fr------------->'
+                            >
+                              <RowForControl
+                                key={propName}
+                                propPath={PP.create([propName])}
+                                controlDescription={controlDescription}
+                                isScene={props.isScene}
+                              />
+                            </UIGridRow>
+                          )
+                        },
+                        propertyControl,
                       )
-                    },
-                    (controlDescription) => {
-                      return (
-                        <RowForControl
-                          key={propName}
-                          propPath={PP.create([propName])}
-                          controlDescription={controlDescription}
-                          isScene={props.isScene}
-                        />
-                      )
-                    },
-                    propertyControl,
-                  )
-                }
-              })}
-            </>
-          )
-        } else {
-          return (
-            <>
-              <InspectorSectionHeader>
-                <SimpleFlexRow style={{ flexGrow: 1 }}>Component props</SimpleFlexRow>
-              </InspectorSectionHeader>
-              <InfoBox message={'No properties available to configure.'} />
-            </>
-          )
-        }
-      },
-      propertyControls,
+                    }
+                  })}
+                  {propsUsedWithoutControls.length > 0 ? (
+                    <Subdued>{`Additional props used in code: ${propsUsedWithoutControls.join(
+                      ', ',
+                    )}`}</Subdued>
+                  ) : null}
+                </>
+              )
+            } else {
+              return (
+                <>
+                  <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+                    <Subdued>No properties available to configure</Subdued>
+                  </UIGridRow>
+                </>
+              )
+            }
+          },
+          propertyControls,
+        )}
+      </>
     )
   },
 )
@@ -620,6 +793,7 @@ export class ComponentSection extends React.Component<
       return (
         <>
           <InspectorSectionHeader>Component props</InspectorSectionHeader>
+
           <PropertyRow
             style={{
               gridTemplateColumns: '2fr 4fr',

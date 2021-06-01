@@ -6,7 +6,7 @@ import {
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { pasteJSXElements, selectComponents } from '../../components/editor/actions/action-creators'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import {
   jsxAttributeNestedObjectSimple,
   jsxAttributeValue,
@@ -48,12 +48,13 @@ describe('maybeSwitchLayoutProps', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
     const elementToPaste = jsxElement(
       'View',
+      NewUID,
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -68,11 +69,11 @@ describe('maybeSwitchLayoutProps', () => {
       }),
       [],
     )
-    const elementPath = TP.appendNewElementPath(TestScenePath, [NewUID])
+    const elementPath = EP.appendNewElementPath(TestScenePath, [NewUID])
 
     const metadata: ElementInstanceMetadataMap = {
-      [TP.toString(TestScenePath)]: {
-        templatePath: TestScenePath,
+      [EP.toString(TestScenePath)]: {
+        elementPath: TestScenePath,
         element: left('Scene'),
         props: {
           style: {
@@ -90,9 +91,10 @@ describe('maybeSwitchLayoutProps', () => {
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
         label: null,
+        importInfo: null,
       },
-      [TP.toString(elementPath)]: {
-        templatePath: elementPath,
+      [EP.toString(elementPath)]: {
+        elementPath: elementPath,
         element: right(elementToPaste),
         props: {
           'data-uid': NewUID,
@@ -127,12 +129,13 @@ describe('maybeSwitchLayoutProps', () => {
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
         label: null,
+        importInfo: null,
       },
     }
 
     const pasteElements = pasteJSXElements(
       [elementToPaste],
-      [TP.appendNewElementPath(TestScenePath, [NewUID])],
+      [EP.appendNewElementPath(TestScenePath, [NewUID])],
       metadata,
     )
     await renderResult.dispatch([pasteElements], true)

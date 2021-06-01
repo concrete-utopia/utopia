@@ -11,7 +11,7 @@ import {
   DefaultPackageJson,
   StoryboardFilePath,
 } from '../components/editor/store/editor-state'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   emptySpecialSizeMeasurements,
@@ -29,6 +29,7 @@ import {
   jsxElement,
   jsxAttributesFromMap,
   jsxAttributeValue,
+  getJSXElementNameAsString,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
@@ -40,7 +41,7 @@ import {
 } from '../core/model/test-ui-js-file.test-utils'
 import {
   RevisionsState,
-  TemplatePath,
+  ElementPath,
   ParseSuccess,
   foldParsedTextFile,
   textFile,
@@ -48,7 +49,7 @@ import {
   unparsed,
   EmptyExportsDetail,
 } from '../core/shared/project-file-types'
-import { right } from '../core/shared/either'
+import { foldEither, right } from '../core/shared/either'
 import Utils from './utils'
 import { canvasRectangle, localRectangle, RectangleInner } from '../core/shared/math-utils'
 import {
@@ -64,6 +65,7 @@ import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
 import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
+import { objectMap } from '../core/shared/object-utils'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -96,7 +98,7 @@ export function createPersistentModel(): PersistentModel {
 }
 
 export function createEditorStates(
-  selectedViews: TemplatePath[] = [],
+  selectedViews: ElementPath[] = [],
 ): {
   editor: EditorState
   derivedState: DerivedState
@@ -166,13 +168,13 @@ export function createFakeMetadataForParseSuccess(
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: TemplatePath[] = []
-  const storyboardTemplatePath = TP.templatePath([[BakedInStoryboardUID]])
+  let storyboardChildren: ElementPath[] = []
+  const storyboardElementPath = EP.elementPath([[BakedInStoryboardUID]])
 
   sceneElements.forEach((scene, index) => {
     const descendantsMetadata = createFakeMetadataForJSXElement(
       scene,
-      storyboardTemplatePath,
+      storyboardElementPath,
       {},
       utopiaComponents,
       false,
@@ -181,16 +183,16 @@ export function createFakeMetadataForParseSuccess(
     )
 
     descendantsMetadata.forEach((individualMetadata) => {
-      const descendantPath = individualMetadata.templatePath
-      elements[TP.toString(descendantPath)] = individualMetadata
-      if (TP.isParentOf(storyboardTemplatePath, descendantPath)) {
+      const descendantPath = individualMetadata.elementPath
+      elements[EP.toString(descendantPath)] = individualMetadata
+      if (EP.isParentOf(storyboardElementPath, descendantPath)) {
         storyboardChildren.push(descendantPath)
       }
     })
   })
 
-  elements[TP.toString(storyboardTemplatePath)] = createFakeMetadataForStoryboard(
-    storyboardTemplatePath,
+  elements[EP.toString(storyboardElementPath)] = createFakeMetadataForStoryboard(
+    storyboardElementPath,
     storyboardChildren,
   )
 
@@ -201,8 +203,8 @@ export function createFakeMetadataForComponents(
   topLevelElements: Array<TopLevelElement>,
 ): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: TemplatePath[] = []
-  const storyboardTemplatePath = TP.templatePath([[BakedInStoryboardUID]])
+  let storyboardChildren: ElementPath[] = []
+  const storyboardElementPath = EP.elementPath([[BakedInStoryboardUID]])
 
   Utils.fastForEach(topLevelElements, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
@@ -216,6 +218,7 @@ export function createFakeMetadataForComponents(
         [
           jsxElement(
             component.name,
+            componentUID,
             jsxAttributesFromMap({
               'data-uid': jsxAttributeValue(componentUID, emptyComments),
             }),
@@ -226,7 +229,7 @@ export function createFakeMetadataForComponents(
 
       const descendantsMetadata = createFakeMetadataForJSXElement(
         fakeScene,
-        storyboardTemplatePath,
+        storyboardElementPath,
         {},
         topLevelElements,
         false,
@@ -235,17 +238,17 @@ export function createFakeMetadataForComponents(
       )
 
       descendantsMetadata.forEach((individualMetadata) => {
-        const descendantPath = individualMetadata.templatePath
-        elements[TP.toString(descendantPath)] = individualMetadata
-        if (TP.isParentOf(storyboardTemplatePath, descendantPath)) {
+        const descendantPath = individualMetadata.elementPath
+        elements[EP.toString(descendantPath)] = individualMetadata
+        if (EP.isParentOf(storyboardElementPath, descendantPath)) {
           storyboardChildren.push(descendantPath)
         }
       })
     }
   })
 
-  elements[TP.toString(storyboardTemplatePath)] = createFakeMetadataForStoryboard(
-    storyboardTemplatePath,
+  elements[EP.toString(storyboardElementPath)] = createFakeMetadataForStoryboard(
+    storyboardElementPath,
     storyboardChildren,
   )
 
@@ -254,7 +257,7 @@ export function createFakeMetadataForComponents(
 
 function createFakeMetadataForJSXElement(
   element: JSXElementChild,
-  rootPath: TemplatePath,
+  rootPath: ElementPath,
   parentScope: MapLike<any>,
   topLevelElements: Array<TopLevelElement>,
   focused: boolean,
@@ -264,9 +267,9 @@ function createFakeMetadataForJSXElement(
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
-    const templatePath = rootOfInstance
-      ? TP.appendNewElementPath(rootPath, elementID)
-      : TP.appendToPath(rootPath, elementID)
+    const elementPath = rootOfInstance
+      ? EP.appendNewElementPath(rootPath, elementID)
+      : EP.appendToPath(rootPath, elementID)
     const definedElsewhere = getDefinedElsewhereFromAttributes(element.props)
     const inScope = {
       ...mapArrayToDictionary(
@@ -280,7 +283,7 @@ function createFakeMetadataForJSXElement(
     const children = element.children.flatMap((child) =>
       createFakeMetadataForJSXElement(
         child,
-        templatePath,
+        elementPath,
         {
           ...inScope,
           ...props,
@@ -290,16 +293,16 @@ function createFakeMetadataForJSXElement(
         false,
       ),
     )
-    const childPaths = children.map((child) => child.templatePath)
+    const childPaths = children.map((child) => child.elementPath)
 
-    let rootElements: Array<TemplatePath> = []
+    let rootElements: Array<ElementPath> = []
     if (focused) {
       const targetComponent = topLevelElements.find(
         (c) => isUtopiaJSXComponent(c) && c.name === element.name.baseVariable,
       )
 
       if (targetComponent != null && isUtopiaJSXComponent(targetComponent)) {
-        const elementScenePath = templatePath
+        const elementScenePath = elementPath
 
         const rootElementsMetadata = createFakeMetadataForJSXElement(
           targetComponent.rootElement,
@@ -315,8 +318,8 @@ function createFakeMetadataForJSXElement(
 
         elements.push(...rootElementsMetadata)
         rootElements = mapDropNulls((individualElementMetadata) => {
-          const path = individualElementMetadata.templatePath
-          return TP.isRootElementOfInstance(path) && TP.isParentOf(elementScenePath, path)
+          const path = individualElementMetadata.elementPath
+          return EP.isRootElementOfInstance(path) && EP.isParentOf(elementScenePath, path)
             ? path
             : null
         }, rootElementsMetadata)
@@ -324,7 +327,7 @@ function createFakeMetadataForJSXElement(
     }
 
     elements.push({
-      templatePath: templatePath,
+      elementPath: elementPath,
       element: right(element),
       props: props,
       globalFrame: canvasRectangle(frame),
@@ -337,6 +340,7 @@ function createFakeMetadataForJSXElement(
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
       label: props[PP.toString(PathForSceneDataLabel)],
+      importInfo: null,
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -359,13 +363,13 @@ function createFakeMetadataForJSXElement(
 }
 
 function createFakeMetadataForStoryboard(
-  templatePath: TemplatePath,
-  children: Array<TemplatePath>,
+  elementPath: ElementPath,
+  children: Array<ElementPath>,
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-    templatePath: templatePath,
+    elementPath: elementPath,
     props: {},
     element: right(jsxTestElement('Storyboard', [], [])),
     children: children,
@@ -376,6 +380,7 @@ function createFakeMetadataForStoryboard(
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
+    importInfo: null,
   }
 }
 
@@ -383,4 +388,47 @@ export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout)
   })
+}
+
+interface SimplifiedMetadata {
+  children: string[]
+  name: string
+  rootElements: string[]
+}
+
+type SimplifiedMetadataMap = { [key: string]: SimplifiedMetadata }
+
+export function simplifiedMetadata(elementMetadata: ElementInstanceMetadata): SimplifiedMetadata {
+  return {
+    name: foldEither(
+      (name) => name,
+      (element) =>
+        isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'not-jsx-element',
+      elementMetadata.element,
+    ),
+    children: elementMetadata.children.map(EP.toString),
+    rootElements: elementMetadata.rootElements.map(EP.toString),
+  }
+}
+
+export function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap): SimplifiedMetadataMap {
+  const sanitizedSpyData = objectMap((elementMetadata, key) => {
+    const elementPathAsReportedBySpy = EP.toString(elementMetadata.elementPath)
+    if (elementPathAsReportedBySpy !== key) {
+      fail(`The reported template path should match what was used as key`)
+    }
+
+    return simplifiedMetadata(elementMetadata)
+  }, metadata)
+  return sanitizedSpyData
+}
+
+export function domWalkerMetadataToSimplifiedMetadataMap(
+  metadata: Array<ElementInstanceMetadata>,
+): SimplifiedMetadataMap {
+  return mapArrayToDictionary(
+    metadata,
+    (elementMetadata: ElementInstanceMetadata) => EP.toString(elementMetadata.elementPath),
+    simplifiedMetadata,
+  )
 }

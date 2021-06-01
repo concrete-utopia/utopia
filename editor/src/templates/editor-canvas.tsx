@@ -1,5 +1,4 @@
 import * as update from 'immutability-helper'
-import * as R from 'ramda'
 import * as React from 'react'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'
@@ -35,6 +34,7 @@ import {
   dragAndDropInsertionSubject,
 } from '../components/editor/editor-modes'
 import {
+  BaseSnappingThreshold,
   CanvasCursor,
   ConsoleLog,
   DerivedState,
@@ -48,10 +48,10 @@ import {
   mouseWheelHandled,
   resetMouseStatus,
 } from '../components/mouse-move'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
-import { TemplatePath } from '../core/shared/project-file-types'
+import { ElementPath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,
   parseClipboardData,
@@ -75,15 +75,12 @@ import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
+import { CanvasMousePositionRaw, updateGlobalPositions } from '../utils/global-positions'
+import { last, reverse } from '../core/shared/array-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
-export const BaseSnappingThreshold = 5
 export const MoveIntoDragThreshold = 3
-
-export let CanvasMousePositionRaw: CanvasPoint | null = null
-export let CanvasMousePositionRounded: CanvasPoint | null = null
-export let WindowMousePositionRaw: WindowPoint | null = null
 
 export const NodeConnectorsDivId = 'node-connectors'
 
@@ -174,10 +171,7 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   }
 
   // Balazs: for the sake of not breaking too much things, I update the mouse position variable here. I removed it from the state for performance reasons
-
-  CanvasMousePositionRaw = event.canvasPositionRaw
-  CanvasMousePositionRounded = event.canvasPositionRounded
-  WindowMousePositionRaw = event.windowPosition
+  updateGlobalPositions(event.canvasPositionRaw, event.canvasPositionRounded, event.windowPosition)
 
   let optionalRedrawControlsAction: EditorAction[] = []
   if (model.mode.type === 'insert') {
@@ -340,10 +334,10 @@ export interface ControlDependencies {
   scale: number
   snappingThreshold: number
   componentMetadata: ElementInstanceMetadataMap
-  highlightedviews: Array<TemplatePath>
-  selectedViews: Array<TemplatePath>
-  topLevelHiddenInstances: Array<TemplatePath>
-  descendantsOfHiddenInstances: Array<TemplatePath>
+  highlightedviews: Array<ElementPath>
+  selectedViews: Array<ElementPath>
+  topLevelHiddenInstances: Array<ElementPath>
+  descendantsOfHiddenInstances: Array<ElementPath>
   editorState: EditorState
   derivedState: DerivedState
 }
@@ -375,7 +369,7 @@ export function collectControlsDependencies(
 
 export function getNewCanvasControlsCursor(canvasCursor: CanvasCursor): CSSCursor | null {
   if (canvasCursor.fixed == null) {
-    return R.propOr(null, 'cursor', R.last(canvasCursor.mouseOver)!)
+    return Utils.propOr(null, 'cursor', last(canvasCursor.mouseOver)!)
   } else {
     return canvasCursor.fixed.cursor
   }
@@ -426,9 +420,9 @@ function controlFragmentContainingPoint(
 
   switch (control.type) {
     case 'svgControl':
-      return R.reverse(control.controls).reduce(reduction, null)
+      return reverse(control.controls).reduce(reduction, null)
     case 'divControl':
-      return R.reverse(control.controls).reduce(reduction, null)
+      return reverse(control.controls).reduce(reduction, null)
     case 'image': {
       const containsPoint = Utils.rectContainsPoint(control.props as CanvasRectangle, point)
       return containsPoint ? control : null
@@ -472,7 +466,7 @@ function topMostControlFragmentContainingPoint(
   controls: Array<ControlOrHigherOrderControl>,
   point: CanvasPoint,
 ): SvgFragmentControl | null {
-  return R.reverse(controls).reduce((working: SvgFragmentControl | null, control) => {
+  return reverse(controls).reduce((working: SvgFragmentControl | null, control) => {
     if (working != null) {
       return working
     } else {
@@ -616,7 +610,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     if (this.props.editor.mode.type === 'insert') {
       if (
         this.props.editor.mode.subject != null &&
-        R.path(['superType', 'template'], this.props.editor.mode.subject) === 'text'
+        Utils.path(['superType', 'template'], this.props.editor.mode.subject) === 'text'
       ) {
         return CSSCursor.TextInsert
       } else {
@@ -794,7 +788,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   getElementAspectRatioLocked(): boolean {
     return this.props.editor.selectedViews.every((target) => {
-      const possibleElement = MetadataUtils.findElementByTemplatePath(
+      const possibleElement = MetadataUtils.findElementByElementPath(
         this.props.editor.jsxMetadata,
         target,
       )
@@ -1101,9 +1095,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       } else {
         parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
-            editor.projectContents,
-            editor.nodeModules.files,
-            editor.canvas.openFile?.filename ?? null,
             result.utopiaData,
             result.files,
             selectedViews,

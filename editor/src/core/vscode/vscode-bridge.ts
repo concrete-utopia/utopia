@@ -4,6 +4,7 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
   walkContentsTreeAsync,
+  zipContentsTree,
   zipContentsTreeAsync,
 } from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
@@ -48,14 +49,17 @@ import {
   boundsInFile,
   getUtopiaVSCodeConfig,
   setFollowSelectionConfig,
+  UpdateDecorationsMessage,
+  SelectedElementChanged,
 } from 'utopia-vscode-common'
-import { isTextFile, ProjectFile, TemplatePath, TextFile } from '../shared/project-file-types'
+import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
 import {
   EditorState,
-  getHighlightBoundsForTemplatePath,
+  getHighlightBoundsForElementPath,
   getOpenTextFileKey,
 } from '../../components/editor/store/editor-state'
+import { ProjectChange } from '../../components/editor/store/vscode-changes'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -77,11 +81,7 @@ function fromFSPath(fsPath: string): string {
   }
 }
 
-async function writeProjectFile(
-  projectID: string,
-  projectPath: string,
-  file: ProjectFile,
-): Promise<void> {
+async function writeProjectFile(projectPath: string, file: ProjectFile): Promise<void> {
   switch (file.type) {
     case 'DIRECTORY': {
       return ensureDirectoryExists(toFSPath(projectPath))
@@ -111,14 +111,11 @@ async function textFileDiffers(projectPath: string, file: TextFile): Promise<boo
   )
 }
 
-async function writeProjectContents(
-  projectID: string,
-  projectContents: ProjectContentTreeRoot,
-): Promise<void> {
+async function writeProjectContents(projectContents: ProjectContentTreeRoot): Promise<void> {
   await walkContentsTreeAsync(projectContents, async (fullPath, file) => {
     // Avoid pushing a file to the file system if the content hasn't changed.
     if ((isTextFile(file) && (await textFileDiffers(fullPath, file))) || isDirectory(file)) {
-      return writeProjectFile(projectID, fullPath, file)
+      return writeProjectFile(fullPath, file)
     } else {
       return Promise.resolve()
     }
@@ -167,7 +164,7 @@ export async function initVSCodeBridge(
       stopPollingMailbox()
       await initializeFS(projectID, UtopiaFSUser)
       await clearBothMailboxes()
-      await writeProjectContents(projectID, projectContents)
+      await writeProjectContents(projectContents)
       await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
         switch (message.type) {
           case 'SEND_INITIAL_DATA':
@@ -221,99 +218,32 @@ export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
   return sendMessage(getUtopiaVSCodeConfig())
 }
 
-export async function applyProjectContentChanges(
-  projectID: string,
-  oldContents: ProjectContentTreeRoot,
-  newContents: ProjectContentTreeRoot,
-): Promise<void> {
-  async function applyChanges(
-    fullPath: string,
-    firstContents: ProjectContentsTree,
-    secondContents: ProjectContentsTree,
-  ): Promise<boolean> {
-    const fsPath = toFSPath(fullPath)
-    if (isProjectContentFile(firstContents)) {
-      if (isProjectContentFile(secondContents)) {
-        if (firstContents.content === secondContents.content) {
-          // Do nothing, no change.
-        } else if (isTextFile(firstContents.content) && isTextFile(secondContents.content)) {
-          // We need to be careful around only sending this across if the text has been updated.
-          const firstSavedContent = getSavedCodeFromTextFile(firstContents.content)
-          const firstUnsavedContent = getUnsavedCodeFromTextFile(firstContents.content)
-          const secondSavedContent = getSavedCodeFromTextFile(secondContents.content)
-          const secondUnsavedContent = getUnsavedCodeFromTextFile(secondContents.content)
-
-          const savedContentChanged = firstSavedContent !== secondSavedContent
-          const unsavedContentChanged = firstUnsavedContent !== secondUnsavedContent
-          const fileMarkedDirtyButNoCodeChangeYet =
-            firstUnsavedContent == null && secondUnsavedContent === firstSavedContent
-
-          // When a parsed model is updated but that change hasn't been reflected in the code yet, we end up with a file
-          // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
-          // has been generated
-          const fileShouldBeWritten =
-            savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet)
-
-          if (fileShouldBeWritten) {
-            await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
-          }
-        } else {
-          await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
-        }
-      } else {
-        await deletePath(fsPath, true)
-        await ensureDirectoryExists(fsPath)
-      }
-    } else {
-      if (isProjectContentFile(secondContents)) {
-        await deletePath(fsPath, true)
-        await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
-      } else {
-        // Do nothing, both sides are a directory.
-      }
+export async function applyProjectChanges(changes: Array<ProjectChange>): Promise<void> {
+  for (const change of changes) {
+    switch (change.type) {
+      case 'DELETE_PATH':
+        // eslint-disable-next-line no-await-in-loop
+        await deletePath(toFSPath(change.fullPath), change.recursive)
+        break
+      case 'WRITE_PROJECT_FILE':
+        // eslint-disable-next-line no-await-in-loop
+        await writeProjectFile(change.fullPath, change.projectFile)
+        break
+      case 'ENSURE_DIRECTORY_EXISTS':
+        // eslint-disable-next-line no-await-in-loop
+        await ensureDirectoryExists(toFSPath(change.fullPath))
+        break
+      default:
+        const _exhaustiveCheck: never = change
+        throw new Error(`Unhandled message type: ${JSON.stringify(change)}`)
     }
-
-    return Promise.resolve(true)
-  }
-
-  async function onElement(
-    fullPath: string,
-    firstContents: ProjectContentsTree | null,
-    secondContents: ProjectContentsTree | null,
-  ): Promise<boolean> {
-    const fsPath = toFSPath(fullPath)
-    if (firstContents == null) {
-      if (secondContents == null) {
-        // Do nothing, nothing exists.
-        return Promise.resolve(false)
-      } else {
-        await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
-        return Promise.resolve(true)
-      }
-    } else {
-      if (secondContents == null) {
-        // Value does not exist, delete it.
-        await deletePath(fsPath, true)
-        return Promise.resolve(false)
-      } else {
-        if (firstContents === secondContents) {
-          // Same value, stop here.
-          return Promise.resolve(false)
-        } else {
-          return applyChanges(fullPath, firstContents, secondContents)
-        }
-      }
-    }
-  }
-  if (isBrowserEnvironment) {
-    await zipContentsTreeAsync(oldContents, newContents, onElement)
   }
 }
 
-export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
+export function getCodeEditorDecorations(editorState: EditorState): UpdateDecorationsMessage {
   let decorations: Array<DecorationRange> = []
-  function addRange(rangeType: DecorationRangeType, path: TemplatePath): void {
-    const highlightBounds = getHighlightBoundsForTemplatePath(path, editorState)
+  function addRange(rangeType: DecorationRangeType, path: ElementPath): void {
+    const highlightBounds = getHighlightBoundsForElementPath(path, editorState)
     if (highlightBounds != null) {
       decorations.push(
         decorationRange(
@@ -334,14 +264,23 @@ export async function sendCodeEditorDecorations(editorState: EditorState): Promi
   editorState.highlightedViews.forEach((highlightedView) => {
     addRange('highlight', highlightedView)
   })
-  await sendUpdateDecorationsMessage(decorations)
+  return updateDecorationsMessage(decorations)
 }
 
-export async function sendSelectedElement(newEditorState: EditorState): Promise<void> {
+export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
+  const decorationsMessage = getCodeEditorDecorations(editorState)
+  await sendMessage(decorationsMessage)
+}
+
+export function getSelectedElementChangedMessage(
+  newEditorState: EditorState,
+): SelectedElementChanged | null {
   const selectedView = newEditorState.selectedViews[0]
-  const highlightBounds = getHighlightBoundsForTemplatePath(selectedView, newEditorState)
-  if (highlightBounds != null) {
-    await sendSelectedElementChangedMessage(
+  const highlightBounds = getHighlightBoundsForElementPath(selectedView, newEditorState)
+  if (highlightBounds == null) {
+    return null
+  } else {
+    return selectedElementChanged(
       boundsInFile(
         highlightBounds.filePath,
         highlightBounds.startLine,
@@ -350,5 +289,14 @@ export async function sendSelectedElement(newEditorState: EditorState): Promise<
         highlightBounds.endCol,
       ),
     )
+  }
+}
+
+export async function sendSelectedElement(newEditorState: EditorState): Promise<void> {
+  const selectedElementChangedMessage = getSelectedElementChangedMessage(newEditorState)
+  if (selectedElementChangedMessage == null) {
+    return Promise.resolve()
+  } else {
+    await sendMessage(selectedElementChangedMessage)
   }
 }

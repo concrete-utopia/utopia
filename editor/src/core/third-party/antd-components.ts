@@ -4,7 +4,7 @@ import {
   DependencyBoundDescriptors,
   ComponentDescriptor,
 } from './third-party-types'
-import { jsxElement, jsxElementName } from '../shared/element-template'
+import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
 import { PropertyControls } from 'utopia-api'
 
@@ -25,7 +25,7 @@ function createBasicComponent(
       antd: importDetails(null, [importAlias(baseVariable)], null),
       'antd/dist/antd.css': importDetails(null, [], null),
     },
-    jsxElement(jsxElementName(baseVariable, propertyPathParts), [], []),
+    jsxElementWithoutUID(jsxElementName(baseVariable, propertyPathParts), [], []),
     name,
     { ...StyleObjectProps, ...propertyControls },
   )

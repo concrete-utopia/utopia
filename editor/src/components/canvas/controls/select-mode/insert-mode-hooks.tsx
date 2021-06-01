@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import * as TP from '../../../../core/shared/template-path'
+import * as EP from '../../../../core/shared/element-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import {
@@ -8,7 +8,6 @@ import {
   insertionSubjectIsJSXElement,
   isInsertMode,
 } from '../../../editor/editor-modes'
-import { getJSXComponentsAndImportsForPathInnerComponent } from '../../../editor/store/editor-state'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useHighlightCallbacks } from './select-mode-hooks'
 
@@ -25,32 +24,16 @@ function useGetHighlightableViewsForInsertMode() {
     }
   })
   return React.useCallback(() => {
-    const {
-      componentMetadata,
-      mode,
-      openFile,
-      projectContents,
-      nodeModules,
-      transientState,
-      resolve,
-    } = storeRef.current
+    const { componentMetadata, mode } = storeRef.current
     if (!isInsertMode(mode)) {
       throw new Error('insert highlight callback was called oustide of insert mode')
     }
     const allPaths = MetadataUtils.getAllPaths(componentMetadata)
     const insertTargets = allPaths.filter((path) => {
-      const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
-        path,
-        openFile,
-        projectContents,
-        nodeModules,
-        transientState.filesState,
-        resolve,
-      )
       return (
         (insertionSubjectIsJSXElement(mode.subject) ||
           insertionSubjectIsDragAndDrop(mode.subject)) &&
-        MetadataUtils.targetSupportsChildren(imports, componentMetadata, path)
+        MetadataUtils.targetSupportsChildren(componentMetadata, path)
       )
     })
     return insertTargets

@@ -1,8 +1,7 @@
-import * as R from 'ramda'
 import * as React from 'react'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { Guideline, Guidelines, XAxisGuideline, YAxisGuideline } from '../guideline'
 import { colorTheme } from '../../../uuiui'
 
@@ -90,8 +89,8 @@ function guidelinesClosestToDragOrFrame(
 interface DistanceGuidelineProps {
   canvasOffset: CanvasVector
   scale: number
-  selectedViews: Array<TemplatePath>
-  highlightedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
+  highlightedViews: Array<ElementPath>
   boundingBox: CanvasRectangle
   guidelines: Array<Guideline>
 }
@@ -327,8 +326,8 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
       )
     }
 
-    const xAxisOverlaps = R.any(leftOfRightEdge, guidelines) && R.any(rightOfLeftEdge, guidelines)
-    const yAxisOverlaps = R.any(belowTopEdge, guidelines) && R.any(aboveBottomEdge, guidelines)
+    const xAxisOverlaps = guidelines.some(leftOfRightEdge) && guidelines.some(rightOfLeftEdge)
+    const yAxisOverlaps = guidelines.some(belowTopEdge) && guidelines.some(aboveBottomEdge)
     return xAxisOverlaps && yAxisOverlaps
   }
 

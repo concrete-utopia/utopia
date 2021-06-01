@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { EditorState } from '../editor/store/editor-state'
+import { EditorState, RightMenuTab } from '../editor/store/editor-state'
 import { isLiveMode } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -17,34 +17,6 @@ import {
 } from '../../uuiui'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
 import { MenuTile } from '../menubar/menubar'
-
-export const enum RightMenuTab {
-  Insert = 'insert',
-  Inspector = 'inspector',
-}
-
-export function updateSelectedRightMenuTab(
-  editorState: EditorState,
-  tab: RightMenuTab,
-): EditorState {
-  return {
-    ...editorState,
-    rightMenu: {
-      ...editorState.rightMenu,
-      selectedTab: tab,
-    },
-  }
-}
-
-export function updateRightMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
-  return {
-    ...editorState,
-    rightMenu: {
-      ...editorState.rightMenu,
-      expanded: expanded,
-    },
-  }
-}
 
 export interface RightMenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
   selected: boolean
@@ -101,8 +73,26 @@ interface RightMenuProps {
   visible: boolean
 }
 
+function useShouldResetCanvas(
+  canvasContentInvalidateCount: number,
+): [boolean, (value: boolean) => void] {
+  const [shouldResetCanvas, setShouldResetCanvas] = React.useState(false)
+  const previousCanvasContentInvalidateCount = React.useRef(canvasContentInvalidateCount)
+
+  if (previousCanvasContentInvalidateCount.current !== canvasContentInvalidateCount) {
+    setShouldResetCanvas(true)
+    previousCanvasContentInvalidateCount.current = canvasContentInvalidateCount
+  }
+
+  return [shouldResetCanvas, setShouldResetCanvas]
+}
+
 export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'RightMenu dispatch')
+  const canvasContentInvalidateCount = useEditorState(
+    (store) => store.editor.canvas.canvasContentInvalidateCount,
+    'RightMenu canvasContentInvalidateCount',
+  )
   const interfaceDesigner = useEditorState(
     (store) => store.editor.interfaceDesigner,
     'RightMenu interfaceDesigner',
@@ -133,6 +123,14 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
   const toggleLiveCanvas = React.useCallback(() => dispatch([EditorActions.toggleCanvasIsLive()]), [
     dispatch,
   ])
+
+  const [shouldResetCanvas, setShouldResetCanvas] = useShouldResetCanvas(
+    canvasContentInvalidateCount,
+  )
+  const resetCanvas = React.useCallback(() => {
+    dispatch([EditorActions.resetCanvas()])
+    setShouldResetCanvas(false)
+  }, [dispatch, setShouldResetCanvas])
 
   const isPreviewPaneVisible = useEditorState(
     (store) => store.editor.preview.visible,
@@ -234,9 +232,10 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         <Tooltip title='Reset canvas' placement='left'>
           <span>
             <MenuTile
-              selected={false}
+              selected={shouldResetCanvas}
               menuExpanded={false}
               icon={<LargerIcons.Refresh />}
+              onClick={resetCanvas}
               size='large'
             />
           </span>

@@ -1,7 +1,13 @@
-jest.mock('../editor/stored-state', () => ({
-  loadStoredState: () => Promise.resolve(null),
-  saveStoredState: () => Promise.resolve(),
-}))
+import { disableStoredStateforTests } from '../editor/stored-state'
+try {
+  jest.mock('../editor/stored-state', () => ({
+    loadStoredState: () => Promise.resolve(null),
+    saveStoredState: () => Promise.resolve(),
+  }))
+} catch (e) {
+  // not jest env, disable stored state manually
+  disableStoredStateforTests()
+}
 
 import * as React from 'react'
 
@@ -14,10 +20,14 @@ const monkeyCreateElement = (...params: any[]) => {
 }
 ;(React as any).createElement = monkeyCreateElement
 
-jest.setTimeout(10000) // in milliseconds
+try {
+  jest.setTimeout(10000) // in milliseconds
+} catch (e) {
+  // probably not Jest env
+}
 
 import { act, render, RenderResult } from '@testing-library/react'
-import * as Prettier from 'prettier'
+import * as Prettier from 'prettier/standalone'
 import create from 'zustand'
 import {
   foldParsedTextFile,
@@ -56,20 +66,24 @@ import {
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { templatePath } from '../../core/shared/template-path'
+import { elementPath } from '../../core/shared/element-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import { testStaticTemplatePath } from '../../core/shared/template-path.test-utils'
+import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
 })
 
-jest.mock('../../core/vscode/vscode-bridge')
+try {
+  jest.mock('../../core/vscode/vscode-bridge')
+} catch (e) {
+  // mock fails don't care
+}
 
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   return renderTestEditorWithModel(createTestProjectWithCode(appUiJsFileCode))
@@ -160,6 +174,7 @@ export async function renderTestEditorWithModel(
       new FakeWatchdogWorker(),
     ),
     dispatch: asyncTestDispatch,
+    alreadySaved: false,
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)
@@ -229,8 +244,11 @@ export async function renderTestEditorWithModel(
   }
 }
 
-export function getPrintedUiJsCode(store: EditorStore): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
+export function getPrintedUiJsCode(
+  store: EditorStore,
+  filePath: string = StoryboardFilePath,
+): string {
+  const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
   if (isTextFile(file)) {
     return file.fileContents.code
   } else {
@@ -255,10 +273,10 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 
 export const TestSceneUID = 'scene-aaa'
 export const TestAppUID = 'app-entity'
-export const TestStoryboardPath = templatePath([[BakedInStoryboardUID]])
+export const TestStoryboardPath = elementPath([[BakedInStoryboardUID]])
 export const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
-export const TestScenePath = templatePath(TestSceneElementPaths)
-export const TestStaticScenePath = testStaticTemplatePath(TestSceneElementPaths)
+export const TestScenePath = elementPath(TestSceneElementPaths)
+export const TestStaticScenePath = testStaticElementPath(TestSceneElementPaths)
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `

@@ -79,7 +79,7 @@ import {
   exportDetailModifier,
   ExportDetail,
   EmptyExportsDetail,
-  StaticElementPath,
+  StaticElementPathPart,
   isParseSuccess,
   isTextFile,
   ProjectFile,
@@ -548,10 +548,11 @@ export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
   }
   return FastCheck.tuple(
     jsxElementNameArbitrary(),
+    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
     jsxAttributesArbitrary(),
     FastCheck.array(childArbitrary, 3),
-  ).map(([elementName, elementAttributes, elementChildren]) => {
-    return jsxElement(elementName, elementAttributes, elementChildren)
+  ).map(([elementName, elementUID, elementAttributes, elementChildren]) => {
+    return jsxElement(elementName, elementUID, elementAttributes, elementChildren)
   })
 }
 
@@ -896,7 +897,7 @@ export function elementsStructure(topLevelElements: Array<TopLevelElement>): str
     }
     structureResults.push(elementResult)
     if (isUtopiaJSXComponent(topLevelElement)) {
-      const emptyPath = ([] as any) as StaticElementPath
+      const emptyPath = ([] as any) as StaticElementPathPart
       walkElement(topLevelElement.rootElement, emptyPath, 1, (innerElement, path, depth) => {
         let innerElementResult: string = ''
         for (let index = 0; index < depth; index++) {

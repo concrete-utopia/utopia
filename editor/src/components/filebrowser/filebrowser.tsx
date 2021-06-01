@@ -52,6 +52,7 @@ import {
   SquareButton,
   Icons,
 } from '../../uuiui'
+import { isLocal } from '../editor/persistence'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -64,6 +65,7 @@ export interface FileBrowserItemInfo {
   modified: boolean
   hasErrorMessages: boolean
   exportedFunction: boolean
+  isUploadedAssetFile: boolean
 }
 
 export function fileHasErrorMessages(path: string, errorMessages: ErrorMessage[] | null): boolean {
@@ -95,6 +97,8 @@ function collectFileBrowserItems(
         hasErrorMessages: hasErrorMessages,
         modified: isModifiedFile(element),
         exportedFunction: false,
+        isUploadedAssetFile:
+          !isLocal() && (element.type === 'IMAGE_FILE' || element.type === 'ASSET_FILE'),
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -115,6 +119,7 @@ function collectFileBrowserItems(
                 hasErrorMessages: false,
                 modified: false,
                 exportedFunction: typeInformation.includes('=>'),
+                isUploadedAssetFile: false,
               })
             }
           })
@@ -174,35 +179,21 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
     projectContents,
     editorSelectedFile,
     errorMessages,
-    isOpenUIFileParseSuccess,
     codeResultCache,
-    propertyControlsInfo,
     renamingTarget,
-    openUiFileName,
+    dropTarget,
   } = useEditorState((store) => {
-    const uiFile = getOpenUIJSFile(store.editor)
     return {
       dispatch: store.dispatch,
       projectContents: store.editor.projectContents,
       editorSelectedFile: getOpenFilename(store.editor),
       errorMessages: getAllCodeEditorErrors(store.editor, false, true),
-      isOpenUIFileParseSuccess: uiFile != null && isParseSuccess(uiFile.fileContents.parsed),
       codeResultCache: store.editor.codeResultCache,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
-      openUiFileName: getOpenUIJSFileKey(store.editor),
+      dropTarget: store.editor.fileBrowser.dropTarget,
     }
   }, 'FileBrowserItems')
-
-  // since useEditorState uses a shallow equality check, we use a separate one to return the entire (string) array of componentUIDs
-  // because the generated array keept loosing its reference equality
-  const componentUIDs = useEditorState((store) => {
-    const uiFile = getOpenUIJSFile(store.editor)
-    return uiFile != null && isParseSuccess(uiFile.fileContents.parsed)
-      ? getAllUniqueUids(store.editor.projectContents)
-      : []
-  }, 'FileBrowserItems componentUIDs')
-  const componentUIDsWithStableRef = useKeepReferenceEqualityIfPossible(componentUIDs)
 
   const [selectedPath, setSelectedPath] = React.useState(editorSelectedFile)
 
@@ -226,61 +217,11 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
     [collapsedPaths],
   )
 
-  const setSelected = React.useCallback(
-    (item: FileBrowserItemInfo | null) => {
-      if (item != null) {
-        setSelectedPath(item.path)
-        if (item.type === 'export' && isOpenUIFileParseSuccess && item.exportedFunction) {
-          const newUID = generateUID(componentUIDsWithStableRef)
-          const fileVarSeparatorIdx = item.path.lastIndexOf('/')
-          const exportVarName = item.path.slice(fileVarSeparatorIdx + 1)
-          const filePath = item.path.slice(0, fileVarSeparatorIdx)
-          const filePathWithoutExtension = dropFileExtension(filePath)
-          const insertingToItself = openUiFileName === filePath
-          const defaultProps = defaultPropertiesForComponentInFile(
-            exportVarName,
-            filePathWithoutExtension,
-            propertyControlsInfo,
-          )
-          let props: JSXAttributes = jsxAttributesFromMap(
-            objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
-          )
-          props = setJSXAttributesAttribute(
-            props,
-            'data-uid',
-            jsxAttributeValue(newUID, emptyComments),
-          )
-          const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [])
-          dispatch(
-            [
-              EditorActions.enableInsertModeForJSXElement(
-                element,
-                newUID,
-                insertingToItself
-                  ? {}
-                  : {
-                      [filePathWithoutExtension]: importDetails(
-                        null,
-                        [importAlias(exportVarName)],
-                        null,
-                      ),
-                    },
-                null,
-              ),
-            ],
-            'everyone',
-          )
-        }
-      }
-    },
-    [
-      propertyControlsInfo,
-      dispatch,
-      isOpenUIFileParseSuccess,
-      componentUIDsWithStableRef,
-      openUiFileName,
-    ],
-  )
+  const setSelected = React.useCallback((item: FileBrowserItemInfo | null) => {
+    if (item != null) {
+      setSelectedPath(item.path)
+    }
+  }, [])
 
   const fileBrowserItems = React.useMemo(
     () => collectFileBrowserItems(projectContents, collapsedPaths, codeResultCache, errorMessages),
@@ -307,6 +248,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
             setSelected={setSelected}
             collapsed={element.type === 'file' && collapsedPaths.indexOf(element.path) > -1}
             hasErrorMessages={fileHasErrorMessages(element.path, errorMessages)}
+            dropTarget={dropTarget}
           />
         </div>
       ))}

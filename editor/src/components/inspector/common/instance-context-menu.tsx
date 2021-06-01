@@ -4,7 +4,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { ContextMenuItem, requireDispatch } from '../../context-menu-items'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import utils from '../../../utils/utils'
 import * as PP from '../../../core/shared/property-path'
 import { useInspectorContext } from './property-path-hooks'
@@ -18,7 +18,7 @@ interface InstanceContextMenuProps {
 }
 
 interface ContextMenuData {
-  selectedViews: TemplatePath[]
+  selectedViews: ElementPath[]
 }
 
 const resetStyle = (enabled: boolean): ContextMenuItem<ContextMenuData> => ({

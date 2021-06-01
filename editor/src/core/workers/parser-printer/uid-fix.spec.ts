@@ -106,6 +106,16 @@ describe('fixParseSuccessUIDs', () => {
           component"
     `)
   })
+
+  it('uids should match including root element when root element changes', () => {
+    const firstResult = lintAndParse('test.js', baseFileContents, null)
+    const secondResult = lintAndParse(
+      'test.js',
+      baseFileContentsWithDifferentBackground,
+      firstResult,
+    )
+    expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
+  })
 })
 
 const baseFileContents = createFileText(`
@@ -113,6 +123,22 @@ export var SameFileApp = (props) => {
   return (
     <div
       style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 191,
+        }}
+      />
+    </div>
+  )
+}
+`)
+
+const baseFileContentsWithDifferentBackground = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'red' }}
     >
       <View
         style={{

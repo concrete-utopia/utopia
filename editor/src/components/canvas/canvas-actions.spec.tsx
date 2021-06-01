@@ -6,7 +6,7 @@ import {
   renderTestEditorWithCode,
   TestScenePath,
 } from './ui-jsx.test-utils'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import { createDuplicationNewUIDsFromEditorState, getOriginalCanvasFrames } from './canvas-utils'
 import { moveDragState } from './canvas-types'
 import { canvasPoint, canvasRectangle } from '../../core/shared/math-utils'
@@ -32,7 +32,7 @@ describe('createDragState', () => {
       `),
     )
 
-    const selectedViews = [TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
+    const selectedViews = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
     await renderResult.dispatch([selectComponents(selectedViews, false)], true)
 
     const editorState = renderResult.getEditorState().editor

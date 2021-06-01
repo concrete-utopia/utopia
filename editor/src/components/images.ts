@@ -7,7 +7,7 @@ import {
   jsxElementName,
 } from '../core/shared/element-template'
 import { isImageFile } from '../core/model/project-file-utils'
-import { ProjectContents, TemplatePath } from '../core/shared/project-file-types'
+import { ProjectContents, ElementPath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
 import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/shared/math-utils'
 import { EditorAction } from './editor/action-types'
@@ -84,7 +84,7 @@ export function createInsertImageAction(
   projectContents: ProjectContents,
   centerPoint: CanvasPoint,
   imagePath: string,
-  parentPath: TemplatePath,
+  parentPath: ElementPath,
   newUID: string,
 ): EditorAction {
   const imageDetails = forceNotNull(
@@ -104,6 +104,7 @@ export function createInsertImageAction(
 
     const imageElement = jsxElement(
       jsxElementName('img', []),
+      newUID,
       jsxAttributesFromMap({
         alt: jsxAttributeValue('', emptyComments),
         src: srcAttribute,

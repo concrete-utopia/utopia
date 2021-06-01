@@ -14,7 +14,15 @@ interface NotLoggedIn {
   type: 'NOT_LOGGED_IN'
 }
 
-export type LoginState = LoggedInUser | NotLoggedIn
+interface LoginLost {
+  type: 'LOGIN_LOST'
+}
+
+interface OfflineState {
+  type: 'OFFLINE_STATE'
+}
+
+export type LoginState = LoggedInUser | NotLoggedIn | LoginLost | OfflineState
 
 export function loggedInUser(user: UserDetails): LoggedInUser {
   return {
@@ -27,6 +35,32 @@ export const notLoggedIn: NotLoggedIn = {
   type: 'NOT_LOGGED_IN',
 }
 
-export function isLoggedIn(loginState: LoginState): loginState is LoggedInUser {
-  return loginState.type === 'LOGGED_IN'
+export function isNotLoggedIn(loginState: unknown): loginState is NotLoggedIn {
+  return (loginState as Partial<LoginState>)?.type === 'NOT_LOGGED_IN'
+}
+
+export function isLoggedIn(loginState: unknown): loginState is LoggedInUser {
+  return (loginState as Partial<LoginState>)?.type === 'LOGGED_IN'
+}
+
+export const loginLost: LoginLost = {
+  type: 'LOGIN_LOST',
+}
+
+export function isLoginLost(loginState: unknown): loginState is LoginLost {
+  return (loginState as Partial<LoginState>)?.type === 'LOGIN_LOST'
+}
+
+export const offlineState: OfflineState = { type: 'OFFLINE_STATE' }
+
+export function isOfflineState(loginState: unknown): loginState is OfflineState {
+  return (loginState as Partial<LoginState>)?.type === 'OFFLINE_STATE'
+}
+
+export function getUserPicture(loginState: LoginState): string | null {
+  if (isLoggedIn(loginState)) {
+    return loginState.user.picture ?? null
+  } else {
+    return null
+  }
 }

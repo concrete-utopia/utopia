@@ -6,8 +6,8 @@ import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isRight } from '../../../core/shared/either'
 import type {
   PropertyPath,
-  StaticTemplatePath,
-  TemplatePath,
+  StaticElementPath,
+  ElementPath,
 } from '../../../core/shared/project-file-types'
 import { createEditorStates } from '../../../utils/utils.test-utils'
 import utils from '../../../utils/utils'
@@ -19,7 +19,7 @@ import {
   StoryboardFilePath,
 } from '../../editor/store/editor-state'
 import { EditorStateContext, EditorStateContextData } from '../../editor/store/store-hook'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { InspectorContextProvider } from '../inspector'
 import { getControlStyles, PropertyStatus } from './control-status'
 import { InspectorInfo } from './property-path-hooks'
@@ -41,7 +41,7 @@ export function getStoreHook(
   mockDispatch: EditorDispatch,
 ): EditorStateContextData & UpdateFunctionHelpers {
   const editor = createEditorStates([
-    TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+    EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
   ])
   const defaultState: EditorStore = {
     editor: editor.editor,
@@ -54,6 +54,7 @@ export function getStoreHook(
     userState: defaultUserState,
     workers: null as any,
     dispatch: mockDispatch,
+    alreadySaved: false,
   }
 
   const storeHook = create<EditorStore & UpdateFunctionHelpers>((set) => ({
@@ -70,7 +71,7 @@ export function getStoreHook(
 }
 
 export const TestInspectorContextProvider: React.FunctionComponent<{
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   editorStoreData: EditorStateContextData
 }> = (props) => {
   return (
@@ -90,7 +91,7 @@ export function editPropOfSelectedView(
   return {
     ...store,
     editor: modifyOpenJsxElementAtStaticPath(
-      store.editor.selectedViews[0] as StaticTemplatePath,
+      store.editor.selectedViews[0] as StaticElementPath,
       (element): JSXElement => {
         const updatedAttributes = setJSXValueAtPath(
           element.props,

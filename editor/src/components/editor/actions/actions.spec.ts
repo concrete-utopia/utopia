@@ -21,6 +21,7 @@ import {
   emptyAttributeMetadatada,
   jsxAttributeOtherJavaScript,
   JSXElementChild,
+  partOfJsxAttributeValue,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -54,7 +55,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { createTestProjectWithCode, getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   createEditorState,
   deriveState,
@@ -63,9 +64,16 @@ import {
   getOpenUIJSFile,
   PersistentModel,
   StoryboardFilePath,
+  defaultUserState,
+  editorModelFromPersistentModel,
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
-import { setCanvasFrames, setProp_UNSAFE, switchLayoutSystem } from './action-creators'
+import {
+  setCanvasFrames,
+  setProp_UNSAFE,
+  switchLayoutSystem,
+  updateFilePath,
+} from './action-creators'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
@@ -83,9 +91,15 @@ import { TestScenePath } from '../../canvas/ui-jsx.test-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
-import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
+import {
+  contentsToTree,
+  getContentsTreeFileFromString,
+  treeToContents,
+  walkContentsTreeForParseSuccess,
+} from '../../assets'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import { complexDefaultProject } from '../../../sample-projects/sample-project-utils'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -94,12 +108,14 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     scenes.push(
       jsxElement(
         'Scene',
+        `scene-${sceneIndex}`,
         jsxAttributesFromMap({
           'data-uid': jsxAttributeValue(`scene-${sceneIndex}`, emptyComments),
         }),
         [
           jsxElement(
             `MyView${sceneIndex + 1}`,
+            `main-component-${sceneIndex}`,
             jsxAttributesFromMap({
               'data-uid': jsxAttributeValue(`main-component-${sceneIndex}`, emptyComments),
               style: jsxAttributeValue(
@@ -128,6 +144,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     [],
     jsxElement(
       'Storyboard',
+      BakedInStoryboardUID,
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
       }),
@@ -158,12 +175,14 @@ const originalModel = deepFreeze(
         [],
         jsxElement(
           jsxElementName('View', []),
+          'aaa',
           jsxAttributesFromMap({
             'data-uid': jsxAttributeValue('aaa', emptyComments),
           }),
           [
             jsxElement(
               jsxElementName('View', []),
+              'bbb',
               jsxAttributesFromMap({
                 test: jsxAttributeNestedObjectSimple(
                   jsxAttributesFromMap({ prop: jsxAttributeValue(5, emptyComments) }),
@@ -202,7 +221,7 @@ const testEditor: EditorState = deepFreeze({
 describe('SET_PROP', () => {
   it('updates a simple value property', () => {
     const action = setProp_UNSAFE(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       PP.create(['test', 'prop']),
       jsxAttributeValue(100, emptyComments),
     )
@@ -226,7 +245,7 @@ describe('SET_PROP', () => {
       updatedViewProps,
       PP.create(['test', 'prop']),
     )
-    chaiExpect(updatedTestProp).to.deep.equal(right(jsxAttributeValue(100, emptyComments)))
+    chaiExpect(updatedTestProp).to.deep.equal(right(partOfJsxAttributeValue(100)))
   })
 })
 
@@ -236,7 +255,7 @@ describe('SET_CANVAS_FRAMES', () => {
     const action = setCanvasFrames(
       [
         getFrameChange(
-          TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+          EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
           canvasRectangle({ x: 20, y: 20, width: 50, height: 50 }),
           false,
         ),
@@ -312,6 +331,7 @@ describe('moveTemplate', () => {
   ): JSXElement {
     return jsxElement(
       jsxElementName(name, []),
+      uid,
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -339,6 +359,7 @@ describe('moveTemplate', () => {
   ): JSXElement {
     return jsxElement(
       jsxElementName(name, []),
+      uid,
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -379,11 +400,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
       'skipFrameChange',
       { type: 'front' },
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       null,
       editor,
       null,
@@ -413,8 +434,8 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
       {
         x: 25,
         y: 25,
@@ -422,7 +443,7 @@ describe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       { type: 'front' },
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       {
         x: 15,
         y: 15,
@@ -461,8 +482,8 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
       {
         x: 25,
         y: 25,
@@ -470,7 +491,7 @@ describe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       { type: 'front' },
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       {
         x: 15,
         y: 15,
@@ -505,11 +526,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
       'skipFrameChange',
       { type: 'front' },
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -538,11 +559,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
       'skipFrameChange',
       { type: 'back' },
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -572,11 +593,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
       'skipFrameChange',
       { type: 'absolute', index: 1 },
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -605,11 +626,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root1, root2]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       'skipFrameChange',
       { type: 'front' },
-      TP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ccc']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ccc']),
       null,
       editor,
       null,
@@ -636,6 +657,7 @@ describe('moveTemplate', () => {
   it('reparents from pinned to group with frame props updated', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
+      'bbb',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -656,11 +678,11 @@ describe('moveTemplate', () => {
     const groupFrame = canvasRectangle({ x: -10, y: -10, width: 100, height: 100 })
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       canvasRectangle({ x: 10, y: 10, width: 100, height: 100 }),
       { type: 'front' },
-      TP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd']),
       groupFrame,
       editor,
       LayoutSystem.Group,
@@ -692,6 +714,7 @@ describe('moveTemplate', () => {
     const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
     const flexView = jsxElement(
       jsxElementName('aaa', []),
+      'aaa',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -715,11 +738,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([flexView, group1]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
-      TP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
       canvasRectangle({ x: 50, y: 50, width: 100, height: 100 }),
       { type: 'front' },
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -747,6 +770,7 @@ describe('moveTemplate', () => {
   xit('reparents from group to pinned with frame props unchanged', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
+      'bbb',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -766,11 +790,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root1, group1]))
 
     const newEditor = editorMoveTemplate(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['ddd', 'bbb']),
-      TP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['ddd', 'bbb']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
       canvasRectangle({ x: 50, y: 50, width: 100, height: 100 }),
       { type: 'front' },
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -808,6 +832,7 @@ function getOpenFileComponents(editor: EditorState): Array<UtopiaJSXComponent> {
 describe('SWITCH_LAYOUT_SYSTEM', () => {
   const childElement = jsxElement(
     'View',
+    'bbb',
     jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('bbb', emptyComments),
       style: jsxAttributeValue(
@@ -824,6 +849,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   )
   const rootElement = jsxElement(
     'View',
+    'aaa',
     jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }, emptyComments),
@@ -852,12 +878,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     [],
     jsxElement(
       'Storyboard',
+      BakedInStoryboardUID,
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
       }),
       [
         jsxElement(
           'Scene',
+          'scene-0',
           jsxAttributesFromMap({
             component: jsxAttributeOtherJavaScript('App', `return App`, ['App'], null),
             'data-uid': jsxAttributeValue('scene-0', emptyComments),
@@ -886,14 +914,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     null,
     0,
   )
-  const rootElementPath = TP.templatePath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])
-  const childElementPath = TP.templatePath([
+  const rootElementPath = EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])
+  const childElementPath = EP.elementPath([
     [BakedInStoryboardUID, 'scene-0'],
     ['aaa', 'bbb'],
   ])
 
   const rootElementMetadata: ElementInstanceMetadata = {
-    templatePath: rootElementPath,
+    elementPath: rootElementPath,
     element: right(firstTopLevelElement.rootElement),
     props: {
       'data-uid': 'aaa',
@@ -908,10 +936,11 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
+    importInfo: null,
   }
 
   const childElementMetadata: ElementInstanceMetadata = {
-    templatePath: childElementPath,
+    elementPath: childElementPath,
     element: right(childElement),
     props: {
       'data-uid': 'bbb',
@@ -932,11 +961,12 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
+    importInfo: null,
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {
-    [TP.toString(rootElementPath)]: rootElementMetadata,
-    [TP.toString(childElementPath)]: childElementMetadata,
+    [EP.toString(rootElementPath)]: rootElementMetadata,
+    [EP.toString(childElementPath)]: childElementMetadata,
   }
 
   const testEditorWithPins: EditorState = deepFreeze({
@@ -945,7 +975,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
       [StoryboardFilePath]: fileForUI,
     }),
     jsxMetadata: elementMetadataMap,
-    selectedViews: [TP.templatePath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])],
+    selectedViews: [EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])],
   })
   it('switches from pins to flex correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
@@ -972,7 +1002,9 @@ describe('LOAD', () => {
     )
     const loadedModel: PersistentModel = {
       appID: null,
+      forkedFromProjectId: null,
       projectVersion: CURRENT_PROJECT_VERSION,
+      projectDescription: '',
       projectContents: contentsToTree({
         [firstUIJSFile]: textFile(initialFileContents, null, 0),
         [secondUIJSFile]: textFile(initialFileContents, null, 0),
@@ -1024,5 +1056,44 @@ describe('LOAD', () => {
     ) as TextFile).fileContents
     expect(isParseSuccess(newSecondFileContents.parsed)).toBeTruthy()
     expect(newSecondFileContents.code).toEqual(initialFileContents.code)
+  })
+})
+
+describe('UPDATE_FILE_PATH', () => {
+  it('updates the files in a directory and imports related to it', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const actualResult = UPDATE_FNS.UPDATE_FILE_PATH(
+      updateFilePath('/src', '/src2'),
+      editorState,
+      defaultUserState,
+      NO_OP,
+    )
+    let filesAndTheirImports: { [filename: string]: Array<string> } = {}
+    walkContentsTreeForParseSuccess(actualResult.projectContents, (fullPath, success) => {
+      filesAndTheirImports[fullPath] = Object.keys(success.imports).sort()
+    })
+    expect(filesAndTheirImports).toMatchInlineSnapshot(`
+      Object {
+        "/src2/app.js": Array [
+          "/src2/card.js",
+          "react",
+        ],
+        "/src2/card.js": Array [
+          "react",
+          "utopia-api",
+        ],
+        "/src2/index.js": Array [
+          "./app.js",
+          "react",
+          "react-dom",
+        ],
+        "/utopia/storyboard.js": Array [
+          "/src2/app.js",
+          "react",
+          "utopia-api",
+        ],
+      }
+    `)
   })
 })

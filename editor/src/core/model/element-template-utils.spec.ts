@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import {
   jsxAttributeValue,
   isJSXAttributeValue,
@@ -7,27 +6,29 @@ import {
   JSXElement,
   jsxElement,
   utopiaJSXComponent,
-  JSXElementChild,
   defaultPropsParam,
   jsxAttributesFromMap,
   getJSXAttribute,
+  isJSXElement,
 } from '../shared/element-template'
 import { getUtopiaID, guaranteeUniqueUids, removeJSXElementChild } from './element-template-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { testStaticTemplatePath } from '../shared/template-path.test-utils'
+import { testStaticElementPath } from '../shared/element-path.test-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
     const exampleElements = [
       jsxElement(
         'View',
+        'aaa',
         jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
         [],
       ),
       jsxElement(
         'View',
+        'aaa',
         jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
         [],
       ),
@@ -46,11 +47,13 @@ describe('guaranteeUniqueUids', () => {
     const exampleElements = [
       jsxElement(
         'View',
+        'aaa',
         jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
         [],
       ),
       jsxElement(
         'View',
+        'aab',
         jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
         [],
       ),
@@ -69,17 +72,22 @@ describe('guaranteeUniqueUids', () => {
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
     const exampleElement = jsxElement(
       'View',
+      '',
       jsxAttributesFromMap({ 'data-uid': jsxAttributeFunctionCall('someFunction', []) }),
       [],
     )
     const fixedElements = guaranteeUniqueUids([exampleElement], [])
-
-    const fixedElementProps = Utils.pathOr([], [0, 'props'], fixedElements)
-    const fixedElementUID = getJSXAttribute(fixedElementProps, 'data-uid')
-    if (fixedElementUID == null) {
+    const fixedElement = fixedElements[0]
+    const fixedElementProps = Utils.pathOr([], ['props'], fixedElement)
+    const fixedElementUIDProp = getJSXAttribute(fixedElementProps, 'data-uid')
+    if (fixedElementUIDProp == null) {
       fail('Unable to find uid for element.')
+    } else if (isJSXAttributeValue(fixedElementUIDProp)) {
+      const fixedElementUID = (fixedElement as JSXElement).uid
+      expect(fixedElementUID).toEqual(fixedElementUIDProp.value)
+      expect(fixedElementUID).not.toEqual('')
     } else {
-      expect(isJSXAttributeValue(fixedElementUID)).toBeTruthy()
+      fail('fixedElementUIDProp is not a simple value')
     }
   })
 })
@@ -88,29 +96,12 @@ describe('getUtopiaID', () => {
   it('returns an id if there is one', () => {
     const element = jsxElement(
       'View',
+      'hello',
       jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('hello', emptyComments) }),
       [],
     )
     const id = getUtopiaID(element as JSXElement)
     expect(id).toEqual('hello')
-  })
-
-  it('throws if there is no ID', () => {
-    const element = jsxElement('View', [], [])
-    expect(() => {
-      getUtopiaID(element as JSXElement)
-    }).toThrow()
-  })
-
-  it('throws if there is an ID which is not a simple jsx attribute value', () => {
-    const element = jsxElement(
-      'View',
-      jsxAttributesFromMap({ 'data-uid': jsxAttributeFunctionCall('hello', []) }),
-      [],
-    )
-    expect(() => {
-      getUtopiaID(element as JSXElement)
-    }).toThrow()
   })
 })
 
@@ -125,6 +116,7 @@ describe('removeJSXElementChild', () => {
       [],
       jsxElement(
         'View',
+        'aaa',
         jsxAttributesFromMap({
           'data-uid': jsxAttributeValue('aaa', emptyComments),
           prop1: jsxAttributeValue(5, emptyComments),
@@ -144,6 +136,7 @@ describe('removeJSXElementChild', () => {
       [],
       jsxElement(
         'View',
+        'aab',
         jsxAttributesFromMap({
           'data-uid': jsxAttributeValue('aab', emptyComments),
           prop2: jsxAttributeValue(15, emptyComments),
@@ -151,11 +144,13 @@ describe('removeJSXElementChild', () => {
         [
           jsxElement(
             'View',
+            'aac',
             jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aac', emptyComments) }),
             [],
           ),
           jsxElement(
             'View',
+            'aad',
             jsxAttributesFromMap({
               'data-uid': jsxAttributeValue('aad', emptyComments),
               prop3: jsxAttributeValue(100, emptyComments),
@@ -164,6 +159,7 @@ describe('removeJSXElementChild', () => {
           ),
           jsxElement(
             'View',
+            'aae',
             jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aae', emptyComments) }),
             [],
           ),
@@ -177,7 +173,7 @@ describe('removeJSXElementChild', () => {
   xit('removes a root element', () => {
     // TODO Scene Implementation
     const updatedElements = removeJSXElementChild(
-      testStaticTemplatePath([[BakedInStoryboardUID, 'scene-aaa'], ['aaa']]),
+      testStaticElementPath([[BakedInStoryboardUID, 'scene-aaa'], ['aaa']]),
       utopiaComponents,
     )
     expect(updatedElements.length).toEqual(1)
@@ -185,17 +181,30 @@ describe('removeJSXElementChild', () => {
   })
   it('removes a non-root element', () => {
     const updatedElements = removeJSXElementChild(
-      testStaticTemplatePath([
+      testStaticElementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['aab', 'aac'],
       ]),
       utopiaComponents,
     )
-    const expectedResult = R.over(
-      R.lensPath([1, 'rootElement', 'children']),
-      (children: Array<JSXElementChild>) => [children[1], children[2]],
-      utopiaComponents,
-    )
+    const expectedResult = utopiaComponents.map((component, index) => {
+      if (index === 1) {
+        const rootElement = component.rootElement
+        if (isJSXElement(rootElement)) {
+          return {
+            ...component,
+            rootElement: {
+              ...rootElement,
+              children: [rootElement.children[1], rootElement.children[2]],
+            },
+          }
+        } else {
+          return component
+        }
+      } else {
+        return component
+      }
+    })
     expect(updatedElements).toEqual(expectedResult)
   })
 })

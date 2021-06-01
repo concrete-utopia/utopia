@@ -11,11 +11,14 @@ import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { UtopiaRequireFn } from '../custom-code/code-file'
 import { betterReactMemo } from '../../uuiui-deps'
-import { TemplatePath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import {
   useWriteOnlyConsoleLogs,
   useWriteOnlyRuntimeErrors,
 } from '../../core/shared/runtime-report-logs'
+import { ProjectContentTreeRoot } from '../assets'
+import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
+
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = betterReactMemo(
@@ -25,9 +28,9 @@ export const CanvasComponentEntry = betterReactMemo(
     const onDomReport = React.useCallback(
       (
         elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-        cachedTreeRoots: Array<TemplatePath>,
+        cachedPaths: Array<ElementPath>,
       ) => {
-        dispatch([saveDOMReport(elementMetadata, cachedTreeRoots)])
+        dispatch([saveDOMReport(elementMetadata, cachedPaths)])
       },
       [dispatch],
     )
@@ -63,8 +66,8 @@ export const CanvasComponentEntry = betterReactMemo(
           }}
         >
           <CanvasErrorBoundary
-            fileCode={canvasProps.uiFileCode}
             filePath={canvasProps.uiFilePath}
+            projectContents={canvasProps.projectContents}
             reportError={onRuntimeError}
             requireFn={canvasProps.requireFn}
             key={`canvas-error-boundary-${canvasProps.mountCount}`}
@@ -79,7 +82,7 @@ export const CanvasComponentEntry = betterReactMemo(
 
 interface CanvasErrorBoundaryProps extends CanvasReactReportErrorCallback {
   filePath: string
-  fileCode: string
+  projectContents: ProjectContentTreeRoot
   requireFn: UtopiaRequireFn | null
 }
 
@@ -122,7 +125,7 @@ export class CanvasErrorBoundary extends React.Component<
     _prevState: CanvasErrorBoundaryState,
   ): void {
     if (
-      prevProps.fileCode !== this.props.fileCode ||
+      prevProps.projectContents !== this.props.projectContents ||
       prevProps.requireFn !== this.props.requireFn
     ) {
       // eslint-disable-next-line react/no-did-update-set-state
@@ -130,8 +133,9 @@ export class CanvasErrorBoundary extends React.Component<
     }
   }
 
-  componentDidCatch(error: unknown, errorInfo: React.ErrorInfo): void {
-    this.props.reportError(this.props.filePath, asErrorObject(error), errorInfo)
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    const fancyError = processErrorWithSourceMap(error, true)
+    this.props.reportError(this.props.filePath, asErrorObject(fancyError), errorInfo)
   }
 
   render(): React.ReactNode {

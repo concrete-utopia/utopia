@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { IcnProps, Icn } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { useComponentIcon } from '../layout-element-icons'
 
 interface ComponentPreviewProps {
-  path: TemplatePath
+  path: ElementPath
   color: IcnProps['color']
 }
 

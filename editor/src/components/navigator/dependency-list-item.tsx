@@ -1,16 +1,16 @@
 /** @jsx jsx */
 import { jsx, keyframes } from '@emotion/react'
 import * as React from 'react'
-import type { PackageDetails } from './dependency-list'
 import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
 import { ContextMenuItem } from '../context-menu-items'
 import { NO_OP } from '../../core/shared/utils'
 import { colorTheme, FlexRow, UtopiaTheme, Tooltip, Icons } from '../../uuiui'
 import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
 import { handleKeyDown } from '../editor/global-shortcuts'
+import type { DependencyPackageDetails } from '../editor/store/editor-state'
 
 interface DependencyListItemProps {
-  packageDetails: PackageDetails
+  packageDetails: DependencyPackageDetails
   editingLocked: boolean
   isNewlyLoaded: boolean
   openDependencyEditField: (dependencyName: string, openVersionInput?: boolean) => void

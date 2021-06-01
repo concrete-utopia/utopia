@@ -3,10 +3,7 @@ import { EditorAction, EditorDispatch } from '../action-types'
 import { UPDATE_FNS } from '../actions/actions'
 
 import { StateHistory } from '../history'
-import {
-  setClipboardData,
-  createClipboardDataFromSelectionNewWorld,
-} from '../../../utils/clipboard'
+import { setClipboardData, createClipboardDataFromSelection } from '../../../utils/clipboard'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 
@@ -114,7 +111,7 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       // side effect 😟
-      setClipboardData(createClipboardDataFromSelectionNewWorld(state, derivedState))
+      setClipboardData(createClipboardDataFromSelection(state))
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch)
     case 'OPEN_TEXT_EDITOR':
       return UPDATE_FNS.OPEN_TEXT_EDITOR(action, state)
@@ -166,6 +163,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_VISIBILITY(action, state)
     case 'SET_PROJECT_NAME':
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
+    case 'SET_PROJECT_DESCRIPTION':
+      return UPDATE_FNS.SET_PROJECT_DESCRIPTION(action, state)
     case 'REGENERATE_THUMBNAIL':
       return UPDATE_FNS.REGENERATE_THUMBNAIL(action, state, dispatch)
     case 'UPDATE_THUMBNAIL_GENERATED':
@@ -290,6 +289,12 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONFIG_FROM_VSCODE(action, state)
     case 'SET_FOLLOW_SELECTION_ENABLED':
       return UPDATE_FNS.SET_FOLLOW_SELECTION_ENABLED(action, state)
+    case 'RESET_CANVAS':
+      return UPDATE_FNS.RESET_CANVAS(action, state)
+    case 'SET_FILEBROWSER_DROPTARGET':
+      return UPDATE_FNS.SET_FILEBROWSER_DROPTARGET(action, state)
+    case 'SET_FORKED_FROM_PROJECT_ID':
+      return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
     default:
       return state
   }

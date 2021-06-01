@@ -2,12 +2,12 @@
 import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { FlexRow, UtopiaTheme } from '../../uuiui'
-import { PackageDetails } from './dependency-list'
+import { DependencyPackageDetails } from '../editor/store/editor-state'
 import { DependencyListItemEditing, DependencySearchSelect } from './dependency-list-input-field'
 import { DependencyListItem } from './dependency-list-item'
 
 interface DependencyListItemsProps {
-  packages: Array<PackageDetails>
+  packages: Array<DependencyPackageDetails>
   editingLocked: boolean
   newlyLoadedItems: Array<string>
   dependencyBeingEdited: string | null

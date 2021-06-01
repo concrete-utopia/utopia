@@ -8,6 +8,7 @@ import {
   useTriggerScrollPerformanceTest,
   useTriggerResizePerformanceTest,
   useTriggerSelectionPerformanceTest,
+  useTriggerBaselinePerformanceTest,
 } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { shareURLForProject } from '../../core/shared/utils'
@@ -21,11 +22,11 @@ import {
   Avatar,
   UtopiaTheme,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
+import { betterReactMemo, User } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import { LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { LeftMenuTab } from '../navigator/left-pane'
 
 interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
@@ -181,6 +182,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
   const onTriggerScrollTest = useTriggerScrollPerformanceTest()
   const onTriggerResizeTest = useTriggerResizePerformanceTest()
   const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
+  const onTriggerBaselineTest = useTriggerBaselinePerformanceTest()
 
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
@@ -207,7 +209,11 @@ export const Menubar = betterReactMemo('Menubar', () => {
       <FlexColumn style={{ flexGrow: 1 }}>
         <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
           <a href='/projects'>
-            <Avatar loginState={userState.loginState} size={28} />
+            <Avatar
+              isLoggedIn={User.isLoggedIn(userState.loginState)}
+              userPicture={User.getUserPicture(userState.loginState)}
+              size={28}
+            />
           </a>
         </Tile>
 
@@ -343,6 +349,9 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerSelectionTest}>P E</a>
+          </Tile>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
+            <a onClick={onTriggerBaselineTest}>B L</a>
           </Tile>
         </React.Fragment>
       ) : null}

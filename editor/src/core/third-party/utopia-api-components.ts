@@ -4,7 +4,7 @@ import {
   DependencyBoundDescriptors,
   ComponentDescriptor,
 } from './third-party-types'
-import { jsxElement, jsxElementName } from '../shared/element-template'
+import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
 import { PropertyControls } from 'utopia-api'
 
 function createBasicUtopiaComponent(
@@ -16,7 +16,7 @@ function createBasicUtopiaComponent(
     {
       'utopia-api': importDetails(null, [importAlias(baseVariable)], null),
     },
-    jsxElement(jsxElementName(baseVariable, []), [], []),
+    jsxElementWithoutUID(jsxElementName(baseVariable, []), [], []),
     name,
     propertyControls,
   )
@@ -33,8 +33,6 @@ export const UtopiaApiComponents: DependencyBoundDescriptors = {
     name: 'utopia-api',
     components: [
       createBasicUtopiaComponent('Ellipse', 'Ellipse', StyleObjectProps),
-      createBasicUtopiaComponent('Layoutable', 'Layoutable', StyleObjectProps),
-      createBasicUtopiaComponent('Positionable', 'Positionable', StyleObjectProps),
       createBasicUtopiaComponent('Rectangle', 'Rectangle', StyleObjectProps),
       createBasicUtopiaComponent('Text', 'Text', StyleObjectProps),
       createBasicUtopiaComponent('View', 'View', StyleObjectProps),
