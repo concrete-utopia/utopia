@@ -72,12 +72,6 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
           backgroundColor: UtopiaTheme.color.component.shade(10).value,
           stroke: UtopiaTheme.color.component.fileNameFragment,
         }
-      } else if (EP.isInsideFocusedComponent(target)) {
-        return {
-          color: UtopiaTheme.color.componentChild.value,
-          backgroundColor: UtopiaTheme.color.componentChild.shade(10).value,
-          stroke: UtopiaTheme.color.componentChild.fileNameFragment,
-        }
       } else if (isFocused() && MetadataUtils.isFocusableComponent(target, metadata)) {
         return {
           color: UtopiaTheme.color.componentChild.value,
