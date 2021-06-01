@@ -28,7 +28,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
     }
   }, 'Component-button')
 
-  const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
+  const dispatch = useEditorState((state) => state.dispatch, 'ComponentOrInstanceIndicator')
 
   const popupEnabled = selectedViews.length > 0
 
