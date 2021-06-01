@@ -15,10 +15,11 @@ import {
 import {
   foldParsedTextFile,
   RevisionsState,
+  TextFile,
   textFile,
   textFileContents,
 } from '../../shared/project-file-types'
-import { parseCode, printCode, printCodeOptions } from './parser-printer'
+import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { emptyComments } from './parser-printer-comments'
 import { testParseCode } from './parser-printer.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
@@ -47,6 +48,53 @@ describe('parseCode', () => {
       (_) => fail('Is unparsed.'),
       parseResult,
     )
+  })
+
+  it('fixes duplicated UIDs for multifile projects', () => {
+    const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
+    let projectContents = {}
+    function addCodeFileToProjectContents(path: string, contents: string) {
+      const parseResult = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE)
+      const file = textFile(
+        textFileContents(contents, parseResult, RevisionsState.BothMatch),
+        null,
+        Date.now(),
+      )
+      projectContents = addFileToProjectContents(projectContents, path, file)
+    }
+
+    addCodeFileToProjectContents(
+      '/src/app.js',
+      `import * as React from 'react'
+import { Card } from './card'
+
+export const App = (props) => {
+  return (
+    <div data-uid='duplicated'>
+      <div data-uid='duplicated2'>Hello World!</div>
+      <Card data-uid='aaa' />
+    </div>
+  )
+}
+`,
+    )
+
+    addCodeFileToProjectContents(
+      '/src/card.js',
+      `import * as React from 'react'
+
+export const Card = (props) => {
+  return (
+    <div data-uid='duplicated'>
+      <div data-uid='duplicated2'>Hello World!</div>
+      <div data-uid='aab'></div>
+    </div>
+  )
+} `,
+    )
+
+    const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
+    expect(uniq(uniqueIDs).length).toEqual(6)
   })
 })
 
