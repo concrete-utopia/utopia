@@ -5,6 +5,7 @@ import {
   TextFile,
   textFileContents,
 } from '../shared/project-file-types'
+import { emptySet } from '../shared/set-utils'
 import { lintAndParse } from '../workers/parser-printer/parser-printer'
 
 export const sampleAppJSCode = `
@@ -18,7 +19,7 @@ export var App = (props) => {
 }`
 
 export function appJSFile(): TextFile {
-  const result = lintAndParse('/src/app.js', sampleAppJSCode, null)
+  const result = lintAndParse('/src/app.js', sampleAppJSCode, null, emptySet())
   return textFile(
     textFileContents(sampleAppJSCode, result, RevisionsState.BothMatch),
     null,
@@ -27,7 +28,7 @@ export function appJSFile(): TextFile {
 }
 
 export function getDefaultUIJsFile(): TextFile {
-  const result = lintAndParse('code.tsx', sampleCode, null)
+  const result = lintAndParse('code.tsx', sampleCode, null, emptySet())
   return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, Date.now())
 }
 

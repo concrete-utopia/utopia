@@ -92,6 +92,7 @@ import { optionalMap } from '../../shared/optional-utils'
 import { getUtopiaID } from '../../model/element-template-utils'
 import { emptyComments, parsedComments, ParsedComments } from './parser-printer-comments'
 import { node } from 'prop-types'
+import { emptySet } from '../../shared/set-utils'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
   (text) => {
@@ -190,7 +191,7 @@ const JavaScriptReservedKeywords: Array<string> = [
 
 export function testParseCode(contents: string): ParsedTextFile {
   const filename = 'code.tsx'
-  const result = lintAndParse(filename, contents, null)
+  const result = lintAndParse(filename, contents, null, emptySet())
   // Ensure that elements have valid unique IDs if the parse is successful.
   forEachParseSuccess((success) => {
     let uids: Array<string> = []

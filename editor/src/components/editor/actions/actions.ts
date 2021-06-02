@@ -490,6 +490,7 @@ import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
+import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { reverse, uniqBy } from '../../../core/shared/array-utils'
@@ -1447,6 +1448,32 @@ function toastOnGeneratedElementsTargeted(
 let checkpointTimeoutId: number | undefined = undefined
 let canvasScrollAnimationTimer: number | undefined = undefined
 
+function updateSelectedComponentsFromEditorPosition(
+  derived: DerivedState,
+  editor: EditorState,
+  dispatch: EditorDispatch,
+  filePath: string,
+  line: number,
+): EditorState {
+  if (Object.keys(editor.jsxMetadata).length === 0) {
+    // Looks like the canvas has errored out, so leave it alone for now.
+    return editor
+  } else {
+    const allElementPaths = derived.navigatorTargets
+    const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
+    const newlySelectedElements = getElementPathsInBounds(
+      line,
+      highlightBoundsForUids,
+      allElementPaths,
+    )
+    return UPDATE_FNS.SELECT_COMPONENTS(
+      selectComponents(newlySelectedElements, false),
+      editor,
+      dispatch,
+    )
+  }
+}
+
 // JS Editor Actions:
 export const UPDATE_FNS = {
   NEW: (
@@ -1474,12 +1501,23 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
+    const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
-        const parseResult = lintAndParse(filename, file.fileContents.code, null)
+        const parseResult = lintAndParse(
+          filename,
+          file.fileContents.code,
+          null,
+          alreadyExistingUIDs_MUTABLE,
+        )
         const lastSavedFileContents = optionalMap((lastSaved) => {
-          const lastSavedParseResult = lintAndParse(filename, lastSaved.code, null)
+          const lastSavedParseResult = lintAndParse(
+            filename,
+            lastSaved.code,
+            null,
+            alreadyExistingUIDs_MUTABLE,
+          )
           return textFileContents(lastSaved.code, lastSavedParseResult, RevisionsState.BothMatch)
         }, file.lastSavedContents)
         return textFile(
@@ -4120,17 +4158,12 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const allElementPaths = derived.navigatorTargets
-    const highlightBoundsForUids = getHighlightBoundsForFile(editor, action.filePath)
-    const newlySelectedElements = getElementPathsInBounds(
-      action.line,
-      highlightBoundsForUids,
-      allElementPaths,
-    )
-    return UPDATE_FNS.SELECT_COMPONENTS(
-      selectComponents(newlySelectedElements, false),
+    return updateSelectedComponentsFromEditorPosition(
+      derived,
       editor,
       dispatch,
+      action.filePath,
+      action.line,
     )
   },
   SEND_CODE_EDITOR_INITIALISATION: (

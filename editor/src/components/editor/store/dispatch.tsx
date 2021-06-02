@@ -76,16 +76,6 @@ import {
   zipContentsTree,
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
-import { applyProjectChanges } from '../../../core/vscode/vscode-bridge'
-import {
-  accumulatedToVSCodeMessage,
-  AccumulatedToVSCodeMessage,
-  boundsInFile,
-  SelectedElementChanged,
-  sendMessage,
-  ToVSCodeMessageNoAccumulated,
-  UpdateDecorationsMessage,
-} from 'utopia-vscode-common'
 import { ElementPathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
@@ -580,11 +570,7 @@ function editorDispatchInner(
       }
     }
 
-    const cleanedEditor = metadataChanged
-      ? removeNonExistingViewReferencesFromState(result.editor)
-      : result.editor
-
-    let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
+    let frozenEditorState: EditorState = optionalDeepFreeze(result.editor)
 
     let frozenDerivedState: DerivedState
     if (anyUndoOrRedo) {

@@ -1612,7 +1612,7 @@ function createJSXElementAllocatingUID(
       ),
     (uid) => {
       // This implies a duplicate UID, so we should replace it.
-      if (uid in existingHighlightBounds) {
+      if (uid in existingHighlightBounds || alreadyExistingUIDs.has(uid)) {
         return forciblyUpdateDataUID(
           sourceFile,
           originatingElement,
@@ -1622,6 +1622,7 @@ function createJSXElementAllocatingUID(
           alreadyExistingUIDs,
         )
       } else {
+        alreadyExistingUIDs.add(uid)
         return {
           uid: uid,
           attributes: withParserMetadata(

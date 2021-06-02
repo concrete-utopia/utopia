@@ -84,6 +84,7 @@ import {
   textFileContents,
   isParseSuccess,
   isTextFile,
+  HighlightBoundsForUids,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -193,6 +194,7 @@ import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
 import { addToMapOfArraysUnique, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
+import { emptySet } from '../../core/shared/set-utils'
 import { WindowMousePositionRaw } from '../../utils/global-positions'
 import { importedFromWhere } from '../editor/import-utils'
 
@@ -2380,7 +2382,12 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null) as ParsedTextFile
+  const parsedFile = lintAndParse(
+    StoryboardFilePath,
+    appUiJsFile,
+    null,
+    emptySet(),
+  ) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
@@ -2428,6 +2435,7 @@ export interface GetParseSuccessOrTransientResult {
   imports: Imports
   jsxFactoryFunction: string | null
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+  highlightBounds: HighlightBoundsForUids | null
 }
 
 const EmptyResult: GetParseSuccessOrTransientResult = {
@@ -2435,6 +2443,7 @@ const EmptyResult: GetParseSuccessOrTransientResult = {
   imports: {},
   jsxFactoryFunction: null,
   combinedTopLevelArbitraryBlock: null,
+  highlightBounds: null,
 }
 
 export function getParseSuccessOrTransientForFilePath(
@@ -2453,6 +2462,7 @@ export function getParseSuccessOrTransientForFilePath(
         imports: parseSuccess.imports,
         jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
         combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+        highlightBounds: parseSuccess.highlightBounds,
       }
     } else {
       return {
@@ -2460,6 +2470,7 @@ export function getParseSuccessOrTransientForFilePath(
         imports: targetTransientFileState.imports,
         jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
         combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+        highlightBounds: parseSuccess.highlightBounds,
       }
     }
   } else {

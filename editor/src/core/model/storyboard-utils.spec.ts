@@ -22,6 +22,7 @@ import {
   textFileContents,
   unparsed,
 } from '../shared/project-file-types'
+import { emptySet } from '../shared/set-utils'
 import { NO_OP } from '../shared/utils'
 import { lintAndParse } from '../workers/parser-printer/parser-printer'
 import { addStoryboardFileToProject } from './storyboard-utils'
@@ -33,7 +34,7 @@ export var App = (props) => {
   return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
 }`
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse(StoryboardFilePath, appFile, null) as ParsedTextFile
+  const parsedFile = lintAndParse(StoryboardFilePath, appFile, null, emptySet()) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')

@@ -13,7 +13,7 @@ import {
 } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { PRODUCTION_ENV } from '../common/env-vars'
-import { appendToUidString, popFrontUID, uidsFromString } from '../core/shared/uid-utils'
+import { appendToUidString } from '../core/shared/uid-utils'
 
 const realCreateElement = React.createElement
 
@@ -238,11 +238,6 @@ const mangleClassType = Utils.memoize(
   },
 )
 
-function uidsWithoutExoticUID(uids: string | null): string | null {
-  const { head: uidsHead, tail: uidsTail } = popFrontUID(uids)
-  return uidsTail ?? uidsHead
-}
-
 const mangleExoticType = Utils.memoize(
   (type: React.ComponentType): React.FunctionComponent => {
     function updateChild(
@@ -304,8 +299,8 @@ const mangleExoticType = Utils.memoize(
             return attachDataUidToRoot(originalResponse, uids, paths)
           }
         } else {
-          const uidsToPass = uidsWithoutExoticUID(uids)
-          const pathsToPass = uidsWithoutExoticUID(paths)
+          const uidsToPass = uids
+          const pathsToPass = paths
 
           if (Array.isArray(p?.children)) {
             children = React.Children.map(p?.children, (child) =>

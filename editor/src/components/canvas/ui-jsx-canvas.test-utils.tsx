@@ -9,7 +9,7 @@ import * as UUIUI from '../../uuiui'
 import * as ANTD from 'antd'
 import * as EmotionReact from '@emotion/react'
 
-import { FancyError } from '../../core/shared/code-exec-utils'
+import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import {
   ElementInstanceMetadata,
@@ -50,6 +50,7 @@ import { directory } from '../../core/model/project-file-utils'
 import { contentsToTree } from '../assets'
 import { MapLike } from 'typescript'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -262,6 +263,8 @@ export function renderCanvasReturnResultAndError(
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
     errorsReportedSpyEnabled = errorsReported
   } catch (e) {
+    // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
+    processErrorWithSourceMap(e, true)
     errorsReportedSpyEnabled = [e]
   }
   errorsReported = []
@@ -280,6 +283,8 @@ export function renderCanvasReturnResultAndError(
     formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
     errorsReportedSpyDisabled = errorsReported
   } catch (e) {
+    // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
+    processErrorWithSourceMap(e, true)
     errorsReportedSpyDisabled = [e]
   }
 
@@ -376,9 +381,9 @@ export function testCanvasErrorMultifile(
 interface TestCanvasError {
   name: string
   message: string
-  originalCode: any
-  lineNumber: any
-  columnNumber: any
+  originalCode: ScriptLine[] | null | undefined
+  lineNumber: number | null | undefined
+  columnNumber: number | null | undefined
 }
 
 export function testCanvasErrorInline(
