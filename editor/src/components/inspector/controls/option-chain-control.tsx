@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Interpolation, jsx } from '@emotion/react'
 import * as React from 'react'
-import { IcnProps } from '../../../uuiui'
+import { IcnProps, UtopiaTheme } from '../../../uuiui'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
 import Utils from '../../../utils/utils'
@@ -53,10 +53,9 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     >
       <div
         style={{
-          // width: '100%',
           display: 'flex',
           flexDirection: 'row',
-          height: 22,
+          height: UtopiaTheme.layout.inputHeight.default,
         }}
         className={`option-chain-control-container ${Utils.pathOr(
           '',
