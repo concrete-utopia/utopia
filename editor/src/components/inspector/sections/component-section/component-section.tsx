@@ -669,12 +669,20 @@ export const ComponentSectionInner = betterReactMemo(
           </UIGridRow>
         ) : isFocusable && isFocused ? (
           <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-            <IconToggleButton
-              value={true}
-              srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
-              srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-              onToggle={toggleFocusMode}
-            />
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconToggleButton
+                value={true}
+                srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
+                srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
+                onToggle={toggleFocusMode}
+              />
+            </span>
             <p>
               {`This ${componentType} is imported from `}
               <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
