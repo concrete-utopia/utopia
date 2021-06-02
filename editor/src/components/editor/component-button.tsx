@@ -54,9 +54,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
     dispatch([setFocusedElement(isFocused ? null : target)])
   }, [dispatch, isFocused, target])
 
-  const isComponent = React.useCallback(() => {
-    return MetadataUtils.isFocusableComponent(target, metadata)
-  }, [target, metadata])
+  const isComponent = target == null ? false : MetadataUtils.isFocusableComponent(target, metadata)
 
   const getEditContextStyle = (): React.CSSProperties => {
     if (target != null) {
@@ -127,7 +125,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
         }}
       >
         {/* TODO replace me with the real icon */}
-        {isComponent() ? (
+        {isComponent ? (
           <Icons.Component color={getEditContextStyle().stroke as IcnColor} />
         ) : (
           <Icn
