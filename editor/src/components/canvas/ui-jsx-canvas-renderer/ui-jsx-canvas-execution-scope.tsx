@@ -41,6 +41,7 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-pr
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
 import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
 import { useContextSelector } from 'use-context-selector'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -161,13 +162,17 @@ export function createExecutionScope(
 export function useGetCodeAndHighlightBounds(
   filePath: string | null,
 ): { code: string; highlightBounds: HighlightBoundsForUids | null } {
-  return useContextSelector(UtopiaProjectContext, (c) => {
-    if (filePath == null) {
-      return { code: '', highlightBounds: null }
-    } else {
-      return getCodeAndHighlightBoundsForFile(filePath, c.projectContents)
-    }
-  })
+  return useContextSelector(
+    UtopiaProjectContext,
+    (c) => {
+      if (filePath == null) {
+        return { code: '', highlightBounds: null }
+      } else {
+        return getCodeAndHighlightBoundsForFile(filePath, c.projectContents)
+      }
+    },
+    shallowEqual,
+  )
 }
 
 export function getCodeAndHighlightBoundsForFile(
