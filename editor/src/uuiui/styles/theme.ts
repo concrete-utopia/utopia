@@ -131,7 +131,7 @@ const light = {
   // interface elements: buttons, segment controls, checkboxes etc
 
   inlineButtonColor: lightBase.primary,
-  buttonBackground: lightBase.bg4,
+  buttonBackground: lightBase.bg2,
   buttonHoverBackground: lightBase.bg3,
 
   // application utilities:
