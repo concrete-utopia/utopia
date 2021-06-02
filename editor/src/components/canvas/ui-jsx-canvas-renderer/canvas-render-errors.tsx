@@ -17,7 +17,7 @@ export function canvasMissingJSXElementError(
 
   const uid = getUtopiaIDFromJSXElement(jsxElement)
   const highlightBoundsForElement = highlightBounds != null ? highlightBounds[uid] : null
-  const lineNumber = (highlightBoundsForElement?.startLine ?? 1) + 1
+  const lineNumber = (highlightBoundsForElement?.startLine ?? 0) + 1
   ;(error as FancyError).stackFrames = createStackFramesFromPosition(
     factoryFunctionName,
     sourceCode,
