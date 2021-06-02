@@ -91,21 +91,31 @@ describe('Monkey Function', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
       render() {
-        return <div>{this.context.value}</div>
+        return (
+          <div data-uid='inner-div' data-paths='inner-div'>
+            {this.context.value}
+          </div>
+        )
       }
     }
     TestClass.contextType = MyContext
 
     const Renderer = () => {
       return (
-        <MyContext.Provider value={{ value: 'hello!' }}>
-          <TestClass />
+        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-paths='provider'>
+          <TestClass data-uid='test-class' data-paths='test-class' />
         </MyContext.Provider>
       )
     }
 
-    expect(renderToFormattedString(<Renderer data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">hello!</div>
+    expect(renderToFormattedString(<Renderer data-uid={'renderer'} data-paths={'renderer'} />))
+      .toMatchInlineSnapshot(`
+      "<div
+        data-uid=\\"inner-div test-class provider renderer\\"
+        data-paths=\\"inner-div test-class provider renderer\\"
+      >
+        hello!
+      </div>
       "
     `)
   })
@@ -147,7 +157,7 @@ describe('Monkey Function', () => {
 
   it('works for function components', () => {
     const OtherTestComponent: React.FunctionComponent = (props) => {
-      return <div>Hello!</div>
+      return <div data-uid='root-div'>Hello!</div>
     }
 
     const TestComponent: React.FunctionComponent = (props) => {
@@ -155,7 +165,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica test1\\">Hello!</div>
+      "<div data-uid=\\"root-div cica test1\\">Hello!</div>
       "
     `)
   })
@@ -218,18 +228,18 @@ describe('Monkey Function', () => {
   it('works for class components returning class components', () => {
     class OtherTestClass extends React.Component {
       render() {
-        return <div>Hello!</div>
+        return <div data-uid='root-div'>Hello!</div>
       }
     }
 
     class TestClass extends React.Component {
       render() {
-        return <OtherTestClass />
+        return <OtherTestClass data-uid='test-class' />
       }
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"root-div test-class test1\\">Hello!</div>
       "
     `)
   })
@@ -241,16 +251,16 @@ describe('Monkey Function', () => {
 
     const Cica = (props: any) => {
       return (
-        <CallRenderPropChild>
+        <CallRenderPropChild data-uid='wrapper-component'>
           {(data: string) => {
-            return <div>{data}</div>
+            return <div data-uid='root-div'>{data}</div>
           }}
         </CallRenderPropChild>
       )
     }
 
     expect(renderToFormattedString(<Cica data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"root-div wrapper-component test1\\">Hello!</div>
       "
     `)
   })
@@ -262,7 +272,7 @@ describe('Monkey Function', () => {
 
     class TestClass extends React.Component {
       renderComponent(data: string) {
-        return <div>{data}</div>
+        return <div data-uid='root-div'>{data}</div>
       }
 
       render() {
@@ -271,7 +281,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica test1\\">Hello!</div>
+      "<div data-uid=\\"root-div cica test1\\">Hello!</div>
       "
     `)
   })
@@ -312,6 +322,21 @@ describe('Monkey Function', () => {
     `)
   })
 
+  it('Fragments work if theres a uid 2', () => {
+    const Component = () => {
+      return (
+        <React.Fragment data-uid='fragment'>
+          <div data-uid='root-div'>Hello!</div>
+        </React.Fragment>
+      )
+    }
+
+    expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"root-div fragment test1\\">Hello!</div>
+      "
+    `)
+  })
+
   it('Fragments work if in absence of uid too', () => {
     const Component = () => {
       return (
@@ -347,8 +372,8 @@ describe('Monkey Function', () => {
       return (
         <div data-uid='cica'>
           <React.Fragment data-uid='kutya'>
-            <div>Hello</div>
-            <div>world!</div>
+            <div data-uid='hello-div'>Hello</div>
+            <div data-uid='world-div'>world!</div>
           </React.Fragment>
         </div>
       )
@@ -356,8 +381,8 @@ describe('Monkey Function', () => {
 
     expect(renderToFormattedString(<Component />)).toMatchInlineSnapshot(`
       "<div data-uid=\\"cica\\">
-        <div data-uid=\\"kutya\\">Hello</div>
-        <div data-uid=\\"kutya\\">world!</div>
+        <div data-uid=\\"hello-div kutya\\">Hello</div>
+        <div data-uid=\\"world-div kutya\\">world!</div>
       </div>
       "
     `)
