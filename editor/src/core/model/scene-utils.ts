@@ -1,3 +1,4 @@
+import * as Hash from 'object-hash'
 import {
   SceneMetadata,
   StaticElementPath,
@@ -45,7 +46,9 @@ import { getUtopiaID } from './element-template-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
-import { generateUID } from '../shared/uid-utils'
+import { generateConsistentUID, generateUID } from '../shared/uid-utils'
+import { StoryboardFilePath } from '../../components/editor/store/editor-state'
+import { emptySet } from '../shared/set-utils'
 
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
@@ -155,7 +158,12 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
       emptyComments,
     ),
   })
-  const componentUID = generateUID([])
+  const hash = Hash({
+    fileName: StoryboardFilePath,
+    name: componentImportedAs,
+    props: jsxAttributesFromMap({}),
+  })
+  const componentUID = generateConsistentUID(emptySet(), hash)
   return jsxElement('Scene', uid, sceneProps, [
     jsxElement(
       componentImportedAs,
