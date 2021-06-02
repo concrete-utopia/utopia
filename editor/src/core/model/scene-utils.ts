@@ -47,7 +47,6 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import { generateConsistentUID, generateUID } from '../shared/uid-utils'
-import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 import { emptySet } from '../shared/set-utils'
 
 export const PathForSceneComponent = PP.create(['component'])
@@ -144,7 +143,11 @@ export function convertScenesToUtopiaCanvasComponent(
   )
 }
 
-export function createSceneFromComponent(componentImportedAs: string, uid: string): JSXElement {
+export function createSceneFromComponent(
+  filePath: string,
+  componentImportedAs: string,
+  uid: string,
+): JSXElement {
   const sceneProps = jsxAttributesFromMap({
     [UTOPIA_UIDS_KEY]: jsxAttributeValue(uid, emptyComments),
     style: jsxAttributeValue(
@@ -159,7 +162,7 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
     ),
   })
   const hash = Hash({
-    fileName: StoryboardFilePath,
+    fileName: filePath,
     name: componentImportedAs,
     props: jsxAttributesFromMap({}),
   })

@@ -237,7 +237,11 @@ function addStoryboardFileForComponent(
   let updatedProjectContents: ProjectContentTreeRoot = editorModel.projectContents
   switch (createFileWithComponent.type) {
     case 'NAMED_COMPONENT_TO_IMPORT':
-      sceneElement = createSceneFromComponent(createFileWithComponent.toImport, 'scene-1')
+      sceneElement = createSceneFromComponent(
+        StoryboardFilePath,
+        createFileWithComponent.toImport,
+        'scene-1',
+      )
       imports = addImport(
         createFileWithComponent.path,
         null,
@@ -247,11 +251,15 @@ function addStoryboardFileForComponent(
       )
       break
     case 'DEFAULT_COMPONENT_TO_IMPORT':
-      sceneElement = createSceneFromComponent('StoryboardComponent', 'scene-1')
+      sceneElement = createSceneFromComponent(StoryboardFilePath, 'StoryboardComponent', 'scene-1')
       imports = addImport(createFileWithComponent.path, 'StoryboardComponent', [], null, imports)
       break
     case 'UNEXPORTED_RENDERED_COMPONENT':
-      sceneElement = createSceneFromComponent(createFileWithComponent.elementName, 'scene-1')
+      sceneElement = createSceneFromComponent(
+        StoryboardFilePath,
+        createFileWithComponent.elementName,
+        'scene-1',
+      )
       imports = addImport(
         createFileWithComponent.path,
         null,
