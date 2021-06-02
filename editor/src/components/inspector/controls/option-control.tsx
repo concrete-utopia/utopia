@@ -83,7 +83,6 @@ export const OptionControl: React.FunctionComponent<
             '.option-chain-control-container &': {
               borderRadius: 0,
               boxShadow: 'none !important',
-              // backgroundColor: 'transparent !important',
             },
             display: 'flex',
             justifyContent: 'center',
