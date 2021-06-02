@@ -48,13 +48,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
 
   const target = selectedViews[0]
 
-  const isFocused = React.useCallback(() => {
-    if (target != null) {
-      return EP.isFocused(focusedElementPath, target)
-    } else {
-      return false
-    }
-  }, [focusedElementPath, target])
+  const isFocused = target == null ? false : EP.isFocused(focusedElementPath, target)
 
   const toggleFocusMode = React.useCallback(() => {
     dispatch([setFocusedElement(isFocused() ? null : target)])
