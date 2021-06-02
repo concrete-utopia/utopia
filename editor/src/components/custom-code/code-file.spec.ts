@@ -28,7 +28,14 @@ import {
   getTextFileByPath,
   SampleNodeModules,
 } from './code-file.test-utils'
-import { NodeModules } from '../../core/shared/project-file-types'
+import {
+  NodeModules,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../core/shared/project-file-types'
+import { addFileToProjectContents } from '../assets'
 
 function transpileCode(
   rootFilenames: Array<string>,
@@ -50,9 +57,11 @@ function transpileCode(
   return objectMap((_, filename) => emitFile(services, `${filename}`), files)
 }
 
+const appJSCode =
+  "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n"
+
 const SampleSingleFileBuildResult = transpileCode(['/app.js'], {
-  '/app.js':
-    "\nimport * as React from 'react'\nimport {\n  Ellipse,\n  HelperFunctions,\n  Image,\n  NodeImplementations,\n  Rectangle,\n  Text,\n  View,\n} from 'utopia-api'\nimport {\n  colorTheme,\n  Button,\n  Dialog,\n  Icn,\n  Icons,\n  LargerIcons,\n  FunctionIcons,\n  MenuIcons,\n  Isolator,\n  TabComponent,\n  Tooltip,\n  ActionSheet,\n  Avatar,\n  ControlledTextArea,\n  Title,\n  H1,\n  H2,\n  H3,\n  Subdued,\n  InspectorSectionHeader,\n  InspectorSubsectionHeader,\n  FlexColumn,\n  FlexRow,\n  ResizableFlexColumn,\n  PopupList,\n  Section,\n  SectionTitleRow,\n  SectionBodyArea,\n  UtopiaListSelect,\n  UtopiaListItem,\n  CheckboxInput,\n  NumberInput,\n  StringInput,\n  OnClickOutsideHOC,\n} from 'uuiui'\n\nexport var canvasMetadata = {\n  specialNodes: [],\n  nodeMetadata: {},\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <View\n      style={{ ...props.style, backgroundColor: colorTheme.white.value }}\n      layout={{ layoutSystem: 'pinSystem' }}\n      data-uid={'aaa'}\n    ></View>\n  )\n}\n\n",
+  '/app.js': appJSCode,
 })
 
 const SampleSingleFileExportsInfo = [
@@ -450,12 +459,28 @@ describe('Creating require function', () => {
 
 describe('incorporateBuildResult', () => {
   it('should remove a value if there is no transpiled code', () => {
+    const projectContents = addFileToProjectContents(
+      {},
+      '/app.js',
+      textFile(textFileContents(appJSCode, unparsed, RevisionsState.CodeAhead), null, 0),
+    )
     let nodeModules: NodeModules = {}
-    incorporateBuildResult(nodeModules, SampleSingleFileBuildResult)
-    incorporateBuildResult(nodeModules, {
+    incorporateBuildResult(nodeModules, projectContents, SampleSingleFileBuildResult)
+    incorporateBuildResult(nodeModules, projectContents, {
       ['/app.js']: { errors: [], transpiledCode: null, sourceMap: null },
     })
-    expect(nodeModules).toMatchInlineSnapshot(`Object {}`)
+    expect(Object.keys(nodeModules)).toMatchInlineSnapshot(`Array []`)
+  })
+  it('should remove a value if there is no transpiled code', () => {
+    const projectContents = addFileToProjectContents(
+      {},
+      '/app.js',
+      textFile(textFileContents(appJSCode, unparsed, RevisionsState.CodeAhead), null, 0),
+    )
+    let nodeModules: NodeModules = {}
+    incorporateBuildResult(nodeModules, projectContents, SampleSingleFileBuildResult)
+    incorporateBuildResult(nodeModules, {}, {})
+    expect(Object.keys(nodeModules)).toMatchInlineSnapshot(`Array []`)
   })
 })
 
