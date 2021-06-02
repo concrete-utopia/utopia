@@ -10,7 +10,6 @@ import { isLeft, isRight, Either } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { ParsedPropertiesKeys } from './css-utils'
 import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
-import { hsl } from 'chroma-js'
 
 export interface ControlStyles {
   fontStyle: string
