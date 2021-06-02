@@ -51,7 +51,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
   const isFocused = target == null ? false : EP.isFocused(focusedElementPath, target)
 
   const toggleFocusMode = React.useCallback(() => {
-    dispatch([setFocusedElement(isFocused() ? null : target)])
+    dispatch([setFocusedElement(isFocused ? null : target)])
   }, [dispatch, isFocused, target])
 
   const isComponent = React.useCallback(() => {
@@ -60,13 +60,13 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
 
   const getEditContextStyle = (): React.CSSProperties => {
     if (target != null) {
-      if (MetadataUtils.isFocusableComponent(target, metadata) && isFocused() == false) {
+      if (MetadataUtils.isFocusableComponent(target, metadata) && isFocused == false) {
         return {
           color: UtopiaTheme.color.component.value,
           backgroundColor: UtopiaTheme.color.component.shade(10).value,
           stroke: UtopiaTheme.color.component.fileNameFragment,
         }
-      } else if (isFocused() && MetadataUtils.isFocusableComponent(target, metadata)) {
+      } else if (isFocused && MetadataUtils.isFocusableComponent(target, metadata)) {
         return {
           color: UtopiaTheme.color.componentChild.value,
           backgroundColor: UtopiaTheme.color.componentChild.shade(10).value,
