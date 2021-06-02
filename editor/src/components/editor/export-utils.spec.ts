@@ -1,4 +1,5 @@
 import { isParseSuccess, unparsed } from '../../core/shared/project-file-types'
+import { emptySet } from '../../core/shared/set-utils'
 import { parseFailure } from '../../core/workers/common/project-file-utils'
 import { parseCode } from '../../core/workers/parser-printer/parser-printer'
 import { getExportedComponentImports } from './export-utils'
@@ -23,7 +24,7 @@ export var Whatever = (props) => {
     <div />
   )
 }`
-    const parseResult = parseCode('/src/index.js', codeForFile, null)
+    const parseResult = parseCode('/src/index.js', codeForFile, null, emptySet())
     expect(isParseSuccess(parseResult)).toEqual(true)
 
     const actualResult = getExportedComponentImports('/src/app.js', '/src/index.js', parseResult)

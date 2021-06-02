@@ -13,6 +13,7 @@ import { ProjectContentTreeRoot, contentsToTree, getContentsTreeFileFromString }
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
 import { replaceAll } from '../../core/shared/string-utils'
+import { emptySet } from '../../core/shared/set-utils'
 
 export const SampleNodeModules: NodeModules = {
   '/node_modules/utopia-api/index.js': esCodeFile(
@@ -58,7 +59,7 @@ export const SampleNodeModules: NodeModules = {
 }
 
 export function createCodeFile(path: string, contents: string): TextFile {
-  const result = lintAndParse(path, contents, null)
+  const result = lintAndParse(path, contents, null, emptySet())
   return textFile(textFileContents(contents, result, RevisionsState.CodeAhead), null, Date.now())
 }
 

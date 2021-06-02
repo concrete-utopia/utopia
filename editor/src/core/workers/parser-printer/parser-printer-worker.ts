@@ -11,6 +11,7 @@ import {
   getHighlightBoundsWithoutUID,
 } from './parser-printer'
 import { fastForEach } from '../../shared/utils'
+import { emptySet } from '../../shared/set-utils'
 
 interface PrintCode {
   type: 'printcode'
@@ -150,6 +151,7 @@ export function handleMessage(
   switch (workerMessage.type) {
     case 'parseprintfiles': {
       try {
+        const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
         const results = workerMessage.files.map((file) => {
           switch (file.type) {
             case 'parsefile':
@@ -158,6 +160,7 @@ export function handleMessage(
                 file.content,
                 file.previousParsed,
                 file.lastRevisedTime,
+                alreadyExistingUIDs_MUTABLE,
               )
             case 'printcode':
               return getPrintCodeResult(
@@ -186,8 +189,14 @@ function getParseFileResult(
   content: string,
   oldParseResultForUIDComparison: ParsedTextFile | null,
   lastRevisedTime: number,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParseFileResult {
-  const parseResult = lintAndParse(filename, content, oldParseResultForUIDComparison)
+  const parseResult = lintAndParse(
+    filename,
+    content,
+    oldParseResultForUIDComparison,
+    alreadyExistingUIDs_MUTABLE,
+  )
   return createParseFileResult(filename, parseResult, lastRevisedTime)
 }
 

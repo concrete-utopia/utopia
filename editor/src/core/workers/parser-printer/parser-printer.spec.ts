@@ -68,6 +68,7 @@ import { emptyComments } from './parser-printer-comments'
 import { optionalMap } from '../../shared/optional-utils'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
+import { emptySet } from '../../shared/set-utils'
 
 describe('JSX parser', () => {
   it('parses the code when it is a var', () => {
@@ -2341,7 +2342,7 @@ export var Whatever = (props) => <View>
   <MyComp layout={{left: 100}} />
 </View>
 `
-    const actualResult = parseCode('code.tsx', code, null)
+    const actualResult = parseCode('code.tsx', code, null, emptySet())
     if (isParseSuccess(actualResult)) {
       expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(1)
       expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(0)
@@ -4567,6 +4568,7 @@ describe('lintAndParse', () => {
       )
     })`,
       null,
+      emptySet(),
     )
     expect(clearParseResultPassTimes(result)).toMatchSnapshot()
   })

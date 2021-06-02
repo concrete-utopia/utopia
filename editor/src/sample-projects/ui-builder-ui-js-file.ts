@@ -5,6 +5,7 @@ import {
   textFileContents,
   unparsed,
 } from '../core/shared/project-file-types'
+import { emptySet } from '../core/shared/set-utils'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 
 // FIXME I've disabled the below because Jest can't deal with it, but we're not using it anyway
@@ -26,7 +27,7 @@ import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 // }
 
 export function getUiBuilderUIJSFile(): TextFile {
-  const result = lintAndParse('code.tsx', sampleCode, null)
+  const result = lintAndParse('code.tsx', sampleCode, null, emptySet())
   return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, 0)
 }
 

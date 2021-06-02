@@ -16,6 +16,7 @@ import {
   githubProjectsFileFilters,
 } from './github-projects'
 import * as minimatch from 'minimatch'
+import { emptySet } from '../core/shared/set-utils'
 
 const javascriptFileEndings = ['.js', '.ts', '.jsx', '.tsx']
 
@@ -26,7 +27,7 @@ async function processFile(
 ): Promise<string> {
   const fileContents = FS.readFileSync(javascriptFilePath, 'utf8')
   const initialPrettifiedContents = applyPrettier(fileContents, false).formatted
-  const parsedContents = parseCode(javascriptFilePath, initialPrettifiedContents, null)
+  const parsedContents = parseCode(javascriptFilePath, initialPrettifiedContents, null, emptySet())
   const printedContents = foldParsedTextFile(
     (_) => initialPrettifiedContents,
     (success) => {

@@ -7,6 +7,7 @@ import { applyPrettier } from 'utopia-vscode-common'
 import { parseCode } from '../core/workers/parser-printer/parser-printer'
 import { foldParsedTextFile } from '../core/shared/project-file-types'
 import { elementsStructure } from '../core/workers/parser-printer/parser-printer.test-utils'
+import { emptySet } from '../core/shared/set-utils'
 
 async function printOutParseResult(
   command: string,
@@ -22,7 +23,12 @@ async function printOutParseResult(
     if (FS.existsSync(fullFilePath)) {
       const fileContents = FS.readFileSync(fullFilePath, 'utf8')
       const initialPrettifiedContents = applyPrettier(fileContents, false).formatted
-      const parsedContents = parseCode(javascriptFilePath, initialPrettifiedContents, null)
+      const parsedContents = parseCode(
+        javascriptFilePath,
+        initialPrettifiedContents,
+        null,
+        emptySet(),
+      )
       switch (command) {
         case 'print':
           console.log(JSON.stringify(parsedContents, null, 2))
