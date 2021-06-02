@@ -29361,9 +29361,9 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
     data-uid=\\"ddd ccc\\"
   >
     <div
-      data-uid=\\"bbb app-entity\\"
+      data-uid=\\"bbb aaa app-entity\\"
       style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
-      data-paths=\\"ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity\\"
+      data-paths=\\"ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity:aaa ccc/ddd/app-entity\\"
     ></div>
   </div>
 </div>
@@ -29946,8 +29946,8 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
-      "data-paths": "ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity",
-      "data-uid": "bbb app-entity",
+      "data-paths": "ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity:aaa ccc/ddd/app-entity",
+      "data-uid": "bbb aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
         "backgroundColor": "#EB1010",
@@ -30015,9 +30015,9 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
     data-uid=\\"ddd ccc\\"
   >
     <div
-      data-uid=\\"bbb card app-entity\\"
+      data-uid=\\"bbb inner aaa card app-entity\\"
       style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
-      data-paths=\\"ccc/ddd/app-entity:card:aaa/inner/bbb ccc/ddd/app-entity:card ccc/ddd/app-entity\\"
+      data-paths=\\"ccc/ddd/app-entity:card:aaa/inner/bbb ccc/ddd/app-entity:card:aaa/inner ccc/ddd/app-entity:card:aaa ccc/ddd/app-entity:card ccc/ddd/app-entity\\"
     ></div>
   </div>
 </div>
