@@ -61,12 +61,14 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
           <MenuIcons.Navigator />
         </SquareButton>
       </Tooltip>
-      <IconToggleButton
-        onToggle={onToggleFollow}
-        value={followSelection.enabled}
-        srcOn={UNSAFE_getIconURL('bracketed-pointer', 'blue', 'semantic', 18, 18)}
-        srcOff={UNSAFE_getIconURL('bracketed-pointer', 'darkgray', 'semantic', 18, 18)}
-      />
+      <Tooltip title='Mirror selection between canvas and code editor' placement='bottom'>
+        <IconToggleButton
+          onToggle={onToggleFollow}
+          value={followSelection.enabled}
+          srcOn={UNSAFE_getIconURL('bracketed-pointer', 'blue', 'semantic', 18, 18)}
+          srcOff={UNSAFE_getIconURL('bracketed-pointer', 'darkgray', 'semantic', 18, 18)}
+        />
+      </Tooltip>
       <ComponentOrInstanceIndicator />
       <FormulaBar key={formulaBarKey} />
     </SimpleFlexRow>
