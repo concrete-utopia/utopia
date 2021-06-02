@@ -6,7 +6,11 @@ import {
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import { fastForEach } from '../../../core/shared/utils'
-import { ProjectContentTreeRoot } from '../../assets'
+import {
+  getContentsTreeFileFromString,
+  ProjectContentsTree,
+  ProjectContentTreeRoot,
+} from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
 import {
   CanvasBase64Blobs,
@@ -21,15 +25,23 @@ import {
 import {
   MutableUtopiaContextProps,
   updateMutableUtopiaContextWithNewProps,
+  UtopiaProjectContext,
 } from './ui-jsx-canvas-contexts'
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import {
+  ElementPath,
+  HighlightBoundsForUids,
+  isParseSuccess,
+  isTextFile,
+} from '../../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
 import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
+import { useContextSelector } from 'use-context-selector'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -99,6 +111,7 @@ export function createExecutionScope(
 
   // First make sure everything is in scope
   if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
+    const { highlightBounds, code } = getCodeAndHighlightBoundsForFile(filePath, projectContents)
     const lookupRenderer = createLookupRender(
       EP.emptyElementPath,
       executionScope,
@@ -113,6 +126,8 @@ export function createExecutionScope(
       shouldIncludeCanvasRootInTheSpy,
       openStoryboardFileNameKILLME,
       imports,
+      code,
+      highlightBounds,
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -141,5 +156,42 @@ export function createExecutionScope(
     scope: executionScope,
     topLevelJsxComponents: topLevelJsxComponents,
     requireResult: requireResult,
+  }
+}
+
+export function useGetCodeAndHighlightBounds(
+  filePath: string | null,
+): { code: string; highlightBounds: HighlightBoundsForUids | null } {
+  return useContextSelector(
+    UtopiaProjectContext,
+    (c) => {
+      if (filePath == null) {
+        return { code: '', highlightBounds: null }
+      } else {
+        return getCodeAndHighlightBoundsForFile(filePath, c.projectContents)
+      }
+    },
+    shallowEqual,
+  )
+}
+
+export function getCodeAndHighlightBoundsForFile(
+  filePath: string,
+  projectContents: ProjectContentTreeRoot,
+): {
+  code: string
+  highlightBounds: HighlightBoundsForUids | null
+} {
+  const file = getContentsTreeFileFromString(projectContents, filePath)
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return {
+      code: file.fileContents.code,
+      highlightBounds: file.fileContents.parsed.highlightBounds,
+    }
+  } else {
+    return {
+      code: '',
+      highlightBounds: null,
+    }
   }
 }

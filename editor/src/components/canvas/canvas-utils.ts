@@ -84,6 +84,7 @@ import {
   textFileContents,
   isParseSuccess,
   isTextFile,
+  HighlightBoundsForUids,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -2428,6 +2429,7 @@ export interface GetParseSuccessOrTransientResult {
   imports: Imports
   jsxFactoryFunction: string | null
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+  highlightBounds: HighlightBoundsForUids | null
 }
 
 const EmptyResult: GetParseSuccessOrTransientResult = {
@@ -2435,6 +2437,7 @@ const EmptyResult: GetParseSuccessOrTransientResult = {
   imports: {},
   jsxFactoryFunction: null,
   combinedTopLevelArbitraryBlock: null,
+  highlightBounds: null,
 }
 
 export function getParseSuccessOrTransientForFilePath(
@@ -2453,6 +2456,7 @@ export function getParseSuccessOrTransientForFilePath(
         imports: parseSuccess.imports,
         jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
         combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+        highlightBounds: parseSuccess.highlightBounds,
       }
     } else {
       return {
@@ -2460,6 +2464,7 @@ export function getParseSuccessOrTransientForFilePath(
         imports: targetTransientFileState.imports,
         jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
         combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+        highlightBounds: parseSuccess.highlightBounds,
       }
     }
   } else {
