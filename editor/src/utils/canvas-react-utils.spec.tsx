@@ -35,18 +35,23 @@ describe('Monkey Function', () => {
     class TestClass extends React.Component {
       render() {
         return (
-          <div data-uid='cica'>
-            <div data-uid='kutya'>Hello!</div>
-            <div data-uid='majom'>Hello!</div>
+          <div data-uid='cica' data-paths='cica'>
+            <div data-uid='kutya' data-paths='kutya'>
+              Hello!
+            </div>
+            <div data-uid='majom' data-paths='majom'>
+              Hello!
+            </div>
           </div>
         )
       }
     }
 
-    expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica test1\\">
-        <div data-uid=\\"kutya\\">Hello!</div>
-        <div data-uid=\\"majom\\">Hello!</div>
+    expect(renderToFormattedString(<TestClass data-uid={'test1'} data-paths='test1' />))
+      .toMatchInlineSnapshot(`
+      "<div data-uid=\\"cica test1\\" data-paths=\\"cica test1\\">
+        <div data-uid=\\"kutya\\" data-paths=\\"kutya\\">Hello!</div>
+        <div data-uid=\\"majom\\" data-paths=\\"majom\\">Hello!</div>
       </div>
       "
     `)
@@ -56,40 +61,28 @@ describe('Monkey Function', () => {
     const MyContext = React.createContext({ value: 'wrong!' })
     class TestClass extends React.Component {
       render() {
-        return <div>{this.context.value}</div>
+        return (
+          <div data-uid='inner-div' data-paths='inner-div'>
+            {this.context.value}
+          </div>
+        )
       }
     }
     TestClass.contextType = MyContext
 
     expect(
       renderToFormattedString(
-        <MyContext.Provider value={{ value: 'hello!' }}>
-          <TestClass data-uid={'test1'} />
+        <MyContext.Provider value={{ value: 'hello!' }} data-uid='provider' data-paths='provider'>
+          <TestClass data-uid={'test-class'} data-paths='test-class' />
         </MyContext.Provider>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">hello!</div>
-      "
-    `)
-  })
-
-  it('class components have a working context, second variant', () => {
-    const MyContext = React.createContext({ value: 'wrong!' })
-    class TestClass extends React.Component {
-      render() {
-        return <div>{this.context.value}</div>
-      }
-    }
-    TestClass.contextType = MyContext
-
-    expect(
-      renderToFormattedString(
-        <MyContext.Provider value={{ value: 'hello!' }} data-uid={'test1'}>
-          <TestClass />
-        </MyContext.Provider>,
-      ),
-    ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">hello!</div>
+      "<div
+        data-uid=\\"inner-div test-class provider\\"
+        data-paths=\\"inner-div test-class provider\\"
+      >
+        hello!
+      </div>
       "
     `)
   })
