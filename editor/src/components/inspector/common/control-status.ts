@@ -235,8 +235,8 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         segmentSelectorColor = ControlStyleDefaults.UnsetSegmentSelectorColor
         segmentTrackColor = ControlStyleDefaults.UnsetSegmentTrackColor
         borderColor = ControlStyleDefaults.UnsetBorderColor
-        mainColor = ControlStyleDefaults.UnsetMainColor
-        trackColor = ControlStyleDefaults.UnsetMainColor
+        mainColor = 'var(--special-effect)'
+        trackColor = 'var(--special-effect)'
         railColor = ControlStyleDefaults.UnsetSecondaryColor
         unsettable = false
         break
