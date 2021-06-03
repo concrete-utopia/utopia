@@ -95,6 +95,7 @@ export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
       alignItems: alignItems ?? 'center',
       ...gridTemplates[variant],
       ...style,
+      '--special-effect': 'orange',
       '&:hover': {
         background: 'red',
         '--special-effect': 'white',
