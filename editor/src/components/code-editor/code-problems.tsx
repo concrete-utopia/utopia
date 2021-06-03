@@ -192,6 +192,50 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
       setSelectedTab('console')
     }, [setSelectedTab, isOpen, toggleIsOpen])
 
+    const problemsTabBackgroundColor = getTabStyleForErrors(errorMessages).backgroundColor
+    const ProblemsTabLabel = React.useMemo(() => {
+      return (
+        <span>
+          Problems
+          <span
+            style={{
+              marginLeft: 8,
+              fontSize: 10,
+              padding: '1px 5px',
+              borderRadius: 2,
+              fontWeight: 500,
+              color: colorTheme.neutralInvertedForeground.value,
+              backgroundColor: problemsTabBackgroundColor,
+            }}
+          >
+            {errorMessages.length}
+          </span>
+        </span>
+      )
+    }, [problemsTabBackgroundColor, errorMessages.length])
+
+    const consoleTabBackgroundColor = getTabStyleForLogs(canvasConsoleLogs).backgroundColor
+    const ConsoleTabLabel = React.useMemo(() => {
+      return (
+        <span>
+          Console
+          <span
+            style={{
+              marginLeft: 8,
+              fontSize: 10,
+              padding: '1px 5px',
+              borderRadius: 2,
+              fontWeight: 500,
+              color: colorTheme.neutralInvertedForeground.value,
+              backgroundColor: consoleTabBackgroundColor,
+            }}
+          >
+            {canvasConsoleLogs.length}
+          </span>
+        </span>
+      )
+    }, [consoleTabBackgroundColor, canvasConsoleLogs.length])
+
     function getTabContents() {
       switch (selectedTab) {
         case 'problems':
@@ -279,24 +323,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
             selected={selectedTab === 'problems'}
             showCloseIndicator={false}
             showModifiedIndicator={false}
-            label={
-              <span>
-                Problems
-                <span
-                  style={{
-                    marginLeft: 8,
-                    fontSize: 10,
-                    padding: '1px 5px',
-                    borderRadius: 2,
-                    fontWeight: 500,
-                    color: colorTheme.neutralInvertedForeground.value,
-                    ...getTabStyleForErrors(errorMessages),
-                  }}
-                >
-                  {errorMessages.length}
-                </span>
-              </span>
-            }
+            label={ProblemsTabLabel}
           />
           <TabComponent
             onClick={selectConsoleTab}
@@ -304,24 +331,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
             selected={selectedTab == 'console'}
             showCloseIndicator={false}
             showModifiedIndicator={false}
-            label={
-              <span>
-                Console
-                <span
-                  style={{
-                    marginLeft: 8,
-                    fontSize: 10,
-                    padding: '1px 5px',
-                    borderRadius: 2,
-                    fontWeight: 500,
-                    color: colorTheme.neutralInvertedForeground.value,
-                    ...getTabStyleForLogs(canvasConsoleLogs),
-                  }}
-                >
-                  {canvasConsoleLogs.length}
-                </span>
-              </span>
-            }
+            label={ConsoleTabLabel}
           />
         </UIRow>
         {isOpen ? getTabContents() : null}

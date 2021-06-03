@@ -51,6 +51,6 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', () => {
       />
     )
   } else {
-    return <div>Loading...</div>
+    return <div style={{ flex: 1 }}>Loading...</div>
   }
 })
