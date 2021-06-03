@@ -1,3 +1,4 @@
+import * as Hash from 'object-hash'
 import {
   SceneMetadata,
   StaticElementPath,
@@ -45,6 +46,8 @@ import { getUtopiaID } from './element-template-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
+import { generateConsistentUID, generateUID } from '../shared/uid-utils'
+import { emptySet } from '../shared/set-utils'
 
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
@@ -140,16 +143,13 @@ export function convertScenesToUtopiaCanvasComponent(
   )
 }
 
-export function createSceneFromComponent(componentImportedAs: string, uid: string): JSXElement {
+export function createSceneFromComponent(
+  filePath: string,
+  componentImportedAs: string,
+  uid: string,
+): JSXElement {
   const sceneProps = jsxAttributesFromMap({
-    component: jsxAttributeOtherJavaScript(
-      componentImportedAs,
-      `return ${componentImportedAs}`,
-      [componentImportedAs],
-      null,
-    ),
     [UTOPIA_UIDS_KEY]: jsxAttributeValue(uid, emptyComments),
-    props: jsxAttributeValue({}, emptyComments),
     style: jsxAttributeValue(
       {
         position: 'absolute',
@@ -161,7 +161,22 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
       emptyComments,
     ),
   })
-  return jsxElement('Scene', uid, sceneProps, [])
+  const hash = Hash({
+    fileName: filePath,
+    name: componentImportedAs,
+    props: jsxAttributesFromMap({}),
+  })
+  const componentUID = generateConsistentUID(emptySet(), hash)
+  return jsxElement('Scene', uid, sceneProps, [
+    jsxElement(
+      componentImportedAs,
+      componentUID,
+      jsxAttributesFromMap({
+        [UTOPIA_UIDS_KEY]: jsxAttributeValue(componentUID, emptyComments),
+      }),
+      [],
+    ),
+  ])
 }
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {

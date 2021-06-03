@@ -1,4 +1,4 @@
-import {
+import type {
   PropertyPath,
   PropertyPathPart,
   StaticElementPathPart,
@@ -23,7 +23,7 @@ import {
   isParsedCommentsEmpty,
   ParsedComments,
 } from '../workers/parser-printer/parser-printer-comments'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import { string } from 'fast-check/*'
 
