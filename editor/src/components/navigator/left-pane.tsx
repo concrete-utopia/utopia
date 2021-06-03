@@ -2,7 +2,12 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
-import { fetchProjectMetadata, projectURL, thumbnailURL } from '../../common/server'
+import {
+  fetchProjectMetadata,
+  projectEditorURL,
+  projectURL,
+  thumbnailURL,
+} from '../../common/server'
 import { useGetProjectMetadata, useIsMyProject } from '../common/server-hooks'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
@@ -141,7 +146,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
   const forkedFromText =
     forkedFrom == null ? null : (
       <React.Fragment>
-        Forked from <Link href={projectURL(forkedFrom)}>{forkedFromMetadata?.title}</Link>
+        Forked from <Link href={projectEditorURL(forkedFrom)}>{forkedFromMetadata?.title}</Link>
       </React.Fragment>
     )
 
@@ -762,7 +767,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   const forkedFromText =
     forkedFrom == null ? null : (
       <React.Fragment>
-        Forked from <Link href={projectURL(forkedFrom)}>{forkedFromMetadata?.title}</Link>
+        Forked from <Link href={projectEditorURL(forkedFrom)}>{forkedFromMetadata?.title}</Link>
       </React.Fragment>
     )
 
