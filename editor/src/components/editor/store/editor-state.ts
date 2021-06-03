@@ -29,7 +29,7 @@ import {
   getHighlightBoundsForProject,
   applyUtopiaJSXComponentsChanges,
 } from '../../../core/model/project-file-utils'
-import { ErrorMessage } from '../../../core/shared/error-messages'
+import type { ErrorMessage, ErrorMessageSeverity } from '../../../core/shared/error-messages'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
   Imports,
@@ -1610,14 +1610,18 @@ export function areGeneratedElementsTargeted(
 
 export function getAllCodeEditorErrors(
   editor: EditorState,
-  onlyFatal: boolean,
+  minimumSeverity: ErrorMessageSeverity,
   skipTsErrors: boolean,
 ): Array<ErrorMessage> {
   const allLintErrors = getAllLintErrors(editor)
   const allBuildErrors = getAllBuildErrors(editor)
   const errorsAndWarnings = skipTsErrors ? allLintErrors : [...allBuildErrors, ...allLintErrors]
-  if (onlyFatal) {
+  if (minimumSeverity === 'fatal') {
     return errorsAndWarnings.filter((error) => error.severity === 'fatal')
+  } else if (minimumSeverity === 'error') {
+    return errorsAndWarnings.filter(
+      (error) => error.severity === 'fatal' || error.severity === 'error',
+    )
   } else {
     return errorsAndWarnings
   }

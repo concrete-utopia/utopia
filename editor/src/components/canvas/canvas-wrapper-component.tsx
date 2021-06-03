@@ -45,7 +45,7 @@ export const CanvasWrapperComponent = betterReactMemo(
     )
 
     const fatalErrors = React.useMemo(() => {
-      return getAllCodeEditorErrors(editorState, true, true)
+      return getAllCodeEditorErrors(editorState, 'fatal', true)
     }, [editorState])
 
     const safeMode = useEditorState((store) => {
@@ -91,7 +91,7 @@ const ErrorOverlayComponent = betterReactMemo(
       )
     }, 'ErrorOverlayComponent utopiaParserErrors')
     const fatalCodeEditorErrors = useEditorState((store) => {
-      return getAllCodeEditorErrors(store.editor, true, true)
+      return getAllCodeEditorErrors(store.editor, 'error', true)
     }, 'ErrorOverlayComponent fatalCodeEditorErrors')
 
     const runtimeErrors = useReadOnlyRuntimeErrors()

@@ -15,6 +15,7 @@ import {
   updateFromCodeEditor,
   sendCodeEditorInitialisation,
   updateConfigFromVSCode,
+  sendLinterRequestMessage,
 } from '../../components/editor/actions/action-creators'
 import {
   getSavedCodeFromTextFile,
@@ -127,12 +128,17 @@ function watchForChanges(dispatch: EditorDispatch): void {
     stat(fsPath).then((fsStat) => {
       if (fsStat.type === 'FILE' && fsStat.sourceOfLastChange !== UtopiaFSUser) {
         readFileAsUTF8(fsPath).then((fileContent) => {
-          const action = updateFromCodeEditor(
-            fromFSPath(fsPath),
+          const path = fromFSPath(fsPath)
+          const updateAction = updateFromCodeEditor(
+            path,
             fileContent.content,
             fileContent.unsavedContent,
           )
-          dispatch([action], 'everyone')
+          const requestLintAction = sendLinterRequestMessage(
+            path,
+            fileContent.unsavedContent ?? fileContent.content,
+          )
+          dispatch([updateAction, requestLintAction], 'everyone')
         })
       }
     })

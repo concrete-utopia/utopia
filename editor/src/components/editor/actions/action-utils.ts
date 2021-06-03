@@ -191,6 +191,7 @@ export function isFromVSCode(action: EditorAction): boolean {
     case 'ATOMIC':
       return action.actions.some(isFromVSCode)
     case 'UPDATE_FROM_CODE_EDITOR':
+    case 'SEND_LINTER_REQUEST_MESSAGE':
       return true
     default:
       return false
