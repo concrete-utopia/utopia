@@ -1,4 +1,3 @@
-import { MapLike } from 'typescript'
 import {
   isJSXElement,
   isUtopiaJSXComponent,
@@ -6,7 +5,6 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
-import { optionalMap } from '../../shared/optional-utils'
 import {
   isParseSuccess,
   ParsedTextFile,
@@ -24,8 +22,6 @@ import {
   getComponentsFromTopLevelElements,
 } from '../../model/project-file-utils'
 import { mapArrayToDictionary } from '../../shared/array-utils'
-import { emptySet } from '../../shared/set-utils'
-import { fastForEach } from '../../shared/utils'
 
 export function fixParseSuccessUIDs(
   oldParsed: ParsedTextFile | null,
@@ -68,10 +64,7 @@ export function fixParseSuccessUIDs(
 
   const newToOldUidMappingArray = Object.values(newToOldUidMapping)
 
-  if (newToOldUidMappingArray.length !== 1) {
-    // we found no uid mismatch or we found too many mismatched UIDs and so we bail out
-    return newParsed
-  } else {
+  if (newToOldUidMappingArray.length === 1) {
     // we found a single UID mismatch, which means there's a very good chance that it was an update element, let's fix that up
     let workingComponents = getComponentsFromTopLevelElements(newParsed.topLevelElements)
 
@@ -128,6 +121,9 @@ export function fixParseSuccessUIDs(
       topLevelElements: fixedTopLevelElements,
       highlightBounds: fixedHighlightBounds,
     }
+  } else {
+    // we found no uid mismatch or we found too many mismatched UIDs and so we bail out
+    return newParsed
   }
 }
 
@@ -141,22 +137,22 @@ function zipTopLevelElements(
     newElementPath: StaticElementPathPart,
   ) => void,
 ): void {
-  secondTopLevelElements.forEach((newTopLevelElement, index) => {
-    if (isUtopiaJSXComponent(newTopLevelElement)) {
-      const uid = getUtopiaID(newTopLevelElement.rootElement)
+  const firstComponents = getComponentsFromTopLevelElements(firstTopLevelElements)
+  const secondComponents = getComponentsFromTopLevelElements(secondTopLevelElements)
 
-      const oldTopLevelElement = firstTopLevelElements.find((tle): tle is UtopiaJSXComponent => {
-        return isUtopiaJSXComponent(tle) && getUtopiaID(tle.rootElement) === uid
-      })
+  firstComponents.forEach((firstComponent, index) => {
+    if (secondComponents.length > index) {
+      const secondComponent = secondComponents[index]
+      const firstUID = getUtopiaID(firstComponent.rootElement)
+      const secondUID = getUtopiaID(secondComponent.rootElement)
 
-      if (oldTopLevelElement != null) {
-        walkElementChildren(
-          EP.emptyElementPathPart,
-          [oldTopLevelElement.rootElement],
-          [newTopLevelElement.rootElement],
-          onElement,
-        )
-      }
+      onElement(firstUID, secondUID, EP.emptyElementPathPart, EP.emptyElementPathPart)
+      walkElementChildren(
+        EP.emptyElementPathPart,
+        [firstComponent.rootElement],
+        [secondComponent.rootElement],
+        onElement,
+      )
     }
   })
 }
@@ -182,12 +178,7 @@ function walkElementChildren(
   newElements.forEach((newElement, index) => {
     const oldElement: JSXElementChild | null = oldElements[index]
 
-    if (
-      oldElement != null &&
-      newElement != null &&
-      isJSXElement(oldElement) &&
-      isJSXElement(newElement)
-    ) {
+    if (oldElement != null && isJSXElement(oldElement) && isJSXElement(newElement)) {
       const oldUID = getUtopiaID(oldElement)
       const newUid = getUtopiaID(newElement)
       const path = EP.appendToElementPath(pathSoFar, newUid)

@@ -18,6 +18,7 @@ import {
 import {
   isUtopiaJSXComponent,
   JSXElement,
+  unparsedCode,
   UtopiaJSXComponent,
   utopiaJSXComponent,
 } from '../shared/element-template'
@@ -223,19 +224,24 @@ function addStoryboardFileForComponent(
   editorModel: EditorState,
 ): EditorState {
   // Add import of storyboard and scene components.
-  let imports = addImport(
+  let imports = addImport('react', null, [], 'React', {})
+  imports = addImport(
     'utopia-api',
     null,
-    [importAlias('Storyboard'), importAlias('Scene'), importAlias('jsx')],
+    [importAlias('Storyboard'), importAlias('Scene')],
     null,
-    {},
+    imports,
   )
   // Create the storyboard variable.
   let sceneElement: JSXElement
   let updatedProjectContents: ProjectContentTreeRoot = editorModel.projectContents
   switch (createFileWithComponent.type) {
     case 'NAMED_COMPONENT_TO_IMPORT':
-      sceneElement = createSceneFromComponent(createFileWithComponent.toImport, 'scene-1')
+      sceneElement = createSceneFromComponent(
+        StoryboardFilePath,
+        createFileWithComponent.toImport,
+        'scene-1',
+      )
       imports = addImport(
         createFileWithComponent.path,
         null,
@@ -245,11 +251,15 @@ function addStoryboardFileForComponent(
       )
       break
     case 'DEFAULT_COMPONENT_TO_IMPORT':
-      sceneElement = createSceneFromComponent('StoryboardComponent', 'scene-1')
+      sceneElement = createSceneFromComponent(StoryboardFilePath, 'StoryboardComponent', 'scene-1')
       imports = addImport(createFileWithComponent.path, 'StoryboardComponent', [], null, imports)
       break
     case 'UNEXPORTED_RENDERED_COMPONENT':
-      sceneElement = createSceneFromComponent(createFileWithComponent.elementName, 'scene-1')
+      sceneElement = createSceneFromComponent(
+        StoryboardFilePath,
+        createFileWithComponent.elementName,
+        'scene-1',
+      )
       imports = addImport(
         createFileWithComponent.path,
         null,
@@ -320,11 +330,11 @@ function addStoryboardFileForComponent(
   // Create the file.
   const success = parseSuccess(
     imports,
-    [storyboardComponent],
+    [unparsedCode('\n\n'), storyboardComponent],
     {},
-    'jsx',
     null,
-    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    null,
+    addModifierExportToDetail(EmptyExportsDetail, BakedInStoryboardVariableName),
   )
   const storyboardFileContents = textFile(
     textFileContents('', success, RevisionsState.ParsedAhead),

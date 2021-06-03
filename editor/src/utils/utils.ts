@@ -1,5 +1,4 @@
 import * as chroma from 'chroma-js'
-import * as R from 'ramda'
 import { v4 as UUID } from 'uuid'
 import { PackageType } from '../core/shared/project-file-types'
 import { AnyJson, JsonMap } from '../missing-types/json'
@@ -128,6 +127,8 @@ import {
   addUniquely,
   addAllUniquely,
   findLastIndex,
+  drop,
+  insert,
 } from '../core/shared/array-utils'
 import {
   shallowEqual,
@@ -142,6 +143,7 @@ import {
 import { memoize } from '../core/shared/memoize'
 import { ValueType, OptionsType, OptionTypeBase } from 'react-select'
 import { emptySet } from '../core/shared/set-utils'
+import * as ObjectPath from 'object-path'
 // TODO Remove re-exported functions
 
 export type FilteredFields<Base, T> = {
@@ -294,17 +296,6 @@ function nullIfTransparent(color: Color | null): Color | null {
 const TRANSPARENT_IMAGE_SRC =
   'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
 
-function doArraysIntersect<T>(first: [T], second: [T]): boolean {
-  for (var firstValue of first) {
-    for (var secondValue of second) {
-      if (R.equals(firstValue, secondValue)) {
-        return true
-      }
-    }
-  }
-  return false
-}
-
 function isJsonStringValid(jsonString: string): boolean {
   try {
     JSON.parse(jsonString)
@@ -330,69 +321,8 @@ function safeCompare<T>(left: T | null | undefined, right: T, fn: (l: T, r: T) =
   }
 }
 
-function createHitTesters<T>(
-  elem: T,
-  getFrame: GetFrame<T>,
-  obtainChildren: ObtainChildren<T>,
-  parents: Array<T>,
-  offsetX: number = 0,
-  offsetY: number = 0,
-): Array<HitTester<T>> {
-  const frame = getFrame(elem, parents)
-  const tester: HitTester<T> = {
-    elem: elem,
-    parents: parents,
-    frame: {
-      x: offsetX + frame.x,
-      y: offsetY + frame.y,
-      width: frame.width,
-      height: frame.height,
-    },
-  }
-
-  const children = obtainChildren(elem, parents)
-  if (children.length > 0) {
-    const newParents = R.append(elem, parents)
-    const recursivelyApply = (accum: Array<HitTester<T>>, child: T): Array<HitTester<T>> => {
-      return accum.concat(
-        createHitTesters(
-          child,
-          getFrame,
-          obtainChildren,
-          newParents,
-          tester.frame.x,
-          tester.frame.y,
-        ),
-      )
-    }
-    return R.reduce(recursivelyApply, [tester], children)
-  } else {
-    return [tester]
-  }
-}
-
-function commonPrefix<A, B>(first: Array<A>, second: Array<B>): Array<A> {
-  return R.map((pair: R.KeyValuePair<A, B>) => pair[0])(
-    R.takeWhile<R.KeyValuePair<A, B>>((pair) => R.equals<any>(pair[0], pair[1]))(
-      R.zip(first, second),
-    ),
-  )
-}
-
-function filterElements<T, U>(
-  array: Array<T>,
-  toFilter: Array<U>,
-  mappingFn: (t: T) => U,
-): Array<T> {
-  return array.filter((t) => !R.contains(mappingFn(t), toFilter))
-}
-
-function objectFilter<T>(filter: (object: T) => boolean, map: R.Dictionary<T>): R.Dictionary<T> {
-  return R.filter(filter, map) as R.Dictionary<T>
-}
-
 function removeFirst<T>(array: Array<T>): Array<T> {
-  return R.remove(0, 1, array)
+  return drop(1, array)
 }
 
 function resolveRef($ref: string, completeSchema: JsonSchema): JsonSchema {
@@ -550,7 +480,7 @@ function getBaseAndIndex(name: string, insertSpace: boolean): { base: string; in
   let baseName = name
   if (insertSpace) {
     lastToken = tokens[tokens.length - 1]
-    baseName = R.dropLast(1, tokens).join(' ')
+    baseName = dropLast(tokens).join(' ')
   } else {
     const regexMatch = name.match(/\d+$/)
     if (regexMatch != null) {
@@ -608,11 +538,6 @@ function indexToInsertAt<T>(array: Array<T>, indexPosition: IndexPosition): numb
   }
 }
 
-function addToArray<T>(element: T, array: T[], atPosition: IndexPosition): Array<T> {
-  const index = indexToInsertAt(array, atPosition)
-  return R.insert(index, element, array)
-}
-
 function addToArrayWithFill<T>(
   element: T,
   array: Array<T>,
@@ -624,7 +549,7 @@ function addToArrayWithFill<T>(
   for (let fillIndex = array.length; fillIndex < index; fillIndex++) {
     midResult.push(fillValue())
   }
-  return R.insert(index, element, midResult)
+  return insert(index, element, midResult)
 }
 
 function assert(errorMessage: string, predicate: boolean | (() => boolean)): void {
@@ -742,30 +667,32 @@ function getRectPointsAlongAxes<C extends CoordinateMarker>(
 function stepInArray<T>(
   eq: (first: T, second: T) => boolean,
   step: number,
-): (array: Array<T>, stepFrom: T) => T | null {
-  return (array: Array<T>, stepFrom: T) => {
-    let workingIndex = 0
-    let foundIndex: number | null = null
-    for (const element of array) {
-      // Check if this is the element we're looking for.
-      if (eq(element, stepFrom)) {
-        foundIndex = workingIndex
-        // Might as well bail out early.
-        break
+  array: Array<T>,
+  stepFrom: T,
+): T | null {
+  let workingIndex = 0
+  let foundIndex: number | null = null
+  for (const element of array) {
+    // Check if this is the element we're looking for.
+    if (eq(element, stepFrom)) {
+      foundIndex = workingIndex
+      // Might as well bail out early.
+      break
+    }
+    workingIndex++
+  }
+  if (foundIndex === null) {
+    return null
+  } else {
+    let index: number = foundIndex + step
+    function tryNextStep(): void {
+      if (index < 0 || index >= array.length) {
+        index = step >= 0 ? index - array.length : index + array.length
+        tryNextStep()
       }
-      workingIndex++
     }
-    if (foundIndex === null) {
-      return null
-    } else {
-      // Ensure the index is in the bounds of the array.
-      const validIndex = (i: number) => i >= 0 && i < array.length
-      // Shift back the length of the array if we're stepping forwards.
-      // Shift forward the length of the array if we're stepping backwards.
-      const valueShift = (i: number) => (step >= 0 ? i - array.length : i + array.length)
-      const newIndex = R.until(validIndex, valueShift, foundIndex + step)
-      return forceNotNull(`No element at index ${newIndex}`, array[newIndex])
-    }
+    tryNextStep()
+    return forceNotNull(`No element at index ${index}`, array[index])
   }
 }
 
@@ -797,17 +724,16 @@ function path<T>(
   objPath: Array<string | number>,
   obj: Record<string | number, any> | undefined | null,
 ): T | undefined {
-  return R.path(objPath, obj!) // Ramda typing is _wrong_, R.path can and does take undefined and null!
+  if (obj == null) {
+    return undefined
+  } else {
+    return ObjectPath.get(obj, objPath)
+  }
 }
 
-// Because Ramda's `pathOr` function returns any for no fucking reason
 // eslint-disable-next-line @typescript-eslint/ban-types
 function pathOr<T, U = T>(defaultValue: T, objPath: Array<string | number>, obj: {}): T | U {
-  return R.pathOr<T, U>(defaultValue, objPath, obj)
-}
-
-function isSameOrSubpath(s: string, prefix: string) {
-  return s === prefix || s.startsWith(`${prefix}.`)
+  return ObjectPath.get(obj, objPath, defaultValue)
 }
 
 function immutableUpdateField(valueToUpdate: any, field: string | number, valueToSet: any): any {
@@ -881,7 +807,9 @@ function isLocalRectangle(rectangle: any): rectangle is LocalRectangle {
 }
 
 function update<T>(index: number, newValue: T, array: Array<T>): Array<T> {
-  return R.update(index, newValue, array)
+  let result = [...array]
+  result.splice(index, 1, newValue)
+  return result
 }
 
 function defer<T>(): Promise<T> & {
@@ -898,22 +826,6 @@ function defer<T>(): Promise<T> & {
   Object.defineProperty(promise, 'reject', { value: rej })
 
   return promise as any
-}
-
-export function keepReferenceIfDeepEqualSLOW<T>(original: T, maybeNew: T, measure = false): T {
-  if (measure) {
-    performance.mark('before eq')
-  }
-  const equalityCheck = R.equals(original, maybeNew)
-  if (measure) {
-    performance.mark('after eq')
-    performance.measure('deep equality check', 'before eq', 'after eq')
-  }
-  if (equalityCheck) {
-    return original
-  } else {
-    return maybeNew
-  }
 }
 
 function timeLimitPromise<T>(promise: Promise<T>, limitms: number, message: string): Promise<T> {
@@ -1017,21 +929,16 @@ export default {
   SafeFunction: SafeFunction,
   SafeFunctionCurriedErrorHandler: SafeFunctionCurriedErrorHandler,
   TRANSPARENT_IMAGE_SRC: TRANSPARENT_IMAGE_SRC,
-  doArraysIntersect: doArraysIntersect,
   get: get,
   isJsonStringValid: isJsonStringValid,
   safeCompare: safeCompare,
   optionalMap: optionalMap,
   optionalFlatMap: optionalFlatMap,
-  createHitTesters: createHitTesters,
-  commonPrefix: commonPrefix,
   stripNulls: stripNulls,
   filterDuplicates: filterDuplicates,
-  filterElements: filterElements,
   propOr: propOr,
   propOrNull: propOrNull,
   objectMap: objectMap,
-  objectFilter: objectFilter,
   removeFirst: removeFirst,
   resolveRef: resolveRef,
   traverseJsonSchema: traverseJsonSchema,
@@ -1043,7 +950,6 @@ export default {
   eventTargetIsTextArea: eventTargetIsTextArea,
   nextName: nextName,
   indexToInsertAt: indexToInsertAt,
-  addToArray: addToArray,
   addToArrayWithFill: addToArrayWithFill,
   percentToNumber: percentToNumber,
   numberToPercent: numberToPercent,
@@ -1057,7 +963,6 @@ export default {
   shallowEqual: shallowEqual,
   oneLevelNestedEquals: oneLevelNestedEquals,
   keepReferenceIfShallowEqual: keepReferenceIfShallowEqual,
-  keepReferenceIfDeepEqualSLOW: keepReferenceIfDeepEqualSLOW,
   maybeToArray: maybeToArray,
   arrayToMaybe: arrayToMaybe,
   getRectPointsAlongAxes: getRectPointsAlongAxes,
@@ -1093,7 +998,6 @@ export default {
   objectValues: objectValues,
   rect: rect,
   point: point,
-  isSameOrSubPath: isSameOrSubpath,
   dropLast: dropLast,
   last: last,
   immutableUpdate: immutableUpdate,

@@ -1,6 +1,5 @@
 import * as MimeTypes from 'mime-types'
 import * as pathParse from 'path-parse'
-import * as R from 'ramda'
 import * as PP from '../shared/property-path'
 import { isText } from 'istextorbinary'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
@@ -62,6 +61,7 @@ import { extractAsset, extractImage, extractText, FileResult } from '../shared/f
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
 import { foldEither, isLeft, isRight, maybeEitherToMaybe } from '../shared/either'
+import { splitAt } from '../shared/string-utils'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -602,8 +602,8 @@ export function uniqueProjectContentID(
       }
     } else {
       // Kinda assume it's a filename.
-      const [prefix, suffixWithFullStop] = R.splitAt(firstIndexOfFullStop, startingIDCorrected)
-      const suffix = R.tail(suffixWithFullStop)
+      const [prefix, suffixWithFullStop] = splitAt(firstIndexOfFullStop, startingIDCorrected)
+      const suffix = suffixWithFullStop.slice(1)
       let counter = 2
       // eslint-disable-next-line no-constant-condition
       while (true) {

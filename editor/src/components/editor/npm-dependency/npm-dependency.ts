@@ -1,5 +1,4 @@
 import * as json5 from 'json5'
-import * as R from 'ramda'
 import { MapLike } from 'typescript'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { sameTextFile } from '../../../core/model/project-file-utils'
@@ -38,6 +37,9 @@ import { ProjectContentTreeRoot } from '../../assets'
 import * as npa from 'npm-package-arg'
 import * as GitHost from 'hosted-git-info'
 import { importDefault, importStar } from '../../../core/es-modules/commonjs-interop'
+
+import * as OPI from 'object-path-immutable'
+const ObjectPathImmutable: any = OPI
 
 interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
@@ -261,7 +263,7 @@ export function dependenciesFromPackageJsonContents(
   try {
     const parsedJSON = json5.parse(packageJson)
 
-    const dependenciesJSON = R.path<any>(['dependencies'], parsedJSON)
+    const dependenciesJSON = Utils.path<any>(['dependencies'], parsedJSON)
     if (typeof dependenciesJSON === 'object') {
       let result: Array<RequestedNpmDependency> = []
       for (const dependencyKey of Object.keys(dependenciesJSON)) {
@@ -382,7 +384,7 @@ export function updateDependenciesInPackageJson(
 ): string {
   function updateDeps(parsedPackageJson: any): string {
     return JSON.stringify(
-      R.assocPath(['dependencies'], npmDependencies, parsedPackageJson),
+      ObjectPathImmutable.set(parsedPackageJson, ['dependencies'], npmDependencies),
       null,
       2,
     )

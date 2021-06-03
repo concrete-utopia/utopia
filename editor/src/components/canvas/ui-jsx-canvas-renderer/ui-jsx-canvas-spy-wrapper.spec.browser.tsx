@@ -6,6 +6,7 @@ import {
   textFileContents,
   RevisionsState,
 } from '../../../core/shared/project-file-types'
+import { emptySet } from '../../../core/shared/set-utils'
 import * as EP from '../../../core/shared/element-path'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { defaultProject } from '../../../sample-projects/sample-project-utils'
@@ -86,6 +87,7 @@ function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
       modifiedFilename,
       modifiedFiles[modifiedFilename],
       null,
+      emptySet(),
     ) as ParsedTextFile
     if (isParseFailure(parsedFile)) {
       fail('The test file parse failed')

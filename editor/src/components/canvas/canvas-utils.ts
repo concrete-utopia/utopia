@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import {
   FramePoint,
   HorizontalFramePointsExceptSize,
@@ -85,6 +84,7 @@ import {
   textFileContents,
   isParseSuccess,
   isTextFile,
+  HighlightBoundsForUids,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -192,8 +192,9 @@ import { emptyComments } from '../../core/workers/parser-printer/parser-printer-
 import { getAllTargetsAtPoint } from './dom-lookup'
 import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
-import { addToMapOfArraysUnique } from '../../core/shared/array-utils'
+import { addToMapOfArraysUnique, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
+import { emptySet } from '../../core/shared/set-utils'
 import { WindowMousePositionRaw } from '../../utils/global-positions'
 import { importedFromWhere } from '../editor/import-utils'
 
@@ -268,7 +269,7 @@ export function getOriginalCanvasFrames(
       EP.allPathsForLastPart(selectedView),
     )
     const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(EP.parentPath)]
-    const allPaths = R.uniqBy(EP.toComponentId, Utils.stripNulls(includingParents))
+    const allPaths = uniqBy(Utils.stripNulls(includingParents), EP.pathsEqual)
     Utils.fastForEach(allPaths, (path) => {
       let alreadyAdded = false
       Utils.fastForEach(originalFrames, (originalFrame) => {
@@ -1665,9 +1666,7 @@ function getReparentTargetAtPosition(
     canvasOffset,
   )
   // filtering for non-selected views from alltargets
-  return R.head(
-    allTargets.filter((target) => selectedViews.every((view) => !EP.pathsEqual(view, target))),
-  )
+  return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
 }
 
 export function getReparentTarget(
@@ -2383,7 +2382,12 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null) as ParsedTextFile
+  const parsedFile = lintAndParse(
+    StoryboardFilePath,
+    appUiJsFile,
+    null,
+    emptySet(),
+  ) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
@@ -2431,6 +2435,7 @@ export interface GetParseSuccessOrTransientResult {
   imports: Imports
   jsxFactoryFunction: string | null
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+  highlightBounds: HighlightBoundsForUids | null
 }
 
 const EmptyResult: GetParseSuccessOrTransientResult = {
@@ -2438,6 +2443,7 @@ const EmptyResult: GetParseSuccessOrTransientResult = {
   imports: {},
   jsxFactoryFunction: null,
   combinedTopLevelArbitraryBlock: null,
+  highlightBounds: null,
 }
 
 export function getParseSuccessOrTransientForFilePath(
@@ -2456,6 +2462,7 @@ export function getParseSuccessOrTransientForFilePath(
         imports: parseSuccess.imports,
         jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
         combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+        highlightBounds: parseSuccess.highlightBounds,
       }
     } else {
       return {
@@ -2463,6 +2470,7 @@ export function getParseSuccessOrTransientForFilePath(
         imports: targetTransientFileState.imports,
         jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
         combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+        highlightBounds: parseSuccess.highlightBounds,
       }
     }
   } else {

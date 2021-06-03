@@ -12056,18 +12056,6 @@ Object {
 }
 `;
 
-exports[`UiJsxCanvas render handles a component that is not imported by throwing a ReferenceError 1`] = `
-Array [
-  Object {
-    "columnNumber": undefined,
-    "lineNumber": undefined,
-    "message": "MyCard is not defined",
-    "name": "ReferenceError",
-    "originalCode": undefined,
-  },
-]
-`;
-
 exports[`UiJsxCanvas render handles a component that renames its props object 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -29373,9 +29361,9 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
     data-uid=\\"ddd ccc\\"
   >
     <div
-      data-uid=\\"bbb app-entity\\"
+      data-uid=\\"bbb aaa app-entity\\"
       style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
-      data-paths=\\"ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity\\"
+      data-paths=\\"ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity:aaa ccc/ddd/app-entity\\"
     ></div>
   </div>
 </div>
@@ -29958,8 +29946,8 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
-      "data-paths": "ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity",
-      "data-uid": "bbb app-entity",
+      "data-paths": "ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity:aaa ccc/ddd/app-entity",
+      "data-uid": "bbb aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
         "backgroundColor": "#EB1010",
@@ -30027,9 +30015,9 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
     data-uid=\\"ddd ccc\\"
   >
     <div
-      data-uid=\\"bbb card app-entity\\"
+      data-uid=\\"bbb inner aaa card app-entity\\"
       style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
-      data-paths=\\"ccc/ddd/app-entity:card:aaa/inner/bbb ccc/ddd/app-entity:card ccc/ddd/app-entity\\"
+      data-paths=\\"ccc/ddd/app-entity:card:aaa/inner/bbb ccc/ddd/app-entity:card:aaa/inner ccc/ddd/app-entity:card:aaa ccc/ddd/app-entity:card ccc/ddd/app-entity\\"
     ></div>
   </div>
 </div>
@@ -36744,345 +36732,4 @@ Object {
     },
   },
 }
-`;
-
-exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"\\"
-></div>
-"
-`;
-
-exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 2`] = `Object {}`;
-
-exports[`UiJsxCanvas runtime errors an arbitrary jsx attribute has correct source map 1`] = `
-Array [
-  Object {
-    "columnNumber": 57,
-    "lineNumber": 8,
-    "message": "a is not defined",
-    "name": "ReferenceError",
-    "originalCode": Array [
-      ScriptLine {
-        "content": "",
-        "highlight": false,
-        "lineNumber": 5,
-      },
-      ScriptLine {
-        "content": "export var App = (props) => {",
-        "highlight": false,
-        "lineNumber": 6,
-      },
-      ScriptLine {
-        "content": "  return (",
-        "highlight": false,
-        "lineNumber": 7,
-      },
-      ScriptLine {
-        "content": "    <MyComp data-uid={'aaa'} someAttribute={'hello' + a.a /* 19,55 */}>",
-        "highlight": true,
-        "lineNumber": 8,
-      },
-      ScriptLine {
-        "content": "      hello!",
-        "highlight": false,
-        "lineNumber": 9,
-      },
-      ScriptLine {
-        "content": "    </MyComp>",
-        "highlight": false,
-        "lineNumber": 10,
-      },
-      ScriptLine {
-        "content": "  )",
-        "highlight": false,
-        "lineNumber": 11,
-      },
-    ],
-  },
-]
-`;
-
-exports[`UiJsxCanvas runtime errors an arbitrary jsx attribute has correct source map even if the entire expression is broken 1`] = `
-Array [
-  Object {
-    "columnNumber": 47,
-    "lineNumber": 8,
-    "message": "a is not defined",
-    "name": "ReferenceError",
-    "originalCode": Array [
-      ScriptLine {
-        "content": "",
-        "highlight": false,
-        "lineNumber": 5,
-      },
-      ScriptLine {
-        "content": "export var App = (props) => {",
-        "highlight": false,
-        "lineNumber": 6,
-      },
-      ScriptLine {
-        "content": "  return (",
-        "highlight": false,
-        "lineNumber": 7,
-      },
-      ScriptLine {
-        "content": "    <MyComp data-uid={'aaa'} someAttribute={a.a /* 19,45 */}>",
-        "highlight": true,
-        "lineNumber": 8,
-      },
-      ScriptLine {
-        "content": "      hello!",
-        "highlight": false,
-        "lineNumber": 9,
-      },
-      ScriptLine {
-        "content": "    </MyComp>",
-        "highlight": false,
-        "lineNumber": 10,
-      },
-      ScriptLine {
-        "content": "  )",
-        "highlight": false,
-        "lineNumber": 11,
-      },
-    ],
-  },
-]
-`;
-
-exports[`UiJsxCanvas runtime errors an arbitrary jsx child has correct source map 1`] = `
-Array [
-  Object {
-    "columnNumber": 13,
-    "lineNumber": 1,
-    "message": "a is not defined",
-    "name": "ReferenceError",
-    "originalCode": Array [
-      ScriptLine {
-        "content": "",
-        "highlight": true,
-        "lineNumber": 1,
-      },
-      ScriptLine {
-        "content": "import * as React from \\"react\\"",
-        "highlight": false,
-        "lineNumber": 2,
-      },
-      ScriptLine {
-        "content": "import { View, Storyboard, Scene } from 'utopia-api'",
-        "highlight": false,
-        "lineNumber": 3,
-      },
-      ScriptLine {
-        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": false,
-        "lineNumber": 4,
-      },
-    ],
-  },
-]
-`;
-
-exports[`UiJsxCanvas runtime errors an arbitrary jsx child has correct source map even if the entire expression is broken 1`] = `
-Array [
-  Object {
-    "columnNumber": 3,
-    "lineNumber": 1,
-    "message": "a is not defined",
-    "name": "ReferenceError",
-    "originalCode": Array [
-      ScriptLine {
-        "content": "",
-        "highlight": true,
-        "lineNumber": 1,
-      },
-      ScriptLine {
-        "content": "import * as React from \\"react\\"",
-        "highlight": false,
-        "lineNumber": 2,
-      },
-      ScriptLine {
-        "content": "import { View, Storyboard, Scene } from 'utopia-api'",
-        "highlight": false,
-        "lineNumber": 3,
-      },
-      ScriptLine {
-        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": false,
-        "lineNumber": 4,
-      },
-    ],
-  },
-]
-`;
-
-exports[`UiJsxCanvas runtime errors arbitrary at the top of a component has correct source map 1`] = `
-Array [
-  Object {
-    "columnNumber": 10,
-    "lineNumber": 7,
-    "message": "a is not defined",
-    "name": "ReferenceError",
-    "originalCode": Array [
-      ScriptLine {
-        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": false,
-        "lineNumber": 4,
-      },
-      ScriptLine {
-        "content": "",
-        "highlight": false,
-        "lineNumber": 5,
-      },
-      ScriptLine {
-        "content": "export var App = (props) => {",
-        "highlight": false,
-        "lineNumber": 6,
-      },
-      ScriptLine {
-        "content": "  '5' + a.a // 18,9",
-        "highlight": true,
-        "lineNumber": 7,
-      },
-      ScriptLine {
-        "content": "  return (",
-        "highlight": false,
-        "lineNumber": 8,
-      },
-      ScriptLine {
-        "content": "    <MyComp data-uid={'aaa'}>",
-        "highlight": false,
-        "lineNumber": 9,
-      },
-      ScriptLine {
-        "content": "      hello!",
-        "highlight": false,
-        "lineNumber": 10,
-      },
-    ],
-  },
-]
-`;
-
-exports[`UiJsxCanvas runtime errors arbitrary at the top of a component has correct source map even if the entire expression is broken 1`] = `
-Array [
-  Object {
-    "columnNumber": 4,
-    "lineNumber": 7,
-    "message": "a is not defined",
-    "name": "ReferenceError",
-    "originalCode": Array [
-      ScriptLine {
-        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": false,
-        "lineNumber": 4,
-      },
-      ScriptLine {
-        "content": "",
-        "highlight": false,
-        "lineNumber": 5,
-      },
-      ScriptLine {
-        "content": "export var App = (props) => {",
-        "highlight": false,
-        "lineNumber": 6,
-      },
-      ScriptLine {
-        "content": "  a.a // 18,3",
-        "highlight": true,
-        "lineNumber": 7,
-      },
-      ScriptLine {
-        "content": "  return (",
-        "highlight": false,
-        "lineNumber": 8,
-      },
-      ScriptLine {
-        "content": "    <MyComp data-uid={'aaa'}>",
-        "highlight": false,
-        "lineNumber": 9,
-      },
-      ScriptLine {
-        "content": "      hello!",
-        "highlight": false,
-        "lineNumber": 10,
-      },
-    ],
-  },
-]
-`;
-
-exports[`UiJsxCanvas runtime errors handles an non-existent component gracefully 1`] = `
-Array [
-  Object {
-    "columnNumber": undefined,
-    "lineNumber": undefined,
-    "message": "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.",
-    "name": "Error",
-    "originalCode": undefined,
-  },
-]
-`;
-
-exports[`UiJsxCanvas runtime errors handles an undefined component gracefully 1`] = `
-Array [
-  Object {
-    "columnNumber": undefined,
-    "lineNumber": undefined,
-    "message": "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.",
-    "name": "Error",
-    "originalCode": undefined,
-  },
-]
-`;
-
-exports[`UiJsxCanvas runtime errors throws an error! 1`] = `
-Array [
-  Object {
-    "columnNumber": 2,
-    "lineNumber": 4,
-    "message": "a is not defined",
-    "name": "ReferenceError",
-    "originalCode": Array [
-      ScriptLine {
-        "content": "import * as React from \\"react\\"",
-        "highlight": false,
-        "lineNumber": 1,
-      },
-      ScriptLine {
-        "content": "import { View, Storyboard, Scene } from 'utopia-api'",
-        "highlight": false,
-        "lineNumber": 2,
-      },
-      ScriptLine {
-        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": false,
-        "lineNumber": 3,
-      },
-      ScriptLine {
-        "content": "a.a // 16,1 this shall throw an error!",
-        "highlight": true,
-        "lineNumber": 4,
-      },
-      ScriptLine {
-        "content": "export var App = (props) => {",
-        "highlight": false,
-        "lineNumber": 5,
-      },
-      ScriptLine {
-        "content": "  return (<MyComp data-uid={'aaa'}/>)",
-        "highlight": false,
-        "lineNumber": 6,
-      },
-      ScriptLine {
-        "content": "}",
-        "highlight": false,
-        "lineNumber": 7,
-      },
-    ],
-  },
-]
 `;

@@ -27,6 +27,7 @@ import {
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
+import { TextDocumentChangeEvent, TextDocumentWillSaveEvent, Uri } from 'vscode'
 
 const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
 
@@ -98,6 +99,147 @@ function watchForUnsavedContentChangesFromFS(utopiaFS: UtopiaFSExtension) {
 let dirtyFiles: Set<string> = new Set()
 let incomingFileChanges: Set<string> = new Set()
 
+interface UpdateDirtyContentChange {
+  type: 'UPDATE_DIRTY_CONTENT'
+  path: string
+  uri: Uri
+}
+
+function updateDirtyContentChange(path: string, uri: Uri): UpdateDirtyContentChange {
+  return {
+    type: 'UPDATE_DIRTY_CONTENT',
+    path: path,
+    uri: uri,
+  }
+}
+
+interface DidChangeTextChange {
+  type: 'DID_CHANGE_TEXT'
+  path: string
+  event: TextDocumentChangeEvent
+}
+
+function didChangeTextChange(path: string, event: TextDocumentChangeEvent): DidChangeTextChange {
+  return {
+    type: 'DID_CHANGE_TEXT',
+    path: path,
+    event: event,
+  }
+}
+
+interface WillSaveText {
+  type: 'WILL_SAVE_TEXT'
+  path: string
+  event: TextDocumentWillSaveEvent
+}
+
+function willSaveText(path: string, event: TextDocumentWillSaveEvent): WillSaveText {
+  return {
+    type: 'WILL_SAVE_TEXT',
+    path: path,
+    event: event,
+  }
+}
+
+interface DidClose {
+  type: 'DID_CLOSE'
+  path: string
+}
+
+function didClose(path: string): DidClose {
+  return {
+    type: 'DID_CLOSE',
+    path: path,
+  }
+}
+
+type SubscriptionWork = UpdateDirtyContentChange | DidChangeTextChange | WillSaveText | DidClose
+let pendingWork: Array<SubscriptionWork> = []
+
+function minimisePendingWork(): void {
+  let newPendingWork: Array<SubscriptionWork> = []
+  for (const workItem of pendingWork) {
+    const latestWorkItem = newPendingWork[newPendingWork.length - 1]
+    if (
+      latestWorkItem != null &&
+      latestWorkItem.type === 'DID_CHANGE_TEXT' &&
+      workItem.type === 'DID_CHANGE_TEXT'
+    ) {
+      // In this case `workItem` is for a subsequent change that happened after `latestWorkItem`.
+      if (latestWorkItem.path === workItem.path) {
+        newPendingWork.splice(newPendingWork.length - 1, 1, workItem)
+      } else {
+        newPendingWork.push(workItem)
+      }
+    } else {
+      newPendingWork.push(workItem)
+    }
+  }
+  pendingWork = newPendingWork
+}
+
+async function doSubscriptionWork(work: SubscriptionWork): Promise<void> {
+  switch (work.type) {
+    case 'DID_CHANGE_TEXT': {
+      const { path, event } = work
+      if (event.document.isDirty) {
+        // New unsaved change
+        dirtyFiles.add(path)
+      }
+      if (dirtyFiles.has(path)) {
+        if (incomingFileChanges.has(path)) {
+          // This change actually came from Utopia, so we don't want to re-write it to the FS
+          incomingFileChanges.delete(path)
+        } else {
+          const fullText = event.document.getText()
+          await writeFileUnsavedContentAsUTF8(path, fullText)
+        }
+      }
+      break
+    }
+    case 'UPDATE_DIRTY_CONTENT': {
+      const { path, uri } = work
+      if (!incomingFileChanges.has(path)) {
+        await updateDirtyContent(uri)
+      }
+      break
+    }
+    case 'WILL_SAVE_TEXT': {
+      const { path, event } = work
+      dirtyFiles.delete(path)
+
+      break
+    }
+    case 'DID_CLOSE': {
+      const { path } = work
+      if (dirtyFiles.has(path)) {
+        // User decided to bin unsaved changes when closing the document
+        clearFileUnsavedContent(path)
+        dirtyFiles.delete(path)
+      }
+
+      break
+    }
+    default:
+      const _exhaustiveCheck: never = work
+      console.error(`Unhandled work type ${JSON.stringify(work)}`)
+  }
+}
+
+const SUBSCRIPTION_POLLING_TIMEOUT = 100
+
+async function runPendingSubscriptionChanges(): Promise<void> {
+  minimisePendingWork()
+  for (const work of pendingWork) {
+    await doSubscriptionWork(work)
+  }
+
+  pendingWork = []
+  setTimeout(runPendingSubscriptionChanges, SUBSCRIPTION_POLLING_TIMEOUT)
+}
+
+setTimeout(runPendingSubscriptionChanges, SUBSCRIPTION_POLLING_TIMEOUT)
+
 function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: string) {
   function isUtopiaDocument(document: vscode.TextDocument): boolean {
     return document.uri.scheme === projectID
@@ -110,25 +252,14 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
         if (resource.scheme === projectID) {
           // Don't act on changes to other documents
           const path = fromUtopiaURI(resource)
-          if (event.document.isDirty) {
-            // New unsaved change
-            dirtyFiles.add(path)
-            if (incomingFileChanges.has(path)) {
-              // This change actually came from Utopia, so we don't want to re-write it to the FS
-              incomingFileChanges.delete(path)
-            } else {
-              const fullText = event.document.getText()
-              writeFileUnsavedContentAsUTF8(path, fullText)
-            }
-          }
+          pendingWork.push(didChangeTextChange(path, event))
         }
       }
     }),
     vscode.workspace.onWillSaveTextDocument((event) => {
       if (isUtopiaDocument(event.document)) {
         const path = fromUtopiaURI(event.document.uri)
-        dirtyFiles.delete(path)
-
+        pendingWork.push(willSaveText(path, event))
         if (event.reason === vscode.TextDocumentSaveReason.Manual) {
           const formattedCode = applyPrettier(event.document.getText(), false).formatted
           event.waitUntil(Promise.resolve([new vscode.TextEdit(entireDocRange(), formattedCode)]))
@@ -138,19 +269,13 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
     vscode.workspace.onDidCloseTextDocument((document) => {
       if (isUtopiaDocument(document)) {
         const path = fromUtopiaURI(document.uri)
-        if (dirtyFiles.has(path)) {
-          // User decided to bin unsaved changes when closing the document
-          clearFileUnsavedContent(path)
-          dirtyFiles.delete(path)
-        }
+        pendingWork.push(didClose(path))
       }
     }),
     vscode.workspace.onDidOpenTextDocument((document) => {
       if (isUtopiaDocument(document)) {
         const path = fromUtopiaURI(document.uri)
-        if (!incomingFileChanges.has(path)) {
-          updateDirtyContent(document.uri)
-        }
+        pendingWork.push(updateDirtyContentChange(path, document.uri))
       }
     }),
   )
@@ -214,7 +339,12 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       case 'SET_FOLLOW_SELECTION_CONFIG':
         vscode.workspace
           .getConfiguration()
-          .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Global)
+          .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Workspace)
+        break
+      case 'ACCUMULATED_TO_VSCODE_MESSAGE':
+        for (const innerMessage of message.messages) {
+          handleMessage(innerMessage)
+        }
         break
       default:
         const _exhaustiveCheck: never = message
@@ -229,7 +359,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       updateDecorations(currentDecorations)
     }),
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      if (event.kind != null && event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
+      if (event.kind !== undefined && event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
         cursorPositionChanged(event)
       }
     }),
@@ -256,7 +386,7 @@ function entireDocRange() {
 async function clearDirtyFlags(resource: vscode.Uri): Promise<void> {
   // File saved on Utopia side, so FS has been updated, so we want VS Code to revert
   // to the now saved version
-  vscode.commands.executeCommand('workbench.action.files.revertResource', resource)
+  return vscode.commands.executeCommand('workbench.action.files.revertResource', resource)
 }
 
 async function updateDirtyContent(resource: vscode.Uri): Promise<void> {

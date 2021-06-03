@@ -1,5 +1,4 @@
 import * as OPI from 'object-path-immutable'
-import * as R from 'ramda'
 import { FlexLength, LayoutSystem, Sides } from 'utopia-api'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
@@ -23,6 +22,7 @@ import {
   stripNulls,
   flatMapArray,
   uniqBy,
+  reverse,
 } from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
@@ -780,7 +780,7 @@ export const MetadataUtils = {
         unfurledComponents,
       } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(path, metadata)
       const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
-      const reversedChildren = R.reverse(childrenIncludingFocusedElements)
+      const reversedChildren = reverse(childrenIncludingFocusedElements)
 
       const isCollapsed = EP.containsPath(path, collapsedViews)
       fastForEach(reversedChildren, (childElement) => {
@@ -841,16 +841,12 @@ export const MetadataUtils = {
       const parentFrames: Array<LocalRectangle> = Utils.stripNulls(
         paths.map((path) => this.getFrame(path, metadata)),
       )
-      return R.reduce(
-        (working, next) => {
-          return Utils.offsetRect(working, {
-            x: -next.x,
-            y: -next.y,
-          } as LocalRectangle)
-        },
-        Utils.asLocal(frame),
-        parentFrames,
-      )
+      return parentFrames.reduce((working, next) => {
+        return Utils.offsetRect(working, {
+          x: -next.x,
+          y: -next.y,
+        } as LocalRectangle)
+      }, Utils.asLocal(frame))
     }
   },
   getElementLabelFromProps(element: ElementInstanceMetadata): string | null {

@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { KeyCharacter, KeysPressed } from '../../utils/keyboard'
 import { CanvasPoint } from '../../core/shared/math-utils'
 import { EditorAction } from '../editor/action-types'
@@ -42,43 +41,47 @@ const CanvasControl = {
   },
   scaleCircleAnchor: function <T extends CircleControlProps>(props: T, scale: number): T {
     const r = props.r / scale
-    return R.merge(props, {
+    return {
+      ...props,
       cx: props.cx,
       cy: props.cy,
       r: r,
       strokeWidth: props.strokeWidth / scale,
-    } as T)
+    } as T
   },
   scaleEllipseAnchor: function <T extends EllipseControlProps>(props: T, scale: number): T {
-    return R.merge(props, {
+    return {
+      ...props,
       cx: props.cx,
       cy: props.cy,
       rx: props.rx / scale,
       ry: props.ry / scale,
       strokeWidth: props.strokeWidth / scale,
-    } as T)
+    } as T
   },
   scaleRectAnchor: function <T extends RectControlProps>(props: T, scale: number): T {
     const width = props.width / scale
     const height = props.height / scale
     const xOffset = (props.width - width) / 2
     const yOffset = (props.height - height) / 2
-    return R.merge(props, {
+    return {
+      ...props,
       x: props.x + xOffset,
       y: props.y + yOffset,
       width: width,
       height: height,
       strokeWidth: props.strokeWidth / scale,
-    } as T)
+    } as T
   },
   scaleLine: function (
     x: number,
     y: number,
   ): (props: { transform?: string }, scale: number) => any {
     return (props: { transform?: string }, scale: number): any => {
-      return R.merge(props, {
+      return {
+        ...props,
         transform: `${props.transform ?? ''} translate(${x}, ${y}) scale(${1 / scale})`,
-      })
+      }
     }
   },
   scaleStrokeOnly: function <P extends { strokeWidth: number; strokeDasharray?: string }>(
@@ -93,15 +96,17 @@ const CanvasControl = {
       })
       .join(' ')
 
-    return R.merge(props, {
+    return {
+      ...props,
       strokeWidth: props.strokeWidth / scale,
       strokeDasharray: scaledStrokeDasharray,
-    } as P)
+    } as P
   },
   scaleViaTransform: function (props: { transform?: string }, scale: number): any {
-    return R.merge(props, {
+    return {
+      ...props,
       transform: `${props.transform ?? ''} scale(${1 / scale})`,
-    })
+    }
   },
 }
 

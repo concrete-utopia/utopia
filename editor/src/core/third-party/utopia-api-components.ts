@@ -33,8 +33,6 @@ export const UtopiaApiComponents: DependencyBoundDescriptors = {
     name: 'utopia-api',
     components: [
       createBasicUtopiaComponent('Ellipse', 'Ellipse', StyleObjectProps),
-      createBasicUtopiaComponent('Layoutable', 'Layoutable', StyleObjectProps),
-      createBasicUtopiaComponent('Positionable', 'Positionable', StyleObjectProps),
       createBasicUtopiaComponent('Rectangle', 'Rectangle', StyleObjectProps),
       createBasicUtopiaComponent('Text', 'Text', StyleObjectProps),
       createBasicUtopiaComponent('View', 'View', StyleObjectProps),

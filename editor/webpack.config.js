@@ -16,7 +16,7 @@ const Development = 'development'
 const verbose = process.env.VERBOSE === 'true'
 const performance = process.env.PERFORMANCE === 'true' // This is for performance testing, which combines the dev server with production config
 const hot = !performance && process.env.HOT === 'true' // For running the webpack-dev-server in hot mode
-const mode = process.env.WEBPACK_MODE || (performance ? Production : Development) // Default to 'development' unless we are running the performance test
+const mode = process.env.WEBPACK_MODE ?? (performance ? Production : Development) // Default to 'development' unless we are running the performance test
 const actualMode = mode === Staging ? Production : mode
 const isDev = mode === Development || performance
 const isStaging = mode === Staging
@@ -153,7 +153,7 @@ const config = {
     }),
     new InterpolateHtmlPlugin(HtmlWebpackPlugin, {
       // This plugin replaces variables of the form %VARIABLE% with the value provided in this object
-      UTOPIA_SHA: process.env.UTOPIA_SHA || 'nocommit',
+      UTOPIA_SHA: process.env.UTOPIA_SHA ?? 'nocommit',
       UTOPIA_DOMAIN: BaseDomain,
       VSCODE_DOMAIN: VSCodeBaseDomain,
     }),
@@ -217,6 +217,8 @@ const config = {
     exprContextCritical: false,
 
     rules: [
+      // handles jest-message-utils importing 'graceful-fs'
+      { test: /graceful-fs/, use: 'null-loader' },
       // Match typescript
       {
         exclude: /node_modules(?!\/utopia-api)/,

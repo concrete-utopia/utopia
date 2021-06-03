@@ -1,5 +1,4 @@
 import React = require('react')
-import * as R from 'ramda'
 import { UseSubmitValueFactory } from '../common/property-path-hooks'
 import { isRight } from '../../../core/shared/either'
 import { ControlStatus, ControlStyles } from '../common/control-status'
@@ -22,6 +21,7 @@ import { BackgroundPicker } from '../sections/style-section/background-subsectio
 import { StringControl } from './string-control'
 import { UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
+import Utils from '../../../utils/utils'
 
 export interface BackgroundThumbnailControlProps {
   value: CSSBackgroundLayer
@@ -177,7 +177,7 @@ export const BackgroundSolidOrGradientThumbnailControl = betterReactMemo(
       <div
         key={props.id}
         id={`trigger-${props.id}`}
-        className={` hexField ${R.pathOr('', ['controlClassName'], props)}`}
+        className={` hexField ${Utils.pathOr('', ['controlClassName'], props)}`}
         style={props.style}
       >
         {picker}

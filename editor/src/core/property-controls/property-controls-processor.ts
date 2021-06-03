@@ -34,7 +34,7 @@ export const initPropertyControlsProcessor = (
     currentNodeModules = applyNodeModulesUpdate(currentNodeModules, nodeModulesUpdate)
     const resolvedNpmDependencies = resolvedDependencyVersions(npmDependencies, currentNodeModules)
 
-    incorporateBuildResult(currentNodeModules, bundledProjectFiles)
+    incorporateBuildResult(currentNodeModules, projectContents, bundledProjectFiles)
 
     let propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
       resolvedNpmDependencies,

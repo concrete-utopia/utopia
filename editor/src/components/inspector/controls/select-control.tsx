@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import * as React from 'react'
 import Select, { components, createFilter, FormatOptionLabelMeta, InputProps } from 'react-select'
 import CreatableSelect, { Props as SelectProps } from 'react-select/creatable'
@@ -125,7 +124,7 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
 
   let selectProperties: SelectProps<SelectOption> = {
     formatCreateLabel: formatCreateLabel,
-    className: `${R.pathOr('', ['controlClassName'], props)} flex-auto`,
+    className: `${Utils.pathOr('', ['controlClassName'], props)} flex-auto`,
     classNamePrefix: 'inspector-select',
     isMulti: false,
     openMenuOnFocus: true,

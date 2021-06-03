@@ -246,7 +246,7 @@ const initPreview = () => {
       await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
     ).buildResult
 
-    incorporateBuildResult(nodeModules, bundledProjectFiles)
+    incorporateBuildResult(nodeModules, projectContents, bundledProjectFiles)
 
     const requireFn = getRequireFn(
       onRemoteModuleDownload,

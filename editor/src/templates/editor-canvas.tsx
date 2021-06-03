@@ -1,5 +1,4 @@
 import * as update from 'immutability-helper'
-import * as R from 'ramda'
 import * as React from 'react'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'
@@ -77,6 +76,7 @@ import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
 import { CanvasMousePositionRaw, updateGlobalPositions } from '../utils/global-positions'
+import { last, reverse } from '../core/shared/array-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -369,7 +369,7 @@ export function collectControlsDependencies(
 
 export function getNewCanvasControlsCursor(canvasCursor: CanvasCursor): CSSCursor | null {
   if (canvasCursor.fixed == null) {
-    return R.propOr(null, 'cursor', R.last(canvasCursor.mouseOver)!)
+    return Utils.propOr(null, 'cursor', last(canvasCursor.mouseOver)!)
   } else {
     return canvasCursor.fixed.cursor
   }
@@ -420,9 +420,9 @@ function controlFragmentContainingPoint(
 
   switch (control.type) {
     case 'svgControl':
-      return R.reverse(control.controls).reduce(reduction, null)
+      return reverse(control.controls).reduce(reduction, null)
     case 'divControl':
-      return R.reverse(control.controls).reduce(reduction, null)
+      return reverse(control.controls).reduce(reduction, null)
     case 'image': {
       const containsPoint = Utils.rectContainsPoint(control.props as CanvasRectangle, point)
       return containsPoint ? control : null
@@ -466,7 +466,7 @@ function topMostControlFragmentContainingPoint(
   controls: Array<ControlOrHigherOrderControl>,
   point: CanvasPoint,
 ): SvgFragmentControl | null {
-  return R.reverse(controls).reduce((working: SvgFragmentControl | null, control) => {
+  return reverse(controls).reduce((working: SvgFragmentControl | null, control) => {
     if (working != null) {
       return working
     } else {
@@ -610,7 +610,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     if (this.props.editor.mode.type === 'insert') {
       if (
         this.props.editor.mode.subject != null &&
-        R.path(['superType', 'template'], this.props.editor.mode.subject) === 'text'
+        Utils.path(['superType', 'template'], this.props.editor.mode.subject) === 'text'
       ) {
         return CSSCursor.TextInsert
       } else {

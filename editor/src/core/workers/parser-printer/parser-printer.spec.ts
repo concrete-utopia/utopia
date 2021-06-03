@@ -55,6 +55,7 @@ import {
   clearParseResultPassTimes,
   clearParseResultUniqueIDsAndEmptyBlocks,
   clearTopLevelElementUniqueIDsAndEmptyBlocks,
+  elementsStructure,
   ensureElementsHaveUID,
   JustImportViewAndReact,
   PrintableProjectContent,
@@ -67,6 +68,7 @@ import { emptyComments } from './parser-printer-comments'
 import { optionalMap } from '../../shared/optional-utils'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
+import { emptySet } from '../../shared/set-utils'
 
 describe('JSX parser', () => {
   it('parses the code when it is a var', () => {
@@ -2340,7 +2342,7 @@ export var Whatever = (props) => <View>
   <MyComp layout={{left: 100}} />
 </View>
 `
-    const actualResult = parseCode('code.tsx', code, null)
+    const actualResult = parseCode('code.tsx', code, null, emptySet())
     if (isParseSuccess(actualResult)) {
       expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(1)
       expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(0)
@@ -4358,6 +4360,26 @@ export var whatever2 = (props) => <View data-uid='aaa'>
     const dataUIDProperty = FastCheck.property(printableArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
   })
+  it('when react is not imported treat components as arbitrary blocks', () => {
+    const code = `
+export var whatever = (props) => <View data-uid='aaa'>
+  <View data-uid='aaa' />
+</View>
+`
+    const actualResult = testParseCode(code)
+    foldParsedTextFile(
+      (_) => fail('Unable to parse code.'),
+      (success) => {
+        expect(elementsStructure(success.topLevelElements)).toMatchInlineSnapshot(`
+          "UNPARSED_CODE
+          ARBITRARY_JS_BLOCK
+          UNPARSED_CODE"
+        `)
+      },
+      (_) => fail('Unable to parse code.'),
+      actualResult,
+    )
+  })
 })
 
 describe('SourceMap', () => {
@@ -4546,6 +4568,7 @@ describe('lintAndParse', () => {
       )
     })`,
       null,
+      emptySet(),
     )
     expect(clearParseResultPassTimes(result)).toMatchSnapshot()
   })

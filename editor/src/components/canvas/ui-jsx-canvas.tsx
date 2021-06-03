@@ -110,7 +110,6 @@ UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
 export interface UiJsxCanvasProps {
   offset: CanvasVector
   scale: number
-  uiFileCode: string
   uiFilePath: string
   selectedViews: Array<ElementPath>
   requireFn: UtopiaRequireFn
@@ -119,6 +118,7 @@ export interface UiJsxCanvasProps {
   editedTextElement: ElementPath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
+  domWalkerInvalidateCount: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
     cachedPaths: Array<ElementPath>,
@@ -194,7 +194,6 @@ export function pickUiJsxCanvasProps(
     return {
       offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
-      uiFileCode: uiFile.fileContents.code,
       uiFilePath: uiFilePath,
       selectedViews: editor.selectedViews,
       requireFn: requireFn,
@@ -203,6 +202,7 @@ export function pickUiJsxCanvasProps(
       editedTextElement: editedTextElement,
       base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
+      domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
       onDomReport: onDomReport,
       walkDOM: walkDOM,
       imports_KILLME: imports_KILLME,
@@ -258,6 +258,11 @@ export const UiJsxCanvas = betterReactMemo(
     clearConsoleLogs()
     proxyConsole(console, addToConsoleLogs)
 
+    if (clearErrors != null) {
+      // a new canvas render, a new chance at having no errors
+      clearErrors()
+    }
+
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
     // Handle the imports changing, this needs to run _before_ any require function
@@ -273,12 +278,6 @@ export const UiJsxCanvas = betterReactMemo(
     let topLevelComponentRendererComponents = React.useRef<
       MapLike<MapLike<ComponentRendererComponent>>
     >({})
-
-    if (clearErrors != null) {
-      // a new canvas render, a new chance at having no errors
-      // FIXME This is illegal! The line below is triggering a re-render
-      clearErrors()
-    }
 
     // TODO after merge requireFn can never be null
     if (requireFn != null) {
@@ -410,6 +409,7 @@ export const UiJsxCanvas = betterReactMemo(
               >
                 <CanvasContainer
                   mountCount={props.mountCount}
+                  domWalkerInvalidateCount={props.domWalkerInvalidateCount}
                   walkDOM={walkDOM}
                   selectedViews={props.selectedViews}
                   scale={scale}
@@ -498,6 +498,7 @@ export interface CanvasContainerProps {
   canvasRootElementElementPath: ElementPath
   validRootPaths: Array<ElementPath>
   mountCount: number
+  domWalkerInvalidateCount: number
   scrollAnimation: boolean
   canvasInteractionHappening: boolean
 }

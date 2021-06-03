@@ -1,3 +1,4 @@
+import { strToBase64, base64ToStr } from '@root/encoding/base64'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { parseUtopiaError } from '../../third-party/react-error-overlay/utils/parseUtopiaError'
 import { getSourceMapConsumer } from '../../third-party/react-error-overlay/utils/getSourceMap'
@@ -8,6 +9,7 @@ import {
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import { NO_OP } from './utils'
 import { take } from './array-utils'
+import parseError from '../../third-party/react-error-overlay/utils/parser'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
@@ -26,13 +28,16 @@ export type ErrorHandler = (e: Error) => void
 
 const UTOPIA_FUNCTION_ROOT_NAME = 'SafeFunctionCurriedErrorHandler'
 
+export const SOURCE_MAP_PREFIX = `;sourceMap=`
+
 export function processErrorWithSourceMap(
-  onError: ErrorHandler,
-  error: Error,
-  sourceCode: string,
-  rawSourceMap: RawSourceMap | null,
+  error: Error | FancyError,
   inSafeFunction: boolean,
-): void {
+): FancyError {
+  if ((error as FancyError)?.stackFrames != null) {
+    // this Error is already processed!
+    return error
+  }
   const errorStack = error.stack
   if (errorStack != null) {
     try {
@@ -46,8 +51,22 @@ export function processErrorWithSourceMap(
           inSafeFunction ? stackLine.replace(UTOPIA_FUNCTION_ROOT_NAME, 'eval') : stackLine,
         )
         .join('\n')
-      const fixedSourceCode = sourceCode.split('\n')
-      const stackFrames = parseUtopiaError(error, fixedSourceCode)
+      const parsedStackFrames = parseError(error)
+
+      // TODO turn ;sourceMap= into const
+      let rawSourceMap: RawSourceMap | null = null
+      let possibleSourceMapSegment: string | null = null
+      if (0 in parsedStackFrames) {
+        possibleSourceMapSegment =
+          parsedStackFrames[0].fileName?.split(SOURCE_MAP_PREFIX)[1] ?? null
+      }
+      if (possibleSourceMapSegment != null) {
+        rawSourceMap = JSON.parse(base64ToStr(possibleSourceMapSegment))
+      }
+      const sourceCode = rawSourceMap?.transpiledContentUtopia
+
+      const fixedSourceCode = sourceCode?.split('\n') ?? []
+      const stackFrames = parseUtopiaError(parsedStackFrames, fixedSourceCode)
       const stackFramesWithoutSafeFn = inSafeFunction
         ? unmapUtopiaSafeFunction(stackFrames)
         : stackFrames
@@ -63,7 +82,16 @@ export function processErrorWithSourceMap(
       console.error('Source map handling threw an error.', sourceMapError)
     }
   }
-  onError(error)
+  return error
+}
+
+function processErrorAndCallHandler(
+  onError: ErrorHandler,
+  error: Error,
+  inSafeFunction: boolean,
+): void {
+  const fancyError = processErrorWithSourceMap(error, inSafeFunction)
+  onError(fancyError)
 }
 
 export const SafeFunctionCurriedErrorHandler = {
@@ -71,7 +99,7 @@ export const SafeFunctionCurriedErrorHandler = {
     async: boolean,
     cacheableContext: any,
     code: string,
-    sourceMap: RawSourceMap | null,
+    sourceMapWithoutTranspiledCode: RawSourceMap | null,
     extraParamKeys: Array<string> = [],
   ): (onError: ErrorHandler) => (...params: Array<unknown>) => unknown {
     const [contextKeys, contextValues] = Object.keys(cacheableContext).reduce(
@@ -82,15 +110,32 @@ export const SafeFunctionCurriedErrorHandler = {
       },
       [[] as string[], [] as any[]],
     )
+    const sourceMap: RawSourceMap | null =
+      sourceMapWithoutTranspiledCode != null
+        ? { ...sourceMapWithoutTranspiledCode, transpiledContentUtopia: code }
+        : null
+
+    let sourceMapBase64 = strToBase64(JSON.stringify(sourceMap))
+
+    const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}(${sourceMap?.sources?.[0]})`
+
+    const codeWithSourceMapAttached = `${code}
+
+    //# sourceURL=${fileName}${SOURCE_MAP_PREFIX}${sourceMapBase64}
+    `
+
     const FunctionOrAsyncFunction = async ? AsyncFunction : Function
-    const fn = new FunctionOrAsyncFunction(...contextKeys.concat(extraParamKeys), code)
+    const fn = new FunctionOrAsyncFunction(
+      ...contextKeys.concat(extraParamKeys),
+      codeWithSourceMapAttached,
+    )
     fn.displayName = UTOPIA_FUNCTION_ROOT_NAME
     const safeFn = (onError: ErrorHandler) => (...params: Array<unknown>) => {
       try {
         const [boundThis, ...otherParams] = params
         return fn.bind(boundThis)(...contextValues, ...otherParams)
       } catch (e) {
-        processErrorWithSourceMap(onError, e, code, sourceMap, true)
+        processErrorAndCallHandler(onError, e, true)
       }
     }
     return safeFn
@@ -101,6 +146,7 @@ export function SafeFunction(
   async: boolean,
   cacheableContext: any,
   code: string,
+  sourceMapWithoutTranspiledCode: RawSourceMap | null,
   extraParamKeys: Array<string>,
   onError: ErrorHandler,
 ): (...params: Array<any>) => any {
@@ -109,11 +155,11 @@ export function SafeFunction(
       async,
       cacheableContext,
       code,
-      null,
+      sourceMapWithoutTranspiledCode,
       extraParamKeys,
     )(onError)
   } catch (e) {
-    processErrorWithSourceMap(onError, e, code, null, true)
+    processErrorAndCallHandler(onError, e, true)
     return NO_OP
   }
 }

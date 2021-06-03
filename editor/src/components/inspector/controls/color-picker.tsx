@@ -1,6 +1,5 @@
 import * as Chroma from 'chroma-js'
-import * as R from 'ramda'
-import { WindowPoint } from '../../../core/shared/math-utils'
+import { clamp, WindowPoint } from '../../../core/shared/math-utils'
 import { ControlStyleDefaults, getControlStyles } from '../common/control-status'
 import {
   CSSColor,
@@ -277,8 +276,8 @@ export class ColorPickerInner extends React.Component<
 
   // Saturation and Value (SV) slider functions
   setSVFromClientPosition = (clientX: number, clientY: number, transient: boolean) => {
-    const x = R.clamp(0, this.fullWidth, clientX - this.SVOrigin.x)
-    const y = R.clamp(0, this.fullHeight, clientY - this.SVOrigin.y)
+    const x = clamp(0, this.fullWidth, clientX - this.SVOrigin.x)
+    const y = clamp(0, this.fullHeight, clientY - this.SVOrigin.y)
 
     const newS = x / this.fullWidth
     const newV = 1 - y / this.fullHeight
@@ -313,7 +312,7 @@ export class ColorPickerInner extends React.Component<
 
   // Hue slider functions
   setHueFromClientX = (clientX: number, transient: boolean) => {
-    const x = R.clamp(0, this.paddedWidth, clientX - this.HueOriginLeft)
+    const x = clamp(0, this.paddedWidth, clientX - this.HueOriginLeft)
     const newHue = Math.round(360 * (x / this.paddedWidth))
     this.setNewHSVa(newHue, undefined, undefined, undefined, transient)
   }
@@ -343,7 +342,7 @@ export class ColorPickerInner extends React.Component<
 
   // Alpha slider functions
   setAlphaFromClientX = (clientX: number, transient: boolean) => {
-    const x = R.clamp(0, this.paddedWidth, clientX - this.AlphaOriginLeft)
+    const x = clamp(0, this.paddedWidth, clientX - this.AlphaOriginLeft)
     const newAlpha = Number((x / this.paddedWidth).toFixed(2))
     this.setNewHSVa(undefined, undefined, undefined, newAlpha, transient)
   }

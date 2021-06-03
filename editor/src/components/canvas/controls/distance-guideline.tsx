@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import * as React from 'react'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
@@ -327,8 +326,8 @@ export class DistanceGuideline extends React.Component<DistanceGuidelineProps> {
       )
     }
 
-    const xAxisOverlaps = R.any(leftOfRightEdge, guidelines) && R.any(rightOfLeftEdge, guidelines)
-    const yAxisOverlaps = R.any(belowTopEdge, guidelines) && R.any(aboveBottomEdge, guidelines)
+    const xAxisOverlaps = guidelines.some(leftOfRightEdge) && guidelines.some(rightOfLeftEdge)
+    const yAxisOverlaps = guidelines.some(belowTopEdge) && guidelines.some(aboveBottomEdge)
     return xAxisOverlaps && yAxisOverlaps
   }
 

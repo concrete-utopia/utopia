@@ -1,7 +1,13 @@
-jest.mock('../editor/stored-state', () => ({
-  loadStoredState: () => Promise.resolve(null),
-  saveStoredState: () => Promise.resolve(),
-}))
+import { disableStoredStateforTests } from '../editor/stored-state'
+try {
+  jest.mock('../editor/stored-state', () => ({
+    loadStoredState: () => Promise.resolve(null),
+    saveStoredState: () => Promise.resolve(),
+  }))
+} catch (e) {
+  // not jest env, disable stored state manually
+  disableStoredStateforTests()
+}
 
 import * as React from 'react'
 
@@ -14,10 +20,14 @@ const monkeyCreateElement = (...params: any[]) => {
 }
 ;(React as any).createElement = monkeyCreateElement
 
-jest.setTimeout(10000) // in milliseconds
+try {
+  jest.setTimeout(10000) // in milliseconds
+} catch (e) {
+  // probably not Jest env
+}
 
 import { act, render, RenderResult } from '@testing-library/react'
-import * as Prettier from 'prettier'
+import * as Prettier from 'prettier/standalone'
 import create from 'zustand'
 import {
   foldParsedTextFile,
@@ -69,7 +79,11 @@ process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack ?? reason)
 })
 
-jest.mock('../../core/vscode/vscode-bridge')
+try {
+  jest.mock('../../core/vscode/vscode-bridge')
+} catch (e) {
+  // mock fails don't care
+}
 
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   return renderTestEditorWithModel(createTestProjectWithCode(appUiJsFileCode))

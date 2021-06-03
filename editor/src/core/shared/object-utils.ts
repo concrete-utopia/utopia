@@ -234,7 +234,9 @@ export function pick<T, K extends keyof T>(keys: Array<K>, obj: T): Pick<T, K> {
   var result = {} as Pick<T, K>
 
   fastForEach(keys, (key) => {
-    result[key] = obj[key]
+    if (key in obj) {
+      result[key] = obj[key]
+    }
   })
   return result
 }

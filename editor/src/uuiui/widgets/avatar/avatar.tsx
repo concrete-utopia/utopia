@@ -4,7 +4,8 @@ import { LoginState, User } from '../../../uuiui-deps'
 import { colorTheme } from '../../styles/theme'
 
 interface AvatarProps {
-  loginState: LoginState
+  userPicture: string | null
+  isLoggedIn: boolean
   size?: number
 }
 
@@ -22,9 +23,9 @@ export class Avatar extends React.Component<AvatarProps> {
 
   render() {
     const imageURL =
-      User.isLoggedIn(this.props.loginState) && this.props.loginState.user.picture !== null
-        ? `url(${this.props.loginState.user.picture})`
-        : User.isLoggedIn(this.props.loginState)
+      this.props.userPicture != null
+        ? `url(${this.props.userPicture})`
+        : this.props.isLoggedIn
         ? this.fallbackLoggedInImageURL
         : this.fallbackLoggedOutImageURL
 

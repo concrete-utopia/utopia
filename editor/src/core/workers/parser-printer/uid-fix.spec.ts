@@ -2,11 +2,12 @@ import { getUtopiaID } from '../../model/element-template-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import { isJSXElement, JSXElementChild } from '../../shared/element-template'
 import { isParseSuccess, ParsedTextFile } from '../../shared/project-file-types'
+import { emptySet } from '../../shared/set-utils'
 import { lintAndParse } from './parser-printer'
 
 describe('fixParseSuccessUIDs', () => {
   it('does not fix identical file', () => {
-    const newFile = lintAndParse('test.js', baseFileContents, baseFile)
+    const newFile = lintAndParse('test.js', baseFileContents, baseFile, emptySet())
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
@@ -20,8 +21,13 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('does not die on top level element change', () => {
-    const newFile = lintAndParse('test.js', baseFileWithTwoTopLevelComponents, null)
-    const newFileFixed = lintAndParse('test.js', baseFileWithTwoTopLevelComponents, baseFile)
+    const newFile = lintAndParse('test.js', baseFileWithTwoTopLevelComponents, null, emptySet())
+    const newFileFixed = lintAndParse(
+      'test.js',
+      baseFileWithTwoTopLevelComponents,
+      baseFile,
+      emptySet(),
+    )
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
       "4ed
@@ -37,7 +43,7 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('founds and fixes a single line change', () => {
-    const newFile = lintAndParse('test.js', fileWithSingleUpdateContents, baseFile)
+    const newFile = lintAndParse('test.js', fileWithSingleUpdateContents, baseFile, emptySet())
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
@@ -51,7 +57,7 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('avoids uid shifting caused by single prepending insertion', () => {
-    const newFile = lintAndParse('test.js', fileWithOneInsertedView, baseFile)
+    const newFile = lintAndParse('test.js', fileWithOneInsertedView, baseFile, emptySet())
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
         random-uuid
@@ -65,7 +71,7 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('double duplication', () => {
-    const newFile = lintAndParse('test.js', fileWithTwoDuplicatedViews, baseFile)
+    const newFile = lintAndParse('test.js', fileWithTwoDuplicatedViews, baseFile, emptySet())
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
         random-uuid
@@ -80,8 +86,13 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('insertion at the beginning', () => {
-    const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null)
-    const fourViews = lintAndParse('test.js', fileWithTwoDuplicatesAndInsertion, threeViews)
+    const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null, emptySet())
+    const fourViews = lintAndParse(
+      'test.js',
+      fileWithTwoDuplicatesAndInsertion,
+      threeViews,
+      emptySet(),
+    )
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
       "4ed
         random-uuid
@@ -95,6 +106,17 @@ describe('fixParseSuccessUIDs', () => {
           component"
     `)
   })
+
+  it('uids should match including root element when root element changes', () => {
+    const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet())
+    const secondResult = lintAndParse(
+      'test.js',
+      baseFileContentsWithDifferentBackground,
+      firstResult,
+      emptySet(),
+    )
+    expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
+  })
 })
 
 const baseFileContents = createFileText(`
@@ -102,6 +124,22 @@ export var SameFileApp = (props) => {
   return (
     <div
       style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 191,
+        }}
+      />
+    </div>
+  )
+}
+`)
+
+const baseFileContentsWithDifferentBackground = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'red' }}
     >
       <View
         style={{
@@ -269,7 +307,7 @@ function createFileText(codeSnippet: string): string {
   `
 }
 
-const baseFile = lintAndParse('test.js', baseFileContents, null)
+const baseFile = lintAndParse('test.js', baseFileContents, null, emptySet())
 
 function getUidTree(parsedFile: ParsedTextFile): string {
   if (!isParseSuccess(parsedFile)) {

@@ -1,13 +1,17 @@
 import * as deepEquals from 'fast-deep-equal'
 import { produce } from 'immer'
-import * as R from 'ramda'
 import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { ElementPath, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import {
+  ElementPath,
+  isParseSuccess,
+  isTextFile,
+  ProjectFile,
+} from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -34,7 +38,13 @@ import {
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
-import { saveToLocalStorage, saveToServer, pushProjectURLToBrowserHistory } from '../persistence'
+import {
+  saveToLocalStorage,
+  saveToServer,
+  pushProjectURLToBrowserHistory,
+  SaveType,
+  save,
+} from '../persistence'
 import { saveStoredState } from '../stored-state'
 import {
   DerivedState,
@@ -58,18 +68,14 @@ import {
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import {
   getContentsTreeFileFromString,
+  getProjectFileFromTree,
+  isProjectContentFile,
+  ProjectContentsTree,
   ProjectContentTreeRoot,
   walkContentsTree,
+  zipContentsTree,
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
-import {
-  applyProjectChanges,
-  collateProjectChanges,
-  sendCodeEditorDecorations,
-  sendSelectedElement,
-  sendSelectedElementChangedMessage,
-} from '../../../core/vscode/vscode-bridge'
-import { boundsInFile } from 'utopia-vscode-common'
 import { ElementPathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
@@ -87,13 +93,23 @@ import {
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
+import { pick } from '../../../core/shared/object-utils'
+import {
+  getSavedCodeFromTextFile,
+  getUnsavedCodeFromTextFile,
+} from '../../../core/model/project-file-utils'
+import {
+  AccumulatedVSCodeChanges,
+  emptyAccumulatedVSCodeChanges,
+  combineAccumulatedVSCodeChanges,
+  getVSCodeChanges,
+  sendVSCodeChanges,
+} from './vscode-changes'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
-
-type SaveType = 'model' | 'name' | 'both'
 
 function simpleStringifyAction(action: EditorAction): string {
   switch (action.action) {
@@ -312,55 +328,7 @@ function maybeRequestModelUpdateOnEditor(
   }
 }
 
-async function applyVSCodeDecorations(
-  oldEditorState: EditorState,
-  newEditorState: EditorState,
-): Promise<void> {
-  const oldHighlightBounds = getHighlightBoundsForUids(oldEditorState)
-  const newHighlightBounds = getHighlightBoundsForUids(newEditorState)
-  if (
-    oldEditorState.selectedViews !== newEditorState.selectedViews ||
-    oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
-    oldHighlightBounds !== newHighlightBounds
-  ) {
-    await sendCodeEditorDecorations(newEditorState)
-  }
-}
-
-async function updateSelectedElementChanged(
-  oldEditorState: EditorState,
-  newEditorState: EditorState,
-): Promise<void> {
-  if (
-    oldEditorState.selectedViews !== newEditorState.selectedViews &&
-    newEditorState.selectedViews.length > 0
-  ) {
-    await sendSelectedElement(newEditorState)
-  }
-}
-
-async function applyVSCodeChanges(
-  oldStoredState: EditorStore,
-  newEditorState: EditorState,
-  updateCameFromVSCode: boolean,
-): Promise<void> {
-  // Update the file system that is shared between Utopia and VS Code.
-  if (oldStoredState.editor.id != null && !updateCameFromVSCode) {
-    const changes = collateProjectChanges(
-      oldStoredState.editor.id,
-      oldStoredState.editor.projectContents,
-      newEditorState.projectContents,
-    )
-    await applyProjectChanges(changes)
-  }
-
-  // Keep the decorations synchronised from Utopia to VS Code.
-  await applyVSCodeDecorations(oldStoredState.editor, newEditorState)
-
-  // Handle the selected element having changed to inform the user what is going on.
-  await updateSelectedElementChanged(oldStoredState.editor, newEditorState)
-}
-
+let currentVSCodeChanges: AccumulatedVSCodeChanges = emptyAccumulatedVSCodeChanges
 let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
 export function editorDispatch(
@@ -370,7 +338,9 @@ export function editorDispatch(
   spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
-  const nameUpdated = dispatchedActions.some((action) => action.action === 'SET_PROJECT_NAME')
+  const nameUpdated = dispatchedActions.some(
+    (action) => action.action === 'SET_PROJECT_NAME' || action.action === 'SET_PROJECT_ID',
+  )
   const forceSave =
     nameUpdated || dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
   const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
@@ -506,13 +476,19 @@ export function editorDispatch(
   }
 
   // Chain off of the previous one to ensure the ordering is maintained.
-  applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(() =>
-    applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
-      console.error('Error sending updates to VS Code', error)
-    }),
+  currentVSCodeChanges = combineAccumulatedVSCodeChanges(
+    currentVSCodeChanges,
+    getVSCodeChanges(storedState.editor, frozenEditorState, updatedFromVSCode),
   )
+  applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
+    const changesToSend = currentVSCodeChanges
+    currentVSCodeChanges = emptyAccumulatedVSCodeChanges
+    return sendVSCodeChanges(changesToSend).catch((error) => {
+      console.error('Error sending updates to VS Code', error)
+    })
+  })
 
-  if (nameUpdated && frozenEditorState.id != null) {
+  if ((isLoadAction || nameUpdated) && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(
       `Utopia ${frozenEditorState.projectName}`,
       frozenEditorState.id,
@@ -549,7 +525,7 @@ function editorDispatchInner(
     // Run everything in a big chain.
     let result = processActions(boundDispatch, storedState, dispatchedActions, spyCollector)
 
-    const anyUndoOrRedo = R.any(isUndoOrRedo, dispatchedActions)
+    const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
 
     if (!PRODUCTION_ENV && typeof window.performance.mark === 'function') {
       window.performance.mark('derived_state_begin')
@@ -594,11 +570,7 @@ function editorDispatchInner(
       }
     }
 
-    const cleanedEditor = metadataChanged
-      ? removeNonExistingViewReferencesFromState(result.editor)
-      : result.editor
-
-    let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
+    let frozenEditorState: EditorState = optionalDeepFreeze(result.editor)
 
     let frozenDerivedState: DerivedState
     if (anyUndoOrRedo) {
@@ -662,33 +634,12 @@ function filterEditorForFiles(editor: EditorState) {
     ...editor,
     codeResultCache: {
       ...editor.codeResultCache,
-      cache: R.pick(allFiles, editor.codeResultCache.cache),
+      cache: pick(allFiles, editor.codeResultCache.cache),
     },
     codeEditorErrors: {
-      buildErrors: R.pick(allFiles, editor.codeEditorErrors.buildErrors),
-      lintErrors: R.pick(allFiles, editor.codeEditorErrors.lintErrors),
+      buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
+      lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
     },
-  }
-}
-
-async function save(
-  state: EditorState,
-  dispatch: EditorDispatch,
-  loginState: LoginState,
-  saveType: SaveType,
-  forceServerSave: boolean,
-) {
-  const modelChange =
-    saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
-  const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
-  try {
-    if (isLoggedIn(loginState)) {
-      saveToServer(dispatch, state.id, state.projectName, modelChange, nameChange, forceServerSave)
-    } else {
-      saveToLocalStorage(dispatch, state.id, state.projectName, modelChange, nameChange)
-    }
-  } catch (error) {
-    console.error('Save not successful', error)
   }
 }
 

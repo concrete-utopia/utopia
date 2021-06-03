@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
       - name: Get Previous Tag
         id: get-previous-tag
-        uses: WyriHaximus/github-action-get-previous-tag@v1.1.0
+        run: echo "::set-output name=tag::`git tag -l 'v*.*.*' | tail -n 1`"
         if: ${{ github.event.inputs.tag-name == null }}
       - name: Get Next Tags
         id: get-next-tags

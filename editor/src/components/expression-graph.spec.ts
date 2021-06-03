@@ -1,6 +1,5 @@
 import * as Chai from 'chai'
 const expect = Chai.expect
-import * as R from 'ramda'
 import Utils from '../utils/utils'
 
 import * as EG from './expression-graph'
@@ -19,10 +18,15 @@ function sortResults(
   function sortArray(
     array: Array<EvaluateExpressionResult<string>>,
   ): Array<EvaluateExpressionResult<string>> {
-    return R.sortBy((elem) => elem.reference, array)
+    let result = [...array]
+    result.sort((firstElem, secondElem) => firstElem.reference.localeCompare(secondElem.reference))
+    return result
   }
   if (results.type == 'success') {
-    return R.over(R.lensProp('results'), sortArray, results)
+    return {
+      ...results,
+      results: sortArray(results.results),
+    }
   } else {
     return results
   }
@@ -70,7 +74,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
@@ -181,7 +185,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
@@ -272,7 +276,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
@@ -357,7 +361,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
@@ -418,7 +422,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }

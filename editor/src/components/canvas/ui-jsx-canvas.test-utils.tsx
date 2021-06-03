@@ -1,4 +1,4 @@
-import * as Prettier from 'prettier'
+const Prettier = jest != null ? require('prettier') : require('prettier/standalone') // TODO split these files, standalone prettier is not working in unit tests
 import * as React from 'react'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 applyUIDMonkeyPatch()
@@ -9,7 +9,7 @@ import * as UUIUI from '../../uuiui'
 import * as ANTD from 'antd'
 import * as EmotionReact from '@emotion/react'
 
-import { FancyError } from '../../core/shared/code-exec-utils'
+import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import {
   ElementInstanceMetadata,
@@ -50,6 +50,7 @@ import { directory } from '../../core/model/project-file-utils'
 import { contentsToTree } from '../assets'
 import { MapLike } from 'typescript'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -100,6 +101,12 @@ export function stripUidsFromMetadata(metadata: ElementInstanceMetadata): Elemen
   }
 }
 
+interface RuntimeErrorInfo {
+  editedFile: string
+  error: FancyError
+  errorInfo?: React.ErrorInfo
+}
+
 const UiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
 export function renderCanvasReturnResultAndError(
   possibleProps: PartialCanvasProps | null,
@@ -109,11 +116,7 @@ export function renderCanvasReturnResultAndError(
   const spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   const parsedUIFileCode = testParseCode(uiFileCode)
-  let errorsReported: Array<{
-    editedFile: string
-    error: FancyError
-    errorInfo?: React.ErrorInfo
-  }> = []
+  let errorsReported: Array<RuntimeErrorInfo> = []
   const reportError: CanvasReactErrorCallback['reportError'] = (
     editedFile: string,
     error: FancyError,
@@ -184,7 +187,6 @@ export function renderCanvasReturnResultAndError(
   }
   if (possibleProps == null) {
     canvasProps = {
-      uiFileCode: uiFileCode,
       uiFilePath: UiFilePath,
       selectedViews: [],
       requireFn: requireFn,
@@ -197,6 +199,7 @@ export function renderCanvasReturnResultAndError(
       hiddenInstances: [],
       editedTextElement: null,
       mountCount: 0,
+      domWalkerInvalidateCount: 0,
       walkDOM: false,
       imports_KILLME: imports,
       canvasIsLive: false,
@@ -212,7 +215,6 @@ export function renderCanvasReturnResultAndError(
   } else {
     canvasProps = {
       ...possibleProps,
-      uiFileCode: uiFileCode,
       uiFilePath: UiFilePath,
       selectedViews: [],
       requireFn: requireFn,
@@ -220,6 +222,7 @@ export function renderCanvasReturnResultAndError(
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
+      domWalkerInvalidateCount: 0,
       walkDOM: false,
       imports_KILLME: imports,
       canvasIsLive: false,
@@ -240,14 +243,14 @@ export function renderCanvasReturnResultAndError(
   }
 
   let formattedSpyEnabled
-  let errorsReportedSpyEnabled = []
+  let errorsReportedSpyEnabled: Array<RuntimeErrorInfo> = []
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
       <EditorStateContext.Provider value={storeHookForTest}>
         <UiJsxCanvasContext.Provider value={spyCollector}>
           <CanvasErrorBoundary
-            fileCode={uiFileCode}
             filePath={UiFilePath}
+            projectContents={canvasProps.projectContents}
             // eslint-disable-next-line react/jsx-no-bind
             reportError={reportError}
             requireFn={canvasProps.requireFn}
@@ -260,12 +263,14 @@ export function renderCanvasReturnResultAndError(
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
     errorsReportedSpyEnabled = errorsReported
   } catch (e) {
+    // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
+    processErrorWithSourceMap(e, true)
     errorsReportedSpyEnabled = [e]
   }
   errorsReported = []
 
   let formattedSpyDisabled
-  let errorsReportedSpyDisabled = []
+  let errorsReportedSpyDisabled: Array<RuntimeErrorInfo> = []
 
   try {
     const flatFormatSpyDisabled = ReactDOMServer.renderToStaticMarkup(
@@ -278,6 +283,8 @@ export function renderCanvasReturnResultAndError(
     formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
     errorsReportedSpyDisabled = errorsReported
   } catch (e) {
+    // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
+    processErrorWithSourceMap(e, true)
     errorsReportedSpyDisabled = [e]
   }
 
@@ -367,6 +374,23 @@ export function testCanvasErrorMultifile(
   uiFileCode: string,
   codeFilesString: MapLike<string>,
 ): void {
+  const errorsToCheck = testCanvasErrorInline(possibleProps, uiFileCode, codeFilesString)
+  expect(errorsToCheck).toMatchSnapshot()
+}
+
+interface TestCanvasError {
+  name: string
+  message: string
+  originalCode: ScriptLine[] | null | undefined
+  lineNumber: number | null | undefined
+  columnNumber: number | null | undefined
+}
+
+export function testCanvasErrorInline(
+  possibleProps: PartialCanvasProps | null,
+  uiFileCode: string,
+  codeFilesString: MapLike<string>,
+): TestCanvasError[] {
   const { errorsReportedSpyEnabled, errorsReportedSpyDisabled } = renderCanvasReturnResultAndError(
     possibleProps,
     uiFileCode,
@@ -376,7 +400,7 @@ export function testCanvasErrorMultifile(
   expect(errorsReportedSpyEnabled.length).toEqual(errorsReportedSpyDisabled.length)
   expect(errorsReportedSpyEnabled.length).toBeGreaterThan(0)
   const errorsToCheck = errorsReportedSpyEnabled.map((error) => {
-    let realError = error.error != null ? error.error : error
+    let realError = error.error != null ? error.error : ((error as unknown) as FancyError) // is this conversion needed?
     const stackFrame = realError.stackFrames?.[0]
     return {
       name: realError.name,
@@ -386,5 +410,5 @@ export function testCanvasErrorMultifile(
       columnNumber: stackFrame?._originalColumnNumber,
     }
   })
-  expect(errorsToCheck).toMatchSnapshot()
+  return errorsToCheck
 }

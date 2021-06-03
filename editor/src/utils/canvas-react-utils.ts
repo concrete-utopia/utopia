@@ -13,7 +13,7 @@ import {
 } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { PRODUCTION_ENV } from '../common/env-vars'
-import { appendToUidString, popFrontUID, uidsFromString } from '../core/shared/uid-utils'
+import { appendToUidString } from '../core/shared/uid-utils'
 
 const realCreateElement = React.createElement
 
@@ -169,30 +169,34 @@ const MeasureRenderTimes = !PRODUCTION_ENV && typeof window.performance.mark ===
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
     const uuid = MeasureRenderTimes ? v4() : ''
-    const mangledFunction = (p: any, context?: any) => {
-      if (MeasureRenderTimes) {
-        performance.mark(`render_start_${uuid}`)
-      }
-      let originalTypeResponse = (type as React.FunctionComponent)(p, context)
-      const res = attachDataUidToRoot(
-        originalTypeResponse,
-        (p as any)?.[UTOPIA_UIDS_KEY],
-        (p as any)?.[UTOPIA_PATHS_KEY],
-      )
-      if (MeasureRenderTimes) {
-        performance.mark(`render_end_${uuid}`)
-        performance.measure(
-          `Render Component ${getDisplayName(type)}`,
-          `render_start_${uuid}`,
-          `render_end_${uuid}`,
+    const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
+
+    const mangledFunction = {
+      [mangledFunctionName]: (p: any, context?: any) => {
+        if (MeasureRenderTimes) {
+          performance.mark(`render_start_${uuid}`)
+        }
+        let originalTypeResponse = (type as React.FunctionComponent)(p, context)
+        const res = attachDataUidToRoot(
+          originalTypeResponse,
+          (p as any)?.[UTOPIA_UIDS_KEY],
+          (p as any)?.[UTOPIA_PATHS_KEY],
         )
-      }
-      return res
-    }
+        if (MeasureRenderTimes) {
+          performance.mark(`render_end_${uuid}`)
+          performance.measure(
+            `Render Component ${getDisplayName(type)}`,
+            `render_start_${uuid}`,
+            `render_end_${uuid}`,
+          )
+        }
+        return res
+      },
+    }[mangledFunctionName]
     ;(mangledFunction as any).theOriginalType = type
     ;(mangledFunction as any).contextTypes = (type as any).contextTypes
     ;(mangledFunction as any).childContextTypes = (type as any).childContextTypes
-    ;(mangledFunction as any).displayName = `UtopiaSpiedExoticType(${getDisplayName(type)})`
+    ;(mangledFunction as any).displayName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
     return mangledFunction
   },
   {
@@ -233,11 +237,6 @@ const mangleClassType = Utils.memoize(
     maxSize: 10000,
   },
 )
-
-function uidsWithoutExoticUID(uids: string | null): string | null {
-  const { head: uidsHead, tail: uidsTail } = popFrontUID(uids)
-  return uidsTail ?? uidsHead
-}
 
 const mangleExoticType = Utils.memoize(
   (type: React.ComponentType): React.FunctionComponent => {
@@ -300,8 +299,8 @@ const mangleExoticType = Utils.memoize(
             return attachDataUidToRoot(originalResponse, uids, paths)
           }
         } else {
-          const uidsToPass = uidsWithoutExoticUID(uids)
-          const pathsToPass = uidsWithoutExoticUID(paths)
+          const uidsToPass = uids
+          const pathsToPass = paths
 
           if (Array.isArray(p?.children)) {
             children = React.Children.map(p?.children, (child) =>

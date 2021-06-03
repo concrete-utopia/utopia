@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import { Console } from 'console-feed'
-import * as R from 'ramda'
 import { Resizable, ResizeCallback } from 're-resizable'
 import * as React from 'react'
 import {
@@ -23,6 +22,7 @@ import { TabComponent } from '../../uuiui/tab'
 import { Icons } from '../../uuiui/icons'
 import { SimpleFlexColumn } from '../../uuiui/widgets/layout/flex-column'
 import { UIRow } from '../../uuiui'
+import { groupBy } from '../../core/shared/array-utils'
 
 interface ErrorMessageRowProps {
   errorMessage: ErrorMessage
@@ -393,8 +393,7 @@ const ProblemsTab = betterReactMemo('Problems Tab', (props: ProblemsTabProps) =>
   const { errorMessages, height, onOpenFile } = props
 
   const rowData: Array<ProblemRowData> = React.useMemo(() => {
-    const groupErrors = R.groupBy((error: ErrorMessage) => error.fileName)
-    const errorsByFile = groupErrors(errorMessages)
+    const errorsByFile = groupBy((error: ErrorMessage) => error.fileName, errorMessages)
 
     let rows: Array<ProblemRowData> = []
     Object.keys(errorsByFile).forEach(function (fileName) {
