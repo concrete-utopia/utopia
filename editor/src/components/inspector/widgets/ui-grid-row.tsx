@@ -100,6 +100,10 @@ export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
         background: 'red',
         '--special-effect': 'white',
       },
+      '&:focus-within': {
+        background: 'pink',
+        '--special-effect': 'green',
+      },
     }}
   >
     {children}
