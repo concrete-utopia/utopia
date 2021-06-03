@@ -176,6 +176,7 @@ export function processExportsInfo(
 
 export function incorporateBuildResult(
   nodeModules: NodeModules,
+  projectContents: ProjectContentTreeRoot,
   buildResult: MultiFileBuildResult,
 ): void {
   // Mutates nodeModules.
@@ -184,7 +185,21 @@ export function incorporateBuildResult(
     if (modulesFile.transpiledCode == null) {
       delete nodeModules[moduleKey]
     } else {
-      nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, 'NODE_MODULES', moduleKey)
+      const projectContentsFile = getContentsTreeFileFromString(projectContents, moduleKey)
+      const origin = projectContentsFile == null ? 'NODE_MODULES' : 'PROJECT_CONTENTS'
+      nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, origin, moduleKey)
+    }
+  })
+  // Cleanup non-existant project files.
+  fastForEach(Object.keys(nodeModules), (moduleKey) => {
+    const modulesFile = nodeModules[moduleKey]
+    if (isEsCodeFile(modulesFile)) {
+      if (modulesFile.origin === 'PROJECT_CONTENTS') {
+        const projectContentsFile = getContentsTreeFileFromString(projectContents, moduleKey)
+        if (projectContentsFile == null) {
+          delete nodeModules[moduleKey]
+        }
+      }
     }
   })
 }
@@ -231,7 +246,7 @@ export function generateCodeResultCache(
   }
 
   // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it.
-  incorporateBuildResult(nodeModules, projectModules)
+  incorporateBuildResult(nodeModules, projectContents, projectModules)
 
   // Trigger async call to build the property controls info.
   sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
