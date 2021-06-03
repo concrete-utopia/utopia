@@ -42,6 +42,7 @@ export function lintCode(
   const passTime = Date.now()
   try {
     const lintResult = linter.verify(code, config, { filename: filename })
+    const codeLines = code.split('\n')
 
     return lintResult.map(
       (r: any): ErrorMessage => {
@@ -59,7 +60,10 @@ export function lintCode(
 
         const message = strippedAndSplitMessage[0]
         const messageWithRule = r.ruleId == null ? message : `${message} (${r.ruleId})`
-        const codeSnippet = strippedAndSplitMessage[1]
+        const codeSnippetFromESLint = strippedAndSplitMessage[1]
+        const codeSnippet =
+          codeSnippetFromESLint ??
+          codeLines.slice(Math.max(r.line - 3, 0), r.endLine + 3).join('\n')
 
         return {
           message: messageWithRule,
