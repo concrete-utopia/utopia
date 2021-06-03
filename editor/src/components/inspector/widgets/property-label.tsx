@@ -1,4 +1,6 @@
+/**@jsx jsx */
 import * as React from 'react'
+import { css, jsx } from '@emotion/react'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { betterReactMemo, InspectorContextMenuWrapper } from '../../../uuiui-deps'
@@ -34,7 +36,7 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
       data={null}
       items={contextMenuItems}
       style={{
-        color: 'black',
+        color: 'var(--special-effect)',
         overflow: 'hidden',
         ...props.style,
       }}

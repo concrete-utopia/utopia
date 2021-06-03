@@ -1,4 +1,6 @@
+/**@jsx jsx */
 import * as React from 'react'
+import { css, jsx } from '@emotion/react'
 import { UtopiaTheme } from '../../../uuiui'
 
 /**
@@ -83,7 +85,7 @@ export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
 }) => (
   <div
     {...props}
-    style={{
+    css={{
       padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
       display: 'grid',
       minHeight: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,
@@ -93,6 +95,10 @@ export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
       alignItems: alignItems ?? 'center',
       ...gridTemplates[variant],
       ...style,
+      '&:hover': {
+        background: 'red',
+        '--special-effect': 'white',
+      },
     }}
   >
     {children}
