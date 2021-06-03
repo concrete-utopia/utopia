@@ -72,6 +72,7 @@ import {
   isProjectContentFile,
   ProjectContentsTree,
   ProjectContentTreeRoot,
+  treeToContents,
   walkContentsTree,
   zipContentsTree,
 } from '../../assets'
@@ -630,7 +631,9 @@ function editorDispatchInner(
 }
 
 function filterEditorForFiles(editor: EditorState) {
-  const allFiles = Object.keys(editor.projectContents)
+  // FIXME: Reimplement this in a way that doesn't require converting from `ProjectContents`.
+  const projectContents = treeToContents(editor.projectContents)
+  const allFiles = Object.keys(projectContents)
   return {
     ...editor,
     codeResultCache: {
