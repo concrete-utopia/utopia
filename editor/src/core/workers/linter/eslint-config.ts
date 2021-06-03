@@ -198,11 +198,11 @@ export const ESLINT_CONFIG: Linter.Config = {
     //   },
     // ],
     'no-use-before-define': [
-      'warn',
+      'error',
       {
         functions: false,
-        classes: false,
-        variables: false,
+        classes: true,
+        variables: true,
       },
     ],
     'no-useless-computed-key': 'warn',
