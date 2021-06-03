@@ -103,7 +103,6 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
     >
       <FlexRow
         role='button'
-        // TODO replace me with the right function call from above
         onClick={toggleFocusMode}
         css={{
           flexGrow: 1,
@@ -124,7 +123,6 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
           },
         }}
       >
-        {/* TODO replace me with the real icon */}
         {isComponent ? (
           <Icons.Component color={getEditContextStyle().stroke as IcnColor} />
         ) : (
