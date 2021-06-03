@@ -30,6 +30,9 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
     propsToUnset,
     metadata.onUnsetValues,
   )
+
+  const controlStyles = metadata.controlStyles
+
   return (
     <InspectorContextMenuWrapper
       id={`property-label-${propsToUnset.join('-')}`}
@@ -37,6 +40,7 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
       items={contextMenuItems}
       style={{
         color: 'var(--special-effect)',
+        background: controlStyles.mainColor,
         overflow: 'hidden',
         ...props.style,
       }}
