@@ -672,7 +672,11 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                   color: controlStyles.secondaryColor,
                 }}
               >
-                {labelInner}
+                {typeof labelInner === 'object' && 'type' in labelInner ? (
+                  <Icn {...labelInner} />
+                ) : (
+                  labelInner
+                )}
               </div>
             </div>
           ) : null}
