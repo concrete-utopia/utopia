@@ -76,7 +76,7 @@ import { testStaticElementPath } from '../../core/shared/element-path.test-utils
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
+  console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack ?? reason)
 })
 
 try {

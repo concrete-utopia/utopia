@@ -49,7 +49,7 @@ maybeDevTools?.subscribe((message) => {
       maybeDevTools.send(null, message.payload.nextLiftedState)
       sendActionUpdates = false
     } else if (message.payload.type === 'PAUSE_RECORDING') {
-      sendActionUpdates = !message.payload.status
+      sendActionUpdates = !(message.payload.status as boolean)
     }
   }
 })

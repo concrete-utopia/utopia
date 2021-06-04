@@ -33,7 +33,7 @@ export function applyUIDMonkeyPatch(): void {
 function getDisplayName(type: any): string {
   // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
   if (typeof type === 'function') {
-    return type.displayName || type.name || 'Unknown'
+    return type.displayName ?? type.name ?? 'Unknown'
   } else if (typeof type === 'symbol') {
     return type.toString()
   } else if (typeof type === 'string') {
@@ -252,7 +252,7 @@ const mangleExoticType = Utils.memoize(
       const existingChildPaths = child.props?.[UTOPIA_PATHS_KEY]
       const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
       const appendedPathsString = appendToUidString(existingChildPaths, paths)
-      if ((!React.isValidElement(child) as any) || child == null) {
+      if ((!React.isValidElement(child) as boolean) || child == null) {
         return child
       } else {
         // Setup the result.

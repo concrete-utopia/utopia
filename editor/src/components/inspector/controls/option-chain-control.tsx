@@ -87,7 +87,7 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
           />
         ))}
       </div>
-      {!labelBelow ? null : (
+      {labelBelow == null ? null : (
         <label
           htmlFor={props.id}
           onContextMenu={props.onContextMenu}

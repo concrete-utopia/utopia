@@ -109,7 +109,7 @@ export const EditorComponentInner = betterReactMemo(
         if (
           event.target !== activeElement &&
           activeElement != null &&
-          activeElement.getAttribute('data-inspector-input') &&
+          activeElement.getAttribute('data-inspector-input') != null &&
           (activeElement as any).blur != null
         ) {
           // OMG what a nightmare! This is the only way of keeping the Inspector fast and ensuring the blur handler for inputs
@@ -240,7 +240,7 @@ export const EditorComponentInner = betterReactMemo(
             width: '100%',
           }}
         >
-          {isChrome ? null : <BrowserInfoBar />}
+          {(isChrome as boolean) ? null : <BrowserInfoBar />}
           <LoginStatusBar />
 
           <SimpleFlexRow

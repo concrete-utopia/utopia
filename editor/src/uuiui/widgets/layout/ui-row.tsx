@@ -12,7 +12,7 @@ export interface UIRowProp extends React.InputHTMLAttributes<HTMLDivElement> {
 export const UIRow = styled.div<UIRowProp>((props) => ({
   ...commonSenseUtopiaLayoutShorthands,
   ...flexRowStyle,
-  padding: props.padded ? UtopiaTheme.layout.rowHorizontalPadding : undefined,
+  padding: props.padded === true ? UtopiaTheme.layout.rowHorizontalPadding : undefined,
   height:
     props.rowHeight == null
       ? UtopiaTheme.layout.rowHeight.normal

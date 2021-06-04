@@ -42,7 +42,7 @@ export const Toast: React.FunctionComponent<NoticeProps> = (props) => {
     <div
       key={'toast-item'}
       style={{
-        ...getStylesForLevel(props.level || 'INFO'),
+        ...getStylesForLevel(props.level ?? 'INFO'),
         boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
         borderRadius: 3,
         width: 270,
@@ -111,7 +111,7 @@ export const NotificationBar: React.FunctionComponent<NotificationBarProps> = (p
       alignItems: 'center',
       justifyContent: 'center',
       ...props.style,
-      ...getStylesForLevel(props.level || 'INFO'),
+      ...getStylesForLevel(props.level ?? 'INFO'),
     }}
     onClick={props.onClick}
   >
@@ -137,7 +137,7 @@ export const InfoBox: React.FunctionComponent<InfoBoxProps> = (props) => (
       padding: 8,
       alignItems: 'stretch',
       flexGrow: 1,
-      ...getStylesForLevel(props.level || 'INFO'),
+      ...getStylesForLevel(props.level ?? 'INFO'),
     }}
   >
     <SimpleFlexRow style={{ fontWeight: 600 }}>{props.message}</SimpleFlexRow>

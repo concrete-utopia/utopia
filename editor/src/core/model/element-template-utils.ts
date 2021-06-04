@@ -63,7 +63,7 @@ function getAllUniqueUidsInner(
       const uidProp = getJSXAttribute(element.props, 'data-uid')
       if (uidProp != null && isJSXAttributeValue(uidProp)) {
         const uid = uidProp.value
-        if (throwErrorWithSuspiciousActions) {
+        if (throwErrorWithSuspiciousActions != null) {
           if (uniqueIDs.has(uid)) {
             throw new Error(
               `Found duplicate UID: '${uid}'. Suspicious action(s): ${throwErrorWithSuspiciousActions}`,
@@ -72,7 +72,7 @@ function getAllUniqueUidsInner(
         }
         uniqueIDs.add(uid)
       } else {
-        if (throwErrorWithSuspiciousActions) {
+        if (throwErrorWithSuspiciousActions != null) {
           throw new Error(
             `Found JSXElement with missing UID. Suspicious action(s): ${throwErrorWithSuspiciousActions}`,
           )

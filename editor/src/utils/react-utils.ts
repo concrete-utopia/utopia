@@ -71,7 +71,7 @@ class RU {
 
   static create(type: any, attrs: any, ...children: any[]): ReactElement<any> {
     if (attrs != null && attrs.key == null) {
-      const elemName = type.name || 'unknown'
+      const elemName = type.name ?? 'unknown'
       throw new Error(`Please provide a key for ${elemName} in RU.create props!`)
     }
     return React.createElement(type, attrs, ...children)

@@ -61,7 +61,7 @@ export const DependencySearchSelect = React.forwardRef(
             onKeyDown: (e) => {
               const select = dependencyNameSelectRef.current
               if (e.key === 'Enter' && select != null) {
-                if ((select.state as any).menuIsOpen) {
+                if ((select.state as any).menuIsOpen as boolean) {
                   e.stopPropagation()
                 } else {
                   addDependency(stateEditedPackageName, null)

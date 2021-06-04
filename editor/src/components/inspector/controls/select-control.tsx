@@ -32,24 +32,20 @@ export interface SelectOption {
 const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
   indicatorProps,
 ) => {
-  return (
-    components.DropdownIndicator && (
-      <components.DropdownIndicator {...indicatorProps}>
-        <Icons.ExpansionArrow />
-      </components.DropdownIndicator>
-    )
+  return components.DropdownIndicator == null ? null : (
+    <components.DropdownIndicator {...indicatorProps}>
+      <Icons.ExpansionArrow />
+    </components.DropdownIndicator>
   )
 }
 
 const ControlledDropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
   indicatorProps,
 ) => {
-  return (
-    components.DropdownIndicator && (
-      <components.DropdownIndicator {...indicatorProps}>
-        <Icons.ExpansionArrowControlled />
-      </components.DropdownIndicator>
-    )
+  return components.DropdownIndicator == null ? null : (
+    <components.DropdownIndicator {...indicatorProps}>
+      <Icons.ExpansionArrowControlled />
+    </components.DropdownIndicator>
   )
 }
 
@@ -163,7 +159,7 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
           height: '100%',
           backgroundColor: props.controlStyles.backgroundColor,
           boxShadow: `0 0 0 1px ${
-            state.isFocused
+            (state.isFocused as boolean)
               ? colorTheme.inspectorFocusedColor.value
               : props.controlStyles.borderColor
           } inset`,

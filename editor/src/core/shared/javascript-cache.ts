@@ -75,7 +75,7 @@ function resolveDefinedElsewhere(
   definedElsewhere.forEach((elsewhere) => {
     const glob: any = global as any
     let possibleValue = glob[elsewhere]
-    if (possibleValue != undefined || glob.hasOwnProperty(elsewhere)) {
+    if (possibleValue != undefined || (glob.hasOwnProperty(elsewhere) as boolean)) {
       definedElsewhereInfo[elsewhere] = possibleValue
     }
 

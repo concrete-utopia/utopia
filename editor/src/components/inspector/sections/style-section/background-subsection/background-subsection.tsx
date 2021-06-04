@@ -186,7 +186,7 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
 
   let unsetPropertyValues: Array<string> = []
   const zerothValue = value[0]
-  if (zerothValue) {
+  if (zerothValue != null) {
     if (isCSSSolidBackgroundLayer(zerothValue)) {
       unsetPropertyValues.push('backgroundColor')
       if (value.length > 1) {

@@ -1019,7 +1019,10 @@ export const MetadataUtils = {
 
       // Checking if our elements support children should prevent us from ending up with the
       // internals of draft-js showing up underneath Text elements.
-      const shouldNotTraverse = Utils.path(['props', 'data-utopia-do-not-traverse'], fromDOM)
+      const shouldNotTraverse: boolean | undefined = Utils.path(
+        ['props', 'data-utopia-do-not-traverse'],
+        fromDOM,
+      )
       let children: Array<ElementPath>
       let rootElements: Array<ElementPath>
       if (shouldNotTraverse) {

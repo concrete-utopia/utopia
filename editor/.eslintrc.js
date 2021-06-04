@@ -1,5 +1,6 @@
 module.exports = {
   parserOptions: {
+    project: './tsconfig.json',
     ecmaVersion: 6,
     sourceType: 'module',
     ecmaFeatures: {
@@ -160,6 +161,19 @@ module.exports = {
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-shadow': ['error'],
+    '@typescript-eslint/strict-boolean-expressions': [
+      'error',
+      {
+        allowString: false,
+        allowNumber: false,
+        allowNullableObject: false,
+        allowNullableBoolean: true,
+        allowNullableString: false,
+        allowNullableNumber: false,
+        allowAny: false,
+        allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: false,
+      },
+    ],
   },
   overrides: [
     {

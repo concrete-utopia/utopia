@@ -299,7 +299,7 @@ export function isDynamicSceneChildWidthHeightPercentage(
   scene: ElementInstanceMetadata,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const isDynamicScene = scene.props[ResizesContentProp] ?? false
+  const isDynamicScene: boolean = scene.props[ResizesContentProp] ?? false
 
   return isDynamicScene && isSceneChildWidthHeightPercentage(scene, metadata)
 }

@@ -925,7 +925,7 @@ export function getOriginalFrameInCanvasCoords(
   originalFrames: Array<OriginalCanvasAndLocalFrame>,
   target: ElementPath,
 ): CanvasRectangle | null {
-  for (const originalFrame of originalFrames || []) {
+  for (const originalFrame of originalFrames ?? []) {
     if (EP.pathsEqual(target, originalFrame.target)) {
       if (originalFrame.canvasFrame != null) {
         return originalFrame.canvasFrame
@@ -2108,7 +2108,7 @@ export function getCanvasOffset(
   const canvasDivSize = canvasDiv == null ? null : canvasDiv.getBoundingClientRect()
   if (canvasDivSize != null && canvasDivSize.width !== 0 && canvasDivSize.height !== 0) {
     const zoomFocusPoint =
-      focusPoint ||
+      focusPoint ??
       focusPointForZoom(
         selectedViews,
         scale,
