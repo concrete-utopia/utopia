@@ -30,7 +30,8 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     // This is the divider in between controls
     '&:not(:first-of-type)::after': {
       content: '""',
-      width: 1,
+      
+      1,
       height: 10,
       backgroundColor: props.controlStyles.borderColor,
       position: 'absolute',
@@ -44,7 +45,6 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
       id={props.id}
       key={props.key}
       css={{
-        // width: '100%',
         display: 'flex',
         flexDirection: 'column',
         marginBottom: 0,
