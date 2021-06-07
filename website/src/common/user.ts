@@ -26,7 +26,12 @@ interface CookiesOrLocalForageUnavailable {
   type: 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE'
 }
 
-export type LoginState = LoggedInUser | NotLoggedIn | LoginLost | OfflineState | CookiesOrLocalForageUnavailable
+export type LoginState =
+  | LoggedInUser
+  | NotLoggedIn
+  | LoginLost
+  | OfflineState
+  | CookiesOrLocalForageUnavailable
 
 export function loggedInUser(user: UserDetails): LoggedInUser {
   return {
@@ -61,9 +66,13 @@ export function isOfflineState(loginState: unknown): loginState is OfflineState 
   return (loginState as Partial<LoginState>)?.type === 'OFFLINE_STATE'
 }
 
-export const cookiesOrLocalForageUnavailable: CookiesOrLocalForageUnavailable = { type: 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE' }
+export const cookiesOrLocalForageUnavailable: CookiesOrLocalForageUnavailable = {
+  type: 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE',
+}
 
-export function isCookiesOrLocalForageUnavailable(loginState: unknown): loginState is CookiesOrLocalForageUnavailable {
+export function isCookiesOrLocalForageUnavailable(
+  loginState: unknown,
+): loginState is CookiesOrLocalForageUnavailable {
   return (loginState as Partial<LoginState>)?.type === 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE'
 }
 
