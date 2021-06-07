@@ -1,5 +1,7 @@
 import {
   isJSXElement,
+  isJSXElementLikeWithChildren,
+  isJSXFragment,
   isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
@@ -64,7 +66,7 @@ export function fixParseSuccessUIDs(
 
   const newToOldUidMappingArray = Object.values(newToOldUidMapping)
 
-  if (newToOldUidMappingArray.length === 1) {
+  if (newToOldUidMappingArray.length > 0) {
     // we found a single UID mismatch, which means there's a very good chance that it was an update element, let's fix that up
     let workingComponents = getComponentsFromTopLevelElements(newParsed.topLevelElements)
 
@@ -143,10 +145,7 @@ function zipTopLevelElements(
   firstComponents.forEach((firstComponent, index) => {
     if (secondComponents.length > index) {
       const secondComponent = secondComponents[index]
-      const firstUID = getUtopiaID(firstComponent.rootElement)
-      const secondUID = getUtopiaID(secondComponent.rootElement)
 
-      onElement(firstUID, secondUID, EP.emptyElementPathPart, EP.emptyElementPathPart)
       walkElementChildren(
         EP.emptyElementPathPart,
         [firstComponent.rootElement],
@@ -178,13 +177,21 @@ function walkElementChildren(
   newElements.forEach((newElement, index) => {
     const oldElement: JSXElementChild | null = oldElements[index]
 
-    if (oldElement != null && isJSXElement(oldElement) && isJSXElement(newElement)) {
+    if (
+      oldElement != null &&
+      isJSXElementLikeWithChildren(oldElement) &&
+      isJSXElementLikeWithChildren(newElement)
+    ) {
       const oldUID = getUtopiaID(oldElement)
       const newUid = getUtopiaID(newElement)
       const path = EP.appendToElementPath(pathSoFar, newUid)
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
-      onElement(oldUID, newUid, oldPathToRestore, path)
-      walkElementChildren(path, oldElement.children, newElement.children, onElement)
+      if (isJSXFragment(newElement)) {
+        walkElementChildren(pathSoFar, oldElement.children, newElement.children, onElement)
+      } else {
+        onElement(oldUID, newUid, oldPathToRestore, path)
+        walkElementChildren(path, oldElement.children, newElement.children, onElement)
+      }
     }
   })
 }

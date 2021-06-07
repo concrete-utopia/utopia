@@ -859,6 +859,12 @@ export function isJSXFragment(element: JSXElementChild): element is JSXFragment 
   return element.type === 'JSX_FRAGMENT'
 }
 
+export function isJSXElementLikeWithChildren(
+  element: JSXElementChild,
+): element is JSXElement | JSXFragment {
+  return isJSXElement(element) || isJSXFragment(element)
+}
+
 export type JSXElementChildren = Array<JSXElementChild>
 
 export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T): T {
