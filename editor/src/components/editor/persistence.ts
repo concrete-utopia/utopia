@@ -293,7 +293,7 @@ export async function triggerForkProject(
     ...editor,
     forkedFromProjectId: oldProjectId,
     id: newProjectId,
-    name: editor.projectName + ' (forked)',
+    name: `${editor.projectName} (forked)`,
   }
   await save(updatedEditor, dispatch, loginState, 'both', true)
   dispatch([
