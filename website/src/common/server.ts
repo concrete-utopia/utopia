@@ -99,7 +99,7 @@ export async function isLocalForageAvailable(): Promise<boolean> {
 
 async function areCookiesAndLocalForageAvailable(): Promise<boolean> {
   const localForageAvailable = await isLocalForageAvailable()
-  // tslint:disable-next-line:no-restricted-globals
+  // eslint-disable-next-line no-restricted-globals
   return localForageAvailable && navigator.cookieEnabled
 }
 
