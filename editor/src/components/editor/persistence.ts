@@ -602,7 +602,7 @@ export async function loadFromServer(
 }
 
 export async function projectIsStoredLocally(projectId: string): Promise<boolean> {
-  const keys = await localforage.keys()
+  const keys = await localforage.keys().catch(() => [])
   const targetKey = localProjectKey(projectId)
   return arrayContains(keys, targetKey)
 }
