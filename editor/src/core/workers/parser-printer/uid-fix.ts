@@ -65,7 +65,7 @@ export function fixParseSuccessUIDs(
 
   const newToOldUidMappingArray = Object.values(newToOldUidMapping)
 
-  if (newToOldUidMappingArray.length > 0) {
+  if (newToOldUidMappingArray.length === 1) {
     // we found a single UID mismatch, which means there's a very good chance that it was an update element, let's fix that up
     let workingComponents = getComponentsFromTopLevelElements(newParsed.topLevelElements)
 
