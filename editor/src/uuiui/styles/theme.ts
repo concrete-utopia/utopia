@@ -46,6 +46,43 @@ const lightBase = {
   fg7: createUtopiColor('hsl(0,0%,70%)', 'grey', 'grey'),
   fg8: createUtopiColor('hsl(0,0%,80%)', 'lightgrey', 'lightgrey'),
   fg9: createUtopiColor('hsl(0,0%,90%)', 'lightgrey', 'lightgrey'),
+  border1: createUtopiColor('hsl(0,0%,91%)', '', ''),
+  border2: createUtopiColor('hsl(0,0%,86%)', '', ''),
+  border3: createUtopiColor('hsl(0,0%,83%)', '', ''),
+}
+
+const darkBase = {
+  darkPrimary: base.blue.shade(150),
+  primary: base.blue,
+  component: base.purple,
+  componentChild: base.orange,
+  css: base.neongreen,
+  white: base.white,
+  transparent: base.transparent,
+  brandPurple: base.purple,
+  brandNeonYellow: base.neonyellow,
+  brandNeonPink: base.neonpink,
+  spectrumTop: base.white,
+  spectrumBottom: base.black,
+  bg0: createUtopiColor('#000000', 'brightest', 'white'),
+  bg1: createUtopiColor('#181C20', '', 'white'),
+  bg2: createUtopiColor('#373C4A', 'eg inputs', 'white'),
+  bg3: createUtopiColor('#55575F', 'visible buttons', 'white'),
+  bg4: createUtopiColor('#4C4D5B', 'hover states for buttons', 'white'),
+  bg5: createUtopiColor('#848998', 'selected elements', 'grey'),
+  fg0: createUtopiColor('#ffffff', 'emphasized foreground', 'black'),
+  fg1: createUtopiColor('#D9DCE3', 'default foreground', 'black'),
+  // fg2: createUtopiColor('red', 'black', 'black'),
+  fg3: createUtopiColor('pink', 'darkgray', 'darkgray'),
+  // fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
+  fg5: createUtopiColor('#8B91A0', 'leva', 'grey'),
+  fg6: createUtopiColor('#6F778B', 'grey', 'grey'),
+  fg7: createUtopiColor('#525B72', 'grey', 'grey'),
+  fg8: createUtopiColor('#2F374A', 'lightgrey', 'lightgrey'),
+  fg9: createUtopiColor('#151A27', 'lightgrey', 'lightgrey'),
+  border1: createUtopiColor('#181C20', '', ''),
+  border2: createUtopiColor('#181C20', '', ''),
+  border3: createUtopiColor('#181C20', '', ''),
 }
 
 const lightPrimitives = {
@@ -62,9 +99,9 @@ const lightPrimitives = {
   verySubduedForeground: lightBase.fg8,
   neutralInvertedForeground: lightBase.bg0,
 
-  neutralBorder: createUtopiColor('hsl(0,0%,81%)', '', ''),
-  secondaryBorder: createUtopiColor('hsl(0,0%,93%)', '', ''),
-  subduedBorder: createUtopiColor('hsl(0,0%,95%)', '', ''),
+  neutralBorder: lightBase.border1,
+  secondaryBorder: lightBase.border2,
+  subduedBorder: lightBase.border3,
 }
 
 const lightErrorStates = {
