@@ -28,7 +28,12 @@ import { View } from "utopia-api";
 import { App } from "/src/app";
 
 const HiElement = (props) => {
-  return <div data-uid="other-hi-element-root">hi!</div>
+  return (
+    <>
+      <div data-uid="hi-element-fragment-child-1">hi!</div>
+      <div data-uid="hi-element-fragment-child-2">hi!</div>
+    </>
+  )
 }
 
 const Button = (props) => {
@@ -525,17 +530,17 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
@@ -840,17 +845,17 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
@@ -1075,7 +1080,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:other-hi-element-root": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1": Object {
+          "children": Array [],
+          "name": "div",
+          "rootElements": Array [],
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
@@ -1165,24 +1175,30 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:other-hi-element-root",
+            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1",
+            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2",
           ],
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:other-hi-element-root": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1": Object {
+          "children": Array [],
+          "name": "div",
+          "rootElements": Array [],
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
-          "name": "div",
+          "name": "fragment",
           "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
@@ -1277,10 +1293,16 @@ describe('Spy Wrapper Template Path Tests', () => {
           "children": Array [],
           "name": "HiElement",
           "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:other-hi-element-root",
+            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1",
+            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2",
           ],
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:other-hi-element-root": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1": Object {
+          "children": Array [],
+          "name": "div",
+          "rootElements": Array [],
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
