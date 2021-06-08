@@ -1,6 +1,5 @@
 import {
   isJSXElement,
-  isJSXElementLikeWithChildren,
   isJSXFragment,
   isUtopiaJSXComponent,
   JSXElementChild,
@@ -177,21 +176,15 @@ function walkElementChildren(
   newElements.forEach((newElement, index) => {
     const oldElement: JSXElementChild | null = oldElements[index]
 
-    if (
-      oldElement != null &&
-      isJSXElementLikeWithChildren(oldElement) &&
-      isJSXElementLikeWithChildren(newElement)
-    ) {
+    if (oldElement != null && isJSXElement(oldElement) && isJSXElement(newElement)) {
       const oldUID = getUtopiaID(oldElement)
       const newUid = getUtopiaID(newElement)
       const path = EP.appendToElementPath(pathSoFar, newUid)
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
-      if (isJSXFragment(newElement)) {
-        walkElementChildren(pathSoFar, oldElement.children, newElement.children, onElement)
-      } else {
-        onElement(oldUID, newUid, oldPathToRestore, path)
-        walkElementChildren(path, oldElement.children, newElement.children, onElement)
-      }
+      onElement(oldUID, newUid, oldPathToRestore, path)
+      walkElementChildren(path, oldElement.children, newElement.children, onElement)
+    } else if (oldElement != null && isJSXFragment(oldElement) && isJSXFragment(newElement)) {
+      walkElementChildren(pathSoFar, oldElement.children, newElement.children, onElement)
     }
   })
 }
