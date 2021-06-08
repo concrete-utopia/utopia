@@ -12,6 +12,7 @@ import {
   showToast,
   setSaveError,
   setForkedFromProjectID,
+  setProjectName,
 } from './actions/action-creators'
 import {
   createNewProjectID,
@@ -292,9 +293,14 @@ export async function triggerForkProject(
     ...editor,
     forkedFromProjectId: oldProjectId,
     id: newProjectId,
+    name: `${editor.projectName} (forked)`,
   }
   await save(updatedEditor, dispatch, loginState, 'both', true)
-  dispatch([setProjectID(newProjectId), setForkedFromProjectID(oldProjectId)])
+  dispatch([
+    setProjectID(newProjectId),
+    setProjectName(editor.projectName + ' (forked)'),
+    setForkedFromProjectID(oldProjectId),
+  ])
 }
 
 async function checkCanSaveProject(projectId: string | null): Promise<boolean> {

@@ -14,6 +14,7 @@ import {
 const urljoin = require('url-join')
 
 export const PROJECT_ENDPOINT = UTOPIA_BACKEND + 'project/'
+export const PROJECT_EDITOR = BASE_URL + 'project'
 
 // if we want to enable CORS, we need the server to be able to answer to preflight OPTION requests with the proper Allow-Access headers
 // until then, this is keeping us safe from attempting a CORS request that results in cryptic error messages
@@ -50,6 +51,10 @@ export function assetURL(projectId: string, fileName: string): string {
 
 export function projectURL(projectId: string): string {
   return urljoin(PROJECT_ENDPOINT, projectId)
+}
+
+export function projectEditorURL(projectId: string): string {
+  return urljoin(PROJECT_EDITOR, projectId)
 }
 
 export function thumbnailURL(projectId: string): string {
