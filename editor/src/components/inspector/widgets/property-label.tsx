@@ -45,12 +45,13 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
       }}
     >
       <div
-        style={{
+        css={{
           display: 'flex',
           alignItems: 'center',
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
           textOverflow: 'ellipsis',
+          color: controlStyles.mainColor,
         }}
       >
         {props.children}

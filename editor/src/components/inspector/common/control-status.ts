@@ -143,11 +143,12 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'unset':
       case 'multiselect-identical-unset':
         set = false
-        mainColor = colorTheme.fg7.value
-        secondaryColor = colorTheme.fg7.value
-        trackColor = colorTheme.bg5.value
-        railColor = colorTheme.bg3.value
         unsettable = false
+        // this makes it interactive if the component provides these values
+        mainColor = 'var(--control-styles-interactive-unset-main-color)'
+        secondaryColor = 'var(--control-styles-interactive-unset-secondary-color)'
+        trackColor = 'var(--control-styles-interactive-unset-track-color)'
+        railColor = 'var(--control-styles-interactive-unset-rail-color)'
         break
       case 'controlled':
       case 'multiselect-controlled':
