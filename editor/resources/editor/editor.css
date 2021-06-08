@@ -9,6 +9,7 @@ body {
   font-size: 11px;
   letter-spacing: 0.2px;
   line-height: 17px;
+  font-feature-settings: 'salt', 'cpsp', 'tnum', 'zero';
 }
 
 a {
