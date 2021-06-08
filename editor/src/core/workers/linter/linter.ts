@@ -16,6 +16,7 @@ import * as Linter from 'eslint4b'
 import { ESLINT_CONFIG, EslintPluginRules } from './eslint-config'
 import { ErrorMessage } from '../../shared/error-messages'
 import * as BabelEslint from 'babel-eslint'
+import { getFileExtension } from '../../shared/file-utils'
 
 class CustomUtopiaLinter extends Linter {
   constructor() {
@@ -34,6 +35,8 @@ class CustomUtopiaLinter extends Linter {
 
 const linter = new CustomUtopiaLinter()
 
+const FileExtensionsToLint = ['.js', '.jsx', '.ts', '.tsx']
+
 export function lintCode(
   filename: string,
   code: string,
@@ -41,46 +44,51 @@ export function lintCode(
 ): ErrorMessage[] {
   const passTime = Date.now()
   try {
-    const lintResult = linter.verify(code, config, { filename: filename })
-    const codeLines = code.split('\n')
+    const fileExtension = getFileExtension(filename)
+    if (FileExtensionsToLint.includes(fileExtension.toLowerCase())) {
+      const lintResult = linter.verify(code, config, { filename: filename })
+      const codeLines = code.split('\n')
 
-    return lintResult.map(
-      (r: any): ErrorMessage => {
-        let severity: ErrorMessage['severity']
-        if (r.fatal as boolean) {
-          severity = 'fatal'
-        } else if (r.severity === 2) {
-          severity = 'error'
-        } else {
-          severity = 'warning'
-        }
+      return lintResult.map(
+        (r: any): ErrorMessage => {
+          let severity: ErrorMessage['severity']
+          if (r.fatal as boolean) {
+            severity = 'fatal'
+          } else if (r.severity === 2) {
+            severity = 'error'
+          } else {
+            severity = 'warning'
+          }
 
-        const ansiStrippedResultMessage = stripAnsi(r.message)
-        const strippedAndSplitMessage = ansiStrippedResultMessage.split('\n\n')
+          const ansiStrippedResultMessage = stripAnsi(r.message)
+          const strippedAndSplitMessage = ansiStrippedResultMessage.split('\n\n')
 
-        const message = strippedAndSplitMessage[0]
-        const messageWithRule = r.ruleId == null ? message : `${message} (${r.ruleId})`
-        const codeSnippetFromESLint = strippedAndSplitMessage[1]
-        const codeSnippet =
-          codeSnippetFromESLint ??
-          codeLines.slice(Math.max(r.line - 3, 0), r.endLine + 3).join('\n')
+          const message = strippedAndSplitMessage[0]
+          const messageWithRule = r.ruleId == null ? message : `${message} (${r.ruleId})`
+          const codeSnippetFromESLint = strippedAndSplitMessage[1]
+          const codeSnippet =
+            codeSnippetFromESLint ??
+            codeLines.slice(Math.max(r.line - 3, 0), r.endLine + 3).join('\n')
 
-        return {
-          message: messageWithRule,
-          fileName: filename,
-          startLine: r.line,
-          startColumn: r.column,
-          endLine: r.endLine,
-          endColumn: r.endColumn,
-          codeSnippet: codeSnippet,
-          severity: severity,
-          type: severity,
-          errorCode: r.ruleId,
-          source: 'eslint',
-          passTime: passTime,
-        }
-      },
-    )
+          return {
+            message: messageWithRule,
+            fileName: filename,
+            startLine: r.line,
+            startColumn: r.column,
+            endLine: r.endLine,
+            endColumn: r.endColumn,
+            codeSnippet: codeSnippet,
+            severity: severity,
+            type: severity,
+            errorCode: r.ruleId,
+            source: 'eslint',
+            passTime: passTime,
+          }
+        },
+      )
+    } else {
+      return []
+    }
   } catch (e) {
     return [
       {
