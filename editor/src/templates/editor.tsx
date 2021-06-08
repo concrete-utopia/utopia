@@ -94,6 +94,8 @@ import {
 } from '../components/editor/actions/actions'
 import { updateCssVars, UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
+import { notice } from '../components/common/notice'
+import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -216,7 +218,7 @@ export class Editor {
       handleHeartbeatRequestMessage(e.data),
     )
 
-    getLoginState('cache').then((loginState) => {
+    getLoginState('cache').then((loginState: LoginState) => {
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
       getUserConfiguration(loginState).then((shortcutConfiguration) => {
@@ -231,7 +233,16 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const githubOwner = urlParams.get('github_owner')
           const githubRepo = urlParams.get('github_repo')
-          if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
+          if (isCookiesOrLocalForageUnavailable(loginState)) {
+            createNewProject(this.boundDispatch, () =>
+              renderRootComponent(
+                this.utopiaStoreHook,
+                this.utopiaStoreApi,
+                this.spyCollector,
+                true,
+              ),
+            )
+          } else if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
             // TODO Should we require users to be logged in for this?
             downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
               if (isRequestFailure(repoResult)) {
@@ -280,6 +291,10 @@ export class Editor {
               ),
             )
           }
+        } else if (isCookiesOrLocalForageUnavailable(loginState)) {
+          createNewProject(this.boundDispatch, () =>
+            renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true),
+          )
         } else if (isSampleProject(projectId)) {
           createNewProjectFromSampleProject(
             projectId,

@@ -61,6 +61,15 @@ export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
           style={{ cursor: 'pointer' }}
         />
       )
+    case 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE':
+      return (
+        <NotificationBar
+          level='ERROR'
+          message={
+            'Cookies or IndexedDB are currently disabled in this browser. Please enable those and then refresh this window.'
+          }
+        />
+      )
     default:
       const _exhaustiveCheck: never = loginState
       throw new Error(`Unhandled login state ${loginState}`)

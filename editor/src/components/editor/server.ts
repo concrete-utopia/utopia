@@ -349,6 +349,7 @@ export async function getUserConfiguration(loginState: LoginState): Promise<User
     case 'NOT_LOGGED_IN':
     case 'LOGIN_LOST':
     case 'OFFLINE_STATE':
+    case 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE':
       return emptyUserConfiguration()
     default:
       const _exhaustiveCheck: never = loginState
