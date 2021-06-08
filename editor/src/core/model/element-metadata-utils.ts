@@ -106,16 +106,6 @@ import { withUnderlyingTarget } from '../../components/editor/store/editor-state
 import { ProjectContentTreeRoot } from '../../components/assets'
 const ObjectPathImmutable: any = OPI
 
-type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
-
-function fromSpyMergeCandidate(fromSpy: ElementInstanceMetadata): MergeCandidate {
-  return makeThis(fromSpy)
-}
-
-function fromDOMMergeCandidate(fromDOM: ElementInstanceMetadata): MergeCandidate {
-  return makeThat(fromDOM)
-}
-
 export const getChildrenOfCollapsedViews = (
   elementPaths: ElementPath[],
   collapsedViews: Array<ElementPath>,
