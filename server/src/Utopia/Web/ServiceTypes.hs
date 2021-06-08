@@ -76,6 +76,11 @@ listingFromProjectMetadata project = ProjectListing
                                    , _modifiedAt = view modifiedAt project
                                    }
 
+data ProjectDetails = UnknownProject
+                    | ReservedProjectID Text
+                    | ProjectDetailsMetadata ProjectMetadata
+                    deriving (Eq, Show)
+
 {-|
   'ServiceCallsF' defines what can be called from the endpoints, thereby preventing arbitrary
   side effects from being invoked. The type parameter 'a' is needed to support chaining multiple
@@ -90,7 +95,7 @@ data ServiceCallsF a = NotFound
                      | ValidateAuth Text (Maybe SessionUser -> a)
                      | UserForId Text (Maybe User -> a)
                      | DebugLog Text a
-                     | GetProjectMetadata Text (Maybe ProjectMetadata -> a)
+                     | GetProjectMetadata Text (ProjectDetails -> a)
                      | LoadProject Text (Maybe DecodedProject -> a)
                      | CreateProject (Text -> a)
                      | SaveProject SessionUser Text (Maybe Text) (Maybe Value) a

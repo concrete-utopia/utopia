@@ -40,22 +40,23 @@ import qualified Web.ServerSession.Core               as SS
 mkMigrate "migrateAll" (SS.serverSessionDefs (Proxy :: Proxy SS.SessionMap) ++ entityDefs)
 
 data DatabaseMetrics = DatabaseMetrics
-                     { _generateUniqueIDMetrics       :: InvocationMetric
-                     , _insertProjectMetrics          :: InvocationMetric
-                     , _saveProjectMetrics            :: InvocationMetric
-                     , _createProjectMetrics          :: InvocationMetric
-                     , _deleteProjectMetrics          :: InvocationMetric
-                     , _loadProjectMetrics            :: InvocationMetric
-                     , _getProjectsForUserMetrics     :: InvocationMetric
-                     , _getProjectOwnerMetrics        :: InvocationMetric
-                     , _getProjectOwnerDetailsMetrics :: InvocationMetric
-                     , _checkIfProjectOwnerMetrics    :: InvocationMetric
-                     , _getShowcaseProjectsMetrics    :: InvocationMetric
-                     , _setShowcaseProjectsMetrics    :: InvocationMetric
-                     , _updateUserDetailsMetrics      :: InvocationMetric
-                     , _getUserDetailsMetrics         :: InvocationMetric
-                     , _getUserConfigurationMetrics   :: InvocationMetric
-                     , _saveUserConfigurationMetrics  :: InvocationMetric
+                     { _generateUniqueIDMetrics         :: InvocationMetric
+                     , _insertProjectMetrics            :: InvocationMetric
+                     , _saveProjectMetrics              :: InvocationMetric
+                     , _createProjectMetrics            :: InvocationMetric
+                     , _deleteProjectMetrics            :: InvocationMetric
+                     , _loadProjectMetrics              :: InvocationMetric
+                     , _getProjectsForUserMetrics       :: InvocationMetric
+                     , _getProjectOwnerMetrics          :: InvocationMetric
+                     , _getProjectOwnerDetailsMetrics   :: InvocationMetric
+                     , _checkIfProjectOwnerMetrics      :: InvocationMetric
+                     , _getShowcaseProjectsMetrics      :: InvocationMetric
+                     , _setShowcaseProjectsMetrics      :: InvocationMetric
+                     , _updateUserDetailsMetrics        :: InvocationMetric
+                     , _getUserDetailsMetrics           :: InvocationMetric
+                     , _getUserConfigurationMetrics     :: InvocationMetric
+                     , _saveUserConfigurationMetrics    :: InvocationMetric
+                     , _checkIfProjectIDReservedMetrics :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
@@ -76,6 +77,7 @@ createDatabaseMetrics store = DatabaseMetrics
   <*> createInvocationMetric "utopia.database.getuserdetails" store
   <*> createInvocationMetric "utopia.database.getuserconfiguration" store
   <*> createInvocationMetric "utopia.database.saveuserconfiguration" store
+  <*> createInvocationMetric "utopia.database.checkifprojectidreserved" store
 
 data UserIDIncorrectException = UserIDIncorrectException
                               deriving (Eq, Show)
@@ -175,7 +177,6 @@ saveProjectInner _ pool userId projectId timestamp possibleTitle possibleProject
   let projectTitleUpdate = maybeToList $ fmap (\t -> ProjectTitle =. t) possibleTitle
   when correctUser $ usePool pool $ updateWhere [ProjectProjId ==. projectId] ([ProjectModifiedAt =. timestamp] ++ projectContentUpdate ++ projectTitleUpdate)
   unless correctUser $ throwM UserIDIncorrectException
-
 saveProjectInner metrics pool userId projectId timestamp possibleTitle possibleProjectContents Nothing = do
   insertProject metrics pool userId projectId timestamp possibleTitle possibleProjectContents
 
@@ -270,3 +271,8 @@ saveUserConfiguration metrics pool userId updatedShortcutConfig = invokeAndMeasu
                                }
   let recordUnique = UniqueUserConfiguration userId
   void $ usePool pool $ upsertBy recordUnique newRecord [UserConfigurationShortcutConfig =. encodedShortcutConfig]
+
+checkIfProjectIDReserved :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO Bool
+checkIfProjectIDReserved metrics pool projectID = invokeAndMeasure (_checkIfProjectIDReservedMetrics metrics) $ do
+  projectIDEntry <- usePool pool $ selectFirst [ProjectIDProjId ==. projectID] []
+  return $ isJust projectIDEntry

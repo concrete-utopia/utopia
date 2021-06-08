@@ -160,18 +160,27 @@ projectIDScript (ProjectIdWithSuffix projectID _) = do
   H.script ! HA.type_ "text/javascript" $ H.toMarkup
     ("window.utopiaProjectID = \"" <> projectID <> "\";")
 
-innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
-innerProjectPage (Just _) Nothing branchName = do
-  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
-  return $ H.preEscapedToHtml projectNotFoundHtml
-innerProjectPage possibleProjectID possibleMetadata branchName = do
-  indexHtml <- getEditorTextContent branchName "index.html"
+projectDetailsToPossibleMetadata :: ProjectDetails -> Maybe ProjectMetadata
+projectDetailsToPossibleMetadata UnknownProject = Nothing
+projectDetailsToPossibleMetadata (ReservedProjectID _) = Nothing
+projectDetailsToPossibleMetadata (ProjectDetailsMetadata metadata) = Just metadata
+
+renderPageWithMetadata :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> Text -> ServerMonad H.Html
+renderPageWithMetadata possibleProjectID possibleMetadata branchName pagePath = do
+  indexHtml <- getEditorTextContent branchName pagePath
   siteRoot <- getSiteRoot
   let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
   let projectIDScriptHtml = maybe "" (\projectID -> toS $ renderHtml $ projectIDScript projectID) possibleProjectID
   let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
   return $ H.preEscapedToHtml withProjectIdWithSuffixScript
+
+innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe Text -> ServerMonad H.Html
+innerProjectPage (Just _) UnknownProject branchName = do
+  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
+  return $ H.preEscapedToHtml projectNotFoundHtml
+innerProjectPage possibleProjectID details branchName = do
+  renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) branchName "index.html"
 
 projectPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
 projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
@@ -179,20 +188,14 @@ projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = d
   innerProjectPage (Just projectIDWithSuffix) possibleMetadata branchName
 
 emptyProjectPage :: Maybe Text -> ServerMonad H.Html
-emptyProjectPage branchName = innerProjectPage Nothing Nothing branchName
+emptyProjectPage branchName = innerProjectPage Nothing UnknownProject branchName
 
-innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
-innerPreviewPage (Just _) Nothing branchName = do
+innerPreviewPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe Text -> ServerMonad H.Html
+innerPreviewPage (Just _) UnknownProject branchName = do
   projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
   return $ H.preEscapedToHtml projectNotFoundHtml
-innerPreviewPage possibleProjectID possibleMetadata branchName = do
-  indexHtml <- getEditorTextContent branchName "preview.html"
-  siteRoot <- getSiteRoot
-  let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
-  let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
-  let projectIDScriptHtml = maybe "" (\projectID -> toS $ renderHtml $ projectIDScript projectID) possibleProjectID
-  let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
-  return $ H.preEscapedToHtml withProjectIdWithSuffixScript
+innerPreviewPage possibleProjectID details branchName = do
+  renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) branchName "preview.html"
 
 previewPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
 previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
@@ -200,7 +203,7 @@ previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = d
   innerPreviewPage (Just projectIDWithSuffix) possibleMetadata branchName
 
 emptyPreviewPage :: Maybe Text -> ServerMonad H.Html
-emptyPreviewPage branchName = innerPreviewPage Nothing Nothing branchName
+emptyPreviewPage branchName = innerPreviewPage Nothing UnknownProject branchName
 
 getUserEndpoint :: Maybe Text -> ServerMonad UserResponse
 getUserEndpoint cookie = checkForUser cookie maybeSessionUserToUser
@@ -213,7 +216,9 @@ getMyProjectsEndpoint cookie = requireUser cookie $ \sessionUser -> do
 getProjectMetadataEndpoint :: ProjectIdWithSuffix -> ServerMonad ProjectListing
 getProjectMetadataEndpoint (ProjectIdWithSuffix projectID _) = do
   possibleMetadata <- getProjectMetadata projectID
-  maybe notFound (\projectMetadata -> return $ listingFromProjectMetadata projectMetadata) possibleMetadata
+  case possibleMetadata of
+    (ProjectDetailsMetadata projectMetadata) -> pure $ listingFromProjectMetadata projectMetadata
+    _ -> notFound
 
 getShowcaseEndpoint :: ServerMonad ProjectListResponse
 getShowcaseEndpoint = do
@@ -229,16 +234,17 @@ setShowcaseEndpoint projectIdsString = do
 projectOwnerEndpoint :: Maybe Text -> ProjectIdWithSuffix -> ServerMonad ProjectOwnerResponse
 projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = checkForUser cookie $ \maybeUser -> do
   possibleProject <- loadProject projectID
-  case (maybeUser, possibleProject) of 
-    (_, Nothing) -> notFound 
+  case (maybeUser, possibleProject) of
+    (_, Nothing) -> notFound
     (Nothing, _) -> notAuthenticated
     (Just sessionUser, Just project) -> return $ ProjectOwnerResponse $ (view id sessionUser) == (view ownerId project)
 
 projectChangedSince :: Text -> UTCTime -> ServerMonad (Maybe Bool)
 projectChangedSince projectID lastChangedDate = do
   possibleMetadata <- getProjectMetadata projectID
-  let possibleChanged = fmap (\m -> view modifiedAt m > lastChangedDate) possibleMetadata
-  return possibleChanged
+  pure $ case possibleMetadata of
+            (ProjectDetailsMetadata ProjectMetadata{..}) -> Just (_modifiedAt > lastChangedDate)
+            _ -> Nothing
 
 downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Value
 downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
