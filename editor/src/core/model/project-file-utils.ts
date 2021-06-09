@@ -434,7 +434,7 @@ export function imageFile(
   base64: string | undefined,
   width: number | undefined,
   height: number | undefined,
-  hash: string,
+  hash: number,
 ): ImageFile {
   return {
     type: 'IMAGE_FILE',

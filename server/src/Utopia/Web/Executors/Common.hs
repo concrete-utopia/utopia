@@ -184,14 +184,12 @@ saveProjectAssetWithCall metrics pool user projectID assetPath saveCall = do
 getPathMimeType :: [Text] -> MimeType
 getPathMimeType pathElements = maybe defaultMimeType defaultMimeLookup $ lastOf traverse pathElements
 
-loadProjectAssetWithCall :: (MonadIO m, MonadThrow m) => LoadAsset -> [Text] -> m Application
+loadProjectAssetWithCall :: (MonadIO m, MonadThrow m) => LoadAsset -> [Text] -> m (Maybe Application)
 loadProjectAssetWithCall loadCall assetPath = do
   possibleAsset <- liftIO $ loadCall assetPath
   let mimeType = getPathMimeType assetPath
   let buildResponse asset = responseLBS ok200 [(hContentType, mimeType)] asset
-  let nonExistantResponse = responseLBS notFound404 [] mempty
-  let response = maybe nonExistantResponse buildResponse possibleAsset
-  return $ \_ -> \sendResponse -> sendResponse response
+  pure $ fmap (\asset -> \_ -> \sendResponse -> sendResponse $ buildResponse asset) possibleAsset
 
 renameProjectAssetWithCall :: (MonadIO m, MonadThrow m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> OldPathText -> NewPathText -> (OldPathText -> NewPathText -> IO ()) -> m ()
 renameProjectAssetWithCall metrics pool user projectID (OldPath oldPath) (NewPath newPath) renameCall = do

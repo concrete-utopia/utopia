@@ -22,12 +22,12 @@ function codeFileArbitrary(): FastCheck.Arbitrary<TextFile> {
 }
 
 function remoteImageFileArbitrary(): FastCheck.Arbitrary<ImageFile> {
-  return FastCheck.constant(imageFile(undefined, undefined, 100, 100, 'hat'))
+  return FastCheck.constant(imageFile(undefined, undefined, 100, 100, 123456))
 }
 
 function localImageFileArbitrary(): FastCheck.Arbitrary<ImageFile> {
   return FastCheck.tuple(FastCheck.string(), FastCheck.string()).map(([imageType, base64]) =>
-    imageFile(imageType, base64, 100, 100, 'hat'),
+    imageFile(imageType, base64, 100, 100, 123456),
   )
 }
 

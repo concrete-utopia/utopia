@@ -521,7 +521,7 @@ export interface ImageFile {
   base64?: string
   width?: number
   height?: number
-  hash: string
+  hash: number
 }
 
 export interface AssetFile {

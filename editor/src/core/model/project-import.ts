@@ -20,7 +20,7 @@ export interface UnsavedAsset {
   fileName: string
   fileType: string
   base64: string
-  hash: string
+  hash: number
   size: Size | null
 }
 

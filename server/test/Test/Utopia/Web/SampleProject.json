@@ -1,1 +1,235 @@
-{"appID":null,"projectVersion":6,"projectContents":{"package.json":{"type":"PROJECT_CONTENT_FILE","fullPath":"/package.json","content":{"type":"TEXT_FILE","fileContents":{"code":"{\n  \"name\": \"Utopia Project\",\n  \"version\": \"0.1.0\",\n  \"utopia\": {\n    \"main-ui\": \"src/app.js\",\n    \"html\": \"public/index.html\",\n    \"js\": \"src/index.js\"\n  },\n  \"dependencies\": {\n    \"react\": \"16.13.1\",\n    \"react-dom\": \"16.13.1\",\n    \"utopia-api\": \"0.4.1\",\n    \"react-spring\": \"8.0.27\"\n  }\n}","parsed":{"type":"UNPARSED"},"revisionsState":"BOTH_MATCH"},"lastSavedContents":null,"lastRevisedTime":0}},"src":{"type":"PROJECT_CONTENT_DIRECTORY","fullPath":"/src","directory":{"type":"DIRECTORY"},"children":{"app.js":{"type":"PROJECT_CONTENT_FILE","fullPath":"/src/app.js","content":{"type":"TEXT_FILE","fileContents":{"code":"/** @jsx jsx */\nimport * as React from 'react'\nimport { Scene, Storyboard, jsx } from 'utopia-api'\nexport var App = (props) => {\n  return (\n    <div\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\n    />\n  )\n}\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      component={App}\n      props={{}}\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\n    />\n  </Storyboard>\n)\n\n","parsed":{"type":"PARSE_SUCCESS","imports":{"react":{"importedWithName":null,"importedFromWithin":[],"importedAs":"React"},"utopia-api":{"importedWithName":null,"importedFromWithin":[{"name":"Scene","alias":"Scene"},{"name":"Storyboard","alias":"Storyboard"},{"name":"jsx","alias":"jsx"}],"importedAs":null}},"topLevelElements":[{"type":"UTOPIA_JSX_COMPONENT","name":"App","isFunction":true,"param":{"type":"PARAM","dotDotDotToken":false,"boundParam":{"type":"REGULAR_PARAM","paramName":"props","defaultExpression":null}},"propsUsed":[],"rootElement":{"type":"JSX_ELEMENT","name":{"baseVariable":"div","propertyPath":{"propertyElements":[]}},"props":{"style":{"type":"ATTRIBUTE_VALUE","value":{"width":"100%","height":"100%","backgroundColor":"#FFFFFF","position":"relative"}},"data-uid":{"type":"ATTRIBUTE_VALUE","value":"d59"}},"children":[]},"arbitraryJSBlock":null,"usedInReactDOMRender":false},{"type":"UTOPIA_JSX_COMPONENT","name":"storyboard","isFunction":false,"param":null,"propsUsed":[],"rootElement":{"type":"JSX_ELEMENT","name":{"baseVariable":"Storyboard","propertyPath":{"propertyElements":[]}},"props":{"data-uid":{"type":"ATTRIBUTE_VALUE","value":"b32"}},"children":[{"type":"JSX_ELEMENT","name":{"baseVariable":"Scene","propertyPath":{"propertyElements":[]}},"props":{"component":{"type":"ATTRIBUTE_OTHER_JAVASCRIPT","javascript":"App","transpiledJavascript":"return App;","definedElsewhere":["App"],"sourceMap":{"version":3,"sources":["code.tsx"],"names":["App"],"mappings":"OAakBA","file":"code.tsx","sourcesContent":["/** @jsx jsx */\nimport * as React from 'react'\nimport { Scene, Storyboard, jsx } from 'utopia-api'\nexport var App = (props) => {\n  return (\n    <div\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\n    />\n  )\n}\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      component={App}\n      props={{}}\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\n    />\n  </Storyboard>\n)\n\n"]},"uniqueID":"78a239df-7011-452c-ac06-954e0b49dd05"},"props":{"type":"ATTRIBUTE_VALUE","value":{}},"style":{"type":"ATTRIBUTE_VALUE","value":{"position":"absolute","left":0,"top":0,"width":375,"height":812}},"data-uid":{"type":"ATTRIBUTE_VALUE","value":"663"}},"children":[]}]},"arbitraryJSBlock":null,"usedInReactDOMRender":false}],"highlightBounds":{"663":{"startCol":4,"startLine":12,"endCol":6,"endLine":16,"uid":"663"},"d59":{"startCol":4,"startLine":5,"endCol":6,"endLine":7,"uid":"d59"},"b32":{"startCol":2,"startLine":11,"endCol":15,"endLine":17,"uid":"b32"}},"jsxFactoryFunction":"jsx","combinedTopLevelArbitraryBlock":null,"exportsDetail":{"defaultExport":null,"namedExports":{"App":{"type":"EXPORT_DETAIL_MODIFIER"},"storyboard":{"type":"EXPORT_DETAIL_MODIFIER"}}}},"revisionsState":"BOTH_MATCH"},"lastSavedContents":null,"lastRevisedTime":1608045469428}},"index.js":{"type":"PROJECT_CONTENT_FILE","fullPath":"/src/index.js","content":{"type":"TEXT_FILE","fileContents":{"code":"import * as React from \"react\";\nimport * as ReactDOM from \"react-dom\";\nimport { App } from \"../src/app\";\n\nconst root = document.getElementById(\"root\");\nif (root != null) {\n  ReactDOM.render(<App />, root);\n}","parsed":{"type":"UNPARSED"},"revisionsState":"CODE_AHEAD"},"lastSavedContents":null,"lastRevisedTime":0}}}},"assets":{"type":"PROJECT_CONTENT_DIRECTORY","fullPath":"/assets","directory":{"type":"DIRECTORY"},"children":{}},"public":{"type":"PROJECT_CONTENT_DIRECTORY","fullPath":"/public","directory":{"type":"DIRECTORY"},"children":{"index.html":{"type":"PROJECT_CONTENT_FILE","fullPath":"/public/index.html","content":{"type":"TEXT_FILE","fileContents":{"code":"<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <title>Utopia React App</title>\n    <!-- Begin Generated Utopia External Links -->\n    <!-- End Generated Utopia External Links -->\n  </head>\n  <body>\n    <div id=\"root\"></div>\n  </body>\n</html>","parsed":{"type":"UNPARSED"},"revisionsState":"CODE_AHEAD"},"lastSavedContents":null,"lastRevisedTime":0}}}}},"exportsInfo":[],"openFiles":[{"type":"OPEN_FILE_TAB","filename":"/src/app.js"},{"type":"RELEASE_NOTES_TAB"}],"selectedFile":{"type":"RELEASE_NOTES_TAB"},"codeEditorErrors":{"buildErrors":{},"lintErrors":{}},"codeEditorTheme":"utopia-highvis","lastUsedFont":null,"hiddenInstances":[],"fileBrowser":{"minimised":false},"dependencyList":{"minimised":false},"projectSettings":{"minimised":false},"navigator":{"minimised":false}}
+{
+  "appID": null,
+  "projectVersion": 6,
+  "projectContents": {
+    "package.json": {
+      "type": "PROJECT_CONTENT_FILE",
+      "fullPath": "/package.json",
+      "content": {
+        "type": "TEXT_FILE",
+        "fileContents": {
+          "code": "{\n  \"name\": \"Utopia Project\",\n  \"version\": \"0.1.0\",\n  \"utopia\": {\n    \"main-ui\": \"src/app.js\",\n    \"html\": \"public/index.html\",\n    \"js\": \"src/index.js\"\n  },\n  \"dependencies\": {\n    \"react\": \"16.13.1\",\n    \"react-dom\": \"16.13.1\",\n    \"utopia-api\": \"0.4.1\",\n    \"react-spring\": \"8.0.27\"\n  }\n}",
+          "parsed": { "type": "UNPARSED" },
+          "revisionsState": "BOTH_MATCH"
+        },
+        "lastSavedContents": null,
+        "lastRevisedTime": 0
+      }
+    },
+    "src": {
+      "type": "PROJECT_CONTENT_DIRECTORY",
+      "fullPath": "/src",
+      "directory": { "type": "DIRECTORY" },
+      "children": {
+        "app.js": {
+          "type": "PROJECT_CONTENT_FILE",
+          "fullPath": "/src/app.js",
+          "content": {
+            "type": "TEXT_FILE",
+            "fileContents": {
+              "code": "/** @jsx jsx */\nimport * as React from 'react'\nimport { Scene, Storyboard, jsx } from 'utopia-api'\nexport var App = (props) => {\n  return (\n    <div\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\n    />\n  )\n}\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      component={App}\n      props={{}}\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\n    />\n  </Storyboard>\n)\n\n",
+              "parsed": {
+                "type": "PARSE_SUCCESS",
+                "imports": {
+                  "react": {
+                    "importedWithName": null,
+                    "importedFromWithin": [],
+                    "importedAs": "React"
+                  },
+                  "utopia-api": {
+                    "importedWithName": null,
+                    "importedFromWithin": [
+                      { "name": "Scene", "alias": "Scene" },
+                      { "name": "Storyboard", "alias": "Storyboard" },
+                      { "name": "jsx", "alias": "jsx" }
+                    ],
+                    "importedAs": null
+                  }
+                },
+                "topLevelElements": [
+                  {
+                    "type": "UTOPIA_JSX_COMPONENT",
+                    "name": "App",
+                    "isFunction": true,
+                    "param": {
+                      "type": "PARAM",
+                      "dotDotDotToken": false,
+                      "boundParam": {
+                        "type": "REGULAR_PARAM",
+                        "paramName": "props",
+                        "defaultExpression": null
+                      }
+                    },
+                    "propsUsed": [],
+                    "rootElement": {
+                      "type": "JSX_ELEMENT",
+                      "name": { "baseVariable": "div", "propertyPath": { "propertyElements": [] } },
+                      "props": {
+                        "style": {
+                          "type": "ATTRIBUTE_VALUE",
+                          "value": {
+                            "width": "100%",
+                            "height": "100%",
+                            "backgroundColor": "#FFFFFF",
+                            "position": "relative"
+                          }
+                        },
+                        "data-uid": { "type": "ATTRIBUTE_VALUE", "value": "d59" }
+                      },
+                      "children": []
+                    },
+                    "arbitraryJSBlock": null,
+                    "usedInReactDOMRender": false
+                  },
+                  {
+                    "type": "UTOPIA_JSX_COMPONENT",
+                    "name": "storyboard",
+                    "isFunction": false,
+                    "param": null,
+                    "propsUsed": [],
+                    "rootElement": {
+                      "type": "JSX_ELEMENT",
+                      "name": {
+                        "baseVariable": "Storyboard",
+                        "propertyPath": { "propertyElements": [] }
+                      },
+                      "props": { "data-uid": { "type": "ATTRIBUTE_VALUE", "value": "b32" } },
+                      "children": [
+                        {
+                          "type": "JSX_ELEMENT",
+                          "name": {
+                            "baseVariable": "Scene",
+                            "propertyPath": { "propertyElements": [] }
+                          },
+                          "props": {
+                            "component": {
+                              "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                              "javascript": "App",
+                              "transpiledJavascript": "return App;",
+                              "definedElsewhere": ["App"],
+                              "sourceMap": {
+                                "version": 3,
+                                "sources": ["code.tsx"],
+                                "names": ["App"],
+                                "mappings": "OAakBA",
+                                "file": "code.tsx",
+                                "sourcesContent": [
+                                  "/** @jsx jsx */\nimport * as React from 'react'\nimport { Scene, Storyboard, jsx } from 'utopia-api'\nexport var App = (props) => {\n  return (\n    <div\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\n    />\n  )\n}\nexport var storyboard = (\n  <Storyboard>\n    <Scene\n      component={App}\n      props={{}}\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\n    />\n  </Storyboard>\n)\n\n"
+                                ]
+                              },
+                              "uniqueID": "78a239df-7011-452c-ac06-954e0b49dd05"
+                            },
+                            "props": { "type": "ATTRIBUTE_VALUE", "value": {} },
+                            "style": {
+                              "type": "ATTRIBUTE_VALUE",
+                              "value": {
+                                "position": "absolute",
+                                "left": 0,
+                                "top": 0,
+                                "width": 375,
+                                "height": 812
+                              }
+                            },
+                            "data-uid": { "type": "ATTRIBUTE_VALUE", "value": "663" }
+                          },
+                          "children": []
+                        }
+                      ]
+                    },
+                    "arbitraryJSBlock": null,
+                    "usedInReactDOMRender": false
+                  }
+                ],
+                "highlightBounds": {
+                  "663": {
+                    "startCol": 4,
+                    "startLine": 12,
+                    "endCol": 6,
+                    "endLine": 16,
+                    "uid": "663"
+                  },
+                  "d59": { "startCol": 4, "startLine": 5, "endCol": 6, "endLine": 7, "uid": "d59" },
+                  "b32": {
+                    "startCol": 2,
+                    "startLine": 11,
+                    "endCol": 15,
+                    "endLine": 17,
+                    "uid": "b32"
+                  }
+                },
+                "jsxFactoryFunction": "jsx",
+                "combinedTopLevelArbitraryBlock": null,
+                "exportsDetail": {
+                  "defaultExport": null,
+                  "namedExports": {
+                    "App": { "type": "EXPORT_DETAIL_MODIFIER" },
+                    "storyboard": { "type": "EXPORT_DETAIL_MODIFIER" }
+                  }
+                }
+              },
+              "revisionsState": "BOTH_MATCH"
+            },
+            "lastSavedContents": null,
+            "lastRevisedTime": 1608045469428
+          }
+        },
+        "index.js": {
+          "type": "PROJECT_CONTENT_FILE",
+          "fullPath": "/src/index.js",
+          "content": {
+            "type": "TEXT_FILE",
+            "fileContents": {
+              "code": "import * as React from \"react\";\nimport * as ReactDOM from \"react-dom\";\nimport { App } from \"../src/app\";\n\nconst root = document.getElementById(\"root\");\nif (root != null) {\n  ReactDOM.render(<App />, root);\n}",
+              "parsed": { "type": "UNPARSED" },
+              "revisionsState": "CODE_AHEAD"
+            },
+            "lastSavedContents": null,
+            "lastRevisedTime": 0
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "PROJECT_CONTENT_DIRECTORY",
+      "fullPath": "/assets",
+      "directory": { "type": "DIRECTORY" },
+      "children": {}
+    },
+    "public": {
+      "type": "PROJECT_CONTENT_DIRECTORY",
+      "fullPath": "/public",
+      "directory": { "type": "DIRECTORY" },
+      "children": {
+        "index.html": {
+          "type": "PROJECT_CONTENT_FILE",
+          "fullPath": "/public/index.html",
+          "content": {
+            "type": "TEXT_FILE",
+            "fileContents": {
+              "code": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <title>Utopia React App</title>\n    <!-- Begin Generated Utopia External Links -->\n    <!-- End Generated Utopia External Links -->\n  </head>\n  <body>\n    <div id=\"root\"></div>\n  </body>\n</html>",
+              "parsed": { "type": "UNPARSED" },
+              "revisionsState": "CODE_AHEAD"
+            },
+            "lastSavedContents": null,
+            "lastRevisedTime": 0
+          }
+        }
+      }
+    }
+  },
+  "exportsInfo": [],
+  "openFiles": [
+    { "type": "OPEN_FILE_TAB", "filename": "/src/app.js" },
+    { "type": "RELEASE_NOTES_TAB" }
+  ],
+  "selectedFile": { "type": "RELEASE_NOTES_TAB" },
+  "codeEditorErrors": { "buildErrors": {}, "lintErrors": {} },
+  "codeEditorTheme": "utopia-highvis",
+  "lastUsedFont": null,
+  "hiddenInstances": [],
+  "fileBrowser": { "minimised": false },
+  "dependencyList": { "minimised": false },
+  "projectSettings": { "minimised": false },
+  "navigator": { "minimised": false }
+}
+

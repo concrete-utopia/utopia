@@ -7,14 +7,14 @@ export interface ImageResult {
   base64Bytes: string
   size: Size
   fileType: string
-  hash: string
+  hash: number
 }
 
 export interface AssetResult {
   type: 'ASSET_RESULT'
   filename: string
   base64Bytes: string
-  hash: string
+  hash: number
 }
 
 export interface TextResult {
