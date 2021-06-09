@@ -277,3 +277,12 @@ getUserConfigurationWithPool metrics pool userID action = do
 saveUserConfigurationWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> Maybe Value -> m ()
 saveUserConfigurationWithPool metrics pool userID possibleShortcutConfig = do
   liftIO $ DB.saveUserConfiguration metrics pool userID possibleShortcutConfig
+
+getProjectDetailsWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> m ProjectDetails
+getProjectDetailsWithPool metrics pool projectID = do
+  projectIDReserved <- liftIO $ DB.checkIfProjectIDReserved metrics pool projectID
+  projectMetadata <- liftIO $ DB.getProjectMetadataWithPool metrics pool projectID
+  pure $ case (projectIDReserved, projectMetadata) of
+            (_, Just metadata) -> ProjectDetailsMetadata metadata
+            (True, _)          -> ReservedProjectID projectID
+            (False, _)         -> UnknownProject

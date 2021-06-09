@@ -142,7 +142,7 @@ validAuthenticate :: ClientM (Headers '[Header "Set-Cookie" SetCookie] Text)
 validAuthenticate = authenticateClient (Just "logmein") (Just "auto-close")
 
 updateAssetPathSpec :: Spec
-updateAssetPathSpec =
+updateAssetPathSpec = around_ withServer $ do
   describe "PUT v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
     it "should update the asset path" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
@@ -170,7 +170,7 @@ updateAssetPathSpec =
         (Right _)                         -> expectationFailure "Unexpected successful response."
 
 deleteAssetSpec :: Spec
-deleteAssetSpec =
+deleteAssetSpec = around_ withServer $ do
   describe "DELETE v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
     it "should delete the asset" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
@@ -191,7 +191,7 @@ deleteAssetSpec =
         (Right _)                         -> expectationFailure "Unexpected successful response."
 
 saveUserConfigurationSpec :: Spec
-saveUserConfigurationSpec =
+saveUserConfigurationSpec = around_ withServer $ do
   describe "GET v1/user/config" $ do
     it "should return an empty result when nothing has been set" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       userConfig <- withClientEnv clientEnv $ do
@@ -208,8 +208,8 @@ saveUserConfigurationSpec =
         getUserConfigurationClient cookieHeader
       (userConfig ^? _Right) `shouldBe` (Just $ UserConfigurationResponse shortcutConf)
 
-routingSpec :: Spec
-routingSpec = around_ withServer $ do
+projectsSpec :: Spec
+projectsSpec = around_ withServer $ do
   describe "GET /authenticate" $ do
     it "should set a cookie for valid login" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       result <- runClientM validAuthenticate clientEnv
@@ -393,6 +393,10 @@ routingSpec = around_ withServer $ do
         projectsClient cookieHeader
       projectListingResponse `shouldBe` (Right $ ProjectListResponse [])
       loadedProjectResult `shouldSatisfy` errorWithStatusCode notFound404
+
+routingSpec :: Spec
+routingSpec = do
+  projectsSpec
   updateAssetPathSpec
   deleteAssetSpec
   saveUserConfigurationSpec

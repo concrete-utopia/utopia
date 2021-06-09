@@ -156,7 +156,7 @@ innerServerExecutor (DebugLog logContent next) = do
 innerServerExecutor (GetProjectMetadata projectID action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  metadata <- liftIO $ DB.getProjectMetadataWithPool metrics pool projectID
+  metadata <- liftIO $ getProjectDetailsWithPool metrics pool projectID
   return $ action metadata
 innerServerExecutor (LoadProject projectID action) = do
   pool <- fmap _projectPool ask
