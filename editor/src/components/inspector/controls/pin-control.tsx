@@ -46,9 +46,9 @@ function getStrokeColor(
   const isPrimary = Utils.propOr(false, 'isPrimaryPosition', framePoints[point])
 
   if (isPrimary && !mixed) {
-    return controlStyles.mainColor
+    return controlStyles.strokePrimaryColor
   } else {
-    return controlStyles.secondaryColor
+    return controlStyles.strokeTertiaryColor
   }
 }
 
@@ -121,7 +121,9 @@ export const PinControl = (props: PinControlProps) => {
             onMouseDown={handlePinMouseDown('PinnedTop')}
           />
           <path
-            d={`M${HorizontalMid},${VerticalMid - VerticalLength} l0,${VerticalLength * 2}`}
+            d={`M${HorizontalMid},${VerticalMid - (VerticalLength - 4)} l0,${
+              (VerticalLength - 4) * 2
+            }`}
             className='pin-indicator'
             id='positioncontrols-pin-centery'
             stroke={getStrokeColor(
@@ -169,7 +171,9 @@ export const PinControl = (props: PinControlProps) => {
             onMouseDown={handlePinMouseDown('PinnedRight')}
           />
           <path
-            d={`M${HorizontalMid - HorizontalLength},${VerticalMid} l${HorizontalLength * 2},0`}
+            d={`M${HorizontalMid - (HorizontalLength - 6)},${VerticalMid} l${
+              (HorizontalLength - 6) * 2
+            },0`}
             className='pin-indicator'
             id='positioncontrols-pin-centerx'
             stroke={getStrokeColor(
@@ -243,7 +247,7 @@ interface PinWidthControlProps {
 export const PinWidthControl = betterReactMemo('PinWidthControl', (props: PinWidthControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
-    <SquareButton onClick={props.toggleWidth} outline={true}>
+    <SquareButton onClick={props.toggleWidth} highlight={true} spotlight={true}>
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-width'
@@ -290,7 +294,7 @@ export const PinHeightControl = betterReactMemo(
   (props: PinHeightControlProps) => {
     const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
     return (
-      <SquareButton onClick={props.toggleHeight} outline={true}>
+      <SquareButton onClick={props.toggleHeight} highlight={true} spotlight={true}>
         <svg width='20' height='20'>
           <g
             id='dimensioncontrols-pin-height'

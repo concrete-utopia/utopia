@@ -377,7 +377,7 @@ export const InsertGroup: React.FunctionComponent<InsertGroupProps> = betterReac
               {props.label}
             </div>
             {props.subLabel == null ? null : (
-              <div style={{ color: colorTheme.tertiaryForeground.value, paddingLeft: 10 }}>
+              <div style={{ color: colorTheme.subduedForeground.value, paddingLeft: 10 }}>
                 {props.subLabel}
               </div>
             )}

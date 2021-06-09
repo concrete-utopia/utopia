@@ -169,9 +169,9 @@ const computeResultingStyle = (
 
   let boxShadow: string | undefined = undefined
   if (isProbablyScene) {
-    boxShadow = `inset 0 -1px ${colorTheme.inputBorder.value}`
+    boxShadow = `inset 0 -1px ${colorTheme.subduedBorder.value}`
   } else if (isFocusedComponent) {
-    boxShadow = `inset 0 1px ${colorTheme.inputBorder.value}`
+    boxShadow = `inset 0 1px ${colorTheme.subduedBorder.value}`
   }
 
   // additional style

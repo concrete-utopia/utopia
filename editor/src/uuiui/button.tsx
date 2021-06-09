@@ -46,22 +46,21 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   background: props.primary
     ? UtopiaStyles.backgrounds.blue
     : props.spotlight
-    ? UtopiaTheme.color.secondaryBackground.value
+    ? UtopiaTheme.color.buttonBackground.value
     : undefined,
   '&:hover': {
     background:
       props.primary && props.highlight
         ? UtopiaStyles.backgrounds.lightblue
         : props.highlight
-        ? 'hsl(0,0%,95%)'
+        ? colorTheme.buttonHoverBackground.value
         : 'transparent',
-    filter: props.highlight ? 'brightness(95%)' : undefined,
   },
   '&:active': {
     outline: 'none',
     border: 'none',
     boxShadow: props.outline ? 'inset 0px 0px 0px 1px  hsl(0,0%,80%)' : undefined,
-    filter: props.highlight ? 'brightness(95%)' : undefined,
+    filter: props.highlight ? 'brightness(98%)' : undefined,
   },
 }))
 
@@ -74,9 +73,9 @@ export const SquareButton = styled(Button)({
 export const ToggleButton = styled(SquareButton)<{
   value: boolean
 }>((props) => ({
-  background: props.value ? UtopiaTheme.color.secondaryBackground.value : 'transparent',
+  background: props.value ? UtopiaTheme.color.buttonBackground.value : 'transparent',
   '&:hover': {
-    background: UtopiaTheme.color.neutralBackground.value,
+    background: UtopiaTheme.color.buttonHoverBackground.value,
   },
 }))
 

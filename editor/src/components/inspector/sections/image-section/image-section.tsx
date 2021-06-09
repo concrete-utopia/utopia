@@ -63,7 +63,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
   let naturalDimensionsNode: React.ReactNode
   if (naturalWidth != null && naturalHeight != null && naturalWidth !== 0 && naturalHeight !== 0) {
     naturalDimensionsNode = (
-      <span style={{ marginLeft: 4, color: colorTheme.tertiaryForeground.value }}>
+      <span style={{ marginLeft: 4, color: colorTheme.subduedForeground.value }}>
         ({naturalWidth} × {naturalHeight})
       </span>
     )

@@ -71,6 +71,8 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
           ref={setReferenceElement}
           onMouseDown={onMouseDown}
           style={{
+            background: controlStyles.backgroundColor,
+            color: controlStyles.mainColor,
             boxShadow: `0 0 0 1px ${controlStyles.borderColor} inset`,
             padding: 4,
             fontSize: 14,

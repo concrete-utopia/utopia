@@ -183,8 +183,8 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
                 paddingRight: 4,
                 paddingTop: 2,
                 paddingBottom: 2,
-                background: '#007AFF',
-                color: 'white',
+                background: colorTheme.primary.value,
+                color: colorTheme.neutralInvertedForeground.value,
                 borderRadius: 2,
               }}
             >
@@ -206,9 +206,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
               width: 28,
               height: 28,
               borderRadius: '50%',
-              boxShadow: `inset 0px 0px 0px 1px ${
-                UtopiaTheme.color.verySubduedForeground.o(50).value
-              }`,
+              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.subduedForeground.o(50).value}`,
               background: UtopiaTheme.color.subtleBackground.value,
             }}
           >

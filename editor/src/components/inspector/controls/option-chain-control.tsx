@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { Interpolation, jsx } from '@emotion/react'
 import * as React from 'react'
-import { IcnProps } from '../../../uuiui'
+import { IcnProps, UtopiaTheme } from '../../../uuiui'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
 import Utils from '../../../utils/utils'
@@ -30,7 +30,6 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     // This is the divider in between controls
     '&:not(:first-of-type)::after': {
       content: '""',
-      width: 1,
       height: 10,
       backgroundColor: props.controlStyles.borderColor,
       position: 'absolute',
@@ -43,8 +42,7 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     <div
       id={props.id}
       key={props.key}
-      style={{
-        width: '100%',
+      css={{
         display: 'flex',
         flexDirection: 'column',
         marginBottom: 0,
@@ -53,12 +51,9 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     >
       <div
         style={{
-          width: '100%',
           display: 'flex',
           flexDirection: 'row',
-          height: 22,
-          boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
-          backgroundColor: props.controlStyles.backgroundColor,
+          height: UtopiaTheme.layout.inputHeight.default,
         }}
         className={`option-chain-control-container ${Utils.pathOr(
           '',
@@ -91,8 +86,7 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
         <label
           htmlFor={props.id}
           onContextMenu={props.onContextMenu}
-          className='label-mini-control f10 tc db'
-          color={props.controlStyles.mainColor}
+          style={{ fontSize: 10, color: props.controlStyles.mainColor, paddingTop: 2 }}
         >
           <span className='label-container'>{labelBelow}</span>
         </label>

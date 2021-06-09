@@ -1,24 +1,15 @@
 import * as deepEqual from 'fast-deep-equal'
-import { UtopiaUtils } from 'utopia-api'
-import { colorTheme } from '../../../uuiui/styles/theme'
+import { colorTheme, UtopiaTheme } from '../../../uuiui/styles/theme'
 import {
   isJSXAttributeNotFound,
   isJSXAttributeValue,
   isPartOfJSXAttributeValue,
-  JSXAttribute,
-  JSXAttributeNotFound,
-  PartOfJSXAttributeValue,
-  StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
-import {
-  GetModifiableAttributeResult,
-  ModifiableAttribute,
-} from '../../../core/shared/jsx-attributes'
+import { GetModifiableAttributeResult } from '../../../core/shared/jsx-attributes'
 import { isLeft, isRight, Either } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
-import { CSSNumber, ParsedPropertiesKeys } from './css-utils'
-import { InspectorInfo, MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
-import { fastForEach } from '../../../core/shared/utils'
+import { ParsedPropertiesKeys } from './css-utils'
+import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
 
 export interface ControlStyles {
   fontStyle: string
@@ -27,8 +18,11 @@ export interface ControlStyles {
   secondaryColor: string
   borderColor: string
   backgroundColor: string
+  focusedBackgroundColor: string
+  strokePrimaryColor: string
+  strokeSecondaryColor: string
+  strokeTertiaryColor: string
   segmentSelectorColor: string
-  segmentTrackColor: string
   set: boolean
   interactive: boolean
   mixed: boolean
@@ -37,53 +31,6 @@ export interface ControlStyles {
   railColor: string
   showContent: boolean
   unsettable: boolean
-}
-
-// note: these colors need to be kept true with the inspector.css vars
-export const ControlStyleDefaults = {
-  SetMainColor: colorTheme.inspectorSetMainColor.value,
-  SetSecondaryColor: colorTheme.inspectorSetSecondaryColor.value,
-  SetBorderColor: colorTheme.inspectorSetBorderColor.value,
-  SetBackgroundColor: colorTheme.inspectorSetBackgroundColor.value,
-  SetSegmentSelectorColor: colorTheme.inspectorSetBackgroundColor.value,
-  SetSegmentTrackColor: colorTheme.inspectorSetSegmentTrackColor.value,
-  UnsetMainColor: colorTheme.inspectorUnsetMainColor.value,
-  UnsetSecondaryColor: colorTheme.inspectorUnsetSecondaryColor.value,
-  UnsetBorderColor: colorTheme.inspectorUnsetBorderColor.value,
-  UnsetBorderHoverFocusColor: colorTheme.inspectorSetBorderColor.value,
-  UnsetBackgroundColor: colorTheme.inspectorUnsetBackgroundColor.value,
-  UnsetSegmentSelectorColor: colorTheme.inspectorUnsetSegmentSelectorColor.value,
-  UnsetSegmentTrackColor: colorTheme.inspectorUnsetSegmentTrackColor.value,
-  DisabledMainColor: colorTheme.inspectorDisabledMainColor.value,
-  DisabledSecondaryColor: colorTheme.inspectorDisabledSecondaryColor.value,
-  DisabledBackgroundColor: colorTheme.inspectorDisabledBackgroundColor.value,
-  DisabledSegmentSelectorColor: colorTheme.inspectorDisabledSegmentSelectorColor.value,
-  DisabledSegmentTrackColor: colorTheme.inspectorDisabledSegmentTrackColor.value,
-  DisabledBorderColor: colorTheme.inspectorDisabledBorderColor.value,
-  UneditableMainColor: colorTheme.inspectorUneditableMainColor.value,
-  UneditableSecondaryColor: colorTheme.inspectorUneditableSecondaryColor.value,
-  UneditableBackgroundColor: colorTheme.inspectorUneditableBackgroundColor.value,
-  UneditableBorderColor: colorTheme.inspectorUneditableBorderColor.value,
-  ControlledMainColor: colorTheme.inspectorControlledMainColor.value,
-  ControlledSecondaryColor: colorTheme.inspectorControlledMainColor.value,
-  ControlledBorderColor: colorTheme.inspectorControlledBorderColor.value,
-  ControlledBackgroundColor: colorTheme.inspectorControlledBackgroundColor.value,
-  ControlledSegmentSelectorColor: colorTheme.inspectorControlledSegmentSelectorColor.value,
-  ControlledSegmentTrackColor: colorTheme.inspectorControlledSegmentTrackColor.value,
-  DetectedMainColor: colorTheme.inspectorDetectedMainColor.value,
-  DetectedSecondaryColor: colorTheme.inspectorDetectedMainColor.value,
-  DetectedBorderColor: colorTheme.inspectorDetectedBorderColor.value,
-  DetectedBackgroundColor: colorTheme.inspectorDetectedBackgroundColor.value,
-  DetectedSegmentSelectorColor: colorTheme.inspectorDetectedSegmentSelectorColor.value,
-  DetectedSegmentTrackColor: colorTheme.inspectorDetectedSegmentTrackColor.value,
-  DetectedFromCssMainColor: colorTheme.inspectorDetectedFromCssMainColor.value,
-  DetectedFromCssSecondaryColor: colorTheme.inspectorDetectedFromCssMainColor.value,
-  OffMainColor: colorTheme.inspectorOffMainColor.value,
-  OffSecondaryColor: colorTheme.inspectorOffSecondaryColor.value,
-  OffBackgroundColor: colorTheme.inspectorOffBackgroundColor.value,
-  OffSegmentSelectorColor: colorTheme.inspectorOffSegmentSelectorColor.value,
-  OffSegmentTrackColor: colorTheme.inspectorOffSegmentTrackColor.value,
-  OffBorderColor: colorTheme.inspectorOffBorderColor.value,
 }
 
 export type ControlStatus =
@@ -167,18 +114,23 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
   (status: ControlStatus): ControlStyles => {
     let fontStyle = 'normal'
     let fontWeight = 400
-    let mainColor: string = ControlStyleDefaults.SetMainColor
-    let secondaryColor: string = ControlStyleDefaults.SetSecondaryColor
-    let borderColor: string = ControlStyleDefaults.SetBorderColor
-    let backgroundColor: string = ControlStyleDefaults.SetBackgroundColor
-    let segmentSelectorColor: string = ControlStyleDefaults.SetSegmentSelectorColor
-    let segmentTrackColor: string = ControlStyleDefaults.SetSegmentTrackColor
+    let mainColor: string = colorTheme.fg1.value
+    let secondaryColor: string = colorTheme.fg7.value
+
+    let borderColor: string = 'transparent'
+    // text inputs
+    let backgroundColor: string = colorTheme.bg2.value
+    let focusedBackgroundColor: string = colorTheme.bg0.value
+    let segmentSelectorColor: string = colorTheme.bg3.value
+    let trackColor = colorTheme.fg7.value
+    let railColor = colorTheme.bg3.value
+    let strokePrimaryColor = colorTheme.fg3.value
+    let strokeSecondaryColor = colorTheme.fg7.value
+    let strokeTertiaryColor = colorTheme.fg8.value
     let set = true
     let interactive = true
     let mixed = false
     let unknown = false
-    let trackColor = ControlStyleDefaults.SetMainColor
-    let railColor = ControlStyleDefaults.SetSecondaryColor
     let showContent = true
     let unsettable = true
 
@@ -186,129 +138,81 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'simple':
       case 'multiselect-identical-simple':
         break
+      case 'detected':
+      case 'multiselect-detected':
+      case 'unset':
+      case 'multiselect-identical-unset':
+        set = false
+        unsettable = false
+        // this makes it interactive if the component provides these values
+        mainColor = 'var(--control-styles-interactive-unset-main-color)'
+        secondaryColor = 'var(--control-styles-interactive-unset-secondary-color)'
+        trackColor = 'var(--control-styles-interactive-unset-track-color)'
+        railColor = 'var(--control-styles-interactive-unset-rail-color)'
+        break
+      case 'controlled':
+      case 'multiselect-controlled':
+      case 'multiselect-mixed-simple-or-unset':
+        interactive = true
+        mainColor = colorTheme.primary.value
+        secondaryColor = colorTheme.primary.value
+        trackColor = colorTheme.primary.value
+        strokePrimaryColor = colorTheme.primary.value
+        showContent = true
+        break
+      case 'trivial-default':
+      case 'multiselect-trivial-default':
+        interactive = true
+        showContent = false
+        mainColor = colorTheme.fg7.value
+        secondaryColor = colorTheme.fg7.value
+        trackColor = colorTheme.bg5.value
+        railColor = colorTheme.bg3.value
+        break
       case 'detected-fromcss':
       case 'multiselect-detected-fromcss':
-        mainColor = ControlStyleDefaults.DetectedFromCssMainColor
-        secondaryColor = ControlStyleDefaults.DetectedFromCssSecondaryColor
-        break
-      case 'multiselect-mixed-simple-or-unset':
-        set = false
-        mixed = true
-        backgroundColor = ControlStyleDefaults.UnsetBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.UnsetSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.UnsetSegmentTrackColor
-        borderColor = ControlStyleDefaults.UnsetBorderColor
-        mainColor = ControlStyleDefaults.UnsetMainColor
-        trackColor = ControlStyleDefaults.UnsetMainColor
-        railColor = ControlStyleDefaults.UnsetSecondaryColor
+        mainColor = colorTheme.css.value
+        secondaryColor = colorTheme.css.value
+        trackColor = colorTheme.css.value
         break
       case 'simple-unknown-css':
       case 'multiselect-simple-unknown-css':
         unknown = true
-        borderColor = ControlStyleDefaults.DisabledBorderColor
         interactive = true
-        mainColor = ControlStyleDefaults.UneditableMainColor
-        secondaryColor = ControlStyleDefaults.UneditableSecondaryColor
-        backgroundColor = ControlStyleDefaults.DisabledBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.DisabledSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.DisabledSegmentTrackColor
-        trackColor = ControlStyleDefaults.UneditableMainColor
-        railColor = ControlStyleDefaults.UneditableSecondaryColor
+        mainColor = 'orange'
+        secondaryColor = 'orange'
+        trackColor = 'orange'
+        backgroundColor = 'transparent'
         break
       case 'unoverwritable':
       case 'multiselect-unoverwritable':
-        borderColor = ControlStyleDefaults.DisabledBorderColor
         interactive = false
-        mainColor = ControlStyleDefaults.UneditableMainColor
-        secondaryColor = ControlStyleDefaults.UneditableSecondaryColor
-        backgroundColor = ControlStyleDefaults.DisabledBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.DisabledSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.DisabledSegmentTrackColor
-        trackColor = ControlStyleDefaults.UneditableMainColor
-        railColor = ControlStyleDefaults.UneditableSecondaryColor
+        mainColor = colorTheme.fg8.value
+        secondaryColor = colorTheme.fg8.value
+        trackColor = colorTheme.fg8.value
+        railColor = colorTheme.fg8.value
         unsettable = false
         break
-      case 'unset':
-      case 'multiselect-identical-unset':
-        set = false
-        backgroundColor = ControlStyleDefaults.UnsetBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.UnsetSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.UnsetSegmentTrackColor
-        borderColor = ControlStyleDefaults.UnsetBorderColor
-        mainColor = ControlStyleDefaults.UnsetMainColor
-        trackColor = ControlStyleDefaults.UnsetMainColor
-        railColor = ControlStyleDefaults.UnsetSecondaryColor
-        unsettable = false
-        break
+
       case 'off':
         set = false
-        borderColor = ControlStyleDefaults.OffBorderColor
         interactive = false
-        mainColor = ControlStyleDefaults.OffMainColor
-        secondaryColor = ControlStyleDefaults.OffSecondaryColor
-        backgroundColor = ControlStyleDefaults.OffBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.OffSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.OffSegmentTrackColor
-        trackColor = ControlStyleDefaults.OffBorderColor
-        railColor = ControlStyleDefaults.OffBorderColor
+        mainColor = colorTheme.fg9.value
+        secondaryColor = colorTheme.fg9.value
+        trackColor = colorTheme.fg9.value
         showContent = false
         unsettable = false
         break
       case 'disabled':
       case 'multiselect-disabled':
-        borderColor = ControlStyleDefaults.DisabledBorderColor
         interactive = false
-        mainColor = ControlStyleDefaults.DisabledMainColor
-        secondaryColor = ControlStyleDefaults.DisabledSecondaryColor
-        backgroundColor = ControlStyleDefaults.DisabledBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.DisabledSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.DisabledSegmentTrackColor
-        trackColor = ControlStyleDefaults.DisabledBorderColor
-        railColor = ControlStyleDefaults.DisabledBorderColor
+        mainColor = colorTheme.fg9.value
+        secondaryColor = colorTheme.fg9.value
+        backgroundColor = 'transparent'
+        segmentSelectorColor = 'transparent'
+        trackColor = 'transparent'
         showContent = true
         unsettable = false
-        break
-      case 'controlled':
-      case 'multiselect-controlled':
-        fontWeight = 600
-        borderColor = ControlStyleDefaults.ControlledBorderColor
-        interactive = true
-        mainColor = ControlStyleDefaults.ControlledMainColor
-        secondaryColor = ControlStyleDefaults.ControlledSecondaryColor
-        backgroundColor = ControlStyleDefaults.ControlledBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.ControlledSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.ControlledSegmentTrackColor
-        trackColor = ControlStyleDefaults.ControlledMainColor
-        railColor = ControlStyleDefaults.ControlledSecondaryColor
-        showContent = true
-        break
-      case 'detected':
-      case 'multiselect-detected':
-        fontWeight = 600
-        borderColor = ControlStyleDefaults.DetectedBorderColor
-        interactive = true
-        mainColor = ControlStyleDefaults.DetectedMainColor
-        secondaryColor = ControlStyleDefaults.DetectedSecondaryColor
-        backgroundColor = ControlStyleDefaults.DetectedBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.DetectedSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.DetectedSegmentTrackColor
-        trackColor = ControlStyleDefaults.DetectedMainColor
-        railColor = ControlStyleDefaults.DetectedSecondaryColor
-        showContent = true
-        break
-      case 'trivial-default':
-      case 'multiselect-trivial-default':
-        fontWeight = 600
-        borderColor = ControlStyleDefaults.DetectedBorderColor
-        interactive = true
-        mainColor = ControlStyleDefaults.DetectedMainColor
-        secondaryColor = ControlStyleDefaults.DetectedSecondaryColor
-        backgroundColor = ControlStyleDefaults.DetectedBackgroundColor
-        segmentSelectorColor = ControlStyleDefaults.DetectedSegmentSelectorColor
-        segmentTrackColor = ControlStyleDefaults.DetectedSegmentTrackColor
-        trackColor = ControlStyleDefaults.DetectedMainColor
-        railColor = ControlStyleDefaults.DetectedSecondaryColor
-        showContent = false
         break
       default:
         break
@@ -321,13 +225,16 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       secondaryColor,
       borderColor,
       backgroundColor,
+      focusedBackgroundColor,
       segmentSelectorColor,
-      segmentTrackColor,
+      strokePrimaryColor,
+      strokeSecondaryColor,
+      strokeTertiaryColor,
+      trackColor,
+      railColor,
       set,
       interactive,
       mixed,
-      trackColor,
-      railColor,
       showContent,
       unknown,
       unsettable,

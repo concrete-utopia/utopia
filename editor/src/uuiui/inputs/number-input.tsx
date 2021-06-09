@@ -601,9 +601,24 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         <div
           className='number-input-container'
           css={{
+            color: controlStyles.mainColor,
+            backgroundColor: controlStyles.backgroundColor,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
+            borderRadius: 2,
             ...chainedStyles,
+            '&:hover': {
+              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+            },
+            '&:focus-within': {
+              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+            },
+            '&:hover input': {
+              color: controlStyles.mainColor,
+            },
+            '&:focus-within input': {
+              color: controlStyles.mainColor,
+            },
           }}
         >
           <InspectorInput
@@ -618,6 +633,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             mixed={mixed}
             value={stateValue}
             ref={ref}
+            css={{ color: controlStyles.mainColor }}
             className='number-input'
             height={height}
             id={id}
@@ -633,28 +649,23 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               className='number-input-innerLabel'
               css={{
                 position: 'absolute',
-                top: 1,
-                right: 1,
+                top: 0,
+                left: 0,
                 userSelect: 'none',
                 pointerEvents: 'none',
                 width: 20,
                 height: 20,
-                backgroundImage: backgroundImage,
-                borderRadius: UtopiaTheme.inputBorderRadius,
                 display: 'block',
-                '.number-input-container:hover &': {
-                  display: incrementControls && controlStyles.interactive ? 'none' : 'block',
-                },
               }}
             >
               <div
                 style={{
                   position: 'absolute',
                   pointerEvents: 'none',
-                  right: 0,
-                  top: 5,
+                  left: 0,
+                  top: 2,
                   textAlign: 'center',
-                  fontWeight: 'bold',
+                  fontWeight: 600,
                   fontSize: '9px',
                   width: '100%',
                   height: '100%',
@@ -675,15 +686,18 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               css={{
                 position: 'absolute',
                 top: 0,
-                right: 0,
+                right: 1,
                 flexDirection: 'column',
                 alignItems: 'stretch',
                 width: 11,
                 height: UtopiaTheme.layout.inputHeight.default,
-                backgroundColor: UtopiaTheme.color.inspectorEmphasizedBackground.value,
+
                 boxShadow: `1px 0 ${controlStyles.borderColor} inset`,
                 display: 'none',
                 '.number-input-container:hover &': {
+                  display: 'block',
+                },
+                '.number-input-container:focus-within &': {
                   display: 'block',
                 },
               }}
@@ -691,15 +705,11 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               <div
                 css={{
                   height: '50%',
-                  boxShadow: `-1px 1px ${
-                    isFocused
-                      ? UtopiaTheme.color.inspectorFocusedColor.value
-                      : controlStyles.borderColor
-                  } inset, 1px 0 ${controlStyles.borderColor} inset`,
+                  opacity: 0.6,
                   position: 'relative',
                   borderTopRightRadius: borderRadiusStyles.borderTopRightRadius,
                   ':active': {
-                    backgroundColor: colorTheme.buttonActiveBackground.value,
+                    opacity: 1,
                   },
                   '::after': {
                     content: '""',
@@ -709,30 +719,42 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                     right: 1,
                     bottom: 0,
                     transform: 'translateY(0.5px)',
-                    backgroundColor: controlStyles.borderColor,
                     pointerEvents: 'none',
                   },
                 }}
                 onMouseDown={onIncrementMouseDown}
               >
-                <Icn category='controls/input' type='up' color='gray' width={11} height={11} />
+                <Icn category='controls/input' type='up' color='darkgray' width={11} height={11} />
               </div>
               <div
                 css={{
                   height: '50%',
-                  boxShadow: `-1px -1px ${
-                    isFocused
-                      ? UtopiaTheme.color.inspectorFocusedColor.value
-                      : controlStyles.borderColor
-                  } inset, 1px 0 ${controlStyles.borderColor} inset`,
+                  opacity: 0.6,
+                  position: 'relative',
                   borderBottomRightRadius: borderRadiusStyles.borderBottomRightRadius,
                   ':active': {
-                    backgroundColor: colorTheme.buttonActiveBackground.value,
+                    opacity: 1,
+                  },
+                  '::after': {
+                    content: '""',
+                    width: 'calc(100% - 1px)',
+                    height: 1,
+                    position: 'absolute',
+                    right: 1,
+                    bottom: 0,
+                    transform: 'translateY(0.5px)',
+                    pointerEvents: 'none',
                   },
                 }}
                 onMouseDown={onDecrementMouseDown}
               >
-                <Icn category='controls/input' type='down' color='gray' width={11} height={11} />
+                <Icn
+                  category='controls/input'
+                  type='down'
+                  color='darkgray'
+                  width={11}
+                  height={11}
+                />
               </div>
             </div>
           ) : null}

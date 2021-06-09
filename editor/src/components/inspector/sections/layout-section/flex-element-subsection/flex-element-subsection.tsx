@@ -1,6 +1,5 @@
 import * as React from 'react'
 
-import { ControlStyleDefaults } from '../../../common/control-status'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PositionControl, MarginControl, AlignSelfControl } from './flex-element-controls'
 import { PropertyLabel } from '../../../widgets/property-label'

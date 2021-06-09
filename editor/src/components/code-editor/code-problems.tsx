@@ -260,7 +260,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
                 },
               }}
               style={{
-                backgroundColor: colorTheme.emphasizedInvertedBackground.value,
+                backgroundColor: colorTheme.neutralInvertedBackground.value,
                 color: 'white',
                 height: '100%',
                 // There probably is a better fix but I've run out of goats to sacrifice

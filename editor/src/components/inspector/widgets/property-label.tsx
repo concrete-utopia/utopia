@@ -1,4 +1,6 @@
+/**@jsx jsx */
 import * as React from 'react'
+import { css, jsx } from '@emotion/react'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { betterReactMemo, InspectorContextMenuWrapper } from '../../../uuiui-deps'
@@ -28,24 +30,28 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
     propsToUnset,
     metadata.onUnsetValues,
   )
+
+  const controlStyles = metadata.controlStyles
+
   return (
     <InspectorContextMenuWrapper
       id={`property-label-${propsToUnset.join('-')}`}
       data={null}
       items={contextMenuItems}
       style={{
-        color: 'black',
+        color: controlStyles.mainColor,
         overflow: 'hidden',
         ...props.style,
       }}
     >
       <div
-        style={{
+        css={{
           display: 'flex',
           alignItems: 'center',
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
           textOverflow: 'ellipsis',
+          color: controlStyles.mainColor,
         }}
       >
         {props.children}

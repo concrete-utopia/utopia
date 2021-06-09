@@ -84,9 +84,7 @@ export const MiniMenuButton: React.StatelessComponent<MiniMenuButtonProps> = (pr
   const primaryStyle = {
     borderRadius: '1',
     padding: '2px',
-    backgroundColor: colorTheme.buttonBackground.value,
     fontWeight: 500,
-    color: colorTheme.tertiaryForeground.value,
   }
   const disabledStyle = isDisabled ? { opacity: 0.5 } : {}
 

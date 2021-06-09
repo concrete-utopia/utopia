@@ -36,6 +36,7 @@ import {
   Icons,
   FlexColumn,
   SimpleNumberInput,
+  colorTheme,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
@@ -412,11 +413,14 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
         <SquareButton
           data-testid='toggle-min-max-button'
           onClick={toggleMinMax}
-          style={{ width: 16, height: 16, fontSize: 8 }}
+          style={{
+            width: 16,
+            height: 16,
+            fontSize: 8,
+            color: colorTheme.subduedForeground.value,
+          }}
         >
-          min
-          <br />
-          max
+          <Icons.FourDots />
         </SquareButton>
       </UIGridRow>
     </UIGridRow>

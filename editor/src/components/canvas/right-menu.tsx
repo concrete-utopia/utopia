@@ -14,6 +14,7 @@ import {
   Tooltip,
   LargerIcons,
   FlexColumn,
+  colorTheme,
 } from '../../uuiui'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
 import { MenuTile } from '../menubar/menubar'
@@ -188,7 +189,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
       id='canvas-menu'
       style={{
         alignSelf: 'stretch',
-        borderLeft: `1px solid #d3d3d369`,
+        borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
         width: 38,
       }}
     >

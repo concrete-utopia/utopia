@@ -19,12 +19,22 @@ export type BoxCorners =
   | 'none'
   | 'all'
 
-function getChainedBoxShadow(controlStyles: ControlStyles, chained: ChainedType, focused: boolean) {
+function getChainedBoxShadow(
+  controlStyles: ControlStyles,
+  chained: ChainedType,
+  focused: boolean,
+  hovered: boolean,
+) {
   const controlStatusEdges = getChainSegmentEdge(controlStyles)
+  const hoveredBoxShadow = `0 0 0 1px hsl(0,0%,83%) inset`
   const focusedBoxShadow = `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value} inset`
 
   const standardBoxShadow = {
-    boxShadow: focused ? focusedBoxShadow : `0 0 0 1px ${controlStyles.borderColor} inset`,
+    boxShadow: focused
+      ? focusedBoxShadow
+      : hovered
+      ? hoveredBoxShadow
+      : `0 0 0 1px ${controlStyles.borderColor} inset`,
   }
   if (controlStyles.interactive) {
     switch (chained) {
@@ -35,6 +45,8 @@ function getChainedBoxShadow(controlStyles: ControlStyles, chained: ChainedType,
         return {
           boxShadow: focused
             ? focusedBoxShadow
+            : hovered
+            ? hoveredBoxShadow
             : `${controlStatusEdges.top}, ${controlStatusEdges.bottom}, ${controlStatusEdges.left}`,
         }
       }
@@ -42,6 +54,8 @@ function getChainedBoxShadow(controlStyles: ControlStyles, chained: ChainedType,
         return {
           boxShadow: focused
             ? focusedBoxShadow
+            : hovered
+            ? hoveredBoxShadow
             : `${controlStatusEdges.top}, ${controlStatusEdges.bottom}`,
         }
       }
@@ -49,6 +63,8 @@ function getChainedBoxShadow(controlStyles: ControlStyles, chained: ChainedType,
         return {
           boxShadow: focused
             ? focusedBoxShadow
+            : hovered
+            ? hoveredBoxShadow
             : `${controlStatusEdges.top}, ${controlStatusEdges.bottom}, ${controlStatusEdges.right}`,
         }
       }
@@ -107,19 +123,22 @@ const StyledInput = styled.input<InspectorInputProps>(
     outline: 'none',
     paddingTop: 2,
     paddingBottom: 2,
-    paddingLeft: 6,
-    paddingRight: labelInner != null ? 15 : 6,
-    backgroundColor: controlStyles.backgroundColor,
+    paddingRight: 6,
+    paddingLeft: labelInner != null ? 22 : 6,
+    background: 'transparent',
     fontStyle: controlStyles.fontStyle,
     fontWeight: controlStyles.fontWeight,
-    color: controlStyles.mainColor,
     border: 0,
     height: UtopiaTheme.layout.inputHeight.default,
     width: '100%',
     marginBottom: 0,
-    ...getChainedBoxShadow(controlStyles, chained, focused),
+    // ...getChainedBoxShadow(controlStyles, chained, focused, false),
     ...getBorderRadiusStyles(chained, roundCorners),
     disabled: !controlStyles.interactive,
+    '&:hover': {
+      // ...getChainedBoxShadow(controlStyles, chained, focused, true),
+    },
+    '&:focus': {},
   }),
 )
 

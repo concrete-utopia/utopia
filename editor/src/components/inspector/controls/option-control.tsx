@@ -3,7 +3,6 @@ import * as React from 'react'
 import { jsx } from '@emotion/react'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { focusTextEditorIfPresent } from '../../editor/text-editor'
-import { ControlStyleDefaults } from '../common/control-status'
 import { IcnProps, UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
@@ -78,13 +77,12 @@ export const OptionControl: React.FunctionComponent<
           css={{
             // If just an option control:
             boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
-            backgroundColor: ControlStyleDefaults.SetSegmentSelectorColor,
+            backgroundColor: props.value ? props.controlStyles.segmentSelectorColor : 'transparent',
             borderRadius: rc != null ? 0 : UtopiaTheme.inputBorderRadius,
             // If part of a option chain control:
             '.option-chain-control-container &': {
               borderRadius: 0,
               boxShadow: 'none !important',
-              backgroundColor: 'transparent !important',
             },
             display: 'flex',
             justifyContent: 'center',
