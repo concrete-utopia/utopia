@@ -67,7 +67,8 @@ function useRenderTestHook<T>(props: RenderTestHookProps<T>) {
   const factory = useCallbackFactory(props.value, props.callback)
 
   const [onSubmitValue1] = factory(props.transformFunction1)
-  const [onSubmitValue2] = props.transformFunction2 ? factory(props.transformFunction2) : [null]
+  const [onSubmitValue2] =
+    props.transformFunction2 != null ? factory(props.transformFunction2) : [null]
 
   return {
     submitValue1: onSubmitValue1,

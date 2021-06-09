@@ -1,5 +1,6 @@
 import {
   isJSXElement,
+  isJSXFragment,
   isUtopiaJSXComponent,
   JSXElementChild,
   TopLevelElement,
@@ -143,10 +144,7 @@ function zipTopLevelElements(
   firstComponents.forEach((firstComponent, index) => {
     if (secondComponents.length > index) {
       const secondComponent = secondComponents[index]
-      const firstUID = getUtopiaID(firstComponent.rootElement)
-      const secondUID = getUtopiaID(secondComponent.rootElement)
 
-      onElement(firstUID, secondUID, EP.emptyElementPathPart, EP.emptyElementPathPart)
       walkElementChildren(
         EP.emptyElementPathPart,
         [firstComponent.rootElement],
@@ -185,6 +183,8 @@ function walkElementChildren(
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
       walkElementChildren(path, oldElement.children, newElement.children, onElement)
+    } else if (oldElement != null && isJSXFragment(oldElement) && isJSXFragment(newElement)) {
+      walkElementChildren(pathSoFar, oldElement.children, newElement.children, onElement)
     }
   })
 }

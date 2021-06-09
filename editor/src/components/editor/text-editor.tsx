@@ -90,7 +90,7 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
       this.draftEditor.current.focus()
     }
 
-    if (this.props.triggerMousePosition) {
+    if (this.props.triggerMousePosition != null) {
       this.positionDraftJSCursorToPoint(this.props.triggerMousePosition)
     } else {
       this.selectAll(this.state.editorState)
@@ -255,16 +255,16 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
   }
 
   getCurrentFontSize(editorState: DraftEditorState): number {
-    return Number(this.styles.fontSize.current(editorState)) || this.props.rawTextStyle.font.size
+    return Number(this.styles.fontSize.current(editorState)) ?? this.props.rawTextStyle.font.size
   }
 
   getCurrentLineHeight(editorState: DraftEditorState): number {
-    return Number(this.styles.lineHeight.current(editorState)) || this.props.rawTextStyle.lineHeight
+    return Number(this.styles.lineHeight.current(editorState)) ?? this.props.rawTextStyle.lineHeight
   }
 
   getCurrentLetterSpacing(editorState: DraftEditorState): number {
     return (
-      Number(this.styles.letterSpacing.current(editorState)) ||
+      Number(this.styles.letterSpacing.current(editorState)) ??
       this.props.rawTextStyle.letterSpacing
     )
   }
@@ -423,7 +423,7 @@ export class TextEditor extends ReactComponent<TextEditorProps, TextEditorState>
       default:
         // default shortcuts
         const newState = RichUtils.handleKeyCommand(editorState, command)
-        if (newState) {
+        if (newState != null) {
           this.onSubmitValue(newState)
           return 'handled'
         }

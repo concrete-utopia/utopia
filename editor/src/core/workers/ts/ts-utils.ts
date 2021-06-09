@@ -4,7 +4,7 @@ import { ErrorMessage } from '../../shared/error-messages'
 export function diagnosticToErrorMessage(diagnostic: TS.Diagnostic): ErrorMessage {
   let message = TS.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
   const severity = getSeverity(diagnostic.category)
-  if (diagnostic.file) {
+  if (diagnostic.file != null) {
     const start = diagnostic.start == null ? 0 : diagnostic.start
     const length = diagnostic.length == null ? 0 : diagnostic.length
     let { line: startLine, character: startColumn } = diagnostic.file.getLineAndCharacterOfPosition(

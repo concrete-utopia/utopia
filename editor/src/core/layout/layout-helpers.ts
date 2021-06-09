@@ -256,7 +256,7 @@ export const FlexLayoutHelpers = {
     props: UtopiaComponentProps,
     parentProps: UtopiaComponentProps,
   ): { width: FlexLength; height: FlexLength } => {
-    return getUnstretchedWidthHeight((props.style as any) || {}, (parentProps.style as any) || {})
+    return getUnstretchedWidthHeight((props.style as any) ?? {}, (parentProps.style as any) ?? {})
   },
 }
 

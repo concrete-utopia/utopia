@@ -24,10 +24,13 @@ import {
   canvasPoint,
   CanvasPoint,
   CanvasRectangle,
+  boundingRectangle,
   LocalPoint,
   LocalRectangle,
   localRectangle,
   roundToNearestHalf,
+  zeroCanvasRect,
+  zeroLocalRect,
 } from '../../core/shared/math-utils'
 import {
   CSSNumber,
@@ -53,9 +56,10 @@ import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import { getPathWithStringsOnDomElement, PathWithString } from '../../core/shared/uid-utils'
-import { mapDropNulls, pluck } from '../../core/shared/array-utils'
+import { mapDropNulls, pluck, uniqBy } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
+import { MapLike } from 'typescript'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -318,6 +322,49 @@ interface DomWalkerProps {
   canvasInteractionHappening: boolean
 }
 
+function mergeFragmentMetadata(
+  metadata: ReadonlyArray<ElementInstanceMetadata>,
+): Array<ElementInstanceMetadata> {
+  let working: MapLike<ElementInstanceMetadata> = {}
+
+  fastForEach(metadata, (elementMetadata) => {
+    const pathString = EP.toString(elementMetadata.elementPath)
+    const existingMetadata = working[pathString]
+
+    if (existingMetadata == null) {
+      working[pathString] = elementMetadata
+    } else {
+      // We've hit a fragment, so remove the style etc., but keep the frames for selection
+      const merged = elementInstanceMetadata(
+        elementMetadata.elementPath,
+        left('fragment'),
+        {},
+        boundingRectangle(
+          existingMetadata.globalFrame ?? zeroCanvasRect,
+          elementMetadata.globalFrame ?? zeroCanvasRect,
+        ),
+        boundingRectangle(
+          existingMetadata.localFrame ?? zeroLocalRect,
+          elementMetadata.localFrame ?? zeroLocalRect,
+        ),
+        existingMetadata.children.concat(elementMetadata.children),
+        existingMetadata.rootElements.concat(elementMetadata.rootElements),
+        false,
+        false,
+        emptySpecialSizeMeasurements,
+        {},
+        {},
+        null,
+        null,
+      )
+
+      working[pathString] = merged
+    }
+  })
+
+  return Object.values(working)
+}
+
 export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState(
@@ -398,7 +445,11 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
         performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
       }
       setInitComplete()
-      props.onDomReport(metadata, cachedPaths)
+
+      // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
+      const fixedMetadata = mergeFragmentMetadata(metadata)
+
+      props.onDomReport(fixedMetadata, cachedPaths)
     }
   })
 
@@ -956,12 +1007,14 @@ function walkElements(
       })
     }
 
+    const uniqueChildPaths = uniqBy(childPaths, EP.pathsEqual)
+
     const { collectedMetadata, cachedPaths } = collectMetadata(
       element,
       pluck(foundValidPaths, 'path'),
       pluck(foundValidPaths, 'asString'),
       parentPoint,
-      childPaths,
+      uniqueChildPaths,
       scale,
       containerRectLazy,
       invalidatedPathsRef,

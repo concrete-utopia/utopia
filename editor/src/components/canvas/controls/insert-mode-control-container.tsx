@@ -554,9 +554,10 @@ export class InsertModeControlContainer extends React.Component<
           element = this.setTextElementFixedSize(element)
         }
 
-        const aspectRatioCorrectedMousePoint = this.state.aspectRatio
-          ? correctToAspectRatio(this.props.dragState.start, mousePoint, this.state.aspectRatio)
-          : mousePoint
+        const aspectRatioCorrectedMousePoint =
+          this.state.aspectRatio != null
+            ? correctToAspectRatio(this.props.dragState.start, mousePoint, this.state.aspectRatio)
+            : mousePoint
         const snappedMousePoint = applySnappingToPoint(
           aspectRatioCorrectedMousePoint,
           closestGuidelines,

@@ -1,6 +1,11 @@
 import { getUtopiaID } from '../../model/element-template-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
-import { isJSXElement, JSXElementChild } from '../../shared/element-template'
+import {
+  isJSXElement,
+  isJSXElementLikeWithChildren,
+  isJSXFragment,
+  JSXElementChild,
+} from '../../shared/element-template'
 import { isParseSuccess, ParsedTextFile } from '../../shared/project-file-types'
 import { emptySet } from '../../shared/set-utils'
 import { lintAndParse } from './parser-printer'
@@ -24,8 +29,8 @@ describe('fixParseSuccessUIDs', () => {
     const newFile = lintAndParse('test.js', baseFileWithTwoTopLevelComponents, null, emptySet())
     const newFileFixed = lintAndParse(
       'test.js',
-      baseFileWithTwoTopLevelComponents,
-      baseFile,
+      baseFileWithTwoTopLevelComponentsUpdated,
+      newFile,
       emptySet(),
     )
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
@@ -35,6 +40,32 @@ describe('fixParseSuccessUIDs', () => {
       6f6
         edd
       a04
+        ce5
+      storyboard
+        scene
+          component"
+    `)
+  })
+
+  it('does not die on top level fragment element change', () => {
+    const fileWithFragment = lintAndParse(
+      'test.js',
+      baseFileWithTopLevelFragmentComponent,
+      null,
+      emptySet(),
+    )
+    const fileWithFragmentUpdated = lintAndParse(
+      'test.js',
+      fileWithTopLevelFragmentComponentUpdateContents,
+      fileWithFragment,
+      emptySet(),
+    )
+    expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
+    expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
+      "4ed
+        random-uuid
+      random-uuid
+        a04
         ce5
       storyboard
         scene
@@ -181,6 +212,36 @@ export var SameFileApp = (props) => {
 }
 `)
 
+const baseFileWithTwoTopLevelComponentsUpdated = createFileText(`
+export var SecondComponent = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: 'hotpink' }}
+    >
+      <View
+        style={{
+          width: 100,
+        }}
+      />
+    </div>
+  )
+}
+
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 191,
+        }}
+      />
+    </div>
+  )
+}
+`)
+
 const fileWithSingleUpdateContents = createFileText(`
 export var SameFileApp = (props) => {
   return (
@@ -275,6 +336,42 @@ export var SameFileApp = (props) => {
 }
 `)
 
+const baseFileWithTopLevelFragmentComponent = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <>
+      <div
+        style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      >
+      </div>
+      <View
+        style={{
+          width: 191,
+        }}
+      />
+    </>
+  )
+}
+`)
+
+const fileWithTopLevelFragmentComponentUpdateContents = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <>
+      <div
+        style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      >
+      </div>
+      <View
+        style={{
+          width: 250, // this is updated
+        }}
+      />
+    </>
+  )
+}
+`)
+
 function createFileText(codeSnippet: string): string {
   return `
   /** @jsx jsx */
@@ -322,7 +419,7 @@ function getUidTree(parsedFile: ParsedTextFile): string {
         const uidWithoutRandomUUID = uid.includes('-') ? 'random-uuid' : uid
         printedUidLines.push(`${'  '.repeat(depthSoFar)}${uidWithoutRandomUUID}`)
 
-        if (element != null && isJSXElement(element)) {
+        if (element != null && isJSXElementLikeWithChildren(element)) {
           walkElementChildren(depthSoFar + 1, element.children)
         }
       })

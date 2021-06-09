@@ -79,7 +79,7 @@ export function useTriggerResizePerformanceTest(): () => void {
         true,
         false,
         false,
-        targetFrame || (zeroRectangle as CanvasRectangle),
+        targetFrame ?? (zeroRectangle as CanvasRectangle),
         originalFrames,
         { x: 1, y: 1 },
         { x: 1, y: 1 },

@@ -408,7 +408,7 @@ interface InsertItemProps {
 export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => {
   const regularIcon = (
     <Icn
-      category={props.category ? props.category : 'element'}
+      category={props.category ?? 'element'}
       type={props.type}
       color={props.selected ? 'white' : 'darkgray'}
       width={18}

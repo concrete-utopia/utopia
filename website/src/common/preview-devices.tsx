@@ -29,41 +29,39 @@ export const PreviewReactSelectDeviceSelector: React.FunctionComponent<PreviewRe
   caratOffset,
 }) => {
   const PreviewReactSelectSingleValue = (singleValueProps: any) => {
-    return (
-      components.SingleValue && (
-        <components.SingleValue {...singleValueProps}>
-          <span
-            style={{
-              whiteSpace: 'nowrap',
-              maxWidth: '10em',
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-              display: 'inline-block',
-              paddingRight: '.3em',
-            }}
-          >
-            {singleValueProps.children}
-          </span>
-          <svg
-            width='9'
-            height='5'
-            viewBox='0 0 9 5'
-            xmlns='http://www.w3.org/2000/svg'
-            style={{
-              position: 'relative',
-              bottom: caratOffset,
-            }}
-          >
-            <path
-              id='dropdown_control'
-              d='M1,1 C5,4.66 3,4.66 7,1'
-              strokeWidth='1'
-              fill='none'
-              stroke='rgb(155, 155, 155)'
-            />
-          </svg>
-        </components.SingleValue>
-      )
+    return components.SingleValue == null ? null : (
+      <components.SingleValue {...singleValueProps}>
+        <span
+          style={{
+            whiteSpace: 'nowrap',
+            maxWidth: '10em',
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            display: 'inline-block',
+            paddingRight: '.3em',
+          }}
+        >
+          {singleValueProps.children}
+        </span>
+        <svg
+          width='9'
+          height='5'
+          viewBox='0 0 9 5'
+          xmlns='http://www.w3.org/2000/svg'
+          style={{
+            position: 'relative',
+            bottom: caratOffset,
+          }}
+        >
+          <path
+            id='dropdown_control'
+            d='M1,1 C5,4.66 3,4.66 7,1'
+            strokeWidth='1'
+            fill='none'
+            stroke='rgb(155, 155, 155)'
+          />
+        </svg>
+      </components.SingleValue>
     )
   }
 

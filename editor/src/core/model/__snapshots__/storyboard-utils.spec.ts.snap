@@ -3,6 +3,12 @@
 exports[`addStoryboardFileToProject adds storyboard file to project that does not have one 1`] = `
 Array [
   Object {
+    "rawCode": "
+
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
     "arbitraryJSBlock": null,
     "blockOrExpression": "block",
     "declarationSyntax": "var",
@@ -17,7 +23,36 @@ Array [
     "rootElement": Object {
       "children": Array [
         Object {
-          "children": Array [],
+          "children": Array [
+            Object {
+              "children": Array [],
+              "name": Object {
+                "baseVariable": "App",
+                "propertyPath": Object {
+                  "propertyElements": Array [],
+                },
+              },
+              "props": Array [
+                Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "key": "data-uid",
+                  "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "be6",
+                  },
+                },
+              ],
+              "type": "JSX_ELEMENT",
+              "uid": "be6",
+            },
+          ],
           "name": Object {
             "baseVariable": "Scene",
             "propertyPath": Object {
@@ -25,23 +60,6 @@ Array [
             },
           },
           "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "component",
-              "value": Object {
-                "definedElsewhere": Array [
-                  "App",
-                ],
-                "javascript": "App",
-                "sourceMap": null,
-                "transpiledJavascript": "return App",
-                "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-                "uniqueID": "",
-              },
-            },
             Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -55,21 +73,6 @@ Array [
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "scene-1",
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "props",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {},
               },
             },
             Object {

@@ -32,24 +32,20 @@ export interface SelectOption {
 const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
   indicatorProps,
 ) => {
-  return (
-    components.DropdownIndicator && (
-      <components.DropdownIndicator {...indicatorProps}>
-        <Icons.ExpansionArrow />
-      </components.DropdownIndicator>
-    )
+  return components.DropdownIndicator == null ? null : (
+    <components.DropdownIndicator {...indicatorProps}>
+      <Icons.ExpansionArrow />
+    </components.DropdownIndicator>
   )
 }
 
 const ControlledDropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
   indicatorProps,
 ) => {
-  return (
-    components.DropdownIndicator && (
-      <components.DropdownIndicator {...indicatorProps}>
-        <Icons.ExpansionArrowControlled />
-      </components.DropdownIndicator>
-    )
+  return components.DropdownIndicator == null ? null : (
+    <components.DropdownIndicator {...indicatorProps}>
+      <Icons.ExpansionArrowControlled />
+    </components.DropdownIndicator>
   )
 }
 

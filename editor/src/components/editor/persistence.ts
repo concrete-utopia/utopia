@@ -12,6 +12,7 @@ import {
   showToast,
   setSaveError,
   setForkedFromProjectID,
+  setProjectName,
 } from './actions/action-creators'
 import {
   createNewProjectID,
@@ -292,9 +293,14 @@ export async function triggerForkProject(
     ...editor,
     forkedFromProjectId: oldProjectId,
     id: newProjectId,
+    name: `${editor.projectName} (forked)`,
   }
   await save(updatedEditor, dispatch, loginState, 'both', true)
-  dispatch([setProjectID(newProjectId), setForkedFromProjectID(oldProjectId)])
+  dispatch([
+    setProjectID(newProjectId),
+    setProjectName(editor.projectName + ' (forked)'),
+    setForkedFromProjectID(oldProjectId),
+  ])
 }
 
 async function checkCanSaveProject(projectId: string | null): Promise<boolean> {
@@ -547,7 +553,7 @@ export async function localSaveInner(
     const existing = await localforage.getItem<LocalProject | null>(localProjectKey(projectIdToUse))
     const existingThumbnail = existing == null ? '' : existing.thumbnail
     const now = new Date().toISOString()
-    const thumbnail = newThumbnail || existingThumbnail
+    const thumbnail = newThumbnail ?? existingThumbnail
     const createdAt = existing == null ? now : existing.createdAt
     const modifiedAt = now
 
@@ -602,7 +608,7 @@ export async function loadFromServer(
 }
 
 export async function projectIsStoredLocally(projectId: string): Promise<boolean> {
-  const keys = await localforage.keys()
+  const keys = await localforage.keys().catch(() => [])
   const targetKey = localProjectKey(projectId)
   return arrayContains(keys, targetKey)
 }

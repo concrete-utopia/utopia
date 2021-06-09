@@ -1,6 +1,8 @@
+import * as localforage from 'localforage'
 import { UTOPIA_BACKEND, THUMBNAIL_ENDPOINT, ASSET_ENDPOINT, BASE_URL } from './env-vars'
 import { ProjectListing } from './persistence'
 import {
+  cookiesOrLocalForageUnavailable,
   isLoggedIn,
   isLoginLost,
   isNotLoggedIn,
@@ -14,6 +16,7 @@ import {
 const urljoin = require('url-join')
 
 export const PROJECT_ENDPOINT = UTOPIA_BACKEND + 'project/'
+export const PROJECT_EDITOR = BASE_URL + 'project'
 
 // if we want to enable CORS, we need the server to be able to answer to preflight OPTION requests with the proper Allow-Access headers
 // until then, this is keeping us safe from attempting a CORS request that results in cryptic error messages
@@ -52,6 +55,10 @@ export function projectURL(projectId: string): string {
   return urljoin(PROJECT_ENDPOINT, projectId)
 }
 
+export function projectEditorURL(projectId: string): string {
+  return urljoin(PROJECT_EDITOR, projectId)
+}
+
 export function thumbnailURL(projectId: string): string {
   return urljoin(THUMBNAIL_ENDPOINT, projectId)
 }
@@ -80,24 +87,50 @@ export async function getLoginState(useCache: 'cache' | 'no-cache'): Promise<Log
   }
 }
 
+let localForageAvailableResult: boolean | null = null
+
+export async function isLocalForageAvailable(): Promise<boolean> {
+  if (localForageAvailableResult == null) {
+    const result = await localforage
+      .keys()
+      .then(() => true)
+      .catch(() => false)
+    localForageAvailableResult = result
+    return result
+  } else {
+    return localForageAvailableResult
+  }
+}
+
+async function areCookiesAndLocalForageAvailable(): Promise<boolean> {
+  const localForageAvailable = await isLocalForageAvailable()
+  // eslint-disable-next-line no-restricted-globals
+  return localForageAvailable && navigator.cookieEnabled
+}
+
 async function createGetLoginStatePromise(
   previousLogin: Promise<LoginState> | null,
 ): Promise<LoginState> {
   try {
-    const url = UTOPIA_BACKEND + 'user'
-    const response = await fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-      headers: HEADERS,
-      mode: MODE,
-    })
-    if (response.ok) {
-      const result = await response.json()
-      const previousLoginState = previousLogin == null ? null : await previousLogin
-      return getLoginStateFromResponse(result, previousLoginState)
+    const cookiesAndLocalForageAvailable = await areCookiesAndLocalForageAvailable()
+    if (cookiesAndLocalForageAvailable) {
+      const url = UTOPIA_BACKEND + 'user'
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+        headers: HEADERS,
+        mode: MODE,
+      })
+      if (response.ok) {
+        const result = await response.json()
+        const previousLoginState = previousLogin == null ? null : await previousLogin
+        return getLoginStateFromResponse(result, previousLoginState)
+      } else {
+        console.error(`Fetch user details failed (${response.status}): ${response.statusText}`)
+        return loginLost
+      }
     } else {
-      console.error(`Fetch user details failed (${response.status}): ${response.statusText}`)
-      return loginLost
+      return cookiesOrLocalForageUnavailable
     }
   } catch (e) {
     console.error(`Fetch user details failed: ${e}`)

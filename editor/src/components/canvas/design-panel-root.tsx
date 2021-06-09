@@ -25,6 +25,7 @@ import {
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { TopMenu } from '../editor/top-menu'
+import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 
 interface DesignPanelRootProps {
   isUiJsFileOpen: boolean
@@ -281,6 +282,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
             }}
           >
             <CodeEditorWrapper />
+            <ConsoleAndErrorsPane />
           </Resizable>
         </SimpleFlexColumn>
 

@@ -72,7 +72,7 @@ export const Icn = betterReactMemo(
     const { onMouseDown: propsOnMouseDown, onClick } = props
     const onMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLImageElement>) => {
-        if (propsOnMouseDown) {
+        if (propsOnMouseDown != null) {
           propsOnMouseDown(e)
         }
         if (onClick != null) {

@@ -1,4 +1,4 @@
-import {
+import type {
   PropertyPath,
   PropertyPathPart,
   StaticElementPathPart,
@@ -23,7 +23,7 @@ import {
   isParsedCommentsEmpty,
   ParsedComments,
 } from '../workers/parser-printer/parser-printer-comments'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import { string } from 'fast-check/*'
 
@@ -857,6 +857,12 @@ export function isJSXTextBlock(element: JSXElementChild): element is JSXTextBloc
 
 export function isJSXFragment(element: JSXElementChild): element is JSXFragment {
   return element.type === 'JSX_FRAGMENT'
+}
+
+export function isJSXElementLikeWithChildren(
+  element: JSXElementChild,
+): element is JSXElement | JSXFragment {
+  return isJSXElement(element) || isJSXFragment(element)
 }
 
 export type JSXElementChildren = Array<JSXElementChild>

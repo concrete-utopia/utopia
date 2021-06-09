@@ -253,7 +253,7 @@ const Canvas = {
     const framesWithPaths = Canvas.getFramesInCanvasContext(componentMetadata, useBoundingFrames)
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
       const shouldUseLooseTargeting =
-        looseTargetingForZeroSizedElements &&
+        looseTargetingForZeroSizedElements === 'loose' &&
         (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
 
       return targetFilters.some((filter) => filter(frameWithPath.path)) &&
@@ -263,8 +263,8 @@ const Canvas = {
             canvasRectangle({
               x: frameWithPath.frame.x,
               y: frameWithPath.frame.y,
-              width: frameWithPath.frame.width || 1,
-              height: frameWithPath.frame.height || 1,
+              width: frameWithPath.frame.width ?? 1,
+              height: frameWithPath.frame.height ?? 1,
             }),
             canvasRectangle({
               x: canvasPosition.x - looseReparentThreshold,

@@ -187,7 +187,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
       dispatch: store.dispatch,
       projectContents: store.editor.projectContents,
       editorSelectedFile: getOpenFilename(store.editor),
-      errorMessages: getAllCodeEditorErrors(store.editor, false, true),
+      errorMessages: getAllCodeEditorErrors(store.editor, 'warning', true),
       codeResultCache: store.editor.codeResultCache,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,

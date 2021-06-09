@@ -49,7 +49,7 @@ maybeDevTools?.subscribe((message) => {
       maybeDevTools.send(null, message.payload.nextLiftedState)
       sendActionUpdates = false
     } else if (message.payload.type === 'PAUSE_RECORDING') {
-      sendActionUpdates = !message.payload.status
+      sendActionUpdates = !(message.payload.status as boolean)
     }
   }
 })
@@ -89,12 +89,14 @@ function sanitizeLoggedState(store: EditorStore) {
 }
 
 export function reduxDevtoolsSendActions(
-  actions: Array<EditorAction>,
+  actions: Array<Array<EditorAction>>,
   newStore: EditorStore,
 ): void {
   if (maybeDevTools != null && sendActionUpdates) {
     // filter out the actions we are not interested in
-    const filteredActions = actions.filter((action) => !ActionsToOmit.includes(action.action))
+    const filteredActions = actions
+      .flat()
+      .filter((action) => !ActionsToOmit.includes(action.action))
     if (filteredActions.length > 0) {
       const sanitizedStore = sanitizeLoggedState(newStore)
       const actionNames = pluck(filteredActions, 'action').join(' ')

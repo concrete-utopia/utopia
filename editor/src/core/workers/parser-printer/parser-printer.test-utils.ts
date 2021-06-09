@@ -945,7 +945,7 @@ export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
   const withoutUID = clearTopLevelElementUniqueIDs(element)
   switch (withoutUID.type) {
     case 'UTOPIA_JSX_COMPONENT': {
-      const blockCode = (withoutUID.arbitraryJSBlock?.javascript || '').trim()
+      const blockCode = (withoutUID.arbitraryJSBlock?.javascript ?? '').trim()
       const blockIsEmpty = blockCode.length === 0
       return {
         ...withoutUID,
@@ -959,7 +959,7 @@ export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
       }
     }
     case 'ARBITRARY_JS_BLOCK': {
-      const blockCode = (withoutUID.javascript || '').trim()
+      const blockCode = (withoutUID.javascript ?? '').trim()
       return {
         ...withoutUID,
         javascript: blockCode,

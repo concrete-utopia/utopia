@@ -394,12 +394,10 @@ const MenuList = (props: MenuListComponentProps<SelectOption>) => {
 const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
   indicatorProps,
 ) => {
-  return (
-    components.DropdownIndicator && (
-      <components.DropdownIndicator {...indicatorProps}>
-        <SmallerIcons.ExpansionArrowDown />
-      </components.DropdownIndicator>
-    )
+  return components.DropdownIndicator == null ? null : (
+    <components.DropdownIndicator {...indicatorProps}>
+      <SmallerIcons.ExpansionArrowDown />
+    </components.DropdownIndicator>
   )
 }
 
@@ -618,12 +616,14 @@ export const PopupList = betterReactMemo<PopupListProps>(
             userSelect: 'none',
             borderRadius: 2,
             fontSize: 11,
-            backgroundColor: optionProps.isFocused
-              ? colorTheme.contextMenuHighlightBackground.value
-              : 'transparent',
-            color: optionProps.isFocused
-              ? colorTheme.contextMenuHighlightForeground.value
-              : colorTheme.contextMenuForeground.value,
+            backgroundColor:
+              optionProps.isFocused === true
+                ? colorTheme.contextMenuHighlightBackground.value
+                : 'transparent',
+            color:
+              optionProps.isFocused === true
+                ? colorTheme.contextMenuHighlightForeground.value
+                : colorTheme.contextMenuForeground.value,
             height: OptionHeight,
             textTransform: 'capitalize',
           }),

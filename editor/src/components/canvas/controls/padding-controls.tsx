@@ -41,9 +41,9 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
-            left: props.frame.x + props.canvasOffset.x + (props.padding.left || 0),
+            left: props.frame.x + props.canvasOffset.x + (props.padding.left ?? 0),
             top: props.frame.y + props.canvasOffset.y,
-            width: props.frame.width - (props.padding.left || 0) - (props.padding.right || 0),
+            width: props.frame.width - (props.padding.left ?? 0) - (props.padding.right ?? 0),
             height: props.padding.top,
             lineHeight: props.padding.top + 'px',
           }}
@@ -77,9 +77,9 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
-            left: props.frame.x + props.canvasOffset.x + (props.padding.left || 0),
+            left: props.frame.x + props.canvasOffset.x + (props.padding.left ?? 0),
             top: props.frame.y + props.canvasOffset.y + props.frame.height - props.padding.bottom,
-            width: props.frame.width - (props.padding.left || 0) - (props.padding.right || 0),
+            width: props.frame.width - (props.padding.left ?? 0) - (props.padding.right ?? 0),
             height: props.padding.bottom,
             lineHeight: props.padding.bottom + 'px',
           }}
@@ -97,10 +97,10 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
           style={{
             position: 'absolute',
             pointerEvents: 'none',
-            left: props.frame.x + props.canvasOffset.x + (props.padding.left || 0),
-            top: props.frame.y + props.canvasOffset.y + (props.padding.top || 0),
-            width: props.frame.width - (props.padding.left || 0) - (props.padding.right || 0),
-            height: props.frame.height - (props.padding.top || 0) - (props.padding.bottom || 0),
+            left: props.frame.x + props.canvasOffset.x + (props.padding.left ?? 0),
+            top: props.frame.y + props.canvasOffset.y + (props.padding.top ?? 0),
+            width: props.frame.width - (props.padding.left ?? 0) - (props.padding.right ?? 0),
+            height: props.frame.height - (props.padding.top ?? 0) - (props.padding.bottom ?? 0),
           }}
         />
       )

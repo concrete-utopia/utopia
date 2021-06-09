@@ -72,6 +72,7 @@ import {
   isProjectContentFile,
   ProjectContentsTree,
   ProjectContentTreeRoot,
+  treeToContents,
   walkContentsTree,
   zipContentsTree,
 } from '../../assets'
@@ -388,14 +389,6 @@ export function editorDispatch(
         allTransient,
         spyCollector,
       )
-      if (!newStore.nothingChanged) {
-        /**
-         * Heads up: we do not log dispatches that resulted in a NO_OP. This is to avoid clogging up the
-         * history with a million CLEAR_HIGHLIGHTED_VIEWS and other such actions.
-         *  */
-
-        reduxDevtoolsSendActions(actions, newStore)
-      }
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
@@ -457,6 +450,15 @@ export function editorDispatch(
       editorWithModelChecked.modelUpdateFinished,
     ]),
     alreadySaved: alreadySaved || shouldSave,
+  }
+
+  if (!finalStore.nothingChanged) {
+    /**
+     * Heads up: we do not log dispatches that resulted in a NO_OP. This is to avoid clogging up the
+     * history with a million CLEAR_HIGHLIGHTED_VIEWS and other such actions.
+     *  */
+
+    reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
   }
 
   if (shouldSave) {
@@ -629,7 +631,9 @@ function editorDispatchInner(
 }
 
 function filterEditorForFiles(editor: EditorState) {
-  const allFiles = Object.keys(editor.projectContents)
+  // FIXME: Reimplement this in a way that doesn't require converting from `ProjectContents`.
+  const projectContents = treeToContents(editor.projectContents)
+  const allFiles = Object.keys(projectContents)
   return {
     ...editor,
     codeResultCache: {
