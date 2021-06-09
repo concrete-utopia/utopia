@@ -162,11 +162,12 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
         return {
           ...base,
           height: '100%',
-          backgroundColor: state.isFocused
-            ? props.controlStyles.focusedBackgroundColor
-            : props.controlStyles.backgroundColor,
+          backgroundColor:
+            state.isFocused === true
+              ? props.controlStyles.focusedBackgroundColor
+              : props.controlStyles.backgroundColor,
           boxShadow: `0 0 0 1px ${
-            state.isFocused
+            state.isFocused === true
               ? colorTheme.inspectorFocusedColor.value
               : props.controlStyles.borderColor
           } inset`,
