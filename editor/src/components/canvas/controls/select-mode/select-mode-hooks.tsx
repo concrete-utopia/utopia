@@ -436,8 +436,9 @@ export function useHighlightCallbacks(
   return { onMouseMove }
 }
 
-export function useSelectModeSelectAndHover(
+function useSelectModeSelectAndHover(
   active: boolean,
+  draggingAllowed: boolean,
   cmdPressed: boolean,
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: ElementPath[]) => void,
 ): {
@@ -475,7 +476,7 @@ export function useSelectModeSelectAndHover(
       const isDeselect = foundTarget == null && !isMultiselect
 
       if (foundTarget != null || isDeselect) {
-        if (foundTarget != null) {
+        if (foundTarget != null && draggingAllowed) {
           startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
         }
 
@@ -522,6 +523,7 @@ export function useSelectModeSelectAndHover(
       setSelectedViewsForCanvasControlsOnly,
       getSelectableViewsForSelectMode,
       editorStoreRef,
+      draggingAllowed,
     ],
   )
 
@@ -537,23 +539,24 @@ export function useSelectAndHover(
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
   const selectModeCallbacks = useSelectModeSelectAndHover(
-    modeType === 'select',
+    modeType === 'select' || modeType === 'select-lite' || modeType === 'live',
+    modeType === 'select' || modeType === 'live',
     cmdPressed,
     setSelectedViewsForCanvasControlsOnly,
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
-  const previewModeCallbacks = useSelectModeSelectAndHover(
-    modeType === 'live',
-    cmdPressed,
-    setSelectedViewsForCanvasControlsOnly,
-  )
-  if (modeType === 'select') {
-    return selectModeCallbacks
-  } else if (modeType === 'insert') {
-    return insertModeCallbacks
-  } else if (modeType === 'live') {
-    return previewModeCallbacks
-  } else {
-    throw new Error(`Unhandled editor mode ${modeType}`)
+
+  switch (modeType) {
+    case 'select':
+      return selectModeCallbacks
+    case 'select-lite':
+      return selectModeCallbacks
+    case 'insert':
+      return insertModeCallbacks
+    case 'live':
+      return selectModeCallbacks
+    default:
+      const _exhaustiveCheck: never = modeType
+      throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
   }
 }

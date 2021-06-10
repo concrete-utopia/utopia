@@ -110,12 +110,16 @@ export type SelectMode = {
   controlId: string | null
 }
 
+export type SelectLiteMode = {
+  type: 'select-lite'
+}
+
 export type LiveCanvasMode = {
   type: 'live'
   controlId: string | null
 }
 
-export type Mode = InsertMode | SelectMode | LiveCanvasMode
+export type Mode = InsertMode | SelectMode | SelectLiteMode | LiveCanvasMode
 
 export const EditorModes = {
   insertMode: function (insertionStarted: boolean, subject: InsertionSubject): InsertMode {
@@ -131,6 +135,11 @@ export const EditorModes = {
       controlId: controlId,
     }
   },
+  selectLiteMode: function (): SelectLiteMode {
+    return {
+      type: 'select-lite',
+    }
+  },
   liveMode: function (controlId: string | null = null): LiveCanvasMode {
     return {
       type: 'live',
@@ -144,6 +153,9 @@ export function isInsertMode(value: Mode): value is InsertMode {
 }
 export function isSelectMode(value: Mode): value is SelectMode {
   return value.type === 'select'
+}
+export function isSelectLiteMode(value: Mode): value is SelectLiteMode {
+  return value.type === 'select-lite'
 }
 export function isLiveMode(value: Mode): value is LiveCanvasMode {
   return value.type === 'live'

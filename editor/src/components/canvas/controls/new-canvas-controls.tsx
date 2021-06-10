@@ -28,7 +28,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { isLiveMode, EditorModes } from '../../editor/editor-modes'
+import { isLiveMode, EditorModes, isSelectLiteMode } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -263,6 +263,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const resizing = isResizing(props.editor.canvas.dragState)
   const dragging = isDragging(props.editor.canvas.dragState)
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
+  const draggingEnabled = !isSelectLiteMode(props.editor.mode)
+  const contextMenuEnabled = !isSelectLiteMode(props.editor.mode)
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
@@ -334,6 +336,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
       case 'select':
+      case 'select-lite':
       case 'live': {
         return (
           <SelectModeControlContainer
@@ -345,6 +348,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             isDragging={dragging}
             isResizing={resizing}
             selectionEnabled={selectionEnabled}
+            draggingEnabled={draggingEnabled}
+            contextMenuEnabled={contextMenuEnabled}
             maybeHighlightOnHover={maybeHighlightOnHover}
             maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
             duplicationState={props.editor.canvas.duplicationState}
