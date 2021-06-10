@@ -73,7 +73,6 @@ export const CanvasWrapperComponent = betterReactMemo(
           // ^ prevents Monaco from pushing the inspector out
         }}
       >
-        <ModeSelectButtons />
         {fatalErrors.length === 0 && !safeMode ? (
           <EditorCanvas
             editor={editorState}
@@ -82,6 +81,7 @@ export const CanvasWrapperComponent = betterReactMemo(
           />
         ) : null}
         {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
+        <ModeSelectButtons />
       </FlexColumn>
     )
   },
@@ -148,41 +148,47 @@ const ModeSelectButtons = betterReactMemo('ModeSelectButtons', () => {
   )
 
   return (
-    <FlexRow style={{ paddingTop: 4 }}>
-      <div
-        style={{
-          height: 29,
-          maxWidth: 150,
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 4,
-          paddingRight: 4,
-          gap: 4,
-          borderRadius: 4,
-          background: 'hsl(0,0%,100%)',
-          // ^^ colortheme.bg0
-          boxShadow: 'inset 0px 0px 0px .5px hsl(0,0%,83%), 0px 2px 4px 0px hsla(0,0%,65%,50%)',
-          // ^^ not sure we have in theme
-          cursor: 'pointer',
-        }}
-      >
-        <ModeSelectButton
-          selected={isSelectMode(currentMode)}
-          title={'Edit ᵅ'}
-          onMouseDown={switchToSelectMode}
-        />
-        <ModeSelectButton
-          selected={isSelectLiteMode(currentMode)}
-          title={'Select'}
-          onMouseDown={switchToSelectLiteMode}
-        />
-        <ModeSelectButton
-          selected={isLiveMode(currentMode)}
-          title={'Live'}
-          onMouseDown={switchToLiveMode}
-        />
-      </div>
-    </FlexRow>
+    <div
+      style={{
+        position: 'absolute',
+        top: '0',
+        right: '0',
+      }}
+    >
+      <FlexRow style={{ paddingTop: 4, paddingRight: 4 }}>
+        <div
+          style={{
+            height: 29,
+            maxWidth: 150,
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: 4,
+            paddingRight: 4,
+            gap: 4,
+            borderRadius: 4,
+            background: colorTheme.bg0.value,
+            boxShadow: 'inset 0px 0px 0px .5px hsl(0,0%,83%), 0px 2px 4px 0px hsla(0,0%,65%,50%)',
+            cursor: 'pointer',
+          }}
+        >
+          <ModeSelectButton
+            selected={isSelectMode(currentMode)}
+            title={'Edit ᵅ'}
+            onMouseDown={switchToSelectMode}
+          />
+          <ModeSelectButton
+            selected={isSelectLiteMode(currentMode)}
+            title={'Select'}
+            onMouseDown={switchToSelectLiteMode}
+          />
+          <ModeSelectButton
+            selected={isLiveMode(currentMode)}
+            title={'Live'}
+            onMouseDown={switchToLiveMode}
+          />
+        </div>
+      </FlexRow>
+    </div>
   )
 })
 
