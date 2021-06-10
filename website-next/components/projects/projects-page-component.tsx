@@ -438,7 +438,7 @@ interface ShowcaseState {
   showcase: Array<ProjectListing>
 }
 
-export class Featured extends React.PureComponent<{}, ShowcaseState> {
+export class FeaturedPage extends React.PureComponent<{}, ShowcaseState> {
   constructor(props: {}) {
     super(props)
     this.state = {
@@ -456,11 +456,11 @@ export class Featured extends React.PureComponent<{}, ShowcaseState> {
 
   render() {
     return (
-      <React.Fragment>
+      <div>
         {this.state.showcase.map((project) => (
           <ProjectCard key={project.id} project={project} selected={false} />
         ))}
-      </React.Fragment>
+      </div>
     )
   }
 }
