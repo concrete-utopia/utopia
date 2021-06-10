@@ -269,7 +269,11 @@ export function isImportedComponent(
 export function isImportedComponentNPM(
   elementInstanceMetadata: ElementInstanceMetadata | null,
 ): boolean {
-  return isImportedComponent(elementInstanceMetadata) // es nem utopia-api
+  return (
+    isImportedComponent(elementInstanceMetadata) &&
+    elementInstanceMetadata != null &&
+    !isUtopiaAPIComponentFromMetadata(elementInstanceMetadata)
+  )
 }
 
 const defaultEmptyUtopiaComponent = EmptyUtopiaCanvasComponent

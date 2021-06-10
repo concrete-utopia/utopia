@@ -692,7 +692,9 @@ export const ComponentSectionInner = betterReactMemo(
             return <ParseErrorControl parseError={rootParseError} />
           },
           (rootParseSuccess) => {
-            const propNames = Object.keys(rootParseSuccess)
+            const propNames = Object.keys(rootParseSuccess).filter(
+              (name) => name !== 'style' && name !== 'css',
+            )
             if (propNames.length > 0) {
               return (
                 <>
