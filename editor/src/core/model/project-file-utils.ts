@@ -237,23 +237,39 @@ export function importInfoFromImportDetails(name: JSXElementName, imports: Impor
   return foundImportDetail
 }
 
-export function isImportedComponent(
-  elementInstanceMetadata: ElementInstanceMetadata | null,
-): boolean {
-  const importInfo = elementInstanceMetadata?.importInfo
-  return importInfo != null && isRight(importInfo)
+export function getFilePathForImportedComponent(
+  element: ElementInstanceMetadata | null,
+): string | null {
+  const importInfo = element?.importInfo
+  if (importInfo != null && isRight(importInfo)) {
+    return importInfo.value.path
+  } else {
+    return null
+  }
 }
 
-export function isImportedComponentNPM(
+export function isImportedComponentFromProjectFiles(
+  element: ElementInstanceMetadata | null,
+): boolean {
+  return !isImportedComponentNPM(element)
+}
+
+export function isImportedComponent(
   elementInstanceMetadata: ElementInstanceMetadata | null,
 ): boolean {
   const importInfo = elementInstanceMetadata?.importInfo
   if (importInfo != null && isRight(importInfo)) {
     const importKey = importInfo.value.path
-    return importKey !== 'utopia-api' && !importKey.startsWith('.') && !importKey.startsWith('/')
+    return !importKey.startsWith('.') && !importKey.startsWith('/')
   } else {
     return false
   }
+}
+
+export function isImportedComponentNPM(
+  elementInstanceMetadata: ElementInstanceMetadata | null,
+): boolean {
+  return isImportedComponent(elementInstanceMetadata) // es nem utopia-api
 }
 
 const defaultEmptyUtopiaComponent = EmptyUtopiaCanvasComponent

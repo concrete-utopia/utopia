@@ -42,8 +42,10 @@ import {
 } from '../../../core/layout/layout-helpers-new'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
+  getFilePathForImportedComponent,
   getUtopiaJSXComponentsFromSuccess,
   isHTMLComponent,
+  isImportedComponentFromProjectFiles,
   isUtopiaAPIComponent,
 } from '../../../core/model/project-file-utils'
 import {
@@ -78,6 +80,7 @@ import {
   getJSXAttribute,
   StyleAttributeMetadata,
   StyleAttributeMetadataEntry,
+  isUtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
   getAllPathsFromAttributes,
@@ -100,6 +103,7 @@ import {
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
+import { getParseSuccessOrTransientForFilePath } from '../../canvas/canvas-utils'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -1019,12 +1023,32 @@ export function useUsedPropsWithoutControls(): Array<string> {
         store.editor,
         (underlyingSuccess, underlyingElement) => {
           const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
+          const elementMetadata = MetadataUtils.findElementByElementPath(
+            store.editor.jsxMetadata,
+            path,
+          )
           if (underlyingElement != null && isJSXElement(underlyingElement)) {
             const noPathName = getJSXElementNameNoPathName(underlyingElement.name)
-            for (const component of rootComponents) {
-              if (component.name === noPathName) {
-                components.push(component)
-                break
+            const isLocalImport = isImportedComponentFromProjectFiles(elementMetadata)
+            const importPath = getFilePathForImportedComponent(elementMetadata)
+            if (isLocalImport && importPath != null) {
+              const result = getParseSuccessOrTransientForFilePath(
+                importPath,
+                store.editor.projectContents,
+                store.derived.canvas.transientState.filesState,
+              )
+              for (const component of result.topLevelElements) {
+                if (isUtopiaJSXComponent(component) && component.name === noPathName) {
+                  components.push(component)
+                  break
+                }
+              }
+            } else {
+              for (const component of rootComponents) {
+                if (component.name === noPathName) {
+                  components.push(component)
+                  break
+                }
               }
             }
           }
@@ -1034,26 +1058,20 @@ export function useUsedPropsWithoutControls(): Array<string> {
     return components
   }, 'useUsedPropsWithoutControls')
 
-  return foldEither(
-    (_) => [],
-    (propertyControls: ParsedPropertyControls) => {
-      const propertiesWithControls = Object.keys(propertyControls)
-      let propertiesWithoutControls: Array<string> = []
-      fastForEach(selectedComponents, (component) => {
-        if (isJSXElement(component.rootElement)) {
-          const propsUsed = filterSpecialProps(component.propsUsed)
-          fastForEach(propsUsed, (propUsed) => {
-            if (!propertiesWithControls.includes(propUsed)) {
-              propertiesWithoutControls = addUniquely(propertiesWithoutControls, propUsed)
-            }
-          })
+  const propertiesWithControls = Object.keys(eitherToMaybe(parsedPropertyControls) ?? {})
+  let propertiesWithoutControls: Array<string> = []
+  fastForEach(selectedComponents, (component) => {
+    if (isJSXElement(component.rootElement)) {
+      const propsUsed = filterSpecialProps(component.propsUsed)
+      fastForEach(propsUsed, (propUsed) => {
+        if (!propertiesWithControls.includes(propUsed)) {
+          propertiesWithoutControls = addUniquely(propertiesWithoutControls, propUsed)
         }
       })
+    }
+  })
 
-      return propertiesWithoutControls
-    },
-    parsedPropertyControls,
-  )
+  return propertiesWithoutControls
 }
 
 export function useUsedPropsWithoutDefaults(): Array<string> {

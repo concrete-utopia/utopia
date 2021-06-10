@@ -549,12 +549,7 @@ export const ComponentSectionInner = betterReactMemo(
       useUsedPropsWithoutControls(),
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
-
-    const propsUsedWithoutDefaults = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutDefaults(),
-    )
     const missingControlsWarning = getMissingPropertyControlsWarning(propsUsedWithoutControls)
-    const missingDefaultsWarning = getMissingDefaultsWarning(propsUsedWithoutDefaults)
 
     const selectedViews = useEditorState(
       (store) => store.editor.selectedViews,
@@ -698,19 +693,12 @@ export const ComponentSectionInner = betterReactMemo(
           },
           (rootParseSuccess) => {
             const propNames = Object.keys(rootParseSuccess)
-
-            // TODO FIX ME
-            if (Math.random() > 0) {
+            if (propNames.length > 0) {
               return (
                 <>
                   {missingControlsWarning == null ? null : (
                     <InfoBox message={'Missing Property Controls'}>
                       {missingControlsWarning}
-                    </InfoBox>
-                  )}
-                  {missingDefaultsWarning == null ? null : (
-                    <InfoBox message={'Missing Default Properties'}>
-                      {missingDefaultsWarning}
                     </InfoBox>
                   )}
                   {propNames.map((propName) => {
@@ -749,25 +737,20 @@ export const ComponentSectionInner = betterReactMemo(
                       )
                     }
                   })}
-                  {propsUsedWithoutControls.length > 0 ? (
-                    <Subdued>{`Additional props used in code: ${propsUsedWithoutControls.join(
-                      ', ',
-                    )}`}</Subdued>
-                  ) : null}
                 </>
               )
             } else {
-              return (
-                <>
-                  <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
-                    <Subdued>No properties available to configure</Subdued>
-                  </UIGridRow>
-                </>
-              )
+              return null
             }
           },
           propertyControls,
         )}
+        {/** props used in the component code without controltypes set */}
+        {propsUsedWithoutControls.length > 0 ? (
+          <Subdued>{`${
+            Object.keys(propertyControls.value ?? {}).length > 0 ? 'Additional props' : 'Props'
+          } used in code: ${propsUsedWithoutControls.join(', ')}`}</Subdued>
+        ) : null}
       </>
     )
   },
