@@ -173,7 +173,7 @@ const ModeSelectButtons = betterReactMemo('ModeSelectButtons', () => {
         >
           <ModeSelectButton
             selected={isSelectMode(currentMode)}
-            title={'Edit ᵅ'}
+            title={'Edit ᵝ'}
             onMouseDown={switchToSelectMode}
           />
           <ModeSelectButton
