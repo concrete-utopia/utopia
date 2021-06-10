@@ -755,7 +755,9 @@ export const ComponentSectionInner = betterReactMemo(
               <Subdued>{`Props: ${propsGivenToElement.join(', ')}${
                 propsUsedWithoutControls.length > 0 ? ', ' : '.'
               }`}</Subdued>
-              <VerySubdued>{`${propsUsedWithoutControls.join(', ')}`}</VerySubdued>
+              <VerySubdued>{`${propsUsedWithoutControls.join(', ')}${
+                propsUsedWithoutControls.length > 0 ? '.' : ''
+              }`}</VerySubdued>
             </div>
           </UIGridRow>
         ) : null}
