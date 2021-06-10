@@ -91,8 +91,8 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getJSXElementNameAsString, isJSXElement } from '../../../../core/shared/element-template'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { usePackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
-import { importedFromWhere } from '../../../editor/import-utils'
 import {
+  getFilePathForImportedComponent,
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
@@ -571,14 +571,20 @@ export const ComponentSectionInner = betterReactMemo(
     }, [dispatch, isFocused, target])
 
     const locationOfComponentInstance = useEditorState((state) => {
-      const underlyingTarget = normalisePathToUnderlyingTarget(
-        state.editor.projectContents,
-        state.editor.nodeModules.files,
-        state.editor.canvas.openFile?.filename ?? '',
-        selectedViews[0],
-      )
+      const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
+      const importResult = getFilePathForImportedComponent(element)
+      if (importResult == null) {
+        const underlyingTarget = normalisePathToUnderlyingTarget(
+          state.editor.projectContents,
+          state.editor.nodeModules.files,
+          state.editor.canvas.openFile?.filename ?? '',
+          selectedViews[0],
+        )
 
-      return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
+        return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
+      } else {
+        return importResult
+      }
     }, 'ComponentSectionInner locationOfComponentInstance')
 
     const componentPackageName = useEditorState((state) => {
@@ -604,10 +610,11 @@ export const ComponentSectionInner = betterReactMemo(
 
     const componentType = useComponentType(target)
 
-    const OpenFile = React.useCallback(
-      () => dispatch([openCodeEditorFile(locationOfComponentInstance, true)]),
-      [dispatch, locationOfComponentInstance],
-    )
+    const OpenFile = React.useCallback(() => {
+      if (locationOfComponentInstance != null) {
+        dispatch([openCodeEditorFile(locationOfComponentInstance, true)])
+      }
+    }, [dispatch, locationOfComponentInstance])
 
     return (
       <>
@@ -746,7 +753,7 @@ export const ComponentSectionInner = betterReactMemo(
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
             <div>
               <Subdued>{`Props: ${propsGivenToElement.join(', ')}${
-                propsGivenToElement.length > 0 ? ', ' : ''
+                propsUsedWithoutControls.length > 0 ? ', ' : '.'
               }`}</Subdued>
               <VerySubdued>{`${propsUsedWithoutControls.join(', ')}`}</VerySubdued>
             </div>
