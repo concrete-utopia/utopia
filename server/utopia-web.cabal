@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d6fac29493b80851a8b72b7c738676b1216539bce5813f217a084ac3e7c5c0cf
+-- hash: e942bc8fcfc90cc05d72651fab3b1fa0f69517c43187641199e82d135c82192c
 
 name:           utopia-web
 version:        0.1.0.4
@@ -27,6 +27,7 @@ executable utopia-web
       Utopia.Web.Auth
       Utopia.Web.Auth.Session
       Utopia.Web.Auth.Types
+      Utopia.Web.ClientModel
       Utopia.Web.Database
       Utopia.Web.Database.Types
       Utopia.Web.Editor.Branches
@@ -50,7 +51,7 @@ executable utopia-web
   hs-source-dirs:
       src
   default-extensions: NoImplicitPrelude
-  ghc-options: -Wall -Werror -threaded -rtsopts
+  ghc-options: -threaded -rtsopts
   extra-libraries:
       z
   build-depends:
@@ -74,6 +75,7 @@ executable utopia-web
     , exceptions
     , filepath
     , free
+    , generic-lens
     , http-api-data
     , http-client
     , http-client-tls
@@ -139,6 +141,7 @@ test-suite utopia-web-test
       Utopia.Web.Auth
       Utopia.Web.Auth.Session
       Utopia.Web.Auth.Types
+      Utopia.Web.ClientModel
       Utopia.Web.Database
       Utopia.Web.Database.Types
       Utopia.Web.Editor.Branches
@@ -163,7 +166,7 @@ test-suite utopia-web-test
       test
       src
   default-extensions: NoImplicitPrelude
-  ghc-options: -Wall -Werror -threaded -rtsopts
+  ghc-options: -threaded -rtsopts
   extra-libraries:
       z
   build-depends:
@@ -187,6 +190,7 @@ test-suite utopia-web-test
     , exceptions
     , filepath
     , free
+    , generic-lens
     , hedgehog
     , hspec
     , http-api-data

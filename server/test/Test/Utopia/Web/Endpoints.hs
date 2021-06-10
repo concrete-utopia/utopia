@@ -7,6 +7,7 @@ module Test.Utopia.Web.Endpoints where
 
 import           Control.Lens                   hiding ((.=))
 import           Data.Aeson
+import           Data.Aeson.Lens
 import           Data.Time
 import           GHC.Conc
 import           Network.HTTP.Client            (CookieJar, cookie_value,
@@ -145,7 +146,7 @@ updateAssetPathSpec :: Spec
 updateAssetPathSpec = around_ withServer $ do
   describe "PUT v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
     it "should update the asset path" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
+      projectContents <- getSampleProject
       -- Create a project, save an asset, rename it and try to load it from the new path.
       assetFromNewPathResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
@@ -173,7 +174,7 @@ deleteAssetSpec :: Spec
 deleteAssetSpec = around_ withServer $ do
   describe "DELETE v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
     it "should delete the asset" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
+      let projectContents = object ["projectContents" .= object []]
       -- Create a project, save an asset, rename it and try to load it from the new path.
       loadedFromPath <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
@@ -220,7 +221,7 @@ projectsSpec = around_ withServer $ do
       length cookies `shouldBe` 1
   describe "GET /project/{project_id}/owner" $ do
     it "return the owner of the project" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
+      projectContents <- getSampleProject
       projectOwnerResponse <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
@@ -237,7 +238,7 @@ projectsSpec = around_ withServer $ do
         projectsClient cookieHeader
       projectListingResponse `shouldBe` (Right $ ProjectListResponse [])
     it "return a list of the user's projects when a project has been created" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
+      projectContents <- getSampleProject
       projectIdAndListingResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
@@ -254,7 +255,7 @@ projectsSpec = around_ withServer $ do
         getShowcaseClient
       projectListingResponse `shouldBe` (Right $ ProjectListResponse [])
     it "return a list containing whatever project that has been added" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
+      projectContents <- getSampleProject
       projectIdAndListingResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
@@ -268,8 +269,8 @@ projectsSpec = around_ withServer $ do
       (listing ^.. projects . traverse . id) `shouldBe` [toUrlPiece projectId]
   describe "GET /project/{project_id}" $ do
     it "returns the not changed result if the last updated data is the same" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      projectContents <- getSampleProject
       earlyTime <- getCurrentTime
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       loadedProjectResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
@@ -320,10 +321,22 @@ projectsSpec = around_ withServer $ do
         loadProjectFileClient projectId ["assets", "picture.jpg"] identity
       fileFromPath <- either throwIO return fileFromPathResult
       (responseBody fileFromPath) `shouldBe` (toS jpgBytes)
+    it "should load from /public/ ahead of /" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      projectContents <- getSampleProject
+      fileFromPathResult <- withClientEnv clientEnv $ do
+        _ <- validAuthenticate
+        cookieHeader <- getCookieHeader cookieJarTVar
+        createProjectResult <- createProjectClient
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        _ <- saveProjectAssetClient cookieHeader projectId ["public", "picture.jpg"] setBodyAsJPG
+        loadProjectFileClient projectId ["picture.jpg"] identity
+      fileFromPath <- either throwIO return fileFromPathResult
+      (responseBody fileFromPath) `shouldBe` (toS jpgBytes)
   describe "POST /project" $ do
     it "should create a project if a request body is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
+      projectContents <- getSampleProject
       loadedProjectResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
@@ -335,7 +348,7 @@ projectsSpec = around_ withServer $ do
       (getLoadedTitleAndContents loadedProject) `shouldBe` (Just ("My Project", projectContents))
     it "should fork a project if an original project ID was passed in with no request body" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
+      projectContents <- getSampleProject
       loadedProjectResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
@@ -350,8 +363,8 @@ projectsSpec = around_ withServer $ do
   describe "PUT /project" $ do
     it "should update a project's contents if the project contents are supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
-      let firstProjectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
-      let secondProjectContents = object ["firstThing" .= (5 :: Int), "secondThing" .= False]
+      firstProjectContents <- getSampleProject
+      let secondProjectContents = set (key "firstThing" . _Bool) False firstProjectContents
       loadedProjectResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
@@ -363,8 +376,8 @@ projectsSpec = around_ withServer $ do
       loadedProject <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents loadedProject) `shouldBe` Just ("My Project", secondProjectContents)
     it "should update a project title if the project title is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      projectContents <- getSampleProject
       earlyTime <- getCurrentTime
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       loadedProjectResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
@@ -378,7 +391,7 @@ projectsSpec = around_ withServer $ do
   describe "DELETE /project" $ do
     it "should delete a project" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
-      let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
+      projectContents <- getSampleProject
       loadedProjectResult <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar

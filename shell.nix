@@ -140,7 +140,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${cabal}/bin/cabal new-update
+      ${cabal}/bin/cabal new-update 'hackage.haskell.org,2021-06-09T12:43:34Z'
     '')
     (pkgs.writeScriptBin "test-server-inner" ''
       #!/usr/bin/env bash

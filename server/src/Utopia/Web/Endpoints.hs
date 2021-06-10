@@ -35,6 +35,7 @@ import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
 import qualified Text.Blaze.Html5.Attributes     as HA
 import           Utopia.Web.Assets
+import           Utopia.Web.ClientModel
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Executors.Common
@@ -249,7 +250,7 @@ projectChangedSince projectID lastChangedDate = do
 downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Value
 downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
   possibleProject <- loadProject projectID
-  let contentLookup = foldl' (\lensSoFar -> \pathPart -> lensSoFar . key pathPart) content pathIntoContent
+  let contentLookup = foldl' (\lensSoFar -> \pathPart -> lensSoFar . key pathPart) DB.content pathIntoContent
   fromMaybe notFound $ do
     project <- possibleProject
     contentFromLookup <- firstOf contentLookup project
@@ -277,7 +278,7 @@ createLoadProjectResponse project = ProjectLoaded { _id=(view id project)
                                                   , _ownerId=(view ownerId project)
                                                   , _title=(view title project)
                                                   , _modifiedAt=(view modifiedAt project)
-                                                  , _content=(view content project)}
+                                                  , _content=(view DB.content project)}
 
 createProjectEndpoint :: ServerMonad CreateProjectResponse
 createProjectEndpoint = do
@@ -301,7 +302,7 @@ forkProject sessionUser sourceProject projectTitle = do
 
 saveProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> SaveProjectRequest -> ServerMonad SaveProjectResponse
 saveProjectEndpoint cookie (ProjectIdWithSuffix projectID _) saveRequest = requireUser cookie $ \sessionUser -> do
-  saveProject sessionUser projectID (view name saveRequest) (view content saveRequest)
+  saveProject sessionUser projectID (view name saveRequest) (view DB.content saveRequest)
   return $ SaveProjectResponse projectID (view id sessionUser)
 
 deleteProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> ServerMonad NoContent
@@ -309,13 +310,11 @@ deleteProjectEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser coo
   deleteProject sessionUser projectID
   return NoContent
 
-loadProjectFileContents :: Maybe DecodedProject -> [Text] -> Maybe Text
-loadProjectFileContents possibleProject filePath = do
-  let projectFilePath = projectContentsPathForFilePath filePath
-  let projectFileLookup = foldl' (\lensSoFar -> \pathPart -> lensSoFar . key pathPart) content projectFilePath
-  project <- possibleProject
-  contentFromLookup <- firstOf (projectFileLookup . _String) project
-  return contentFromLookup
+loadProjectFileContents :: DecodedProject -> [[Text]] -> Either Text (Maybe (ProjectFile, [Text]))
+loadProjectFileContents decodedProject pathsToCheck = do
+  projectContentsTree <- projectContentsTreeFromDecodedProject decodedProject
+  let projectFile = getFirst $ foldMap (\path -> First $ fmap (\c -> (c, path)) $ getProjectContentsTreeFile projectContentsTree path) pathsToCheck
+  pure projectFile
 
 sendProjectFileContentsResponse :: [Text] -> Text -> (Response -> a) -> a
 sendProjectFileContentsResponse filePath contents = \sendResponse ->
@@ -323,14 +322,39 @@ sendProjectFileContentsResponse filePath contents = \sendResponse ->
       builtResponse = responseLBS ok200 [(hContentType, mimeType)] (BL.fromStrict $ encodeUtf8 contents)
   in sendResponse builtResponse
 
+assetCallFold :: Maybe Application -> ServerMonad (Maybe Application) -> ServerMonad (Maybe Application)
+assetCallFold priorResult assetCall = maybe assetCall (\a -> pure $ Just a) priorResult
+
 loadProjectFileEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Application
 loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) filePath = do
   let normalizedPath = normalizePath filePath
+  -- Check /public/a/b/ before checking /a/b/.
+  let pathsToCheck = ["public" : filePath, filePath]
   possibleProject <- loadProject projectID
-  let projectFileContents = loadProjectFileContents possibleProject normalizedPath
+  decodedProject <- maybe notFound pure possibleProject
+  let handleNoAsset assetCall = do
+        possibleResult <- assetCall
+        maybe notFound pure possibleResult
+  let projectFileContents = loadProjectFileContents decodedProject pathsToCheck
   case projectFileContents of
-    Just fileContents -> return $ \_ -> sendProjectFileContentsResponse normalizedPath fileContents
-    Nothing -> loadProjectAsset ([projectID] ++ normalizedPath)
+    (Left errorMessage) -> do
+      -- There was an error parsing the project contents JSON.
+      debugLog errorMessage
+      badRequest
+    (Right Nothing) -> do
+      -- Unable to find the file in the project contents.
+      -- Speculatively try loading the various paths in order instead.
+      let assetCalls = fmap loadProjectAsset $ fmap (\p -> projectID : p) pathsToCheck
+      let possibleResult = foldlM assetCallFold Nothing assetCalls
+      handleNoAsset possibleResult
+    (Right (Just ((ProjectTextFile (TextFile{..})), _))) -> do
+      -- Found the file in the project contents and it's a text file,
+      -- so return the text file contents from within there.
+      pure $ const $ sendProjectFileContentsResponse normalizedPath $ code fileContents
+    (Right (Just (_, pathFound))) -> do
+      -- Found the file in the project contents, so
+      -- load the asset from that path.
+      handleNoAsset $ loadProjectAsset (projectID : pathFound)
 
 saveProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad Application
 saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> do

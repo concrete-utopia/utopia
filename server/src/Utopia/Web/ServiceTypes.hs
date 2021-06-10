@@ -100,7 +100,7 @@ data ServiceCallsF a = NotFound
                      | CreateProject (Text -> a)
                      | SaveProject SessionUser Text (Maybe Text) (Maybe Value) a
                      | DeleteProject SessionUser Text a
-                     | LoadProjectAsset [Text] (Application -> a)
+                     | LoadProjectAsset [Text] (Maybe Application -> a)
                      | SaveProjectAsset Text Text [Text] (Application -> a)
                      | RenameProjectAsset Text Text OldPathText NewPathText a
                      | DeleteProjectAsset Text Text [Text] a

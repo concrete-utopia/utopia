@@ -400,7 +400,7 @@ export type SaveAsset = {
   fileName: string
   fileType: string
   base64: string
-  hash: string
+  hash: number
   imageDetails: SaveImageDetails | null
 }
 
