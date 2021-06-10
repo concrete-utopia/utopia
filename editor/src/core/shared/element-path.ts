@@ -750,7 +750,7 @@ export function pathUpToElementPath(
   return foundIndex === -1 ? null : elementPath(fullElementPath.slice(0, foundIndex + 1))
 }
 
-interface DropFirstPathElementResultType {
+export interface DropFirstPathElementResultType {
   newPath: StaticElementPath | null
   droppedPathElements: StaticElementPathPart | null
 }

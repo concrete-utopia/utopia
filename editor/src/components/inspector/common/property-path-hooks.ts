@@ -45,7 +45,6 @@ import {
   getFilePathForImportedComponent,
   getUtopiaJSXComponentsFromSuccess,
   isHTMLComponent,
-  isImportedComponentFromProjectFiles,
   isUtopiaAPIComponent,
 } from '../../../core/model/project-file-utils'
 import {
@@ -59,7 +58,7 @@ import {
   removeIgnored,
   getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
-import { addUniquely, stripNulls } from '../../../core/shared/array-utils'
+import { addUniquely, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import {
   defaultEither,
   Either,
@@ -80,7 +79,6 @@ import {
   getJSXAttribute,
   StyleAttributeMetadata,
   StyleAttributeMetadataEntry,
-  isUtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
   getAllPathsFromAttributes,
@@ -90,7 +88,7 @@ import {
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
-import type { PropertyPath, ElementPath } from '../../../core/shared/project-file-types'
+import { PropertyPath, ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import { fastForEach } from '../../../core/shared/utils'
@@ -103,7 +101,10 @@ import {
 import { default as Utils } from '../../../utils/utils'
 import { ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
-import { getParseSuccessOrTransientForFilePath } from '../../canvas/canvas-utils'
+import { findUnderlyingTargetComponentImplementation } from '../../custom-code/code-file'
+import type { MapLike } from 'typescript'
+import { omitWithPredicate } from '../../../core/shared/object-utils'
+import { UtopiaKeys } from '../../../core/model/utopia-constants'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -1010,7 +1011,7 @@ export function useSelectedPropertyControls(
   }
 }
 
-export function useUsedPropsWithoutControls(): Array<string> {
+export function useUsedPropsWithoutControls(propsGiven: Array<string>): Array<string> {
   const parsedPropertyControls = useSelectedPropertyControls(true)
 
   const selectedViews = useRefSelectedViews()
@@ -1018,42 +1019,18 @@ export function useUsedPropsWithoutControls(): Array<string> {
   const selectedComponents = useEditorState((store) => {
     let components: Array<UtopiaJSXComponent> = []
     fastForEach(selectedViews.current, (path) => {
-      forUnderlyingTargetFromEditorState(
-        path,
-        store.editor,
-        (underlyingSuccess, underlyingElement) => {
-          const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
-          const elementMetadata = MetadataUtils.findElementByElementPath(
-            store.editor.jsxMetadata,
-            path,
-          )
-          if (underlyingElement != null && isJSXElement(underlyingElement)) {
-            const noPathName = getJSXElementNameNoPathName(underlyingElement.name)
-            const isLocalImport = isImportedComponentFromProjectFiles(elementMetadata)
-            const importPath = getFilePathForImportedComponent(elementMetadata)
-            if (isLocalImport && importPath != null) {
-              const result = getParseSuccessOrTransientForFilePath(
-                importPath,
-                store.editor.projectContents,
-                store.derived.canvas.transientState.filesState,
-              )
-              for (const component of result.topLevelElements) {
-                if (isUtopiaJSXComponent(component) && component.name === noPathName) {
-                  components.push(component)
-                  break
-                }
-              }
-            } else {
-              for (const component of rootComponents) {
-                if (component.name === noPathName) {
-                  components.push(component)
-                  break
-                }
-              }
-            }
-          }
-        },
-      )
+      const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
+      if (openStoryboardFile != null) {
+        const component = findUnderlyingTargetComponentImplementation(
+          store.editor.projectContents,
+          store.editor.nodeModules.files,
+          openStoryboardFile,
+          path,
+        )
+        if (component != null) {
+          components.push(component)
+        }
+      }
     })
     return components
   }, 'useUsedPropsWithoutControls')
@@ -1062,9 +1039,8 @@ export function useUsedPropsWithoutControls(): Array<string> {
   let propertiesWithoutControls: Array<string> = []
   fastForEach(selectedComponents, (component) => {
     if (isJSXElement(component.rootElement)) {
-      const propsUsed = filterSpecialProps(component.propsUsed)
-      fastForEach(propsUsed, (propUsed) => {
-        if (!propertiesWithControls.includes(propUsed)) {
+      fastForEach(component.propsUsed, (propUsed) => {
+        if (!propertiesWithControls.includes(propUsed) && !propsGiven.includes(propUsed)) {
           propertiesWithoutControls = addUniquely(propertiesWithoutControls, propUsed)
         }
       })
@@ -1072,6 +1048,38 @@ export function useUsedPropsWithoutControls(): Array<string> {
   })
 
   return propertiesWithoutControls
+}
+
+const PropsToDiscard = [...UtopiaKeys, 'skipDeepFreeze', 'data-utopia-instance-path']
+function filterUtopiaSpecificProps(props: MapLike<any>) {
+  return omitWithPredicate(props, (key) => typeof key === 'string' && PropsToDiscard.includes(key))
+}
+
+export function useGivenPropsWithoutControls(): Array<string> {
+  const parsedPropertyControls = useSelectedPropertyControls(true)
+  const selectedViews = useRefSelectedViews()
+
+  const selectedElements = useEditorState((store) => {
+    return mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+      selectedViews.current,
+    )
+  }, 'useGivenPropsWithoutControls')
+
+  const propertiesWithControls = filterSpecialProps(
+    Object.keys(eitherToMaybe(parsedPropertyControls) ?? {}),
+  )
+  let givenProps: Array<string> = []
+  fastForEach(selectedElements, (element) => {
+    const elementProps = filterUtopiaSpecificProps(element.props)
+    fastForEach(Object.keys(elementProps), (propName) => {
+      if (!propertiesWithControls.includes(propName)) {
+        givenProps = addUniquely(givenProps, propName)
+      }
+    })
+  })
+
+  return givenProps
 }
 
 export function useUsedPropsWithoutDefaults(): Array<string> {

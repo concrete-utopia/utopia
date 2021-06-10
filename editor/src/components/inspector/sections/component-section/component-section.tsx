@@ -11,9 +11,8 @@ import {
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import {
+  filterSpecialProps,
   getDescriptionUnsetOptionalFields,
-  getMissingDefaultsWarning,
-  getMissingPropertyControlsWarning,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
 import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
@@ -44,6 +43,7 @@ import {
   FlexColumn,
   paddingTop,
   Subdued,
+  VerySubdued,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -61,6 +61,7 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
+  useGivenPropsWithoutControls,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
   useUsedPropsWithoutDefaults,
@@ -545,11 +546,11 @@ export const ComponentSectionInner = betterReactMemo(
   'ComponentSectionInner',
   (props: ComponentSectionProps) => {
     const propertyControls = useKeepReferenceEqualityIfPossible(useSelectedPropertyControls(false))
+    const propsGivenToElement = useKeepReferenceEqualityIfPossible(useGivenPropsWithoutControls())
     const propsUsedWithoutControls = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutControls(),
+      useUsedPropsWithoutControls(propsGivenToElement),
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
-    const missingControlsWarning = getMissingPropertyControlsWarning(propsUsedWithoutControls)
 
     const selectedViews = useEditorState(
       (store) => store.editor.selectedViews,
@@ -692,17 +693,10 @@ export const ComponentSectionInner = betterReactMemo(
             return <ParseErrorControl parseError={rootParseError} />
           },
           (rootParseSuccess) => {
-            const propNames = Object.keys(rootParseSuccess).filter(
-              (name) => name !== 'style' && name !== 'css',
-            )
+            const propNames = filterSpecialProps(Object.keys(rootParseSuccess))
             if (propNames.length > 0) {
               return (
                 <>
-                  {missingControlsWarning == null ? null : (
-                    <InfoBox message={'Missing Property Controls'}>
-                      {missingControlsWarning}
-                    </InfoBox>
-                  )}
                   {propNames.map((propName) => {
                     const propertyControl = rootParseSuccess[propName]
                     if (propertyControl == null) {
@@ -747,11 +741,16 @@ export const ComponentSectionInner = betterReactMemo(
           },
           propertyControls,
         )}
-        {/** props used in the component code without controltypes set */}
-        {propsUsedWithoutControls.length > 0 ? (
-          <Subdued>{`${
-            Object.keys(propertyControls.value ?? {}).length > 0 ? 'Additional props' : 'Props'
-          } used in code: ${propsUsedWithoutControls.join(', ')}`}</Subdued>
+        {/** props set on the component instance and props used inside the component code */}
+        {propsUsedWithoutControls.length > 0 || propsGivenToElement.length > 0 ? (
+          <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+            <div>
+              <Subdued>{`Props: ${propsGivenToElement.join(', ')}${
+                propsGivenToElement.length > 0 ? ', ' : ''
+              }`}</Subdued>
+              <VerySubdued>{`${propsUsedWithoutControls.join(', ')}`}</VerySubdued>
+            </div>
+          </UIGridRow>
         ) : null}
       </>
     )

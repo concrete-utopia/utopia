@@ -24,6 +24,7 @@ import {
   RevisionsState,
   isParseSuccess,
   StaticElementPath,
+  ParseSuccess,
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
@@ -37,19 +38,23 @@ import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import { Either, left, right } from '../../core/shared/either'
+import { Either, isRight, left, right } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import {
   getJSXAttribute,
   isIntrinsicElement,
   isJSXAttributeOtherJavaScript,
+  isUtopiaJSXComponent,
   JSXElement,
+  UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import { findElementWithUID } from '../../core/shared/uid-utils'
 import { importedFromWhere } from '../editor/import-utils'
 import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
+import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 
 export interface CodeResult {
   exports: ModuleExportTypes
@@ -428,69 +433,7 @@ export function normalisePathToUnderlyingTarget(
             return normalisePathImportNotFound(lastDroppedPathPart)
           } else {
             const nonNullTargetElement: JSXElement = targetElement
-            function lookupElementImport(elementBaseVariable: string): NormalisePathResult {
-              const importedFrom = importedFromWhere(
-                currentFilePath,
-                elementBaseVariable,
-                parsedContent.topLevelElements,
-                parsedContent.imports,
-              )
-              if (importedFrom == null) {
-                return normalisePathImportNotFound(elementBaseVariable)
-              } else {
-                if (importedFrom === 'utopia-api' && elementBaseVariable === 'Scene') {
-                  // Navigate around the scene with the special case handling.
-                  const componentAttr = getJSXAttribute(nonNullTargetElement.props, 'component')
-                  if (componentAttr != null && isJSXAttributeOtherJavaScript(componentAttr)) {
-                    return lookupElementImport(componentAttr.javascript)
-                  } else {
-                    return normalisePathError(
-                      `Unable to handle Scene component definition for ${optionalMap(
-                        EP.toString,
-                        elementPath,
-                      )}`,
-                    )
-                  }
-                } else {
-                  const resolutionResult = resolveModule(
-                    projectContents,
-                    nodeModules,
-                    currentFilePath,
-                    importedFrom,
-                  )
-                  switch (resolutionResult.type) {
-                    case 'RESOLVE_SUCCESS':
-                      const successResult = resolutionResult.success
-                      // Avoid drilling into node_modules because we can't do anything useful with
-                      // the contents of files in there.
-                      if (successResult.path.startsWith('/node_modules/')) {
-                        const splitPath = successResult.path.split('/')
-                        return normalisePathEndsAtDependency(splitPath[2])
-                      } else {
-                        switch (successResult.file.type) {
-                          case 'ES_CODE_FILE':
-                            return normalisePathToUnderlyingTarget(
-                              projectContents,
-                              nodeModules,
-                              successResult.path,
-                              potentiallyDroppedFirstPathElementResult.newPath,
-                            )
-                          case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
-                            return normalisePathUnableToProceed(successResult.path)
-                          default:
-                            const _exhaustiveCheck: never = successResult.file
-                            throw new Error(`Unhandled case ${JSON.stringify(successResult.file)}`)
-                        }
-                      }
-                    case 'RESOLVE_NOT_PRESENT':
-                      return normalisePathError(`Unable to find resolve path at ${importedFrom}`)
-                    default:
-                      const _exhaustiveCheck: never = resolutionResult
-                      throw new Error(`Unhandled case ${JSON.stringify(resolutionResult)}`)
-                  }
-                }
-              }
-            }
+
             // Handle things like divs.
             if (isIntrinsicElement(targetElement.name)) {
               return normalisePathSuccess(
@@ -501,7 +444,16 @@ export function normalisePathToUnderlyingTarget(
                 currentFile,
               )
             } else {
-              return lookupElementImport(targetElement.name.baseVariable)
+              return lookupElementImport(
+                targetElement.name.baseVariable,
+                currentFilePath,
+                projectContents,
+                nodeModules,
+                nonNullTargetElement,
+                elementPath,
+                parsedContent,
+                potentiallyDroppedFirstPathElementResult,
+              )
             }
           }
         }
@@ -509,6 +461,88 @@ export function normalisePathToUnderlyingTarget(
     }
   } else {
     return normalisePathUnableToProceed(currentFilePath)
+  }
+}
+
+function lookupElementImport(
+  elementBaseVariable: string,
+  currentFilePath: string,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  nonNullTargetElement: JSXElement,
+  elementPath: ElementPath | null,
+  parsedContent: ParseSuccess,
+  potentiallyDroppedFirstPathElementResult: EP.DropFirstPathElementResultType,
+): NormalisePathResult {
+  const importedFrom = importedFromWhere(
+    currentFilePath,
+    elementBaseVariable,
+    parsedContent.topLevelElements,
+    parsedContent.imports,
+  )
+  if (importedFrom == null) {
+    return normalisePathImportNotFound(elementBaseVariable)
+  } else {
+    if (importedFrom === 'utopia-api' && elementBaseVariable === 'Scene') {
+      // Navigate around the scene with the special case handling.
+      const componentAttr = getJSXAttribute(nonNullTargetElement.props, 'component')
+      if (componentAttr != null && isJSXAttributeOtherJavaScript(componentAttr)) {
+        return lookupElementImport(
+          componentAttr.javascript,
+          currentFilePath,
+          projectContents,
+          nodeModules,
+          nonNullTargetElement,
+          elementPath,
+          parsedContent,
+          potentiallyDroppedFirstPathElementResult,
+        )
+      } else {
+        return normalisePathError(
+          `Unable to handle Scene component definition for ${optionalMap(
+            EP.toString,
+            elementPath,
+          )}`,
+        )
+      }
+    } else {
+      const resolutionResult = resolveModule(
+        projectContents,
+        nodeModules,
+        currentFilePath,
+        importedFrom,
+      )
+      switch (resolutionResult.type) {
+        case 'RESOLVE_SUCCESS':
+          const successResult = resolutionResult.success
+          // Avoid drilling into node_modules because we can't do anything useful with
+          // the contents of files in there.
+          if (successResult.path.startsWith('/node_modules/')) {
+            const splitPath = successResult.path.split('/')
+            return normalisePathEndsAtDependency(splitPath[2])
+          } else {
+            switch (successResult.file.type) {
+              case 'ES_CODE_FILE':
+                return normalisePathToUnderlyingTarget(
+                  projectContents,
+                  nodeModules,
+                  successResult.path,
+                  potentiallyDroppedFirstPathElementResult.newPath,
+                )
+              case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
+                return normalisePathUnableToProceed(successResult.path)
+              default:
+                const _exhaustiveCheck: never = successResult.file
+                throw new Error(`Unhandled case ${JSON.stringify(successResult.file)}`)
+            }
+          }
+        case 'RESOLVE_NOT_PRESENT':
+          return normalisePathError(`Unable to find resolve path at ${importedFrom}`)
+        default:
+          const _exhaustiveCheck: never = resolutionResult
+          throw new Error(`Unhandled case ${JSON.stringify(resolutionResult)}`)
+      }
+    }
   }
 }
 
@@ -521,4 +555,54 @@ export function normalisePathToUnderlyingTargetForced(
   return normalisePathSuccessOrThrowError(
     normalisePathToUnderlyingTarget(projectContents, nodeModules, currentFilePath, elementPath),
   )
+}
+
+export function findUnderlyingTargetComponentImplementation(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  currentFilePath: string,
+  elementPath: ElementPath | null,
+): UtopiaJSXComponent | null {
+  const underlyingTarget = normalisePathToUnderlyingTarget(
+    projectContents,
+    nodeModules,
+    currentFilePath,
+    elementPath,
+  )
+  if (underlyingTarget.type === 'NORMALISE_PATH_SUCCESS') {
+    const parseResult = underlyingTarget.textFile.fileContents.parsed
+    if (isParseSuccess(parseResult) && underlyingTarget.normalisedPath != null) {
+      const element = findJSXElementAtStaticPath(
+        getUtopiaJSXComponentsFromSuccess(parseResult),
+        underlyingTarget.normalisedPath,
+      )
+      const elementName = element?.name.baseVariable
+      if (element != null && elementName != null) {
+        const innerUnderlyingTarget = lookupElementImport(
+          elementName,
+          underlyingTarget.filePath,
+          projectContents,
+          nodeModules,
+          element,
+          underlyingTarget.normalisedPath,
+          parseResult,
+          { droppedPathElements: null, newPath: null },
+        )
+        if (
+          innerUnderlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
+          isParseSuccess(innerUnderlyingTarget.textFile.fileContents.parsed)
+        ) {
+          return (
+            innerUnderlyingTarget.textFile.fileContents.parsed.topLevelElements.find(
+              (tle): tle is UtopiaJSXComponent => {
+                return isUtopiaJSXComponent(tle) && tle.name === elementName
+              },
+            ) ?? null
+          )
+        }
+      }
+    }
+  }
+
+  return null
 }

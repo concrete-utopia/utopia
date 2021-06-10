@@ -46,6 +46,9 @@ export const Subdued = styled.span([
     lineHeight: '17px',
   },
 ])
+export const VerySubdued = styled(Subdued)({
+  color: colorTheme.verySubduedForeground.value,
+})
 
 export const InspectorSectionHeader = styled(H1)({
   label: 'section-header',
