@@ -1,4 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import * as React from 'react'
+import { jsx } from '@emotion/react'
 import { filterOldPasses } from '../../core/workers/ts/ts-worker'
 import { EditorCanvas } from '../../templates/editor-canvas'
 import { ErrorRecord } from '../../third-party/react-error-overlay/containers/RuntimeError'
@@ -6,7 +9,11 @@ import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-e
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { setFocus } from '../common/actions'
-import { openCodeEditorFile, setSafeMode } from '../editor/actions/action-creators'
+import {
+  openCodeEditorFile,
+  setSafeMode,
+  switchEditorMode,
+} from '../editor/actions/action-creators'
 import {
   ConsoleLog,
   createCanvasModelKILLME,
@@ -23,12 +30,13 @@ import CloseButton from '../../third-party/react-error-overlay/components/CloseB
 import { NO_OP } from '../../core/shared/utils'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
-import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
+import { FlexColumn, FlexRow, Button, UtopiaTheme, colorTheme } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
+import { EditorModes, isLiveMode, isSelectLiteMode, isSelectMode } from '../editor/editor-modes'
 
 interface CanvasWrapperComponentProps {}
 
@@ -65,6 +73,7 @@ export const CanvasWrapperComponent = betterReactMemo(
           // ^ prevents Monaco from pushing the inspector out
         }}
       >
+        <ModeSelectButtons />
         {fatalErrors.length === 0 && !safeMode ? (
           <EditorCanvas
             editor={editorState}
@@ -77,6 +86,105 @@ export const CanvasWrapperComponent = betterReactMemo(
     )
   },
 )
+
+interface ModeSelectButtonProps {
+  selected: boolean
+  title: string
+  onMouseDown: () => void
+}
+
+const ModeSelectButton = betterReactMemo('ModeSelectButton', (props: ModeSelectButtonProps) => {
+  return props.selected ? (
+    <div
+      // this is the selected variant. No hover effects on this one
+      style={{
+        padding: '2px 4px',
+        background: colorTheme.emphasizedBackground.value,
+        color: colorTheme.primary.value,
+        borderRadius: 2,
+      }}
+      onMouseDown={props.onMouseDown}
+    >
+      {props.title}
+    </div>
+  ) : (
+    <div
+      css={{
+        padding: '2px 4px',
+        background: 'transparent',
+        borderRadius: 2,
+        opacity: 0.6,
+        transition: 'background .1s ease-in-out',
+        '&:hover': {
+          opacity: 0.8,
+          background: colorTheme.emphasizedBackground.value,
+        },
+        '&:active': {
+          opacity: 1,
+        },
+      }}
+      onMouseDown={props.onMouseDown}
+    >
+      {props.title}
+    </div>
+  )
+})
+
+const ModeSelectButtons = betterReactMemo('ModeSelectButtons', () => {
+  const currentMode = useEditorState((store) => store.editor.mode, 'ModeSelectButtons editor.mode')
+  const dispatch = useEditorState((store) => store.dispatch, 'ModeSelectButtons dispatch')
+
+  const switchToSelectMode = React.useCallback(
+    () => dispatch([switchEditorMode(EditorModes.selectMode())]),
+    [dispatch],
+  )
+  const switchToSelectLiteMode = React.useCallback(
+    () => dispatch([switchEditorMode(EditorModes.selectLiteMode())]),
+    [dispatch],
+  )
+  const switchToLiveMode = React.useCallback(
+    () => dispatch([switchEditorMode(EditorModes.liveMode())]),
+    [dispatch],
+  )
+
+  return (
+    <FlexRow style={{ paddingTop: 4 }}>
+      <div
+        style={{
+          height: 29,
+          maxWidth: 150,
+          display: 'flex',
+          alignItems: 'center',
+          paddingLeft: 4,
+          paddingRight: 4,
+          gap: 4,
+          borderRadius: 4,
+          background: 'hsl(0,0%,100%)',
+          // ^^ colortheme.bg0
+          boxShadow: 'inset 0px 0px 0px .5px hsl(0,0%,83%), 0px 2px 4px 0px hsla(0,0%,65%,50%)',
+          // ^^ not sure we have in theme
+          cursor: 'pointer',
+        }}
+      >
+        <ModeSelectButton
+          selected={isSelectMode(currentMode)}
+          title={'Edit ᵅ'}
+          onMouseDown={switchToSelectMode}
+        />
+        <ModeSelectButton
+          selected={isSelectLiteMode(currentMode)}
+          title={'Select'}
+          onMouseDown={switchToSelectLiteMode}
+        />
+        <ModeSelectButton
+          selected={isLiveMode(currentMode)}
+          title={'Live'}
+          onMouseDown={switchToLiveMode}
+        />
+      </div>
+    </FlexRow>
+  )
+})
 
 interface ErrorOverlayComponentProps {}
 
