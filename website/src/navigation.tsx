@@ -29,7 +29,7 @@ export default class Navigation extends React.Component {
 
   render() {
     return (
-      <>
+      <React.Fragment>
         <Global
           styles={{
             body: {
@@ -100,7 +100,7 @@ export default class Navigation extends React.Component {
             </this.NavLink>
           </div>
         </nav>
-      </>
+      </React.Fragment>
     )
   }
 }

@@ -1,6 +1,4 @@
 /** @jsx jsx */
-import React from 'react'
-import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 export const H2 = styled.h2({
@@ -11,39 +9,39 @@ export const H2 = styled.h2({
 })
 
 export const InlineButton = styled.a({
-  color: "#007AFF",
-  textDecoration: "none",
-  cursor: "pointer",
+  color: '#007AFF',
+  textDecoration: 'none',
+  cursor: 'pointer',
   paddingLeft: 2,
   paddingRight: 2,
-  position: "relative",
-  "&:hover": {
+  position: 'relative',
+  '&:hover': {
     borderRadius: 1,
-    background: "#E9F3FF"
+    background: '#E9F3FF',
   },
-  "&:active": {
-    background: "#007aff",
-    color: "#ffffff",
+  '&:active': {
+    background: '#007aff',
+    color: '#ffffff',
     borderRadiusTopLeft: 2,
-    borderRadiusBottomLeft: 2
+    borderRadiusBottomLeft: 2,
   },
 
-  "&:visited": {
-    color: "#007AFF"
-  }
-});
+  '&:visited': {
+    color: '#007AFF',
+  },
+})
 
 export const A = styled.a({
-  color: "#007AFF",
-  textDecoration: "none",
-  cursor: "pointer",
+  color: '#007AFF',
+  textDecoration: 'none',
+  cursor: 'pointer',
   paddingLeft: 2,
   paddingRight: 2,
-  "&:hover": {
-    textDecoration: "underline"
+  '&:hover': {
+    textDecoration: 'underline',
   },
-  "&:visited": {
-    color: "#007AFF"
+  '&:visited': {
+    color: '#007AFF',
   },
-  "&:active": {}
-});
+  '&:active': {},
+})

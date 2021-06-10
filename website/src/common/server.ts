@@ -5,10 +5,8 @@ import {
   cookiesOrLocalForageUnavailable,
   isLoggedIn,
   isLoginLost,
-  isNotLoggedIn,
   loginLost,
   LoginState,
-  notLoggedIn,
   offlineState,
 } from './user'
 // Stupid style of import because the website and editor are different

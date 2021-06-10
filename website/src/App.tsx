@@ -10,28 +10,6 @@ import Home from './home'
 import Team from './team'
 import Prerelease from './prerelease'
 
-var PlaceholderScreen = () => {
-  return (
-    <div>
-      <div
-        style={{
-          height: '40px',
-          position: 'sticky',
-          top: 0,
-          backgroundColor: 'white',
-        }}
-        className='flex flex-row items-center justify-center '
-      />
-      <div style={{ height: '90vh' }} className='flex flex-row items-center justify-center '>
-        <img
-          src='/static/logotype-exactsized-brandpurple-420x93.svg'
-          alt='Utopia. Welcome to the future :) '
-        />
-      </div>
-    </div>
-  )
-}
-
 class App extends Component {
   loginRender = () => {
     window.location.replace(auth0Url('redirect'))
