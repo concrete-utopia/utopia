@@ -8,28 +8,6 @@ import { Menu } from '../components/menu'
 import { GhostBrowser } from '../components/ghostbrowser'
 import { Header } from '../components/header'
 
-// TODO
-// [x] - Create horizontal layout
-//       [x] - update the menu to horizontal
-// [ ] - Update base styles (font, colours) for copy
-// [x] - Sticky header with fade-in background (matching the design) @malte
-// [x] - fix the menu size
-// [x] - Update background asset @malte
-// [x] - Upload background asset @balazs
-// [x] - create the "ghost browser" component to wrap images / videos / components @malte
-// [x] - use it to contain the previewtopia image
-// [x] - understand the font situation (univers, marfa licensing etc) @malte
-// [x] - Install the Inter web font @malte
-// [ ] - review responsive design, make tweaks
-// [x] - favicon!
-// [x] - Apple icon!
-// [x] - Social Media OG tags @malte
-// [x] - visually center the rotation, either by wrapping it or by transform-origin pixelfucking
-// [x] - white gradient fade-in of bg, and [ ] - background position @malte
-// [x] - spacing between text (margin-top or gap or something)
-// [x] - fuck-off width for the menu (full screen on MB Air)
-// [x] - font weight 500 for base text in Inter
-
 function MainTitle({ children }) {
   return (
     <h1
