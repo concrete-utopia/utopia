@@ -566,10 +566,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       this.props.dispatch([CanvasActions.setSelectionControlsVisibility(true)], 'canvas')
     }
 
-    if (this.props.model.focusedPanel !== 'canvas' && event.event !== 'WHEEL') {
-      return
-    }
-
     if (
       (event.nativeEvent != null &&
         event.nativeEvent.srcElement != null &&
@@ -593,10 +589,15 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       } as WindowRectangle
     }
 
-    const actions = [
-      ...handleCanvasEvent(this.props.model, event),
-      ...on(this.props.model, event, canvasBounds),
-    ]
+    let actions: Array<EditorAction> = []
+    // Focus the panel as something is happening in/on it.
+    if (this.props.model.focusedPanel !== 'canvas' && event.event === 'MOUSE_DOWN') {
+      actions.push(setFocus('canvas'))
+    }
+
+    actions.push(...handleCanvasEvent(this.props.model, event))
+    actions.push(...on(this.props.model, event, canvasBounds))
+
     const realActions = actions.filter((action) => action.action !== 'TRANSIENT_ACTIONS')
     const transientActions = actions.filter((action) => action.action === 'TRANSIENT_ACTIONS')
     if (realActions.length > 0) {
