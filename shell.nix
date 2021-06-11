@@ -37,7 +37,7 @@ let
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
       ${node}/bin/npm --scripts-prepend-node-path=true install
     '')
     (pkgs.writeScriptBin "test-editor" ''
@@ -55,8 +55,8 @@ let
     (pkgs.writeScriptBin "test-website" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website
-      ${node}/bin/npm --scripts-prepend-node-path=true test
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
+      # ${node}/bin/npm --scripts-prepend-node-path=true test
     '')
     (pkgs.writeScriptBin "test-editor-all" ''
       #!/usr/bin/env bash
@@ -208,7 +208,7 @@ let
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website
       ${node}/bin/npm --scripts-prepend-node-path=true install
-      BROWSER=none ${node}/bin/npm --scripts-prepend-node-path=true start
+      BROWSER=none ${node}/bin/npm --scripts-prepend-node-path=true run dev
     '')
   ];
 
@@ -330,9 +330,9 @@ let
     (pkgs.writeScriptBin "build-website" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
       ${node}/bin/npm --scripts-prepend-node-path=true install
-      CI=false ${node}/bin/npm --scripts-prepend-node-path=true run build
+      CI=false ${node}/bin/npm --scripts-prepend-node-path=true run export
     '')
     (pkgs.writeScriptBin "build-server" ''
       #!/usr/bin/env bash

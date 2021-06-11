@@ -45,8 +45,8 @@ jobs:
       - name: Cache website modules
         uses: actions/cache@v2
         with:
-          path: website/node_modules
-          key: ${{ runner.os }}-node-website-PRs-${{ hashFiles('website/package-lock.json') }}
+          path: website-next/node_modules
+          key: ${{ runner.os }}-node-website-PRs-${{ hashFiles('website-next/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-website-PRs-
       - name: Install nix
