@@ -435,7 +435,7 @@ clearBranchCacheEndpoint branchName = do
 websiteAssetsEndpoint :: FilePath -> ServerMonad Application
 websiteAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
-  maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 ["static"]) possibleProxyManager
+  maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
 
 vsCodeAssetsEndpoint :: ServerMonad Application
 vsCodeAssetsEndpoint = do
@@ -445,18 +445,6 @@ vsCodeAssetsEndpoint = do
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do
   defaultLookup [unsafeToPiece "index.html"]
-
-serveWebAppEndpointNotProxied :: FilePath -> ServerMonad Application
-serveWebAppEndpointNotProxied path = do
-  let defaultSettings = defaultFileServerSettings path
-  let defaultLookup = ssLookupFile defaultSettings
-  let settingsChange settings = settings { ssLookupFile = wrappedWebAppLookup defaultLookup }
-  servePath' path settingsChange Nothing
-
-serveWebAppEndpoint :: FilePath -> ServerMonad Application
-serveWebAppEndpoint notProxiedPath = do
-  possibleProxyManager <- getProxyManager
-  maybe (serveWebAppEndpointNotProxied notProxiedPath) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
 
 getPackageJSONEndpoint :: Text -> ServerMonad Value
 getPackageJSONEndpoint javascriptPackageName = do
@@ -556,10 +544,9 @@ unprotected = authenticate
          :<|> hashedAssetPathsEndpoint
          :<|> editorAssetsEndpoint "./editor"
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing
-         :<|> websiteAssetsEndpoint "./public/static"
          :<|> vsCodeAssetsEndpoint
          :<|> servePath "./public/.well-known" Nothing
-         :<|> serveWebAppEndpoint "./public"
+         :<|> websiteAssetsEndpoint "./public"
 
 server :: ServerT API ServerMonad
 server = protected :<|> unprotected
