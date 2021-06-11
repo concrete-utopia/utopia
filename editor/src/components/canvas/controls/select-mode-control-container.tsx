@@ -453,12 +453,7 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   canResizeElements(): boolean {
-    return (
-      this.props.draggingEnabled &&
-      this.props.selectedViews.every((target) => {
-        return this.props.elementsThatRespectLayout.some((path) => EP.pathsEqual(path, target))
-      })
-    )
+    return this.props.draggingEnabled
   }
 
   render(): JSX.Element {

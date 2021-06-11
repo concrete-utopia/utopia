@@ -34,7 +34,6 @@ import {
   getValidTargetAtPoint,
 } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
-import { selectElementsThatRespectLayout } from '../new-canvas-controls'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 
@@ -245,10 +244,6 @@ function useStartDragState(): (
       const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadata
       const selectedViews = entireEditorStoreRef.current.editor.selectedViews
 
-      const elementsThatRespectLayout = selectElementsThatRespectLayout(
-        entireEditorStoreRef.current,
-      )
-
       const duplicate = event.altKey
       const duplicateNewUIDs = duplicate
         ? createDuplicationNewUIDs(
@@ -260,14 +255,10 @@ function useStartDragState(): (
 
       const isTargetSelected = selectedViews.some((sv) => EP.pathsEqual(sv, target))
 
-      const selection =
+      const moveTargets =
         isTargetSelected && EP.areAllElementsInSameInstance(selectedViews)
           ? selectedViews
           : [target]
-
-      const moveTargets = selection.filter((view) =>
-        elementsThatRespectLayout.some((path) => EP.pathsEqual(path, view)),
-      )
 
       let originalFrames = getOriginalCanvasFrames(moveTargets, componentMetadata)
       originalFrames = originalFrames.filter((f) => f.frame != null)

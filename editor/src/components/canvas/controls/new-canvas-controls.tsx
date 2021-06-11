@@ -97,7 +97,6 @@ export interface ControlProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
-  elementsThatRespectLayout: Array<ElementPath>
   maybeClearHighlightsOnHoverEnd: () => void
   transientState: TransientCanvasState
   resolve: ResolveFn
@@ -221,37 +220,6 @@ interface NewCanvasControlsInnerProps {
   setLocalSelectedViews: (newSelectedViews: ElementPath[]) => void
 }
 
-export const selectElementsThatRespectLayout = createSelector(
-  (store: EditorStore) => store.derived.navigatorTargets,
-  (store: EditorStore) => store.editor.propertyControlsInfo,
-  (store: EditorStore) => getOpenUIJSFileKey(store.editor),
-  (store: EditorStore) => store.editor.projectContents,
-  (store: EditorStore) => store.editor.nodeModules.files,
-  (store: EditorStore) => store.editor.jsxMetadata,
-  (
-    navigatorTargets: ElementPath[],
-    propertyControlsInfo: PropertyControlsInfo,
-    openFilePath: string | null,
-    projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
-    metadata: ElementInstanceMetadataMap,
-  ) => {
-    const targetsWithRootViewPaths = flatMapArray((view) => {
-      const rootElements = MetadataUtils.getRootViewPaths(metadata, view)
-      return [view, ...rootElements]
-    }, navigatorTargets)
-    return targetsWithRootViewPaths.filter((view) => {
-      return targetRespectsLayout(
-        view,
-        propertyControlsInfo,
-        openFilePath,
-        projectContents,
-        nodeModules,
-      )
-    })
-  },
-)
-
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
@@ -291,11 +259,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     return 'enabled'
   }
 
-  const elementsThatRespectLayout = useEditorState(
-    selectElementsThatRespectLayout,
-    'NewCanvasControls elementsThatRespectLayout',
-  )
-
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
       const possibleElement = MetadataUtils.findElementByElementPath(componentMetadata, target)
@@ -325,7 +288,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       windowToCanvasPosition: props.windowToCanvasPosition,
       cmdKeyPressed: cmdKeyPressed,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
-      elementsThatRespectLayout: elementsThatRespectLayout,
       maybeClearHighlightsOnHoverEnd: maybeClearHighlightsOnHoverEnd,
       projectContents: props.editor.projectContents,
       nodeModules: props.editor.nodeModules.files,
