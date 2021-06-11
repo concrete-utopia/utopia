@@ -9,7 +9,7 @@ on:
         description: 'Branch or SHA to tag (defaults to master)'
         required: false
   schedule:
-    - cron: '0 5 * * *' # Run every day 5:00 UTC
+    - cron: '0 5 * * 1-5' # Run every weekday 5:00 UTC
 jobs:
   release:
     name: Create Release
