@@ -296,7 +296,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             aspectRatioLocked={aspectRatioLocked}
             toggleAspectRatioLock={toggleAspectRatioLock}
           />
-          <ClassNameSubsection />
           <StyleSection />
           <WarningSubsection />
           <ImgSection />
@@ -308,6 +307,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
+          <ClassNameSubsection />
           <EventHandlersSection />
         </React.Fragment>
       )
