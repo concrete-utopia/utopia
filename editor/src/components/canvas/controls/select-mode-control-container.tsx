@@ -51,6 +51,8 @@ interface SelectModeControlContainerProps extends ControlProps {
   isDragging: boolean // set only when user already moves a cursor a little after a mousedown
   isResizing: boolean
   selectionEnabled: boolean
+  draggingEnabled: boolean
+  contextMenuEnabled: boolean
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
@@ -135,13 +137,15 @@ export class SelectModeControlContainer extends React.Component<
     _start: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ): void => {
-    this.props.startDragStateAfterDragExceedsThreshold(originalEvent.nativeEvent, target)
+    if (this.props.draggingEnabled) {
+      this.props.startDragStateAfterDragExceedsThreshold(originalEvent.nativeEvent, target)
+    }
   }
 
   onContextMenu = (event: React.MouseEvent<HTMLDivElement>): void => {
     event.stopPropagation()
     event.preventDefault()
-    if (this.props.selectedViews.length > 0) {
+    if (this.props.contextMenuEnabled && this.props.selectedViews.length > 0) {
       this.props.dispatch(
         [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent)],
         'canvas',
@@ -264,6 +268,7 @@ export class SelectModeControlContainer extends React.Component<
     if (
       this.props.selectedViews.length > 0 &&
       this.props.isDragging &&
+      this.props.draggingEnabled &&
       !areYogaChildren(this.props.componentMetadata, this.props.selectedViews) &&
       !this.props.keysPressed['cmd']
     ) {
@@ -448,9 +453,12 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   canResizeElements(): boolean {
-    return this.props.selectedViews.every((target) => {
-      return this.props.elementsThatRespectLayout.some((path) => EP.pathsEqual(path, target))
-    })
+    return (
+      this.props.draggingEnabled &&
+      this.props.selectedViews.every((target) => {
+        return this.props.elementsThatRespectLayout.some((path) => EP.pathsEqual(path, target))
+      })
+    )
   }
 
   render(): JSX.Element {

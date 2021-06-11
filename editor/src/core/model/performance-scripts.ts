@@ -2,7 +2,11 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import CanvasActions from '../../components/canvas/canvas-actions'
 import { DebugDispatch } from '../../components/editor/action-types'
-import { clearSelection, selectComponents } from '../../components/editor/actions/action-creators'
+import {
+  clearSelection,
+  selectComponents,
+  switchEditorMode,
+} from '../../components/editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
 import {
   canvasPoint,
@@ -15,6 +19,7 @@ import { resizeDragState } from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
+import { EditorModes } from '../../components/editor/editor-modes'
 
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useEditorState(
@@ -57,6 +62,7 @@ export function useTriggerResizePerformanceTest(): () => void {
       console.info('RESIZE_TEST_MISSING_SELECTEDVIEW')
       return
     }
+    await dispatch([switchEditorMode(EditorModes.selectMode())]).entireUpdateFinished
 
     const target = selectedViews.current[0]
     const targetFrame = MetadataUtils.findElementByElementPath(metadata.current, target)

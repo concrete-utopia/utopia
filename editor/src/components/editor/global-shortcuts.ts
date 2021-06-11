@@ -37,7 +37,13 @@ import {
   defaultTextElement,
   defaultViewElement,
 } from './defaults'
-import { EditorModes, isInsertMode, isLiveMode } from './editor-modes'
+import {
+  EditorModes,
+  isInsertMode,
+  isLiveMode,
+  isSelectLiteMode,
+  isSelectMode,
+} from './editor-modes'
 import { insertImage } from './image-insert'
 import {
   CANCEL_EVERYTHING_SHORTCUT,
@@ -341,10 +347,8 @@ export function handleKeyDown(
   }
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
-  const modeType = editor.mode.type
-
   function cycleSiblings(forwards: boolean): Array<EditorAction> {
-    if (modeType === 'select') {
+    if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
       const tabbedTo = Canvas.jumpToSibling(editor.selectedViews, editor.jsxMetadata, forwards)
       if (tabbedTo != null) {
         return [EditorActions.selectComponents([tabbedTo], false)]
@@ -377,7 +381,7 @@ export function handleKeyDown(
     }
     return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
       [DELETE_SELECTED_SHORTCUT]: () => {
-        return [EditorActions.deleteSelected()]
+        return isSelectMode(editor.mode) ? [EditorActions.deleteSelected()] : []
       },
       [RESET_CANVAS_ZOOM_SHORTCUT]: () => {
         return [CanvasActions.zoom(1)]
@@ -395,9 +399,9 @@ export function handleKeyDown(
         return [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
-        if (modeType === 'select') {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           const textTarget = getTextEditorTarget(editor, derived)
-          if (textTarget != null) {
+          if (textTarget != null && isSelectMode(editor.mode)) {
             return [EditorActions.openTextEditor(textTarget, null)]
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
@@ -409,14 +413,14 @@ export function handleKeyDown(
         return []
       },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
-        if (modeType === 'select') {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           return jumpToParentActions(editor.selectedViews)
         } else {
           return []
         }
       },
       [CANCEL_EVERYTHING_SHORTCUT]: () => {
-        if (modeType === 'insert') {
+        if (isInsertMode(editor.mode)) {
           return [
             EditorActions.switchEditorMode(EditorModes.selectMode()),
             CanvasActions.clearDragState(false),
@@ -424,7 +428,7 @@ export function handleKeyDown(
           ]
         } else if (editor.canvas.dragState != null && editor.canvas.dragState.start != null) {
           return [CanvasActions.clearDragState(false)]
-        } else if (modeType === 'select') {
+        } else if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           return jumpToParentActions(editor.selectedViews)
         }
 
@@ -437,7 +441,7 @@ export function handleKeyDown(
         return []
       },
       [CYCLE_HIERACHY_TARGETS_SHORTCUT]: () => {
-        if (modeType === 'select') {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
@@ -466,52 +470,52 @@ export function handleKeyDown(
         return cycleSiblings(false)
       },
       [RESIZE_ELEMENT_UP_SHORTCUT]: () => {
-        return adjustFrames(true, 'vertical', -1, 1)
+        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 1) : []
       },
       [RESIZE_ELEMENT_UP_MORE_SHORTCUT]: () => {
-        return adjustFrames(true, 'vertical', -1, 10)
+        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', -1, 10) : []
       },
       [MOVE_ELEMENT_UP_SHORTCUT]: () => {
-        return adjustFrames(false, 'vertical', -1, 1)
+        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 1) : []
       },
       [MOVE_ELEMENT_UP_MORE_SHORTCUT]: () => {
-        return adjustFrames(false, 'vertical', -1, 10)
+        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', -1, 10) : []
       },
       [RESIZE_ELEMENT_DOWN_SHORTCUT]: () => {
-        return adjustFrames(true, 'vertical', 1, 1)
+        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 1) : []
       },
       [RESIZE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
-        return adjustFrames(true, 'vertical', 1, 10)
+        return isSelectMode(editor.mode) ? adjustFrames(true, 'vertical', 1, 10) : []
       },
       [MOVE_ELEMENT_DOWN_SHORTCUT]: () => {
-        return adjustFrames(false, 'vertical', 1, 1)
+        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 1) : []
       },
       [MOVE_ELEMENT_DOWN_MORE_SHORTCUT]: () => {
-        return adjustFrames(false, 'vertical', 1, 10)
+        return isSelectMode(editor.mode) ? adjustFrames(false, 'vertical', 1, 10) : []
       },
       [RESIZE_ELEMENT_LEFT_SHORTCUT]: () => {
-        return adjustFrames(true, 'horizontal', -1, 1)
+        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 1) : []
       },
       [RESIZE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
-        return adjustFrames(true, 'horizontal', -1, 10)
+        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', -1, 10) : []
       },
       [MOVE_ELEMENT_LEFT_SHORTCUT]: () => {
-        return adjustFrames(false, 'horizontal', -1, 1)
+        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 1) : []
       },
       [MOVE_ELEMENT_LEFT_MORE_SHORTCUT]: () => {
-        return adjustFrames(false, 'horizontal', -1, 10)
+        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', -1, 10) : []
       },
       [RESIZE_ELEMENT_RIGHT_SHORTCUT]: () => {
-        return adjustFrames(true, 'horizontal', 1, 1)
+        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 1) : []
       },
       [RESIZE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
-        return adjustFrames(true, 'horizontal', 1, 10)
+        return isSelectMode(editor.mode) ? adjustFrames(true, 'horizontal', 1, 10) : []
       },
       [MOVE_ELEMENT_RIGHT_SHORTCUT]: () => {
-        return adjustFrames(false, 'horizontal', 1, 1)
+        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 1) : []
       },
       [MOVE_ELEMENT_RIGHT_MORE_SHORTCUT]: () => {
-        return adjustFrames(false, 'horizontal', 1, 10)
+        return isSelectMode(editor.mode) ? adjustFrames(false, 'horizontal', 1, 10) : []
       },
       [SELECT_ALL_SIBLINGS_SHORTCUT]: () => {
         return [EditorActions.selectAllSiblings()]
@@ -520,38 +524,44 @@ export function handleKeyDown(
         return toggleTextFormatting(editor, dispatch, 'bold')
       },
       [TOGGLE_BORDER_SHORTCUT]: () => {
-        return editor.selectedViews.map((target) =>
-          EditorActions.toggleProperty(
-            target,
-            toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
-          ),
-        )
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) =>
+              EditorActions.toggleProperty(
+                target,
+                toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
+              ),
+            )
+          : []
       },
       [COPY_SELECTION_SHORTCUT]: () => {
-        return [EditorActions.copySelectionToClipboard()]
+        return isSelectMode(editor.mode) ? [EditorActions.copySelectionToClipboard()] : []
       },
       [DUPLICATE_SELECTION_SHORTCUT]: () => {
-        return [EditorActions.duplicateSelected()]
+        return isSelectMode(editor.mode) ? [EditorActions.duplicateSelected()] : []
       },
       [TOGGLE_BACKGROUND_SHORTCUT]: () => {
-        return editor.selectedViews.map((target) =>
-          EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
-        )
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) =>
+              EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
+            )
+          : []
       },
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
-        return editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
+        return isSelectMode(editor.mode)
+          ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
+          : []
       },
       [WRAP_ELEMENT_SHORTCUT]: () => {
-        return [EditorActions.wrapInGroup(editor.selectedViews)]
+        return isSelectMode(editor.mode) ? [EditorActions.wrapInGroup(editor.selectedViews)] : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]
       },
       [TOGGLE_TEXT_ITALIC_SHORTCUT]: () => {
-        return toggleTextFormatting(editor, dispatch, 'italic')
+        return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'italic') : []
       },
       [INSERT_IMAGE_SHORTCUT]: () => {
-        if (modeType === 'select' || modeType === 'insert') {
+        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           // FIXME: Side effects.
           insertImage(dispatch)
         }
@@ -577,7 +587,7 @@ export function handleKeyDown(
         }
       },
       [INSERT_RECTANGLE_SHORTCUT]: () => {
-        if (modeType === 'select' || modeType === 'insert') {
+        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
@@ -594,7 +604,7 @@ export function handleKeyDown(
         }
       },
       [INSERT_ELLIPSE_SHORTCUT]: () => {
-        if (modeType === 'select' || modeType === 'insert') {
+        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
@@ -620,7 +630,7 @@ export function handleKeyDown(
         )
       },
       [INSERT_TEXT_SHORTCUT]: () => {
-        if (modeType === 'select' || modeType === 'insert') {
+        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
@@ -635,7 +645,7 @@ export function handleKeyDown(
         }
       },
       [INSERT_VIEW_SHORTCUT]: () => {
-        if (modeType === 'select' || modeType === 'insert') {
+        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
@@ -650,7 +660,9 @@ export function handleKeyDown(
         }
       },
       [CUT_SELECTION_SHORTCUT]: () => {
-        return [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
+        return isSelectMode(editor.mode)
+          ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
+          : []
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
         return [EditorActions.undo()]
@@ -662,19 +674,19 @@ export function handleKeyDown(
         return [EditorActions.setHighlightsEnabled(false), EditorActions.clearHighlightedViews()]
       },
       [MOVE_ELEMENT_BACKWARD_SHORTCUT]: () => {
-        return [EditorActions.moveSelectedBackward()]
+        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedBackward()] : []
       },
       [MOVE_ELEMENT_TO_BACK_SHORTCUT]: () => {
-        return [EditorActions.moveSelectedToBack()]
+        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedToBack()] : []
       },
       [MOVE_ELEMENT_FORWARD_SHORTCUT]: () => {
-        return [EditorActions.moveSelectedForward()]
+        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedForward()] : []
       },
       [MOVE_ELEMENT_TO_FRONT_SHORTCUT]: () => {
-        return [EditorActions.moveSelectedToFront()]
+        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedToFront()] : []
       },
       [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
-        return toggleTextFormatting(editor, dispatch, 'underline')
+        return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'underline') : []
       },
       [TOGGLE_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('leftmenu')]

@@ -74,6 +74,8 @@ import { printCode, printCodeOptions } from '../../core/workers/parser-printer/p
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
+import { switchEditorMode } from '../editor/actions/action-creators'
+import { EditorModes } from '../editor/editor-modes'
 
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack ?? reason)
@@ -223,6 +225,10 @@ export async function renderTestEditorWithModel(
         false,
       )
     })
+  })
+
+  await act(async () => {
+    await asyncTestDispatch([switchEditorMode(EditorModes.selectMode())], undefined, true, false)
   })
 
   return {

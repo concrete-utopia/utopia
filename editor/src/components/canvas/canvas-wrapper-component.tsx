@@ -1,21 +1,16 @@
 import * as React from 'react'
 import { filterOldPasses } from '../../core/workers/ts/ts-worker'
 import { EditorCanvas } from '../../templates/editor-canvas'
-import { ErrorRecord } from '../../third-party/react-error-overlay/containers/RuntimeError'
 import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-error-overlay'
-import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
-import { CursorPosition } from '../code-editor/code-editor-utils'
 import { setFocus } from '../common/actions'
 import { openCodeEditorFile, setSafeMode } from '../editor/actions/action-creators'
 import {
-  ConsoleLog,
   createCanvasModelKILLME,
   getAllCodeEditorErrors,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
   LeftPaneDefaultWidth,
   parseFailureAsErrorMessages,
-  TransientCanvasState,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
@@ -25,10 +20,9 @@ import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
 import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { ElementPath } from '../../core/shared/project-file-types'
-import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
+import { ModeSelectButtons } from './mode-select-buttons'
 
 interface CanvasWrapperComponentProps {}
 
@@ -73,6 +67,7 @@ export const CanvasWrapperComponent = betterReactMemo(
           />
         ) : null}
         {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
+        <ModeSelectButtons />
       </FlexColumn>
     )
   },
