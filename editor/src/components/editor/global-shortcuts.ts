@@ -327,15 +327,15 @@ export function handleKeyDown(
   const editorTargeted = editorIsTarget(event, editor)
   let updatedKeysPressed: KeysPressed
   if (editorTargeted) {
-    updatedKeysPressed = updateModifiers(
-      editor.keysPressed,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
-  } else {
     updatedKeysPressed = updateKeysPressed(
       editor.keysPressed,
       key,
       true,
+      Modifier.modifiersForKeyboardEvent(event),
+    )
+  } else {
+    updatedKeysPressed = updateModifiers(
+      editor.keysPressed,
       Modifier.modifiersForKeyboardEvent(event),
     )
   }
