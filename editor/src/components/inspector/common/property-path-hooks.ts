@@ -349,7 +349,7 @@ export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(p
 export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
   p: P,
   target: readonly string[],
-) {
+): PropertyPath {
   return PP.create([...target, p])
 }
 
@@ -363,11 +363,15 @@ export function useInspectorStyleInfo<P extends ParsedCSSPropertiesKeys>(
     ({
       [prop]: transformedType,
     } as Partial<ParsedValues<P>>),
-) {
+): InspectorInfo<ParsedCSSProperties[P]> {
   return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
 }
 
-export function useInspectorContext() {
+export function useInspectorContext(): {
+  selectedViewsRef: ReadonlyRef<Array<ElementPath>>
+  onContextSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
+  onContextUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void
+} {
   const { onSubmitValue, onUnsetValue, selectedViewsRef } = React.useContext(
     InspectorCallbackContext,
   )
@@ -396,10 +400,8 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
 } {
   const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
-
   const parsedValue = parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
-  const parsedSpiedValue = parseAnyParseableValue(property, spiedValue, null)
-  const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
+
   if (isRight(parsedValue)) {
     return {
       finalValue: parsedValue.value,
@@ -408,33 +410,41 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
       usesComputedFallback: false,
       setFromCssStyleSheet: false,
     }
-  } else if (isRight(parsedSpiedValue)) {
-    return {
-      finalValue: parsedSpiedValue.value,
-      isUnknown: simpleValueAsMaybe != null,
-      trivialDefault: false,
-      usesComputedFallback: false,
-      setFromCssStyleSheet: false,
-    }
-  } else if (isRight(parsedComputedValue)) {
-    const detectedComputedValue = parsedComputedValue.value
-    const trivialDefault = isTrivialDefaultValue(property, detectedComputedValue)
-    return {
-      finalValue: detectedComputedValue,
-      isUnknown: simpleValueAsMaybe != null,
-      trivialDefault: trivialDefault,
-      usesComputedFallback: true,
-      setFromCssStyleSheet: attributeMetadataEntry?.fromStyleSheet ?? false,
-    }
   } else {
-    const defaultValue = emptyValues[property]
-    const trivialDefault = isTrivialDefaultValue(property, defaultValue)
-    return {
-      finalValue: emptyValues[property],
-      isUnknown: simpleValueAsMaybe != null,
-      trivialDefault: trivialDefault,
-      usesComputedFallback: false,
-      setFromCssStyleSheet: false,
+    const parsedSpiedValue = parseAnyParseableValue(property, spiedValue, null)
+
+    if (isRight(parsedSpiedValue)) {
+      return {
+        finalValue: parsedSpiedValue.value,
+        isUnknown: simpleValueAsMaybe != null,
+        trivialDefault: false,
+        usesComputedFallback: false,
+        setFromCssStyleSheet: false,
+      }
+    } else {
+      const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
+
+      if (isRight(parsedComputedValue)) {
+        const detectedComputedValue = parsedComputedValue.value
+        const trivialDefault = isTrivialDefaultValue(property, detectedComputedValue)
+        return {
+          finalValue: detectedComputedValue,
+          isUnknown: simpleValueAsMaybe != null,
+          trivialDefault: trivialDefault,
+          usesComputedFallback: true,
+          setFromCssStyleSheet: attributeMetadataEntry?.fromStyleSheet ?? false,
+        }
+      } else {
+        const defaultValue = emptyValues[property]
+        const trivialDefault = isTrivialDefaultValue(property, defaultValue)
+        return {
+          finalValue: emptyValues[property],
+          isUnknown: simpleValueAsMaybe != null,
+          trivialDefault: trivialDefault,
+          usesComputedFallback: false,
+          setFromCssStyleSheet: false,
+        }
+      }
     }
   }
 }
@@ -742,6 +752,7 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
         )
         isUnknownInner = isUnknownInner || pathIsUnknown
         // setting the status to detected because it uses the fallback value
+        // Mutates the parameter.
         propertyStatus.detected = usesComputedFallback
         propertyStatus.fromCssStyleSheet = setFromCssStyleSheet
         propertyStatus.trivialDefault = trivialDefault
@@ -775,6 +786,7 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
           }
           isUnknownInner = isUnknownInner || pathIsUnknown
           // setting the status to detected because it uses the fallback value
+          // Mutates the parameter.
           propertyStatus.detected = propertyStatus.detected || usesComputedFallback
           propertyStatus.fromCssStyleSheet =
             propertyStatus.fromCssStyleSheet || setFromCssStyleSheet
