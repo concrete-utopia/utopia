@@ -11,9 +11,8 @@ import {
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import {
+  filterSpecialProps,
   getDescriptionUnsetOptionalFields,
-  getMissingDefaultsWarning,
-  getMissingPropertyControlsWarning,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
 import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
@@ -44,6 +43,7 @@ import {
   FlexColumn,
   paddingTop,
   Subdued,
+  VerySubdued,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -61,6 +61,7 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
+  useGivenPropsWithoutControls,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
   useUsedPropsWithoutDefaults,
@@ -90,8 +91,8 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getJSXElementNameAsString, isJSXElement } from '../../../../core/shared/element-template'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { usePackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
-import { importedFromWhere } from '../../../editor/import-utils'
 import {
+  getFilePathForImportedComponent,
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
@@ -545,16 +546,11 @@ export const ComponentSectionInner = betterReactMemo(
   'ComponentSectionInner',
   (props: ComponentSectionProps) => {
     const propertyControls = useKeepReferenceEqualityIfPossible(useSelectedPropertyControls(false))
+    const propsGivenToElement = useKeepReferenceEqualityIfPossible(useGivenPropsWithoutControls())
     const propsUsedWithoutControls = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutControls(),
+      useUsedPropsWithoutControls(propsGivenToElement),
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
-
-    const propsUsedWithoutDefaults = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutDefaults(),
-    )
-    const missingControlsWarning = getMissingPropertyControlsWarning(propsUsedWithoutControls)
-    const missingDefaultsWarning = getMissingDefaultsWarning(propsUsedWithoutDefaults)
 
     const selectedViews = useEditorState(
       (store) => store.editor.selectedViews,
@@ -575,14 +571,20 @@ export const ComponentSectionInner = betterReactMemo(
     }, [dispatch, isFocused, target])
 
     const locationOfComponentInstance = useEditorState((state) => {
-      const underlyingTarget = normalisePathToUnderlyingTarget(
-        state.editor.projectContents,
-        state.editor.nodeModules.files,
-        state.editor.canvas.openFile?.filename ?? '',
-        selectedViews[0],
-      )
+      const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
+      const importResult = getFilePathForImportedComponent(element)
+      if (importResult == null) {
+        const underlyingTarget = normalisePathToUnderlyingTarget(
+          state.editor.projectContents,
+          state.editor.nodeModules.files,
+          state.editor.canvas.openFile?.filename ?? '',
+          selectedViews[0],
+        )
 
-      return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
+        return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
+      } else {
+        return importResult
+      }
     }, 'ComponentSectionInner locationOfComponentInstance')
 
     const componentPackageName = useEditorState((state) => {
@@ -608,10 +610,11 @@ export const ComponentSectionInner = betterReactMemo(
 
     const componentType = useComponentType(target)
 
-    const OpenFile = React.useCallback(
-      () => dispatch([openCodeEditorFile(locationOfComponentInstance, true)]),
-      [dispatch, locationOfComponentInstance],
-    )
+    const OpenFile = React.useCallback(() => {
+      if (locationOfComponentInstance != null) {
+        dispatch([openCodeEditorFile(locationOfComponentInstance, true)])
+      }
+    }, [dispatch, locationOfComponentInstance])
 
     return (
       <>
@@ -697,22 +700,10 @@ export const ComponentSectionInner = betterReactMemo(
             return <ParseErrorControl parseError={rootParseError} />
           },
           (rootParseSuccess) => {
-            const propNames = Object.keys(rootParseSuccess)
-
-            // TODO FIX ME
-            if (Math.random() > 0) {
+            const propNames = filterSpecialProps(Object.keys(rootParseSuccess))
+            if (propNames.length > 0) {
               return (
                 <>
-                  {missingControlsWarning == null ? null : (
-                    <InfoBox message={'Missing Property Controls'}>
-                      {missingControlsWarning}
-                    </InfoBox>
-                  )}
-                  {missingDefaultsWarning == null ? null : (
-                    <InfoBox message={'Missing Default Properties'}>
-                      {missingDefaultsWarning}
-                    </InfoBox>
-                  )}
                   {propNames.map((propName) => {
                     const propertyControl = rootParseSuccess[propName]
                     if (propertyControl == null) {
@@ -749,25 +740,27 @@ export const ComponentSectionInner = betterReactMemo(
                       )
                     }
                   })}
-                  {propsUsedWithoutControls.length > 0 ? (
-                    <Subdued>{`Additional props used in code: ${propsUsedWithoutControls.join(
-                      ', ',
-                    )}`}</Subdued>
-                  ) : null}
                 </>
               )
             } else {
-              return (
-                <>
-                  <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
-                    <Subdued>No properties available to configure</Subdued>
-                  </UIGridRow>
-                </>
-              )
+              return null
             }
           },
           propertyControls,
         )}
+        {/** props set on the component instance and props used inside the component code */}
+        {propsUsedWithoutControls.length > 0 || propsGivenToElement.length > 0 ? (
+          <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+            <div>
+              <Subdued>{`Props: ${propsGivenToElement.join(', ')}${
+                propsUsedWithoutControls.length > 0 ? ', ' : '.'
+              }`}</Subdued>
+              <VerySubdued>{`${propsUsedWithoutControls.join(', ')}${
+                propsUsedWithoutControls.length > 0 ? '.' : ''
+              }`}</VerySubdued>
+            </div>
+          </UIGridRow>
+        ) : null}
       </>
     )
   },
