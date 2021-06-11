@@ -436,7 +436,7 @@ export function useHighlightCallbacks(
   return { onMouseMove }
 }
 
-function useSelectModeSelectAndHover(
+function useSelectOrLiveModeSelectAndHover(
   active: boolean,
   draggingAllowed: boolean,
   cmdPressed: boolean,
@@ -538,7 +538,7 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
-  const selectModeCallbacks = useSelectModeSelectAndHover(
+  const selectModeCallbacks = useSelectOrLiveModeSelectAndHover(
     modeType === 'select' || modeType === 'select-lite' || modeType === 'live',
     modeType === 'select' || modeType === 'live',
     cmdPressed,
