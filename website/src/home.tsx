@@ -3,6 +3,8 @@ import * as React from 'react'
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import facepaint from 'facepaint'
+import canAutoPlay from 'can-autoplay'
+import Wrapper from './website-wrapper'
 
 export interface BasicStyledComponent {
   emotion?: Record<string, any>
@@ -27,7 +29,7 @@ const Paragraph = styled.p({
 export default class Home extends React.Component {
   render() {
     return (
-      <React.Fragment>
+      <>
         <style>
           body {'{'} margin: 0; background-color: #C1EDFF; {'}'}
         </style>
@@ -108,7 +110,7 @@ export default class Home extends React.Component {
             </div>
           </div>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

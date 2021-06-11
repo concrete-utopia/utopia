@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -23,11 +19,9 @@
     "noImplicitThis": true,
     "strictNullChecks": true,
     "alwaysStrict": true,
-    "jsx": "react",
+    "jsx": "preserve",
     "isolatedModules": true,
     "strict": false
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

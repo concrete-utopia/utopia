@@ -1,6 +1,3 @@
-/* eslint-disable react/jsx-no-bind */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
@@ -12,6 +9,7 @@ import { colors } from './home/components/theme'
 
 import { Global } from '@emotion/react'
 import { fetchProjectList, fetchShowcaseProjects } from './common/server'
+import { Redirect } from 'react-router-dom'
 import {
   ProjectListing,
   deleteProject,
@@ -19,6 +17,7 @@ import {
 } from './common/persistence'
 import * as timeago from 'timeago.js'
 import { Card, cardLayout, cardLayoutStyle } from './home/components/cards'
+import { isNullOrUndefined } from 'util'
 
 interface navItemProps {
   selected: boolean
@@ -308,7 +307,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
       this.state.filteredProjects.length + this.state.filteredLocalProjects.length
 
     return (
-      <React.Fragment>
+      <>
         <Global
           styles={{
             html: {
@@ -431,7 +430,7 @@ export class Projects extends React.Component<{}, ProjectsState> {
             </FlexWrappingList>
           </FlexColumn>
         </FlexColumn>
-      </React.Fragment>
+      </>
     )
   }
 }
@@ -458,11 +457,11 @@ export class Featured extends React.PureComponent<{}, ShowcaseState> {
 
   render() {
     return (
-      <React.Fragment>
+      <>
         {this.state.showcase.map((project) => (
           <ProjectCard key={project.id} project={project} selected={false} />
         ))}
-      </React.Fragment>
+      </>
     )
   }
 }

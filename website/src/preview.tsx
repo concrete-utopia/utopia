@@ -148,7 +148,7 @@ export class PreviewWindow extends React.Component<PreviewWindowProps, PreviewWi
       : this.state.height * this.state.scale
 
     return (
-      <React.Fragment>
+      <>
         <Global
           styles={{
             html: {
@@ -320,7 +320,7 @@ export class PreviewWindow extends React.Component<PreviewWindowProps, PreviewWi
             )}
           </div>
         </div>
-      </React.Fragment>
+      </>
     )
   }
 }

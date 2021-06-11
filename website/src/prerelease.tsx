@@ -2,6 +2,7 @@
 import * as React from 'react'
 import { jsx } from '@emotion/react'
 import facepaint from 'facepaint'
+import canAutoPlay from 'can-autoplay'
 import Wrapper from './website-wrapper'
 
 export interface BasicStyledComponent {
