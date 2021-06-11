@@ -99,7 +99,7 @@ const ModeSelectButton = betterReactMemo('ModeSelectButton', (props: ModeSelectB
       // this is the selected variant. No hover effects on this one
       style={{
         padding: '2px 4px',
-        background: colorTheme.emphasizedBackground.value,
+        background: colorTheme.secondaryBackground.value,
         color: colorTheme.primary.value,
         borderRadius: 2,
       }}
@@ -117,7 +117,7 @@ const ModeSelectButton = betterReactMemo('ModeSelectButton', (props: ModeSelectB
         transition: 'background .1s ease-in-out',
         '&:hover': {
           opacity: 0.8,
-          background: colorTheme.emphasizedBackground.value,
+          background: colorTheme.secondaryBackground.value,
         },
         '&:active': {
           opacity: 1,
