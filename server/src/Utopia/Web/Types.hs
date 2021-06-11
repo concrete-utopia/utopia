@@ -143,8 +143,6 @@ type EditorAssetsAPI = "editor" :> BranchNameParam :> RawM
 
 type WebpackSockJSAPI = "sockjs-node" :> RawM
 
-type WebsiteAssetsAPI = "static" :> RawM
-
 type VSCodeAssetsAPI = "vscode" :> RawM
 
 type SSLAPI = ".well-known" :> RawM
@@ -193,7 +191,6 @@ type Unprotected = AuthenticateAPI H.Html
               :<|> HashedAssetPathsAPI
               :<|> EditorAssetsAPI
               :<|> WebpackSockJSAPI
-              :<|> WebsiteAssetsAPI
               :<|> VSCodeAssetsAPI
               :<|> SSLAPI
               :<|> WebsiteAPI
