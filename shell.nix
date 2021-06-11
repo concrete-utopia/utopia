@@ -206,7 +206,7 @@ let
     (pkgs.writeScriptBin "watch-website" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
       ${node}/bin/npm --scripts-prepend-node-path=true install
       BROWSER=none ${node}/bin/npm --scripts-prepend-node-path=true run dev
     '')
