@@ -39,11 +39,11 @@ function Subtitle({ children, center }) {
   )
 }
 
-function HeroButton({ children, primary }) {
+function HeroButton({ href, children, primary }) {
   return (
     <div className='rounded-2xl shadow mt-3'>
       <a
-        href='#'
+        href={href}
         className={
           'rounded-2xl w-full flex items-center justify-center text-base font-medium font-button ' +
           'md:text-lg px-4 py-2 md:px-6 md:py-2 ' +
@@ -81,8 +81,10 @@ function HeroSection() {
                 sm:flex sm:justify-center gap-x-3
                 '
               >
-                <HeroButton primary>Create a Project</HeroButton>
-                <HeroButton>Read More</HeroButton>
+                <HeroButton primary href='/project'>
+                  Create a Project
+                </HeroButton>
+                {/* <HeroButton>Read More</HeroButton> */}
               </div>
             </div>
           </main>
@@ -178,9 +180,9 @@ export default function LandingPage() {
         </div>
 
         <HeroSection />
-        <DesignToolForCodeSection />
+        {/* <DesignToolForCodeSection />
         <CodeEditorForDesignSection />
-        <AlwaysLiveSection />
+        <AlwaysLiveSection /> */}
         <div className='pt-80' />
       </div>
     </div>
