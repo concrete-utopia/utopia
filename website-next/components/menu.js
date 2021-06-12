@@ -3,11 +3,11 @@ import { Popover, Transition } from '@headlessui/react'
 import { MenuIcon, XIcon } from '@heroicons/react/outline'
 
 const navigation = [
-  { name: 'Sunscreen', href: '#' },
-  { name: 'Samples', href: '#' },
-  { name: 'Stickers', href: '#' },
-  { name: 'Source', href: 'https://github.com/concrete-utopia/utopia' },
-  { name: 'Log In', href: '#' },
+  { name: ' ', href: '#' },
+  { name: ' ', href: '#' },
+  { name: ' ', href: '#' },
+  { name: ' ', href: 'https://github.com/concrete-utopia/utopia' },
+  { name: 'Create a Project', href: '/project' },
 ]
 
 export function Menu() {
