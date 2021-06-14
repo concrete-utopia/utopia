@@ -2,12 +2,35 @@ export const EyeButton = (props) => (
   <div
     style={{
       borderRadius: '50%',
-      height: 6,
-      width: 6,
+      height: 17,
+      width: 17,
       background: 'white',
-      ...props.style,
+      border: '1px solid #383C4A',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     }}
-  ></div>
+  >
+    <div
+      style={{
+        borderRadius: '50%',
+        height: 8,
+        width: 8,
+        background: '#383C4A',
+      }}>
+        <div
+          style={{
+            borderRadius: '50%',
+            height: 2,
+            width: 2,
+            background: 'white',
+            position: 'relative',
+            left: 4,
+            top: 3,
+          }}
+        />
+      </div>
+    </div>
 )
 
 export const GhostBrowser = (props) => (
@@ -19,10 +42,10 @@ export const GhostBrowser = (props) => (
       fontSize: 11,
       flexDirection: 'column',
       color: 'white',
-      border: '1px solid white',
-      borderRadius: 10,
-      background: '#FFFFFF44',
-      backdropFilter: 'blur(4px)',
+      border: '1px solid #383C4A',
+      borderRadius: 8,
+      background: '#FFFFFF',
+      // backdropFilter: 'blur(4px)',
       overflow: 'hidden',
     }}
   >
@@ -30,11 +53,11 @@ export const GhostBrowser = (props) => (
       style={{
         display: 'flex',
         alignItems: 'center',
-        borderBottom: '1px solid white',
+        borderBottom: '1px solid #383C4A',
         paddingLeft: 8,
         paddingRight: 8,
-        height: 24,
-        minHeight: 24,
+        height: 32,
+        minHeight: 32,
       }}
     >
       <div
@@ -46,8 +69,8 @@ export const GhostBrowser = (props) => (
           cursor: 'pointer',
         }}
       >
-        <EyeButton style={{ backgroundColor: 'black' }} />
-        <EyeButton style={{ backgroundColor: 'black' }} />
+        <EyeButton />
+        <EyeButton />
       </div>
 
       <div style={{ cursor: 'grab' }}>{props.title}</div>
