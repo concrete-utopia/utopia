@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Header } from '../../components/header'
-import { Menu } from '../../components/Menu'
+import { Menu } from '../../components/menu'
 import { MainTitle } from '../../components/main-title'
 import { Paragraph } from '../../components/paragraph'
 import { GhostBrowser } from '../../components/ghostbrowser'
