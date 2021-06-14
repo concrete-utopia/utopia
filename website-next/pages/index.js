@@ -7,6 +7,7 @@ import SwitchHorizontalIcon from '@heroicons/react/outline/SwitchHorizontalIcon'
 import { Menu } from '../components/menu'
 import { GhostBrowser } from '../components/ghostbrowser'
 import { Header } from '../components/header'
+import { HostedImage } from '../components/hosted-image'
 
 function MainTitle({ children }) {
   return (
@@ -92,7 +93,7 @@ function HeroSection() {
       </div>
       <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
         <GhostBrowser className='w-full object-cover'>
-          <img src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </>
@@ -112,7 +113,7 @@ function DesignToolForCodeSection() {
       </div>
       <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
         <GhostBrowser className='w-full object-cover'>
-          <img src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </>
@@ -131,7 +132,7 @@ function CodeEditorForDesignSection() {
       </div>
       <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
         <GhostBrowser className='w-full object-cover'>
-          <img src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </>
@@ -150,7 +151,7 @@ function AlwaysLiveSection() {
       </div>
       <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
         <GhostBrowser className='w-full object-cover'>
-          <img src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </>
