@@ -12,6 +12,7 @@ import { LandingScrollableSection } from '../components/landing-scrollable-secti
 import { HostedImage } from '../components/hosted-image'
 import { MainTitle } from '../components/main-title'
 import { Subtitle } from '../components/subtitle'
+import Blog from '../pages/blog'
 
 function HeroButton({ href, children }) {
   return (
@@ -139,7 +140,9 @@ const OpenSourceSection = props => (
   </div>
 )
 
-export default function LandingPage() {
+// TODO this is the landing page, it should be the default export once it's enabled
+// export default function LandingPage() {
+function LandingPage() {
   return (
     <div>
       <Header />
@@ -171,3 +174,5 @@ export default function LandingPage() {
     </div>
   )
 }
+
+export default Blog
