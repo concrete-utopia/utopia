@@ -4,7 +4,7 @@ export const EyeButton = (props) => (
       borderRadius: '50%',
       height: 17,
       width: 17,
-      background: 'white',
+      background: props.dark ? '#181818' : 'white',
       border: '1px solid #383C4A',
       display: 'flex',
       alignItems: 'center',
@@ -16,7 +16,7 @@ export const EyeButton = (props) => (
         borderRadius: '50%',
         height: 8,
         width: 8,
-        background: '#383C4A',
+        background: props.dark ? '#181818' : '#383C4A',
       }}>
         <div
           style={{
@@ -27,6 +27,7 @@ export const EyeButton = (props) => (
             position: 'relative',
             left: 4,
             top: 3,
+            display: props.dark ? 'none' : 'block'
           }}
         />
       </div>
@@ -44,7 +45,7 @@ export const GhostBrowser = (props) => (
       color: 'white',
       border: '1px solid #383C4A',
       borderRadius: 8,
-      background: '#FFFFFF',
+      background: props.dark ? '#383C4A' : '#FFFFFF',
       // backdropFilter: 'blur(4px)',
       overflow: 'hidden',
     }}
@@ -69,8 +70,8 @@ export const GhostBrowser = (props) => (
           cursor: 'pointer',
         }}
       >
-        <EyeButton />
-        <EyeButton />
+        <EyeButton dark={props.dark}/>
+        <EyeButton dark={props.dark}/>
       </div>
 
       <div style={{ cursor: 'grab' }}>{props.title}</div>
@@ -78,4 +79,8 @@ export const GhostBrowser = (props) => (
 
     <div style={{}}>{props.children}</div>
   </div>
+)
+
+export const GhostBrowserDark = props => (
+  <GhostBrowser {...props} dark/>
 )

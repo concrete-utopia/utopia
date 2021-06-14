@@ -5,8 +5,9 @@ import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import SwitchHorizontalIcon from '@heroicons/react/outline/SwitchHorizontalIcon'
 import { Menu } from '../components/menu'
-import { GhostBrowser } from '../components/ghostbrowser'
+import { GhostBrowser, GhostBrowserDark } from '../components/ghostbrowser'
 import { Header } from '../components/header'
+import { ImageContainer } from '../components/image-container'
 
 function MainTitle({ children }) {
   return (
