@@ -5,8 +5,8 @@ import { MenuIcon, XIcon } from '@heroicons/react/outline'
 const navigation = [
   { name: ' ', href: '#' },
   { name: ' ', href: '#' },
-  { name: ' ', href: '#' },
-  { name: ' ', href: 'https://github.com/concrete-utopia/utopia' },
+  { name: 'Blog', href: '#' },
+  { name: 'Github', href: 'https://github.com/concrete-utopia/utopia' },
   { name: 'Create a Project', href: '/project' },
 ]
 

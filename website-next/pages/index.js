@@ -8,13 +8,15 @@ import { Menu } from '../components/menu'
 import { GhostBrowser, GhostBrowserDark } from '../components/ghostbrowser'
 import { Header } from '../components/header'
 import { ImageContainer } from '../components/image-container'
+import { LandingScrollableSection } from '../components/landing-scrollable-section'
 
-function MainTitle({ children }) {
+function MainTitle({ children, dark }) {
   return (
     <h1
-      className='text-5xl md:text-6xl tracking-tight text-gray-900 font-extrabold font-headline'
+      className='text-5xl md:text-6xl tracking-tight font-body'
       style={{
         textShadow: '0 2px 59px #00FFCD',
+        color: dark ? '#FFFFFF' : '#383C4A'
       }}
     >
       {children}
@@ -22,7 +24,7 @@ function MainTitle({ children }) {
   )
 }
 
-function Subtitle({ children, center }) {
+function Subtitle({ children, center, dark }) {
   return (
     <p
       className={
@@ -34,6 +36,9 @@ function Subtitle({ children, center }) {
         'tracking-wider ' +
         'inline-block '
       }
+      style={{
+        color: dark ? '#D0D0D0' :  '#383C4A'
+      }}
     >
       {children}
     </p>
@@ -85,14 +90,13 @@ function HeroSection() {
                 <HeroButton primary href='/project'>
                   Create a Project
                 </HeroButton>
-                {/* <HeroButton>Read More</HeroButton> */}
               </div>
             </div>
           </main>
         </div>
       </div>
-      <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
-        <GhostBrowser className='w-full object-cover'>
+      <div className='px-2 pt-6 pb-24 sm:pt-16 lg:pt-32 max-w-7xl mx-auto'>
+        <GhostBrowser className='max-w-7xl object-cover'>
           <img src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
@@ -158,6 +162,60 @@ function AlwaysLiveSection() {
   )
 }
 
+const LandingPageSection2 = props => (
+  <div className='pt-40 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
+    <div className='max-w-7xl mx-auto flex'>
+      <div className='text-left w-2/4'>
+        <MainTitle>Work on the Real Thing</MainTitle>
+        <Subtitle>
+          Utopia connects design and code in real time. It’s built for real-world code, including nested components.
+        </Subtitle>
+      </div>
+      <GhostBrowser className='w-2/4'>
+          <img src='/screenshots/screenshot2.png' />
+      </GhostBrowser>
+    </div>
+  </div>
+)
+
+const LandingPageSection3 = props => (
+  <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
+    <div className='max-w-7xl mx-auto flex'>
+      <div className='w-2/4 grid grid-flow-col grid-cols-2 grid-rows-3 gap-4'>
+        <ImageContainer />
+        <ImageContainer />
+        <ImageContainer />
+        <ImageContainer />
+        <ImageContainer />
+        <ImageContainer />
+      </div>
+      <div className='text-right w-2/4'>
+        <MainTitle>Immediately Familiar</MainTitle>
+        <Subtitle>
+          Utopia includes a though-out design tool to inspect, edit and create.
+          It uses your code as a source of truth, and you can see the changes it makes to it in real time.
+        </Subtitle>
+      </div>
+    </div>
+  </div>
+)
+
+const LandingPageSection4 = props => (
+  <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#181818'}}>
+    <div className='max-w-7xl mx-auto text-center'>
+      <MainTitle dark>Designed to Code</MainTitle>
+      <Subtitle dark>
+        Utopia includes a browser-based development environment for React. It’s powered by
+        Microsoft’s VSCode, takes seconds to spin up, and give you a real-time preview of your app
+        and components. And it includes everything you expect:
+      </Subtitle>
+    </div>
+    <div className='max-w-7xl pt-16 mx-auto'>
+      <LandingScrollableSection />
+    </div>
+  </div>
+)
+
 export default function LandingPage() {
   return (
     <div>
@@ -181,9 +239,12 @@ export default function LandingPage() {
         </div>
 
         <HeroSection />
-        {/* <DesignToolForCodeSection />
-        <CodeEditorForDesignSection />
-        <AlwaysLiveSection /> */}
+        <LandingPageSection2/>
+        <LandingPageSection3/>
+        <LandingPageSection4/>
+        {/* <DesignToolForCodeSection /> */}
+        {/* <CodeEditorForDesignSection /> */}
+        {/* <AlwaysLiveSection /> */}
         <div className='pt-80' />
       </div>
     </div>
