@@ -10,41 +10,8 @@ import { Header } from '../components/header'
 import { ImageContainer } from '../components/image-container'
 import { LandingScrollableSection } from '../components/landing-scrollable-section'
 import { HostedImage } from '../components/hosted-image'
-
-function MainTitle({ children, dark }) {
-  return (
-    <h1
-      className='text-5xl md:text-6xl tracking-tight font-body'
-      style={{
-        textShadow: '0 2px 59px #00FFCD',
-        color: dark ? '#FFFFFF' : '#383C4A'
-      }}
-    >
-      {children}
-    </h1>
-  )
-}
-
-function Subtitle({ children, center, dark }) {
-  return (
-    <p
-      className={
-        'mt-14 sm:mt-16' +
-        'sm:max-w-xl md:max-w-3xl ' +
-        'text-xl md:text-2xl ' +
-        'leading-snug md:leading-normal ' +
-        'font-body font-medium ' +
-        'tracking-wider ' +
-        'inline-block '
-      }
-      style={{
-        color: dark ? '#D0D0D0' :  '#383C4A'
-      }}
-    >
-      {children}
-    </p>
-  )
-}
+import { MainTitle } from '../components/main-title'
+import { Subtitle } from '../components/subtitle'
 
 function HeroButton({ href, children, primary }) {
   return (

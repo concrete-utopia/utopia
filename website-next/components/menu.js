@@ -6,7 +6,7 @@ import { HostedImage } from './hosted-image'
 const navigation = [
   { name: ' ', href: '#' },
   { name: ' ', href: '#' },
-  { name: 'Blog', href: '#' },
+  { name: 'Blog', href: '/blog' },
   { name: 'Github', href: 'https://github.com/concrete-utopia/utopia' },
   { name: 'Create a Project', href: '/project' },
 ]
