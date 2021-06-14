@@ -1,10 +1,10 @@
 module.exports = {
   theme: {
     fontFamily: {
-      headline: ['Marfa-Bold', 'serif'],
-      menu: ['Marfa-Medium', 'serif'],
+      headline: ['RecklessNeue-Book', 'serif'],
+      menu: ['RecklessNeue-Book', 'serif'],
       body: ['Inter', 'serif'],
-      button: ['Marfa-Medium', 'serif'],
+      button: ['RecklessNeue-Book', 'serif'],
     },
     extend: {
       flexGrow: {

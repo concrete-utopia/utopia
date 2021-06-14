@@ -8,7 +8,7 @@ export function Subtitle({ children, center, dark }) {
         'sm:max-w-xl md:max-w-3xl ' +
         'text-xl md:text-2xl ' +
         'leading-snug md:leading-normal ' +
-        'font-body font-medium ' +
+        'font-headline ' +
         'tracking-wider ' +
         'inline-block '
       }
