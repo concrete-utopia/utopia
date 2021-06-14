@@ -13,18 +13,18 @@ import { HostedImage } from '../components/hosted-image'
 import { MainTitle } from '../components/main-title'
 import { Subtitle } from '../components/subtitle'
 
-function HeroButton({ href, children, primary }) {
+function HeroButton({ href, children }) {
   return (
-    <div className='rounded-2xl shadow mt-3'>
+    <div className='mt-3'>
       <a
         href={href}
         className={
-          'rounded-2xl w-full flex items-center justify-center text-base font-medium font-button ' +
-          'md:text-lg px-4 py-2 md:px-6 md:py-2 ' +
-          (primary
-            ? 'border-2 border-black bg-gradient-to-b from-blue-100 to-pink-300'
-            : 'border border-transparent text-purple-600 bg-indigo-100 hover:bg-indigo-200')
+          'flex items-center justify-center font-button font-light text-lg leading-loose pl-16 pr-16'
         }
+        style={{
+          color: '#FFFFFF',
+          backgroundImage: `linear-gradient(90deg, rgba(255,255,255,0.00) 0%, #393D4B 18%, #393D4B 84%, rgba(255,255,255,0.00) 100%)`
+        }}
       >
         {children}
       </a>
@@ -55,7 +55,7 @@ function HeroSection() {
                 sm:flex sm:justify-center gap-x-3
                 '
               >
-                <HeroButton primary href='/project'>
+                <HeroButton href='/project'>
                   Create a Project
                 </HeroButton>
               </div>
@@ -63,7 +63,7 @@ function HeroSection() {
           </main>
         </div>
       </div>
-      <div className='px-2 pt-6 pb-24 sm:pt-16 lg:pt-32 max-w-7xl mx-auto'>
+      <div className='px-2 pt-12 pb-24 max-w-7xl mx-auto'>
         <GhostBrowser className='max-w-7xl object-cover'>
           <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
@@ -202,8 +202,8 @@ export default function LandingPage() {
     <div>
       <Header />
       <div
-        className='relative bg-blue-100 overflow-hidden bg-no-repeat bg-cover'
-        style={{ backgroundImage: 'url(/backgrounds/mesh-pinkblue-sky.jpg)' }}
+        // className='relative bg-blue-100 overflow-hidden bg-no-repeat bg-cover'
+        // style={{ backgroundImage: 'url(/backgrounds/mesh-pinkblue-sky.jpg)' }}
       >
         <div
           style={{
