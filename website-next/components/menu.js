@@ -7,7 +7,11 @@ const navigation = [
   { name: ' ', href: '#' },
   { name: ' ', href: '#' },
   { name: ' ', href: '#' },
-  { name: ' ', href: 'https://github.com/concrete-utopia/utopia' },
+  { name: ' ', href: '#' },
+  { name: ' ', href: '#' },
+  { name: ' ', href: '#' },
+  { name: 'Github', href: 'https://github.com/concrete-utopia/utopia' },
+  { name: 'Discord', href: 'https://discord.gg/dSWs79MY' },
   { name: 'Create a Project', href: '/project' },
 ]
 
