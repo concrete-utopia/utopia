@@ -9,6 +9,7 @@ import { GhostBrowser, GhostBrowserDark } from '../components/ghostbrowser'
 import { Header } from '../components/header'
 import { ImageContainer } from '../components/image-container'
 import { LandingScrollableSection } from '../components/landing-scrollable-section'
+import { HostedImage } from '../components/hosted-image'
 
 function MainTitle({ children, dark }) {
   return (
@@ -97,7 +98,7 @@ function HeroSection() {
       </div>
       <div className='px-2 pt-6 pb-24 sm:pt-16 lg:pt-32 max-w-7xl mx-auto'>
         <GhostBrowser className='max-w-7xl object-cover'>
-          <img src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </>
@@ -117,7 +118,7 @@ function DesignToolForCodeSection() {
       </div>
       <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
         <GhostBrowser className='w-full object-cover'>
-          <img src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </>
@@ -136,7 +137,7 @@ function CodeEditorForDesignSection() {
       </div>
       <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
         <GhostBrowser className='w-full object-cover'>
-          <img src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </>
@@ -155,7 +156,7 @@ function AlwaysLiveSection() {
       </div>
       <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
         <GhostBrowser className='w-full object-cover'>
-          <img src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </>
@@ -173,7 +174,7 @@ const LandingPageSection2 = props => (
       </div>
       <div  className='w-2/4 pl-8'>
         <GhostBrowser>
-            <img src='/screenshots/screenshot2.png' />
+            <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </div>
