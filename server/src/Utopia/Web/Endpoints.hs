@@ -410,6 +410,9 @@ addCacheControlRevalidate = addMiddlewareHeader "Cache-Control" "public, must-re
 addCDNHeaders :: Middleware
 addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 
+addCDNHeadersCacheRevalidate :: Middleware
+addCDNHeadersCacheRevalidate = addCacheControlRevalidate . addAccessControlAllowOrigin
+
 editorAssetsEndpoint :: FilePath -> Maybe Text -> ServerMonad Application
 editorAssetsEndpoint notProxiedPath possibleBranchName = do
   possibleProxyManager <- getProxyManager
@@ -435,12 +438,12 @@ clearBranchCacheEndpoint branchName = do
 websiteAssetsEndpoint :: FilePath -> ServerMonad Application
 websiteAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
-  fmap addCDNHeaders $ maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
+  fmap addCDNHeadersCacheRevalidate $ maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
 
 vsCodeAssetsEndpoint :: ServerMonad Application
 vsCodeAssetsEndpoint = do
   pathToServeFrom <- getVSCodeAssetRoot
-  fmap addAccessControlAllowOrigin $ fmap addCacheControlRevalidate $ servePath pathToServeFrom Nothing
+  fmap addCDNHeadersCacheRevalidate $ servePath pathToServeFrom Nothing
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do
