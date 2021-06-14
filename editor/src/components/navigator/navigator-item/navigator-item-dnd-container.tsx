@@ -148,9 +148,9 @@ function onHover(
     }
 
     if (isCursorInTopArea(dropTargetRectangle, cursor.y, numberOfAreasToCut)) {
-      if (props.dropTargetHint.type !== 'after') {
+      if (props.dropTargetHint.type !== 'before') {
         props.editorDispatch(
-          [...targetAction, showNavigatorDropTargetHint('after', component.props.elementPath)],
+          [...targetAction, showNavigatorDropTargetHint('before', component.props.elementPath)],
           'leftpane',
         )
       }
@@ -167,20 +167,20 @@ function onHover(
         const targetDistance = Math.min(cursorTargetDepth, maximumTargetDepth)
         const targetTP = EP.getNthParent(props.elementPath, targetDistance)
         if (
-          props.dropTargetHint.type !== 'before' ||
+          props.dropTargetHint.type !== 'after' ||
           !EP.pathsEqual(props.dropTargetHint.target, targetTP)
         ) {
           props.editorDispatch(
-            [...targetAction, showNavigatorDropTargetHint('before', targetTP)],
+            [...targetAction, showNavigatorDropTargetHint('after', targetTP)],
             'leftpane',
           )
         }
       } else if (
-        props.dropTargetHint.type !== 'before' ||
+        props.dropTargetHint.type !== 'after' ||
         !EP.pathsEqual(props.dropTargetHint.target, component.props.elementPath)
       ) {
         props.editorDispatch(
-          [...targetAction, showNavigatorDropTargetHint('before', component.props.elementPath)],
+          [...targetAction, showNavigatorDropTargetHint('after', component.props.elementPath)],
           'leftpane',
         )
       }

@@ -1383,7 +1383,7 @@ function getZIndexOrderedViewsWithoutDirectChildren(
     const index = derived.navigatorTargets.findIndex((tp) => EP.pathsEqual(tp, target))
     targetsAndZIndex.push({ target: target, index: index })
   })
-  targetsAndZIndex.sort((a, b) => a.index - b.index)
+  targetsAndZIndex.sort((a, b) => b.index - a.index)
   const orderedTargets = Utils.pluck(targetsAndZIndex, 'target')
 
   // keep direct children from reparenting
