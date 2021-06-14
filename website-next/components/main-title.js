@@ -5,7 +5,6 @@ export function MainTitle({ children, dark }) {
     <h1
       className='text-6xl leading-normal tracking-tight font-body'
       style={{
-        // textShadow: '0 2px 59px #00FFCD',
         color: dark ? '#FFFFFF' : '#383C4A'
       }}
     >
