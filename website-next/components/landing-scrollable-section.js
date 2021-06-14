@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { GhostBrowserDark } from './ghostbrowser'
+import { HostedImage } from './hosted-image'
 
 const Content = [
   {
@@ -37,7 +38,7 @@ export const LandingScrollableSection = props => {
       >
         {Content.map(c => (
           <div style={{width: 440}}>
-            <GhostBrowserDark className='w-full object-cover'><img scr={c.image}/></GhostBrowserDark>
+            <GhostBrowserDark className='w-full object-cover'><HostedImage scr={c.image}/></GhostBrowserDark>
             <div className='pt-4' style={{color: '#D0D0D0'}}>{c.title}</div>
           </div>
         ))}
