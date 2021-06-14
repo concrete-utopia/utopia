@@ -163,17 +163,19 @@ function AlwaysLiveSection() {
 }
 
 const LandingPageSection2 = props => (
-  <div className='pt-40 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
+  <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
     <div className='max-w-7xl mx-auto flex'>
-      <div className='text-left w-2/4'>
+      <div className='text-left w-2/4 pr-4'>
         <MainTitle>Work on the Real Thing</MainTitle>
         <Subtitle>
           Utopia connects design and code in real time. It’s built for real-world code, including nested components.
         </Subtitle>
       </div>
-      <GhostBrowser className='w-2/4'>
-          <img src='/screenshots/screenshot2.png' />
-      </GhostBrowser>
+      <div  className='w-2/4 pl-8'>
+        <GhostBrowser>
+            <img src='/screenshots/screenshot2.png' />
+        </GhostBrowser>
+      </div>
     </div>
   </div>
 )
@@ -181,7 +183,7 @@ const LandingPageSection2 = props => (
 const LandingPageSection3 = props => (
   <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
     <div className='max-w-7xl mx-auto flex'>
-      <div className='w-2/4 grid grid-flow-col grid-cols-2 grid-rows-3 gap-4'>
+      <div className='w-2/4 grid grid-flow-col grid-cols-2 grid-rows-3 gap-4 pr-4'>
         <ImageContainer />
         <ImageContainer />
         <ImageContainer />
@@ -189,7 +191,7 @@ const LandingPageSection3 = props => (
         <ImageContainer />
         <ImageContainer />
       </div>
-      <div className='text-right w-2/4'>
+      <div className='text-right w-2/4 pl-4'>
         <MainTitle>Immediately Familiar</MainTitle>
         <Subtitle>
           Utopia includes a though-out design tool to inspect, edit and create.
