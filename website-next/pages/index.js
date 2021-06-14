@@ -216,6 +216,17 @@ const LandingPageSection4 = props => (
   </div>
 )
 
+const OpenSourceSection = props => (
+  <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
+    <div className='max-w-7xl mx-auto text-center'>
+      <MainTitle>Proudly Open Source</MainTitle>
+      <Subtitle>
+        Utopia is an open-source project under the MIT license.
+      </Subtitle>
+    </div>
+  </div>
+)
+
 export default function LandingPage() {
   return (
     <div>
@@ -242,6 +253,7 @@ export default function LandingPage() {
         <LandingPageSection2/>
         <LandingPageSection3/>
         <LandingPageSection4/>
+        <OpenSourceSection />
         {/* <DesignToolForCodeSection /> */}
         {/* <CodeEditorForDesignSection /> */}
         {/* <AlwaysLiveSection /> */}
