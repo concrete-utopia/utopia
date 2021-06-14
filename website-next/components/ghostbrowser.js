@@ -46,7 +46,6 @@ export const GhostBrowser = (props) => (
       border: '1px solid #383C4A',
       borderRadius: 8,
       background: props.dark ? '#383C4A' : '#FFFFFF',
-      // backdropFilter: 'blur(4px)',
       overflow: 'hidden',
     }}
   >
