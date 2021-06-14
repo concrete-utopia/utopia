@@ -596,17 +596,17 @@ describe('getting the root paths', () => {
 
 describe('createOrderedElementPathsFromElements returns all of the ordered navigator targets, visible and not', () => {
   const expectedNavigatorTargets: Array<ElementPath> = [
-    testStoryboardChildElement.elementPath,
-    testStoryboardGrandChildElement.elementPath,
     testComponentSceneElement.elementPath,
-    testComponentRoot1.elementPath,
-    testComponentMetadataChild3.elementPath,
-    testComponentMetadataGrandchild.elementPath,
-    testComponentMetadataChild2.elementPath,
-    testComponentMetadataChild1.elementPath,
     testComponentSceneChildElement.elementPath,
     testComponentSceneChildElementRoot.elementPath,
     testComponentSceneChildElementRootChild.elementPath,
+    testComponentRoot1.elementPath,
+    testComponentMetadataChild1.elementPath,
+    testComponentMetadataChild2.elementPath,
+    testComponentMetadataChild3.elementPath,
+    testComponentMetadataGrandchild.elementPath,
+    testStoryboardChildElement.elementPath,
+    testStoryboardGrandChildElement.elementPath,
   ]
 
   it('with no collapsed paths', () => {
@@ -623,9 +623,9 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
+      testComponentSceneElement.elementPath,
       testStoryboardChildElement.elementPath,
       testStoryboardGrandChildElement.elementPath,
-      testComponentSceneElement.elementPath,
     ])
   })
 
@@ -637,11 +637,11 @@ describe('createOrderedElementPathsFromElements returns all of the ordered navig
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
+      testComponentSceneElement.elementPath,
+      testComponentSceneChildElement.elementPath,
+      testComponentRoot1.elementPath,
       testStoryboardChildElement.elementPath,
       testStoryboardGrandChildElement.elementPath,
-      testComponentSceneElement.elementPath,
-      testComponentRoot1.elementPath,
-      testComponentSceneChildElement.elementPath,
     ])
   })
 })
