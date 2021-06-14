@@ -15,7 +15,7 @@ interface NavigatorHintProps {
 }
 
 export const NavigatorHintTop: React.FunctionComponent<NavigatorHintProps> = (props) => {
-  if (props.isOver && props.dropTargetType != null && props.dropTargetType === 'after') {
+  if (props.isOver && props.dropTargetType != null && props.dropTargetType === 'before') {
     return (
       <div
         style={{
@@ -37,7 +37,7 @@ export const NavigatorHintTop: React.FunctionComponent<NavigatorHintProps> = (pr
 NavigatorHintTop.displayName = 'NavigatorHintTop'
 
 export const NavigatorHintBottom: React.FunctionComponent<NavigatorHintProps> = (props) => {
-  if (props.isOver && props.dropTargetType != null && props.dropTargetType === 'before') {
+  if (props.isOver && props.dropTargetType != null && props.dropTargetType === 'after') {
     return (
       <div
         style={{
