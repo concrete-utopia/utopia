@@ -6,7 +6,7 @@ export function Paragraph({ children, dark }) {
       className='text-2xl font-body pb-10'
       style={{
         textShadow: '0 2px 59px #00FFCD',
-        color: dark ? '#FFFFFF' : '#383C4A'
+        color: dark ? '#D0D0D0' : '#383C4A'
       }}
     >
       {children}
