@@ -72,64 +72,6 @@ function HeroSection() {
   )
 }
 
-function DesignToolForCodeSection() {
-  return (
-    <>
-      <div className='max-w-7xl mx-auto pt-48'>
-        <MainTitle>A design tool built for code</MainTitle>
-        <Subtitle>
-          Utopia writes and understands code, and gives you the tools to compose and manipulate it.
-          Use all the design features you know, and combine them with the power of flexbox, nested
-          components, and component props with a UI.
-        </Subtitle>
-      </div>
-      <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
-        <GhostBrowser className='w-full object-cover'>
-          <HostedImage src='/screenshots/screenshot2.png' />
-        </GhostBrowser>
-      </div>
-    </>
-  )
-}
-
-function CodeEditorForDesignSection() {
-  return (
-    <>
-      <div className='max-w-7xl mx-auto pt-48 text-right'>
-        <MainTitle>A code editor built for design</MainTitle>
-        <Subtitle>
-          Utopia is powered by VSCode’s Monaco editor and we’ve given it superpowers: selecting
-          elements jumps to code, hovering over code highlights elements.
-        </Subtitle>
-      </div>
-      <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
-        <GhostBrowser className='w-full object-cover'>
-          <HostedImage src='/screenshots/screenshot2.png' />
-        </GhostBrowser>
-      </div>
-    </>
-  )
-}
-
-function AlwaysLiveSection() {
-  return (
-    <>
-      <div className='max-w-7xl mx-auto pt-40 text-center'>
-        <MainTitle>Always Live</MainTitle>
-        <Subtitle>
-          See code and design change instantly. Instantly jump between between design and preview
-          mode. See and edit the same component in multiple configurations.
-        </Subtitle>
-      </div>
-      <div className='px-2 pt-6 sm:pt-16 lg:pt-32 max-w-screen-2xl mx-auto'>
-        <GhostBrowser className='w-full object-cover'>
-          <HostedImage src='/screenshots/screenshot2.png' />
-        </GhostBrowser>
-      </div>
-    </>
-  )
-}
-
 const LandingPageSection2 = props => (
   <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
     <div className='max-w-7xl mx-auto flex'>
@@ -224,9 +166,6 @@ export default function LandingPage() {
         <LandingPageSection3/>
         <LandingPageSection4/>
         <OpenSourceSection />
-        {/* <DesignToolForCodeSection /> */}
-        {/* <CodeEditorForDesignSection /> */}
-        {/* <AlwaysLiveSection /> */}
         <div className='pt-80' />
       </div>
     </div>
