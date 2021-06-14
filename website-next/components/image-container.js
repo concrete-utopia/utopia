@@ -12,7 +12,6 @@ export const ImageContainer = (props) => (
       border: '1px solid #383C4A',
       borderRadius: 8,
       background: '#FFFFFF',
-      // backdropFilter: 'blur(4px)',
       overflow: 'hidden',
     }}
   >
