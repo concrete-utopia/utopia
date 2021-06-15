@@ -12,7 +12,7 @@ const navigation = [
   { name: ' ', href: '#' },
   { name: 'Github', href: 'https://github.com/concrete-utopia/utopia' },
   { name: 'Discord', href: 'https://discord.gg/dSWs79MY' },
-  { name: 'Create a Project', href: '/project' },
+  { name: 'Create a Project', href: '/project', primary: true },
 ]
 
 export function Menu() {
@@ -21,13 +21,19 @@ export function Menu() {
       {({ open }) => (
         <>
           <div className='relative px-4 sm:px-6 lg:px-8 flex-grow'>
-            <nav className='relative flex items-center justify-between sm:h-10 max-w-6xl m-auto font-menu'>
+            <nav className='relative flex items-center justify-between sm:h-10 max-w-6xl m-auto font-body'>
               <HostedImage className='h-8 w-auto sm:h-10' src='/pyramid_small.png' />
               {navigation.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className='hidden md:block font-medium text-gray-900 hover:text-gray-900 text-lg'
+                  className='hidden md:block font-body text-lg'
+                  style={{
+                    color: item.primary === true ? '#FFFFFF' : '#383C4A',
+                    backgroundColor: item.primary === true ? '#181818' : '#FFFFFF',
+                    padding: '6px 20px',
+                    borderRadius: 4,
+                  }}
                   onMouseDown={() =>
                     gtag('event', 'navigate', { category: 'links', label: item.href, value: 1 })
                   }
@@ -76,7 +82,7 @@ export function Menu() {
                     <a
                       key={item.name}
                       href={item.href}
-                      className='block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                      className='block px-3 py-2 rounded-md text-base font-body text-gray-700 hover:text-gray-900 hover:bg-gray-50'
                     >
                       {item.name}
                     </a>
@@ -84,7 +90,7 @@ export function Menu() {
                 </div>
                 <a
                   href='#'
-                  className='block w-full px-5 py-3 text-center font-medium text-indigo-600 bg-gray-50 hover:bg-gray-100'
+                  className='block w-full px-5 py-3 text-center font-body text-indigo-600 bg-gray-50 hover:bg-gray-100'
                 >
                   Log in
                 </a>

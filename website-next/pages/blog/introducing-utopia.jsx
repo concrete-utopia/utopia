@@ -1,24 +1,15 @@
 import * as React from 'react'
 import { Header } from '../../components/header'
-import { Menu } from '../../components/menu'
 import { MainTitle } from '../../components/main-title'
+import { Menu } from '../../components/menu'
 import { Paragraph } from '../../components/paragraph'
+import { ContactUs } from '../../components/contact-us'
 import { GhostBrowser } from '../../components/ghostbrowser'
 import { HostedImage } from '../../components/hosted-image'
 import { CookieConsentBar } from '../../components/cookie-consent'
 
-function Video() {
-  return (
-    <video
-      controls
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload
-      src='https://archipelago.utopia.app/speedrun-text.mp4'
-    />
-  )
+function Video({ src }) {
+  return <video controls autoPlay loop muted playsInline preload src={src} />
 }
 
 export default function Blog() {
@@ -41,7 +32,7 @@ export default function Blog() {
       <div className='pt-28 pb-28 text-center'>
         <MainTitle dark={false}>Introducing Utopia</MainTitle>
       </div>
-      <div className='text-center max-w-4xl mx-auto'>
+      <div className='text-center sm:px-4 max-w-3xl mx-auto'>
         <Paragraph dark={false}>
           Today we’re announcing the alpha version of Utopia, a design and coding environment for
           React projects and components that runs in the browser. It combines VSCode with a design
@@ -49,7 +40,9 @@ export default function Blog() {
           <b>design and code update each other, in real time</b>. And unlike any design tool out
           there, it uses React code as the source of truth.
         </Paragraph>
-        <GhostBrowser className='max-w-4xl mx-auto mb-10'><Video/></GhostBrowser>
+        <GhostBrowser className='max-w-4xl mx-auto mb-10'>
+          <Video src='https://archipelago.utopia.app/speedrun-text.mp4' />
+        </GhostBrowser>
         <Paragraph dark={false}>
           We built Utopia to combine the speed of design tools with the power of code. And we wanted
           to do this so that it works with real code, in real projects. Recent years have seen an
@@ -92,6 +85,9 @@ export default function Blog() {
           clicking on an element in the design automatically opens up the file, scrolls to the right
           place, and places the cursor. And this works the other way around as well!
         </Paragraph>
+        <GhostBrowser className='max-w-4xl mx-auto mb-10'>
+          <Video src='https://archipelago.utopia.app/follow-me-loop-1.mp4' />
+        </GhostBrowser>
         <Paragraph dark={false}>
           <b>Components are first class concepts.</b> Utopia was built from the ground up to work
           with nested components that can be configured via props. For instance, you can quickly
@@ -148,6 +144,9 @@ export default function Blog() {
           <br />
           Team Utopia
         </Paragraph>
+      </div>
+      <div className='max-w-3xl mx-auto pt-12 pb-28'>
+        <ContactUs />
       </div>
       {/* <GhostBrowser className='max-w-4xl mx-auto pb-10'><HostedImage src=''/></GhostBrowser> */}
       <CookieConsentBar />

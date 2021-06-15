@@ -84,7 +84,7 @@ function otherFn(n) {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+      "mappings": "AAYCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
       "names": Array [
         "function",
         "cakeFn",
@@ -102,7 +102,16 @@ function otherFn(n) {
       "sourcesContent": Array [
         "import { cake } from 'cake'
 import * as React from 'react'
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'
+import {
+  UtopiaUtils,
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  View,
+  Scene,
+} from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -112,7 +121,10 @@ function otherFn(n) {
 export var whatever = (props) => {
   return (
     <View data-uid='aaa'>
-      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
+      <cake
+        data-uid='aab'
+        left={cakeFn(otherFn('b') + 2)}
+      />
     </View>
   )
 }
@@ -142,16 +154,16 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
   "highlightBounds": Object {
     "aaa": Object {
       "endCol": 11,
-      "endLine": 13,
+      "endLine": 25,
       "startCol": 4,
-      "startLine": 11,
+      "startLine": 20,
       "uid": "aaa",
     },
     "aab": Object {
-      "endCol": 61,
-      "endLine": 12,
+      "endCol": 8,
+      "endLine": 24,
       "startCol": 6,
-      "startLine": 12,
+      "startLine": 21,
       "uid": "aab",
     },
   },
@@ -254,7 +266,16 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "Scene",
       ],
       "module": "utopia-api",
-      "rawCode": "import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'",
+      "rawCode": "import {
+  UtopiaUtils,
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  View,
+  Scene,
+} from 'utopia-api'",
       "type": "IMPORT_STATEMENT",
     },
     Object {
@@ -275,7 +296,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC",
+        "mappings": "AAYCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC",
         "names": Array [
           "function",
           "cakeFn",
@@ -290,7 +311,16 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "sourcesContent": Array [
           "import { cake } from 'cake'
 import * as React from 'react'
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'
+import {
+  UtopiaUtils,
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  View,
+  Scene,
+} from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -300,7 +330,10 @@ function otherFn(n) {
 export var whatever = (props) => {
   return (
     <View data-uid='aaa'>
-      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
+      <cake
+        data-uid='aab'
+        left={cakeFn(otherFn('b') + 2)}
+      />
     </View>
   )
 }
@@ -333,7 +366,7 @@ return { cakeFn: cakeFn };",
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAMCA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
+        "mappings": "AAeCA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
         "names": Array [
           "function",
           "otherFn",
@@ -348,7 +381,16 @@ return { cakeFn: cakeFn };",
         "sourcesContent": Array [
           "import { cake } from 'cake'
 import * as React from 'react'
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'
+import {
+  UtopiaUtils,
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  View,
+  Scene,
+} from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -358,7 +400,10 @@ function otherFn(n) {
 export var whatever = (props) => {
   return (
     <View data-uid='aaa'>
-      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
+      <cake
+        data-uid='aab'
+        left={cakeFn(otherFn('b') + 2)}
+      />
     </View>
   )
 }
@@ -438,7 +483,7 @@ return { otherFn: otherFn };",
                   "javascript": "cakeFn(otherFn('b') + 2)",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAYkCA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
+                    "mappings": "OAuBeA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
                     "names": Array [
                       "cakeFn",
                       "otherFn",
@@ -452,7 +497,16 @@ return { otherFn: otherFn };",
                     "sourcesContent": Array [
                       "import { cake } from 'cake'
 import * as React from 'react'
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'
+import {
+  UtopiaUtils,
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  View,
+  Scene,
+} from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -462,7 +516,10 @@ function otherFn(n) {
 export var whatever = (props) => {
   return (
     <View data-uid='aaa'>
-      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
+      <cake
+        data-uid='aab'
+        left={cakeFn(otherFn('b') + 2)}
+      />
     </View>
   )
 }

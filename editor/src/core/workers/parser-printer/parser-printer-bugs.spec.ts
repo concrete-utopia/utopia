@@ -95,10 +95,17 @@ import { Storyboard, View } from 'utopia-api'
 const myCoolTheme = {}
 
 export var App = (props) => {
-  return <View data-uid='xxx' style={{ ...myCoolTheme, backgroundColor: 'purple' }} />
+  return (
+    <View
+      data-uid='xxx'
+      style={{ ...myCoolTheme, backgroundColor: 'purple' }}
+    />
+  )
 }
 
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}' />
+)
 `
     testParseThenPrint(code, code)
   })
@@ -114,7 +121,9 @@ export var Widget = (props) => {
   return <View data-uid='aaa' />
 }
 
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}' />
+)
 `
     testParseThenPrint(code, code)
   })
@@ -129,12 +138,17 @@ export var App = (props) => {
   return (
     <View
       data-uid='aaa'
-      css={{ backgroundColor: 'regular propety, without quotes', '& :hover': { color: color } }}
+      css={{
+        backgroundColor: 'regular propety, without quotes',
+        '& :hover': { color: color },
+      }}
     />
   )
 }
 
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}' />
+)
 `
     testParseThenPrint(code, code)
   })
@@ -146,13 +160,17 @@ import { Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (
     <View data-uid='aaa' css={{ backgroundColor: 'red' }}>
-      <View data-uid='bbb'>{elements.map((e) => null)}</View>
+      <View data-uid='bbb'>
+        {elements.map((e) => null)}
+      </View>
     </View>
   )
 }
 
 const elements = []
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}' />
+)
 `
     testParseThenPrint(code, code)
   })
@@ -167,13 +185,17 @@ import { Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (
     <View data-uid='aaa' css={{ backgroundColor: 'red' }}>
-      <View data-uid='bbb'>{elements.map((e) => null)}</View>
+      <View data-uid='bbb'>
+        {elements.map((e) => null)}
+      </View>
     </View>
   )
 }
 
 const elements = []
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
+export var ${BakedInStoryboardVariableName} = (
+  <Storyboard data-uid='${BakedInStoryboardUID}' />
+)
 `
     testParseThenPrint(code, code)
   })
