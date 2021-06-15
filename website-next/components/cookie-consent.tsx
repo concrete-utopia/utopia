@@ -16,7 +16,6 @@ export const CookieConsentBar = () => {
   return (
     <CookieConsent
       location='bottom'
-      overlay={true}
       style={{ background: '#383C4A', fontSize: '13px' }}
       buttonStyle={{
         color: '#383C4A',
