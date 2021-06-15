@@ -66,7 +66,6 @@ export const GhostBrowser = (props) => (
           alignItems: 'center',
           flexGrow: 1,
           gap: 6,
-          cursor: 'pointer',
         }}
       >
         <EyeButton dark={props.dark}/>
