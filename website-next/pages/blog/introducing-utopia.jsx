@@ -94,6 +94,9 @@ export default function Blog() {
           switch between seeing the instance of one to editing the component itself, in place,
           without context switching.
         </Paragraph>
+        <GhostBrowser className='max-w-4xl mx-auto mb-10'>
+          <Video src='https://archipelago.utopia.app/component-drilling-1.mp4' />
+        </GhostBrowser>
         <Paragraph dark={false}>
           <b>Working with generated and conditional content:</b> Real UIs aren’t just “powered by
           data”, but frequently generated from them. And they contain a lot of conditionally
