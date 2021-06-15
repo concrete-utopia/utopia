@@ -3,7 +3,7 @@ module.exports = {
     fontFamily: {
       headline: ['RecklessNeue-Book', 'serif'],
       menu: ['RecklessNeue-Book', 'serif'],
-      body: ['Inter', 'sans-serif'],
+      body: ['Moderat-Regular', 'sans-serif'],
       button: ['RecklessNeue-Book', 'serif'],
     },
     extend: {
