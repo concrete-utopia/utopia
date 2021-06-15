@@ -15,8 +15,13 @@ export function Header() {
         as='font'
         type='font/woff2'
       />
-      <link rel='preconnect' href='https://fonts.gstatic.com' />
-      <link href='https://fonts.googleapis.com/css2?family=Inter&display=swap' rel='stylesheet' />
+      <link
+        rel='preload'
+        href='/fonts/Moderat-Regular.woff2'
+        crossorigin='anonymous'
+        as='font'
+        type='font/woff2'
+      />
 
       {/* Google Analytics */}
       <script async src='https://www.googletagmanager.com/gtag/js?id=G-QM0KPN0RNV'></script>
