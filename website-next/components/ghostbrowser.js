@@ -39,7 +39,7 @@ export const GhostBrowser = (props) => (
     className={props.className}
     style={{
       display: 'flex',
-      fontFamily: 'Inter',
+      fontFamily: 'Moderat-Regular',
       fontSize: 11,
       flexDirection: 'column',
       color: 'white',
