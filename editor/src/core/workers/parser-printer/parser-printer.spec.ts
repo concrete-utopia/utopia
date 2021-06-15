@@ -3239,7 +3239,7 @@ return { test: test };`
           BakedInStoryboardVariableName,
           false,
           'var',
-          'expression',
+          'parenthesized-expression',
           null,
           [],
           jsxElement(

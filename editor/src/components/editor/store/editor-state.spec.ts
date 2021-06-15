@@ -68,10 +68,21 @@ describe('modifyUnderlyingTarget', () => {
       export var App = (props) => {
         return (
           <div
-            style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#FFFFFF',
+            }}
           >
             <Card
-              style={{ position: 'absolute', left: 0, top: 0, width: 200, height: 300 }}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 200,
+                height: 300,
+              }}
               data-thing='a thing'
             />
           </div>

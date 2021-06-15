@@ -52,14 +52,26 @@ describe('JSX parser', () => {
         export var App = (props) => {
           return (
             <View
-              style={{ ...props.style, position: 'relative', backgroundColor: '#FFFFFF' }}
+              style={{
+                ...props.style,
+                position: 'relative',
+                backgroundColor: '#FFFFFF',
+              }}
               data-uid='aaa'
             >
               <React.Fragment>
-                <div data-label='random-div' style={{ width: 100, height: 100 }} data-uid='bbb'>
+                <div
+                  data-label='random-div'
+                  style={{ width: 100, height: 100 }}
+                  data-uid='bbb'
+                >
                   Hello
                   <>
-                    <div data-label='some-other-div' style={{ width: 100, height: 100 }} data-uid='ccc' />
+                    <div
+                      data-label='some-other-div'
+                      style={{ width: 100, height: 100 }}
+                      data-uid='ccc'
+                    />
                   </>
                 </div>
               </React.Fragment>
@@ -70,10 +82,25 @@ describe('JSX parser', () => {
         export var storyboard = (
           <Storyboard data-uid='eee'>
             <Scene
-              style={{ position: 'absolute', height: 812, left: 0, width: 375, top: 0 }}
+              style={{
+                position: 'absolute',
+                height: 812,
+                left: 0,
+                width: 375,
+                top: 0,
+              }}
               data-uid='fff'
             >
-              <App data-uid='app' style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }} />
+              <App
+                data-uid='app'
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                }}
+              />
             </Scene>
           </Storyboard>
         )
