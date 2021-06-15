@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Header } from '../../components/header'
 import { MainTitle } from '../../components/main-title'
+import { Menu } from '../../components/menu'
 import { Paragraph } from '../../components/paragraph'
 import { ContactUs } from '../../components/contact-us'
 import { GhostBrowser } from '../../components/ghostbrowser'
@@ -25,7 +26,20 @@ export default function Blog() {
   return (
     <div>
       <Header />
-      <div className='pt-48 pb-28 text-center'>
+      <div
+        style={{
+          backgroundImage: 'linear-gradient(white 0%, white 50%, #ffffff00 100%)',
+        }}
+        className='h-8 sm:h-16 lg:h-32'
+      >
+        <div
+          id='menu'
+          className='bg-white fixed flex w-screen justify-center z-100 h-16 items-center'
+        >
+          <Menu />
+        </div>
+      </div>
+      <div className='pt-28 pb-28 text-center'>
         <MainTitle dark={false}>Introducing Utopia</MainTitle>
       </div>
       <div className='text-center max-w-4xl mx-auto'>
@@ -136,7 +150,7 @@ export default function Blog() {
           Team Utopia
         </Paragraph>
       </div>
-      <div className='max-w-4xl mx-auto pt-28 pb-28'>
+      <div className='max-w-4xl mx-auto pt-12 pb-28'>
         <ContactUs />
       </div>
       {/* <GhostBrowser className='max-w-4xl mx-auto pb-10'><HostedImage src=''/></GhostBrowser> */}
