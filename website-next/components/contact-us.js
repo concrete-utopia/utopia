@@ -9,7 +9,7 @@ const navigation = [
 export const ContactUs = (props) => (
   <>
     <div
-      className='max-w-2xl sm:h-40 md:h-36 mx-auto mb-6 font-body md:text-lg sm:text-sm text-center'
+      className='max-w-2xl h-52 md:h-36 mx-auto mb-6 font-body md:text-lg text-sm text-center'
       style={{
         position: 'relative',
         border: '1px solid black',
@@ -33,7 +33,7 @@ export const ContactUs = (props) => (
         <BasicEmailSignup />
       </div>
     </div>
-    <div className='font-body md:text-lg sm:text-sm flex justify-center items-center'>
+    <div className='font-body md:text-lg text-sm flex justify-center items-center'>
       {navigation.map((item) => (
         <a
           key={item.name}
