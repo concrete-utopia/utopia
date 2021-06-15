@@ -11,7 +11,7 @@ function Video() {
     <video
       className='pb-10'
       controls
-      autoplay
+      autoPlay
       loop
       muted
       playsInline
