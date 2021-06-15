@@ -9,7 +9,11 @@ import { Canvas, Scene, View } from 'utopia-api'
 export var App = (props) => {
   return (
     <View
-      style={{ ...props.style, position: 'relative', backgroundColor: '#FFFFFF' }}
+      style={{
+        ...props.style,
+        position: 'relative',
+        backgroundColor: '#FFFFFF',
+      }}
       data-uid='aaa'
     >
       <View data-uid='9ec'>hi</View>
@@ -20,11 +24,35 @@ export var App = (props) => {
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Canvas data-uid='${BakedInStoryboardUID}'>
-      <Scene style={{ height: 200, left: 59, width: 200, top: 79 }} data-uid='scene-0'>
-        <App data-uid='app-0' style={{ height: '100%', width: '100%' }} title='Hi there!' />
+      <Scene
+        style={{
+          height: 200,
+          left: 59,
+          width: 200,
+          top: 79,
+        }}
+        data-uid='scene-0'
+      >
+        <App
+          data-uid='app-0'
+          style={{ height: '100%', width: '100%' }}
+          title='Hi there!'
+        />
       </Scene>
-      <Scene style={{ height: 400, left: 459, width: 400, top: 79 }} data-uid='scene-1'>
-        <App data-uid='app-1' style={{ height: '100%', width: '100%' }} title='woo there!' />
+      <Scene
+        style={{
+          height: 400,
+          left: 459,
+          width: 400,
+          top: 79,
+        }}
+        data-uid='scene-1'
+      >
+        <App
+          data-uid='app-1'
+          style={{ height: '100%', width: '100%' }}
+          title='woo there!'
+        />
       </Scene>
     </Canvas>
   )

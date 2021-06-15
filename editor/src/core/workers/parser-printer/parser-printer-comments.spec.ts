@@ -154,7 +154,9 @@ describe('Parsing and printing code with comments', () => {
         return (
           <div /* Comment before all attributes */
             data-uid='aaa' /* Comment inside attributes */
-            someProp={/* Comment at start of JSX attribute */ 1000 /* Comment at end of JSX attribute */}
+            someProp={
+              /* Comment at start of JSX attribute */ 1000 /* Comment at end of JSX attribute */
+            }
             someProp2={{
               /* Comment before object key */ someKey /* Comment after object key */:
                 /* Comment before object value */ 'someValue' /* Comment after object separator */ /* Comment after object value */,
