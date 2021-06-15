@@ -28,6 +28,9 @@ export function Menu() {
                   key={item.name}
                   href={item.href}
                   className='hidden md:block font-medium text-gray-900 hover:text-gray-900 text-lg'
+                  onMouseDown={() =>
+                    gtag('event', 'navigate', { category: 'links', label: item.href, value: 1 })
+                  }
                 >
                   {item.name}
                 </a>
