@@ -1,8 +1,9 @@
 import * as React from 'react'
 import { Header } from '../../components/header'
-import { Menu } from '../../components/menu'
 import { MainTitle } from '../../components/main-title'
+import { Menu } from '../../components/menu'
 import { Paragraph } from '../../components/paragraph'
+import { ContactUs } from '../../components/contact-us'
 import { GhostBrowser } from '../../components/ghostbrowser'
 import { HostedImage } from '../../components/hosted-image'
 import { CookieConsentBar } from '../../components/cookie-consent'
@@ -31,7 +32,7 @@ export default function Blog() {
       <div className='pt-28 pb-28 text-center'>
         <MainTitle dark={false}>Introducing Utopia</MainTitle>
       </div>
-      <div className='text-center max-w-4xl mx-auto'>
+      <div className='text-center sm:px-4 max-w-3xl mx-auto'>
         <Paragraph dark={false}>
           Today we’re announcing the alpha version of Utopia, a design and coding environment for
           React projects and components that runs in the browser. It combines VSCode with a design
@@ -143,6 +144,9 @@ export default function Blog() {
           <br />
           Team Utopia
         </Paragraph>
+      </div>
+      <div className='max-w-3xl mx-auto pt-12 pb-28'>
+        <ContactUs />
       </div>
       {/* <GhostBrowser className='max-w-4xl mx-auto pb-10'><HostedImage src=''/></GhostBrowser> */}
       <CookieConsentBar />
