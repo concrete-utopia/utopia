@@ -5,6 +5,7 @@ import { MainTitle } from '../../components/main-title'
 import { Paragraph } from '../../components/paragraph'
 import { GhostBrowser } from '../../components/ghostbrowser'
 import { HostedImage } from '../../components/hosted-image'
+import { CookieConsentBar } from '../../components/cookie-consent'
 
 function Video() {
   return (
@@ -149,6 +150,7 @@ export default function Blog() {
         </Paragraph>
       </div>
       {/* <GhostBrowser className='max-w-4xl mx-auto pb-10'><HostedImage src=''/></GhostBrowser> */}
+      <CookieConsentBar />
     </div>
   )
 }
