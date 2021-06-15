@@ -104,6 +104,9 @@ export default function Blog() {
           understands what “source” they refer back to. For conditions, you can see where they
           apply, toggle them manually, and make the changes you want.{' '}
         </Paragraph>
+        <GhostBrowser className='max-w-4xl mx-auto mb-10'>
+          <Video src='https://archipelago.utopia.app/interactive-1.mp4' />
+        </GhostBrowser>
         <Paragraph dark={false}>
           <b>Layouts with real CSS:</b> We built Utopia to deal with real layouts. This includes not
           only layout systems like Flexbox / Autolayout, but also content-driven sizing, and
