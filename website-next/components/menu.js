@@ -32,8 +32,11 @@ export function Menu() {
                     color: item.primary === true ? '#FFFFFF' : '#383C4A',
                     backgroundColor: item.primary === true ? '#181818' : '#FFFFFF',
                     padding: '6px 20px',
-                    borderRadius: 4
+                    borderRadius: 4,
                   }}
+                  onMouseDown={() =>
+                    gtag('event', 'navigate', { category: 'links', label: item.href, value: 1 })
+                  }
                 >
                   {item.name}
                 </a>
