@@ -9,11 +9,11 @@ const navigation = [
 
 export const ContactUs = props => (
   <>
-    <div className='max-w-2xl mx-auto pb-6 font-body text-lg text-center'>
+    <div className='max-w-2xl mx-auto pb-6 font-body md:text-lg sm:text-sm text-center'>
       Stay in touch. We’ll send you a long-form email once or twice a month <br/>(and only when we have enough new development to write about!)
       <BasicEmailSignup />
     </div>
-    <div className='font-body text-lg flex justify-center items-center'>
+    <div className='font-body md:text-lg sm:text-sm flex justify-center items-center'>
       {navigation.map((item) => (
         <a
           key={item.name}
