@@ -32,7 +32,7 @@ export default function Blog() {
       <div className='pt-12 pb-12 md:pt-28 md:pb-28 text-center'>
         <MainTitle dark={false}>Introducing Utopia</MainTitle>
       </div>
-      <div className='text-center px-4 max-w-3xl mx-auto'>
+      <div className='text-left px-4 max-w-3xl mx-auto'>
         <Paragraph dark={false}>
           Today we’re announcing the alpha version of Utopia, a design and coding environment for
           React projects and components that runs in the browser. It combines VSCode with a design
