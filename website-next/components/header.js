@@ -7,6 +7,11 @@ export function Header() {
       <title>Utopia</title>
       <meta name='viewport' content='width=device-width,initial-scale=1,shrink-to-fit=no' />
 
+      {/* preload fonts */}
+      <link rel="preload" href="/fonts/RecklessNeue-Book.woff2" crossorigin="anonymous" as="font" type="font/woff2" />
+      <link rel="preconnect" href="https://fonts.gstatic.com"/>
+      <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+
       {/* favicons cropped to fix vertical alignment, but I don't like that they are cropped */}
       <link rel='icon' href='/favicon-32.png' />
       <link rel='icon' href='/favicon-128.png' />
