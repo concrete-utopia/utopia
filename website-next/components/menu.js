@@ -12,7 +12,11 @@ const navigation = [
   { name: ' ', href: '#' },
   { name: 'Github', href: 'https://github.com/concrete-utopia/utopia' },
   { name: 'Discord', href: 'https://discord.gg/dSWs79MY' },
-  { name: 'Create a Project', href: '/project', primary: true },
+  {
+    name: 'Play with Utopia',
+    href: 'https://utopia.app/p/36ae27be-welcome-to-utopia',
+    primary: true,
+  },
 ]
 
 export function Menu() {

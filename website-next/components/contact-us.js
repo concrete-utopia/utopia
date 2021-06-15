@@ -1,7 +1,7 @@
 import { BasicEmailSignup } from './email-signup'
 
 const navigation = [
-  { name: 'Play with Utopia', href: '/project' },
+  { name: 'Play with Utopia', href: 'https://utopia.app/p/36ae27be-welcome-to-utopia' },
   { name: 'Join our Discord', href: 'https://discord.gg/dSWs79MY' },
   { name: 'Check us on Github', href: 'https://github.com/concrete-utopia/utopia' },
 ]
