@@ -148,7 +148,6 @@ export default function Blog() {
       <div className='max-w-3xl mx-auto pt-12 pb-28'>
         <ContactUs />
       </div>
-      {/* <GhostBrowser className='max-w-4xl mx-auto pb-10'><HostedImage src=''/></GhostBrowser> */}
       <CookieConsentBar />
     </div>
   )
