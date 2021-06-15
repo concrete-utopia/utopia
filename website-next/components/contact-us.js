@@ -9,7 +9,8 @@ const navigation = [
 
 export const ContactUs = props => (
   <>
-    <div className='pb-6 font-body'>
+    <div className='max-w-2xl mx-auto pb-6 font-body text-lg text-center'>
+      Stay in touch. We’ll send you a long-form email once or twice a month <br/>(and only when we have enough new development to write about!)
       <BasicEmailSignup />
     </div>
     <div className='font-body text-lg flex justify-center items-center'>
