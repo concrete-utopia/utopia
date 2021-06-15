@@ -1,5 +1,6 @@
 import * as React from 'react'
 import Head from 'next/head'
+import { srcToCdn } from './hosted-image'
 
 export function Header() {
   return (
@@ -66,12 +67,12 @@ export function Header() {
       <link rel='mask-icon' href='/safari-pinned-tab.svg' color='#5bbad5' />
 
       {/* OpenGraph tags */}
-      <meta property='og:title' content='Utopia:Design and Code on one platform' />
+      <meta property='og:title' content='Utopia: Design and Code on one platform' />
       <meta
         property='og:description'
         content='Utopia is a production-grade online coding and design tool for React that reads and writes code you’ll want to commit.'
       />
-      <meta property='og:image' content='/utopia_og_preview_image@2x.png' />
+      <meta property='og:image' content={srcToCdn('/og-card.png')} />
       <meta property='og:type' content='website' />
     </Head>
   )

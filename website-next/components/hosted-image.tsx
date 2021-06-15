@@ -2,7 +2,7 @@ import * as React from 'react'
 
 const cdnUrl = process.env.UTOPIA_CDN_URL ?? ''
 
-function srcToCdn(src: string): string {
+export function srcToCdn(src: string): string {
   return `${cdnUrl}${src}`
 }
 
