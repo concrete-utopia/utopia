@@ -8,9 +8,39 @@ export function Header() {
       <meta name='viewport' content='width=device-width,initial-scale=1,shrink-to-fit=no' />
 
       {/* preload fonts */}
-      <link rel="preload" href="/fonts/RecklessNeue-Book.woff2" crossorigin="anonymous" as="font" type="font/woff2" />
-      <link rel="preconnect" href="https://fonts.gstatic.com"/>
-      <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+      <link
+        rel='preload'
+        href='/fonts/RecklessNeue-Book.woff2'
+        crossorigin='anonymous'
+        as='font'
+        type='font/woff2'
+      />
+      <link
+        rel='preload'
+        href='/fonts/Moderat-Regular.woff2'
+        crossorigin='anonymous'
+        as='font'
+        type='font/woff2'
+      />
+
+      {/* Google Analytics */}
+      <script async src='https://www.googletagmanager.com/gtag/js?id=G-QM0KPN0RNV'></script>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', {
+          'ad_storage': 'denied',
+          'analytics_storage': 'denied'
+        });
+        gtag('js', new Date());
+        gtag('config', 'G-QM0KPN0RNV', {
+          page_path: window.location.pathname,
+        });
+          `,
+        }}
+      />
 
       {/* favicons cropped to fix vertical alignment, but I don't like that they are cropped */}
       <link rel='icon' href='/favicon-32.png' />

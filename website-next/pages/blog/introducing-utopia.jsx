@@ -6,11 +6,11 @@ import { Paragraph } from '../../components/paragraph'
 import { ContactUs } from '../../components/contact-us'
 import { GhostBrowser } from '../../components/ghostbrowser'
 import { HostedImage } from '../../components/hosted-image'
+import { CookieConsentBar } from '../../components/cookie-consent'
 
 function Video() {
   return (
     <video
-      className='pb-10'
       controls
       autoPlay
       loop
@@ -50,7 +50,7 @@ export default function Blog() {
           <b>design and code update each other, in real time</b>. And unlike any design tool out
           there, it uses React code as the source of truth.
         </Paragraph>
-        <Video />
+        <GhostBrowser className='max-w-4xl mx-auto mb-10'><Video/></GhostBrowser>
         <Paragraph dark={false}>
           We built Utopia to combine the speed of design tools with the power of code. And we wanted
           to do this so that it works with real code, in real projects. Recent years have seen an
@@ -154,6 +154,7 @@ export default function Blog() {
         <ContactUs />
       </div>
       {/* <GhostBrowser className='max-w-4xl mx-auto pb-10'><HostedImage src=''/></GhostBrowser> */}
+      <CookieConsentBar />
     </div>
   )
 }
