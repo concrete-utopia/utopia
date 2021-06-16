@@ -4,14 +4,18 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 # Welcome to Utopia!
-
-To try the latest deployed version of the editor, go to https://utopia.app/project
+Utopia is an integrated design and development environment for React. It uses React code as the source of truth, and lets you make real time changes to components by editing it and using a suite of design tools. It's early software, but you can [try it today](https://utopia.app/project), look at an example project, or read about it on our [blog](https://utopia.app/blog)!
 
 ![screenshot of utopia](https://user-images.githubusercontent.com/2226774/93580752-7b7b8e80-f9a0-11ea-8663-39683a53df2e.png)
 
-# Development
 
-Utopia runs in the browser! To run it, you'll need to run the server (locally) and webpack.
+
+
+# For development: Installing Utopia on your machine
+
+Utopia is browser-based. To run it locally, clone the repo, and then set up the server and webpack by following these instructions.
+
+⚠️ We're looking into M1 related issues for some folks, but have it running successfully on three machine
 
 ## Prerequisites
 
