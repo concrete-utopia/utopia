@@ -2159,7 +2159,9 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSDefault
       parsed = parseColor(matches[2])
       const enabled = matches[1] === undefined && matches[3] === undefined
       if (isRight(parsed)) {
-        return right(cssDefault(cssSolidColor(parsed.value, enabled), false))
+        const underlyingColor = cssSolidColor(parsed.value, enabled)
+        const isDefault = fastDeepEqual(underlyingColor, emptyBackgroundColor)
+        return right(cssDefault(underlyingColor, isDefault))
       } else {
         return parsed
       }
@@ -3667,8 +3669,10 @@ const updateBackgroundImageLayersWithNewValues = (
         if (workingNewValueForAll == null) {
           workingNewValueForAll = !v.enabled
         }
-        v.enabled = workingNewValueForAll
-        return v
+        return {
+          ...v,
+          enabled: workingNewValueForAll,
+        }
       })
       // set all backgroundImage layers to the new value
       return setJSXValueInAttributeAtPath(

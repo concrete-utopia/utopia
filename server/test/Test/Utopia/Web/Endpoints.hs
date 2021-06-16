@@ -8,6 +8,7 @@ module Test.Utopia.Web.Endpoints where
 import           Control.Lens                   hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Lens
+import qualified Data.HashMap.Strict as M
 import           Data.Time
 import           GHC.Conc
 import           Network.HTTP.Client            (CookieJar, cookie_value,
@@ -136,8 +137,17 @@ jpgMediaType = "image" // "jpg"
 jpgBytes :: ByteString
 jpgBytes = "totally a jpg"
 
+textMediaType :: MediaType
+textMediaType = "text" // "plain"
+
+textBytes :: ByteString
+textBytes = "just some random text"
+
 setBodyAsJPG :: Request -> Request
 setBodyAsJPG = setRequestBody (RequestBodyBS jpgBytes) jpgMediaType
+
+setBodyAsText :: Request -> Request
+setBodyAsText = setRequestBody (RequestBodyBS textBytes) textMediaType
 
 validAuthenticate :: ClientM (Headers '[Header "Set-Cookie" SetCookie] Text)
 validAuthenticate = authenticateClient (Just "logmein") (Just "auto-close")
@@ -333,6 +343,23 @@ projectsSpec = around_ withServer $ do
         loadProjectFileClient projectId ["picture.jpg"] identity
       fileFromPath <- either throwIO return fileFromPathResult
       (responseBody fileFromPath) `shouldBe` (toS jpgBytes)
+    it "should load an asset the same as an image" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      projectContents <- getSampleProject
+      fileFromPathResult <- withClientEnv clientEnv $ do
+        _ <- validAuthenticate
+        let assetFile = object [("type", "ASSET_FILE")]
+        let projectContentFile = object [("type", "PROJECT_CONTENT_FILE"), ("fullPath", "/public/text.txt"), ("content", assetFile)]
+        let addAssetJSON = M.insert "text.txt" projectContentFile
+        let lensToAsset = key "projectContents" . key "public" . key "children" . _Object
+        let projectContentsWithAsset = over lensToAsset addAssetJSON projectContents
+        cookieHeader <- getCookieHeader cookieJarTVar
+        createProjectResult <- createProjectClient
+        let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContentsWithAsset)
+        _ <- saveProjectAssetClient cookieHeader projectId ["public", "text.txt"] setBodyAsText
+        loadProjectFileClient projectId ["text.txt"] identity
+      fileFromPath <- either throwIO return fileFromPathResult
+      (responseBody fileFromPath) `shouldBe` (toS textBytes)
   describe "POST /project" $ do
     it "should create a project if a request body is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime

@@ -34,7 +34,10 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
       import { Rectangle } from 'utopia-api'
       export var Card = (props) => {
         return (
-          <div data-uid='card-outer-div' style={{ ...props.style }}>
+          <div
+            data-uid='card-outer-div'
+            style={{ ...props.style }}
+          >
             <div
               data-uid='card-inner-div'
               style={{
@@ -81,7 +84,10 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
       import { Rectangle } from 'utopia-api'
       export var Card = (props) => {
         return (
-          <div data-uid='card-outer-div' style={{ ...props.style }}>
+          <div
+            data-uid='card-outer-div'
+            style={{ ...props.style }}
+          >
             <div
               data-uid='card-inner-div'
               style={{

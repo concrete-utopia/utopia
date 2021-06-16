@@ -91,7 +91,9 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
     }
     case 1: {
       const zerothBackgroundLayer = cssBackgroundLayers[0]
-      if (zerothBackgroundLayer != null) {
+      if (zerothBackgroundLayer == null) {
+        return {}
+      } else {
         if (isCSSSolidBackgroundLayer(zerothBackgroundLayer)) {
           return {
             backgroundColor: cssDefault(
@@ -105,13 +107,13 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
             ...getBackgroundSizeOrUndefinedIfDefault(cssBackgroundLayers),
           }
         }
-      } else {
-        return {}
       }
     }
     default: {
       const zerothBackgroundLayer = cssBackgroundLayers[0]
-      if (zerothBackgroundLayer != null) {
+      if (zerothBackgroundLayer == null) {
+        return {}
+      } else {
         if (isCSSSolidBackgroundLayer(zerothBackgroundLayer)) {
           const newCSSBackgroundLayers = cssBackgroundLayers.slice(1)
           return {
@@ -130,8 +132,6 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
             ...getBackgroundSizeOrUndefinedIfDefault(cssBackgroundLayers),
           }
         }
-      } else {
-        return {}
       }
     }
   }
@@ -148,10 +148,10 @@ export function backgroundImagesAndColorToCSSBackgroundLayerArray(values: {
       return cssBackgroundToCSSBackgroundLayer(bgImage, bgSize)
     })
     .reverse()
-  if (!values.backgroundColor.default) {
-    return [cssSolidBackgroundLayer(values.backgroundColor.value), ...backgroundLayers]
-  } else {
+  if (values.backgroundColor.default) {
     return backgroundLayers
+  } else {
+    return [cssSolidBackgroundLayer(values.backgroundColor.value), ...backgroundLayers]
   }
 }
 

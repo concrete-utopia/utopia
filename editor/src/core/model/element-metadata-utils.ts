@@ -754,8 +754,7 @@ export const MetadataUtils = {
     navigatorTargets: Array<ElementPath>
     visibleNavigatorTargets: Array<ElementPath>
   } {
-    // This function exists separately from getAllPaths because the Navigator has a specific
-    // ordering for the paths, which arguably should go in the bin
+    // This function exists separately from getAllPaths because the Navigator handles collapsed views
     let navigatorTargets: Array<ElementPath> = []
     let visibleNavigatorTargets: Array<ElementPath> = []
 
@@ -770,16 +769,15 @@ export const MetadataUtils = {
         unfurledComponents,
       } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(path, metadata)
       const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
-      const reversedChildren = reverse(childrenIncludingFocusedElements)
 
       const isCollapsed = EP.containsPath(path, collapsedViews)
-      fastForEach(reversedChildren, (childElement) => {
+      fastForEach(childrenIncludingFocusedElements, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
       })
     }
 
-    const reverseCanvasRoots = MetadataUtils.getAllStoryboardChildrenPaths(metadata).reverse()
-    fastForEach(reverseCanvasRoots, (childElement) => {
+    const canvasRoots = MetadataUtils.getAllStoryboardChildrenPaths(metadata)
+    fastForEach(canvasRoots, (childElement) => {
       walkAndAddKeys(childElement, false)
     })
 

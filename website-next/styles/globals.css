@@ -7,9 +7,10 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Inter', serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu,
-    Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-family: 'Moderat-Regular', sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+    Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-feature-settings: 'salt', 'cpsp';
+  text-rendering: geometricPrecision;
   color: #222;
 }
 
@@ -23,43 +24,39 @@ a {
 }
 
 @font-face {
-  font-family: 'Marfa-Medium';
-  src: url('/fonts/Marfa-Semibold.otf');
+  font-family: 'Moderat-Regular';
+  src: url('/fonts/Moderat-Regular.woff2');
   fallback: serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
     Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-style: normal;
-  font-weight: 500;
-  font-display: fallback;
+  font-weight: 400;
+  font-display: optional;
 }
 
 @font-face {
-  font-family: 'Marfa-Semibold';
-  src: url('/fonts/Marfa-Semibold.otf');
+  font-family: 'RecklessNeue-Book';
+  src: url('/fonts/RecklessNeue-Book.woff2');
   fallback: serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
     Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-style: normal;
-  font-weight: 600;
-  font-display: fallback;
+  font-weight: 400;
+  font-display: optional;
 }
 
 @font-face {
-  font-family: 'Marfa-Bold';
-  src: url('/fonts/Marfa-Bold.otf');
+  font-family: 'RecklessNeue-Semibold';
+  src: url('/fonts/RecklessNeue-Semibold.woff2');
   fallback: serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
     Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-style: normal;
-  font-weight: 600;
-  font-display: fallback;
+  font-display: optional;
 }
 
 @font-face {
-  font-family: 'Marfa-Black';
-  src: url('/fonts/Marfa-Black.otf');
+  font-family: 'RecklessNeue-SemiBoldItalic';
+  src: url('/fonts/RecklessNeue-SemiBoldItalic.woff2');
   fallback: serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
     Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
   font-style: normal;
-  font-weight: 900;
-  font-display: fallback;
+  font-display: optional;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap');

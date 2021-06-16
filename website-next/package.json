@@ -18,6 +18,7 @@
     "next": "10.x",
     "prettier": "^2.3.1",
     "react": "17.x",
+    "react-cookie-consent": "6.2.4",
     "react-dom": "17.x",
     "react-select": "3.1.0",
     "timeago.js": "4.0.2",

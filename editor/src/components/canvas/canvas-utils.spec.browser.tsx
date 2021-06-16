@@ -1268,13 +1268,13 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View data-uid='eee'>
-            <View data-uid='ddd' style={{ left: 52, top: -141 }} />
             <View
               style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: -141, width: 256, height: 202 }}
               data-uid='bbb'
             >
               <View data-uid='ccc' />
             </View>
+            <View data-uid='ddd' style={{ left: 52, top: -141 }} />
           </View>
         </View>
       `,

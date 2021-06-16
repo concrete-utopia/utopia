@@ -5,7 +5,7 @@ import { CursorOptions, Options } from 'prettier'
 export const PrettierConfig: Options = {
   parser: 'typescript',
   plugins: [parserTypescript],
-  printWidth: 100,
+  printWidth: 60,
   trailingComma: 'all',
   tabWidth: 2,
   semi: false,

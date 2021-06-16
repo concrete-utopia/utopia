@@ -63,7 +63,7 @@ data AssetFile = AssetFile
                  deriving (Eq, Show, Generic)
 
 instance FromJSON AssetFile where
-  parseJSON = genericParseJSON defaultOptions
+  parseJSON = const $ pure AssetFile
 
 data ProjectFile = ProjectTextFile TextFile
                  | ProjectImageFile ImageFile

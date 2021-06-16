@@ -94,8 +94,14 @@ export var App = (props) => {
 export var storyboard = (props) => {
   return (
     <Storyboard data-uid='${BakedInStoryboardUID}'>
-      <Scene style={{ left: 0, top: 0, width: 400, height: 400 }} data-uid='${TestSceneUID}'>
-        <App data-uid='${TestAppUID}' style={{ bottom: 0, left: 0, right: 0, top: 0 }} />
+      <Scene
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ bottom: 0, left: 0, right: 0, top: 0 }}
+        />
       </Scene>
     </Storyboard>
   )
