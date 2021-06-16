@@ -19,6 +19,7 @@ import {
   Button,
 } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
+import { PRODUCTION_CONFIG } from '../../../../common/env-vars'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.normal,
@@ -131,15 +132,19 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
         <label htmlFor='toggleInterfaceDesignerAdditionalCanvasControls'>Additional controls</label>
       </StyledFlexRow>
       <br />
-      <Button outline spotlight onClick={printEditorState}>
-        Print Current Editor State to Console
-      </Button>
-      <Button outline spotlight onClick={printOpenUiJsFileModel}>
-        Print Current Model to Console
-      </Button>
-      <Button outline spotlight onClick={printCanvasMetadata}>
-        Print Latest Metadata / Measurements
-      </Button>
+      {(PRODUCTION_CONFIG as boolean) ? null : (
+        <>
+          <Button outline spotlight onClick={printEditorState}>
+            Print Current Editor State to Console
+          </Button>
+          <Button outline spotlight onClick={printOpenUiJsFileModel}>
+            Print Current Model to Console
+          </Button>
+          <Button outline spotlight onClick={printCanvasMetadata}>
+            Print Latest Metadata / Measurements
+          </Button>
+        </>
+      )}
       <FeatureSwitchesSection />
     </FlexColumn>
   )

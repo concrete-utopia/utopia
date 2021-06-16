@@ -1,4 +1,5 @@
 import * as localforage from 'localforage'
+import { PRODUCTION_CONFIG } from '../common/env-vars'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
 export type FeatureName =
@@ -22,8 +23,8 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
   'Advanced Resize Box': false,
-  'Re-parse Project Button': false,
-  'Performance Test Triggers': true,
+  'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
+  'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
 }
 
 function settingKeyForName(featureName: FeatureName): string {
