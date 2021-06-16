@@ -71,7 +71,7 @@ type EmptyProjectPageAPI = "p" :> BranchNameParam :> Get '[HTML] H.Html
 
 type ProjectPageAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> BranchNameParam :> Get '[HTML] H.Html
 
-type LoadProjectFileAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "file_path" Text :> RawM
+type LoadProjectFileAPI = "p" :> Capture "project_id" ProjectIdWithSuffix :> Header "If-None-Match" Text :> CaptureAll "file_path" Text :> RawM
 
 type EmptyPreviewPageAPI = "share" :> BranchNameParam :> Get '[HTML] H.Html
 
@@ -103,7 +103,7 @@ type ShowcaseAPI = "v1" :> "showcase" :> Get '[JSON] ProjectListResponse
 
 type SetShowcaseAPI = "v1" :> "showcase" :> "overwrite" :> QueryParam' '[Required] "projects" Text :> Post '[JSON] NoContent
 
-type PreviewProjectFileAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "file_path" Text :> RawM
+type PreviewProjectFileAPI = "share" :> Capture "project_id" ProjectIdWithSuffix :> Header "If-None-Match" Text :> CaptureAll "file_path" Text :> RawM
 
 type RenameProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "path" Text :> QueryParam' '[Required] "old_file_name" Text :> Put '[JSON] NoContent
 
@@ -111,7 +111,7 @@ type DeleteProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" ProjectIdWi
 
 type SaveProjectAssetAPI = "v1" :> "asset" :> Capture "project_id" ProjectIdWithSuffix :> CaptureAll "path" Text :> RawM
 
-type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> Get '[BMP, GIF, JPG, PNG, SVG] BL.ByteString
+type LoadProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> Header "If-None-Match" Text :> RawM
 
 type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" ProjectIdWithSuffix :> ReqBody '[BMP, GIF, JPG, PNG, SVG] BL.ByteString :> Post '[JSON] NoContent
 

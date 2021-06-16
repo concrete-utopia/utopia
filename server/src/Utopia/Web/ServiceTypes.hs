@@ -100,11 +100,11 @@ data ServiceCallsF a = NotFound
                      | CreateProject (Text -> a)
                      | SaveProject SessionUser Text (Maybe Text) (Maybe Value) a
                      | DeleteProject SessionUser Text a
-                     | LoadProjectAsset [Text] (Maybe Application -> a)
+                     | LoadProjectAsset [Text] (Maybe Text) (Maybe Application -> a)
                      | SaveProjectAsset Text Text [Text] (Application -> a)
                      | RenameProjectAsset Text Text OldPathText NewPathText a
                      | DeleteProjectAsset Text Text [Text] a
-                     | LoadProjectThumbnail Text (Maybe BL.ByteString -> a)
+                     | LoadProjectThumbnail Text (Maybe Text) (Maybe Application -> a)
                      | SaveProjectThumbnail Text Text BL.ByteString a
                      | GetProxyManager (Maybe Manager -> a)
                      | GetProjectsForUser Text ([ProjectListing] -> a)
