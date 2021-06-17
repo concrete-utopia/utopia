@@ -188,10 +188,10 @@ innerServerExecutor (SetShowcaseProjects showcaseProjects next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
   setShowcaseProjectsWithPool metrics pool showcaseProjects next
-innerServerExecutor (LoadProjectAsset path action) = do
+innerServerExecutor (LoadProjectAsset path possibleETag action) = do
   awsResource <- fmap _awsResources ask
   let loadCall = maybe loadProjectAssetFromDisk loadProjectAssetFromS3 awsResource
-  application <- loadProjectAssetWithCall loadCall path
+  application <- loadProjectAssetWithCall loadCall path possibleETag
   return $ action application
 innerServerExecutor (SaveProjectAsset user projectID path action) = do
   awsResource <- fmap _awsResources ask
@@ -214,11 +214,11 @@ innerServerExecutor (DeleteProjectAsset user projectID path next) = do
   let deleteCall = maybe deleteProjectAssetOnDisk deleteProjectAssetOnS3 awsResource
   liftIO $ deleteProjectAssetWithCall metrics pool user projectID path deleteCall
   return next
-innerServerExecutor (LoadProjectThumbnail projectID action) = do
+innerServerExecutor (LoadProjectThumbnail projectID possibleETag action) = do
   awsResource <- fmap _awsResources ask
   let loadCall = maybe loadProjectThumbnailFromDisk loadProjectThumbnailFromS3 awsResource
-  loadedThumbnail <- liftIO $ loadCall projectID
-  return $ action loadedThumbnail
+  application <- loadProjectThumbnailWithCall loadCall projectID possibleETag
+  return $ action application
 innerServerExecutor (SaveProjectThumbnail user projectID thumbnail next) = do
   pool <- fmap _projectPool ask
   awsResource <- fmap _awsResources ask
