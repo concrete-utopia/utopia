@@ -105,38 +105,43 @@ interface FlexAlignItemsControlProps extends FlexFieldControlProps<FlexAlignment
   alignItemsFlexEnd: uglyLabel
 }
 
+const alignItemsProp = [createLayoutPropertyPath('alignItems')]
+
 export const FlexAlignItemsControl = betterReactMemo(
   'FlexAlignItemsControl',
   (props: FlexAlignItemsControlProps) => {
     return (
-      <div
-        style={{
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'row',
-        }}
-      >
-        <InspectorContextMenuWrapper
-          id={`alignItems-context-menu`}
-          items={[unsetPropertyMenuItem('Align Items', props.onUnset)]}
-          data={{}}
+      <>
+        <PropertyLabel target={alignItemsProp}>Align</PropertyLabel>
+        <div
+          style={{
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
         >
-          <OptionChainControl
-            id='flex.container.alignItems'
-            key='flex.container.alignItems'
-            testId='flex.container.alignItems'
-            value={props.value}
-            controlStatus={props.controlStatus}
-            controlStyles={props.controlStyles}
-            options={alignItemsOptions(
-              props.alignDirection,
-              props.alignItemsFlexStart,
-              props.alignItemsFlexEnd,
-            )}
-            onSubmitValue={props.onSubmitValue}
-          />
-        </InspectorContextMenuWrapper>
-      </div>
+          <InspectorContextMenuWrapper
+            id={`alignItems-context-menu`}
+            items={[unsetPropertyMenuItem('Align Items', props.onUnset)]}
+            data={{}}
+          >
+            <OptionChainControl
+              id='flex.container.alignItems'
+              key='flex.container.alignItems'
+              testId='flex.container.alignItems'
+              value={props.value}
+              controlStatus={props.controlStatus}
+              controlStyles={props.controlStyles}
+              options={alignItemsOptions(
+                props.alignDirection,
+                props.alignItemsFlexStart,
+                props.alignItemsFlexEnd,
+              )}
+              onSubmitValue={props.onSubmitValue}
+            />
+          </InspectorContextMenuWrapper>
+        </div>
+      </>
     )
   },
 )
@@ -235,6 +240,8 @@ interface FlexGapControlProps extends FlexFieldControlProps<number> {
   onTransientSubmitValue: OnSubmitValueOrEmpty<number>
 }
 
+const flexGapProp = [createLayoutPropertyPath('FlexGap')]
+
 export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapControlProps) => {
   const menuItems = [unsetPropertyMenuItem('Flex Gap', props.onUnset)]
   const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(props.onSubmitValue, props.onUnset)
@@ -243,9 +250,10 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
     props.onUnset,
   )
   return (
-    <>
-      <UIGridRow padded={false} variant='<--------auto-------->|--45px--|'>
-        <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
+    <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
+      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+        <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
+        <UIGridRow padded={false} variant='<--------auto-------->|--45px--|'>
           <SliderControl
             id='flex.container.gap.main'
             key='flex.container.gap.main'
@@ -266,8 +274,6 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             controlStatus={props.controlStatus}
             controlStyles={props.controlStyles}
           />
-        </InspectorContextMenuWrapper>
-        <InspectorContextMenuWrapper id={`gap-main-context-menu`} items={menuItems} data={{}}>
           <SimpleNumberInput
             id='flex.container.gap.main'
             testId='flex.container.gap.main'
@@ -281,9 +287,9 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             controlStatus={props.controlStatus}
             defaultUnitToHide={'px'}
           />
-        </InspectorContextMenuWrapper>
+        </UIGridRow>
       </UIGridRow>
-    </>
+    </InspectorContextMenuWrapper>
   )
 })
 
