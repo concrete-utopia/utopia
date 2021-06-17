@@ -58,15 +58,14 @@ jobs:
       - name: Run the tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-all-ci
-      - name: Send Notification
-        uses: bayssmekanique/action-simple-slack-notifier@v1.2.5
+      - name: Discord Notification
+        uses: Ilshidur/action-discord@0.3.0
         if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          DISCORD_USERNAME: 'Build Failure'
         with:
-          token: ${{ secrets.BUILD_NOTIFIER_SLACK_BOT_TOKEN }}
-          status: ${{ job.status }}
-          channel: '#builds'
-          action: 'Editor Tests'
-          name: master
+          args: 'Editor Tests Failed: https://github.com/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}'
 
   test-server:
     name: Test Server
@@ -105,15 +104,14 @@ jobs:
       - name: Run the tests
         if: steps.cache-server-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
-      - name: Send Notification
-        uses: bayssmekanique/action-simple-slack-notifier@v1.2.5
+      - name: Discord Notification
+        uses: Ilshidur/action-discord@0.3.0
         if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          DISCORD_USERNAME: 'Build Failure'
         with:
-          token: ${{ secrets.BUILD_NOTIFIER_SLACK_BOT_TOKEN }}
-          status: ${{ job.status }}
-          channel: '#builds'
-          action: 'Server Tests'
-          name: master
+          args: 'Server Tests Failed: https://github.com/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}'
 
   trigger-deploy:
     name: Trigger Deploy
