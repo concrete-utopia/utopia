@@ -29,7 +29,8 @@ import           Protolude
 import           Servant                         hiding
                                                  (serveDirectoryFileServer,
                                                   serveDirectoryWith)
-import           Servant.RawM
+import           Servant.Conduit
+import           Servant.RawM.Server
 import           Text.Blaze.Html.Renderer.Text
 import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
@@ -484,7 +485,7 @@ packagePackagerEndpoint versionedPackageName ifModifiedSince possibleOrigin = do
   case possiblePackagerContent of
     Nothing -> notModified -- Not modified.
     Just (packagerContent, lastModified) -> do
-      return $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
+      return $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader $ packagerContent
 
 emptyUserConfigurationResponse :: UserConfigurationResponse
 emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing }

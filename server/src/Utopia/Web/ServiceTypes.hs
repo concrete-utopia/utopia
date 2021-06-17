@@ -13,6 +13,7 @@
 
 module Utopia.Web.ServiceTypes where
 
+import           Conduit
 import           Control.Lens              hiding ((.=))
 import           Control.Monad.Free
 import           Control.Monad.Free.TH
@@ -117,7 +118,7 @@ data ServiceCallsF a = NotFound
                      | GetCommitHash (Text -> a)
                      | GetEditorTextContent (Maybe Text) Text (Text -> a)
                      | GetHashedAssetPaths (Value -> a)
-                     | GetPackagePackagerContent Text (Maybe UTCTime) (Maybe (BL.ByteString, UTCTime) -> a)
+                     | GetPackagePackagerContent Text (Maybe UTCTime) (Maybe (ConduitT () ByteString (ResourceT IO) (), UTCTime) -> a)
                      | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      | GetSiteRoot (Text -> a)
                      | GetPathToServe FilePath (Maybe Text) (FilePath -> a)

@@ -9,12 +9,14 @@
 
 module Utopia.Web.Executors.Common where
 
+import           Conduit
 import           Control.Lens              hiding ((.=), (<.>))
 import           Control.Monad.Catch       hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
 import           Data.Binary.Builder
 import qualified Data.ByteString.Lazy      as BL
+import           Data.Conduit.Combinators
 import qualified Data.HashMap.Strict       as M
 import           Data.IORef
 import           Data.Pool
@@ -27,7 +29,8 @@ import           Network.HTTP.Types.Status
 import           Network.Mime
 import           Network.Wai
 import qualified Network.Wreq              as WR
-import           Protolude                 hiding ((<.>))
+import           Protolude                 hiding (concatMap, intersperse, map,
+                                            sourceFile, (<.>))
 import           Servant
 import           Servant.Client
 import           System.Directory
@@ -84,7 +87,7 @@ data AssetsCaches = AssetsCaches
   , _assetPathDetails :: [PathAndBuilders]
   }
 
-failedAuth0CodeCheck :: (MonadIO m, MonadError ServantErr m) => ServantError -> m a
+failedAuth0CodeCheck :: (MonadIO m, MonadError ServerError m) => ClientError -> m a
 failedAuth0CodeCheck servantError = do
   putErrLn $ (show servantError :: String)
   throwError err500
@@ -95,7 +98,7 @@ successfulAuthCheck metrics pool sessionState action user = do
   possibleSetCookie <- liftIO $ newSessionForUser sessionState $ userDetailsUserId user
   return $ action possibleSetCookie
 
-auth0CodeCheck :: (MonadIO m, MonadError ServantErr m) => DB.DatabaseMetrics -> Pool SqlBackend -> SessionState -> Auth0Resources -> Text -> (Maybe SetCookie -> a) -> m a
+auth0CodeCheck :: (MonadIO m, MonadError ServerError m) => DB.DatabaseMetrics -> Pool SqlBackend -> SessionState -> Auth0Resources -> Text -> (Maybe SetCookie -> a) -> m a
 auth0CodeCheck metrics pool sessionState auth0Resources authCode action = do
   userOrError <- liftIO $ getUserDetailsFromCode auth0Resources authCode
   either failedAuth0CodeCheck (successfulAuthCheck metrics pool sessionState action) userOrError
@@ -238,34 +241,46 @@ getRoundedAccessTime filePath = do
   let roundedDiffTime = fromInteger $ round $ utctDayTime time
   return $ time { utctDayTime = roundedDiffTime }
 
-cachePackagerContent :: Text -> Maybe UTCTime -> IO BL.ByteString -> IO (Maybe (BL.ByteString, UTCTime))
-cachePackagerContent versionedPackageName ifModifiedSince fallback = do
+type ConduitBytes m = ConduitT () ByteString m ()
+
+cachePackagerContent :: (MonadResource m, MonadMask m) => QSem -> Text -> Maybe UTCTime -> ConduitBytes m -> IO (Maybe (ConduitBytes m, UTCTime))
+cachePackagerContent semaphore versionedPackageName ifModifiedSince fallback = do
   let cacheFileParentPath = ".utopia-cache" </> "packager" </> toS versionedPackageName
   let cacheFilePath = cacheFileParentPath </> "cache.json"
   fileExists <- doesFileExist cacheFilePath
-  let getLastModified = getRoundedAccessTime cacheFilePath
+  let getLastModified = getRoundedAccessTime cacheFileParentPath
   let whenFileExists = do
             lastModified <- getLastModified
             -- Handle checking the if-modified-since value should there be one, defaulting to always loading.
             let shouldLoad = maybe True (\ifms -> ifms < lastModified) ifModifiedSince
             -- Incorporate the last modified value into the return value.
-            let fromDisk = fmap (\result -> Just (result, lastModified)) $ BL.readFile cacheFilePath
-            if shouldLoad then fromDisk else return Nothing
+            let fromDisk = sourceFile cacheFilePath
+            pure $ if shouldLoad then Just (fromDisk, lastModified) else Nothing
   let whenFileDoesNotExist = do
-            result <- fallback
+            -- Create the parent directory.
             createDirectoryIfMissing True cacheFileParentPath
-            BL.writeFile cacheFilePath result
-            -- Use the same function that is used when the file exists.
+            -- Get the last modified from the directory just created.
             lastModified <- getLastModified
-            return $ Just (result, lastModified)
-  if fileExists then whenFileExists else whenFileDoesNotExist
+            -- Write out the file as well as returning the content.
+            let writeToFile = passthroughSink (sinkFile cacheFilePath) (const $ pure ())
+            -- Include the fallback.
+            pure $ Just (fallback .| writeToFile, lastModified)
+  let whenFileDoesNotExistSafe = withSemaphore semaphore $ do
+            reallyExists <- doesFileExist cacheFilePath
+            if reallyExists then whenFileExists else whenFileDoesNotExist
+  if fileExists then whenFileExists else whenFileDoesNotExistSafe
 
-getPackagerContent :: QSem -> Text -> Maybe UTCTime -> IO (Maybe (BL.ByteString, UTCTime))
+filePairsToBytes :: (Monad m) => ConduitT () (FilePath, Value) m () -> ConduitBytes m
+filePairsToBytes filePairs =
+  let pairToBytes (filePath, pathValue) = (toS $ encode filePath) <> ": " <> (toS $ encode pathValue)
+      pairsAsBytes = filePairs .| map pairToBytes
+      withCommas = pairsAsBytes .| intersperse ", "
+   in sequence_ [yield "{\"contents\": ", withCommas, yield "}"]
+
+getPackagerContent :: (MonadResource m, MonadMask m) => QSem -> Text -> Maybe UTCTime -> IO (Maybe (ConduitBytes m, UTCTime))
 getPackagerContent semaphore versionedPackageName ifModifiedSince = do
-  cachePackagerContent versionedPackageName ifModifiedSince $ do
-    filesAndContent <- withInstalledProject semaphore versionedPackageName getModuleAndDependenciesFiles
-    let encodingResult = toEncoding $ M.singleton contentsText filesAndContent
-    return $ toLazyByteString $ fromEncoding encodingResult
+  cachePackagerContent semaphore versionedPackageName ifModifiedSince $ do
+    withInstalledProject versionedPackageName (\path -> filePairsToBytes $ getModuleAndDependenciesFiles path)
 
 getUserConfigurationWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
 getUserConfigurationWithPool metrics pool userID action = do

@@ -8,7 +8,7 @@ module Test.Utopia.Web.Endpoints where
 import           Control.Lens                   hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Lens
-import qualified Data.HashMap.Strict as M
+import qualified Data.HashMap.Strict            as M
 import           Data.Time
 import           GHC.Conc
 import           Network.HTTP.Client            (CookieJar, cookie_value,
