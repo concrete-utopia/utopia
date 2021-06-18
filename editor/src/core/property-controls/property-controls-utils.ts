@@ -27,6 +27,7 @@ import {
   UtopiaJSXComponent,
   JSXElement,
   getJSXElementNameLastPart,
+  isIntrinsicElement,
 } from '../shared/element-template'
 import {
   esCodeFile,
@@ -42,6 +43,7 @@ import {
   getOpenUIJSFileKey,
   EditorState,
   withUnderlyingTarget,
+  packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
@@ -49,6 +51,8 @@ import { ExportsInfo } from '../workers/ts/ts-worker'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { importedFromWhere } from '../../components/editor/import-utils'
+import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
+import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -405,6 +409,12 @@ export function getPropertyControlsForTarget(
            * but for now, I just return a one-size-fits-all PropertyControls result here
            */
           return HtmlElementStyleObjectProps
+        } else if (isIntrinsicElement(element.name)) {
+          const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
+          const dependencies = dependenciesFromPackageJson(packageJsonFile)
+          if (dependencies.some((dependency) => dependency.name === '@react-three/fiber')) {
+            return ReactThreeFiberControls[element.name.baseVariable]
+          }
         } else if (openFilePath != null) {
           filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
         }
