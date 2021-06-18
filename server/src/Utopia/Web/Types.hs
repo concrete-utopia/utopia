@@ -118,13 +118,13 @@ type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Proje
 
 type DownloadGithubProjectAPI = "v1" :> "github" :> Capture "owner" Text :> Capture "project" Text :> Get '[ZIP] BL.ByteString
 
-type PackagePackagerResponse =  StreamGet NoFraming ForcedJSON (Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ()))
+type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 
 type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
                        :> Capture "versioned_package_name" Text
                        :> Header "If-Modified-Since" LastModifiedTime
                        :> Header "Origin" Text
-                       :> PackagePackagerResponse
+                       :> StreamGet NoFraming ForcedJSON PackagePackagerResponse
 
 type GetPackageJSONAPI = "v1" :> "javascript" :> "package" :> "metadata" :> Capture "package_name" Text :> Get '[JSON] Value
 

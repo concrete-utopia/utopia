@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2283e9d8d2c16a07bc6374694dde9856de22da5c7dc1530a5c750c2dc53324e4
+-- hash: e83d456103edba455f137157039a03c0c8ffec40f6796a1389ac1cacf963ee6f
 
 name:           utopia-web
 version:        0.1.0.4
@@ -40,6 +40,7 @@ executable utopia-web
       Utopia.Web.Github
       Utopia.Web.JSON
       Utopia.Web.Metrics
+      Utopia.Web.Packager.Locking
       Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
       Utopia.Web.Servant
@@ -66,6 +67,7 @@ executable utopia-web
     , blaze-html
     , bytestring
     , case-insensitive
+    , concurrent-extra
     , conduit
     , cookie
     , cryptohash-sha256
@@ -156,6 +158,7 @@ test-suite utopia-web-test
       Utopia.Web.Github
       Utopia.Web.JSON
       Utopia.Web.Metrics
+      Utopia.Web.Packager.Locking
       Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
       Utopia.Web.Servant
@@ -183,6 +186,7 @@ test-suite utopia-web-test
     , blaze-html
     , bytestring
     , case-insensitive
+    , concurrent-extra
     , conduit
     , cookie
     , cryptohash-sha256

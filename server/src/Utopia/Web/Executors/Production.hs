@@ -41,6 +41,7 @@ import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
+import Utopia.Web.Packager.Locking
 
 {-|
   Any long living resources like database pools live in here.
@@ -57,6 +58,7 @@ data ProductionServerResources = ProductionServerResources
                                , _registryManager :: Manager
                                , _assetsCaches    :: AssetsCaches
                                , _nodeSemaphore   :: QSem
+                               , _locksRef        :: PackageVersionLocksRef
                                , _siteHost        :: Text
                                , _branchDownloads :: Maybe BranchDownloads
                                }
@@ -178,7 +180,8 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
   packageMetadata <- liftIO $ lookupPackageJSON manager qualifiedPackageName
   return $ action packageMetadata
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
-  packageMetadata <- liftIO $ findMatchingVersions javascriptPackageName maybeJavascriptPackageVersion
+  semaphore <- fmap _nodeSemaphore ask
+  packageMetadata <- liftIO $ findMatchingVersions semaphore javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -193,7 +196,8 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   return $ action _editorMappings
 innerServerExecutor (GetPackagePackagerContent versionedPackageName ifModifiedSince action) = do
   semaphore <- fmap _nodeSemaphore ask
-  packagerContent <- liftIO $ getPackagerContent semaphore versionedPackageName ifModifiedSince
+  locksRef <- fmap _locksRef ask
+  packagerContent <- liftIO $ getPackagerContent semaphore locksRef versionedPackageName ifModifiedSince
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
@@ -270,6 +274,7 @@ initialiseResources = do
   _nodeSemaphore <- newQSem 1
   _siteHost <- fmap toS $ getEnv "SITE_HOST"
   _branchDownloads <- createBranchDownloads
+  _locksRef <- newIORef mempty
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop

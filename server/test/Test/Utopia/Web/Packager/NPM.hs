@@ -2,7 +2,11 @@
 
 module Test.Utopia.Web.Packager.NPM where
 
+import Conduit
+import Control.Lens
 import qualified Data.HashMap.Strict     as Map
+import Data.List (stripPrefix)
+import Data.Text (pack)
 import           Protolude
 import           System.Directory
 import           System.FilePath
@@ -44,25 +48,25 @@ expectedFilenames = [
   "/node_modules/react/umd/react.production.min.js",
   "/node_modules/react/umd/react.profiling.min.js"]
 
-getNodeModulesSubDirectories :: FilePath -> IO [FilePath]
-getNodeModulesSubDirectories projectFolder = do
-  paths <- listDirectory (projectFolder </> "node_modules")
-  return $ sort paths
+getNodeModulesSubDirectories :: FilePath -> ConduitT () FilePath (ResourceT IO) ()
+getNodeModulesSubDirectories projectFolder = 
+  let targetDir = projectFolder </> "node_modules"
+   in mapOutput (\path -> fromMaybe path $ stripPrefix (targetDir <> "/") path) $ sourceDirectory targetDir
 
 npmSpec :: Spec
 npmSpec = do
   describe "withInstalledProject" $ do
     it "should have the various dependencies in node_modules for react" $ do
       semaphore <- newQSem 1
-      result <- withInstalledProject semaphore "react@16.13.1" getNodeModulesSubDirectories
-      result `shouldBe` [".bin", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
+      result <- runResourceT $ sourceToList $ withInstalledProject semaphore "react@16.13.1" getNodeModulesSubDirectories
+      (sort result) `shouldBe` [".bin", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
     it "should fail for a non-existent project" $ do
       semaphore <- newQSem 1
-      withInstalledProject semaphore "non-existent-project-that-will-never-exist@9.9.9.9.9.9" getNodeModulesSubDirectories `shouldThrow` anyIOException
+      (runResourceT $ sourceToList $ withInstalledProject semaphore "non-existent-project-that-will-never-exist@9.9.9.9.9.9" getNodeModulesSubDirectories) `shouldThrow` anyIOException
   describe "getModuleAndDependenciesFiles" $ do
     it "should get a bunch of .js, .d.ts and package.json files" $ do
       semaphore <- newQSem 1
-      result <- withInstalledProject semaphore "react@16.13.1" getModuleAndDependenciesFiles
-      let filteredResult = Map.filter (\v -> v /= Placeholder) result
-      let sortedFilenames = sort $ Map.keys filteredResult
+      result <- runResourceT $ sourceToList $ withInstalledProject semaphore "react@16.13.1" getModuleAndDependenciesFiles
+      let filteredResult = filter (\(k, v) -> v /= encodedPlaceholder) result
+      let sortedFilenames = sort $ fmap pack $ toListOf (traverse . _1) filteredResult
       sortedFilenames `shouldBe` expectedFilenames

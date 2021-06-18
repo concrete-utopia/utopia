@@ -21,6 +21,7 @@ import           Protolude
 import           Servant
 import           Servant.Client
 import           Servant.Client.Core
+import Servant.RawM.Client
 import           System.Timeout
 import           Test.Hspec
 import           Test.Utopia.Web.Executors.Test
@@ -43,16 +44,16 @@ withServer action = do
     identity
     (const (waitUntilServerUp >> action))
 
-errorWithStatusCode :: Status -> Either ServantError a -> Bool
-errorWithStatusCode expectedStatus (Left (FailureResponse response)) = responseStatusCode response == expectedStatus
-errorWithStatusCode _ _                                              = False
+errorWithStatusCode :: Status -> Either ClientError a -> Bool
+errorWithStatusCode expectedStatus (Left (FailureResponse _ response)) = responseStatusCode response == expectedStatus
+errorWithStatusCode _ _                                                = False
 
 withClientAndCookieJar :: ((ClientEnv, TVar CookieJar) -> IO a) -> IO a
 withClientAndCookieJar specCall = do
   let testBaseUrl = BaseUrl Http "localhost" 8888 mempty
   httpManager <- newManager defaultManagerSettings
   httpCookieJar <- newTVarIO mempty
-  let clientEnv = ClientEnv httpManager testBaseUrl (Just httpCookieJar)
+  let clientEnv = ClientEnv httpManager testBaseUrl (Just httpCookieJar) defaultMakeClientRequest
   specCall (clientEnv, httpCookieJar)
 
 withClient :: (ClientEnv -> IO a) -> IO a
@@ -80,7 +81,7 @@ getPossibleModifiedAt :: LoadProjectResponse -> Maybe UTCTime
 getPossibleModifiedAt ProjectLoaded{..} = Just _modifiedAt
 getPossibleModifiedAt _                 = Nothing
 
-withClientEnv :: ClientEnv -> ClientM a -> IO (Either ServantError a)
+withClientEnv :: ClientEnv -> ClientM a -> IO (Either ClientError a)
 withClientEnv = flip runClientM
 
 authenticateClient :: Maybe Text -> Maybe Text -> ClientM (Headers '[Header "Set-Cookie" SetCookie] Text)
@@ -176,9 +177,9 @@ updateAssetPathSpec = around_ withServer $ do
         fromOldPath <- loadProjectFileClient savedProjectId ["assets", "picture.jpg"] identity
         return fromOldPath
       case assetFromOldPathResult of
-        (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
-        (Left _)                          -> expectationFailure "Unexpected response type."
-        (Right _)                         -> expectationFailure "Unexpected successful response."
+        (Left (FailureResponse _ response)) -> responseStatusCode response `shouldBe` notFound404
+        (Left _)                            -> expectationFailure "Unexpected response type."
+        (Right _)                           -> expectationFailure "Unexpected successful response."
 
 deleteAssetSpec :: Spec
 deleteAssetSpec = around_ withServer $ do
@@ -197,9 +198,9 @@ deleteAssetSpec = around_ withServer $ do
         loaded <- loadProjectFileClient projectId ["assets", "picture.jpg"] identity
         return loaded
       case loadedFromPath of
-        (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
-        (Left _)                          -> expectationFailure "Unexpected response type."
-        (Right _)                         -> expectationFailure "Unexpected successful response."
+        (Left (FailureResponse _ response)) -> responseStatusCode response `shouldBe` notFound404
+        (Left _)                            -> expectationFailure "Unexpected response type."
+        (Right _)                           -> expectationFailure "Unexpected successful response."
 
 saveUserConfigurationSpec :: Spec
 saveUserConfigurationSpec = around_ withServer $ do
@@ -316,9 +317,9 @@ projectsSpec = around_ withServer $ do
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         loadProjectFileClient projectId ["src", "non-existent-file", "index.js"] identity
       case fileFromPathResult of
-        (Left (FailureResponse response)) -> responseStatusCode response `shouldBe` notFound404
-        (Left _)                          -> expectationFailure "Unexpected response type."
-        (Right _)                         -> expectationFailure "Unexpected successful response."
+        (Left (FailureResponse _ response)) -> responseStatusCode response `shouldBe` notFound404
+        (Left _)                            -> expectationFailure "Unexpected response type."
+        (Right _)                           -> expectationFailure "Unexpected successful response."
     it "should fallback to using the asset load logic" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       fileFromPathResult <- withClientEnv clientEnv $ do

@@ -25,8 +25,8 @@ handleVersionsLookupError :: IOException -> IO (Maybe Value)
 handleVersionsLookupError _ = return Nothing
 
 -- Find Applicable Versions using `npm view packageName@version version --json
-findMatchingVersions :: Text -> Maybe Text -> IO (Maybe Value)
-findMatchingVersions jsPackageName maybePackageVersion = do
+findMatchingVersions :: QSem -> Text -> Maybe Text -> IO (Maybe Value)
+findMatchingVersions semaphore jsPackageName maybePackageVersion = withSemaphore semaphore $ do
   let atPackageVersion = maybe "" (\v -> "@" <> toS v) maybePackageVersion
   let packageNameAtPackageVersion = jsPackageName <> atPackageVersion
   let versionsProc = proc "npm" ["view", toS packageNameAtPackageVersion, "version", "--json"]
@@ -46,8 +46,8 @@ ioErrorCatcher _ = pure ()
 ignoringIOErrors :: MonadCatch m => m () -> m ()
 ignoringIOErrors action = catch action ioErrorCatcher
 
-withInstalledProject :: (MonadIO m, MonadMask m, MonadResource m) => Text -> (FilePath -> ConduitT i o m r) -> ConduitT i o m r
-withInstalledProject versionedPackageName withInstalledPath = do
+withInstalledProject :: (MonadIO m, MonadMask m, MonadResource m) => QSem -> Text -> (FilePath -> ConduitT i o m r) -> ConduitT i o m r
+withInstalledProject semaphore versionedPackageName withInstalledPath = do
   -- Create temporary folder.
   let createDir = do
         tmpDir <- getCanonicalTemporaryDirectory
@@ -57,7 +57,7 @@ withInstalledProject versionedPackageName withInstalledPath = do
     -- Run `npm install "packageName@packageVersion"`.
     let baseProc = proc "npm" ["install", "--silent", "--ignore-scripts", toS versionedPackageName]
     let procWithCwd = baseProc { cwd = Just tempDir }
-    liftIO $ do
+    liftIO $ withSemaphore semaphore $ do
       putText "Starting NPM Install."
       readCreateProcess procWithCwd ""
       putText "NPM Install Finished."

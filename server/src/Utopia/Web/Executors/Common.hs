@@ -13,6 +13,7 @@ import           Conduit
 import           Control.Lens              hiding ((.=), (<.>))
 import           Control.Monad.Catch       hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
+import Control.Concurrent.ReadWriteLock
 import           Data.Aeson
 import           Data.Binary.Builder
 import qualified Data.ByteString.Lazy      as BL
@@ -44,6 +45,7 @@ import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types     (Auth0Resources)
 import qualified Utopia.Web.Database       as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
@@ -229,12 +231,6 @@ emptyAssetsCaches _assetPathDetails = do
   _assetResultCache <- newIORef $ AssetResultCache (toJSON $ object []) mempty
   return $ AssetsCaches{..}
 
-contentText :: Text
-contentText = "content"
-
-contentsText :: Text
-contentsText = "contents"
-
 getRoundedAccessTime :: String -> IO UTCTime
 getRoundedAccessTime filePath = do
   time <- getAccessTime filePath
@@ -243,16 +239,18 @@ getRoundedAccessTime filePath = do
 
 type ConduitBytes m = ConduitT () ByteString m ()
 
-cachePackagerContent :: (MonadResource m, MonadMask m) => QSem -> Text -> Maybe UTCTime -> ConduitBytes m -> IO (Maybe (ConduitBytes m, UTCTime))
-cachePackagerContent semaphore versionedPackageName ifModifiedSince fallback = do
+cachePackagerContent :: (MonadResource m, MonadMask m) => PackageVersionLocksRef -> Text -> Maybe UTCTime -> ConduitBytes m -> IO (Maybe (ConduitBytes m, UTCTime))
+cachePackagerContent locksRef versionedPackageName ifModifiedSince fallback = do
   let cacheFileParentPath = ".utopia-cache" </> "packager" </> toS versionedPackageName
   let cacheFilePath = cacheFileParentPath </> "cache.json"
   fileExists <- doesFileExist cacheFilePath
+  -- Use the parent path as we can create that and get a last modified date
+  -- from it before the file is fully written to disk.
   let getLastModified = getRoundedAccessTime cacheFileParentPath
   let whenFileExists = do
             lastModified <- getLastModified
             -- Handle checking the if-modified-since value should there be one, defaulting to always loading.
-            let shouldLoad = maybe True (\ifms -> ifms < lastModified) ifModifiedSince
+            let shouldLoad = maybe True (< lastModified) ifModifiedSince
             -- Incorporate the last modified value into the return value.
             let fromDisk = sourceFile cacheFilePath
             pure $ if shouldLoad then Just (fromDisk, lastModified) else Nothing
@@ -262,12 +260,17 @@ cachePackagerContent semaphore versionedPackageName ifModifiedSince fallback = d
             -- Get the last modified from the directory just created.
             lastModified <- getLastModified
             -- Write out the file as well as returning the content.
-            let writeToFile = passthroughSink (sinkFile cacheFilePath) (const $ pure ())
+            let writeToFile = passthroughSink (sinkFileCautious cacheFilePath) (const $ pure ())
             -- Include the fallback.
-            pure $ Just (fallback .| writeToFile, lastModified)
-  let whenFileDoesNotExistSafe = withSemaphore semaphore $ do
-            reallyExists <- doesFileExist cacheFilePath
-            if reallyExists then whenFileExists else whenFileDoesNotExist
+            pure (fallback .| writeToFile, lastModified)
+  let whenFileDoesNotExistSafe = do
+            lock <- getPackageVersionLock locksRef versionedPackageName
+            writeAcquired <- tryAcquireWrite lock
+            case writeAcquired of
+              False -> withRead lock $ whenFileExists
+              True -> do
+                (cond, lastModified) <- whenFileDoesNotExist
+                pure $ Just (bracketP (pure ()) (const $ releaseWrite lock) (const cond), lastModified)
   if fileExists then whenFileExists else whenFileDoesNotExistSafe
 
 filePairsToBytes :: (Monad m) => ConduitT () (FilePath, Value) m () -> ConduitBytes m
@@ -275,12 +278,12 @@ filePairsToBytes filePairs =
   let pairToBytes (filePath, pathValue) = (toS $ encode filePath) <> ": " <> (toS $ encode pathValue)
       pairsAsBytes = filePairs .| map pairToBytes
       withCommas = pairsAsBytes .| intersperse ", "
-   in sequence_ [yield "{\"contents\": ", withCommas, yield "}"]
+   in sequence_ [yield "{\"contents\": {", withCommas, yield "}}"]
 
-getPackagerContent :: (MonadResource m, MonadMask m) => QSem -> Text -> Maybe UTCTime -> IO (Maybe (ConduitBytes m, UTCTime))
-getPackagerContent semaphore versionedPackageName ifModifiedSince = do
-  cachePackagerContent semaphore versionedPackageName ifModifiedSince $ do
-    withInstalledProject versionedPackageName (\path -> filePairsToBytes $ getModuleAndDependenciesFiles path)
+getPackagerContent :: (MonadResource m, MonadMask m) => QSem -> PackageVersionLocksRef -> Text -> Maybe UTCTime -> IO (Maybe (ConduitBytes m, UTCTime))
+getPackagerContent npmSemaphore packageLocksRef versionedPackageName ifModifiedSince = do
+  cachePackagerContent packageLocksRef versionedPackageName ifModifiedSince $ do
+    withInstalledProject npmSemaphore versionedPackageName (\path -> filePairsToBytes $ getModuleAndDependenciesFiles path)
 
 getUserConfigurationWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
 getUserConfigurationWithPool metrics pool userID action = do

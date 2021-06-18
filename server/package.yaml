@@ -18,6 +18,7 @@ dependencies:
   - blaze-html
   - bytestring
   - case-insensitive
+  - concurrent-extra
   - conduit
   - cookie
   - cryptohash-sha256
