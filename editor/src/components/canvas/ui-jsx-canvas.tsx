@@ -476,7 +476,9 @@ function useGetStoryboardRoot(
           transientFilesState,
           resolve,
         )
-  const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
+  const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(
+    validPaths[0] ?? EP.emptyElementPath,
+  )
 
   return {
     StoryboardRootComponent: StoryboardRootComponent,
