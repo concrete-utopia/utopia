@@ -21,7 +21,7 @@ import           Protolude
 import           Servant
 import           Servant.Client
 import           Servant.Client.Core
-import Servant.RawM.Client
+import           Servant.RawM.Client
 import           System.Timeout
 import           Test.Hspec
 import           Test.Utopia.Web.Executors.Test

@@ -2,11 +2,11 @@
 
 module Test.Utopia.Web.Packager.NPM where
 
-import Conduit
-import Control.Lens
+import           Conduit
+import           Control.Lens
 import qualified Data.HashMap.Strict     as Map
-import Data.List (stripPrefix)
-import Data.Text (pack)
+import           Data.List               (stripPrefix)
+import           Data.Text               (pack)
 import           Protolude
 import           System.Directory
 import           System.FilePath
@@ -49,7 +49,7 @@ expectedFilenames = [
   "/node_modules/react/umd/react.profiling.min.js"]
 
 getNodeModulesSubDirectories :: FilePath -> ConduitT () FilePath (ResourceT IO) ()
-getNodeModulesSubDirectories projectFolder = 
+getNodeModulesSubDirectories projectFolder =
   let targetDir = projectFolder </> "node_modules"
    in mapOutput (\path -> fromMaybe path $ stripPrefix (targetDir <> "/") path) $ sourceDirectory targetDir
 

@@ -10,18 +10,18 @@
 module Utopia.Web.Executors.Common where
 
 import           Conduit
-import           Control.Lens              hiding ((.=), (<.>))
-import           Control.Monad.Catch       hiding (Handler, catch)
+import           Control.Concurrent.ReadWriteLock
+import           Control.Lens                     hiding ((.=), (<.>))
+import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
-import Control.Concurrent.ReadWriteLock
 import           Data.Aeson
 import           Data.Binary.Builder
-import qualified Data.ByteString.Lazy      as BL
+import qualified Data.ByteString.Lazy             as BL
 import           Data.Conduit.Combinators
-import qualified Data.HashMap.Strict       as M
+import qualified Data.HashMap.Strict              as M
 import           Data.IORef
 import           Data.Pool
-import           Data.String               (String)
+import           Data.String                      (String)
 import           Data.Time
 import           Database.Persist.Sql
 import           Network.HTTP.Client
@@ -29,21 +29,22 @@ import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Mime
 import           Network.Wai
-import qualified Network.Wreq              as WR
-import           Protolude                 hiding (concatMap, intersperse, map,
-                                            sourceFile, (<.>))
+import qualified Network.Wreq                     as WR
+import           Protolude                        hiding (concatMap,
+                                                   intersperse, map, sourceFile,
+                                                   (<.>))
 import           Servant
 import           Servant.Client
 import           System.Directory
 import           System.Environment
 import           System.FilePath
-import           System.Metrics            hiding (Value)
-import qualified Text.Blaze.Html5          as H
+import           System.Metrics                   hiding (Value)
+import qualified Text.Blaze.Html5                 as H
 import           Utopia.Web.Assets
-import           Utopia.Web.Auth           (getUserDetailsFromCode)
+import           Utopia.Web.Auth                  (getUserDetailsFromCode)
 import           Utopia.Web.Auth.Session
-import           Utopia.Web.Auth.Types     (Auth0Resources)
-import qualified Utopia.Web.Database       as DB
+import           Utopia.Web.Auth.Types            (Auth0Resources)
+import qualified Utopia.Web.Database              as DB
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM

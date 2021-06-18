@@ -37,11 +37,11 @@ import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
+import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
-import Utopia.Web.Packager.Locking
 
 {-|
   Any long living resources like database pools live in here.

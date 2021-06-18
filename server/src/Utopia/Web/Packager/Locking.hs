@@ -9,12 +9,12 @@
 
 module Utopia.Web.Packager.Locking where
 
-import           Protolude                 
-import qualified Data.HashMap.Strict       as M
-import Data.IORef
-import Control.Concurrent.ReadWriteLock
+import           Control.Concurrent.ReadWriteLock
+import qualified Data.HashMap.Strict              as M
+import           Data.IORef
+import           Protolude
 
-type PackageVersionLocks = M.HashMap Text RWLock 
+type PackageVersionLocks = M.HashMap Text RWLock
 
 type PackageVersionLocksRef = IORef PackageVersionLocks
 
