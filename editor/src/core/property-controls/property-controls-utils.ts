@@ -51,7 +51,6 @@ import { ExportsInfo } from '../workers/ts/ts-worker'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { importedFromWhere } from '../../components/editor/import-utils'
-import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 
 export interface FullNodeModulesUpdate {
@@ -412,9 +411,9 @@ export function getPropertyControlsForTarget(
         } else if (isIntrinsicElement(element.name)) {
           const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
           const dependencies = dependenciesFromPackageJson(packageJsonFile)
-          if (dependencies.some((dependency) => dependency.name === '@react-three/fiber')) {
-            return ReactThreeFiberControls[element.name.baseVariable]
-          }
+          // if (dependencies.some((dependency) => dependency.name === '@react-three/fiber')) {
+          //   return ReactThreeFiberControls[element.name.baseVariable]
+          // }
         } else if (openFilePath != null) {
           filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
         }
