@@ -118,7 +118,7 @@ export interface InspectorPropsContextData {
 export interface InspectorCallbackContextData {
   selectedViewsRef: ReadonlyRef<Array<ElementPath>>
   onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
-  onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void
+  onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>, transient: boolean) => void
 }
 
 export const InspectorPropsContext = createContext<InspectorPropsContextData>({
@@ -370,7 +370,10 @@ export function useInspectorStyleInfo<P extends ParsedCSSPropertiesKeys>(
 export function useInspectorContext(): {
   selectedViewsRef: ReadonlyRef<Array<ElementPath>>
   onContextSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
-  onContextUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void
+  onContextUnsetValue: (
+    propertyPath: PropertyPath | Array<PropertyPath>,
+    transient: boolean,
+  ) => void
 } {
   const { onSubmitValue, onUnsetValue, selectedViewsRef } = React.useContext(
     InspectorCallbackContext,
@@ -520,7 +523,10 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
   )
   const onUnsetValues = React.useCallback(() => {
-    onUnsetValue(propKeys.map((propKey) => pathMappingFn(propKey, target)))
+    onUnsetValue(
+      propKeys.map((propKey) => pathMappingFn(propKey, target)),
+      false,
+    )
   }, [onUnsetValue, propKeys, pathMappingFn, target])
 
   const transformedValue = transformValue(values)
@@ -561,7 +567,7 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
   pathMappingFn: PathMappingFn<P>,
   target: readonly string[],
   onSingleSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void,
-  onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void,
+  onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>, transient: boolean) => void,
 ): (newValue: T, transient?: boolean | undefined) => void {
   return React.useCallback(
     (newValue, transient = false) => {
@@ -573,7 +579,7 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
           const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
           onSingleSubmitValue(printedProperty, propertyPath, transient)
         } else {
-          onUnsetValue(propertyPath)
+          onUnsetValue(propertyPath, transient)
         }
       })
     },
@@ -877,7 +883,7 @@ export function useInspectorInfoSimpleUntyped(
 
   const onUnsetValues = React.useCallback(() => {
     for (const propertyPath of propertyPaths) {
-      onSingleUnsetValue(propertyPath)
+      onSingleUnsetValue(propertyPath, false)
     }
   }, [onSingleUnsetValue, propertyPaths])
 
@@ -894,7 +900,7 @@ export function useInspectorInfoSimpleUntyped(
           const printedProperty = maybePrintCSSValue(property, propertyToPrint)
           onSingleSubmitValue(printedProperty, path, transient)
         } else {
-          onSingleUnsetValue(path)
+          onSingleUnsetValue(path, transient)
         }
       }) as (path: PropertyPath) => void
       propertyPaths.forEach(submitValue)

@@ -85,7 +85,7 @@ export function useInspectorInfoForPropertyControl(
   const onSubmitValue = React.useCallback(
     (newValue: any, transient = false) => {
       if (newValue == null) {
-        onSingleUnsetValue(propertyPath)
+        onSingleUnsetValue(propertyPath, transient)
       } else {
         const printedValue = printerFn(newValue)
         onSingleSubmitValue(printedValue, propertyPath, transient)
@@ -101,7 +101,7 @@ export function useInspectorInfoForPropertyControl(
   const useSubmitValueFactory = useCallbackFactory(parsedValue, onSubmitValue)
 
   const onUnsetValues = React.useCallback(() => {
-    onSingleUnsetValue(propertyPath)
+    onSingleUnsetValue(propertyPath, false)
   }, [onSingleUnsetValue, propertyPath])
 
   return {

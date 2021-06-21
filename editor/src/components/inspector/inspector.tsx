@@ -598,17 +598,19 @@ export const InspectorContextProvider = betterReactMemo<{
   )
 
   const onUnsetValue = React.useCallback(
-    (property: PropertyPath | Array<PropertyPath>) => {
-      let actions: Array<EditorAction> = []
+    (property: PropertyPath | Array<PropertyPath>, transient: boolean) => {
+      let actionsArray: Array<EditorAction> = []
       Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
-            actions.push(unsetProperty(elem, p))
+            actionsArray.push(unsetProperty(elem, p))
           })
         } else {
-          actions.push(unsetProperty(elem, property))
+          actionsArray.push(unsetProperty(elem, property))
         }
       })
+
+      const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
       dispatch(actions, 'everyone')
     },
     [dispatch, refElementsToTargetForUpdates],
