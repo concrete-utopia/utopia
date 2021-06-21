@@ -10,7 +10,7 @@ import {
   getUnsavedCodeFromTextFile,
 } from '../../../core/model/project-file-utils'
 import { ProjectFile, isTextFile } from '../../../core/shared/project-file-types'
-import { isBrowserEnvironment } from '../../../core/shared/utils'
+import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import {
   applyProjectChanges,
   getCodeEditorDecorations,
@@ -209,12 +209,36 @@ export interface AccumulatedVSCodeChanges {
   selectedChanged: SelectedElementChanged | null
 }
 
+function combineFileChanges(
+  first: Array<ProjectChange>,
+  second: Array<ProjectChange>,
+): Array<ProjectChange> {
+  let writeFilePathsSeen: Set<string> = new Set()
+  let reversedResult: Array<ProjectChange> = []
+  fastForEach([...first, ...second].reverse(), (change) => {
+    if (change.type === 'WRITE_PROJECT_FILE') {
+      if (writeFilePathsSeen.has(change.fullPath)) {
+        // We only want the last version of each file
+        return
+      } else {
+        reversedResult.push(change)
+        writeFilePathsSeen.add(change.fullPath)
+      }
+    } else {
+      reversedResult.push(change)
+    }
+  })
+
+  const result = reversedResult.reverse()
+  return result
+}
+
 export function combineAccumulatedVSCodeChanges(
   first: AccumulatedVSCodeChanges,
   second: AccumulatedVSCodeChanges,
 ): AccumulatedVSCodeChanges {
   return {
-    fileChanges: [...first.fileChanges, ...second.fileChanges],
+    fileChanges: combineFileChanges(first.fileChanges, second.fileChanges),
     updateDecorations: second.updateDecorations ?? first.updateDecorations,
     selectedChanged: second.selectedChanged ?? first.selectedChanged,
   }
