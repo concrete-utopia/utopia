@@ -30,6 +30,12 @@ We welcome contributions. Utopia is a big project, but we're here to help, and a
 # Run the Editor
 There are a few different options for running Utopia below, but for all of them you'll head to [localhost:8000](https://localhost:8000). Importantly, [/project](https://localhost:8000/project) gets you to the editor.
 
+Before you do anything, you'll need to build VS Code:
+
+```
+build-vscode
+```
+
 ## Dev Mode: slower performance, full error messages, easier to debug
 
 ```
