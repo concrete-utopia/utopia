@@ -264,6 +264,7 @@ export const UiJsxCanvas = betterReactMemo(
     }
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+    metadataContext.current.spyValues.metadata = {}
 
     // Handle the imports changing, this needs to run _before_ any require function
     // calls as it's modifying the underlying DOM elements. This is somewhat working
