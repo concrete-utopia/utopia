@@ -400,20 +400,19 @@ export function getPropertyControlsForTarget(
 
       let filenameForLookup: string | null = null
       if (importedFrom == null) {
-        if (isIntrinsicHTMLElement(element.name)) {
-          /**
-           * We detected an intrinsic HTML Element (such as div, a, span, etc...)
-           * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
-           * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
-           * but for now, I just return a one-size-fits-all PropertyControls result here
-           */
-          return HtmlElementStyleObjectProps
-        } else if (isIntrinsicElement(element.name)) {
-          const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
-          const dependencies = dependenciesFromPackageJson(packageJsonFile)
-          // if (dependencies.some((dependency) => dependency.name === '@react-three/fiber')) {
-          //   return ReactThreeFiberControls[element.name.baseVariable]
-          // }
+        if (isIntrinsicElement(element.name)) {
+          if (isIntrinsicHTMLElement(element.name)) {
+            /**
+             * We detected an intrinsic HTML Element (such as div, a, span, etc...)
+             * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
+             * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
+             * but for now, I just return a one-size-fits-all PropertyControls result here
+             */
+            return HtmlElementStyleObjectProps
+          } else {
+            // you can add more intrinsic (ie not imported) element types here
+            return null
+          }
         } else if (openFilePath != null) {
           filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
         }
