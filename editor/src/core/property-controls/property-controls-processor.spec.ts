@@ -85,9 +85,10 @@ describe('Property Controls Processor', () => {
     const onControlsProcess = (propertyControlsInfo: PropertyControlsInfo) => {
       callbackCount++
 
-      expect(propertyControlsInfo).toEqual(
-        getThirdPartyPropertyControls(packageName, packageVersion),
-      )
+      expect(propertyControlsInfo).toEqual({
+        '/src/index': {},
+        ...getThirdPartyPropertyControls(packageName, packageVersion),
+      })
 
       if (callbackCount === 2) {
         done()
