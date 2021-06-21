@@ -20,9 +20,9 @@ import * as deepEquals from 'fast-deep-equal'
 function fastPropertyControlsParse(value: unknown): ParseResult<GetPropertyControlsInfoMessage> {
   return applicative3Either(
     createGetPropertyControlsInfoMessage,
-    objectKeyParser(parseAny, 'exportsInfo')(value),
     objectKeyParser(parseAny, 'nodeModulesUpdate')(value),
     objectKeyParser(parseAny, 'projectContents')(value),
+    objectKeyParser(parseAny, 'updatedAndReverseDepFilenames')(value),
   )
 }
 
@@ -53,6 +53,11 @@ const initPropertyControlsWorker = () => {
         await createBundle(bundlerWorker, emptyTypeDefinitions, projectContents)
       ).buildResult
 
+      // Mutating the evaluation cache.
+      for (const fileToDelete of model.updatedAndReverseDepFilenames) {
+        delete evaluationCache[fileToDelete]
+      }
+
       const npmDependencies = dependenciesWithEditorRequirements(projectContents)
       propertyControlsProcessor(
         npmDependencies,
@@ -60,7 +65,6 @@ const initPropertyControlsWorker = () => {
         projectContents,
         evaluationCache,
         bundledProjectFiles,
-        model.exportsInfo,
       )
     }
   }
