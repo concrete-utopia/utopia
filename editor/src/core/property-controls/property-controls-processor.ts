@@ -29,7 +29,6 @@ export const initPropertyControlsProcessor = (
     projectContents: ProjectContentTreeRoot,
     evaluationCache: EvaluationCache,
     bundledProjectFiles: MultiFileBuildResult,
-    exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {
     currentNodeModules = applyNodeModulesUpdate(currentNodeModules, nodeModulesUpdate)
     const resolvedNpmDependencies = resolvedDependencyVersions(npmDependencies, currentNodeModules)
@@ -45,7 +44,6 @@ export const initPropertyControlsProcessor = (
       projectContents,
       evaluationCache,
       bundledProjectFiles,
-      exportsInfo,
     )
   }
 
@@ -54,7 +52,6 @@ export const initPropertyControlsProcessor = (
     projectContents: ProjectContentTreeRoot,
     evaluationCache: EvaluationCache,
     bundledProjectFiles: MultiFileBuildResult,
-    exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {
     const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
       moduleDownload.then((downloadedModules: NodeModules) => {
@@ -65,7 +62,6 @@ export const initPropertyControlsProcessor = (
           projectContents,
           evaluationCache,
           bundledProjectFiles,
-          exportsInfo,
         )
       })
     }
@@ -79,21 +75,21 @@ export const initPropertyControlsProcessor = (
     )
 
     const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)
-    fastForEach(exportsInfo, (result) => {
-      const codeResult = processExportsInfo(exportValues[result.filename], result.exportTypes)
-      let propertyControls: { [name: string]: PropertyControls } = {}
-      if (codeResult.exports != null) {
-        fastForEach(Object.keys(codeResult.exports), (name) => {
-          const exportedObject = codeResult.exports[name].value
-          if (exportedObject != null && exportedObject.propertyControls != null) {
-            // FIXME validate shape
-            propertyControls[name] = exportedObject.propertyControls
-          }
-        })
-        const filenameNoExtension = result.filename.replace(/\.(js|jsx|ts|tsx)$/, '')
-        propertyControlsInfo[filenameNoExtension] = propertyControls
+    for (const fileName in exportValues) {
+      const filenameNoExtension = fileName.replace(/\.(js|jsx|ts|tsx)$/, '')
+      if (propertyControlsInfo[filenameNoExtension] == null) {
+        propertyControlsInfo[filenameNoExtension] = {}
       }
-    })
+      const exportsForFile = exportValues[fileName]
+      for (const exportedVariableName in exportsForFile) {
+        const exportedObject = exportsForFile[exportedVariableName]
+        if (exportedObject.propertyControls != null) {
+          // FIXME validate shape
+          propertyControlsInfo[filenameNoExtension][exportedVariableName] =
+            exportedObject.propertyControls
+        }
+      }
+    }
 
     onControlsProcessed(propertyControlsInfo)
   }
