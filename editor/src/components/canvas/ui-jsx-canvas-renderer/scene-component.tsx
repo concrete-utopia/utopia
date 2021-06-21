@@ -5,6 +5,20 @@ import { Scene, SceneProps } from 'utopia-api'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { RerenderUtopiaContext } from './ui-jsx-canvas-contexts'
+import { UiJsxCanvasContext } from '../ui-jsx-canvas'
+import { fastForEach } from '../../../core/shared/utils'
+
+function useClearMetadataForScene(props: any) {
+  const metadataContext = React.useContext(UiJsxCanvasContext)
+  const scenePath = props['data-utopia-scene-id']
+  if (scenePath != null) {
+    fastForEach(Object.keys(metadataContext.current.spyValues.metadata), (path) => {
+      if (path.includes(scenePath)) {
+        delete metadataContext.current.spyValues.metadata[path]
+      }
+    })
+  }
+}
 
 export const SceneComponent = betterReactMemo(
   'Scene',
@@ -21,6 +35,8 @@ export const SceneComponent = betterReactMemo(
         : UtopiaStyles.scene.editing.boxShadow,
       ...style,
     }
+
+    useClearMetadataForScene(remainingProps)
 
     return (
       <Scene {...remainingProps} style={sceneStyle}>
