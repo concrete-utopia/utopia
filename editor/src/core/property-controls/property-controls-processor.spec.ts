@@ -56,7 +56,6 @@ describe('Property Controls Processor', () => {
       {},
       {},
       {},
-      [],
     )
   })
 
@@ -108,7 +107,6 @@ describe('Property Controls Processor', () => {
           errors: [],
         },
       },
-      [],
     )
   })
 })
