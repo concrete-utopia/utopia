@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e942bc8fcfc90cc05d72651fab3b1fa0f69517c43187641199e82d135c82192c
+-- hash: e83d456103edba455f137157039a03c0c8ffec40f6796a1389ac1cacf963ee6f
 
 name:           utopia-web
 version:        0.1.0.4
@@ -40,6 +40,7 @@ executable utopia-web
       Utopia.Web.Github
       Utopia.Web.JSON
       Utopia.Web.Metrics
+      Utopia.Web.Packager.Locking
       Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
       Utopia.Web.Servant
@@ -66,6 +67,7 @@ executable utopia-web
     , blaze-html
     , bytestring
     , case-insensitive
+    , concurrent-extra
     , conduit
     , cookie
     , cryptohash-sha256
@@ -93,21 +95,23 @@ executable utopia-web
     , path
     , path-pieces
     , pathwalk
-    , persistent <2.10.0
-    , persistent-postgresql
-    , persistent-sqlite
-    , persistent-template
+    , persistent ==2.9.2
+    , persistent-postgresql ==2.9.1
+    , persistent-sqlite ==2.9.3
+    , persistent-template ==2.6.0
     , process
     , protolude ==0.2.4
     , resource-pool
     , rio
-    , servant ==0.15
+    , servant ==0.18.2
     , servant-blaze
-    , servant-client ==0.15
-    , servant-rawm ==0.3.0.0
-    , servant-server ==0.15
-    , servant-websockets ==1.1.0
-    , serversession
+    , servant-client ==0.18.2
+    , servant-conduit
+    , servant-rawm-client
+    , servant-rawm-server
+    , servant-server ==0.18.2
+    , servant-websockets ==2.0.0
+    , serversession ==1.0.1
     , serversession-backend-persistent
     , split
     , tagsoup
@@ -154,6 +158,7 @@ test-suite utopia-web-test
       Utopia.Web.Github
       Utopia.Web.JSON
       Utopia.Web.Metrics
+      Utopia.Web.Packager.Locking
       Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
       Utopia.Web.Servant
@@ -181,6 +186,7 @@ test-suite utopia-web-test
     , blaze-html
     , bytestring
     , case-insensitive
+    , concurrent-extra
     , conduit
     , cookie
     , cryptohash-sha256
@@ -210,23 +216,25 @@ test-suite utopia-web-test
     , path
     , path-pieces
     , pathwalk
-    , persistent <2.10.0
-    , persistent-postgresql
-    , persistent-sqlite
-    , persistent-template
+    , persistent ==2.9.2
+    , persistent-postgresql ==2.9.1
+    , persistent-sqlite ==2.9.3
+    , persistent-template ==2.6.0
     , port-utils
     , process
     , protolude ==0.2.4
     , resource-pool
     , rio
-    , servant ==0.15
+    , servant ==0.18.2
     , servant-blaze
-    , servant-client ==0.15
+    , servant-client ==0.18.2
     , servant-client-core
-    , servant-rawm ==0.3.0.0
-    , servant-server ==0.15
-    , servant-websockets ==1.1.0
-    , serversession
+    , servant-conduit
+    , servant-rawm-client
+    , servant-rawm-server
+    , servant-server ==0.18.2
+    , servant-websockets ==2.0.0
+    , serversession ==1.0.1
     , serversession-backend-persistent
     , split
     , tagsoup

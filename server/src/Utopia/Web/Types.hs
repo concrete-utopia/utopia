@@ -10,6 +10,7 @@
 
 module Utopia.Web.Types where
 
+import           Conduit
 import           Data.Aeson
 import           Data.Aeson.TH
 import qualified Data.ByteString.Lazy    as BL
@@ -17,7 +18,7 @@ import           Data.Time
 import           Protolude
 import           Servant
 import           Servant.HTML.Blaze
-import           Servant.RawM
+import           Servant.RawM.Server
 import qualified Text.Blaze.Html5        as H
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
@@ -117,13 +118,13 @@ type SaveProjectThumbnailAPI = "v1" :> "thumbnail" :> Capture "project_id" Proje
 
 type DownloadGithubProjectAPI = "v1" :> "github" :> Capture "owner" Text :> Capture "project" Text :> Get '[ZIP] BL.ByteString
 
-type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] BL.ByteString
+type PackagePackagerResponse = Headers '[Header "Cache-Control" Text, Header "Last-Modified" LastModifiedTime, Header "Access-Control-Allow-Origin" Text] (ConduitT () ByteString (ResourceT IO) ())
 
 type PackagePackagerAPI = "v1" :> "javascript" :> "packager"
                        :> Capture "versioned_package_name" Text
                        :> Header "If-Modified-Since" LastModifiedTime
                        :> Header "Origin" Text
-                       :> Get '[ForcedJSON] PackagePackagerResponse
+                       :> StreamGet NoFraming ForcedJSON PackagePackagerResponse
 
 type GetPackageJSONAPI = "v1" :> "javascript" :> "package" :> "metadata" :> Capture "package_name" Text :> Get '[JSON] Value
 

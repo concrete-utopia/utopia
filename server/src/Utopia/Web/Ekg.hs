@@ -20,7 +20,8 @@ import           Network.Wai
 import           Protolude
 import           Servant.API
 import           Servant.API.WebSocket
-import           Servant.RawM
+import           Servant.RawM.Server
+import           Servant.Server
 import           System.Metrics
 import qualified System.Metrics.Counter      as Counter
 import qualified System.Metrics.Distribution as Distribution
@@ -195,3 +196,7 @@ instance HasEndpoint (sub :: *) => HasEndpoint (CaptureAll (h :: Symbol) a :> su
 instance HasEndpoint WebSocket where
     getEndpoint _ _ = Nothing
     mkPaths _ = []
+
+instance HasEndpoint (Stream method status framing contentType a) where
+    getEndpoint _ _ = Just "STREAM"
+    mkPaths _ = ["STREAM"]
