@@ -312,7 +312,8 @@ function useInvalidateInitCompleteOnMountCount(
   return [initCompleteRef.current, setInitComplete]
 }
 type ValueOrUpdater<S> = S | ((prevState: S) => S)
-type SetValueCallback<S> = (
+// todo move to file
+export type SetValueCallback<S> = (
   valueOrUpdater: ValueOrUpdater<S>,
   doNotInvalidate?: 'do-not-invalidate',
 ) => void
@@ -320,7 +321,10 @@ type SetValueCallback<S> = (
 function isSimpleValue<S>(valueOrUpdater: ValueOrUpdater<S>): valueOrUpdater is S {
   return typeof valueOrUpdater !== 'function'
 }
-function useStateAsyncInvalidate<S>(initialState: S): [S, SetValueCallback<S>] {
+function useStateAsyncInvalidate<S>(
+  onInvalidate: () => void,
+  initialState: S,
+): [S, SetValueCallback<S>] {
   const stateRef = React.useRef(initialState)
   const setAndMarkInvalidated = React.useCallback(
     (valueOrUpdater: ValueOrUpdater<S>, doNotInvalidate?: 'do-not-invalidate') => {
@@ -334,11 +338,30 @@ function useStateAsyncInvalidate<S>(initialState: S): [S, SetValueCallback<S>] {
       stateRef.current = resolvedNewValue
 
       // TODO invalidate
+      if (doNotInvalidate !== 'do-not-invalidate') {
+        onInvalidate()
+      }
     },
-    [stateRef],
+    [stateRef, onInvalidate],
   )
 
   return [stateRef.current, setAndMarkInvalidated]
+}
+
+function useThrottledCallback(callback: () => void): () => void {
+  const timeoutRef = React.useRef<NodeJS.Timeout | number | null>(null)
+
+  const callbackRef = React.useRef(callback)
+  callbackRef.current = callback
+
+  return React.useCallback(() => {
+    if (timeoutRef.current == null) {
+      timeoutRef.current = setTimeout(() => {
+        timeoutRef.current = null
+        callbackRef.current()
+      }, 0)
+    }
+  }, [])
 }
 
 interface DomWalkerProps {
@@ -398,50 +421,12 @@ function mergeFragmentMetadata(
   return Object.values(working)
 }
 
-export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
+export function useDomWalker(
+  props: DomWalkerProps,
+): [SetValueCallback<Set<string>>, SetValueCallback<Set<string>>, React.Ref<HTMLDivElement>] {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const rootMetadataInStateRef = useRefEditorState(
-    (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
-  )
-  const [invalidatedPaths, updateInvalidatedPaths] = useStateAsyncInvalidate<Set<string>>(
-    emptySet(),
-  ) // For invalidating specific paths only
-  const [invalidatedScenes, updateInvalidatedScenes] = useStateAsyncInvalidate<Set<string>>(
-    emptySet(),
-  ) // For invalidating entire scenes and everything below them
-  const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
-  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
-    props.mountCount,
-    props.domWalkerInvalidateCount,
-  )
-  const selectedViewsRef = React.useRef(props.selectedViews)
-  const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
 
-  if (selectedViewsRef.current !== props.selectedViews) {
-    selectedViewsRef.current = props.selectedViews
-  }
-  if (canvasInteractionHappeningRef.current !== props.canvasInteractionHappening) {
-    canvasInteractionHappeningRef.current = props.canvasInteractionHappening
-  }
-
-  const resizeObserver = useResizeObserver(
-    updateInvalidatedPaths,
-    updateInvalidatedScenes,
-    selectedViewsRef,
-    canvasInteractionHappeningRef,
-  )
-  const mutationObserver = useMutationObserver(
-    updateInvalidatedPaths,
-    updateInvalidatedScenes,
-    selectedViewsRef,
-    canvasInteractionHappeningRef,
-  )
-  useInvalidateScenesWhenSelectedViewChanges(
-    updateInvalidatedScenes,
-    invalidatedPathsForStylesheetCacheRef,
-  )
-
-  React.useLayoutEffect(() => {
+  const fireThrottledCallback = useThrottledCallback(() => {
     if (containerRef.current != null) {
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_START')
@@ -492,7 +477,54 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
     }
   })
 
-  return containerRef
+  const rootMetadataInStateRef = useRefEditorState(
+    (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
+  )
+  const [invalidatedPaths, updateInvalidatedPaths] = useStateAsyncInvalidate<Set<string>>(
+    fireThrottledCallback,
+    emptySet(),
+  ) // For invalidating specific paths only
+  const [invalidatedScenes, updateInvalidatedScenes] = useStateAsyncInvalidate<Set<string>>(
+    fireThrottledCallback,
+    emptySet(),
+  ) // For invalidating entire scenes and everything below them
+  const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
+  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
+    props.mountCount,
+    props.domWalkerInvalidateCount,
+  )
+  const selectedViewsRef = React.useRef(props.selectedViews)
+  const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
+
+  if (selectedViewsRef.current !== props.selectedViews) {
+    selectedViewsRef.current = props.selectedViews
+  }
+  if (canvasInteractionHappeningRef.current !== props.canvasInteractionHappening) {
+    canvasInteractionHappeningRef.current = props.canvasInteractionHappening
+  }
+
+  const resizeObserver = useResizeObserver(
+    updateInvalidatedPaths,
+    updateInvalidatedScenes,
+    selectedViewsRef,
+    canvasInteractionHappeningRef,
+  )
+  const mutationObserver = useMutationObserver(
+    updateInvalidatedPaths,
+    updateInvalidatedScenes,
+    selectedViewsRef,
+    canvasInteractionHappeningRef,
+  )
+  useInvalidateScenesWhenSelectedViewChanges(
+    updateInvalidatedScenes,
+    invalidatedPathsForStylesheetCacheRef,
+  )
+
+  React.useLayoutEffect(() => {
+    fireThrottledCallback()
+  })
+
+  return [updateInvalidatedPaths, updateInvalidatedScenes, containerRef]
 }
 
 function collectMetadataForElement(

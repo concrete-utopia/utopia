@@ -42,7 +42,7 @@ import {
   TransientFilesState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
-import { useDomWalker } from './dom-walker'
+import { SetValueCallback, useDomWalker } from './dom-walker'
 import { isLiveMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
@@ -77,6 +77,7 @@ import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
+import { NO_OP } from '../../core/shared/utils'
 
 applyUIDMonkeyPatch()
 
@@ -106,6 +107,8 @@ export const UiJsxCanvasContext = React.createContext<UiJsxCanvasContextData>(
   emptyUiJsxCanvasContextData(),
 )
 UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
+
+export const DomWalkerInvalidateContext = React.createContext<SetValueCallback<Set<string>>>(NO_OP)
 
 export interface UiJsxCanvasProps {
   offset: CanvasVector
@@ -508,22 +511,27 @@ export interface CanvasContainerProps {
 const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (
   props: React.PropsWithChildren<CanvasContainerProps>,
 ) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  let containerRef = props.walkDOM ? useDomWalker(props) : React.useRef<HTMLDivElement>(null)
+  let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = props.walkDOM
+    ? // eslint-disable-next-line react-hooks/rules-of-hooks
+      useDomWalker(props)
+    : // eslint-disable-next-line react-hooks/rules-of-hooks
+      [NO_OP, NO_OP, React.useRef<HTMLDivElement>(null)]
 
   return (
-    <div
-      id={CanvasContainerID}
-      key={'canvas-container'}
-      ref={containerRef}
-      style={{
-        all: 'initial',
-        position: 'absolute',
-      }}
-      data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
-    >
-      {props.children}
-    </div>
+    <DomWalkerInvalidateContext.Provider value={updateInvalidatedScenes}>
+      <div
+        id={CanvasContainerID}
+        key={'canvas-container'}
+        ref={containerRef}
+        style={{
+          all: 'initial',
+          position: 'absolute',
+        }}
+        data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
+      >
+        {props.children}
+      </div>
+    </DomWalkerInvalidateContext.Provider>
   )
 }
 CanvasContainer.displayName = 'CanvasContainer'
