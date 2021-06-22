@@ -691,13 +691,7 @@ export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXA
         }
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        const spreadValue = attrPart.spreadValue
-        if (isJSXAttributeNestedObject(spreadValue)) {
-          const updatedNestedObject = dropKeyFromNestedObject(spreadValue, key)
-          newAttributes.push(jsxAttributesSpread(updatedNestedObject, spreadValue.comments))
-        } else {
-          newAttributes.push(attrPart)
-        }
+        // Skip these for now.
         break
       default:
         const _exhaustiveCheck: never = attrPart
@@ -727,27 +721,7 @@ export function setJSXAttributesAttribute(
         }
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        const spreadValue = attrPart.spreadValue
-        if (isJSXAttributeNestedObject(spreadValue)) {
-          if (spreadValue.content.some((v) => isPropertyAssignment(v) && v.key === key)) {
-            const setResult = setJSXValueInAttributeAtPath(
-              attrPart.spreadValue,
-              PP.create([key]),
-              simplifiedValue,
-            )
-            const updatedAttr = foldEither(
-              (_) => attrPart,
-              (updated) => jsxAttributesSpread(updated, attrPart.comments),
-              setResult,
-            )
-            result.push(updatedAttr)
-            updatedExistingField = true
-          } else {
-            result.push(attrPart)
-          }
-        } else {
-          result.push(attrPart)
-        }
+        // Ignore these for now.
         break
       default:
         const _exhaustiveCheck: never = attrPart
