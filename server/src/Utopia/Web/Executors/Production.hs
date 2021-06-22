@@ -194,10 +194,10 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
   AssetResultCache{..} <- liftIO $ readIORef _assetResultCache
   return $ action _editorMappings
-innerServerExecutor (GetPackagePackagerContent versionedPackageName ifModifiedSince action) = do
+innerServerExecutor (GetPackagePackagerContent versionedPackageName action) = do
   semaphore <- fmap _nodeSemaphore ask
   locksRef <- fmap _locksRef ask
-  packagerContent <- liftIO $ getPackagerContent semaphore locksRef versionedPackageName ifModifiedSince
+  packagerContent <- liftIO $ getPackagerContent semaphore locksRef versionedPackageName
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"

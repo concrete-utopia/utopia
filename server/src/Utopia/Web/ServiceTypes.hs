@@ -118,7 +118,7 @@ data ServiceCallsF a = NotFound
                      | GetCommitHash (Text -> a)
                      | GetEditorTextContent (Maybe Text) Text (Text -> a)
                      | GetHashedAssetPaths (Value -> a)
-                     | GetPackagePackagerContent Text (Maybe UTCTime) (Maybe (ConduitT () ByteString (ResourceT IO) (), UTCTime) -> a)
+                     | GetPackagePackagerContent Text ((ConduitT () ByteString (ResourceT IO) (), UTCTime) -> a)
                      | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      | GetSiteRoot (Text -> a)
                      | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
