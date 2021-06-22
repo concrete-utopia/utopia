@@ -2055,7 +2055,7 @@ export function cssColorToChromaColor(c: CSSColor): Either<string, Chroma.Color>
   } else if (isHex(c)) {
     return right(Chroma.hex(c.hex))
   } else if (isHSL(c)) {
-    return right((Chroma.hsl as any)(c.h, c.s, c.l, c.a))
+    return right((Chroma.hsl as any)(c.h, c.s / 100.0, c.l / 100.0, c.a))
   } else {
     return right(Chroma(c.r, c.g, c.b, c.a))
   }
