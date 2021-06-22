@@ -10,7 +10,11 @@ import {
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
-import { DomWalkerInvalidateScenesContext, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import {
+  DomWalkerInvalidatePathsContext,
+  DomWalkerInvalidateScenesContext,
+  UiJsxCanvasContextData,
+} from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
@@ -97,8 +101,9 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     ...passThroughProps
   } = props
   spyCallback(passThroughProps)
-  const updateInvalidatedScenes = React.useContext(DomWalkerInvalidateScenesContext)
-  updateInvalidatedScenes((current) => current.add(EP.toString($$utopiaElementPath)))
+  const updateInvalidatedPaths = React.useContext(DomWalkerInvalidatePathsContext)
+  console.log('calling invalidated scenes', updateInvalidatedPaths)
+  updateInvalidatedPaths((current) => current.add(EP.toString($$utopiaElementPath)))
   return renderComponentUsingJsxFactoryFunction(
     inScope,
     jsxFactoryFunctionName,
