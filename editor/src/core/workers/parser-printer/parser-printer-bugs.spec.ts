@@ -86,7 +86,7 @@ export var App = props => {
       fail(parsedPlainCode)
     }
   })
-  it('does something odd for spread mapping - #1365', () => {
+  it('parses elements that use props spreading - #1365', () => {
     const nonSpreadCode = `
     import * as React from "react"
     import { Card } from './card'
