@@ -108,7 +108,12 @@ export const UiJsxCanvasContext = React.createContext<UiJsxCanvasContextData>(
 )
 UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
 
-export const DomWalkerInvalidateContext = React.createContext<SetValueCallback<Set<string>>>(NO_OP)
+export const DomWalkerInvalidateScenesContext = React.createContext<SetValueCallback<Set<string>>>(
+  NO_OP,
+)
+export const DomWalkerInvalidatePathsContext = React.createContext<SetValueCallback<Set<string>>>(
+  NO_OP,
+)
 
 export interface UiJsxCanvasProps {
   offset: CanvasVector
@@ -518,20 +523,22 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
       [NO_OP, NO_OP, React.useRef<HTMLDivElement>(null)]
 
   return (
-    <DomWalkerInvalidateContext.Provider value={updateInvalidatedScenes}>
-      <div
-        id={CanvasContainerID}
-        key={'canvas-container'}
-        ref={containerRef}
-        style={{
-          all: 'initial',
-          position: 'absolute',
-        }}
-        data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
-      >
-        {props.children}
-      </div>
-    </DomWalkerInvalidateContext.Provider>
+    <DomWalkerInvalidatePathsContext.Provider value={updateInvalidatedPaths}>
+      <DomWalkerInvalidateScenesContext.Provider value={updateInvalidatedScenes}>
+        <div
+          id={CanvasContainerID}
+          key={'canvas-container'}
+          ref={containerRef}
+          style={{
+            all: 'initial',
+            position: 'absolute',
+          }}
+          data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
+        >
+          {props.children}
+        </div>
+      </DomWalkerInvalidateScenesContext.Provider>
+    </DomWalkerInvalidatePathsContext.Provider>
   )
 }
 CanvasContainer.displayName = 'CanvasContainer'
