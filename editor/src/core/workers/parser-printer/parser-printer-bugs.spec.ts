@@ -232,7 +232,7 @@ export var ${BakedInStoryboardVariableName} = (
 `
     testParseThenPrint(code, code)
   })
-  it('does something odd for spread mapping - #1365', () => {
+  it('parses elements that use props spreading - #1365', () => {
     const spreadCode = `import * as React from 'react'
 const Test = (props) => {
   return (
