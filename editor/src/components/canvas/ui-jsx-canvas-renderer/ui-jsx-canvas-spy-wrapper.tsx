@@ -103,7 +103,7 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
   spyCallback(passThroughProps)
   const updateInvalidatedPaths = React.useContext(DomWalkerInvalidatePathsContext)
   console.log('calling invalidated scenes', updateInvalidatedPaths)
-  updateInvalidatedPaths((current) => current.add(EP.toString($$utopiaElementPath)))
+  updateInvalidatedPaths((current) => current)
   return renderComponentUsingJsxFactoryFunction(
     inScope,
     jsxFactoryFunctionName,

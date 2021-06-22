@@ -42,7 +42,7 @@ export const SceneComponent = betterReactMemo(
 
     useClearMetadataForScene(remainingProps)
 
-    updateInvalidatedScenes((current) => current.add(remainingProps[UTOPIA_SCENE_ID_KEY]))
+    updateInvalidatedScenes((current) => current)
 
     return (
       <Scene {...remainingProps} style={sceneStyle}>
