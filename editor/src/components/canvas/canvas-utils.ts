@@ -2424,7 +2424,7 @@ export function cullSpyCollector(
   })
   // Eliminate the element paths which are invalid.
   fastForEach(Object.keys(spyCollector.current.spyValues.metadata), (elementPath) => {
-    if (!elementPaths.has(elementPath)) {
+    if (!elementPaths.has(elementPath.split(':')[0])) {
       delete spyCollector.current.spyValues.metadata[elementPath]
     }
   })
