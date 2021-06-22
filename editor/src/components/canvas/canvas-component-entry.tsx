@@ -5,6 +5,10 @@ import {
   pickUiJsxCanvasProps,
   CanvasReactErrorCallback,
   CanvasReactReportErrorCallback,
+  DomWalkerInvalidateScenesContext,
+  DomWalkerInvalidatePathsContext,
+  UiJsxCanvasProps,
+  UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
 import { saveDOMReport } from '../editor/actions/action-creators'
 import { ElementInstanceMetadata } from '../../core/shared/element-template'
@@ -18,6 +22,7 @@ import {
 } from '../../core/shared/runtime-report-logs'
 import { ProjectContentTreeRoot } from '../assets'
 import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
+import { DomWalkerProps, useDomWalker } from './dom-walker'
 
 interface CanvasComponentEntryProps {}
 
@@ -72,13 +77,32 @@ export const CanvasComponentEntry = betterReactMemo(
             requireFn={canvasProps.requireFn}
             key={`canvas-error-boundary-${canvasProps.mountCount}`}
           >
-            <UiJsxCanvas {...canvasProps} clearErrors={clearRuntimeErrors} />
+            <DomWalkerWrapper {...canvasProps} clearErrors={clearRuntimeErrors} />
           </CanvasErrorBoundary>
         </div>
       )
     }
   },
 )
+
+function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
+  let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = useDomWalker({
+    selectedViews: props.selectedViews,
+    canvasInteractionHappening: props.transientFilesState != null,
+    mountCount: props.mountCount,
+    domWalkerInvalidateCount: props.domWalkerInvalidateCount,
+    scale: props.scale,
+    onDomReport: props.onDomReport,
+  })
+
+  return (
+    <DomWalkerInvalidatePathsContext.Provider value={updateInvalidatedPaths}>
+      <DomWalkerInvalidateScenesContext.Provider value={updateInvalidatedScenes}>
+        <UiJsxCanvas {...props} ref={containerRef} />
+      </DomWalkerInvalidateScenesContext.Provider>
+    </DomWalkerInvalidatePathsContext.Provider>
+  )
+}
 
 interface CanvasErrorBoundaryProps extends CanvasReactReportErrorCallback {
   filePath: string

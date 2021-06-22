@@ -358,21 +358,23 @@ function useThrottledCallback(callback: () => void): () => void {
     if (timeoutRef.current == null) {
       timeoutRef.current = setTimeout(() => {
         timeoutRef.current = null
+        console.log('executing throttled callback')
         callbackRef.current()
       }, 0)
+      console.log('callback armed', timeoutRef.current)
+    } else {
+      console.log('callback called but already armed')
     }
   }, [])
 }
 
-interface DomWalkerProps {
+export interface DomWalkerProps {
   selectedViews: Array<ElementPath>
   scale: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
     cachedPaths: Array<ElementPath>,
   ) => void
-  canvasRootElementElementPath: ElementPath
-  validRootPaths: Array<ElementPath>
   mountCount: number
   domWalkerInvalidateCount: number
   canvasInteractionHappening: boolean
@@ -452,8 +454,6 @@ export function useDomWalker(
       const { metadata, cachedPaths } = walkCanvasRootFragment(
         refOfContainer,
         0,
-        props.canvasRootElementElementPath,
-        props.validRootPaths,
         rootMetadataInStateRef,
         invalidatedPaths as ReadonlySet<string>, // this is not the nicest type here, but it should be fine for now :)
         updateInvalidatedPaths,
@@ -810,8 +810,6 @@ function globalFrameForElement(
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   index: number,
-  canvasRootPath: ElementPath,
-  validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedPaths: ReadonlySet<string>,
   updateInvalidatedPaths: SetValueCallback<Set<string>>,
@@ -826,6 +824,21 @@ function walkCanvasRootFragment(
   metadata: ReadonlyArray<ElementInstanceMetadata>
   cachedPaths: Array<ElementPath>
 } {
+  const canvasRootPath: ElementPath | null = optionalMap(
+    EP.fromString,
+    canvasRoot.getAttribute('data-utopia-root-element-path'),
+  )
+  const validPaths: Array<ElementPath> | null = optionalMap(
+    (paths) => paths.split(' ').map(EP.fromString),
+    canvasRoot.getAttribute('data-utopia-valid-paths'),
+  )
+
+  if (canvasRootPath == null || validPaths == null) {
+    throw new Error(
+      'Utopia Internal Error: Running DOM-walker without canvasRootPath or validRootPaths',
+    )
+  }
+
   if (
     ObserversAvailable &&
     invalidatedPaths.size === 0 &&

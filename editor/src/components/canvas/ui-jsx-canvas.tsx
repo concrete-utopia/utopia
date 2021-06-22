@@ -240,7 +240,7 @@ function normalizedCssImportsFromImports(filePath: string, imports: Imports): Ar
 
 export const UiJsxCanvas = betterReactMemo(
   'UiJsxCanvas',
-  (props: UiJsxCanvasPropsWithErrorCallback) => {
+  React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
     const {
       offset,
       scale,
@@ -288,7 +288,9 @@ export const UiJsxCanvas = betterReactMemo(
     >({})
 
     // TODO after merge requireFn can never be null
-    if (requireFn != null) {
+    if (requireFn == null) {
+      throw new Error('Utopia Internal Error: requireFn can never be null')
+    } else {
       let resolvedFiles: string[] = []
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
@@ -416,6 +418,7 @@ export const UiJsxCanvas = betterReactMemo(
                 }}
               >
                 <CanvasContainer
+                  ref={ref}
                   mountCount={props.mountCount}
                   domWalkerInvalidateCount={props.domWalkerInvalidateCount}
                   walkDOM={walkDOM}
@@ -447,10 +450,8 @@ export const UiJsxCanvas = betterReactMemo(
           </MutableUtopiaContext.Provider>
         </>
       )
-    } else {
-      return null
     }
-  },
+  }),
 )
 
 function useGetStoryboardRoot(
@@ -513,32 +514,24 @@ export interface CanvasContainerProps {
   canvasInteractionHappening: boolean
 }
 
-const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (
-  props: React.PropsWithChildren<CanvasContainerProps>,
-) => {
-  let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = props.walkDOM
-    ? // eslint-disable-next-line react-hooks/rules-of-hooks
-      useDomWalker(props)
-    : // eslint-disable-next-line react-hooks/rules-of-hooks
-      [NO_OP, NO_OP, React.useRef<HTMLDivElement>(null)]
-
+const CanvasContainer = React.forwardRef<
+  HTMLDivElement,
+  React.PropsWithChildren<CanvasContainerProps>
+>((props, ref) => {
   return (
-    <DomWalkerInvalidatePathsContext.Provider value={updateInvalidatedPaths}>
-      <DomWalkerInvalidateScenesContext.Provider value={updateInvalidatedScenes}>
-        <div
-          id={CanvasContainerID}
-          key={'canvas-container'}
-          ref={containerRef}
-          style={{
-            all: 'initial',
-            position: 'absolute',
-          }}
-          data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
-        >
-          {props.children}
-        </div>
-      </DomWalkerInvalidateScenesContext.Provider>
-    </DomWalkerInvalidatePathsContext.Provider>
+    <div
+      id={CanvasContainerID}
+      key={'canvas-container'}
+      ref={ref}
+      style={{
+        all: 'initial',
+        position: 'absolute',
+      }}
+      data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
+      data-utopia-root-element-path={EP.toString(props.canvasRootElementElementPath)}
+    >
+      {props.children}
+    </div>
   )
-}
+})
 CanvasContainer.displayName = 'CanvasContainer'
