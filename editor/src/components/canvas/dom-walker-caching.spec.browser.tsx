@@ -67,7 +67,11 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[0].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
+      EP.fromString(':storyboard-entity/scene-2-entity'),
+    ])
     expect(saveDomReportActions[1].cachedPaths).toEqual([
       EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
       EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
@@ -95,7 +99,12 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[0].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity'),
+      EP.fromString(':storyboard-entity/scene-1-entity'),
+    ])
     expect(saveDomReportActions[1].cachedPaths).toEqual([
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
       EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
