@@ -223,7 +223,20 @@ export function jsxAttributesToProps(
 ): any {
   let result: any = {}
   for (const entry of attributes) {
-    result[entry.key] = jsxAttributeToValue(inScope, requireResult, entry.value)
+    switch (entry.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        result[entry.key] = jsxAttributeToValue(inScope, requireResult, entry.value)
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        result = {
+          ...result,
+          ...jsxAttributeToValue(inScope, requireResult, entry.spreadValue),
+        }
+        break
+      default:
+        const _exhaustiveCheck: never = entry
+        throw new Error(`Unhandled entry ${JSON.stringify(entry)}`)
+    }
   }
   return result
 }
@@ -401,8 +414,6 @@ export function deeplyCreatedValue(path: PropertyPath, value: JSXAttribute): JSX
   }, value)
 }
 
-// TODO This function should absolutely be returning an Either since there is no guarantee that it
-// won't be called with "illegal" params
 export function setJSXValueInAttributeAtPath(
   attribute: JSXAttribute,
   path: PropertyPath,
@@ -842,7 +853,17 @@ function walkAttributes(
   walk: (attribute: JSXAttribute, path: PropertyPath | null) => void,
 ): void {
   fastForEach(attributes, (attr) => {
-    walkAttribute(attr.value, PP.create([attr.key]), walk)
+    switch (attr.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        walkAttribute(attr.value, PP.create([attr.key]), walk)
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        walkAttribute(attr.spreadValue, PP.create([]), walk)
+        break
+      default:
+        const _exhaustiveCheck: never = attr
+        throw new Error(`Unhandled attribute ${JSON.stringify(attr)}`)
+    }
   })
 }
 

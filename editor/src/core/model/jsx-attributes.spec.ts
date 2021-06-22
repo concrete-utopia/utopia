@@ -1,6 +1,6 @@
 import * as PP from '../shared/property-path'
 import { deepFreeze } from '../../utils/deep-freeze'
-import { forceRight, isLeft, isRight, right } from '../shared/either'
+import { Either, forceRight, isLeft, isRight, right } from '../shared/either'
 import {
   getJSXAttributeForced,
   isJSXAttributeFunctionCall,
@@ -17,6 +17,7 @@ import {
   jsxAttributeOtherJavaScript,
   JSXAttributes,
   jsxAttributesFromMap,
+  jsxAttributesSpread,
   jsxAttributeValue,
   jsxPropertyAssignment,
   jsxSpreadAssignment,
@@ -399,6 +400,50 @@ describe('setJSXValueAtPath', () => {
         ),
       }),
     )
+  })
+
+  it('can set an attribute into a spread attribute', () => {
+    const originalAttributes: JSXAttributes = [
+      jsxAttributesSpread(
+        jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              'style',
+              jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+        emptyComments,
+      ),
+    ]
+
+    const actualResult = setJSXValueAtPath(
+      originalAttributes,
+      PP.create(['style', 'backgroundColor']),
+      jsxAttributeValue('green', emptyComments),
+    )
+
+    const expectedResult: Either<string, JSXAttributes> = right([
+      jsxAttributesSpread(
+        jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              'style',
+              jsxAttributeValue({ backgroundColor: 'green' }, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+        emptyComments,
+      ),
+    ])
+
+    expect(actualResult).toEqual(expectedResult)
   })
 })
 

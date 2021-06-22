@@ -75,7 +75,7 @@ export var App = (props) => {
     expect(clipboardData?.data.length).toEqual(1)
     expect(clipboardData?.data[0].type).toEqual('ELEMENT_COPY')
     expect(clipboardData?.data[0].elements).toMatchInlineSnapshot(
-      `"[{type:\\"JSX_ELEMENT\\",name:{baseVariable:\\"div\\",propertyPath:{propertyElements:[]}},uid:\\"app-inner-div-to-copy\\",props:[{key:\\"data-uid\\",value:{type:\\"ATTRIBUTE_VALUE\\",value:\\"app-inner-div-to-copy\\",comments:{leadingComments:[],trailingComments:[]}},comments:{leadingComments:[],trailingComments:[]}}],children:[]}]"`,
+      `"[{type:\\"JSX_ELEMENT\\",name:{baseVariable:\\"div\\",propertyPath:{propertyElements:[]}},uid:\\"app-inner-div-to-copy\\",props:[{type:\\"JSX_ATTRIBUTES_ENTRY\\",key:\\"data-uid\\",value:{type:\\"ATTRIBUTE_VALUE\\",value:\\"app-inner-div-to-copy\\",comments:{leadingComments:[],trailingComments:[]}},comments:{leadingComments:[],trailingComments:[]}}],children:[]}]"`,
     )
   })
 })

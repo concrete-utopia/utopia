@@ -478,6 +478,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -493,6 +494,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -512,6 +514,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "layout",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -666,6 +669,7 @@ return { b: b };",
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -693,6 +697,7 @@ return { b: b };",
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -708,6 +713,7 @@ return { b: b };",
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -741,6 +747,7 @@ return { b: b };",
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -756,6 +763,7 @@ return { b: b };",
               "trailingComments": Array [],
             },
             "key": "layout",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
