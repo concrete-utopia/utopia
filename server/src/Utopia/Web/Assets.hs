@@ -10,21 +10,26 @@ import           Data.String
 import           Data.Text
 import qualified Data.UUID               as U
 import           Data.UUID.V4
-import           Protolude               hiding (intercalate)
-import           System.Directory
-import           System.FilePath
-
 import           Network.AWS.Auth
 import           Network.AWS.Data.Text
 import           Network.AWS.S3
+import           Protolude               hiding (intercalate)
+import           System.Directory
 import           System.Environment
+import           System.FilePath
 
 data AWSResources = AWSResources
                   { _awsEnv :: Env
                   , _bucket :: BucketName
                   }
 
-type LoadAsset = [Text] -> IO (Maybe BL.ByteString)
+data LoadAssetResult = AssetUnmodified
+                     | AssetNotFound
+                     | AssetLoaded BL.ByteString (Maybe Text)
+
+type LoadAsset = [Text] -> Maybe Text -> IO LoadAssetResult
+
+type LoadThumbnail = Text -> Maybe Text -> IO LoadAssetResult
 
 newtype OldPath a = OldPath { getOldPath :: a }
   deriving (Eq, Ord, Show)
@@ -48,10 +53,10 @@ pathForAsset assetPath = intermediatePathForAsset </> joinPath (fmap toS assetPa
 pathForThumbnail :: Text -> FilePath
 pathForThumbnail thumbnailID = intermediatePathForThumbnail </> toS thumbnailID
 
-loadFileFromDisk :: FilePath -> IO (Maybe BL.ByteString)
+loadFileFromDisk :: FilePath -> IO LoadAssetResult
 loadFileFromDisk path = do
   exists <- doesFileExist path
-  if exists then fmap Just $ BL.readFile path else return Nothing
+  if exists then fmap (\f -> AssetLoaded f Nothing) $ BL.readFile path else pure AssetNotFound
 
 saveFileToDisk :: FilePath -> BL.ByteString -> IO ()
 saveFileToDisk path contents = do
@@ -59,7 +64,7 @@ saveFileToDisk path contents = do
   BL.writeFile path contents
 
 loadProjectAssetFromDisk :: LoadAsset
-loadProjectAssetFromDisk assetPath = do
+loadProjectAssetFromDisk assetPath _ = do
   let path = pathForAsset assetPath
   loadFileFromDisk path
 
@@ -80,8 +85,8 @@ deleteProjectAssetOnDisk assetPath = do
   let path = pathForAsset assetPath
   removeFile path
 
-loadProjectThumbnailFromDisk :: Text -> IO (Maybe BL.ByteString)
-loadProjectThumbnailFromDisk projectID = do
+loadProjectThumbnailFromDisk :: Text -> Maybe Text -> IO LoadAssetResult
+loadProjectThumbnailFromDisk projectID _ = do
   let path = pathForThumbnail projectID
   loadFileFromDisk path
 
@@ -124,11 +129,17 @@ assetPathToObjectKey assetPath = ObjectKey $ assetPathToS3Path assetPath
 projectIDToThumbnailObjectKey :: Text -> ObjectKey
 projectIDToThumbnailObjectKey projectID = ObjectKey ("thumbnails/" <> projectID)
 
-loadFileFromS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) BL.ByteString
-loadFileFromS3 bucketName objectKey = do
-  let getObjectRequest = getObject bucketName objectKey
-  getResponse <- send getObjectRequest
-  sinkBody (view gorsBody getResponse) sinkLazy
+loadFileFromS3 :: BucketName -> ObjectKey -> (Maybe Text) -> AWST (ResourceT IO) LoadAssetResult
+loadFileFromS3 bucketName objectKey possibleETag = do
+  let getObjectRequest = set goIfNoneMatch possibleETag $ getObject bucketName objectKey
+  response <- trying (_ServiceError . hasStatus 304) (send getObjectRequest)
+  case response of
+    Right getObjectResponse -> do
+      fileContents <- sinkBody (view gorsBody getObjectResponse) sinkLazy
+      let etagFromS3 = fmap (\(ETag etagValue) -> toS etagValue) $ view gorsETag getObjectResponse
+      pure $ AssetLoaded fileContents etagFromS3
+    Left serviceError -> do
+      pure AssetUnmodified
 
 checkFileExistsInS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) Bool
 checkFileExistsInS3 bucketName objectKey = do
@@ -138,16 +149,16 @@ checkFileExistsInS3 bucketName objectKey = do
   let objectWithKey object = view oKey object == objectKey
   return $ has (lovrsContents . folded . filtered objectWithKey) listObjectResponse
 
-loadPossibleFileFromS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) (Maybe BL.ByteString)
-loadPossibleFileFromS3 bucketName objectKey = do
+loadPossibleFileFromS3 :: BucketName -> ObjectKey -> Maybe Text -> AWST (ResourceT IO) LoadAssetResult
+loadPossibleFileFromS3 bucketName objectKey possibleETag = do
   exists <- checkFileExistsInS3 bucketName objectKey
-  if exists then fmap Just (loadFileFromS3 bucketName objectKey) else return Nothing
+  if exists then loadFileFromS3 bucketName objectKey possibleETag else pure AssetNotFound
 
 loadProjectAssetFromS3 :: AWSResources -> LoadAsset
-loadProjectAssetFromS3 resources assetPath = runInAWS resources $ do
+loadProjectAssetFromS3 resources assetPath possibleETag = runInAWS resources $ do
   let bucketName = _bucket resources
   let objectKey = assetPathToObjectKey assetPath
-  loadPossibleFileFromS3 bucketName objectKey
+  loadPossibleFileFromS3 bucketName objectKey possibleETag
 
 saveProjectAssetToS3 :: AWSResources -> [Text] -> BL.ByteString -> IO ()
 saveProjectAssetToS3 resources assetPath contents = runInAWS resources $ do
@@ -167,10 +178,10 @@ deleteProjectAssetOnS3 resources path = runInAWS resources $ do
   let deleteObjectRequest = deleteObject (_bucket resources) (assetPathToObjectKey path)
   void $ send deleteObjectRequest
 
-loadProjectThumbnailFromS3 :: AWSResources -> Text -> IO (Maybe BL.ByteString)
-loadProjectThumbnailFromS3 resources projectID = runInAWS resources $ do
+loadProjectThumbnailFromS3 :: AWSResources -> Text -> Maybe Text -> IO LoadAssetResult
+loadProjectThumbnailFromS3 resources projectID possibleETag = runInAWS resources $ do
   let bucketName = _bucket resources
-  loadPossibleFileFromS3 bucketName (projectIDToThumbnailObjectKey projectID)
+  loadPossibleFileFromS3 bucketName (projectIDToThumbnailObjectKey projectID) possibleETag
 
 saveProjectThumbnailToS3 :: AWSResources -> Text -> BL.ByteString -> IO ()
 saveProjectThumbnailToS3 resources projectID contents = runInAWS resources $ do

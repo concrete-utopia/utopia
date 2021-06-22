@@ -291,7 +291,7 @@ export class ColorPickerInner extends React.Component<
       const origin = this.SVControlRef.current.getBoundingClientRect()
       this.SVOrigin = { x: origin.left, y: origin.top } as WindowPoint
 
-      this.setSVFromClientPosition(e.clientX, e.clientY, false)
+      this.setSVFromClientPosition(e.clientX, e.clientY, true)
 
       document.addEventListener('mousemove', this.onSVMouseMove)
       document.addEventListener('mouseup', this.onSVMouseUp)

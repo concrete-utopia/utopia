@@ -17,9 +17,6 @@ import { createLayoutPropertyPath } from '../../../../../core/layout/layout-help
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 
-const flexGapProp = [createLayoutPropertyPath('FlexGap')]
-const alignItemsProp = [createLayoutPropertyPath('alignItems')]
-
 export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }>(
   'FlexContainerControls',
   (props) => {
@@ -77,19 +74,15 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
             justifyFlexEnd={justifyFlexEnd}
           />
         </UIGridRow>
+        <FlexGapControl
+          value={flexGap.value}
+          onSubmitValue={wrappedOnSubmitValue}
+          onTransientSubmitValue={wrappedOnTransientSubmitValue}
+          onUnset={flexGap.onUnsetValues}
+          controlStatus={flexGap.controlStatus}
+          controlStyles={flexGap.controlStyles}
+        />
         <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-          <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
-          <FlexGapControl
-            value={flexGap.value}
-            onSubmitValue={wrappedOnSubmitValue}
-            onTransientSubmitValue={wrappedOnTransientSubmitValue}
-            onUnset={flexGap.onUnsetValues}
-            controlStatus={flexGap.controlStatus}
-            controlStyles={flexGap.controlStyles}
-          />
-        </UIGridRow>
-        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-          <PropertyLabel target={alignItemsProp}>Align</PropertyLabel>
           <FlexAlignItemsControl
             value={alignItems.value}
             controlStatus={alignItems.controlStatus}

@@ -34,28 +34,17 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
   const controlStyles = metadata.controlStyles
 
   return (
-    <InspectorContextMenuWrapper
-      id={`property-label-${propsToUnset.join('-')}`}
-      data={null}
-      items={contextMenuItems}
-      style={{
+    <div
+      css={{
+        display: 'flex',
+        alignItems: 'center',
+        overflowX: 'scroll',
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
         color: controlStyles.mainColor,
-        overflow: 'hidden',
-        ...props.style,
       }}
     >
-      <div
-        css={{
-          display: 'flex',
-          alignItems: 'center',
-          overflowX: 'scroll',
-          whiteSpace: 'nowrap',
-          textOverflow: 'ellipsis',
-          color: controlStyles.mainColor,
-        }}
-      >
-        {props.children}
-      </div>
-    </InspectorContextMenuWrapper>
+      {props.children}
+    </div>
   )
 })

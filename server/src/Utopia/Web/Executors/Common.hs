@@ -24,7 +24,7 @@ import           Data.Pool
 import           Data.String                      (String)
 import           Data.Time
 import           Database.Persist.Sql
-import           Network.HTTP.Client
+import           Network.HTTP.Client       hiding (Response)
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Mime
@@ -34,7 +34,7 @@ import           Protolude                        hiding (concatMap,
                                                    intersperse, map, sourceFile,
                                                    (<.>))
 import           Servant
-import           Servant.Client
+import           Servant.Client            hiding (Response)
 import           System.Directory
 import           System.Environment
 import           System.FilePath
@@ -190,12 +190,24 @@ saveProjectAssetWithCall metrics pool user projectID assetPath saveCall = do
 getPathMimeType :: [Text] -> MimeType
 getPathMimeType pathElements = maybe defaultMimeType defaultMimeLookup $ lastOf traverse pathElements
 
-loadProjectAssetWithCall :: (MonadIO m, MonadThrow m) => LoadAsset -> [Text] -> m (Maybe Application)
-loadProjectAssetWithCall loadCall assetPath = do
-  possibleAsset <- liftIO $ loadCall assetPath
-  let mimeType = getPathMimeType assetPath
-  let buildResponse asset = responseLBS ok200 [(hContentType, mimeType)] asset
-  pure $ fmap (\asset -> \_ -> \sendResponse -> sendResponse $ buildResponse asset) possibleAsset
+getAssetHeaders :: Maybe [Text] -> Maybe Text -> ResponseHeaders
+getAssetHeaders possibleAssetPath possibleETag =
+  let mimeTypeHeaders = foldMap (\assetPath -> [(hContentType, getPathMimeType assetPath)]) possibleAssetPath
+      etagHeaders = foldMap (\etag -> [(hCacheControl, "public, must-revalidate, proxy-revalidate, max-age=0"), ("ETag", toS etag)]) possibleETag
+  in  mimeTypeHeaders <> etagHeaders
+
+responseFromLoadAssetResult :: [Text] -> LoadAssetResult -> Maybe Response
+responseFromLoadAssetResult _ AssetUnmodified = Just $ responseLBS notModified304 [] mempty
+responseFromLoadAssetResult _ AssetNotFound   = Nothing
+responseFromLoadAssetResult assetPath (AssetLoaded bytes possibleETag) =
+  let headers = getAssetHeaders (Just assetPath) possibleETag
+  in  Just $ responseLBS ok200 headers bytes
+
+loadProjectAssetWithCall :: (MonadIO m, MonadThrow m) => LoadAsset -> [Text] -> Maybe Text -> m (Maybe Application)
+loadProjectAssetWithCall loadCall assetPath possibleETag = do
+  possibleAsset <- liftIO $ loadCall assetPath possibleETag
+  let possibleResponse = responseFromLoadAssetResult assetPath possibleAsset
+  pure $ fmap (\response -> \_ -> \sendResponse -> sendResponse response) possibleResponse
 
 renameProjectAssetWithCall :: (MonadIO m, MonadThrow m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> OldPathText -> NewPathText -> (OldPathText -> NewPathText -> IO ()) -> m ()
 renameProjectAssetWithCall metrics pool user projectID (OldPath oldPath) (NewPath newPath) renameCall = do
@@ -204,6 +216,19 @@ renameProjectAssetWithCall metrics pool user projectID (OldPath oldPath) (NewPat
 deleteProjectAssetWithCall :: (MonadIO m, MonadThrow m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> [Text] -> ([Text] -> IO ()) -> m()
 deleteProjectAssetWithCall metrics pool user projectID assetPath deleteCall = do
   whenProjectOwner metrics pool user projectID $ liftIO $ deleteCall (projectID : assetPath)
+
+responseFromLoadThumbnailResult :: LoadAssetResult -> Maybe Response
+responseFromLoadThumbnailResult AssetUnmodified = Just $ responseLBS notModified304 [] mempty
+responseFromLoadThumbnailResult AssetNotFound   = Nothing
+responseFromLoadThumbnailResult (AssetLoaded bytes possibleETag) =
+  let headers = getAssetHeaders Nothing possibleETag
+  in  Just $ responseLBS ok200 headers bytes
+
+loadProjectThumbnailWithCall :: (MonadIO m, MonadThrow m) => LoadThumbnail -> Text -> Maybe Text -> m (Maybe Application)
+loadProjectThumbnailWithCall loadCall projectID possibleETag = do
+  possibleThumbnail <- liftIO $ loadCall projectID possibleETag
+  let possibleResponse = responseFromLoadThumbnailResult possibleThumbnail
+  pure $ fmap (\response -> \_ -> \sendResponse -> sendResponse response) possibleResponse
 
 saveProjectThumbnailWithCall :: (MonadIO m, MonadThrow m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> BL.ByteString -> (Text -> BL.ByteString -> IO ()) -> m ()
 saveProjectThumbnailWithCall metrics pool user projectID thumbnail saveCall = do

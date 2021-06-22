@@ -326,8 +326,8 @@ sendProjectFileContentsResponse filePath contents = \sendResponse ->
 assetCallFold :: Maybe Application -> ServerMonad (Maybe Application) -> ServerMonad (Maybe Application)
 assetCallFold priorResult assetCall = maybe assetCall (\a -> pure $ Just a) priorResult
 
-loadProjectFileEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Application
-loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) filePath = do
+loadProjectFileEndpoint :: ProjectIdWithSuffix -> Maybe Text -> [Text] -> ServerMonad Application
+loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) possibleETag filePath = do
   let normalizedPath = normalizePath filePath
   -- Check /public/a/b/ before checking /a/b/.
   let pathsToCheck = ["public" : filePath, filePath]
@@ -345,7 +345,7 @@ loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) filePath = do
     (Right Nothing) -> do
       -- Unable to find the file in the project contents.
       -- Speculatively try loading the various paths in order instead.
-      let assetCalls = fmap loadProjectAsset $ fmap (\p -> projectID : p) pathsToCheck
+      let assetCalls = fmap (\proj -> loadProjectAsset proj possibleETag) $ fmap (\p -> projectID : p) pathsToCheck
       let possibleResult = foldlM assetCallFold Nothing assetCalls
       handleNoAsset possibleResult
     (Right (Just ((ProjectTextFile (TextFile{..})), _))) -> do
@@ -355,7 +355,7 @@ loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) filePath = do
     (Right (Just (_, pathFound))) -> do
       -- Found the file in the project contents, so
       -- load the asset from that path.
-      handleNoAsset $ loadProjectAsset (projectID : pathFound)
+      handleNoAsset $ loadProjectAsset (projectID : pathFound) possibleETag
 
 saveProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad Application
 saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> do
@@ -371,9 +371,9 @@ deleteProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requi
   deleteProjectAsset (view id sessionUser) projectID path
   return NoContent
 
-loadProjectThumbnailEndpoint :: ProjectIdWithSuffix -> ServerMonad BL.ByteString
-loadProjectThumbnailEndpoint (ProjectIdWithSuffix projectID _) = do
-  possibleProjectThumbnail <- loadProjectThumbnail projectID
+loadProjectThumbnailEndpoint :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad Application
+loadProjectThumbnailEndpoint (ProjectIdWithSuffix projectID _) possibleETag = do
+  possibleProjectThumbnail <- loadProjectThumbnail projectID possibleETag
   maybe notFound return possibleProjectThumbnail
 
 saveProjectThumbnailEndpoint :: Maybe Text -> ProjectIdWithSuffix -> BL.ByteString -> ServerMonad NoContent

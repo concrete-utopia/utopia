@@ -1,4 +1,6 @@
+/**@jsx jsx */
 import * as React from 'react'
+import { css, jsx } from '@emotion/react'
 import { Component as ReactComponent } from 'react'
 import {
   Menu,
@@ -10,7 +12,8 @@ import {
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
-import { Icons } from '../uuiui'
+import { Icons, UtopiaTheme } from '../uuiui'
+import { getControlStyles } from '../uuiui-deps'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -191,13 +194,31 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
       <div
         key={name}
         className={name + ' ' + (this.props.className ?? '')}
-        style={{
+        css={{
           width: '100%',
           ...this.props.style,
+          '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
+          '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
+          '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
+          '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
+          '&:hover': {
+            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
+              .secondaryColor,
+            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+          },
+          '&:focus-within': {
+            '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+            '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
+              .secondaryColor,
+            '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+            '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+          },
         }}
       >
         {this.props.items.length > 0 ? (
-          <>
+          <React.Fragment>
             <MenuProvider
               key={`${this.props.id}-provider`}
               id={this.props.id}
@@ -214,7 +235,7 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
               items={this.props.items}
               getData={this.getData}
             />
-          </>
+          </React.Fragment>
         ) : (
           this.props.children
         )}
