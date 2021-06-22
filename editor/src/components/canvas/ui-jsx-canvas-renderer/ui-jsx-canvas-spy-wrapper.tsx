@@ -57,6 +57,7 @@ export function buildSpyWrappedElement(
       importInfo: importInfoFromImportDetails(jsx.name, imports),
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
+      console.log('spy mutation', EP.toString(elementPath))
       metadataContext.current.spyValues.metadata[EP.toComponentId(elementPath)] = instanceMetadata
     }
   }
