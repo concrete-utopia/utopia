@@ -42,6 +42,7 @@ export const SceneComponent = betterReactMemo(
 
     useClearMetadataForScene(remainingProps)
 
+    // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
     updateInvalidatedScenes((current) => current)
 
     return (
