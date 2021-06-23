@@ -4,12 +4,10 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 # Welcome to Utopia 🏝
+
 Utopia is an integrated design and development environment for React. It uses React code as the source of truth, and lets you make real time changes to components by editing it and using a suite of design tools. It's early software, but you can [try it today](https://utopia.app/project), look at an [example project](https://utopia.app/p/36ae27be-welcome-to-utopia/), or read about it on our [blog](https://utopia.app/blog)!
 
 ![screenshot of utopia](https://user-images.githubusercontent.com/2226774/93580752-7b7b8e80-f9a0-11ea-8663-39683a53df2e.png)
-
-
-
 
 # For development: Installing Utopia on your machine
 
@@ -25,9 +23,11 @@ Utopia is browser-based. To run it locally, clone the repo, and then set up the 
 - Recommended: [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands, and switching to nix will be a bit slower.
 
 ## Contributing and Bug Reporting
-We welcome contributions. Utopia is a big project, but we're here to help, and are happy to pair up with you. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/pD8SrEJ). Please read our [contributing](contributing.md) doc to get started
+
+We welcome contributions. Utopia is a big project, but we're here to help, and are happy to pair up with you. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/NEEnPKCgzC). Please read our [contributing](contributing.md) doc to get started
 
 # Run the Editor
+
 There are a few different options for running Utopia below, but for all of them you'll head to [localhost:8000](https://localhost:8000). Importantly, [/project](https://localhost:8000/project) gets you to the editor.
 
 Before you do anything, you'll need to build VS Code:
@@ -135,7 +135,6 @@ nix-shell
 watch-website
 ```
 
-
 ### Build editor vscode
 
 ```
@@ -157,6 +156,7 @@ Limitations:
 # Troubleshooting
 
 ## M1 Macbook
+
 There are some extra steps to build server files, steps 11-14 are also needed when there are dependency changes for the server.
 
 1. Open Applications, locate the Terminal within the Utilities folder
@@ -175,6 +175,7 @@ There are some extra steps to build server files, steps 11-14 are also needed wh
 14. Open a normal Terminal, run the `start` script in the utopia folder.
 
 ## fsevents
+
 If you notice that 1 or more CPU cores are running 100% because of `node` processes, it is probably webpack-dev-server having trouble with `fsevents` on MacOS. To fix it, run `npm install fsevents` in the `utopia/editor` directory. see https://github.com/webpack/webpack/issues/701#issuecomment-216082726
 
 ## Running this without Nix

@@ -2,7 +2,7 @@ import { BasicEmailSignup } from './email-signup'
 
 const navigation = [
   { name: 'Play with Utopia', href: 'https://utopia.app/p/36ae27be-welcome-to-utopia' },
-  { name: 'Join our Discord', href: 'https://discord.gg/dSWs79MY' },
+  { name: 'Join our Discord', href: 'https://discord.gg/NEEnPKCgzC' },
   { name: 'Check us on Github', href: 'https://github.com/concrete-utopia/utopia' },
 ]
 
@@ -13,8 +13,9 @@ export const ContactUs = (props) => (
       style={{
         position: 'relative',
         border: '1px solid black',
-        padding: 16
-      }}>
+        padding: 16,
+      }}
+    >
       <div
         style={{
           position: 'absolute',
@@ -26,10 +27,13 @@ export const ContactUs = (props) => (
           background: 'white',
           padding: 14,
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
         }}
       >
-        <span>Stay in touch. We’ll send you a long-form email once or twice a month <br/>(and only when we have enough new development to write about!)</span>
+        <span>
+          Stay in touch. We’ll send you a long-form email once or twice a month <br />
+          (and only when we have enough new development to write about!)
+        </span>
         <BasicEmailSignup />
       </div>
     </div>
