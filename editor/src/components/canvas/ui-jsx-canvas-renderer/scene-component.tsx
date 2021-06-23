@@ -7,19 +7,6 @@ import { betterReactMemo } from '../../../uuiui-deps'
 import { RerenderUtopiaContext } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidateScenesContext, UiJsxCanvasContext } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
-import { fastForEach } from '../../../core/shared/utils'
-
-function useClearMetadataForScene(props: any) {
-  const metadataContext = React.useContext(UiJsxCanvasContext)
-  const scenePath = props['data-utopia-scene-id']
-  if (scenePath != null) {
-    fastForEach(Object.keys(metadataContext.current.spyValues.metadata), (path) => {
-      if (path.startsWith(scenePath)) {
-        delete metadataContext.current.spyValues.metadata[path]
-      }
-    })
-  }
-}
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
@@ -39,8 +26,6 @@ export const SceneComponent = betterReactMemo(
         : UtopiaStyles.scene.editing.boxShadow,
       ...style,
     }
-
-    useClearMetadataForScene(remainingProps)
 
     // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
     updateInvalidatedScenes((current) => current)
