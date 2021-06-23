@@ -358,6 +358,7 @@ function useThrottledCallback(callback: () => void): (immediate?: 'immediate') =
     if (immediate === 'immediate') {
       if (timeoutRef.current != null) {
         clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
       }
       callbackRef.current()
     } else if (timeoutRef.current == null) {
