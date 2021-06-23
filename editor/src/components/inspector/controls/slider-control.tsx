@@ -37,10 +37,26 @@ export const SliderControl: React.FunctionComponent<SliderControlProps> = (props
     [onChangeFn],
   )
 
-  const controlOptions = {
-    ...defaultSliderControlOptions,
-    ...props.DEPRECATED_controlOptions,
-  }
+  const controlOptions = React.useMemo(() => {
+    return {
+      ...defaultSliderControlOptions,
+      ...props.DEPRECATED_controlOptions,
+    }
+  }, [props.DEPRECATED_controlOptions])
+
+  const handleAndTrackStyle = React.useMemo(() => {
+    return {
+      backgroundColor: controlOptions.filled ? props.controlStyles.trackColor : undefined,
+    }
+  }, [controlOptions.filled, props.controlStyles])
+
+  const activeDotStyle = React.useMemo(() => {
+    return {
+      backgroundColor: controlOptions.filled
+        ? props.controlStyles.trackColor
+        : props.controlStyles.railColor,
+    }
+  }, [controlOptions.filled, props.controlStyles])
 
   let marks: Marks = {}
   if (typeof controlOptions.origin === 'number') {
@@ -69,23 +85,14 @@ export const SliderControl: React.FunctionComponent<SliderControlProps> = (props
         value={props.value}
         onBeforeChange={handleBeforeChange}
         onChange={props.onTransientSubmitValue}
-        // onAfterChange={props.onForcedSubmitValue ?? props.onSubmitValue}
         onAfterChange={handleOnAfterChange}
         min={controlOptions.minimum}
         max={controlOptions.maximum}
         step={controlOptions.stepSize}
         marks={marks}
-        handleStyle={{
-          backgroundColor: controlOptions.filled ? props.controlStyles.trackColor : undefined,
-        }}
-        trackStyle={{
-          backgroundColor: controlOptions.filled ? props.controlStyles.trackColor : undefined,
-        }}
-        activeDotStyle={{
-          backgroundColor: controlOptions.filled
-            ? props.controlStyles.trackColor
-            : props.controlStyles.railColor,
-        }}
+        handleStyle={handleAndTrackStyle}
+        trackStyle={handleAndTrackStyle}
+        activeDotStyle={activeDotStyle}
         railStyle={{
           backgroundColor: props.controlStyles.railColor,
         }}
@@ -112,70 +119,4 @@ export const SliderControl: React.FunctionComponent<SliderControlProps> = (props
       ) : null}
     </FlexRow>
   )
-}
-
-export class SliderControl2 extends React.Component<SliderControlProps> {
-  render() {
-    const controlOptions = {
-      ...defaultSliderControlOptions,
-      ...this.props.DEPRECATED_controlOptions,
-    }
-
-    let marks: Marks = {}
-    if (typeof controlOptions.origin === 'number') {
-      marks[controlOptions.origin] = {
-        style: {
-          display: 'none',
-        },
-        label: String(controlOptions.origin),
-      }
-    }
-
-    return (
-      <FlexRow
-        style={{
-          width: '100%',
-          height: UtopiaTheme.layout.inputHeight.default,
-          paddingLeft: 4,
-          paddingRight: 4,
-          alignItems: 'center',
-          ...this.props.style,
-        }}
-        className={this.props.controlClassName}
-        onContextMenu={this.props.onContextMenu}
-      >
-        <Slider
-          disabled={!this.props.controlStyles.interactive}
-          value={this.props.value}
-          onChange={this.props.onTransientSubmitValue}
-          onAfterChange={this.props.onForcedSubmitValue ?? this.props.onSubmitValue}
-          min={controlOptions.minimum}
-          max={controlOptions.maximum}
-          step={controlOptions.stepSize}
-          marks={marks}
-          handleStyle={{
-            backgroundColor: controlOptions.filled
-              ? this.props.controlStyles.trackColor
-              : undefined,
-          }}
-          trackStyle={{
-            backgroundColor: controlOptions.filled
-              ? this.props.controlStyles.trackColor
-              : undefined,
-          }}
-          activeDotStyle={{
-            backgroundColor: controlOptions.filled
-              ? this.props.controlStyles.trackColor
-              : this.props.controlStyles.railColor,
-          }}
-          railStyle={{
-            backgroundColor: this.props.controlStyles.railColor,
-          }}
-          dotStyle={{
-            backgroundColor: this.props.controlStyles.railColor,
-          }}
-        />
-      </FlexRow>
-    )
-  }
 }
