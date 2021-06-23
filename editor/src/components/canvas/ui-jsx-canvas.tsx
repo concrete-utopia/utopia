@@ -239,6 +239,26 @@ function normalizedCssImportsFromImports(filePath: string, imports: Imports): Ar
   return result
 }
 
+function useClearSpyMetadataOnRemount(
+  canvasMountCount: number,
+  domWalkerInvalidateCount: number,
+  metadataContext: UiJsxCanvasContextData,
+) {
+  const canvasMountCountRef = React.useRef(canvasMountCount)
+  const domWalkerInvalidateCountRef = React.useRef(domWalkerInvalidateCount)
+
+  const invalidated =
+    canvasMountCountRef.current !== canvasMountCount ||
+    domWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
+
+  if (invalidated) {
+    metadataContext.current.spyValues.metadata = {}
+  }
+
+  canvasMountCountRef.current = canvasMountCount
+  domWalkerInvalidateCountRef.current = domWalkerInvalidateCount
+}
+
 export const UiJsxCanvas = betterReactMemo(
   'UiJsxCanvas',
   React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
@@ -276,6 +296,7 @@ export const UiJsxCanvas = betterReactMemo(
     const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
       DomWalkerInvalidatePathsContext,
     )
+    useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
     // Handle the imports changing, this needs to run _before_ any require function
     // calls as it's modifying the underlying DOM elements. This is somewhat working
