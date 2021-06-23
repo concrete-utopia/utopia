@@ -5,6 +5,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
   id=\\"canvas-container\\"
   style=\\"all: initial; position: absolute;\\"
   data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
+  data-utopia-root-element-path=\\"sb\\"
 >
   <div
     data-utopia-scene-id=\\"sb/scene\\"
