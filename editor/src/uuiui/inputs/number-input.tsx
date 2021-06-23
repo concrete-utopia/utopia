@@ -760,19 +760,35 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           ) : null}
         </div>
         {DEPRECATED_labelBelow == null && controlStatus != 'off' ? null : (
-          <div
-            onMouseDown={onLabelMouseDown}
-            style={{
-              cursor: CSSCursor.ResizeEW,
-              fontSize: 9,
-              textAlign: 'center',
-              display: 'block',
-              color: controlStyles.secondaryColor,
-              paddingTop: 2,
-            }}
-          >
-            {DEPRECATED_labelBelow != null ? DEPRECATED_labelBelow : null}
-          </div>
+          <React.Fragment>
+            {isFauxcused ? (
+              <div
+                css={{
+                  label: 'hover-avoider-while-sliding',
+                  position: 'fixed',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  right: 0,
+                  background: 'transparent',
+                  zIndex: 1,
+                }}
+              ></div>
+            ) : null}
+            <div
+              onMouseDown={onLabelMouseDown}
+              style={{
+                cursor: CSSCursor.ResizeEW,
+                fontSize: 9,
+                textAlign: 'center',
+                display: 'block',
+                color: controlStyles.secondaryColor,
+                paddingTop: 2,
+              }}
+            >
+              {DEPRECATED_labelBelow != null ? DEPRECATED_labelBelow : null}
+            </div>
+          </React.Fragment>
         )}
       </form>
     )
