@@ -432,7 +432,6 @@ export function useDomWalker(
 
   const fireThrottledCallback = useThrottledCallback(() => {
     if (containerRef.current != null) {
-      // console.log('DOM_WALKER_START')
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_START')
       }
@@ -476,7 +475,6 @@ export function useDomWalker(
       // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
       const fixedMetadata = mergeFragmentMetadata(metadata)
 
-      // console.log('DOM_WALKER_FINISH')
       props.onDomReport(fixedMetadata, cachedPaths)
     }
   })
