@@ -337,7 +337,6 @@ function useStateAsyncInvalidate<S>(
       }
       stateRef.current = resolvedNewValue
 
-      // TODO invalidate
       if (doNotInvalidate !== 'do-not-invalidate') {
         onInvalidate()
       }
