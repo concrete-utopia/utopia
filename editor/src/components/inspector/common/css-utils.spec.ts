@@ -15,6 +15,7 @@ import {
   CSSBorderRadius,
   cssColor,
   CSSColor,
+  cssColorHSL,
   cssColorToChromaColor,
   cssDefault,
   cssKeyword,
@@ -1621,6 +1622,21 @@ describe('cssColorToChromaColor', () => {
     invalidStrings.forEach((invalid) => {
       expect(isLeft(cssColorToChromaColor({ type: 'Keyword', keyword: invalid }))).toEqual(true)
     })
+  })
+  it('parses hsl values correctly', () => {
+    expect(cssColorToChromaColor(cssColorHSL(0, 0, 95, 1, false))).toMatchInlineSnapshot(`
+      Object {
+        "type": "RIGHT",
+        "value": Color {
+          "_rgb": Array [
+            242.25,
+            242.25,
+            242.25,
+            1,
+          ],
+        },
+      }
+    `)
   })
 })
 
