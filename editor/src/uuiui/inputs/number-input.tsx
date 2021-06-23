@@ -763,8 +763,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           <React.Fragment>
             {isFauxcused ? (
               <div
-                css={{
-                  label: 'hover-avoider-while-sliding',
+                style={{
                   position: 'fixed',
                   left: 0,
                   top: 0,
