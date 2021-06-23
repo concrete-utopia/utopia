@@ -281,45 +281,49 @@ export const UiJsxCanvas = betterReactMemo(
 
     // TODO after merge requireFn can never be null
     if (requireFn != null) {
-      let resolvedFiles: string[] = []
+      let resolvedFiles: MapLike<Array<string>> = {} // Mapping from importOrigin to an array of toImport
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
-          const filePathResolveResult = resolve(importOrigin, toImport)
+          if (resolvedFiles[importOrigin] == null) {
+            resolvedFiles[importOrigin] = []
+          }
+          let resolvedFromThisOrigin = resolvedFiles[importOrigin]
+
+          const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback
+          const filePathResolveResult = alreadyResolved
+            ? left<string, string>('Already resolved')
+            : resolve(importOrigin, toImport)
+
           const resolvedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
             (resolvedFilePath) => {
-              if (resolvedFiles.includes(resolvedFilePath)) {
-                // We're inside a cyclic dependency, so bail and the outer call will create the execution scope
-                return left('Ignoring inner cyclic dependency')
-              } else {
-                resolvedFiles.push(resolvedFilePath)
-                const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-                if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-                  const { scope } = createExecutionScope(
-                    resolvedFilePath,
-                    customRequire,
-                    mutableContextRef,
-                    topLevelComponentRendererComponents,
-                    projectContents,
-                    uiFilePath,
-                    transientFilesState,
-                    base64FileBlobs,
-                    hiddenInstances,
-                    metadataContext,
-                    shouldIncludeCanvasRootInTheSpy,
-                  )
-                  const exportsDetail = projectFile.fileContents.parsed.exportsDetail
-                  let filteredScope: MapLike<any> = {}
-                  for (const s of Object.keys(scope)) {
-                    if (s in exportsDetail.namedExports) {
-                      filteredScope[s] = scope[s]
-                    } else if (s === exportsDetail.defaultExport?.name) {
-                      filteredScope[s] = scope[s]
-                    }
+              resolvedFromThisOrigin.push(toImport)
+              const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+              if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+                const { scope } = createExecutionScope(
+                  resolvedFilePath,
+                  customRequire,
+                  mutableContextRef,
+                  topLevelComponentRendererComponents,
+                  projectContents,
+                  uiFilePath,
+                  transientFilesState,
+                  base64FileBlobs,
+                  hiddenInstances,
+                  metadataContext,
+                  shouldIncludeCanvasRootInTheSpy,
+                )
+                const exportsDetail = projectFile.fileContents.parsed.exportsDetail
+                let filteredScope: MapLike<any> = {}
+                for (const s of Object.keys(scope)) {
+                  if (s in exportsDetail.namedExports) {
+                    filteredScope[s] = scope[s]
+                  } else if (s === exportsDetail.defaultExport?.name) {
+                    filteredScope[s] = scope[s]
                   }
-                  return right(filteredScope)
-                } else {
-                  return left(`File ${resolvedFilePath} is not a ParseSuccess`)
                 }
+                return right(filteredScope)
+              } else {
+                return left(`File ${resolvedFilePath} is not a ParseSuccess`)
               }
             },
             filePathResolveResult,
