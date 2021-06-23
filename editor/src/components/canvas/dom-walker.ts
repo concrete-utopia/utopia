@@ -348,22 +348,23 @@ function useStateAsyncInvalidate<S>(
   return [stateRef.current, setAndMarkInvalidated]
 }
 
-function useThrottledCallback(callback: () => void): () => void {
-  const timeoutRef = React.useRef<NodeJS.Timeout | number | null>(null)
+function useThrottledCallback(callback: () => void): (immediate?: 'immediate') => void {
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const callbackRef = React.useRef(callback)
   callbackRef.current = callback
 
-  return React.useCallback(() => {
-    if (timeoutRef.current == null) {
+  return React.useCallback((immediate?: 'immediate') => {
+    if (immediate === 'immediate') {
+      if (timeoutRef.current != null) {
+        clearTimeout(timeoutRef.current)
+      }
+      callbackRef.current()
+    } else if (timeoutRef.current == null) {
       timeoutRef.current = setTimeout(() => {
         timeoutRef.current = null
-        console.log('executing throttled callback')
         callbackRef.current()
       }, 0)
-      console.log('callback armed', timeoutRef.current)
-    } else {
-      console.log('callback called but already armed')
     }
   }, [])
 }
@@ -430,7 +431,7 @@ export function useDomWalker(
 
   const fireThrottledCallback = useThrottledCallback(() => {
     if (containerRef.current != null) {
-      console.log('DOM_WALKER_START')
+      // console.log('DOM_WALKER_START')
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_START')
       }
@@ -474,7 +475,7 @@ export function useDomWalker(
       // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
       const fixedMetadata = mergeFragmentMetadata(metadata)
 
-      console.log('DOM_WALKER_FINISH')
+      // console.log('DOM_WALKER_FINISH')
       props.onDomReport(fixedMetadata, cachedPaths)
     }
   })
@@ -523,7 +524,7 @@ export function useDomWalker(
   )
 
   React.useLayoutEffect(() => {
-    fireThrottledCallback()
+    fireThrottledCallback('immediate')
   })
 
   return [updateInvalidatedPaths, updateInvalidatedScenes, containerRef]
