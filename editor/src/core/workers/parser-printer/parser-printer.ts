@@ -374,34 +374,47 @@ function jsxElementToExpression(
     case 'JSX_ELEMENT': {
       let attribsArray: Array<TS.JsxAttributeLike> = []
       fastForEach(element.props, (propEntry) => {
-        const skip = stripUIDs && propEntry.key === 'data-uid'
-        if (!skip) {
-          const prop = propEntry.value
-          const identifier = TS.createIdentifier(propEntry.key)
-          let attributeToAdd: TS.JsxAttribute
-          if (isJSXAttributeValue(prop) && typeof prop.value === 'boolean') {
-            // Use the shorthand style for true values, and the explicit style for false values
-            if (prop.value) {
-              // The `any` allows our `undefined` to punch through the invalid typing
-              // of `createJsxAttribute`.
-              attributeToAdd = TS.createJsxAttribute(identifier, undefined as any)
-            } else {
-              attributeToAdd = TS.createJsxAttribute(
-                identifier,
-                TS.createJsxExpression(undefined, TS.createFalse()),
-              )
+        switch (propEntry.type) {
+          case 'JSX_ATTRIBUTES_ENTRY':
+            const skip = stripUIDs && propEntry.key === 'data-uid'
+            if (!skip) {
+              const prop = propEntry.value
+              const identifier = TS.createIdentifier(propEntry.key)
+              let attributeToAdd: TS.JsxAttribute
+              if (isJSXAttributeValue(prop) && typeof prop.value === 'boolean') {
+                // Use the shorthand style for true values, and the explicit style for false values
+                if (prop.value) {
+                  // The `any` allows our `undefined` to punch through the invalid typing
+                  // of `createJsxAttribute`.
+                  attributeToAdd = TS.createJsxAttribute(identifier, undefined as any)
+                } else {
+                  attributeToAdd = TS.createJsxAttribute(
+                    identifier,
+                    TS.createJsxExpression(undefined, TS.createFalse()),
+                  )
+                }
+              } else {
+                const attributeExpression = jsxAttributeToExpression(prop)
+                const initializer: TS.StringLiteral | TS.JsxExpression = TS.isStringLiteral(
+                  attributeExpression,
+                )
+                  ? attributeExpression
+                  : TS.createJsxExpression(undefined, attributeExpression)
+                attributeToAdd = TS.createJsxAttribute(identifier, initializer)
+              }
+              addCommentsToNode(attributeToAdd, propEntry.comments)
+              attribsArray.push(attributeToAdd)
             }
-          } else {
-            const attributeExpression = jsxAttributeToExpression(prop)
-            const initializer: TS.StringLiteral | TS.JsxExpression = TS.isStringLiteral(
-              attributeExpression,
-            )
-              ? attributeExpression
-              : TS.createJsxExpression(undefined, attributeExpression)
-            attributeToAdd = TS.createJsxAttribute(identifier, initializer)
-          }
-          addCommentsToNode(attributeToAdd, propEntry.comments)
-          attribsArray.push(attributeToAdd)
+            break
+          case 'JSX_ATTRIBUTES_SPREAD':
+            const attributeExpression = jsxAttributeToExpression(propEntry.spreadValue)
+            const attributeToAdd = TS.createJsxSpreadAttribute(attributeExpression)
+            addCommentsToNode(attributeToAdd, propEntry.comments)
+            attribsArray.push(attributeToAdd)
+            break
+          default:
+            const _exhaustiveCheck: never = propEntry
+            throw new Error(`Unhandled attribute type ${JSON.stringify(propEntry)}`)
         }
       })
       const attribs = TS.createJsxAttributes(attribsArray)

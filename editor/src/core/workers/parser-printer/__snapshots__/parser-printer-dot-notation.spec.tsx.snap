@@ -87,6 +87,7 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "data-uid",
+                  "type": "JSX_ATTRIBUTES_ENTRY",
                   "value": Object {
                     "comments": Object {
                       "leadingComments": Array [],
@@ -163,6 +164,7 @@ export var storyboard = (props) => {
             "trailingComments": Array [],
           },
           "key": "data-uid",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],

@@ -3784,7 +3784,7 @@ export function toggleShadow(attribute: ModifiableAttribute): JSXAttributeValue<
 export function toggleStylePropPath(
   path: PropertyPath,
   toggleFn: (attribute: ModifiableAttribute) => ModifiableAttribute,
-) {
+): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
     const attributeResult = getModifiableJSXAttributeAtPath(element.props, path)
     if (isRight(attributeResult)) {
@@ -3807,7 +3807,9 @@ export function toggleStylePropPath(
   }
 }
 
-export function toggleStylePropPaths(toggleFn: (attribute: JSXAttribute) => JSXAttribute) {
+export function toggleStylePropPaths(
+  toggleFn: (attribute: JSXAttribute) => JSXAttribute,
+): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
     const styleProp = getJSXAttributeAtPath(element.props, PP.create(['style']))
     const attribute = styleProp.attribute
