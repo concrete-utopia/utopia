@@ -30,7 +30,7 @@ import {
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
-import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsContextData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
   ElementPath,
   HighlightBoundsForUids,
@@ -58,6 +58,7 @@ export function createExecutionScope(
   fileBlobs: CanvasBase64Blobs,
   hiddenInstances: ElementPath[],
   metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): {
   scope: MapLike<any>
@@ -122,6 +123,7 @@ export function createExecutionScope(
       [],
       undefined,
       metadataContext,
+      updateInvalidatedPaths,
       jsxFactoryFunction,
       shouldIncludeCanvasRootInTheSpy,
       openStoryboardFileNameKILLME,

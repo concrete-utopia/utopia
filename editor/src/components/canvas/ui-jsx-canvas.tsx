@@ -111,9 +111,10 @@ UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
 export const DomWalkerInvalidateScenesContext = React.createContext<SetValueCallback<Set<string>>>(
   NO_OP,
 )
-export const DomWalkerInvalidatePathsContext = React.createContext<SetValueCallback<Set<string>>>(
-  NO_OP,
-)
+export type DomWalkerInvalidatePathsContextData = SetValueCallback<Set<string>>
+export const DomWalkerInvalidatePathsContext = React.createContext<
+  DomWalkerInvalidatePathsContextData
+>(NO_OP)
 
 export interface UiJsxCanvasProps {
   offset: CanvasVector
@@ -272,6 +273,9 @@ export const UiJsxCanvas = betterReactMemo(
     }
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
+      DomWalkerInvalidatePathsContext,
+    )
 
     // Handle the imports changing, this needs to run _before_ any require function
     // calls as it's modifying the underlying DOM elements. This is somewhat working
@@ -315,6 +319,7 @@ export const UiJsxCanvas = betterReactMemo(
                     base64FileBlobs,
                     hiddenInstances,
                     metadataContext,
+                    updateInvalidatedPaths,
                     shouldIncludeCanvasRootInTheSpy,
                   )
                   const exportsDetail = projectFile.fileContents.parsed.exportsDetail
@@ -357,6 +362,7 @@ export const UiJsxCanvas = betterReactMemo(
           base64FileBlobs,
           hiddenInstances,
           metadataContext,
+          updateInvalidatedPaths,
           shouldIncludeCanvasRootInTheSpy,
         ],
       )
@@ -372,6 +378,7 @@ export const UiJsxCanvas = betterReactMemo(
         base64FileBlobs,
         hiddenInstances,
         metadataContext,
+        updateInvalidatedPaths,
         props.shouldIncludeCanvasRootInTheSpy,
       )
 

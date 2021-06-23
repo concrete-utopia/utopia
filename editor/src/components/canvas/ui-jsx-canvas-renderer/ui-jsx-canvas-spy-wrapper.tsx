@@ -10,11 +10,7 @@ import {
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
-import {
-  DomWalkerInvalidatePathsContext,
-  DomWalkerInvalidateScenesContext,
-  UiJsxCanvasContextData,
-} from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsContextData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
@@ -24,6 +20,7 @@ export function buildSpyWrappedElement(
   finalProps: any,
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
   childrenElementPaths: Array<ElementPath>,
   childrenElements: Array<React.ReactNode>,
   Element: any,
@@ -61,7 +58,7 @@ export function buildSpyWrappedElement(
       importInfo: importInfoFromImportDetails(jsx.name, imports),
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
-      console.log('spy mutation', EP.toString(elementPath))
+      updateInvalidatedPaths((current) => current)
       metadataContext.current.spyValues.metadata[EP.toComponentId(elementPath)] = instanceMetadata
     }
   }
@@ -101,9 +98,6 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     ...passThroughProps
   } = props
   spyCallback(passThroughProps)
-  const updateInvalidatedPaths = React.useContext(DomWalkerInvalidatePathsContext)
-  console.log('calling invalidated scenes', updateInvalidatedPaths)
-  updateInvalidatedPaths((current) => current)
   return renderComponentUsingJsxFactoryFunction(
     inScope,
     jsxFactoryFunctionName,
