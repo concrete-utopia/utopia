@@ -2407,29 +2407,6 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
   }
 }
 
-export function cullSpyCollector(
-  spyCollector: UiJsxCanvasContextData,
-  domMetadata: ReadonlyArray<ElementInstanceMetadata>,
-): void {
-  // Note: Mutates `spyCollector`.
-  // Collate all the valid paths.
-  let elementPaths: Set<string> = Utils.emptySet()
-  fastForEach(domMetadata, (element) => {
-    let workingPath: ElementPath | null = element.elementPath
-    while (workingPath != null && !EP.isEmptyPath(workingPath)) {
-      const pathAsString = EP.toString(workingPath)
-      elementPaths.add(pathAsString)
-      workingPath = EP.parentPath(workingPath)
-    }
-  })
-  // Eliminate the element paths which are invalid.
-  fastForEach(Object.keys(spyCollector.current.spyValues.metadata), (elementPath) => {
-    if (!elementPaths.has(elementPath.split(':')[0])) {
-      delete spyCollector.current.spyValues.metadata[elementPath]
-    }
-  })
-}
-
 export interface GetParseSuccessOrTransientResult {
   topLevelElements: Array<TopLevelElement>
   imports: Imports
