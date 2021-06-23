@@ -58,6 +58,12 @@ export const SliderControl: React.FunctionComponent<SliderControlProps> = (props
     }
   }, [controlOptions.filled, props.controlStyles])
 
+  const railAndDotStyle = React.useMemo(() => {
+    return {
+      backgroundColor: props.controlStyles.railColor,
+    }
+  }, [props.controlStyles])
+
   let marks: Marks = {}
   if (typeof controlOptions.origin === 'number') {
     marks[controlOptions.origin] = {
@@ -93,12 +99,8 @@ export const SliderControl: React.FunctionComponent<SliderControlProps> = (props
         handleStyle={handleAndTrackStyle}
         trackStyle={handleAndTrackStyle}
         activeDotStyle={activeDotStyle}
-        railStyle={{
-          backgroundColor: props.controlStyles.railColor,
-        }}
-        dotStyle={{
-          backgroundColor: props.controlStyles.railColor,
-        }}
+        railStyle={railAndDotStyle}
+        dotStyle={railAndDotStyle}
       />
       {/* This div blocks other controls from receiving hover events 
           while you're sliding the slider. NB this needs to come here, 
