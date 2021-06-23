@@ -3961,7 +3961,7 @@ export const UPDATE_FNS = {
 
       if (pathToUpdate == null) {
         return setPropertyOnTarget(editor, target, (props) => {
-          let updatedProps = jsxAttributesFromMap(
+          let updatedProps: JSXAttributes = jsxAttributesFromMap(
             objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
           )
           const dataUID = getJSXAttribute(props, 'data-uid')

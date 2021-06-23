@@ -22,7 +22,7 @@ export function buildSpyWrappedElement(
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
   childrenElementPaths: Array<ElementPath>,
-  childrenElements: Array<React.ReactNode>,
+  childrenElements: Array<React.ReactChild>,
   Element: any,
   inScope: MapLike<any>,
   jsxFactoryFunctionName: string | null,

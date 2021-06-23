@@ -4,7 +4,7 @@ Our goal is to craft an open and welcoming community here, which is why we have 
 
 ## Looking for help?
 
-If you need help, please reach out to us on our [Discord](https://discord.gg/pD8SrEJ), in the `#help-me` channel.
+If you need help, please reach out to us on our [Discord](https://discord.gg/NEEnPKCgzC), in the `#help-me` channel.
 
 ## Reporting an issue
 

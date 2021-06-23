@@ -11,7 +11,7 @@ const navigation = [
   { name: ' ', href: '#' },
   { name: ' ', href: '#' },
   { name: 'Github', href: 'https://github.com/concrete-utopia/utopia' },
-  { name: 'Discord', href: 'https://discord.gg/dSWs79MY' },
+  { name: 'Discord', href: 'https://discord.gg/NEEnPKCgzC' },
   {
     name: 'Play with Utopia',
     href: 'https://utopia.app/p/36ae27be-welcome-to-utopia',

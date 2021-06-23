@@ -29,7 +29,8 @@ import           Protolude
 import           Servant                         hiding
                                                  (serveDirectoryFileServer,
                                                   serveDirectoryWith)
-import           Servant.RawM
+import           Servant.Conduit
+import           Servant.RawM.Server
 import           Text.Blaze.Html.Renderer.Text
 import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
@@ -478,13 +479,14 @@ packagerCacheControl = "public, immutable, max-age=2592000"
 
 packagePackagerEndpoint :: Text -> Maybe LastModifiedTime -> Maybe Text -> ServerMonad PackagePackagerResponse
 packagePackagerEndpoint versionedPackageName ifModifiedSince possibleOrigin = do
-  possiblePackagerContent <- getPackagePackagerContent versionedPackageName (fmap getLastModifiedTime ifModifiedSince)
+  (packagerContent, lastModified) <- getPackagePackagerContent versionedPackageName
   allowOriginHeader <- accessControlAllowOrigin possibleOrigin
   let applyOriginHeader = maybe noHeader addHeader allowOriginHeader
-  case possiblePackagerContent of
-    Nothing -> notModified -- Not modified.
-    Just (packagerContent, lastModified) -> do
-      return $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
+  let fullResponse = maybe True (\modifiedSince -> lastModified > (getLastModifiedTime modifiedSince)) ifModifiedSince
+  -- Handle the case where it shouldn't return the full response.
+  unless fullResponse notModified
+  -- Return the entire response back to the caller.
+  pure $ addHeader packagerCacheControl $ addHeader (LastModifiedTime lastModified) $ applyOriginHeader packagerContent
 
 emptyUserConfigurationResponse :: UserConfigurationResponse
 emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing }

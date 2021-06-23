@@ -176,7 +176,7 @@ export function createComponentRendererComponent(params: {
       } else {
         const ownElementPath = EP.appendNewElementPath(instancePath, getUtopiaID(element))
 
-        return renderCoreElement(
+        const renderedCoreElement = renderCoreElement(
           element,
           ownElementPath,
           mutableContext.rootScope,
@@ -199,6 +199,12 @@ export function createComponentRendererComponent(params: {
           code,
           highlightBounds,
         )
+
+        if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
+          return <>{renderedCoreElement}</>
+        } else {
+          return renderedCoreElement
+        }
       }
     }
 

@@ -62,6 +62,7 @@ import {
   simplifyAttributeIfPossible,
   jsxAttributesEntry,
   setJSXAttributesAttribute,
+  jsxAttributesSpread,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1349,14 +1350,40 @@ function parseElementProps(
   // Maintain this so that we can still use early returns.
   let propIndex: number = 0
   for (const prop of attributes.properties) {
-    if (TS.isJsxAttribute(prop)) {
-      let propComments = getComments(sourceText, prop)
-      if (propIndex === attributes.properties.length - 1) {
-        propComments = parsedComments(propComments.leadingComments, [
-          ...propComments.trailingComments,
-          ...leadingCommentsAgainstClosingToken,
-        ])
+    let propComments = getComments(sourceText, prop)
+    if (propIndex === attributes.properties.length - 1) {
+      propComments = parsedComments(propComments.leadingComments, [
+        ...propComments.trailingComments,
+        ...leadingCommentsAgainstClosingToken,
+      ])
+    }
+    if (TS.isJsxSpreadAttribute(prop)) {
+      const attributeResult = parseAttributeExpression(
+        sourceFile,
+        sourceText,
+        filename,
+        imports,
+        topLevelNames,
+        propsObjectName,
+        prop.expression,
+        highlightBounds,
+        alreadyExistingUIDs,
+        [],
+      )
+      if (isLeft(attributeResult)) {
+        return attributeResult
+      } else {
+        result.push(
+          jsxAttributesSpread(
+            simplifyAttributeIfPossible(attributeResult.value.value),
+            propComments,
+          ),
+        )
+        highlightBounds = attributeResult.value.highlightBounds
+        propsUsed.push(...attributeResult.value.propsUsed)
+        definedElsewhere.push(...attributeResult.value.definedElsewhere)
       }
+    } else if (TS.isJsxAttribute(prop)) {
       if (prop.initializer == null) {
         result.push(
           jsxAttributesEntry(

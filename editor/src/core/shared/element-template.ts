@@ -5,16 +5,21 @@ import type {
   ElementPath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
-import { Either, isLeft, left, right } from './either'
+import { Either, foldEither, isLeft, left, right } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
 import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api'
 import { fastForEach, unknownObjectProperty } from './utils'
-import { addAllUniquely, mapDropNulls } from './array-utils'
+import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
 import { CSSPosition } from '../../components/inspector/common/css-utils'
-import { ModifiableAttribute } from './jsx-attributes'
+import {
+  dropKeyFromNestedObject,
+  getJSXAttributeAtPathInner,
+  ModifiableAttribute,
+  setJSXValueInAttributeAtPath,
+} from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
@@ -25,7 +30,6 @@ import {
 } from '../workers/parser-printer/parser-printer-comments'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
-import { string } from 'fast-check/*'
 
 interface BaseComment {
   comment: string
@@ -222,7 +226,7 @@ export function jsxAttributeNestedObject(
 }
 
 export function jsxAttributeNestedObjectSimple(
-  content: JSXAttributes,
+  content: Array<JSXAttributesEntry>,
   comments: ParsedComments,
 ): JSXAttributeNestedObject {
   return {
@@ -329,9 +333,24 @@ export function clearJSXAttributeOtherJavaScriptUniqueIDs(
 }
 
 export function simplifyAttributesIfPossible(attributes: JSXAttributes): JSXAttributes {
-  return attributes.map(({ key, value, comments }) =>
-    jsxAttributesEntry(key, simplifyAttributeIfPossible(value), comments),
-  )
+  return attributes.map((attribute) => {
+    switch (attribute.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        return jsxAttributesEntry(
+          attribute.key,
+          simplifyAttributeIfPossible(attribute.value),
+          attribute.comments,
+        )
+      case 'JSX_ATTRIBUTES_SPREAD':
+        return jsxAttributesSpread(
+          simplifyAttributeIfPossible(attribute.spreadValue),
+          attribute.comments,
+        )
+      default:
+        const _exhaustiveCheck: never = attribute
+        throw new Error(`Unhandled attribute type ${JSON.stringify(attribute)}`)
+    }
+  })
 }
 
 export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribute {
@@ -587,6 +606,7 @@ export function isRegularJSXAttribute(
 }
 
 export interface JSXAttributesEntry extends WithComments {
+  type: 'JSX_ATTRIBUTES_ENTRY'
   key: string
   value: JSXAttribute
 }
@@ -597,35 +617,88 @@ export function jsxAttributesEntry(
   comments: ParsedComments,
 ): JSXAttributesEntry {
   return {
+    type: 'JSX_ATTRIBUTES_ENTRY',
     key: key,
     value: value,
     comments: comments,
   }
 }
 
-export type JSXAttributes = Array<JSXAttributesEntry>
+export interface JSXAttributesSpread extends WithComments {
+  type: 'JSX_ATTRIBUTES_SPREAD'
+  spreadValue: JSXAttribute
+}
 
-export function jsxAttributesFromMap(map: MapLike<JSXAttribute>): JSXAttributes {
+export function jsxAttributesSpread(
+  spreadValue: JSXAttribute,
+  comments: ParsedComments,
+): JSXAttributesSpread {
+  return {
+    type: 'JSX_ATTRIBUTES_SPREAD',
+    spreadValue: spreadValue,
+    comments: comments,
+  }
+}
+
+export type JSXAttributesPart = JSXAttributesEntry | JSXAttributesSpread
+
+export function isJSXAttributesEntry(part: JSXAttributesPart): part is JSXAttributesEntry {
+  return part.type === 'JSX_ATTRIBUTES_ENTRY'
+}
+
+export function isJSXAttributesSpread(part: JSXAttributesPart): part is JSXAttributesSpread {
+  return part.type === 'JSX_ATTRIBUTES_SPREAD'
+}
+
+export type JSXAttributes = Array<JSXAttributesPart>
+
+export function jsxAttributesFromMap(map: MapLike<JSXAttribute>): Array<JSXAttributesEntry> {
   return Object.keys(map).map((objectKey) => {
     return jsxAttributesEntry(objectKey, map[objectKey], emptyComments)
   })
 }
 
 export function getJSXAttribute(attributes: JSXAttributes, key: string): JSXAttribute | null {
-  const entry = attributes.find((attr) => attr.key === key)
-  if (entry == null) {
-    return null
-  } else {
-    return entry.value
+  for (const attrPart of reverse(attributes)) {
+    switch (attrPart.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        if (attrPart.key === key) {
+          return attrPart.value
+        }
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        // Ignore these for now.
+        break
+      default:
+        const _exhaustiveCheck: never = attrPart
+        throw new Error(`Unhandled attribute type ${JSON.stringify(attrPart)}`)
+    }
   }
+  return null
 }
 
-export function getJSXAttributeForced(attributes: JSXAttributes, key: string): JSXAttribute {
+export function getJSXAttributeForced(attributes: JSXAttributes, key: string): ModifiableAttribute {
   return forceNotNull('Should not be null.', getJSXAttribute(attributes, key))
 }
 
 export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXAttributes {
-  return attributes.filter((a) => a.key !== key)
+  let newAttributes: JSXAttributes = []
+  for (const attrPart of attributes) {
+    switch (attrPart.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        if (attrPart.key !== key) {
+          newAttributes.push(attrPart)
+        }
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        // Skip these for now.
+        break
+      default:
+        const _exhaustiveCheck: never = attrPart
+        throw new Error(`Unhandled attribute type ${JSON.stringify(attrPart)}`)
+    }
+  }
+  return newAttributes
 }
 
 export function setJSXAttributesAttribute(
@@ -635,14 +708,27 @@ export function setJSXAttributesAttribute(
 ): JSXAttributes {
   let updatedExistingField: boolean = false
   const simplifiedValue = simplifyAttributeIfPossible(value)
-  let result: JSXAttributes = attributes.map((attr) => {
-    if (attr.key === key) {
-      updatedExistingField = true
-      return jsxAttributesEntry(key, simplifiedValue, attr.comments)
-    } else {
-      return attr
+  let result: JSXAttributes = []
+
+  for (const attrPart of attributes) {
+    switch (attrPart.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        if (attrPart.key === key) {
+          result.push(jsxAttributesEntry(key, simplifiedValue, attrPart.comments))
+          updatedExistingField = true
+        } else {
+          result.push(attrPart)
+        }
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        // Ignore these for now.
+        break
+      default:
+        const _exhaustiveCheck: never = attrPart
+        throw new Error(`Unhandled attribute type ${JSON.stringify(attrPart)}`)
     }
-  })
+  }
+
   if (!updatedExistingField) {
     result.push(jsxAttributesEntry(key, simplifiedValue, emptyComments))
   }
@@ -667,7 +753,15 @@ export function getDefinedElsewhereFromAttribute(attribute: JSXAttribute): Array
 
 export function getDefinedElsewhereFromAttributes(attributes: JSXAttributes): Array<string> {
   return attributes.reduce<Array<string>>((working, entry) => {
-    return addAllUniquely(working, getDefinedElsewhereFromAttribute(entry.value))
+    switch (entry.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        return addAllUniquely(working, getDefinedElsewhereFromAttribute(entry.value))
+      case 'JSX_ATTRIBUTES_SPREAD':
+        return addAllUniquely(working, getDefinedElsewhereFromAttribute(entry.spreadValue))
+      default:
+        const _exhaustiveCheck: never = entry
+        throw new Error(`Unhandled attribute type ${JSON.stringify(entry)}`)
+    }
   }, [])
 }
 
@@ -686,21 +780,43 @@ export function getDefinedElsewhereFromElement(element: JSXElement): Array<strin
 
 export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttributes {
   return attributes.map((attribute) => {
-    return jsxAttributesEntry(
-      attribute.key,
-      clearAttributeUniqueIDs(attribute.value),
-      attribute.comments,
-    )
+    switch (attribute.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        return jsxAttributesEntry(
+          attribute.key,
+          clearAttributeUniqueIDs(attribute.value),
+          attribute.comments,
+        )
+      case 'JSX_ATTRIBUTES_SPREAD':
+        return jsxAttributesSpread(
+          clearAttributeUniqueIDs(attribute.spreadValue),
+          attribute.comments,
+        )
+      default:
+        const _exhaustiveCheck: never = attribute
+        throw new Error(`Unhandled attribute type ${JSON.stringify(attribute)}`)
+    }
   })
 }
 
 export function clearAttributesSourceMaps(attributes: JSXAttributes): JSXAttributes {
   return attributes.map((attribute) => {
-    return jsxAttributesEntry(
-      attribute.key,
-      clearAttributeSourceMaps(attribute.value),
-      attribute.comments,
-    )
+    switch (attribute.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        return jsxAttributesEntry(
+          attribute.key,
+          clearAttributeSourceMaps(attribute.value),
+          attribute.comments,
+        )
+      case 'JSX_ATTRIBUTES_SPREAD':
+        return jsxAttributesSpread(
+          clearAttributeSourceMaps(attribute.spreadValue),
+          attribute.comments,
+        )
+      default:
+        const _exhaustiveCheck: never = attribute
+        throw new Error(`Unhandled attribute type ${JSON.stringify(attribute)}`)
+    }
   })
 }
 

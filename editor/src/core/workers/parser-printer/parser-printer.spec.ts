@@ -27,6 +27,7 @@ import {
   clearArbitraryJSBlockUniqueIDs,
   jsxAttributesFromMap,
   getJSXAttributeForced,
+  isJSXAttributesEntry,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports, parseSuccess } from '../common/project-file-utils'
@@ -2369,7 +2370,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         if (result.rootElement.children.length === 1) {
           const child = result.rootElement.children[0]
           if (isJSXElement(child)) {
-            const childPropKeys = child.props.map((prop) => prop.key)
+            const childPropKeys = child.props.filter(isJSXAttributesEntry).map((prop) => prop.key)
             expect(childPropKeys).toEqual(['data-uid', 'left'])
             const leftProp = getJSXAttributeForced(child.props, 'left')
             expect(leftProp.type).toEqual('ATTRIBUTE_OTHER_JAVASCRIPT')
@@ -4481,7 +4482,9 @@ export var App = props => {
 
     const arbitraryProp = optionalMap(
       (p) => p.value,
-      appComponent.rootElement.props.find((p) => p.key === 'arbitrary'),
+      appComponent.rootElement.props
+        .filter(isJSXAttributesEntry)
+        .find((p) => p.key === 'arbitrary'),
     )
 
     if (arbitraryProp == null || !isJSXAttributeOtherJavaScript(arbitraryProp)) {

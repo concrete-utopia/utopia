@@ -1230,8 +1230,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         >
           <div
             id=\\"nasty-div\\"
-            data-uid=\\"8cd~~~1 833~~~2 65e~~~1 aaa app-entity\\"
-            data-paths=\\"833~~~2/8cd~~~1 833~~~2 65e~~~1 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+            data-uid=\\"77f~~~1 833~~~2 65e~~~1 aaa app-entity\\"
+            data-paths=\\"833~~~2/77f~~~1 833~~~2 65e~~~1 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
           >
             huhahuha
           </div>
@@ -1672,6 +1672,43 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )`,
+    )
+  })
+
+  it('renders a component using the spread operator', () => {
+    testCanvasRender(
+      null,
+      `
+      import * as React from 'react'
+      import { View, Storyboard, Scene } from 'utopia-api'
+      
+      export var App = (props) => {
+        return (
+          <View
+            {...props}
+            data-uid={'aaa'}
+          >
+            <View style={{position: 'absolute'}} data-uid={'bbb'}>hi</View>
+          </View>
+        )
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '99.9', width: '77.7' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
     )
   })
 })

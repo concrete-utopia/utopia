@@ -31,6 +31,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
                   "leadingComments": Array [],
@@ -46,6 +47,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
                   "leadingComments": Array [],
@@ -79,6 +81,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "data-uid",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],
@@ -94,6 +97,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "style",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],
@@ -112,6 +116,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "layout",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],
@@ -157,6 +162,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "component",
+              "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "definedElsewhere": Array [
                   "App",
@@ -174,6 +180,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
                   "leadingComments": Array [],
@@ -201,6 +208,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "data-uid",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],
@@ -251,6 +259,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
                   "leadingComments": Array [],
@@ -266,6 +275,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
                   "leadingComments": Array [],
@@ -297,6 +307,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "data-uid",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],
@@ -312,6 +323,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "style",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],
@@ -330,6 +342,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "layout",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],
@@ -375,6 +388,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "component",
+              "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "definedElsewhere": Array [
                   "App",
@@ -392,6 +406,7 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "data-uid",
+              "type": "JSX_ATTRIBUTES_ENTRY",
               "value": Object {
                 "comments": Object {
                   "leadingComments": Array [],
@@ -419,6 +434,7 @@ Array [
             "trailingComments": Array [],
           },
           "key": "data-uid",
+          "type": "JSX_ATTRIBUTES_ENTRY",
           "value": Object {
             "comments": Object {
               "leadingComments": Array [],
