@@ -64,28 +64,26 @@ async function map(frames: StackFrame[], contextLines: number = 3): Promise<Stac
   })
 }
 
-export function unmapUtopiaSafeFunction(frames: StackFrame[]): StackFrame[] {
+export function unmapUtopiaSafeFunction(frame: StackFrame): StackFrame {
   const LinesToDropFromSafeFunction = 2
 
-  return frames.map((frame) => {
-    if (frame._originalScriptCode == null || frame._originalLineNumber == null) {
-      return frame
-    }
-    const code = frame._originalScriptCode
+  if (frame._originalScriptCode == null || frame._originalLineNumber == null) {
+    return frame
+  }
+  const code = frame._originalScriptCode
 
-    return new StackFrame(
-      frame.functionName,
-      frame.fileName,
-      frame.lineNumber,
-      frame.columnNumber,
-      frame._scriptCode,
-      frame._originalFunctionName,
-      frame._originalFileName,
-      frame._originalLineNumber - LinesToDropFromSafeFunction,
-      frame._originalColumnNumber,
-      code,
-    )
-  })
+  return new StackFrame(
+    frame.functionName,
+    frame.fileName,
+    frame.lineNumber,
+    frame.columnNumber,
+    frame._scriptCode,
+    frame._originalFunctionName,
+    frame._originalFileName,
+    frame._originalLineNumber - LinesToDropFromSafeFunction,
+    frame._originalColumnNumber,
+    code,
+  )
 }
 
 function getOriginalSourcePosition(
@@ -129,36 +127,34 @@ function getOriginalSourcePosition(
   return null
 }
 
-export function unmapBabelTranspiledCode(frames: StackFrame[], map: SourceMap): StackFrame[] {
-  return frames.map((frame) => {
-    if (frame._originalColumnNumber == null || frame._originalLineNumber == null) {
-      return frame
-    }
+export function unmapBabelTranspiledCode(frame: StackFrame, map: SourceMap): StackFrame {
+  if (frame._originalColumnNumber == null || frame._originalLineNumber == null) {
+    return frame
+  }
 
-    const originalSourcePosition = getOriginalSourcePosition(
-      map,
-      frame._originalLineNumber,
-      frame._originalColumnNumber,
+  const originalSourcePosition = getOriginalSourcePosition(
+    map,
+    frame._originalLineNumber,
+    frame._originalColumnNumber,
+  )
+
+  if (originalSourcePosition != null) {
+    const originalSource = map.getSource(originalSourcePosition.sourceFilename) || []
+    return new StackFrame(
+      frame.functionName,
+      frame.fileName,
+      frame.lineNumber,
+      frame.columnNumber,
+      frame._scriptCode,
+      frame.functionName,
+      originalSourcePosition.sourceFilename,
+      originalSourcePosition.line,
+      originalSourcePosition.column,
+      getLinesAround(originalSourcePosition.line, 3, originalSource),
     )
-
-    if (originalSourcePosition != null) {
-      const originalSource = map.getSource(originalSourcePosition.sourceFilename) || []
-      return new StackFrame(
-        frame.functionName,
-        frame.fileName,
-        frame.lineNumber,
-        frame.columnNumber,
-        frame._scriptCode,
-        frame.functionName,
-        originalSourcePosition.sourceFilename,
-        originalSourcePosition.line,
-        originalSourcePosition.column,
-        getLinesAround(originalSourcePosition.line, 3, originalSource),
-      )
-    } else {
-      return frame
-    }
-  })
+  } else {
+    return frame
+  }
 }
 
 export { map }

@@ -42,8 +42,8 @@ describe('UiJsxCanvas React errors', () => {
     expect(canvasErrors.length).toEqual(1)
     expect(canvasErrors[0].message).toEqual('React is not defined')
     // TODO a nicer matcher would be nice
-    expect(canvasErrors[0].originalCode?.length).toEqual(7)
-    expect(canvasErrors[0].originalCode?.[4].content).toEqual(
+    expect(canvasErrors[0].stackFrames[0].originalCode?.length).toEqual(7)
+    expect(canvasErrors[0].stackFrames[0].originalCode?.[4].content).toEqual(
       `        <Storyboard data-uid={'utopia-storyboard-uid'}>`,
     )
   })
@@ -84,9 +84,9 @@ describe('UiJsxCanvas React errors', () => {
     )
     expect(canvasErrors.length).toEqual(1)
     expect(canvasErrors[0].message).toEqual('React is not defined')
-    expect(canvasErrors[0].originalCode?.length).toEqual(6)
+    expect(canvasErrors[0].stackFrames[0].originalCode?.length).toEqual(6)
     // TODO Figure out a way to do an inline snapshot-type thing here
-    expect(canvasErrors[0].originalCode?.[1].content).toEqual(
+    expect(canvasErrors[0].stackFrames[0].originalCode?.[1].content).toEqual(
       '      export var Card = (props) => {',
     )
   })
