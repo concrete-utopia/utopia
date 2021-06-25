@@ -123,6 +123,7 @@ function deriveStateFromNewColor(
     normalisedValuePosition: v,
     normalisedAlphaPosition: color.alpha(),
     dirty: false,
+    isScrubbing: false,
   }
 }
 
@@ -146,6 +147,7 @@ interface ColorPickerPositions {
 
 export interface ColorPickerInnerState extends ColorPickerPositions {
   dirty: boolean
+  isScrubbing: boolean
 }
 
 export class ColorPickerInner extends React.Component<
@@ -175,6 +177,7 @@ export class ColorPickerInner extends React.Component<
     this.state = {
       ...calculatedState,
       dirty: false,
+      isScrubbing: false,
     }
   }
 
@@ -258,6 +261,7 @@ export class ColorPickerInner extends React.Component<
         hexa: newChromaValue.hex('auto').toUpperCase(),
         normalisedAlphaPosition: newChromaValue.alpha(),
         dirty: true,
+        isScrubbing: state.isScrubbing,
       }))
       this.submitNewColor(newChromaValue, false)
     } catch (e) {
@@ -287,6 +291,9 @@ export class ColorPickerInner extends React.Component<
 
   onMouseDownSV = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
+    this.setState({
+      isScrubbing: true,
+    })
     if (this.SVControlRef.current != null) {
       const origin = this.SVControlRef.current.getBoundingClientRect()
       this.SVOrigin = { x: origin.left, y: origin.top } as WindowPoint
@@ -307,6 +314,9 @@ export class ColorPickerInner extends React.Component<
     this.setSVFromClientPosition(e.clientX, e.clientY, false)
     document.removeEventListener('mousemove', this.onSVMouseMove)
     document.removeEventListener('mouseup', this.onSVMouseUp)
+    this.setState({
+      isScrubbing: false,
+    })
     e.stopPropagation()
   }
 
@@ -319,10 +329,14 @@ export class ColorPickerInner extends React.Component<
 
   onHueSliderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
+
     if (this.HueControlRef.current != null) {
       this.HueOriginLeft = this.HueControlRef.current.getBoundingClientRect().left
       const clientX = e.clientX
       this.setHueFromClientX(clientX, true)
+      this.setState({
+        isScrubbing: true,
+      })
       document.addEventListener('mousemove', this.onHueSliderMouseMove)
       document.addEventListener('mouseup', this.onHueSliderMouseUp)
     }
@@ -337,6 +351,9 @@ export class ColorPickerInner extends React.Component<
     this.setHueFromClientX(e.clientX, false)
     document.removeEventListener('mousemove', this.onHueSliderMouseMove)
     document.removeEventListener('mouseup', this.onHueSliderMouseUp)
+    this.setState({
+      isScrubbing: false,
+    })
     e.stopPropagation()
   }
 
@@ -350,6 +367,9 @@ export class ColorPickerInner extends React.Component<
   onAlphaSliderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
     if (this.AlphaControlRef.current != null) {
+      this.setState({
+        isScrubbing: true,
+      })
       this.AlphaOriginLeft = this.AlphaControlRef.current.getBoundingClientRect().left
       const clientX = e.clientX
       this.setAlphaFromClientX(clientX, true)
@@ -367,6 +387,9 @@ export class ColorPickerInner extends React.Component<
     this.setAlphaFromClientX(e.clientX, false)
     document.removeEventListener('mousemove', this.onAlphaSliderMouseMove)
     document.removeEventListener('mouseup', this.onAlphaSliderMouseUp)
+    this.setState({
+      isScrubbing: false,
+    })
   }
 
   // SubmitValue functions
@@ -437,205 +460,220 @@ export class ColorPickerInner extends React.Component<
       )`
 
     return (
-      <div>
-        <div
-          className='colorPicker-saturation-and-value'
-          onMouseDown={this.onMouseDownSV}
-          ref={this.SVControlRef}
-          style={{
-            height: MetadataEditorModalPreviewHeight,
-            width: '100%',
-            backgroundColor: hueColor,
-            backgroundImage: `
+      <div style={{ position: 'relative' }}>
+        <div>
+          <div
+            className='colorPicker-saturation-and-value'
+            onMouseDown={this.onMouseDownSV}
+            ref={this.SVControlRef}
+            style={{
+              height: MetadataEditorModalPreviewHeight,
+              width: '100%',
+              backgroundColor: hueColor,
+              backgroundImage: `
                   linear-gradient(to top, #000, rgba(0, 0, 0, 0)),
                   linear-gradient(to right, #fff, rgba(255, 255, 255, 0))`,
-            paddingBottom: 4,
-            position: 'relative',
-            display: 'flex',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div
-            className='colorPicker-saturation-and-value-indicator'
-            style={{
-              width: 8,
-              height: 8,
-              backgroundColor: cssWith1Alpha,
-              borderRadius: '50%',
-              boxShadow:
-                'inset 0 0 1px rgba(0, 0, 0, 0.24), 0 0 0 2px white, 0 0 2px 2px rgba(0, 0, 0, 0.24)',
-              position: 'absolute',
-              margin: -4,
-              left: `${this.state.normalisedSaturationPosition * 100}%`,
-              top: `${(1 - this.state.normalisedValuePosition) * 100}%`,
-              pointerEvents: 'none',
-            }}
-          />
-        </div>
-        <div
-          style={{
-            padding: inspectorEdgePadding,
-          }}
-        >
-          <div
-            className='colorPicker-hue'
-            ref={this.HueControlRef}
-            onMouseDown={this.onHueSliderMouseDown}
-            style={{
-              height: 20,
-              width: '100%',
-              borderRadius: 4,
-              boxShadow: `0 0 0 1px ${colorTheme.neutralBorder.value} inset`,
-              backgroundImage: hsvHue,
-              padding: '0 4px',
+              paddingBottom: 4,
+              position: 'relative',
+              display: 'flex',
+              flexWrap: 'wrap',
             }}
           >
-            <div style={{ position: 'relative' }}>
-              <div
-                className='colorPicker-hue-indicator'
-                style={{
-                  width: 8,
-                  height: 20,
-                  backgroundColor: hueColor,
-                  borderRadius: 1,
-                  boxShadow: `inset 0 0 1px rgba(0, 0, 0, 0.24), 0px 0px 0px 2px white, 0px 0px 2px 2px rgba(0, 0, 0, 0.239216)`,
-                  position: 'absolute',
-                  margin: '0 -4px',
-                  left: `${this.state.normalisedHuePosition * 100}%`,
-                  top: 0,
-                  pointerEvents: 'none',
-                }}
-              />
-            </div>
+            <div
+              className='colorPicker-saturation-and-value-indicator'
+              style={{
+                width: 8,
+                height: 8,
+                backgroundColor: cssWith1Alpha,
+                borderRadius: '50%',
+                boxShadow:
+                  'inset 0 0 1px rgba(0, 0, 0, 0.24), 0 0 0 2px white, 0 0 2px 2px rgba(0, 0, 0, 0.24)',
+                position: 'absolute',
+                margin: -4,
+                left: `${this.state.normalisedSaturationPosition * 100}%`,
+                top: `${(1 - this.state.normalisedValuePosition) * 100}%`,
+                pointerEvents: 'none',
+              }}
+            />
           </div>
           <div
-            className='colorPicker-alpha'
-            ref={this.AlphaControlRef}
-            onMouseDown={this.onAlphaSliderMouseDown}
             style={{
-              height: 20,
-              width: '100%',
-              backgroundColor: 'white',
-              borderRadius: 4,
-              boxShadow: `0 0 0 1px ${colorTheme.neutralBorder.value} inset`,
-              backgroundImage: `
-                    linear-gradient(to right, ${cssWith0Alpha} 0%, ${cssWith1Alpha} 100%),
-                    ${checkerboardBackground.backgroundImage}`,
-              backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}`,
-              backgroundPosition: `0 0, ${checkerboardBackground.backgroundPosition}`,
-              marginTop: 10,
-              padding: '0 4px',
+              padding: inspectorEdgePadding,
             }}
           >
-            <div style={{ position: 'relative' }}>
-              <div
-                className='colorPicker-alpha-indicator'
-                style={{
-                  width: 8,
-                  height: 20,
-                  backgroundImage: `
+            <div
+              className='colorPicker-hue'
+              ref={this.HueControlRef}
+              onMouseDown={this.onHueSliderMouseDown}
+              style={{
+                height: 20,
+                width: '100%',
+                borderRadius: 4,
+                boxShadow: `0 0 0 1px ${colorTheme.neutralBorder.value} inset`,
+                backgroundImage: hsvHue,
+                padding: '0 4px',
+              }}
+            >
+              <div style={{ position: 'relative' }}>
+                <div
+                  className='colorPicker-hue-indicator'
+                  style={{
+                    width: 8,
+                    height: 20,
+                    backgroundColor: hueColor,
+                    borderRadius: 1,
+                    boxShadow: `inset 0 0 1px rgba(0, 0, 0, 0.24), 0px 0px 0px 2px white, 0px 0px 2px 2px rgba(0, 0, 0, 0.239216)`,
+                    position: 'absolute',
+                    margin: '0 -4px',
+                    left: `${this.state.normalisedHuePosition * 100}%`,
+                    top: 0,
+                    pointerEvents: 'none',
+                  }}
+                />
+              </div>
+            </div>
+            <div
+              className='colorPicker-alpha'
+              ref={this.AlphaControlRef}
+              onMouseDown={this.onAlphaSliderMouseDown}
+              style={{
+                height: 20,
+                width: '100%',
+                backgroundColor: 'white',
+                borderRadius: 4,
+                boxShadow: `0 0 0 1px ${colorTheme.neutralBorder.value} inset`,
+                backgroundImage: `
+                    linear-gradient(to right, ${cssWith0Alpha} 0%, ${cssWith1Alpha} 100%),
+                    ${checkerboardBackground.backgroundImage}`,
+                backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}`,
+                backgroundPosition: `0 0, ${checkerboardBackground.backgroundPosition}`,
+                marginTop: 10,
+                padding: '0 4px',
+              }}
+            >
+              <div style={{ position: 'relative' }}>
+                <div
+                  className='colorPicker-alpha-indicator'
+                  style={{
+                    width: 8,
+                    height: 20,
+                    backgroundImage: `
                         linear-gradient(${cssWithAlpha}, ${cssWithAlpha}),
                         ${checkerboardBackground.backgroundImage},
                         linear-gradient(white, white)`,
-                  backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}, 100% 100%`,
-                  backgroundPosition: `0 0, ${checkerboardBackground.backgroundPosition}, 0 0`,
-                  borderRadius: 1,
-                  boxShadow: `inset 0 0 1px rgba(0, 0, 0, 0.24), 0px 0px 0px 2px white, 0px 0px 2px 2px rgba(0, 0, 0, 0.239216)`,
-                  position: 'absolute',
-                  margin: '0 -4px',
-                  left: `${this.state.normalisedAlphaPosition * 100}%`,
-                  top: 0,
-                  pointerEvents: 'none',
-                }}
-              />
+                    backgroundSize: `100% 100%, ${checkerboardBackground.backgroundSize}, 100% 100%`,
+                    backgroundPosition: `0 0, ${checkerboardBackground.backgroundPosition}, 0 0`,
+                    borderRadius: 1,
+                    boxShadow: `inset 0 0 1px rgba(0, 0, 0, 0.24), 0px 0px 0px 2px white, 0px 0px 2px 2px rgba(0, 0, 0, 0.239216)`,
+                    position: 'absolute',
+                    margin: '0 -4px',
+                    left: `${this.state.normalisedAlphaPosition * 100}%`,
+                    top: 0,
+                    pointerEvents: 'none',
+                  }}
+                />
+              </div>
             </div>
           </div>
-        </div>
-        <div
-          className='colorPicker-controls'
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '80px repeat(4, 1fr)',
-            columnGap: 4,
-            padding: '0 8px 8px',
-          }}
-        >
-          <StringControl
-            ref={this.RefFirstControl}
-            key={this.props.id}
-            value={chroma.hex('auto').toUpperCase()}
-            onSubmitValue={this.onSubmitValueHex}
-            controlStatus='simple'
-            controlStyles={getControlStyles('simple')}
-            id='colorPicker-controls-hex'
-            testId={`${this.props.testId}-colorPicker-controls-hex`}
+          <div
+            className='colorPicker-controls'
             style={{
-              gridColumn: 'span 1',
+              display: 'grid',
+              gridTemplateColumns: '80px repeat(4, 1fr)',
+              columnGap: 4,
+              padding: '0 8px 8px',
             }}
-            DEPRECATED_controlOptions={{ DEPRECATED_labelBelow: 'Hex' }}
-          />
-          <SimpleNumberInput
-            value={this.state.normalisedHuePosition * 360}
-            id='colorPicker-controls-hue'
-            testId={`${this.props.testId}-colorPicker-controls-hue`}
-            onSubmitValue={this.onSubmitValueHue}
-            onTransientSubmitValue={this.onTransientSubmitValueHue}
-            onForcedSubmitValue={this.onSubmitValueHue}
-            minimum={0}
-            maximum={360}
-            DEPRECATED_labelBelow='H'
-            labelInner={{
-              category: 'layout/systems',
-              type: 'transform-rotate',
-              color: 'gray',
-              width: 10,
-              height: 10,
-            }}
-            defaultUnitToHide={null}
-          />
-          <SimplePercentInput
-            value={Number(this.state.normalisedSaturationPosition.toFixed(2))}
-            id='colorPicker-controls-saturation'
-            testId={`${this.props.testId}-colorPicker-controls-saturation`}
-            onSubmitValue={this.onSubmitValueSaturation}
-            onTransientSubmitValue={this.onTransientSubmitValueSaturation}
-            onForcedSubmitValue={this.onSubmitValueSaturation}
-            style={{ gridColumn: 'span 1' }}
-            minimum={0}
-            maximum={1}
-            stepSize={0.01}
-            DEPRECATED_labelBelow='S'
-            defaultUnitToHide={null}
-          />
-          <SimplePercentInput
-            value={Number(this.state.normalisedValuePosition.toFixed(2))}
-            id='colorPicker-controls-value'
-            testId={`${this.props.testId}-colorPicker-controls-value`}
-            onSubmitValue={this.onSubmitHSVValueValue}
-            onTransientSubmitValue={this.onTransientSubmitHSVValueValue}
-            onForcedSubmitValue={this.onSubmitHSVValueValue}
-            style={{ gridColumn: 'span 1' }}
-            minimum={0}
-            maximum={1}
-            stepSize={0.01}
-            DEPRECATED_labelBelow='V'
-            defaultUnitToHide={null}
-          />
-          <SimplePercentInput
-            value={this.state.normalisedAlphaPosition}
-            id='colorPicker-controls-alpha'
-            testId={`${this.props.testId}-colorPicker-controls-alpha`}
-            onSubmitValue={this.onSubmitValueAlpha}
-            onTransientSubmitValue={this.onTransientSubmitValueAlpha}
-            onForcedSubmitValue={this.onSubmitValueAlpha}
-            style={{ gridColumn: 'span 1' }}
-            minimum={0}
-            maximum={1}
-            stepSize={0.01}
-            DEPRECATED_labelBelow='A'
-            defaultUnitToHide={null}
-          />
+          >
+            <StringControl
+              ref={this.RefFirstControl}
+              key={this.props.id}
+              value={chroma.hex('auto').toUpperCase()}
+              onSubmitValue={this.onSubmitValueHex}
+              controlStatus='simple'
+              controlStyles={getControlStyles('simple')}
+              id='colorPicker-controls-hex'
+              testId={`${this.props.testId}-colorPicker-controls-hex`}
+              style={{
+                gridColumn: 'span 1',
+              }}
+              DEPRECATED_controlOptions={{ DEPRECATED_labelBelow: 'Hex' }}
+            />
+            <SimpleNumberInput
+              value={this.state.normalisedHuePosition * 360}
+              id='colorPicker-controls-hue'
+              testId={`${this.props.testId}-colorPicker-controls-hue`}
+              onSubmitValue={this.onSubmitValueHue}
+              onTransientSubmitValue={this.onTransientSubmitValueHue}
+              onForcedSubmitValue={this.onSubmitValueHue}
+              minimum={0}
+              maximum={360}
+              DEPRECATED_labelBelow='H'
+              labelInner={{
+                category: 'layout/systems',
+                type: 'transform-rotate',
+                color: 'gray',
+                width: 10,
+                height: 10,
+              }}
+              defaultUnitToHide={null}
+            />
+            <SimplePercentInput
+              value={Number(this.state.normalisedSaturationPosition.toFixed(2))}
+              id='colorPicker-controls-saturation'
+              testId={`${this.props.testId}-colorPicker-controls-saturation`}
+              onSubmitValue={this.onSubmitValueSaturation}
+              onTransientSubmitValue={this.onTransientSubmitValueSaturation}
+              onForcedSubmitValue={this.onSubmitValueSaturation}
+              style={{ gridColumn: 'span 1' }}
+              minimum={0}
+              maximum={1}
+              stepSize={0.01}
+              DEPRECATED_labelBelow='S'
+              defaultUnitToHide={null}
+            />
+            <SimplePercentInput
+              value={Number(this.state.normalisedValuePosition.toFixed(2))}
+              id='colorPicker-controls-value'
+              testId={`${this.props.testId}-colorPicker-controls-value`}
+              onSubmitValue={this.onSubmitHSVValueValue}
+              onTransientSubmitValue={this.onTransientSubmitHSVValueValue}
+              onForcedSubmitValue={this.onSubmitHSVValueValue}
+              style={{ gridColumn: 'span 1' }}
+              minimum={0}
+              maximum={1}
+              stepSize={0.01}
+              DEPRECATED_labelBelow='V'
+              defaultUnitToHide={null}
+            />
+            <SimplePercentInput
+              value={this.state.normalisedAlphaPosition}
+              id='colorPicker-controls-alpha'
+              testId={`${this.props.testId}-colorPicker-controls-alpha`}
+              onSubmitValue={this.onSubmitValueAlpha}
+              onTransientSubmitValue={this.onTransientSubmitValueAlpha}
+              onForcedSubmitValue={this.onSubmitValueAlpha}
+              style={{ gridColumn: 'span 1' }}
+              minimum={0}
+              maximum={1}
+              stepSize={0.01}
+              DEPRECATED_labelBelow='A'
+              defaultUnitToHide={null}
+            />
+          </div>
         </div>
+        {/* hover preventer: don't trigger other hover events while sliding / scrubbing */}
+        {this.state.isScrubbing ? (
+          <div
+            style={{
+              position: 'fixed',
+              left: 0,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              background: 'transparent',
+            }}
+          />
+        ) : null}
       </div>
     )
   }
