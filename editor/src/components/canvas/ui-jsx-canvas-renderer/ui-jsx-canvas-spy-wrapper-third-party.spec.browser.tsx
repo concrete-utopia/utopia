@@ -139,7 +139,7 @@ function createTestProject() {
 }
 
 describe('Spy Wrapper Tests For React Three Fiber', () => {
-  it('a simple @react-three/fiber Canvas in a scene', async () => {
+  it('a simple Canvas element in a scene where spy and jsx metadata has extra elements', async () => {
     // Code kept commented for any future person who needs it.
     // const currentWindow = require('electron').remote.getCurrentWindow()
     // currentWindow.show()
