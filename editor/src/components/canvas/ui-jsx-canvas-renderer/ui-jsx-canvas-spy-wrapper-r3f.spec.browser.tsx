@@ -128,6 +128,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
     // currentWindow.setSize(2200, 1000)
     // currentWindow.openDevTools()
     // await wait(20000)
+
     const { getEditorState } = await createTestProject()
     await wait(20000)
     const spiedMetadata = getEditorState().editor.spyMetadata
