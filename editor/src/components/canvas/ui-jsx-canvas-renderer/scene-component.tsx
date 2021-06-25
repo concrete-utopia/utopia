@@ -27,8 +27,8 @@ export const SceneComponent = betterReactMemo(
       ...style,
     }
 
-    // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
-    updateInvalidatedScenes((current) => current)
+    // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again
+    updateInvalidatedScenes((current) => current, 'invalidate')
 
     return (
       <Scene {...remainingProps} style={sceneStyle}>
