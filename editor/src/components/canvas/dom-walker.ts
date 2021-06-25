@@ -196,13 +196,13 @@ function useResizeObserver(
         if (canvasInteractionHappening.current) {
           // Only add the selected views
           fastForEach(selectedViews.current, (v) =>
-            updateInvalidatedPaths((current) => current.add(EP.toString(v))),
+            updateInvalidatedPaths((current) => current.add(EP.toString(v)), 'invalidate'),
           )
         } else {
           for (let entry of entries) {
             const sceneID = findParentScene(entry.target)
             if (sceneID != null) {
-              updateInvalidatedScenes((current) => current.add(sceneID))
+              updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
             }
           }
         }
@@ -234,7 +234,7 @@ function useMutationObserver(
         if (canvasInteractionHappening.current) {
           // Only add the selected views
           fastForEach(selectedViews.current, (v) =>
-            updateInvalidatedPaths((current) => current.add(EP.toString(v))),
+            updateInvalidatedPaths((current) => current.add(EP.toString(v)), 'invalidate'),
           )
         } else {
           for (let mutation of mutations) {
@@ -246,7 +246,7 @@ function useMutationObserver(
               if (mutation.target instanceof HTMLElement) {
                 const sceneID = findParentScene(mutation.target)
                 if (sceneID != null) {
-                  updateInvalidatedScenes((current) => current.add(sceneID))
+                  updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
                 }
               }
             }
@@ -279,7 +279,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
         const scenePath = EP.createBackwardsCompatibleScenePath(sv)
         if (scenePath != null) {
           const sceneID = EP.toString(scenePath)
-          updateInvalidatedScenes((current) => current.add(sceneID))
+          updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
           invalidatedPathsForStylesheetCacheRef.current.add(EP.toString(sv))
         }
       })
@@ -315,7 +315,7 @@ type ValueOrUpdater<S> = S | ((prevState: S) => S)
 // todo move to file
 export type SetValueCallback<S> = (
   valueOrUpdater: ValueOrUpdater<S>,
-  doNotInvalidate?: 'do-not-invalidate',
+  invalidate: 'invalidate' | 'do-not-invalidate',
 ) => void
 
 function isSimpleValue<S>(valueOrUpdater: ValueOrUpdater<S>): valueOrUpdater is S {
@@ -327,7 +327,10 @@ function useStateAsyncInvalidate<S>(
 ): [S, SetValueCallback<S>] {
   const stateRef = React.useRef(initialState)
   const setAndMarkInvalidated = React.useCallback(
-    (valueOrUpdater: ValueOrUpdater<S>, doNotInvalidate?: 'do-not-invalidate') => {
+    (
+      valueOrUpdater: ValueOrUpdater<S>,
+      invalidate: 'invalidate' | 'do-not-invalidate' = 'invalidate',
+    ) => {
       let resolvedNewValue: S
       if (isSimpleValue(valueOrUpdater)) {
         // TODO make this type nicer using a type guard
@@ -337,7 +340,7 @@ function useStateAsyncInvalidate<S>(
       }
       stateRef.current = resolvedNewValue
 
-      if (doNotInvalidate !== 'do-not-invalidate') {
+      if (invalidate === 'invalidate') {
         onInvalidate('throttled')
       }
     },
