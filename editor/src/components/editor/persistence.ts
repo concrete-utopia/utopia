@@ -13,6 +13,7 @@ import {
   setSaveError,
   setForkedFromProjectID,
   setProjectName,
+  addStoryboardFile,
 } from './actions/action-creators'
 import {
   createNewProjectID,
@@ -28,6 +29,7 @@ import {
   PersistentModel,
   persistentModelForProjectContents,
   persistentModelFromEditorModel,
+  StoryboardFilePath,
 } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import { arrayContains, NO_OP, projectURLForProject } from '../../core/shared/utils'
@@ -37,6 +39,7 @@ import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { notice } from '../common/notice'
 import { replaceAll } from '../../core/shared/string-utils'
 import { isLoggedIn, isNotLoggedIn, LoginState } from '../../common/user'
+import { getContentsTreeFileFromString } from '../assets'
 
 interface NeverSaved {
   type: 'never-saved'
@@ -223,7 +226,20 @@ export async function createNewProjectFromImportedProject(
     true,
   )
   await saveAssets(projectId, importedProject.assetsToUpload)
-  load(dispatch, persistentModel, importedProject.projectName, projectId, workers, renderEditorRoot)
+  await load(
+    dispatch,
+    persistentModel,
+    importedProject.projectName,
+    projectId,
+    workers,
+    renderEditorRoot,
+  )
+
+  const storyboardFileMissing =
+    getContentsTreeFileFromString(persistentModel.projectContents, StoryboardFilePath) == null
+  if (storyboardFileMissing) {
+    dispatch([addStoryboardFile()])
+  }
 }
 
 export async function createNewProjectFromSampleProject(
