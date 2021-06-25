@@ -29205,6 +29205,7 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
   id=\\"canvas-container\\"
   style=\\"all: initial; position: absolute;\\"
   data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
