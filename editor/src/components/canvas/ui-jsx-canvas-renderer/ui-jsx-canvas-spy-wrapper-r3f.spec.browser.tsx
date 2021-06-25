@@ -1,3 +1,22 @@
+import * as ReactThreeFiber from '@react-three/fiber'
+import * as editorPackageJSON from '../../../../package.json'
+
+jest.mock('../../../core/es-modules/package-manager/built-in-dependencies-list', () => ({
+  BuiltInDependencies: (mode: 'preview' | 'canvas'): Array<any> => [
+    ...(jest.requireActual(
+      '../../../core/es-modules/package-manager/built-in-dependencies-list',
+    ) as any)['BuiltInDependencies']('canvas'),
+    {
+      moduleName: '@react-three/fiber',
+      nodeModule: {
+        ...ReactThreeFiber,
+        default: ReactThreeFiber,
+      },
+      version: editorPackageJSON.devDependencies['@react-three/fiber'],
+    },
+  ],
+}))
+
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   ParsedTextFile,
