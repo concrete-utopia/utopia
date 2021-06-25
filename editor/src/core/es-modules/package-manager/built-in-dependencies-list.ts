@@ -7,7 +7,7 @@ import * as EmotionReact from '@emotion/react'
 import * as EmotionStyled from '@emotion/styled'
 
 import * as editorPackageJSON from '../../../../package.json'
-import * as utopiaAPIPackageJSON from 'utopia-api/package'
+import * as utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import { NO_OP } from '../../shared/utils'
 
 export interface BuiltInDependency {
