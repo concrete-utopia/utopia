@@ -322,7 +322,7 @@ function isSimpleValue<S>(valueOrUpdater: ValueOrUpdater<S>): valueOrUpdater is 
   return typeof valueOrUpdater !== 'function'
 }
 function useStateAsyncInvalidate<S>(
-  onInvalidate: () => void,
+  onInvalidate: (immediate: 'immediate' | 'throttled') => void,
   initialState: S,
 ): [S, SetValueCallback<S>] {
   const stateRef = React.useRef(initialState)
@@ -338,7 +338,7 @@ function useStateAsyncInvalidate<S>(
       stateRef.current = resolvedNewValue
 
       if (doNotInvalidate !== 'do-not-invalidate') {
-        onInvalidate()
+        onInvalidate('throttled')
       }
     },
     [stateRef, onInvalidate],
@@ -347,13 +347,15 @@ function useStateAsyncInvalidate<S>(
   return [stateRef.current, setAndMarkInvalidated]
 }
 
-function useThrottledCallback(callback: () => void): (immediate?: 'immediate') => void {
+function useThrottledCallback(
+  callback: () => void,
+): (immediate: 'immediate' | 'throttled') => void {
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   const callbackRef = React.useRef(callback)
   callbackRef.current = callback
 
-  return React.useCallback((immediate?: 'immediate') => {
+  return React.useCallback((immediate: 'immediate' | 'throttled') => {
     if (immediate === 'immediate') {
       if (timeoutRef.current != null) {
         clearTimeout(timeoutRef.current)
