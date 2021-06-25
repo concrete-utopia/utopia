@@ -28,123 +28,29 @@ We welcome contributions. Utopia is a big project, but we're here to help, and a
 
 # Run the Editor
 
-There are a few different options for running Utopia below, but for all of them you'll head to [localhost:8000/p](https://localhost:8000/p) when developing the editor, or [localhost:8000](https://localhost:8000/) when developing the website itself.
-
-Before you do anything, you'll need to build VS Code:
+The first time running the editor, run the following script:
 
 ```
-build-vscode
+start-full
 ```
 
-## Dev Mode: slower performance, full error messages, easier to debug
+Subsequently it should be possible to just run, unless either changes have been made to VS Code or something like the dependencies have changed in the editor project:
 
 ```
-start
+start-minimal
 ```
 
-and in a second terminal, for typescript compile errors
+Both of these scripts result in a tmux session with all of the various servers running and watching for changes.
+
+To shut them down, in the "Scratchpad" tab of the session run the following command:
 
 ```
-watch-tsc
-```
-
-## Fast Mode: fast performance, minified react errors
-
-Run everything in _fast_ mode, performance is fast, react will throw minified errors:
-
-```
-start-performance
-```
-
-and in a second terminal, for typescript compile errors
-
-```
-watch-tsc
-```
-
-## Run everything in _hot and brittle_ mode.
-
-> it's the same as start but webpack is in hot mode (under the hood it runs npm run move-fast-and-break-things-hot instead of npm run move-fast-and-break-things). I've been using this for the last 4-5 days or so. hot mode still works if you are working on for example the inspector design. the canvas is pretty brittle to hot updates, every 4th update made my canvas turn white but for the purposes of the inspector tweaking it was fine
-
-```
-start-hot-only-ui-work
-```
-
-## Run each part separately
-
-(each series of commands assumes that you're starting from the root directory of the project)
-
-### Running the server:
-
-Shell 1:
-
-```
-nix-shell
-redis-server
-```
-
-Shell 2:
-
-```
-nix-shell
-watch-server
-```
-
-If this ever fails with `truncated tar archive`, it's a cabal failure. The fix appears to be to delete `~/.cabal/packages`
-
-### Running the editor in dev mode (slow but you see react errors)
-
-Shell 3:
-
-```
-nix-shell
-watch-tsc
-```
-
-Shell 4:
-
-```
-nix-shell
-watch-editor-cowboy
-```
-
-### Running the editor in fast mode
-
-Shell 5:
-
-```
-nix-shell
-watch-tsc
-```
-
-Shell 6:
-
-```
-nix-shell
-watch-editor-performance
-```
-
-Alternatively you can run `npm run webpack-production`. Occasionally you'll need to run `npm install` from the `/editor` directory before webpack.
-
-### Running webpack with the website
-
-Shell 7:
-
-```
-nix-shell
-watch-website
-```
-
-### Build editor vscode
-
-```
-build-vscode-with-extension
-watch-vscode-dev
+stop-dev
 ```
 
 ### Finally, loading the running application
 
-Now the editor should load on [localhost:8000/p](https://localhost:8000/p)
+Now the editor should load on [localhost:8000/p](https://localhost:8000/p), or [localhost:8000](https://localhost:8000/) when developing the website itself.
 
 ## Pull request bundle support.
 

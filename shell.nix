@@ -166,7 +166,7 @@ let
       #!/usr/bin/env bash
       set -e
       cabal-update
-      ${pkgs.parallel}/bin/parallel --delay 10 --halt now,done=1 --line-buffer --tag ::: redis-server test-server-inner
+      test-server-inner
     '')
   ];
 
@@ -281,38 +281,46 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
       ${pkgs.nodePackages.nodemon}/bin/nodemon --watch ../utopia-vscode-extension/dist/browser/extension.js --exec pull-extension
     '')
-    (pkgs.writeScriptBin "watch-vscode-dev" ''
-      #!/usr/bin/env bash
-      set -e
-      ${pkgs.parallel}/bin/parallel --line-buffer --tag ::: watch-utopia-vscode-common watch-utopia-vscode-extension watch-vscode-build-extension-only
-    '')
   ];
 
   # For the useful scripts in our dev environments
   customDevScripts = [
-    (pkgs.writeScriptBin "start-website-server" ''
+    (pkgs.writeScriptBin "stop-dev" ''
       #!/usr/bin/env bash
-      set -e
-      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-website redis-server
+      # Kill nodemon because it just seems to keep running.
+      pkill nodemon
+      tmux kill-session -t utopia-dev
     '')
-    (pkgs.writeScriptBin "start" ''
+    (pkgs.writeScriptBin "start-minimal" ''
       #!/usr/bin/env bash
+      stop-dev
+      tmux new-session -s utopia-dev \; \
+        set-option -g mouse on \; \
+        new-window -n "Scratchpad" \; \
+        new-window -n "Server" \; \
+        send-keys -t :2 watch-server C-m \; \
+        new-window -n "Editor TSC" \; \
+        send-keys -t :3 watch-tsc C-m \; \
+        new-window -n "Editor Webpack" \; \
+        send-keys -t :4 watch-editor-cowboy C-m \; \
+        new-window -n "Website" \; \
+        send-keys -t :5 watch-website C-m \; \
+        new-window -n "VSCode Common" \; \
+        send-keys -t :6 watch-utopia-vscode-common C-m \; \
+        new-window -n "VSCode Extension" \; \
+        send-keys -t :7 watch-utopia-vscode-extension C-m \; \
+        new-window -n "VSCode Pull Extension" \; \
+        send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        select-window -t :1 \;
+    '')
+    (pkgs.writeScriptBin "start-full" ''
+      #!/usr/bin/env bash
+      stop-dev
       set -e
       install-editor
-      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-cowboy watch-website redis-server
+      build-vscode
+      start-minimal
     '')
-    (pkgs.writeScriptBin "start-performance" ''
-      #!/usr/bin/env bash
-      set -e
-      install-editor
-      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-performance watch-website redis-server
-    '')
-    (pkgs.writeScriptBin "start-hot-only-ui-work" ''
-      #!/usr/bin/env bash
-      set -e
-      install-editor
-      ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-cowboy-danger-hot watch-website redis-server
-    '')    
   ] ++ vscodeDevScripts;
 
   withCustomDevScripts = withServerRunScripts ++ (lib.optionals includeRunLocallySupport customDevScripts);
@@ -365,7 +373,6 @@ let
     pkgs.haskellPackages.stylish-haskell
     pkgs.haskellPackages.hpack
     pkgs.postgresql
-    pkgs.redis
   ];
 
   serverRunPackages = [
@@ -377,7 +384,7 @@ let
 
   pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
