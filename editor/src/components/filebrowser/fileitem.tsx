@@ -31,6 +31,7 @@ import {
   flexRowStyle,
   OnClickOutsideHOC,
   StringInput,
+  //TODO: switch to functional component and make use of 'useColorTheme':
   colorTheme,
   UtopiaTheme,
   SimpleFlexRow,

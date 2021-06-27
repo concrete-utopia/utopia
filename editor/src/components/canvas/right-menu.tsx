@@ -14,7 +14,7 @@ import {
   Tooltip,
   LargerIcons,
   FlexColumn,
-  colorTheme,
+  useColorTheme,
 } from '../../uuiui'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
 import { MenuTile } from '../menubar/menubar'
@@ -89,6 +89,7 @@ function useShouldResetCanvas(
 }
 
 export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) => {
+  const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'RightMenu dispatch')
   const canvasContentInvalidateCount = useEditorState(
     (store) => store.editor.canvas.canvasContentInvalidateCount,

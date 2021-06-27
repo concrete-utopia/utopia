@@ -44,6 +44,7 @@ import {
   PersistentModel,
   RightMenuTab,
   StoredEditorState,
+  Theme,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
@@ -824,6 +825,11 @@ export interface SetFilebrowserDropTarget {
   target: string | null
 }
 
+export interface SetCurrentTheme {
+  action: 'SET_CURRENT_THEME'
+  theme: Theme
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -960,6 +966,7 @@ export type EditorAction =
   | SetLoginState
   | ResetCanvas
   | SetFilebrowserDropTarget
+  | SetCurrentTheme
 
 export type DispatchPriority =
   | 'everyone'

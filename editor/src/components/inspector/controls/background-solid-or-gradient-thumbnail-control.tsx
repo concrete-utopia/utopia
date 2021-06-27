@@ -19,7 +19,7 @@ import {
 } from '../common/css-utils'
 import { BackgroundPicker } from '../sections/style-section/background-subsection/background-picker'
 import { StringControl } from './string-control'
-import { colorTheme, UtopiaTheme } from '../../../uuiui'
+import { useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import Utils from '../../../utils/utils'
 
@@ -86,6 +86,7 @@ export const backgroundControlContainerStyle = {
 export const BackgroundSolidOrGradientThumbnailControl = betterReactMemo(
   'BackgroundControl',
   (props: BackgroundSolidOrGradientThumbnailControlProps) => {
+    const colorTheme = useColorTheme()
     const setOpenPopup = props.setOpenPopup
     const closePopup = React.useCallback(() => setOpenPopup(undefined), [setOpenPopup])
     const backgroundArrayItem = (() => {

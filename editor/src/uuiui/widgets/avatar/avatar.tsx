@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { LoginState, User } from '../../../uuiui-deps'
 
-import { colorTheme } from '../../styles/theme'
+import { useColorTheme } from '../../styles/theme'
 
 interface AvatarProps {
   userPicture: string | null
@@ -9,46 +9,45 @@ interface AvatarProps {
   size?: number
 }
 
-export class Avatar extends React.Component<AvatarProps> {
-  size: string = (this.props.size ?? '24') + 'px'
+export function Avatar(props: AvatarProps) {
+  const colorTheme = useColorTheme()
+  const size: string = (props.size ?? '24') + 'px'
 
   /* Make the user wish they'd never logged in with an avatar-providing service. */
   /* Change these in   avatars.sketch and export from there */
-  utopinoIndex = Math.round(Math.random() * 13)
-  anonyminoIndex = Math.round(Math.random() * 10)
+  const utopinoIndex = Math.round(Math.random() * 13)
+  const anonyminoIndex = Math.round(Math.random() * 10)
 
-  fallbackLoggedOutImageURL =
-    'url(/editor/avatars/anonymino' + this.anonyminoIndex.toString() + '.png)'
-  fallbackLoggedInImageURL = 'url(/editor/avatars/utopino' + this.utopinoIndex.toString() + '.png)'
+  const fallbackLoggedOutImageURL =
+    'url(/editor/avatars/anonymino' + anonyminoIndex.toString() + '.png)'
+  const fallbackLoggedInImageURL = 'url(/editor/avatars/utopino' + utopinoIndex.toString() + '.png)'
 
-  render() {
-    const imageURL =
-      this.props.userPicture != null
-        ? `url(${this.props.userPicture})`
-        : this.props.isLoggedIn
-        ? this.fallbackLoggedInImageURL
-        : this.fallbackLoggedOutImageURL
+  const imageURL =
+    props.userPicture != null
+      ? `url(${props.userPicture})`
+      : props.isLoggedIn
+      ? fallbackLoggedInImageURL
+      : fallbackLoggedOutImageURL
 
-    const backgroundStyle = {
-      backgroundImage: imageURL,
-      backgroundPosition: 'center',
-      backgroundSize: 'cover',
-      backgroundRepeat: 'no-repeat',
-    }
-
-    return (
-      <div
-        className='user-avatar'
-        style={{
-          ...backgroundStyle,
-          justifyContent: 'center',
-          overflow: 'hidden',
-          width: this.size,
-          height: this.size,
-          borderRadius: this.size,
-          backgroundColor: colorTheme.emphasizedBackground.value,
-        }}
-      />
-    )
+  const backgroundStyle = {
+    backgroundImage: imageURL,
+    backgroundPosition: 'center',
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
   }
+
+  return (
+    <div
+      className='user-avatar'
+      style={{
+        ...backgroundStyle,
+        justifyContent: 'center',
+        overflow: 'hidden',
+        width: size,
+        height: size,
+        borderRadius: size,
+        backgroundColor: colorTheme.emphasizedBackground.value,
+      }}
+    />
+  )
 }

@@ -37,7 +37,7 @@ import {
   CSSCursor,
 } from '../../uuiui-deps'
 import { Icn, IcnProps } from '../icn'
-import { colorTheme, UtopiaTheme } from '../styles/theme'
+import { UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
 import {
   BaseInputProps,

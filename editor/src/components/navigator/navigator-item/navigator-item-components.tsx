@@ -6,7 +6,7 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { DropTargetType } from '../navigator'
-import { colorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
+import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
 
 interface NavigatorHintProps {
   isOver: boolean
@@ -15,6 +15,7 @@ interface NavigatorHintProps {
 }
 
 export const NavigatorHintTop: React.FunctionComponent<NavigatorHintProps> = (props) => {
+  const colorTheme = useColorTheme()
   if (props.isOver && props.dropTargetType != null && props.dropTargetType === 'before') {
     return (
       <div
@@ -37,6 +38,7 @@ export const NavigatorHintTop: React.FunctionComponent<NavigatorHintProps> = (pr
 NavigatorHintTop.displayName = 'NavigatorHintTop'
 
 export const NavigatorHintBottom: React.FunctionComponent<NavigatorHintProps> = (props) => {
+  const colorTheme = useColorTheme()
   if (props.isOver && props.dropTargetType != null && props.dropTargetType === 'after') {
     return (
       <div
@@ -96,6 +98,7 @@ interface OriginalComponentNameLabelProps {
 export const OriginalComponentNameLabel: React.FunctionComponent<OriginalComponentNameLabelProps> = (
   props,
 ) => {
+  const colorTheme = useColorTheme()
   return (
     <div
       className={'role-componentnanme pr4 pl4 f10 '}

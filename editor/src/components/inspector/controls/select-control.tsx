@@ -7,7 +7,7 @@ import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './contr
 import { getControlStyles, ControlStatus, isControlledStatus } from '../common/control-status'
 import { ValueType } from 'react-select/src/types'
 import { PortalTargetID } from '../../../core/shared/utils'
-import { IcnProps, Icons, colorTheme, UtopiaTheme } from '../../../uuiui'
+import { IcnProps, Icons, useColorTheme, UtopiaTheme } from '../../../uuiui'
 
 export interface DEPRECATEDSelectControlOptions extends DEPRECATEDGenericControlOptions {
   creatable?: boolean
@@ -87,6 +87,7 @@ export const CustomReactSelectInput = (props: InputProps) => {
 }
 
 export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>> = (props) => {
+  const colorTheme = useColorTheme()
   const options = props.options != null ? (props.options as Array<SelectOption>) : []
   const controlOptions = {
     creatable: false,

@@ -2,16 +2,16 @@ import * as React from 'react'
 import { ElementPath } from 'src/core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { fastForEach } from '../../../core/shared/utils'
-import { colorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 import { useForceUpdate } from '../../editor/hook-utils'
 import { OnSubmitValue } from '../controls/control'
 import { ControlStatus } from './control-status'
 import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
 
-const isControlledStyling = {
+const isControlledStyling = (colorTheme: any) => ({
   backgroundColor: colorTheme.primary.shade(5).value,
   color: colorTheme.primary.value,
-}
+})
 
 const isNotControlledStyling = {
   backgroundColor: undefined,
@@ -19,6 +19,7 @@ const isNotControlledStyling = {
 }
 
 export function useGetSubsectionHeaderStyle(controlStatus: ControlStatus): React.CSSProperties {
+  const colorTheme = useColorTheme()
   // TODO instead of this, make the inspector hook return the `PropertyStatus` too, and just use PropertyStatus.controlled
   const isControlled =
     controlStatus === 'controlled' ||
@@ -26,7 +27,7 @@ export function useGetSubsectionHeaderStyle(controlStatus: ControlStatus): React
     controlStatus === 'unoverwritable' ||
     controlStatus === 'multiselect-unoverwritable'
 
-  return isControlled ? isControlledStyling : isNotControlledStyling
+  return isControlled ? isControlledStyling(colorTheme) : isNotControlledStyling
 }
 
 export type CSSArrayItem = CSSBackgroundLayer | CSSTransformItem | CSSUnknownArrayItem

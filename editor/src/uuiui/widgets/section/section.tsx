@@ -5,7 +5,7 @@ import styled from '@emotion/styled'
 import { FlexRow } from '../layout/flex-row'
 import { FlexColumn } from '../layout/flex-column'
 import { ExpandableIndicator } from '../../../components/navigator/navigator-item/expandable-indicator'
-import { UtopiaTheme, colorTheme } from '../../styles/theme'
+import { UtopiaTheme, useColorTheme } from '../../styles/theme'
 import { SquareButton } from '../../button'
 
 export const Section = styled.div({
@@ -18,6 +18,7 @@ interface SectionTitleRowProps {
 }
 
 export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (props) => {
+  const colorTheme = useColorTheme()
   const toggleMinimised = props.toggleMinimised
   const handleClick = React.useCallback(
     (e: React.MouseEvent) => {
@@ -40,7 +41,7 @@ export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (p
       }}
       css={{
         '&:hover': {
-          background: UtopiaTheme.color.neutralBackground.value,
+          background: colorTheme.neutralBackground.value,
         },
       }}
       onClick={handleClick}

@@ -2,13 +2,14 @@ import * as React from 'react'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { Scene, SceneProps } from 'utopia-api'
-import { colorTheme, UtopiaStyles } from '../../../uuiui'
+import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { RerenderUtopiaContext } from './ui-jsx-canvas-contexts'
 
 export const SceneComponent = betterReactMemo(
   'Scene',
   (props: React.PropsWithChildren<SceneProps>) => {
+    const colorTheme = useColorTheme()
     const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
 
     const { style, ...remainingProps } = props

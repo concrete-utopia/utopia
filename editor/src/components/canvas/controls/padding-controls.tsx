@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Sides } from 'utopia-api'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
-import { colorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 
 interface PaddingControlsProps {
@@ -12,6 +12,7 @@ interface PaddingControlsProps {
 }
 
 export const PaddingControls = betterReactMemo('PaddingControls', (props: PaddingControlsProps) => {
+  const colorTheme = useColorTheme()
   if (props.padding == null) {
     return null
   } else {

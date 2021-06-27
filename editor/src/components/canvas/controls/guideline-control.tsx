@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
-import { colorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 import { GuidelineWithSnappingVector } from '../guideline'
 
 interface ResizeEdgeProps {
@@ -12,6 +12,7 @@ interface ResizeEdgeProps {
 }
 
 export function GuidelineControl(props: ResizeEdgeProps) {
+  const colorTheme = useColorTheme()
   const { targetFrame } = props
   const guideline = props.guidelineWithSnapping.guideline
   const lineSize = 1 / props.scale

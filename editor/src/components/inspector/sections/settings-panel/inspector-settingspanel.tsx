@@ -15,7 +15,7 @@ import {
   H2,
   CheckboxInput,
   FlexColumn,
-  colorTheme,
+  useColorTheme,
   Button,
 } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
@@ -66,6 +66,7 @@ const FeatureSwitchRow = betterReactMemo('Feature Switch Row', (props: { name: F
 })
 
 export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
+  const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'SettingsPanel dispatch')
   const interfaceDesigner = useEditorState(
     (store) => store.editor.interfaceDesigner,

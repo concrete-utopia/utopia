@@ -3,7 +3,7 @@ import * as React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { colorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
+import { useColorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
@@ -27,6 +27,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     }
   }, 'FormulaBar selectedElement')
 
+  const colorTheme = useColorTheme()
   const [simpleText, setSimpleText] = React.useState('')
   const [disabled, setDisabled] = React.useState(false)
 

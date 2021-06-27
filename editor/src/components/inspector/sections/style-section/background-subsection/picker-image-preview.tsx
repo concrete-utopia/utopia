@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { colorTheme, FlexRow, Icn, UtopiaTheme, SimpleFlexRow } from '../../../../../uuiui'
+import { useColorTheme, FlexRow, Icn, UtopiaTheme, SimpleFlexRow } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { MetadataEditorModalPreviewHeight } from '../../../controls/color-picker'
 import { CSSURLFunctionBackgroundLayer } from '../../../common/css-utils'
@@ -12,6 +12,7 @@ interface PickerImagePreviewProps {
 export const PickerImagePreview = betterReactMemo(
   'BackgroundLayerMetadataModalURLImagePreview',
   (props: PickerImagePreviewProps) => {
+    const colorTheme = useColorTheme()
     const [imageNotFound, setImageNotFound] = React.useState(false)
     const onError = React.useCallback(() => {
       setImageNotFound(true)

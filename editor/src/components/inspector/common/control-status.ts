@@ -1,4 +1,5 @@
 import * as deepEqual from 'fast-deep-equal'
+//TODO: pass in colorTheme to utility functions to get rid of colorTheme here:
 import { colorTheme, UtopiaTheme } from '../../../uuiui/styles/theme'
 import {
   isJSXAttributeNotFound,
