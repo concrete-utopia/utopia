@@ -42,7 +42,7 @@ import {
   TransientFilesState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
-import { useDomWalker } from './dom-walker'
+import { SetValueCallback, useDomWalker } from './dom-walker'
 import { isLiveMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
@@ -77,6 +77,7 @@ import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
+import { NO_OP } from '../../core/shared/utils'
 
 applyUIDMonkeyPatch()
 
@@ -106,6 +107,14 @@ export const UiJsxCanvasContext = React.createContext<UiJsxCanvasContextData>(
   emptyUiJsxCanvasContextData(),
 )
 UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
+
+export const DomWalkerInvalidateScenesContext = React.createContext<SetValueCallback<Set<string>>>(
+  NO_OP,
+)
+export type DomWalkerInvalidatePathsContextData = SetValueCallback<Set<string>>
+export const DomWalkerInvalidatePathsContext = React.createContext<
+  DomWalkerInvalidatePathsContextData
+>(NO_OP)
 
 export interface UiJsxCanvasProps {
   offset: CanvasVector
@@ -230,9 +239,29 @@ function normalizedCssImportsFromImports(filePath: string, imports: Imports): Ar
   return result
 }
 
+function useClearSpyMetadataOnRemount(
+  canvasMountCount: number,
+  domWalkerInvalidateCount: number,
+  metadataContext: UiJsxCanvasContextData,
+) {
+  const canvasMountCountRef = React.useRef(canvasMountCount)
+  const domWalkerInvalidateCountRef = React.useRef(domWalkerInvalidateCount)
+
+  const invalidated =
+    canvasMountCountRef.current !== canvasMountCount ||
+    domWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
+
+  if (invalidated) {
+    metadataContext.current.spyValues.metadata = {}
+  }
+
+  canvasMountCountRef.current = canvasMountCount
+  domWalkerInvalidateCountRef.current = domWalkerInvalidateCount
+}
+
 export const UiJsxCanvas = betterReactMemo(
   'UiJsxCanvas',
-  (props: UiJsxCanvasPropsWithErrorCallback) => {
+  React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
     const {
       offset,
       scale,
@@ -264,6 +293,10 @@ export const UiJsxCanvas = betterReactMemo(
     }
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
+      DomWalkerInvalidatePathsContext,
+    )
+    useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
     // Handle the imports changing, this needs to run _before_ any require function
     // calls as it's modifying the underlying DOM elements. This is somewhat working
@@ -280,7 +313,9 @@ export const UiJsxCanvas = betterReactMemo(
     >({})
 
     // TODO after merge requireFn can never be null
-    if (requireFn != null) {
+    if (requireFn == null) {
+      throw new Error('Utopia Internal Error: requireFn can never be null')
+    } else {
       let resolvedFiles: MapLike<Array<string>> = {} // Mapping from importOrigin to an array of toImport
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
@@ -310,6 +345,7 @@ export const UiJsxCanvas = betterReactMemo(
                   base64FileBlobs,
                   hiddenInstances,
                   metadataContext,
+                  updateInvalidatedPaths,
                   shouldIncludeCanvasRootInTheSpy,
                 )
                 const exportsDetail = projectFile.fileContents.parsed.exportsDetail
@@ -351,6 +387,7 @@ export const UiJsxCanvas = betterReactMemo(
           base64FileBlobs,
           hiddenInstances,
           metadataContext,
+          updateInvalidatedPaths,
           shouldIncludeCanvasRootInTheSpy,
         ],
       )
@@ -366,6 +403,7 @@ export const UiJsxCanvas = betterReactMemo(
         base64FileBlobs,
         hiddenInstances,
         metadataContext,
+        updateInvalidatedPaths,
         props.shouldIncludeCanvasRootInTheSpy,
       )
 
@@ -412,6 +450,7 @@ export const UiJsxCanvas = betterReactMemo(
                 }}
               >
                 <CanvasContainer
+                  ref={ref}
                   mountCount={props.mountCount}
                   domWalkerInvalidateCount={props.domWalkerInvalidateCount}
                   walkDOM={walkDOM}
@@ -443,10 +482,8 @@ export const UiJsxCanvas = betterReactMemo(
           </MutableUtopiaContext.Provider>
         </>
       )
-    } else {
-      return null
     }
-  },
+  }),
 )
 
 function useGetStoryboardRoot(
@@ -509,25 +546,24 @@ export interface CanvasContainerProps {
   canvasInteractionHappening: boolean
 }
 
-const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (
-  props: React.PropsWithChildren<CanvasContainerProps>,
-) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  let containerRef = props.walkDOM ? useDomWalker(props) : React.useRef<HTMLDivElement>(null)
-
+const CanvasContainer = React.forwardRef<
+  HTMLDivElement,
+  React.PropsWithChildren<CanvasContainerProps>
+>((props, ref) => {
   return (
     <div
       id={CanvasContainerID}
       key={'canvas-container'}
-      ref={containerRef}
+      ref={ref}
       style={{
         all: 'initial',
         position: 'absolute',
       }}
       data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
+      data-utopia-root-element-path={EP.toString(props.canvasRootElementElementPath)}
     >
       {props.children}
     </div>
   )
-}
+})
 CanvasContainer.displayName = 'CanvasContainer'

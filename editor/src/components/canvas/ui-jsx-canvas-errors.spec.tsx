@@ -690,6 +690,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         id=\\"canvas-container\\"
         style=\\"all: initial; position: absolute;\\"
         data-utopia-valid-paths=\\"\\"
+        data-utopia-root-element-path=\\"\\"
       ></div>
       "
     `)

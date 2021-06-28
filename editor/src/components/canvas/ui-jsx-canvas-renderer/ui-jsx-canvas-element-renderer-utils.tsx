@@ -31,7 +31,7 @@ import { fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsContextData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
@@ -57,6 +57,7 @@ export function createLookupRender(
   validPaths: Array<ElementPath>,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
@@ -106,6 +107,7 @@ export function createLookupRender(
       generatedUID,
       reactChildren,
       metadataContext,
+      updateInvalidatedPaths,
       jsxFactoryFunctionName,
       null,
       shouldIncludeCanvasRootInTheSpy,
@@ -142,6 +144,7 @@ export function renderCoreElement(
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -174,6 +177,7 @@ export function renderCoreElement(
         validPaths,
         passthroughProps,
         metadataContext,
+        updateInvalidatedPaths,
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
@@ -194,6 +198,7 @@ export function renderCoreElement(
         validPaths,
         reactChildren,
         metadataContext,
+        updateInvalidatedPaths,
         jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         filePath,
@@ -229,6 +234,7 @@ export function renderCoreElement(
           uid,
           reactChildren,
           metadataContext,
+          updateInvalidatedPaths,
           jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
@@ -263,6 +269,7 @@ function renderJSXElement(
   validPaths: Array<ElementPath>,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -295,6 +302,7 @@ function renderJSXElement(
       undefined,
       undefined,
       metadataContext,
+      updateInvalidatedPaths,
       jsxFactoryFunctionName,
       codeError,
       shouldIncludeCanvasRootInTheSpy,
@@ -362,6 +370,7 @@ function renderJSXElement(
       finalPropsIcludingElementPath,
       elementPath,
       metadataContext,
+      updateInvalidatedPaths,
       childrenElementPaths,
       childrenElements,
       FinalElement,

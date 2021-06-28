@@ -185,8 +185,8 @@ function getCachedAttributesComingFromStyleSheets(
 }
 
 function useResizeObserver(
-  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
-  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedScenes: SetValueCallback<Set<string>>,
   selectedViews: React.MutableRefObject<Array<ElementPath>>,
   canvasInteractionHappening: React.MutableRefObject<boolean>,
 ) {
@@ -195,12 +195,14 @@ function useResizeObserver(
       return new ResizeObserver((entries: any) => {
         if (canvasInteractionHappening.current) {
           // Only add the selected views
-          fastForEach(selectedViews.current, (v) => invalidatedPathsRef.current.add(EP.toString(v)))
+          fastForEach(selectedViews.current, (v) =>
+            updateInvalidatedPaths((current) => current.add(EP.toString(v)), 'invalidate'),
+          )
         } else {
           for (let entry of entries) {
             const sceneID = findParentScene(entry.target)
             if (sceneID != null) {
-              invalidatedScenesRef.current.add(sceneID)
+              updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
             }
           }
         }
@@ -221,8 +223,8 @@ function useResizeObserver(
 }
 
 function useMutationObserver(
-  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
-  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  updateInvalidatedScenes: SetValueCallback<Set<string>>,
   selectedViews: React.MutableRefObject<Array<ElementPath>>,
   canvasInteractionHappening: React.MutableRefObject<boolean>,
 ) {
@@ -231,7 +233,9 @@ function useMutationObserver(
       return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
         if (canvasInteractionHappening.current) {
           // Only add the selected views
-          fastForEach(selectedViews.current, (v) => invalidatedPathsRef.current.add(EP.toString(v)))
+          fastForEach(selectedViews.current, (v) =>
+            updateInvalidatedPaths((current) => current.add(EP.toString(v)), 'invalidate'),
+          )
         } else {
           for (let mutation of mutations) {
             if (
@@ -242,7 +246,7 @@ function useMutationObserver(
               if (mutation.target instanceof HTMLElement) {
                 const sceneID = findParentScene(mutation.target)
                 if (sceneID != null) {
-                  invalidatedScenesRef.current.add(sceneID)
+                  updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
                 }
               }
             }
@@ -265,7 +269,7 @@ function useMutationObserver(
 }
 
 function useInvalidateScenesWhenSelectedViewChanges(
-  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
   return useSelectorWithCallback(
@@ -275,7 +279,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
         const scenePath = EP.createBackwardsCompatibleScenePath(sv)
         if (scenePath != null) {
           const sceneID = EP.toString(scenePath)
-          invalidatedScenesRef.current.add(sceneID)
+          updateInvalidatedScenes((current) => current.add(sceneID), 'invalidate')
           invalidatedPathsForStylesheetCacheRef.current.add(EP.toString(sv))
         }
       })
@@ -307,16 +311,76 @@ function useInvalidateInitCompleteOnMountCount(
 
   return [initCompleteRef.current, setInitComplete]
 }
+type ValueOrUpdater<S> = S | ((prevState: S) => S)
+// todo move to file
+export type SetValueCallback<S> = (
+  valueOrUpdater: ValueOrUpdater<S>,
+  invalidate: 'invalidate' | 'do-not-invalidate',
+) => void
 
-interface DomWalkerProps {
+function isSimpleValue<S>(valueOrUpdater: ValueOrUpdater<S>): valueOrUpdater is S {
+  return typeof valueOrUpdater !== 'function'
+}
+function useStateAsyncInvalidate<S>(
+  onInvalidate: (immediate: 'immediate' | 'throttled') => void,
+  initialState: S,
+): [S, SetValueCallback<S>] {
+  const stateRef = React.useRef(initialState)
+  const setAndMarkInvalidated = React.useCallback(
+    (
+      valueOrUpdater: ValueOrUpdater<S>,
+      invalidate: 'invalidate' | 'do-not-invalidate' = 'invalidate',
+    ) => {
+      let resolvedNewValue: S
+      if (isSimpleValue(valueOrUpdater)) {
+        // TODO make this type nicer using a type guard
+        resolvedNewValue = valueOrUpdater
+      } else {
+        resolvedNewValue = valueOrUpdater(stateRef.current)
+      }
+      stateRef.current = resolvedNewValue
+
+      if (invalidate === 'invalidate') {
+        onInvalidate('throttled')
+      }
+    },
+    [stateRef, onInvalidate],
+  )
+
+  return [stateRef.current, setAndMarkInvalidated]
+}
+
+function useThrottledCallback(
+  callback: () => void,
+): (immediate: 'immediate' | 'throttled') => void {
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  const callbackRef = React.useRef(callback)
+  callbackRef.current = callback
+
+  return React.useCallback((immediate: 'immediate' | 'throttled') => {
+    if (immediate === 'immediate') {
+      if (timeoutRef.current != null) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      callbackRef.current()
+    } else if (timeoutRef.current == null) {
+      timeoutRef.current = setTimeout(() => {
+        timeoutRef.current = null
+        callbackRef.current()
+      }, 0)
+    }
+  }, [])
+}
+
+export interface DomWalkerProps {
   selectedViews: Array<ElementPath>
   scale: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
     cachedPaths: Array<ElementPath>,
   ) => void
-  canvasRootElementElementPath: ElementPath
-  validRootPaths: Array<ElementPath>
   mountCount: number
   domWalkerInvalidateCount: number
   canvasInteractionHappening: boolean
@@ -365,46 +429,12 @@ function mergeFragmentMetadata(
   return Object.values(working)
 }
 
-export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
+export function useDomWalker(
+  props: DomWalkerProps,
+): [SetValueCallback<Set<string>>, SetValueCallback<Set<string>>, React.Ref<HTMLDivElement>] {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const rootMetadataInStateRef = useRefEditorState(
-    (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
-  )
-  const invalidatedPathsRef = React.useRef<Set<string>>(emptySet()) // For invalidating specific paths only
-  const invalidatedScenesRef = React.useRef<Set<string>>(emptySet()) // For invalidating entire scenes and everything below them
-  const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
-  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
-    props.mountCount,
-    props.domWalkerInvalidateCount,
-  )
-  const selectedViewsRef = React.useRef(props.selectedViews)
-  const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
 
-  if (selectedViewsRef.current !== props.selectedViews) {
-    selectedViewsRef.current = props.selectedViews
-  }
-  if (canvasInteractionHappeningRef.current !== props.canvasInteractionHappening) {
-    canvasInteractionHappeningRef.current = props.canvasInteractionHappening
-  }
-
-  const resizeObserver = useResizeObserver(
-    invalidatedPathsRef,
-    invalidatedScenesRef,
-    selectedViewsRef,
-    canvasInteractionHappeningRef,
-  )
-  const mutationObserver = useMutationObserver(
-    invalidatedPathsRef,
-    invalidatedScenesRef,
-    selectedViewsRef,
-    canvasInteractionHappeningRef,
-  )
-  useInvalidateScenesWhenSelectedViewChanges(
-    invalidatedScenesRef,
-    invalidatedPathsForStylesheetCacheRef,
-  )
-
-  React.useLayoutEffect(() => {
+  const fireThrottledCallback = useThrottledCallback(() => {
     if (containerRef.current != null) {
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_START')
@@ -429,11 +459,11 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
       const { metadata, cachedPaths } = walkCanvasRootFragment(
         refOfContainer,
         0,
-        props.canvasRootElementElementPath,
-        props.validRootPaths,
         rootMetadataInStateRef,
-        invalidatedPathsRef,
-        invalidatedScenesRef,
+        invalidatedPaths as ReadonlySet<string>, // this is not the nicest type here, but it should be fine for now :)
+        updateInvalidatedPaths,
+        invalidatedScenes as ReadonlySet<string>,
+        updateInvalidatedScenes,
         invalidatedPathsForStylesheetCacheRef,
         props.selectedViews,
         !initComplete,
@@ -453,7 +483,54 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
     }
   })
 
-  return containerRef
+  const rootMetadataInStateRef = useRefEditorState(
+    (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
+  )
+  const [invalidatedPaths, updateInvalidatedPaths] = useStateAsyncInvalidate<Set<string>>(
+    fireThrottledCallback,
+    emptySet(),
+  ) // For invalidating specific paths only
+  const [invalidatedScenes, updateInvalidatedScenes] = useStateAsyncInvalidate<Set<string>>(
+    fireThrottledCallback,
+    emptySet(),
+  ) // For invalidating entire scenes and everything below them
+  const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
+  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
+    props.mountCount,
+    props.domWalkerInvalidateCount,
+  )
+  const selectedViewsRef = React.useRef(props.selectedViews)
+  const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
+
+  if (selectedViewsRef.current !== props.selectedViews) {
+    selectedViewsRef.current = props.selectedViews
+  }
+  if (canvasInteractionHappeningRef.current !== props.canvasInteractionHappening) {
+    canvasInteractionHappeningRef.current = props.canvasInteractionHappening
+  }
+
+  const resizeObserver = useResizeObserver(
+    updateInvalidatedPaths,
+    updateInvalidatedScenes,
+    selectedViewsRef,
+    canvasInteractionHappeningRef,
+  )
+  const mutationObserver = useMutationObserver(
+    updateInvalidatedPaths,
+    updateInvalidatedScenes,
+    selectedViewsRef,
+    canvasInteractionHappeningRef,
+  )
+  useInvalidateScenesWhenSelectedViewChanges(
+    updateInvalidatedScenes,
+    invalidatedPathsForStylesheetCacheRef,
+  )
+
+  React.useLayoutEffect(() => {
+    fireThrottledCallback('immediate')
+  })
+
+  return [updateInvalidatedPaths, updateInvalidatedScenes, containerRef]
 }
 
 function collectMetadataForElement(
@@ -483,12 +560,9 @@ function collectMetadataForElement(
 
 function isAnyPathInvalidated(
   stringPathsForElement: Array<string>,
-  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPaths: ReadonlySet<string>,
 ): boolean {
-  return (
-    invalidatedPathsRef.current.size > 0 &&
-    stringPathsForElement.some((p) => invalidatedPathsRef.current.has(p))
-  )
+  return invalidatedPaths.size > 0 && stringPathsForElement.some((p) => invalidatedPaths.has(p))
 }
 
 function collectMetadata(
@@ -499,14 +573,14 @@ function collectMetadata(
   allUnfilteredChildrenPaths: Array<ElementPath>,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPaths: ReadonlySet<string>,
+  updateInvalidatedPaths: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidated: boolean,
   selectedViews: Array<ElementPath>,
 ): { collectedMetadata: Array<ElementInstanceMetadata>; cachedPaths: Array<ElementPath> } {
-  const shouldCollect =
-    invalidated || isAnyPathInvalidated(stringPathsForElement, invalidatedPathsRef)
+  const shouldCollect = invalidated || isAnyPathInvalidated(stringPathsForElement, invalidatedPaths)
   if (shouldCollect && pathsForElement.length > 0) {
     const {
       tagName,
@@ -523,7 +597,11 @@ function collectMetadata(
     )
 
     const collectedMetadata = pathsForElement.map((path) => {
-      invalidatedPathsRef.current.delete(EP.toString(path))
+      updateInvalidatedPaths((current) => {
+        // sneaky mutation to improve performance
+        ;(current as Set<string>).delete(EP.toString(path))
+        return current
+      }, 'do-not-invalidate')
       const rootsOrChildrenToAdd = pathsForElement.filter((otherPath) =>
         EP.isParentOf(path, otherPath),
       )
@@ -583,7 +661,8 @@ function collectMetadata(
         allUnfilteredChildrenPaths,
         scale,
         containerRectLazy,
-        invalidatedPathsRef,
+        invalidatedPaths,
+        updateInvalidatedPaths,
         invalidatedPathsForStylesheetCacheRef,
         rootMetadataInStateRef,
         true,
@@ -735,11 +814,11 @@ function globalFrameForElement(
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   index: number,
-  canvasRootPath: ElementPath,
-  validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
-  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  invalidatedPaths: ReadonlySet<string>,
+  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  invalidatedScenes: ReadonlySet<string>,
+  updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -749,10 +828,25 @@ function walkCanvasRootFragment(
   metadata: ReadonlyArray<ElementInstanceMetadata>
   cachedPaths: Array<ElementPath>
 } {
+  const canvasRootPath: ElementPath | null = optionalMap(
+    EP.fromString,
+    canvasRoot.getAttribute('data-utopia-root-element-path'),
+  )
+  const validPaths: Array<ElementPath> | null = optionalMap(
+    (paths) => paths.split(' ').map(EP.fromString),
+    canvasRoot.getAttribute('data-utopia-valid-paths'),
+  )
+
+  if (canvasRootPath == null || validPaths == null) {
+    throw new Error(
+      'Utopia Internal Error: Running DOM-walker without canvasRootPath or validRootPaths',
+    )
+  }
+
   if (
     ObserversAvailable &&
-    invalidatedPathsRef.current.size === 0 &&
-    invalidatedScenesRef.current.size === 0 &&
+    invalidatedPaths.size === 0 &&
+    invalidatedScenes.size === 0 &&
     rootMetadataInStateRef.current.length > 0 &&
     !invalidated
   ) {
@@ -764,8 +858,10 @@ function walkCanvasRootFragment(
       index,
       validPaths,
       rootMetadataInStateRef,
-      invalidatedPathsRef,
-      invalidatedScenesRef,
+      invalidatedPaths,
+      updateInvalidatedPaths,
+      invalidatedScenes,
+      updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
       invalidated,
@@ -800,8 +896,10 @@ function walkScene(
   index: number,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
-  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  invalidatedPaths: ReadonlySet<string>,
+  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  invalidatedScenes: ReadonlySet<string>,
+  updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -821,19 +919,23 @@ function walkScene(
     if (sceneID != null && instancePath != null && EP.isElementPath(instancePath)) {
       const invalidatedScene =
         invalidated ||
-        (ObserversAvailable &&
-          invalidatedScenesRef.current.size > 0 &&
-          invalidatedScenesRef.current.has(sceneID))
+        (ObserversAvailable && invalidatedScenes.size > 0 && invalidatedScenes.has(sceneID))
 
-      invalidatedScenesRef.current.delete(sceneID)
+      updateInvalidatedScenes((current) => {
+        // mutating here and skipping invalidation
+        current.delete(sceneID)
+        return current
+      }, 'do-not-invalidate')
 
       const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
         scene,
         index,
         validPaths,
         rootMetadataInStateRef,
-        invalidatedPathsRef,
-        invalidatedScenesRef,
+        invalidatedPaths,
+        updateInvalidatedPaths,
+        invalidatedScenes,
+        updateInvalidatedScenes,
         invalidatedPathsForStylesheetCacheRef,
         selectedViews,
         invalidatedScene,
@@ -849,7 +951,8 @@ function walkScene(
         rootElements,
         scale,
         containerRectLazy,
-        invalidatedPathsRef,
+        invalidatedPaths,
+        updateInvalidatedPaths,
         invalidatedPathsForStylesheetCacheRef,
         rootMetadataInStateRef,
         invalidatedScene,
@@ -869,8 +972,10 @@ function walkSceneInner(
   index: number,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
-  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  invalidatedPaths: ReadonlySet<string>,
+  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  invalidatedScenes: ReadonlySet<string>,
+  updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -895,8 +1000,10 @@ function walkSceneInner(
       globalFrame,
       validPaths,
       rootMetadataInStateRef,
-      invalidatedPathsRef,
-      invalidatedScenesRef,
+      invalidatedPaths,
+      updateInvalidatedPaths,
+      invalidatedScenes,
+      updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
       invalidated,
@@ -924,8 +1031,10 @@ function walkElements(
   parentPoint: CanvasPoint,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
-  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  invalidatedPaths: ReadonlySet<string>,
+  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  invalidatedScenes: ReadonlySet<string>,
+  updateInvalidatedScenes: SetValueCallback<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
   invalidated: boolean,
@@ -943,8 +1052,10 @@ function walkElements(
       index,
       validPaths,
       rootMetadataInStateRef,
-      invalidatedPathsRef,
-      invalidatedScenesRef,
+      invalidatedPaths,
+      updateInvalidatedPaths,
+      invalidatedScenes,
+      updateInvalidatedScenes,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
       invalidated,
@@ -993,8 +1104,10 @@ function walkElements(
           globalFrame,
           validPaths,
           rootMetadataInStateRef,
-          invalidatedPathsRef,
-          invalidatedScenesRef,
+          invalidatedPaths,
+          updateInvalidatedPaths,
+          invalidatedScenes,
+          updateInvalidatedScenes,
           invalidatedPathsForStylesheetCacheRef,
           selectedViews,
           invalidated,
@@ -1017,7 +1130,8 @@ function walkElements(
       uniqueChildPaths,
       scale,
       containerRectLazy,
-      invalidatedPathsRef,
+      invalidatedPaths,
+      updateInvalidatedPaths,
       invalidatedPathsForStylesheetCacheRef,
       rootMetadataInStateRef,
       invalidated,

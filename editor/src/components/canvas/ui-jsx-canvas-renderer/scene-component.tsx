@@ -5,11 +5,16 @@ import { Scene, SceneProps } from 'utopia-api'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { RerenderUtopiaContext } from './ui-jsx-canvas-contexts'
+import { DomWalkerInvalidateScenesContext, UiJsxCanvasContext } from '../ui-jsx-canvas'
+import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
+
+type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
 export const SceneComponent = betterReactMemo(
   'Scene',
-  (props: React.PropsWithChildren<SceneProps>) => {
+  (props: React.PropsWithChildren<ExtendedSceneProps>) => {
     const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
+    const updateInvalidatedScenes = React.useContext(DomWalkerInvalidateScenesContext)
 
     const { style, ...remainingProps } = props
 
@@ -22,6 +27,9 @@ export const SceneComponent = betterReactMemo(
       ...style,
     }
 
+    // TODO right now we don't actually change the invalidated paths, just let the dom-walker know it should walk again
+    updateInvalidatedScenes((current) => current, 'invalidate')
+
     return (
       <Scene {...remainingProps} style={sceneStyle}>
         {props.children}
@@ -29,8 +37,8 @@ export const SceneComponent = betterReactMemo(
     )
   },
   (
-    prevProps: React.PropsWithChildren<SceneProps>,
-    nextProps: React.PropsWithChildren<SceneProps>,
+    prevProps: React.PropsWithChildren<ExtendedSceneProps>,
+    nextProps: React.PropsWithChildren<ExtendedSceneProps>,
   ) => {
     // Compare child types (to see if a child was actually changed), and compare style
     const prevChildren = React.Children.toArray(prevProps.children)
