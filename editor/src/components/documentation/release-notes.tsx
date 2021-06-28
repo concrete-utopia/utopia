@@ -3,12 +3,14 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import * as React from 'react'
-import { colorTheme, SimpleFlexColumn, SimpleFlexRow, UtopiaTheme } from '../../uuiui'
+import { useColorTheme, SimpleFlexColumn, SimpleFlexRow, UtopiaTheme } from '../../uuiui'
 import { H1, H2, PrettyKeys, EM, CalloutPrimary, A } from './documentation-components'
 
 import { GettingStarted } from './getting-started'
 
 export function ReleaseNotesContent() {
+  const colorTheme = useColorTheme()
+
   return (
     <SimpleFlexColumn>
       <div

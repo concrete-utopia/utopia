@@ -28,7 +28,9 @@ import Utils from '../../../../utils/utils'
 import { getParseErrorDetails, ParseError } from '../../../../utils/value-parser-utils'
 import {
   Tooltip,
-  colorTheme,
+  //TODO: switch last component to functional component and make use of 'useColorTheme':
+  colorTheme as colorThemeConst,
+  useColorTheme,
   UtopiaTheme,
   InspectorSectionHeader,
   SimpleFlexRow,
@@ -164,6 +166,7 @@ export const ParseErrorControl = betterReactMemo('ParseErrorControl', (props: Pa
 })
 
 const WarningTooltip = betterReactMemo('WarningTooltip', ({ warning }: { warning: string }) => {
+  const colorTheme = useColorTheme()
   return (
     <Tooltip title={warning}>
       <div
@@ -545,6 +548,7 @@ export interface ComponentSectionProps {
 export const ComponentSectionInner = betterReactMemo(
   'ComponentSectionInner',
   (props: ComponentSectionProps) => {
+    const colorTheme = useColorTheme()
     const propertyControls = useKeepReferenceEqualityIfPossible(useSelectedPropertyControls(false))
     const propsGivenToElement = useKeepReferenceEqualityIfPossible(useGivenPropsWithoutControls())
     const propsUsedWithoutControls = useKeepReferenceEqualityIfPossible(
@@ -800,7 +804,7 @@ export class ComponentSection extends React.Component<
               gridTemplateColumns: '2fr 4fr',
             }}
           >
-            <span style={{ paddingTop: 4, color: colorTheme.errorForeground.value }}>
+            <span style={{ paddingTop: 4, color: colorThemeConst.errorForeground.value }}>
               Invalid propertyControls value
             </span>
           </PropertyRow>

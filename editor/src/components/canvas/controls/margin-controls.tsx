@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Sides } from 'utopia-api'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
-import { colorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 
 interface MarginControlsProps {
@@ -12,6 +12,8 @@ interface MarginControlsProps {
 }
 
 export const MarginControls = betterReactMemo('MarginControls', (props: MarginControlsProps) => {
+  const colorTheme = useColorTheme()
+
   if (props.margin == null) {
     return null
   } else {

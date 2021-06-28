@@ -4,24 +4,30 @@ import Utils from '../../../utils/utils'
 import * as EP from '../../../core/shared/element-path'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
+import { betterReactMemo } from '../../../uuiui-deps'
+import { useColorTheme } from '../../../uuiui'
 
 const Size = 6
 
-export class RepositionableControl extends React.Component<ControlProps> {
-  render() {
-    const outlineOffset = 0.5 / this.props.scale
+export const RepositionableControl = betterReactMemo(
+  'RepositionableControl',
+  (props: ControlProps) => {
+    const colorTheme = useColorTheme()
+
+    const outlineOffset = 0.5 / props.scale
 
     let indicators: JSX.Element[] = []
-    Utils.fastForEach(this.props.selectedViews, (selectedView) => {
-      const frame = MetadataUtils.getFrameInCanvasCoords(selectedView, this.props.componentMetadata)
+    Utils.fastForEach(props.selectedViews, (selectedView) => {
+      const frame = MetadataUtils.getFrameInCanvasCoords(selectedView, props.componentMetadata)
       if (frame == null) {
         return
       }
 
       const selectionColor = getSelectionColor(
         selectedView,
-        this.props.componentMetadata,
-        this.props.focusedElementPath,
+        props.componentMetadata,
+        props.focusedElementPath,
+        colorTheme,
       )
 
       indicators.push(
@@ -30,8 +36,8 @@ export class RepositionableControl extends React.Component<ControlProps> {
           className='role-outline'
           style={{
             position: 'absolute',
-            left: this.props.canvasOffset.x + frame.x - Size / 2 + outlineOffset,
-            top: this.props.canvasOffset.y + frame.y - Size / 2 + outlineOffset,
+            left: props.canvasOffset.x + frame.x - Size / 2 + outlineOffset,
+            top: props.canvasOffset.y + frame.y - Size / 2 + outlineOffset,
             borderRadius: '50%',
             width: Size,
             height: Size,
@@ -43,5 +49,5 @@ export class RepositionableControl extends React.Component<ControlProps> {
     })
 
     return <>{...indicators}</>
-  }
-}
+  },
+)

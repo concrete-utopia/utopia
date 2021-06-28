@@ -46,7 +46,7 @@ import {
   UtopiaTheme,
   FlexRow,
   ResizableFlexColumn,
-  colorTheme,
+  useColorTheme,
   TabComponent,
   LargerIcons,
   Subdued,
@@ -87,7 +87,7 @@ export const EditorComponentInner = betterReactMemo(
   'EditorComponentInner',
   (props: EditorProps) => {
     const editorStoreRef = useRefEditorState((store) => store)
-
+    const colorTheme = useColorTheme()
     const onWindowMouseDown = React.useCallback(
       (event: MouseEvent) => {
         const popupId = editorStoreRef.current.editor.openPopupId

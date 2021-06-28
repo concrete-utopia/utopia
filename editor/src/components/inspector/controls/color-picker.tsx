@@ -15,6 +15,7 @@ import { inspectorEdgePadding } from '../sections/style-section/background-subse
 import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
 import React = require('react')
+//TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme, SimpleNumberInput, SimplePercentInput, UtopiaStyles } from '../../../uuiui'
 
 export interface ColorPickerProps extends ColorPickerInnerProps {

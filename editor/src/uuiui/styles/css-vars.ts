@@ -1,4 +1,5 @@
 import { UtopiColor } from './utopi-color-helpers'
+// TODO: pass in colorTheme to updateCssVars from a hook and remove the dependency here:
 import { colorTheme } from './theme'
 
 function setCssColor(name: string, value: UtopiColor) {

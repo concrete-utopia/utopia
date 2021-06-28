@@ -7,7 +7,7 @@ import { Button } from './button'
 import { Icons } from './icons'
 import * as R from 'ramda'
 
-import { colorTheme, UtopiaTheme } from './styles/theme'
+import { useColorTheme, UtopiaTheme } from './styles/theme'
 import { CSSObject } from '@emotion/serialize'
 import { defaultIfNull } from '../core/shared/optional-utils'
 import { NO_OP } from '../core/shared/utils'
@@ -31,6 +31,7 @@ interface TabComponentProps {
 export const TabComponent: React.FunctionComponent<TabComponentProps> = betterReactMemo(
   'TabComponent',
   (props) => {
+    const colorTheme = useColorTheme()
     const [tabIsHovered, setTabIsHovered] = React.useState(false)
     const [indicatorIsHovered, setIndicatorIsHovered] = React.useState(false)
 

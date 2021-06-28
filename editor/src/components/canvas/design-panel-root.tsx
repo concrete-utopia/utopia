@@ -19,7 +19,7 @@ import {
   UtopiaStyles,
   SimpleFlexColumn,
   background,
-  colorTheme,
+  useColorTheme,
   Icons,
   LargerIcons,
 } from '../../uuiui'
@@ -39,6 +39,7 @@ interface NumberSize {
 const TopMenuHeight = 40
 
 const NothingOpenCard = betterReactMemo('NothingOpen', () => {
+  const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'NothingOpenCard dispatch')
   const handleOpenCanvasClick = React.useCallback(() => {
     dispatch([EditorActions.setPanelVisibility('canvas', true)])

@@ -1,5 +1,6 @@
 import styled from '@emotion/styled'
 import * as React from 'react'
+//TODO: refactor components to functional components and use 'useColorTheme()':
 import { colorTheme } from './styles/theme'
 
 export const Link = styled.a({

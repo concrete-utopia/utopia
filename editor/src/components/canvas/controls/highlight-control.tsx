@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
-import { colorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 
 interface HighlightControlProps {
@@ -10,14 +11,16 @@ interface HighlightControlProps {
   color?: string
 }
 
-export class HighlightControl extends React.Component<HighlightControlProps> {
-  render() {
-    const outlineWidth = 1.5 / this.props.scale
+export const HighlightControl = betterReactMemo(
+  'HighlightControl',
+  (props: HighlightControlProps) => {
+    const colorTheme = useColorTheme()
+    const outlineWidth = 1.5 / props.scale
     const outlineColor =
-      this.props.color === null ? colorTheme.canvasSelectionPrimaryOutline.value : this.props.color
+      props.color === null ? colorTheme.canvasSelectionPrimaryOutline.value : props.color
 
     const { borderRadius, extraWidth, extraHeight } = calculateExtraSizeForZeroSizedElement(
-      this.props.frame,
+      props.frame,
     )
 
     return (
@@ -26,10 +29,10 @@ export class HighlightControl extends React.Component<HighlightControlProps> {
           className='role-component-highlight-outline'
           style={{
             position: 'absolute',
-            left: this.props.canvasOffset.x + this.props.frame.x - extraWidth / 2,
-            top: this.props.canvasOffset.y + this.props.frame.y - extraHeight / 2,
-            width: this.props.frame.width + extraWidth,
-            height: this.props.frame.height + extraHeight,
+            left: props.canvasOffset.x + props.frame.x - extraWidth / 2,
+            top: props.canvasOffset.y + props.frame.y - extraHeight / 2,
+            width: props.frame.width + extraWidth,
+            height: props.frame.height + extraHeight,
             boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
             pointerEvents: 'none',
             borderRadius: borderRadius,
@@ -37,5 +40,5 @@ export class HighlightControl extends React.Component<HighlightControlProps> {
         />
       </>
     )
-  }
-}
+  },
+)

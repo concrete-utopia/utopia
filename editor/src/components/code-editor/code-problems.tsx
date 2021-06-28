@@ -14,7 +14,7 @@ import { CursorPosition } from './code-editor-utils'
 import { clampValue } from '../../core/shared/math-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { VariableSizeList as List } from 'react-window'
-import { colorTheme, UtopiaTheme } from '../../uuiui/styles/theme'
+import { useColorTheme, UtopiaTheme } from '../../uuiui/styles/theme'
 import { FlexRow } from '../../uuiui/widgets/layout/flex-row'
 import { NO_OP } from '../../core/shared/utils'
 import { betterReactMemo } from '../../utils/react-performance'
@@ -32,6 +32,7 @@ interface ErrorMessageRowProps {
 const ErrorMessageRowHeight = 31
 
 const ErrorMessageRow = (props: ErrorMessageRowProps) => {
+  const colorTheme = useColorTheme()
   const { onOpenFile } = props
   const { fileName, startLine, startColumn } = props.errorMessage
 
@@ -96,7 +97,10 @@ function errorMessageSeverityToColor(severity: ErrorMessageSeverity) {
   }
 }
 
-function getTabStyleForErrors(errorMessages: Array<ErrorMessage>): { backgroundColor: string } {
+function getTabStyleForErrors(
+  errorMessages: Array<ErrorMessage>,
+  colorTheme: any,
+): { backgroundColor: string } {
   const errorStyle = { backgroundColor: colorTheme.errorBgSolid.value }
   const warningStyle = { backgroundColor: colorTheme.warningBgSolid.value }
   const defaultStyle = { backgroundColor: colorTheme.subtleBackground.value }
@@ -112,7 +116,10 @@ function getTabStyleForErrors(errorMessages: Array<ErrorMessage>): { backgroundC
   return defaultStyle
 }
 
-function getTabStyleForLogs(canvasConsoleLogs: Array<ConsoleLog>): { backgroundColor: string } {
+function getTabStyleForLogs(
+  canvasConsoleLogs: Array<ConsoleLog>,
+  colorTheme: any,
+): { backgroundColor: string } {
   const errorStyle = { backgroundColor: colorTheme.errorBgSolid.value }
   const warningStyle = { backgroundColor: colorTheme.warningBgSolid.value }
   const defaultStyle = { backgroundColor: 'grey' }
@@ -146,6 +153,7 @@ type OpenCodeEditorTab = 'problems' | 'console'
 export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
   'CodeEditorTabPane',
   ({ errorMessages, onOpenFile, canvasConsoleLogs }) => {
+    const colorTheme = useColorTheme()
     const defaultHeightWhenOpen =
       ProblemTabBarHeight +
       ProblemRowHeight * clampValue(Math.max(errorMessages.length, canvasConsoleLogs.length), 3, 10)
@@ -192,7 +200,8 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
       setSelectedTab('console')
     }, [setSelectedTab, isOpen, toggleIsOpen])
 
-    const problemsTabBackgroundColor = getTabStyleForErrors(errorMessages).backgroundColor
+    const problemsTabBackgroundColor = getTabStyleForErrors(errorMessages, colorTheme)
+      .backgroundColor
     const ProblemsTabLabel = React.useMemo(() => {
       return (
         <span>
@@ -212,9 +221,10 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
           </span>
         </span>
       )
-    }, [problemsTabBackgroundColor, errorMessages.length])
+    }, [colorTheme, problemsTabBackgroundColor, errorMessages.length])
 
-    const consoleTabBackgroundColor = getTabStyleForLogs(canvasConsoleLogs).backgroundColor
+    const consoleTabBackgroundColor = getTabStyleForLogs(canvasConsoleLogs, colorTheme)
+      .backgroundColor
     const ConsoleTabLabel = React.useMemo(() => {
       return (
         <span>
@@ -234,7 +244,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
           </span>
         </span>
       )
-    }, [consoleTabBackgroundColor, canvasConsoleLogs.length])
+    }, [colorTheme, consoleTabBackgroundColor, canvasConsoleLogs.length])
 
     function getTabContents() {
       switch (selectedTab) {

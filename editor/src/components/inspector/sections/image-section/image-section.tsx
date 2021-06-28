@@ -15,13 +15,14 @@ import {
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
-import { colorTheme, InspectorSectionHeader } from '../../../../uuiui'
+import { useColorTheme, InspectorSectionHeader } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
 
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
 
 export const ImgSection = betterReactMemo('ImgSection', () => {
+  const colorTheme = useColorTheme()
   const selectedViews = useSelectedViews()
 
   const { dispatch, zerothElementInstanceMetadata } = useEditorState((store) => {

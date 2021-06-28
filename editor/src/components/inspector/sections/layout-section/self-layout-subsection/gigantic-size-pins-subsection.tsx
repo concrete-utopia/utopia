@@ -36,7 +36,7 @@ import {
   Icons,
   FlexColumn,
   SimpleNumberInput,
-  colorTheme,
+  useColorTheme,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
@@ -340,6 +340,7 @@ interface WidthHeightRowProps {
 }
 
 const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowProps) => {
+  const colorTheme = useColorTheme()
   const {
     layoutType,
     toggleMinMax,

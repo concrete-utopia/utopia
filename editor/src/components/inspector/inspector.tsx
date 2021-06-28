@@ -64,7 +64,7 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
+import { Icn, useColorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
@@ -210,6 +210,7 @@ const nonDefaultPositionPaths: Array<PropertyPath> = [
 ]
 
 export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: InspectorProps) => {
+  const colorTheme = useColorTheme()
   const { selectedViews } = props
   const {
     dispatch,

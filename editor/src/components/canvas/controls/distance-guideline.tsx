@@ -3,6 +3,7 @@ import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { Guideline, Guidelines, XAxisGuideline, YAxisGuideline } from '../guideline'
+//TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme } from '../../../uuiui'
 
 const StrokeColor = colorTheme.canvasLayoutStroke.value

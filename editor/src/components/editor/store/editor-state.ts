@@ -272,6 +272,8 @@ export interface DesignerFile {
   filename: string
 }
 
+export type Theme = 'light' | 'dark'
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -394,6 +396,7 @@ export interface EditorState {
   vscodeBridgeReady: boolean
   focusedElementPath: ElementPath | null
   config: UtopiaVSCodeConfig
+  theme: Theme
 }
 
 export interface StoredEditorState {
@@ -1158,6 +1161,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     vscodeBridgeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
+    theme: 'light',
   }
 }
 
@@ -1393,6 +1397,7 @@ export function editorModelFromPersistentModel(
     vscodeBridgeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
+    theme: 'light',
   }
   return editor
 }
@@ -2008,4 +2013,8 @@ export function forUnderlyingTarget(
   ) => void,
 ): void {
   withUnderlyingTarget<any>(target, projectContents, nodeModules, openFile, {}, withTarget)
+}
+
+export function getCurrentTheme(editor: EditorState): Theme {
+  return editor.theme
 }

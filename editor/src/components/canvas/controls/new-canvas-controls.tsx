@@ -36,7 +36,7 @@ import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo, ResolveFn } from '../../custom-code/code-file'
-import { colorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import {
   isDragging,
@@ -221,6 +221,7 @@ interface NewCanvasControlsInnerProps {
 }
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
+  const colorTheme = useColorTheme()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
   const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props

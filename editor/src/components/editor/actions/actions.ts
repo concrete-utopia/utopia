@@ -352,6 +352,7 @@ import {
   ResetCanvas,
   SetFilebrowserDropTarget,
   SetForkedFromProjectID,
+  SetCurrentTheme,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1021,6 +1022,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
     focusedElementPath: currentEditor.focusedElementPath,
     config: defaultConfig(),
+    theme: currentEditor.theme,
   }
 }
 
@@ -4314,6 +4316,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       forkedFromProjectId: action.id,
+    }
+  },
+  SET_CURRENT_THEME: (action: SetCurrentTheme, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      theme: action.theme,
     }
   },
 }
