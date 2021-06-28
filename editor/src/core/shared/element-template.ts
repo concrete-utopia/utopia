@@ -161,6 +161,28 @@ export function jsxAttributeOtherJavaScript(
   }
 }
 
+export interface JSXConditionalExpression {
+  type: 'JSX_CONDITIONAL_EXPRESSION'
+  condition: JSXAttribute // <--- this is going to suck
+  whenTrue: JSXAttribute
+  whenFalse: JSXAttribute
+  uniqueID: string
+}
+
+export function jsxConditionalExpression(
+  condition: JSXAttribute,
+  whenTrue: JSXAttribute,
+  whenFalse: JSXAttribute,
+): JSXConditionalExpression {
+  return {
+    type: 'JSX_CONDITIONAL_EXPRESSION',
+    condition,
+    whenTrue,
+    whenFalse,
+    uniqueID: UUID(),
+  }
+}
+
 export interface JSXSpreadAssignment extends WithComments {
   type: 'SPREAD_ASSIGNMENT'
   value: JSXAttribute
@@ -957,7 +979,12 @@ export function jsxFragment(children: JSXElementChildren, longForm: boolean): JS
   }
 }
 
-export type JSXElementChild = JSXElement | JSXArbitraryBlock | JSXTextBlock | JSXFragment
+export type JSXElementChild =
+  | JSXElement
+  | JSXArbitraryBlock
+  | JSXConditionalExpression
+  | JSXTextBlock
+  | JSXFragment
 
 export function isJSXElement(element: JSXElementChild): element is JSXElement {
   return element.type === 'JSX_ELEMENT'
@@ -979,6 +1006,12 @@ export function isJSXElementLikeWithChildren(
   element: JSXElementChild,
 ): element is JSXElement | JSXFragment {
   return isJSXElement(element) || isJSXFragment(element)
+}
+
+export function isJSXConditionalExpression(
+  element: JSXElementChild,
+): element is JSXConditionalExpression {
+  return element.type === 'JSX_CONDITIONAL_EXPRESSION'
 }
 
 export type JSXElementChildren = Array<JSXElementChild>
@@ -1005,6 +1038,17 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
       ...element,
       uniqueID: '',
       children: updatedChildren,
+    }
+  } else if (isJSXConditionalExpression(element)) {
+    const updatedCondition = clearAttributeUniqueIDs(element.condition)
+    const updatedWhenTrue = clearAttributeUniqueIDs(element.whenTrue)
+    const updatedwhenFalse = clearAttributeUniqueIDs(element.whenFalse)
+    return {
+      ...element,
+      condition: updatedCondition,
+      whenTrue: updatedWhenTrue,
+      whenFalse: updatedwhenFalse,
+      uniqueID: '',
     }
   } else {
     return {
@@ -1621,6 +1665,8 @@ export function walkElement(
       fastForEach(Object.keys(element.elementsWithin), (childKey) =>
         walkElement(element.elementsWithin[childKey], parentPath, depth + 1, forEach),
       )
+      break
+    case 'JSX_CONDITIONAL_EXPRESSION':
       break
     default:
       const _exhaustiveCheck: never = element

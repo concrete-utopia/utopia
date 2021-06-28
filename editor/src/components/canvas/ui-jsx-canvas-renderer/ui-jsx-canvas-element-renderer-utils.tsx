@@ -21,7 +21,11 @@ import {
   JSXArbitraryBlock,
   getJSXAttribute,
 } from '../../../core/shared/element-template'
-import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import {
+  jsxAttributesToProps,
+  jsxAttributeToValue,
+  setJSXValueAtPath,
+} from '../../../core/shared/jsx-attributes'
 import {
   ElementPath,
   HighlightBoundsForUids,
@@ -249,6 +253,21 @@ export function renderCoreElement(
     }
     case 'JSX_TEXT_BLOCK': {
       return element.text
+    }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      const expressionEvaluated = jsxAttributeToValue(inScope, requireResult, element.condition)
+      const trueOrFalseResult = jsxAttributeToValue(
+        inScope,
+        requireResult,
+        expressionEvaluated ? element.whenTrue : element.whenFalse,
+      )
+      return renderComponentUsingJsxFactoryFunction(
+        inScope,
+        jsxFactoryFunctionName,
+        React.Fragment,
+        { key: EP.toString(elementPath) },
+        trueOrFalseResult,
+      )
     }
     default:
       const _exhaustiveCheck: never = element

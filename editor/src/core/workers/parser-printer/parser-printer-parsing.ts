@@ -10,12 +10,14 @@ import {
 import { intrinsicHTMLElementNamesAsStrings } from '../../shared/dom-utils'
 import {
   applicative2Either,
+  applicative3Either,
   bimapEither,
   Either,
   flatMapEither,
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
@@ -63,6 +65,7 @@ import {
   jsxAttributesEntry,
   setJSXAttributesAttribute,
   jsxAttributesSpread,
+  jsxConditionalExpression,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1446,8 +1449,6 @@ function pullOutElementsToParse(nodes: Array<TS.Node>): Either<string, ElementsT
       TS.isJsxFragment(node)
     ) {
       result.push(node)
-    } else {
-      return left(`Invalid content in JSX.`)
     }
   }
   return right(result)
@@ -1682,6 +1683,70 @@ function createJSXElementAllocatingUID(
   )
 }
 
+function produceConditionalFromExpression(
+  sourceFile: TS.SourceFile,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  propsObjectName: string | null,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  expression: TS.ConditionalExpression,
+): Either<string, WithParserMetadata<SuccessfullyParsedElement>> {
+  function parseAttribute(
+    attributeExpression: TS.Expression,
+  ): Either<string, WithParserMetadata<JSXAttribute>> {
+    return parseAttributeExpression(
+      sourceFile,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      attributeExpression,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      [], // TODO HELP ME we need trailingComments here
+    )
+  }
+  return applicative3Either<
+    string,
+    WithParserMetadata<JSXAttribute>,
+    WithParserMetadata<JSXAttribute>,
+    WithParserMetadata<JSXAttribute>,
+    WithParserMetadata<SuccessfullyParsedElement>
+  >(
+    (condition, whenTrue, whenFalse) => {
+      const conditionalExpression = jsxConditionalExpression(
+        condition.value,
+        whenTrue.value,
+        whenFalse.value,
+      )
+      const highlightBounds = {
+        ...condition.highlightBounds,
+        ...whenTrue.highlightBounds,
+        ...whenFalse.highlightBounds,
+      }
+      const propsUsed = [...condition.propsUsed, ...whenTrue.propsUsed, ...whenFalse.propsUsed]
+      const definedElsewhere = [
+        ...condition.definedElsewhere,
+        ...whenTrue.definedElsewhere,
+        ...whenFalse.definedElsewhere,
+      ]
+      return withParserMetadata(
+        successfullyParsedElement(sourceFile, expression, conditionalExpression),
+        highlightBounds,
+        propsUsed,
+        definedElsewhere,
+      )
+    },
+    parseAttribute(expression.condition),
+    parseAttribute(expression.whenTrue),
+    parseAttribute(expression.whenFalse),
+  )
+}
+
 export function parseOutJSXElements(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -1766,11 +1831,45 @@ export function parseOutJSXElements(
             break
           }
           case TS.SyntaxKind.JsxExpression: {
-            const possibleExpression = produceArbitraryBlockFromJsxExpression(elem)
-            if (isLeft(possibleExpression)) {
-              return possibleExpression
+            let parseResult: Either<string, SuccessfullyParsedElement> = left(
+              'Expression fallback.',
+            )
+            // Handle ternaries.
+            if (elem.expression != null && TS.isConditionalExpression(elem.expression)) {
+              const possibleConditional = produceConditionalFromExpression(
+                sourceFile,
+                sourceText,
+                filename,
+                imports,
+                topLevelNames,
+                propsObjectName,
+                existingHighlightBounds,
+                alreadyExistingUIDs,
+                elem.expression,
+              )
+              parseResult = bimapEither(
+                (failure) => failure,
+                (success) => {
+                  highlightBounds = {
+                    ...highlightBounds,
+                    ...success.highlightBounds,
+                  }
+                  propsUsed.push(...success.propsUsed)
+                  definedElsewhere.push(...success.definedElsewhere)
+                  return success.value
+                },
+                possibleConditional,
+              )
+            }
+            // Fallback to arbitrary block parsing.
+            if (isLeft(parseResult)) {
+              parseResult = produceArbitraryBlockFromJsxExpression(elem)
+            }
+
+            if (isRight(parseResult)) {
+              addParsedElement(parseResult.value)
             } else {
-              addParsedElement(possibleExpression.value)
+              return parseResult
             }
             break
           }

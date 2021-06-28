@@ -304,6 +304,8 @@ export function findElementWithUID(
           }
         }
         return null
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        return null // TODO BEFORE MERGE this ain't right
       default:
         const _exhaustiveCheck: never = element
         throw new Error(`Unhandled element type ${JSON.stringify(element)}`)

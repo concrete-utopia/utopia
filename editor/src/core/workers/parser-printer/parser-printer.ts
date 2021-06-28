@@ -64,6 +64,7 @@ import {
   isImportStatement,
   UnparsedCode,
   unparsedCode,
+  jsxConditionalExpression,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -430,6 +431,13 @@ function jsxElementToExpression(
           closing,
         )
       }
+    }
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      // TODO: make a nice JSXArbitraryBlockToExpression function that special cases for this.
+      const condition = jsxAttributeToExpression(element.condition)
+      const whenTrue = jsxAttributeToExpression(element.whenTrue)
+      const whenFalse = jsxAttributeToExpression(element.whenFalse)
+      return TS.createJsxExpression(undefined, TS.createConditional(condition, whenTrue, whenFalse))
     }
     case 'JSX_ARBITRARY_BLOCK': {
       const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
