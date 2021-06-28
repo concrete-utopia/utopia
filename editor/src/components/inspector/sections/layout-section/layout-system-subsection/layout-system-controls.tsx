@@ -281,7 +281,7 @@ const layoutSystemConfigPropertyPaths = [
 function useDeleteAllLayoutConfig() {
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
   return React.useCallback(() => {
-    onUnsetValue(layoutSystemConfigPropertyPaths)
+    onUnsetValue(layoutSystemConfigPropertyPaths, false)
   }, [onUnsetValue])
 }
 

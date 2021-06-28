@@ -58,6 +58,11 @@ import {
   ImportInfo,
   createImportedFrom,
   FoundImportInfo,
+  JSXAttributesSpread,
+  jsxAttributesSpread,
+  JSXAttributesPart,
+  isJSXAttributesEntry,
+  isJSXAttributesSpread,
 } from '../../../core/shared/element-template'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
 import {
@@ -384,8 +389,30 @@ export function JSXAttributesEntryDeepEqualityCall(): KeepDeepEqualityCall<JSXAt
   )
 }
 
+export function JSXAttributesSpreadDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributesSpread> {
+  return combine2EqualityCalls(
+    (entry) => entry.spreadValue,
+    JSXAttributeKeepDeepEqualityCall(),
+    (entry) => entry.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
+    jsxAttributesSpread,
+  )
+}
+
+export function JSXAttributesPartDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributesPart> {
+  return (oldPart, newPart) => {
+    if (isJSXAttributesEntry(oldPart) && isJSXAttributesEntry(newPart)) {
+      return JSXAttributesEntryDeepEqualityCall()(oldPart, newPart)
+    } else if (isJSXAttributesSpread(oldPart) && isJSXAttributesSpread(newPart)) {
+      return JSXAttributesSpreadDeepEqualityCall()(oldPart, newPart)
+    } else {
+      return keepDeepEqualityResult(newPart, false)
+    }
+  }
+}
+
 export function JSXAttributesKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributes> {
-  return arrayDeepEquality(JSXAttributesEntryDeepEqualityCall())
+  return arrayDeepEquality(JSXAttributesPartDeepEqualityCall())
 }
 
 export function JSXElementKeepDeepEquality(): KeepDeepEqualityCall<JSXElement> {

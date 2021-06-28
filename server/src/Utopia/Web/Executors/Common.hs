@@ -9,38 +9,44 @@
 
 module Utopia.Web.Executors.Common where
 
-import           Control.Lens              hiding ((.=), (<.>))
-import           Control.Monad.Catch       hiding (Handler, catch)
+import           Conduit
+import           Control.Concurrent.ReadWriteLock
+import           Control.Lens                     hiding ((.=), (<.>))
+import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
 import           Data.Binary.Builder
-import qualified Data.ByteString.Lazy      as BL
-import qualified Data.HashMap.Strict       as M
+import qualified Data.ByteString.Lazy             as BL
+import           Data.Conduit.Combinators         hiding (foldMap)
+import qualified Data.HashMap.Strict              as M
 import           Data.IORef
 import           Data.Pool
-import           Data.String               (String)
+import           Data.String                      (String)
 import           Data.Time
 import           Database.Persist.Sql
-import           Network.HTTP.Client       hiding (Response)
+import           Network.HTTP.Client              hiding (Response)
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Mime
 import           Network.Wai
-import qualified Network.Wreq              as WR
-import           Protolude                 hiding ((<.>))
+import qualified Network.Wreq                     as WR
+import           Protolude                        hiding (concatMap,
+                                                   intersperse, map, sourceFile,
+                                                   (<.>))
 import           Servant
-import           Servant.Client            hiding (Response)
+import           Servant.Client                   hiding (Response)
 import           System.Directory
 import           System.Environment
 import           System.FilePath
-import           System.Metrics            hiding (Value)
-import qualified Text.Blaze.Html5          as H
+import           System.Metrics                   hiding (Value)
+import qualified Text.Blaze.Html5                 as H
 import           Utopia.Web.Assets
-import           Utopia.Web.Auth           (getUserDetailsFromCode)
+import           Utopia.Web.Auth                  (getUserDetailsFromCode)
 import           Utopia.Web.Auth.Session
-import           Utopia.Web.Auth.Types     (Auth0Resources)
-import qualified Utopia.Web.Database       as DB
+import           Utopia.Web.Auth.Types            (Auth0Resources)
+import qualified Utopia.Web.Database              as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
@@ -84,7 +90,7 @@ data AssetsCaches = AssetsCaches
   , _assetPathDetails :: [PathAndBuilders]
   }
 
-failedAuth0CodeCheck :: (MonadIO m, MonadError ServantErr m) => ServantError -> m a
+failedAuth0CodeCheck :: (MonadIO m, MonadError ServerError m) => ClientError -> m a
 failedAuth0CodeCheck servantError = do
   putErrLn $ (show servantError :: String)
   throwError err500
@@ -95,7 +101,7 @@ successfulAuthCheck metrics pool sessionState action user = do
   possibleSetCookie <- liftIO $ newSessionForUser sessionState $ userDetailsUserId user
   return $ action possibleSetCookie
 
-auth0CodeCheck :: (MonadIO m, MonadError ServantErr m) => DB.DatabaseMetrics -> Pool SqlBackend -> SessionState -> Auth0Resources -> Text -> (Maybe SetCookie -> a) -> m a
+auth0CodeCheck :: (MonadIO m, MonadError ServerError m) => DB.DatabaseMetrics -> Pool SqlBackend -> SessionState -> Auth0Resources -> Text -> (Maybe SetCookie -> a) -> m a
 auth0CodeCheck metrics pool sessionState auth0Resources authCode action = do
   userOrError <- liftIO $ getUserDetailsFromCode auth0Resources authCode
   either failedAuth0CodeCheck (successfulAuthCheck metrics pool sessionState action) userOrError
@@ -251,46 +257,54 @@ emptyAssetsCaches _assetPathDetails = do
   _assetResultCache <- newIORef $ AssetResultCache (toJSON $ object []) mempty
   return $ AssetsCaches{..}
 
-contentText :: Text
-contentText = "content"
-
-contentsText :: Text
-contentsText = "contents"
-
 getRoundedAccessTime :: String -> IO UTCTime
 getRoundedAccessTime filePath = do
   time <- getAccessTime filePath
   let roundedDiffTime = fromInteger $ round $ utctDayTime time
   return $ time { utctDayTime = roundedDiffTime }
 
-cachePackagerContent :: Text -> Maybe UTCTime -> IO BL.ByteString -> IO (Maybe (BL.ByteString, UTCTime))
-cachePackagerContent versionedPackageName ifModifiedSince fallback = do
+type ConduitBytes m = ConduitT () ByteString m ()
+
+cleanupWriteLock :: RWLock -> Bool -> IO ()
+cleanupWriteLock lock True = releaseWrite lock
+cleanupWriteLock _ False   = pure ()
+
+cachePackagerContent :: (MonadResource m, MonadMask m) => PackageVersionLocksRef -> Text -> ConduitBytes m -> IO (ConduitBytes m, UTCTime)
+cachePackagerContent locksRef versionedPackageName fallback = do
   let cacheFileParentPath = ".utopia-cache" </> "packager" </> toS versionedPackageName
   let cacheFilePath = cacheFileParentPath </> "cache.json"
   fileExists <- doesFileExist cacheFilePath
-  let getLastModified = getRoundedAccessTime cacheFilePath
-  let whenFileExists = do
-            lastModified <- getLastModified
-            -- Handle checking the if-modified-since value should there be one, defaulting to always loading.
-            let shouldLoad = maybe True (\ifms -> ifms < lastModified) ifModifiedSince
-            -- Incorporate the last modified value into the return value.
-            let fromDisk = fmap (\result -> Just (result, lastModified)) $ BL.readFile cacheFilePath
-            if shouldLoad then fromDisk else return Nothing
-  let whenFileDoesNotExist = do
-            result <- fallback
-            createDirectoryIfMissing True cacheFileParentPath
-            BL.writeFile cacheFilePath result
-            -- Use the same function that is used when the file exists.
-            lastModified <- getLastModified
-            return $ Just (result, lastModified)
-  if fileExists then whenFileExists else whenFileDoesNotExist
+  -- Use the parent path as we can create that and get a last modified date
+  -- from it before the file is fully written to disk.
+  unless fileExists $ createDirectoryIfMissing True cacheFileParentPath
+  lastModified <- getRoundedAccessTime cacheFileParentPath
+  let whenFileExists = sourceFile cacheFilePath
+  let whenFileDoesNotExist =
+            -- Write out the file as well as returning the content.
+            let writeToFile = passthroughSink (sinkFileCautious cacheFilePath) (const $ pure ())
+            -- Include the fallback.
+            in (fallback .| writeToFile)
+  let whenFileDoesNotExistSafe = do
+            lock <- getPackageVersionLock locksRef versionedPackageName
+            pure $ bracketP (tryAcquireWrite lock) (cleanupWriteLock lock) $ \writeAcquired -> do
+              case writeAcquired of
+                False -> bracketP (acquireRead lock) (const $ releaseRead lock) (const whenFileExists)
+                True -> whenFileDoesNotExist
 
-getPackagerContent :: QSem -> Text -> Maybe UTCTime -> IO (Maybe (BL.ByteString, UTCTime))
-getPackagerContent semaphore versionedPackageName ifModifiedSince = do
-  cachePackagerContent versionedPackageName ifModifiedSince $ do
-    filesAndContent <- withInstalledProject semaphore versionedPackageName getModuleAndDependenciesFiles
-    let encodingResult = toEncoding $ M.singleton contentsText filesAndContent
-    return $ toLazyByteString $ fromEncoding encodingResult
+  conduit <- if fileExists then pure whenFileExists else whenFileDoesNotExistSafe
+  pure (conduit, lastModified)
+
+filePairsToBytes :: (Monad m) => ConduitT () (FilePath, Value) m () -> ConduitBytes m
+filePairsToBytes filePairs =
+  let pairToBytes (filePath, pathValue) = (toS $ encode filePath) <> ": " <> (toS $ encode pathValue)
+      pairsAsBytes = filePairs .| map pairToBytes
+      withCommas = pairsAsBytes .| intersperse ", "
+   in sequence_ [yield "{\"contents\": {", withCommas, yield "}}"]
+
+getPackagerContent :: (MonadResource m, MonadMask m) => QSem -> PackageVersionLocksRef -> Text -> IO (ConduitBytes m, UTCTime)
+getPackagerContent npmSemaphore packageLocksRef versionedPackageName = do
+  cachePackagerContent packageLocksRef versionedPackageName $ do
+    withInstalledProject npmSemaphore versionedPackageName (\path -> filePairsToBytes $ getModuleAndDependenciesFiles path)
 
 getUserConfigurationWithPool :: (MonadIO m) => DB.DatabaseMetrics -> Pool SqlBackend -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
 getUserConfigurationWithPool metrics pool userID action = do

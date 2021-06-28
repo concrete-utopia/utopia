@@ -43,7 +43,7 @@ filteredHeaderNames =
 sendProxiedRequest' :: Manager -> Int -> (Response -> IO ResponseReceived) -> Text -> RequestHeaders -> [Text] -> IO ResponseReceived
 sendProxiedRequest' webpackManager port sendResponse method headers segments = do
   let options = WR.defaults & WR.manager .~ Right webpackManager & WR.headers .~ headers
-  let webpackUrl = "http://localhost:" <> show port <> "/" <> (T.intercalate "/" segments)
+  let webpackUrl = "http://localhost:" <> show port <> (toLazyByteString $ encodePathSegments segments)
   responseToClient <- (flip catch) handleClientError $ do
       responseFromWebpack <- WR.customMethodWith (toS method) options (toS webpackUrl)
       let headersFromServer = responseFromWebpack ^. WR.responseHeaders

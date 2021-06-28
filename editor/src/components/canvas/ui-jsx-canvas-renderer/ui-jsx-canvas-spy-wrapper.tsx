@@ -21,7 +21,7 @@ export function buildSpyWrappedElement(
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
   childrenElementPaths: Array<ElementPath>,
-  childrenElements: Array<React.ReactNode>,
+  childrenElements: Array<React.ReactChild>,
   Element: any,
   inScope: MapLike<any>,
   jsxFactoryFunctionName: string | null,

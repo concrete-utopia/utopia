@@ -1,6 +1,5 @@
 import { strToBase64, base64ToStr } from '@root/encoding/base64'
-import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
-import { parseUtopiaError } from '../../third-party/react-error-overlay/utils/parseUtopiaError'
+import StackFrame, { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import { getSourceMapConsumer } from '../../third-party/react-error-overlay/utils/getSourceMap'
 import {
   unmapBabelTranspiledCode,
@@ -8,7 +7,7 @@ import {
 } from '../../third-party/react-error-overlay/utils/mapper'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import { NO_OP } from './utils'
-import { take } from './array-utils'
+import { findLastIndex, last, take } from './array-utils'
 import parseError from '../../third-party/react-error-overlay/utils/parser'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -43,7 +42,7 @@ export function processErrorWithSourceMap(
     try {
       const splitErrorStack = errorStack.split('\n')
       const evalEntryPoint = inSafeFunction
-        ? splitErrorStack.findIndex((e) => e.indexOf(UTOPIA_FUNCTION_ROOT_NAME) > -1)
+        ? findLastIndex((e) => e.indexOf(UTOPIA_FUNCTION_ROOT_NAME) > -1, splitErrorStack)
         : 1
       const strippedErrorStack = take(evalEntryPoint + 1, splitErrorStack)
       error.stack = strippedErrorStack
@@ -53,36 +52,65 @@ export function processErrorWithSourceMap(
         .join('\n')
       const parsedStackFrames = parseError(error)
 
-      // TODO turn ;sourceMap= into const
-      let rawSourceMap: RawSourceMap | null = null
-      let possibleSourceMapSegment: string | null = null
-      if (0 in parsedStackFrames) {
-        possibleSourceMapSegment =
-          parsedStackFrames[0].fileName?.split(SOURCE_MAP_PREFIX)[1] ?? null
-      }
-      if (possibleSourceMapSegment != null) {
-        rawSourceMap = JSON.parse(base64ToStr(possibleSourceMapSegment))
-      }
-      const sourceCode = rawSourceMap?.transpiledContentUtopia
-
-      const fixedSourceCode = sourceCode?.split('\n') ?? []
-      const stackFrames = parseUtopiaError(parsedStackFrames, fixedSourceCode)
-      const stackFramesWithoutSafeFn = inSafeFunction
-        ? unmapUtopiaSafeFunction(stackFrames)
-        : stackFrames
-
-      if (rawSourceMap == null) {
-        ;(error as FancyError).stackFrames = stackFramesWithoutSafeFn
-      } else {
-        const sourceMap = getSourceMapConsumer(rawSourceMap as any)
-        const enhancedStackFrames = unmapBabelTranspiledCode(stackFramesWithoutSafeFn, sourceMap)
-        ;(error as FancyError).stackFrames = enhancedStackFrames
-      }
+      const enhancedStackFrames = enhanceStackFrames(parsedStackFrames, inSafeFunction)
+      ;(error as FancyError).stackFrames = enhancedStackFrames
     } catch (sourceMapError) {
       console.error('Source map handling threw an error.', sourceMapError)
     }
   }
   return error
+}
+
+export function enhanceStackFrames(
+  parsedStackFrames: Array<StackFrame>,
+  inSafeFunction: boolean,
+): StackFrame[] {
+  return parsedStackFrames.map((frame) => {
+    const rawSourceMap = extractRawSourceMap(frame)
+    const scriptLines = parseSourceCodeFromRawSourceMap(rawSourceMap)
+    const fixedFilename = frame.fileName?.split(SOURCE_MAP_PREFIX)[0]
+    const stackFrame = new StackFrame(
+      frame.functionName,
+      fixedFilename,
+      frame.lineNumber,
+      frame.columnNumber,
+      scriptLines,
+      frame.functionName,
+      fixedFilename,
+      frame.lineNumber,
+      frame.columnNumber,
+      scriptLines,
+    )
+
+    const stackFrameWithoutSafeFn = inSafeFunction
+      ? unmapUtopiaSafeFunction(stackFrame)
+      : stackFrame
+
+    return maybeEnhanceStackFrame(stackFrameWithoutSafeFn, rawSourceMap)
+  })
+}
+
+function maybeEnhanceStackFrame(
+  stackFrame: StackFrame,
+  rawSourceMap: RawSourceMap | null,
+): StackFrame {
+  if (rawSourceMap == null) {
+    return stackFrame
+  } else {
+    const sourceMap = getSourceMapConsumer(rawSourceMap as any)
+    return unmapBabelTranspiledCode(stackFrame, sourceMap)
+  }
+}
+
+function extractRawSourceMap(stackFrame: StackFrame): RawSourceMap | null {
+  const possibleSourceMapSegment = stackFrame.fileName?.split(SOURCE_MAP_PREFIX)[1] ?? null
+  return possibleSourceMapSegment == null ? null : JSON.parse(base64ToStr(possibleSourceMapSegment))
+}
+
+function parseSourceCodeFromRawSourceMap(rawSourceMap: RawSourceMap | null): ScriptLine[] {
+  const sourceCode = rawSourceMap?.transpiledContentUtopia
+  const fixedSourceCode = sourceCode?.split('\n') ?? []
+  return fixedSourceCode.map((sourceLine, index) => new ScriptLine(index + 1, sourceLine, false))
 }
 
 function processErrorAndCallHandler(

@@ -60,6 +60,7 @@ import {
   jsxElementName,
   ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
+  getJSXAttribute,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -293,17 +294,24 @@ export const MetadataUtils = {
     ) {
       return true
     }
-    if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
-      const buttonRoleFound = instance.element.value.props.some(
-        (attribute) =>
-          attribute.key === 'role' &&
-          eitherToMaybe(jsxSimpleAttributeToValue(attribute.value)) === 'button',
-      )
-      if (buttonRoleFound) {
-        return true
-      }
+    let buttonRoleFound: boolean = false
+    if (instance != null) {
+      forEachRight(instance.element, (elem) => {
+        if (isJSXElement(elem)) {
+          const attrResult = getSimpleAttributeAtPath(right(elem.props), PP.create(['role']))
+          forEachRight(attrResult, (value) => {
+            if (value === 'button') {
+              buttonRoleFound = true
+            }
+          })
+        }
+      })
     }
-    return instance?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
+    if (buttonRoleFound) {
+      return true
+    } else {
+      return instance?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
+    }
   },
   getYogaSizeProps(target: ElementPath, metadata: ElementInstanceMetadataMap): Partial<Size> {
     const parentInstance = this.getParent(metadata, target)

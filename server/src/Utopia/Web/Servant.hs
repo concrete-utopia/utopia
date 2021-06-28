@@ -118,7 +118,10 @@ instance Accept ForcedJSON where
   contentType _ = "application" // "json"
 
 instance MimeRender ForcedJSON BL.ByteString where
-  mimeRender _ bytes =  bytes
+  mimeRender _ bytes = bytes
+
+instance MimeRender ForcedJSON ByteString where
+  mimeRender _ bytes = toS bytes
 
 
 data LastModifiedTime = LastModifiedTime { getLastModifiedTime :: UTCTime }

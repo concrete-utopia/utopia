@@ -63,10 +63,10 @@ export function createLookupRender(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
-): (element: JSXElement, scope: MapLike<any>) => React.ReactElement {
+): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
   let index = 0
 
-  return (element: JSXElement, scope: MapLike<any>): React.ReactElement => {
+  return (element: JSXElement, scope: MapLike<any>): React.ReactChild => {
     index++
     const innerUID = getUtopiaID(element)
     const generatedUID = createIndexedUid(innerUID, index)
@@ -149,7 +149,7 @@ export function renderCoreElement(
   imports: Imports,
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
-): React.ReactElement {
+): React.ReactChild {
   if (codeError != null) {
     throw codeError
   }
@@ -213,7 +213,7 @@ export function renderCoreElement(
       return runJSXArbitraryBlock(requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
-      let renderedChildren: Array<React.ReactElement> = []
+      let renderedChildren: Array<React.ReactChild> = []
       fastForEach(element.children, (child) => {
         const childPath = EP.appendToPath(EP.parentPath(elementPath), getUtopiaID(child))
         const renderResult = renderCoreElement(
@@ -242,14 +242,7 @@ export function renderCoreElement(
       return <>{renderedChildren}</>
     }
     case 'JSX_TEXT_BLOCK': {
-      // JSXTextBlock is the final remaining case.
-      return renderComponentUsingJsxFactoryFunction(
-        inScope,
-        jsxFactoryFunctionName,
-        React.Fragment,
-        { key: elementPath == null ? uid : EP.toString(elementPath) },
-        element.text,
-      )
+      return element.text
     }
     default:
       const _exhaustiveCheck: never = element
@@ -287,9 +280,7 @@ function renderJSXElement(
   }
   elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
 
-  const createChildrenElement = (
-    child: JSXElementChild,
-  ): React.ReactElement | Array<React.ReactElement> => {
+  const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = EP.appendToPath(elementPath, getUtopiaID(child))
     return renderCoreElement(
       child,
@@ -409,8 +400,8 @@ function hideElement(props: any): any {
 export function utopiaCanvasJSXLookup(
   elementsWithin: ElementsWithin,
   executionScope: MapLike<any>,
-  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactElement,
-): (uid: string, inScope: MapLike<any>) => React.ReactElement | null {
+  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactChild,
+): (uid: string, inScope: MapLike<any>) => React.ReactChild | null {
   return (uid, inScope) => {
     const element = elementsWithin[uid]
     if (element == null) {

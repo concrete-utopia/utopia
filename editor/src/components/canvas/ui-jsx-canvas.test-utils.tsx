@@ -378,12 +378,17 @@ export function testCanvasErrorMultifile(
   expect(errorsToCheck).toMatchSnapshot()
 }
 
+interface MappedStackFrame {
+  fileName: string | null
+  originalCode: ScriptLine[] | null
+  lineNumber: number | null
+  columnNumber: number | null
+}
+
 interface TestCanvasError {
   name: string
   message: string
-  originalCode: ScriptLine[] | null | undefined
-  lineNumber: number | null | undefined
-  columnNumber: number | null | undefined
+  stackFrames: MappedStackFrame[]
 }
 
 export function testCanvasErrorInline(
@@ -401,13 +406,18 @@ export function testCanvasErrorInline(
   expect(errorsReportedSpyEnabled.length).toBeGreaterThan(0)
   const errorsToCheck = errorsReportedSpyEnabled.map((error) => {
     let realError = error.error != null ? error.error : ((error as unknown) as FancyError) // is this conversion needed?
-    const stackFrame = realError.stackFrames?.[0]
     return {
       name: realError.name,
       message: realError.message,
-      originalCode: stackFrame?._originalScriptCode,
-      lineNumber: stackFrame?._originalLineNumber,
-      columnNumber: stackFrame?._originalColumnNumber,
+      stackFrames:
+        realError.stackFrames?.map((stackFrame) => {
+          return {
+            fileName: stackFrame._originalFileName,
+            originalCode: stackFrame._originalScriptCode,
+            lineNumber: stackFrame._originalLineNumber,
+            columnNumber: stackFrame._originalColumnNumber,
+          }
+        }) ?? [],
     }
   })
   return errorsToCheck

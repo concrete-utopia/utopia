@@ -42,6 +42,7 @@ import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
+import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
@@ -66,6 +67,7 @@ data DevServerResources = DevServerResources
                         , _registryManager :: Manager
                         , _assetsCaches    :: AssetsCaches
                         , _nodeSemaphore   :: QSem
+                        , _locksRef        :: PackageVersionLocksRef
                         , _branchDownloads :: Maybe BranchDownloads
                         }
 
@@ -73,7 +75,7 @@ $(makeFieldsNoPrefix ''DevServerResources)
 
 type DevProcessMonad a = ServerProcessMonad DevServerResources a
 
-handleAuthCodeError :: (MonadIO m, MonadError ServantErr m) => ServantError -> m a
+handleAuthCodeError :: (MonadIO m, MonadError ServerError m) => ClientError -> m a
 handleAuthCodeError servantError = do
   putText $ show servantError
   throwError err500
@@ -242,7 +244,8 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
   packageMetadata <- liftIO $ lookupPackageJSON manager qualifiedPackageName
   return $ action packageMetadata
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
-  packageMetadata <- liftIO $ findMatchingVersions javascriptPackageName maybeJavascriptPackageVersion
+  semaphore <- fmap _nodeSemaphore ask
+  packageMetadata <- liftIO $ findMatchingVersions semaphore javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -257,9 +260,10 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask
   AssetResultCache{..} <- liftIO $ readIORef _assetResultCache
   return $ action _editorMappings
-innerServerExecutor (GetPackagePackagerContent versionedPackageName ifModifiedSince action) = do
+innerServerExecutor (GetPackagePackagerContent versionedPackageName action) = do
   semaphore <- fmap _nodeSemaphore ask
-  packagerContent <- liftIO $ getPackagerContent semaphore versionedPackageName ifModifiedSince
+  locksRef <- fmap _locksRef ask
+  packagerContent <- liftIO $ getPackagerContent semaphore locksRef versionedPackageName
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
@@ -349,6 +353,7 @@ initialiseResources = do
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
   _branchDownloads <- createBranchDownloads
+  _locksRef <- newIORef mempty
   let _silentMigration = False
   let _logOnStartup = True
   return $ DevServerResources{..}

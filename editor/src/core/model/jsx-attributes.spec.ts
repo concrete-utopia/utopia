@@ -1,6 +1,6 @@
 import * as PP from '../shared/property-path'
 import { deepFreeze } from '../../utils/deep-freeze'
-import { forceRight, isLeft, isRight, right } from '../shared/either'
+import { Either, forceRight, isLeft, isRight, right } from '../shared/either'
 import {
   getJSXAttributeForced,
   isJSXAttributeFunctionCall,
@@ -17,6 +17,7 @@ import {
   jsxAttributeOtherJavaScript,
   JSXAttributes,
   jsxAttributesFromMap,
+  jsxAttributesSpread,
   jsxAttributeValue,
   jsxPropertyAssignment,
   jsxSpreadAssignment,

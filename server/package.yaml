@@ -18,6 +18,7 @@ dependencies:
   - blaze-html
   - bytestring
   - case-insensitive
+  - concurrent-extra
   - conduit
   - cookie
   - cryptohash-sha256
@@ -46,21 +47,23 @@ dependencies:
   - path
   - path-pieces
   - pathwalk
-  - persistent <2.10.0
-  - persistent-postgresql
-  - persistent-sqlite
-  - persistent-template
+  - persistent ==2.9.2
+  - persistent-postgresql ==2.9.1
+  - persistent-sqlite ==2.9.3
+  - persistent-template ==2.6.0
   - process
   - protolude ==0.2.4
   - resource-pool
   - rio
-  - servant ==0.15
+  - servant ==0.18.2
   - servant-blaze
-  - servant-client ==0.15
-  - servant-rawm ==0.3.0.0
-  - servant-server ==0.15
-  - servant-websockets ==1.1.0
-  - serversession
+  - servant-client ==0.18.2
+  - servant-conduit
+  - servant-rawm-client
+  - servant-rawm-server
+  - servant-server ==0.18.2
+  - servant-websockets ==2.0.0
+  - serversession ==1.0.1
   - serversession-backend-persistent
   - split
   - tagsoup

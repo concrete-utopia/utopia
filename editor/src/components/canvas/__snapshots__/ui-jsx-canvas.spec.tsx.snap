@@ -83,6 +83,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -98,6 +99,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -131,6 +133,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -152,6 +155,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -258,6 +262,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -273,6 +278,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -399,6 +405,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -414,6 +421,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-label",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -493,6 +501,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -565,6 +574,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -670,6 +680,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -685,6 +696,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -785,6 +797,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -800,6 +813,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -900,6 +914,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -915,6 +930,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1064,6 +1080,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -1079,6 +1096,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -1112,6 +1130,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1133,6 +1152,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1239,6 +1259,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1254,6 +1275,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1372,6 +1394,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1440,6 +1463,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1455,6 +1479,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1563,9 +1588,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <input
-      data-uid=\\"5f4 567 app-entity\\"
+      data-uid=\\"78b 567 app-entity\\"
       style=\\"top: 10px;\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:5f4 utopia-storyboard-uid/scene-aaa/app-entity:567 utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:78b utopia-storyboard-uid/scene-aaa/app-entity:567 utopia-storyboard-uid/scene-aaa/app-entity\\"
     />
   </div>
 </div>
@@ -1609,6 +1634,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -1624,6 +1650,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -1657,6 +1684,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1678,6 +1706,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1784,6 +1813,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1799,6 +1829,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1917,6 +1948,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -2094,6 +2126,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -2109,6 +2142,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -2142,6 +2176,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -2163,6 +2198,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -2269,6 +2305,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -2284,6 +2321,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -2461,6 +2499,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -2541,6 +2580,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -2690,6 +2730,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -2840,6 +2881,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -2990,6 +3032,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -3206,6 +3249,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -3221,6 +3265,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -3254,6 +3299,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -3275,6 +3321,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -3381,6 +3428,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -3396,6 +3444,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -3588,6 +3637,7 @@ Object {
                               "trailingComments": Array [],
                             },
                             "key": "data-uid",
+                            "type": "JSX_ATTRIBUTES_ENTRY",
                             "value": Object {
                               "comments": Object {
                                 "leadingComments": Array [],
@@ -3674,6 +3724,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -3769,6 +3820,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -3933,6 +3985,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -4019,6 +4072,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -4175,6 +4229,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -4332,6 +4387,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -4489,6 +4545,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -4655,6 +4712,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -4741,6 +4799,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -4897,6 +4956,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -5054,6 +5114,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -5211,6 +5272,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -5377,6 +5439,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -5463,6 +5526,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -5619,6 +5683,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -5776,6 +5841,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -5933,6 +5999,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6093,6 +6160,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -6108,6 +6176,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -6141,6 +6210,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6162,6 +6232,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6268,6 +6339,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6283,6 +6355,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6432,6 +6505,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -6460,6 +6534,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -6487,6 +6562,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6585,6 +6661,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6684,6 +6761,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6831,6 +6909,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -6846,6 +6925,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -6879,6 +6959,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -6900,6 +6981,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7006,6 +7088,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7021,6 +7104,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7139,6 +7223,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7209,6 +7294,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7380,6 +7466,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -7395,6 +7482,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -7428,6 +7516,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7449,6 +7538,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7555,6 +7645,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7570,6 +7661,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7697,6 +7789,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -7712,6 +7805,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "title",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "definedElsewhere": Array [
                         "n",
@@ -7836,6 +7930,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7938,6 +8033,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -7953,6 +8049,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -8110,6 +8207,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -8125,6 +8223,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -8282,6 +8381,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -8297,6 +8397,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -8520,6 +8621,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -8535,6 +8637,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -8568,6 +8671,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -8589,6 +8693,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -8695,6 +8800,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -8710,6 +8816,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -8837,6 +8944,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -8852,6 +8960,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "title",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "definedElsewhere": Array [
                         "n",
@@ -8976,6 +9085,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -9078,6 +9188,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -9093,6 +9204,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -9250,6 +9362,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -9265,6 +9378,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -9422,6 +9536,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -9437,6 +9552,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -9654,6 +9770,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -9669,6 +9786,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -9702,6 +9820,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -9723,6 +9842,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -9829,6 +9949,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -9844,6 +9965,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -9993,6 +10115,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -10021,6 +10144,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -10048,6 +10172,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -10146,6 +10271,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -10259,6 +10385,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -10432,6 +10559,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -10447,6 +10575,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -10480,6 +10609,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -10501,6 +10631,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -10607,6 +10738,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -10622,6 +10754,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -10749,6 +10882,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -10829,6 +10963,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -10927,6 +11062,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11040,6 +11176,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11214,6 +11351,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -11229,6 +11367,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -11248,6 +11387,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "title",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -11275,6 +11415,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11296,6 +11437,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11402,6 +11544,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11417,6 +11560,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11436,6 +11580,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11564,6 +11709,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -11579,6 +11725,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -11597,6 +11744,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "title",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "definedElsewhere": Array [
                     "props",
@@ -11671,6 +11819,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11769,6 +11918,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11877,6 +12027,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11892,6 +12043,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -11910,6 +12062,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "props",
@@ -12135,6 +12288,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -12150,6 +12304,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -12169,6 +12324,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "title",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -12196,6 +12352,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12217,6 +12374,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12323,6 +12481,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12338,6 +12497,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12357,6 +12517,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12485,6 +12646,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -12500,6 +12662,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -12518,6 +12681,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "title",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "definedElsewhere": Array [
                     "props",
@@ -12592,6 +12756,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12690,6 +12855,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12798,6 +12964,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12813,6 +12980,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -12831,6 +12999,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "props",
@@ -13057,6 +13226,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -13072,6 +13242,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -13091,6 +13262,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "title",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -13118,6 +13290,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13139,6 +13312,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13245,6 +13419,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13260,6 +13435,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13279,6 +13455,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13407,6 +13584,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -13422,6 +13600,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -13440,6 +13619,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "titles",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -13562,6 +13742,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13660,6 +13841,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13768,6 +13950,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13783,6 +13966,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -13801,6 +13985,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "titles",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14081,6 +14266,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -14096,6 +14282,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -14115,6 +14302,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "title",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -14142,6 +14330,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14163,6 +14352,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14269,6 +14459,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14284,6 +14475,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14303,6 +14495,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14431,6 +14624,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -14446,6 +14640,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -14464,6 +14659,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "titles",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -14586,6 +14782,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14684,6 +14881,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14792,6 +14990,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14807,6 +15006,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -14825,6 +15025,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "titles",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15091,6 +15292,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -15106,6 +15308,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -15139,6 +15342,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15160,6 +15364,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15266,6 +15471,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15281,6 +15487,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15399,6 +15606,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15680,6 +15888,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -15695,6 +15904,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -15728,6 +15938,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15749,6 +15960,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15855,6 +16067,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -15870,6 +16083,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -16136,6 +16350,7 @@ export var storyboard = (props) => {
                           "trailingComments": Array [],
                         },
                         "key": "data-uid",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
                           "comments": Object {
                             "leadingComments": Array [],
@@ -16151,6 +16366,7 @@ export var storyboard = (props) => {
                           "trailingComments": Array [],
                         },
                         "key": "data-label",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
                           "definedElsewhere": Array [
                             "pair",
@@ -16291,6 +16507,7 @@ export var storyboard = (props) => {
                               "trailingComments": Array [],
                             },
                             "key": "data-uid",
+                            "type": "JSX_ATTRIBUTES_ENTRY",
                             "value": Object {
                               "comments": Object {
                                 "leadingComments": Array [],
@@ -16306,6 +16523,7 @@ export var storyboard = (props) => {
                               "trailingComments": Array [],
                             },
                             "key": "shortcut",
+                            "type": "JSX_ATTRIBUTES_ENTRY",
                             "value": Object {
                               "definedElsewhere": Array [
                                 "pair",
@@ -16443,6 +16661,7 @@ export var storyboard = (props) => {
                           "trailingComments": Array [],
                         },
                         "key": "data-uid",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
                           "comments": Object {
                             "leadingComments": Array [],
@@ -16458,6 +16677,7 @@ export var storyboard = (props) => {
                           "trailingComments": Array [],
                         },
                         "key": "data-label",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
                           "definedElsewhere": Array [
                             "pair",
@@ -16737,6 +16957,7 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -16764,6 +16985,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -17065,6 +17287,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -17311,6 +17534,7 @@ export var storyboard = (props) => {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -17326,6 +17550,7 @@ export var storyboard = (props) => {
                       "trailingComments": Array [],
                     },
                     "key": "data-label",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "definedElsewhere": Array [
                         "pair",
@@ -17466,6 +17691,7 @@ export var storyboard = (props) => {
                           "trailingComments": Array [],
                         },
                         "key": "data-uid",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
                           "comments": Object {
                             "leadingComments": Array [],
@@ -17481,6 +17707,7 @@ export var storyboard = (props) => {
                           "trailingComments": Array [],
                         },
                         "key": "shortcut",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
                           "definedElsewhere": Array [
                             "pair",
@@ -17618,6 +17845,7 @@ export var storyboard = (props) => {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -17633,6 +17861,7 @@ export var storyboard = (props) => {
                       "trailingComments": Array [],
                     },
                     "key": "data-label",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "definedElsewhere": Array [
                         "pair",
@@ -17912,6 +18141,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -18146,6 +18376,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -18161,6 +18392,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -18493,6 +18725,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -18508,6 +18741,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -18840,6 +19074,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -18855,6 +19090,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -19068,6 +19304,7 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -19083,6 +19320,7 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "shortcut",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "definedElsewhere": Array [
                     "pair",
@@ -19220,6 +19458,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -19235,6 +19474,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -19450,6 +19690,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -19465,6 +19706,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "shortcut",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -19699,6 +19941,7 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -19714,6 +19957,7 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "shortcut",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "definedElsewhere": Array [
                     "pair",
@@ -19851,6 +20095,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -19866,6 +20111,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -20077,6 +20323,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -20092,6 +20339,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "shortcut",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -20322,6 +20570,7 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -20337,6 +20586,7 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "shortcut",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "definedElsewhere": Array [
                     "pair",
@@ -20474,6 +20724,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -20489,6 +20740,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -20700,6 +20952,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -20715,6 +20968,7 @@ export var storyboard = (props) => {
               "trailingComments": Array [],
             },
             "key": "shortcut",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "pair",
@@ -21003,6 +21257,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -21018,6 +21273,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -21051,6 +21307,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21072,6 +21329,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21178,6 +21436,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21193,6 +21452,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21342,6 +21602,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -21357,6 +21618,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "name",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -21385,6 +21647,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -21400,6 +21663,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "name",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -21427,6 +21691,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21525,6 +21790,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21540,6 +21806,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "name",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21654,6 +21921,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21669,6 +21937,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "name",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21832,6 +22101,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -21847,6 +22117,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -21880,6 +22151,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -21901,6 +22173,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22007,6 +22280,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22022,6 +22296,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22140,6 +22415,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "ref",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "console",
@@ -22202,6 +22478,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22348,6 +22625,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -22363,6 +22641,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -22396,6 +22675,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22417,6 +22697,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22523,6 +22804,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22538,6 +22820,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22656,6 +22939,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "ref",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "console",
@@ -22713,6 +22997,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22781,6 +23066,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22943,6 +23229,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -22970,6 +23257,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -22985,6 +23273,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -23097,6 +23386,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -23226,6 +23516,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -23241,6 +23532,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "thing",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "definedElsewhere": Array [
                     "React",
@@ -23317,6 +23609,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -23332,6 +23625,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -23439,6 +23733,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -23454,6 +23749,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "thing",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "React",
@@ -23711,6 +24007,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -23726,6 +24023,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -23759,6 +24057,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -23780,6 +24079,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -23886,6 +24186,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -23901,6 +24202,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24038,6 +24340,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "style",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -24059,6 +24362,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -24086,6 +24390,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -24101,6 +24406,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -24133,6 +24439,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24151,6 +24458,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24275,6 +24583,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -24296,6 +24605,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -24323,6 +24633,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24338,6 +24649,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24462,6 +24774,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24483,6 +24796,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24655,6 +24969,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -24670,6 +24985,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -24689,6 +25005,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "title",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -24716,6 +25033,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24737,6 +25055,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24843,6 +25162,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24858,6 +25178,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -24877,6 +25198,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25011,6 +25333,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -25028,6 +25351,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -25055,6 +25379,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25152,6 +25477,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25266,6 +25592,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25283,6 +25610,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25455,6 +25783,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -25470,6 +25799,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -25503,6 +25833,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25524,6 +25855,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25630,6 +25962,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25645,6 +25978,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -25772,6 +26106,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -25787,6 +26122,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "title",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "definedElsewhere": Array [
                         "n",
@@ -25911,6 +26247,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -26013,6 +26350,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -26028,6 +26366,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -26185,6 +26524,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -26200,6 +26540,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -26357,6 +26698,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -26372,6 +26714,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -26595,6 +26938,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -26610,6 +26954,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -26643,6 +26988,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -26664,6 +27010,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -26770,6 +27117,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -26785,6 +27133,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -26912,6 +27261,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -26927,6 +27277,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "title",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "definedElsewhere": Array [
                         "div",
@@ -27052,6 +27403,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -27154,6 +27506,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -27169,6 +27522,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "div",
@@ -27327,6 +27681,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -27342,6 +27697,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "div",
@@ -27500,6 +27856,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -27515,6 +27872,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "div",
@@ -27739,6 +28097,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -27754,6 +28113,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -27787,6 +28147,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -27808,6 +28169,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -27914,6 +28276,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -27929,6 +28292,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -28057,6 +28421,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -28072,6 +28437,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "title",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "definedElsewhere": Array [
                         "n",
@@ -28202,6 +28568,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -28304,6 +28671,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -28319,6 +28687,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -28476,6 +28845,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -28491,6 +28861,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -28648,6 +29019,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -28663,6 +29035,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "n",
@@ -28801,6 +29174,773 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render renders a component using the spread operator 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"all: initial; position: absolute;\\"
+  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+>
+  <div
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+    style=\\"
+      position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      height: 200px;
+      left: 59px;
+      width: 200px;
+      top: 79px;
+    \\"
+    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+  >
+    <div
+      style=\\"position: absolute; height: 99.9; width: 77.7;\\"
+      title=\\"Hi there!\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-uid=\\"aaa app-entity\\"
+    >
+      <div
+        style=\\"position: absolute;\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        data-uid=\\"bbb\\"
+      >
+        hi
+      </div>
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders a component using the spread operator 2`] = `
+Object {
+  "utopia-storyboard-uid/scene-aaa": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [
+      Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+        ],
+        "type": "elementpath",
+      },
+    ],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "App",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "app-entity",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": Object {
+                    "height": "99.9",
+                    "position": "absolute",
+                    "width": "77.7",
+                  },
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "title",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "Hi there!",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "app-entity",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "Scene",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "height": 200,
+                "left": 59,
+                "position": "absolute",
+                "top": 79,
+                "width": 200,
+              },
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "scene-aaa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa utopia-storyboard-uid",
+      "data-uid": "scene-aaa utopia-storyboard-uid",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
+      "skipDeepFreeze": true,
+      "style": Object {
+        "height": 200,
+        "left": 59,
+        "position": "absolute",
+        "top": 79,
+        "width": 200,
+      },
+    },
+    "rootElements": Array [],
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "App",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "app-entity",
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "height": "99.9",
+                "position": "absolute",
+                "width": "77.7",
+              },
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "title",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "Hi there!",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "app-entity",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-uid": "app-entity",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+      "style": Object {
+        "height": "99.9",
+        "position": "absolute",
+        "width": "77.7",
+      },
+      "title": "Hi there!",
+    },
+    "rootElements": Array [],
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [
+      Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "aaa",
+            "bbb",
+          ],
+        ],
+        "type": "elementpath",
+      },
+    ],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "text": "hi",
+                "type": "JSX_TEXT_BLOCK",
+                "uniqueID": "",
+              },
+            ],
+            "name": Object {
+              "baseVariable": "View",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": Object {
+                    "position": "absolute",
+                  },
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "bbb",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "bbb",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "View",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "spreadValue": Object {
+              "definedElsewhere": Array [
+                "props",
+              ],
+              "javascript": "props",
+              "sourceMap": Object {
+                "file": "code.tsx",
+                "mappings": "OAOiBA",
+                "names": Array [
+                  "props",
+                ],
+                "sources": Array [
+                  "code.tsx",
+                ],
+                "sourcesContent": Array [
+                  "
+      import * as React from 'react'
+      import { View, Storyboard, Scene } from 'utopia-api'
+      
+      export var App = (props) => {
+        return (
+          <View
+            {...props}
+            data-uid={'aaa'}
+          >
+            <View style={{position: 'absolute'}} data-uid={'bbb'}>hi</View>
+          </View>
+        )
+      }
+      export var storyboard = (props) => {
+        return (
+          <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'scene-aaa'}
+            >
+              <App
+                data-uid='app-entity'
+                style={{ position: 'absolute', height: '99.9', width: '77.7' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      ",
+                ],
+                "version": 3,
+              },
+              "transpiledJavascript": "return props;",
+              "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+              "uniqueID": "",
+            },
+            "type": "JSX_ATTRIBUTES_SPREAD",
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "aaa",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-uid": "aaa app-entity",
+      "skipDeepFreeze": true,
+      "style": Object {
+        "height": "99.9",
+        "position": "absolute",
+        "width": "77.7",
+      },
+      "title": "Hi there!",
+    },
+    "rootElements": Array [],
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "hi",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "View",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "position": "absolute",
+              },
+            },
+          },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "bbb",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+          "bbb",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
+      "data-uid": "bbb",
+      "skipDeepFreeze": true,
+      "style": Object {
+        "position": "absolute",
+      },
+    },
+    "rootElements": Array [],
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -28876,6 +30016,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -28903,6 +30044,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -28918,6 +30060,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -28939,6 +30082,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29046,6 +30190,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29157,6 +30302,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29261,6 +30407,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29407,6 +30554,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -29434,6 +30582,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29449,6 +30598,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29561,6 +30711,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29683,6 +30834,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -29698,6 +30850,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -29731,6 +30884,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "value",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "definedElsewhere": Array [
                 "storeRef",
@@ -29789,6 +30943,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29890,6 +31045,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -29905,6 +31061,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30061,6 +31218,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -30088,6 +31246,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30103,6 +31262,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30215,6 +31375,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30320,6 +31481,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30481,6 +31643,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -30508,6 +31671,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30523,6 +31687,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30635,6 +31800,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30872,6 +32038,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -30887,6 +32054,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31043,6 +32211,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -31070,6 +32239,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31091,6 +32261,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31197,6 +32368,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31302,6 +32474,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31317,6 +32490,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "x",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31487,6 +32661,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -31502,6 +32677,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -31535,6 +32711,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31556,6 +32733,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31662,6 +32840,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31677,6 +32856,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -31829,6 +33009,7 @@ Object {
                               "trailingComments": Array [],
                             },
                             "key": "data-label",
+                            "type": "JSX_ATTRIBUTES_ENTRY",
                             "value": Object {
                               "comments": Object {
                                 "leadingComments": Array [],
@@ -31844,6 +33025,7 @@ Object {
                               "trailingComments": Array [],
                             },
                             "key": "style",
+                            "type": "JSX_ATTRIBUTES_ENTRY",
                             "value": Object {
                               "comments": Object {
                                 "leadingComments": Array [],
@@ -31862,6 +33044,7 @@ Object {
                               "trailingComments": Array [],
                             },
                             "key": "data-uid",
+                            "type": "JSX_ATTRIBUTES_ENTRY",
                             "value": Object {
                               "comments": Object {
                                 "leadingComments": Array [],
@@ -31894,6 +33077,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-label",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -31909,6 +33093,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "style",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -31927,6 +33112,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -31972,6 +33158,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -31999,6 +33186,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32114,6 +33302,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32233,6 +33422,7 @@ export var storyboard = (
                       "trailingComments": Array [],
                     },
                     "key": "data-label",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -32248,6 +33438,7 @@ export var storyboard = (
                       "trailingComments": Array [],
                     },
                     "key": "style",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -32266,6 +33457,7 @@ export var storyboard = (
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -32298,6 +33490,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32313,6 +33506,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32331,6 +33525,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32435,6 +33630,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-label",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32450,6 +33646,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32468,6 +33665,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32579,6 +33777,7 @@ export var storyboard = (
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32731,6 +33930,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -32746,6 +33946,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -32779,6 +33980,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32800,6 +34002,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32906,6 +34109,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -32921,6 +34125,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33056,6 +34261,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -33071,6 +34277,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "src",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -33098,6 +34305,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33200,6 +34408,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33215,6 +34424,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "src",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33366,6 +34576,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -33381,6 +34592,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -33414,6 +34626,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33435,6 +34648,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33542,6 +34756,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33557,6 +34772,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33676,6 +34892,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33869,6 +35086,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -33884,6 +35102,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -33917,6 +35136,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -33938,6 +35158,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -34044,6 +35265,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -34059,6 +35281,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -34241,6 +35464,7 @@ Object {
                           "trailingComments": Array [],
                         },
                         "key": "data-uid",
+                        "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
                           "comments": Object {
                             "leadingComments": Array [],
@@ -34268,6 +35492,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -34355,6 +35580,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -34513,6 +35739,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -34540,6 +35767,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -34693,6 +35921,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -34849,6 +36078,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -34876,6 +36106,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35029,6 +36260,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35185,6 +36417,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -35212,6 +36445,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35365,6 +36599,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35467,8 +36702,8 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"d39 aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d39 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-uid=\\"ba3 aaa app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:ba3 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
       class=\\"css-16au7uv\\"
     >
       Utopia
@@ -35515,6 +36750,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -35530,6 +36766,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -35563,6 +36800,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35584,6 +36822,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35690,6 +36929,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35705,6 +36945,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35823,6 +37064,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -35994,6 +37236,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -36009,6 +37252,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "style",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -36042,6 +37286,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -36063,6 +37308,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -36169,6 +37415,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -36184,6 +37431,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "style",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -36327,6 +37575,7 @@ Object {
                       "trailingComments": Array [],
                     },
                     "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
                       "comments": Object {
                         "leadingComments": Array [],
@@ -36354,6 +37603,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -36381,6 +37631,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -36503,6 +37754,7 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -36530,6 +37782,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -36649,6 +37902,7 @@ Object {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],

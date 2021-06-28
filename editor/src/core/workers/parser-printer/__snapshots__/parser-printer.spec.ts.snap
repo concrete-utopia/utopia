@@ -460,6 +460,7 @@ return { otherFn: otherFn };",
                   "trailingComments": Array [],
                 },
                 "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "comments": Object {
                     "leadingComments": Array [],
@@ -475,6 +476,7 @@ return { otherFn: otherFn };",
                   "trailingComments": Array [],
                 },
                 "key": "left",
+                "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
                   "definedElsewhere": Array [
                     "cakeFn",
@@ -550,6 +552,7 @@ export var whatever = (props) => {
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -779,6 +782,7 @@ return { a: a };",
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],
@@ -1136,6 +1140,7 @@ export var App = (props) => <View data-uid='bbb'>
               "trailingComments": Array [],
             },
             "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
               "comments": Object {
                 "leadingComments": Array [],

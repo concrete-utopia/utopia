@@ -2055,7 +2055,7 @@ export function cssColorToChromaColor(c: CSSColor): Either<string, Chroma.Color>
   } else if (isHex(c)) {
     return right(Chroma.hex(c.hex))
   } else if (isHSL(c)) {
-    return right((Chroma.hsl as any)(c.h, c.s, c.l, c.a))
+    return right((Chroma.hsl as any)(c.h, c.s / 100.0, c.l / 100.0, c.a))
   } else {
     return right(Chroma(c.r, c.g, c.b, c.a))
   }
@@ -3784,7 +3784,7 @@ export function toggleShadow(attribute: ModifiableAttribute): JSXAttributeValue<
 export function toggleStylePropPath(
   path: PropertyPath,
   toggleFn: (attribute: ModifiableAttribute) => ModifiableAttribute,
-) {
+): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
     const attributeResult = getModifiableJSXAttributeAtPath(element.props, path)
     if (isRight(attributeResult)) {
@@ -3807,7 +3807,9 @@ export function toggleStylePropPath(
   }
 }
 
-export function toggleStylePropPaths(toggleFn: (attribute: JSXAttribute) => JSXAttribute) {
+export function toggleStylePropPaths(
+  toggleFn: (attribute: JSXAttribute) => JSXAttribute,
+): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
     const styleProp = getJSXAttributeAtPath(element.props, PP.create(['style']))
     const attribute = styleProp.attribute

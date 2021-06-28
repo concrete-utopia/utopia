@@ -26,6 +26,7 @@ initialiseTestResources = do
   npmRegistryManager <- newManager tlsManagerSettings
   testAssetsCaches <- emptyAssetsCaches []
   semaphoreForNode <- newQSem 1
+  locksRef <- newIORef mempty
   return $ DevServerResources
          { _commitHash = "nocommit"
          , _projectPool = pool
@@ -41,6 +42,7 @@ initialiseTestResources = do
          , _registryManager = npmRegistryManager
          , _assetsCaches = testAssetsCaches
          , _nodeSemaphore = semaphoreForNode
+         , _locksRef = locksRef
          , _branchDownloads = Nothing
          }
 
