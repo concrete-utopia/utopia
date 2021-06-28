@@ -95,3 +95,5 @@ declare module 'npm-package-arg'
 declare module '@svgr/plugin-jsx'
 
 declare module '@root/encoding/base64'
+
+declare module 'react/jsx-runtime'
