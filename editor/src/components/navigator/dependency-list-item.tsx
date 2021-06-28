@@ -32,16 +32,20 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
   const LoadingTextColor = colorTheme.subduedForeground.value
   const DefaultTextColor = colorTheme.neutralForeground.value
 
-  const FlashAnimation = keyframes({
-    from: {
-      backgroundColor: colorTheme.listNewItemFlashBackground.o(100).value,
-      color: colorTheme.subduedForeground.value,
-    },
-    to: {
-      backgroundColor: colorTheme.listNewItemFlashBackground.o(0).value,
-      color: colorTheme.neutralForeground.value,
-    },
-  })
+  const FlashAnimation = React.useMemo(
+    () =>
+      keyframes({
+        from: {
+          backgroundColor: colorTheme.listNewItemFlashBackground.o(100).value,
+          color: colorTheme.subduedForeground.value,
+        },
+        to: {
+          backgroundColor: colorTheme.listNewItemFlashBackground.o(0).value,
+          color: colorTheme.neutralForeground.value,
+        },
+      }),
+    [colorTheme],
+  )
 
   const isLoading =
     packageDetails.status === 'loading' || packageDetails.status === 'version-lookup'
