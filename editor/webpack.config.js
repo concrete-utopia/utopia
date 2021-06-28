@@ -190,6 +190,7 @@ const config = {
       'uuiui-deps': srcPath('uuiui-deps'),
       fs: require.resolve('./node_modules/browserfs/dist/shims/fs'),
       process: require.resolve('./node_modules/browserfs/dist/shims/process'),
+      'react/jsx-runtime': require.resolve('./node_modules/react/jsx-runtime'),
       react: require.resolve('./node_modules/react'),
 
       // Support running the profiler against production build of react
