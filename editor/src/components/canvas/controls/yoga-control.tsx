@@ -13,6 +13,8 @@ import { getOriginalFrames } from '../canvas-utils'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
+import { betterReactMemo } from '../../../uuiui-deps'
+import { useColorTheme } from '../../../uuiui'
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
   target: ElementPath
@@ -97,49 +99,49 @@ export interface YogaControlsProps extends ControlProps {
   dragState: ResizeDragState | null
 }
 
-export class YogaControls extends React.Component<YogaControlsProps> {
-  render() {
-    const targets = this.props.selectedViews
-    const everyThingIsYogaLayouted = targets.every((selectedView) => {
-      return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        selectedView,
-        this.props.componentMetadata,
-      )
-    })
-
-    const unknownElementsSelected = MetadataUtils.anyUnknownOrGeneratedElements(
-      this.props.projectContents,
-      this.props.nodeModules,
-      this.props.openFile,
-      this.props.selectedViews,
+export const YogaControls = betterReactMemo('YogaControls', (props: YogaControlsProps) => {
+  const colorTheme = useColorTheme()
+  const targets = props.selectedViews
+  const everyThingIsYogaLayouted = targets.every((selectedView) => {
+    return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+      selectedView,
+      props.componentMetadata,
     )
+  })
 
-    const showResizeControl =
-      targets.length === 1 && everyThingIsYogaLayouted && !unknownElementsSelected
+  const unknownElementsSelected = MetadataUtils.anyUnknownOrGeneratedElements(
+    props.projectContents,
+    props.nodeModules,
+    props.openFile,
+    props.selectedViews,
+  )
 
-    let color: string = ''
-    if (showResizeControl && targets.length > 0) {
-      const selectedView = targets[0]
-      color = getSelectionColor(
-        selectedView,
-        this.props.componentMetadata,
-        this.props.focusedElementPath,
-      )
-    }
+  const showResizeControl =
+    targets.length === 1 && everyThingIsYogaLayouted && !unknownElementsSelected
 
-    return (
-      <React.Fragment>
-        {!showResizeControl ? null : (
-          <YogaResizeControl
-            {...this.props}
-            target={targets[0]}
-            targetElement={
-              MetadataUtils.findElementByElementPath(this.props.componentMetadata, targets[0])!
-            }
-            color={color}
-          />
-        )}
-      </React.Fragment>
+  let color: string = ''
+  if (showResizeControl && targets.length > 0) {
+    const selectedView = targets[0]
+    color = getSelectionColor(
+      selectedView,
+      props.componentMetadata,
+      props.focusedElementPath,
+      colorTheme,
     )
   }
-}
+
+  return (
+    <React.Fragment>
+      {!showResizeControl ? null : (
+        <YogaResizeControl
+          {...props}
+          target={targets[0]}
+          targetElement={
+            MetadataUtils.findElementByElementPath(props.componentMetadata, targets[0])!
+          }
+          color={color}
+        />
+      )}
+    </React.Fragment>
+  )
+})

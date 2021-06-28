@@ -737,6 +737,17 @@ export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
   )
 })
 
+const themeOptions = [
+  {
+    label: 'Dark',
+    value: 'dark',
+  },
+  {
+    label: 'Light',
+    value: 'light',
+  },
+]
+
 const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   const colorTheme = useColorTheme()
   const {
@@ -771,17 +782,6 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
     value: 'light',
   })
   const forkedFromMetadata = useGetProjectMetadata(forkedFrom)
-
-  const themeOptions = [
-    {
-      label: 'Dark',
-      value: 'dark',
-    },
-    {
-      label: 'Light',
-      value: 'light',
-    },
-  ]
 
   const forkedFromText =
     forkedFrom == null ? null : (
@@ -919,7 +919,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
 
                 <UIGridRow padded variant='<---1fr--->|------172px-------|'>
                   <span>Name</span>
-                  {userState.loginState.type === 'LOGGED_IN' ? (
+                  {userState.loginState.type !== 'LOGGED_IN' ? (
                     <span>{name}</span>
                   ) : (
                     <StringInput
