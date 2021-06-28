@@ -13,7 +13,7 @@ import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
-import { auth0Url, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
+import { auth0Url, BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
 import {
@@ -58,6 +58,9 @@ import { StoryboardFilePath } from '../editor/store/editor-state'
 import { getContentsTreeFileFromString } from '../assets'
 import { Link } from '../../uuiui/link'
 import { useTriggerForkProject } from '../editor/persistence-hooks'
+import urljoin = require('url-join')
+import { parseGithubProjectString } from '../../core/shared/github'
+
 export interface LeftPaneProps {
   editorState: EditorState
   derivedState: DerivedState
@@ -662,6 +665,28 @@ const SharingPane = betterReactMemo('SharingPane', () => {
 })
 
 const GithubPane = betterReactMemo('GithubPane', () => {
+  const [githubRepoStr, setGithubRepoStr] = React.useState('')
+  const parsedRepo = parseGithubProjectString(githubRepoStr)
+
+  const onStartImport = React.useCallback(() => {
+    if (parsedRepo != null) {
+      const { owner, repo } = parsedRepo
+
+      const url = new URL(urljoin(BASE_URL, 'p'))
+      url.searchParams.set('github_owner', owner)
+      url.searchParams.set('github_repo', repo)
+
+      window.open(url.toString())
+    }
+  }, [parsedRepo])
+
+  const onChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setGithubRepoStr(e.currentTarget.value)
+    },
+    [setGithubRepoStr],
+  )
+
   return (
     <FlexColumn
       id='leftPaneGithub'
@@ -690,12 +715,12 @@ const GithubPane = betterReactMemo('GithubPane', () => {
           fontSize: '11px',
         }}
       >
-        You can import a new project from Github. It might take a few minutes, and will show up in{' '}
-        <a href='/projects'>your projects</a> (not here).
+        You can import a new project from Github. It might take a few minutes, and will show up in a
+        new tab.
       </div>
       <UIGridRow padded variant='<--------auto-------->|--45px--|'>
-        <StringInput testId='importProject' value='' />
-        <Button spotlight highlight>
+        <StringInput testId='importProject' value={githubRepoStr} onChange={onChange} />
+        <Button spotlight highlight disabled={parsedRepo == null} onMouseUp={onStartImport}>
           Start
         </Button>
       </UIGridRow>
