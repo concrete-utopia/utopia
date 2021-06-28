@@ -10,7 +10,7 @@ import {
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
-import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsContextData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
@@ -20,6 +20,7 @@ export function buildSpyWrappedElement(
   finalProps: any,
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
   childrenElementPaths: Array<ElementPath>,
   childrenElements: Array<React.ReactChild>,
   Element: any,
@@ -57,6 +58,8 @@ export function buildSpyWrappedElement(
       importInfo: importInfoFromImportDetails(jsx.name, imports),
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
+      // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
+      updateInvalidatedPaths((current) => current, 'invalidate')
       metadataContext.current.spyValues.metadata[EP.toComponentId(elementPath)] = instanceMetadata
     }
   }
@@ -65,6 +68,7 @@ export function buildSpyWrappedElement(
     spyCallback: spyCallback,
     inScope: inScope,
     jsxFactoryFunctionName: jsxFactoryFunctionName,
+    $$utopiaElementPath: elementPath,
   }
   return renderComponentUsingJsxFactoryFunction(
     inScope,
@@ -83,6 +87,7 @@ interface SpyWrapperProps {
   elementToRender: React.ComponentType<any>
   inScope: MapLike<any>
   jsxFactoryFunctionName: string | null
+  $$utopiaElementPath: ElementPath
 }
 const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
   const {
@@ -90,6 +95,7 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     elementToRender: ElementToRender,
     inScope,
     jsxFactoryFunctionName,
+    $$utopiaElementPath,
     ...passThroughProps
   } = props
   spyCallback(passThroughProps)

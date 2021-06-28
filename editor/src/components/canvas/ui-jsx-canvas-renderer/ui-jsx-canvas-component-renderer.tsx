@@ -9,7 +9,12 @@ import {
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { UiJsxCanvasContext, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import {
+  DomWalkerInvalidatePathsContext,
+  DomWalkerInvalidatePathsContextData,
+  UiJsxCanvasContext,
+  UiJsxCanvasContextData,
+} from '../ui-jsx-canvas'
 import {
   MutableUtopiaContextProps,
   RerenderUtopiaContext,
@@ -100,6 +105,9 @@ export function createComponentRendererComponent(params: {
     const sceneContext = React.useContext(SceneLevelUtopiaContext)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
+      DomWalkerInvalidatePathsContext,
+    )
 
     if (utopiaJsxComponent == null) {
       // If this element cannot be found, we want to purposefully cause a 'ReferenceError' to notify the user.
@@ -140,6 +148,7 @@ export function createComponentRendererComponent(params: {
         sceneContext.validPaths,
         undefined,
         metadataContext,
+        updateInvalidatedPaths,
         mutableContext.jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         params.filePath,
@@ -180,6 +189,8 @@ export function createComponentRendererComponent(params: {
           realPassedProps['data-uid'],
           undefined,
           metadataContext,
+
+          updateInvalidatedPaths,
           mutableContext.jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,

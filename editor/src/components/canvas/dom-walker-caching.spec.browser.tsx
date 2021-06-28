@@ -7,6 +7,7 @@ import { setCanvasFrames } from '../editor/actions/action-creators'
 import CanvasActions from './canvas-actions'
 import { pinFrameChange } from './canvas-types'
 import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
+import { act } from 'react-test-renderer'
 
 describe('Dom-walker Caching', () => {
   async function prepareTestProject() {
@@ -27,9 +28,10 @@ describe('Dom-walker Caching', () => {
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(saveDomReportActions.length).toBe(2)
+    expect(saveDomReportActions.length).toBe(3)
     expect(saveDomReportActions[0].cachedPaths).toEqual([])
     expect(saveDomReportActions[1].cachedPaths).toEqual([])
+    expect(saveDomReportActions[2].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
   })
 
   it('returns cached metadata for scroll', async () => {
@@ -57,10 +59,14 @@ describe('Dom-walker Caching', () => {
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
-    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    // TODO FIXME this is BAD. we dispatch a second non-action, because the dom-walker is apparently one step behind the canvas
-    await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 0, y: 0 }))], true)
+      await domFinished
+      await dispatchDone
+    })
 
     const saveDomReportActions = renderResult
       .getRecordedActions()
@@ -85,10 +91,14 @@ describe('Dom-walker Caching', () => {
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
-    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
-    // TODO FIXME this is BAD. we dispatch a second non-action, because the dom-walker is apparently one step behind the canvas
-    await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 0, y: 0 }))], true)
+      await domFinished
+      await dispatchDone
+    })
 
     const saveDomReportActions = renderResult
       .getRecordedActions()

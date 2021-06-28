@@ -191,7 +191,7 @@ module.exports = {
       severity: 'error',
       from: {
         path: '\\.ts$',
-        pathNot: ['built-in-dependencies.ts$'],
+        pathNot: ['built-in-dependencies-list.ts$'],
       },
       to: {
         path: '\\.tsx$',
