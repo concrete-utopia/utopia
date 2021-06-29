@@ -1,7 +1,6 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isAnimatedElement, isImg, isImportedComponent } from '../../core/model/project-file-utils'
 import {
-  isIntrinsicHTMLElement,
   isJSXElement,
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
