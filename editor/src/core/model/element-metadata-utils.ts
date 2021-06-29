@@ -1278,7 +1278,7 @@ export const MetadataUtils = {
   },
   isComponentInstance(path: ElementPath, rootElements: Array<UtopiaJSXComponent>): boolean {
     const elementName = MetadataUtils.getStaticElementName(path, rootElements)
-    return elementName != null && !isIntrinsicElement(elementName)
+    return elementName != null && !isIntrinsicHTMLElement(elementName)
   },
   isPinnedAndNotAbsolutePositioned(
     metadata: ElementInstanceMetadataMap,
