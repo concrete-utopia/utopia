@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { Either } from '../core/shared/either'
-import { ElementInstanceMetadataMap, isIntrinsicHTMLElement } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap, isIntrinsicElement } from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
 import { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
@@ -145,7 +145,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   isHidden: (data) => {
     return data.selectedViews.every((view) => {
       const elementName = MetadataUtils.getJSXElementFromMetadata(data.jsxMetadata, view)
-      return elementName != null ? isIntrinsicHTMLElement(elementName) : true
+      return elementName != null ? isIntrinsicElement(elementName) : true
     })
   },
   action: (data, dispatch?: EditorDispatch) => {
