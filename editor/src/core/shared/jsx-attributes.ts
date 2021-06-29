@@ -414,8 +414,16 @@ export function deeplyCreatedValue(path: PropertyPath, value: JSXAttribute): JSX
   }, value)
 }
 
+const PositiveIntegerRegex = /^(0|[1-9]\d*)$/
+
 function isArrayIndex(maybeIndex: string | number): maybeIndex is number {
-  return !isNaN(maybeIndex as any)
+  if (typeof maybeIndex === 'number') {
+    return Number.isInteger(maybeIndex)
+  } else if (typeof maybeIndex === 'string') {
+    return PositiveIntegerRegex.test(maybeIndex)
+  } else {
+    return false
+  }
 }
 export function setJSXValueInAttributeAtPath(
   attribute: JSXAttribute,
