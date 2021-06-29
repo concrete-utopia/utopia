@@ -1,23 +1,27 @@
 import type { MapLike } from 'typescript'
-import { PropertyControls } from 'utopia-api'
+import { ObjectControlDescription, PropertyControls } from 'utopia-api'
+
+const Vector3: ObjectControlDescription = {
+  type: 'object',
+  object: {
+    0: {
+      type: 'number',
+      title: 'x',
+    },
+    1: {
+      type: 'number',
+      title: 'y',
+    },
+    2: {
+      type: 'number',
+      title: 'z',
+    },
+  },
+}
 
 const lightControls: PropertyControls = {
-  position: {
-    type: 'array',
-    propertyControl: {
-      type: 'number',
-      title: 'position',
-    },
-    maxCount: 3,
-  },
-  rotation: {
-    type: 'array',
-    propertyControl: {
-      type: 'number',
-      title: 'rotation',
-    },
-    maxCount: 3,
-  },
+  position: Vector3,
+  rotation: Vector3,
   color: {
     type: 'string',
     title: 'color',
@@ -39,14 +43,7 @@ const lightControls: PropertyControls = {
 }
 
 const sphereGeometryControls: PropertyControls = {
-  args: {
-    type: 'array',
-    propertyControl: {
-      type: 'number',
-      title: 'args',
-    },
-    maxCount: 3,
-  },
+  args: Vector3,
   attach: {
     type: 'string',
     title: 'attach',
@@ -55,14 +52,7 @@ const sphereGeometryControls: PropertyControls = {
 }
 
 const boxGeometryControls: PropertyControls = {
-  args: {
-    type: 'array',
-    propertyControl: {
-      type: 'number',
-      title: 'args',
-    },
-    maxCount: 3,
-  },
+  args: Vector3,
 }
 
 const meshStandardMaterialControls: PropertyControls = {
