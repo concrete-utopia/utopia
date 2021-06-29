@@ -286,7 +286,7 @@ const RowForArrayControl = betterReactMemo(
     )
 
     const rowHeight = UtopiaTheme.layout.rowHeight.max
-    const transformedValue = Array.isArray(value) ? value : []
+    const transformedValue = Array.isArray(value) ? value : [value]
     const { springs, bind } = useArraySuperControl(
       transformedValue,
       onSubmitValue,
