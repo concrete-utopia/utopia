@@ -13,6 +13,9 @@ export const RETURN_TO_PREPEND = 'return '
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const NO_OP = () => {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export const NO_OP_ASYNC = async () => {}
+
 export type ValueOf<T> = T[keyof T]
 
 export type PrimitiveType = number | string | boolean | bigint | symbol | null | undefined

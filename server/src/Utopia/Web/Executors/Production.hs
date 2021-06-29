@@ -15,6 +15,7 @@
 -}
 module Utopia.Web.Executors.Production where
 
+import           Control.Concurrent.Chan
 import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
@@ -32,6 +33,7 @@ import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
+import           Utopia.Web.Classroom
 import qualified Utopia.Web.Database         as DB
 import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
@@ -61,6 +63,7 @@ data ProductionServerResources = ProductionServerResources
                                , _locksRef        :: PackageVersionLocksRef
                                , _siteHost        :: Text
                                , _branchDownloads :: Maybe BranchDownloads
+                               , _classroomChan   :: Chan ClassroomMessage
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -250,7 +253,7 @@ serverMonadToHandler resources serverMonad = foldFree (serverExecutor resources)
   Glue to pull together the free monad computation and turn it into an HTTP service.
 -}
 serverAPI :: ProductionServerResources -> Server API
-serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) server
+serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) (server (_classroomChan resources))
 
 assetPathsAndBuilders :: [PathAndBuilders]
 assetPathsAndBuilders =
@@ -275,6 +278,7 @@ initialiseResources = do
   _siteHost <- fmap toS $ getEnv "SITE_HOST"
   _branchDownloads <- createBranchDownloads
   _locksRef <- newIORef mempty
+  _classroomChan <- newChan
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop

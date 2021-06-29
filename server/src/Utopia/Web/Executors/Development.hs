@@ -15,6 +15,7 @@
 -}
 module Utopia.Web.Executors.Development where
 
+import           Control.Concurrent.Chan
 import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
@@ -36,6 +37,7 @@ import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
+import           Utopia.Web.Classroom
 import qualified Utopia.Web.Database         as DB
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Editor.Branches
@@ -69,6 +71,7 @@ data DevServerResources = DevServerResources
                         , _nodeSemaphore   :: QSem
                         , _locksRef        :: PackageVersionLocksRef
                         , _branchDownloads :: Maybe BranchDownloads
+                        , _classroomChan   :: Chan ClassroomMessage
                         }
 
 $(makeFieldsNoPrefix ''DevServerResources)
@@ -311,7 +314,7 @@ serverMonadToHandler resources serverMonad = foldFree (serverExecutor resources)
   Glue to pull together the free monad computation and turn it into an HTTP service.
 -}
 serverAPI :: DevServerResources -> Server API
-serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) server
+serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) (server (_classroomChan resources))
 
 startup :: DevServerResources -> IO Stop
 startup DevServerResources{..} = do
@@ -354,6 +357,7 @@ initialiseResources = do
   _nodeSemaphore <- newQSem 1
   _branchDownloads <- createBranchDownloads
   _locksRef <- newIORef mempty
+  _classroomChan <- newChan
   let _silentMigration = False
   let _logOnStartup = True
   return $ DevServerResources{..}

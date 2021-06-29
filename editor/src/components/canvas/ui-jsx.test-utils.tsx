@@ -62,6 +62,7 @@ import {
   EditorStore,
   PersistentModel,
   persistentModelForProjectContents,
+  regularMode,
   StoryboardFilePath,
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
@@ -177,6 +178,7 @@ export async function renderTestEditorWithModel(
     ),
     dispatch: asyncTestDispatch,
     alreadySaved: false,
+    editorMode: regularMode,
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)
@@ -221,7 +223,7 @@ export async function renderTestEditorWithModel(
         'Test',
         '0',
         initialEditorStore.workers,
-        Utils.NO_OP,
+        Utils.NO_OP_ASYNC,
         false,
       )
     })

@@ -4548,14 +4548,14 @@ export async function loadSampleProject(
   projectID: string,
   dispatch: EditorDispatch,
   workers: UtopiaTsWorkers,
-  renderEditorRoot: () => void,
+  renderEditorRoot: () => Promise<void>,
 ): Promise<void> {
   const sampleProject = sampleProjectForId(projectID)
   if (sampleProject == null) {
     return newProject(dispatch, renderEditorRoot)
   } else {
     const { name, model } = sampleProject
-    return load(dispatch, model, name, projectID, workers, renderEditorRoot)
+    return await load(dispatch, model, name, projectID, workers, renderEditorRoot)
   }
 }
 
@@ -4565,7 +4565,7 @@ export async function load(
   title: string,
   projectId: string,
   workers: UtopiaTsWorkers,
-  renderEditorRoot: () => void,
+  renderEditorRoot: () => Promise<void>,
   retryFetchNodeModules: boolean = true,
 ): Promise<void> {
   // this action is now async!
@@ -4614,7 +4614,7 @@ export async function load(
 
   const safeMode = await localforage.getItem<boolean>(getProjectLockedKey(projectId))
 
-  renderEditorRoot()
+  await renderEditorRoot()
 
   dispatch(
     [

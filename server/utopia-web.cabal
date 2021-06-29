@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e83d456103edba455f137157039a03c0c8ffec40f6796a1389ac1cacf963ee6f
+-- hash: f88b05dbf35e2f125ae6b129c7055fd2ef0ed5f27a389f5350827250087939f5
 
 name:           utopia-web
 version:        0.1.0.4
@@ -27,6 +27,7 @@ executable utopia-web
       Utopia.Web.Auth
       Utopia.Web.Auth.Session
       Utopia.Web.Auth.Types
+      Utopia.Web.Classroom
       Utopia.Web.ClientModel
       Utopia.Web.Database
       Utopia.Web.Database.Types
@@ -145,6 +146,7 @@ test-suite utopia-web-test
       Utopia.Web.Auth
       Utopia.Web.Auth.Session
       Utopia.Web.Auth.Types
+      Utopia.Web.Classroom
       Utopia.Web.ClientModel
       Utopia.Web.Database
       Utopia.Web.Database.Types

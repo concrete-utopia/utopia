@@ -58,6 +58,13 @@ import {
   EditorState,
   DerivedState,
   UserState,
+  regularMode,
+  EditorMode,
+  classroomControllerMode,
+  classroomAttendeeMode,
+  PersistentModel,
+  persistentModelFromEditorModel,
+  ClassroomControllerMode,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -91,11 +98,13 @@ import {
   isPropertyControlsIFrameReady,
   isSendPreviewModel,
   isUpdatePropertyControlsInfo,
+  load,
 } from '../components/editor/actions/actions'
 import { updateCssVars, UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
+import { transformContentsTree, walkContentsTree } from '../components/assets'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -108,6 +117,37 @@ function replaceLoadingMessage(newMessage: string) {
   if (loadingMessageElement != null) {
     loadingMessageElement.innerHTML = newMessage
   }
+}
+
+export interface StartControllerClassroomMessage {
+  type: 'START_CONTROLLER'
+}
+
+export interface StartAttendantClassroomMessage {
+  type: 'START_ATTENDANT'
+}
+
+export interface SendModelClassroomMessage {
+  type: 'SEND_MODEL'
+  model: PersistentModel
+  projectId: string
+  title: string
+}
+
+export interface SendActionsClassroomMessage {
+  type: 'SEND_ACTIONS'
+  actions: Array<EditorAction>
+}
+
+export type ClassroomMessage =
+  | StartControllerClassroomMessage
+  | StartAttendantClassroomMessage
+  | SendModelClassroomMessage
+  | SendActionsClassroomMessage
+
+function sendClassroomMessage(socket: WebSocket, message: ClassroomMessage): void {
+  console.log(`sending ${message.type}`)
+  socket.send(JSON.stringify(message))
 }
 
 export class Editor {
@@ -132,6 +172,91 @@ export class Editor {
 
     const watchdogWorker = new RealWatchdogWorker()
 
+    let editorMode: EditorMode = regularMode
+    const queryParms: URLSearchParams = new URLSearchParams(window.location.search)
+    if (queryParms.has('classroom')) {
+      const classroomValue = queryParms.get('classroom')
+      switch (classroomValue) {
+        case 'controller': {
+          const socket = new WebSocket('ws://localhost:8000/v1/classroom')
+          editorMode = classroomControllerMode('test', socket, false)
+          const controllerMode: ClassroomControllerMode = editorMode
+          socket.onopen = () => {
+            console.log('Controller connection opened.')
+            sendClassroomMessage(socket, { type: 'START_CONTROLLER' })
+          }
+          socket.onmessage = (event) => {
+            const message: ClassroomMessage = JSON.parse(event.data)
+            console.log(
+              'controller message',
+              Object.keys(message),
+              `[${message.type}]`,
+              message.type === 'START_ATTENDANT',
+              message,
+            )
+            switch (message.type) {
+              case 'START_ATTENDANT':
+                console.log('About to SEND_MODEL.')
+                sendClassroomMessage(socket, {
+                  type: 'SEND_MODEL',
+                  model: persistentModelFromEditorModel(this.storedState.editor),
+                  projectId: this.storedState.editor.id ?? '???',
+                  title: this.storedState.editor.projectName,
+                })
+                controllerMode.ready = true
+                break
+              default:
+                console.log('not sure what is happening', message)
+            }
+          }
+          break
+        }
+        case 'attendant': {
+          const socket = new WebSocket('ws://localhost:8000/v1/classroom')
+          socket.onopen = () => {
+            console.log('Attendant connection opened.')
+            sendClassroomMessage(socket, { type: 'START_ATTENDANT' })
+          }
+          let chainedPromise: Promise<void> = Promise.resolve()
+          socket.onmessage = (event) => {
+            const message: ClassroomMessage = JSON.parse(event.data)
+            console.log('attendantmessage', message)
+            switch (message.type) {
+              case 'SEND_MODEL':
+                chainedPromise = chainedPromise.then(() =>
+                  load(
+                    this.storedState.dispatch,
+                    message.model,
+                    message.title,
+                    message.projectId,
+                    this.storedState.workers,
+                    async () => {
+                      renderRootComponent(
+                        this.utopiaStoreHook,
+                        this.utopiaStoreApi,
+                        this.spyCollector,
+                        true,
+                      )
+                    },
+                  ),
+                )
+                break
+              case 'SEND_ACTIONS':
+                chainedPromise = chainedPromise.then(() => {
+                  this.storedState.dispatch(message.actions, 'everyone')
+                })
+                break
+              default:
+                break
+            }
+          }
+          editorMode = classroomAttendeeMode('test', socket)
+          break
+        }
+        default:
+      }
+    }
+
     this.storedState = {
       editor: emptyEditorState,
       derived: derivedState,
@@ -145,6 +270,7 @@ export class Editor {
       ),
       dispatch: this.boundDispatch,
       alreadySaved: false,
+      editorMode: editorMode,
     }
 
     const storeHook = create<EditorStore>((set) => this.storedState)
@@ -228,7 +354,9 @@ export class Editor {
         }
 
         const projectId = getProjectID()
-        if (projectId == null) {
+        if (editorMode.type === 'CLASSROOM_ATTENDEE') {
+          // Do nothing for now...
+        } else if (projectId == null) {
           // Check if this is a github import
           const urlParams = new URLSearchParams(window.location.search)
           const githubOwner = urlParams.get('github_owner')
@@ -329,7 +457,7 @@ export class Editor {
                 projectId,
                 this.boundDispatch,
                 this.storedState.workers,
-                () => {
+                async () => {
                   renderRootComponent(
                     this.utopiaStoreHook,
                     this.utopiaStoreApi,

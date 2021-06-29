@@ -7,7 +7,7 @@ import {
   loadFromLocalStorage,
   forceQueuedSave,
 } from './persistence'
-import { NO_OP } from '../../core/shared/utils'
+import { NO_OP, NO_OP_ASYNC } from '../../core/shared/utils'
 import { createPersistentModel, delay } from '../../utils/utils.test-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import { TextFile } from '../../core/shared/project-file-types'
@@ -276,7 +276,7 @@ describe('Saving to the server', () => {
     setBaseSaveWaitTime(10)
     const projectId = randomProjectID()
     addLocalProject(projectId, ModelChange)
-    await loadFromLocalStorage(projectId, NO_OP, false, new MockUtopiaTsWorkers(), NO_OP) // Load without triggering the upload
+    await loadFromLocalStorage(projectId, NO_OP, false, new MockUtopiaTsWorkers(), NO_OP_ASYNC) // Load without triggering the upload
     expect(localProjects[localProjectKey(projectId)]).toBeDefined()
     await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, true) // Forcibly save to bypass throttling
     expect(saveLog[projectId]).toEqual([ModelChange])
@@ -291,7 +291,7 @@ describe('Loading a local project', () => {
     const projectId = randomProjectID()
     addLocalProject(projectId, ModelChange)
     expect(localProjects[localProjectKey(projectId)]).toBeDefined()
-    await loadFromLocalStorage(projectId, NO_OP, true, new MockUtopiaTsWorkers(), NO_OP)
+    await loadFromLocalStorage(projectId, NO_OP, true, new MockUtopiaTsWorkers(), NO_OP_ASYNC)
     await delay(20)
     expect(saveLog[projectId]).toEqual([ModelChange])
     expect(localProjects[localProjectKey(projectId)]).toBeUndefined()

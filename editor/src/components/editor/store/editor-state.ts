@@ -220,6 +220,50 @@ export const defaultUserState: UserState = {
   shortcutConfig: {},
 }
 
+export interface RegularMode {
+  type: 'REGULAR'
+}
+
+export const regularMode: RegularMode = {
+  type: 'REGULAR',
+}
+
+export interface ClassroomControllerMode {
+  type: 'CLASSROOM_CONTROLLER'
+  room: string
+  socket: WebSocket
+  ready: boolean
+}
+
+export function classroomControllerMode(
+  room: string,
+  socket: WebSocket,
+  ready: boolean,
+): ClassroomControllerMode {
+  return {
+    type: 'CLASSROOM_CONTROLLER',
+    room: room,
+    socket: socket,
+    ready: ready,
+  }
+}
+
+export interface ClassroomAttendeeMode {
+  type: 'CLASSROOM_ATTENDEE'
+  room: string
+  socket: WebSocket
+}
+
+export function classroomAttendeeMode(room: string, socket: WebSocket): ClassroomAttendeeMode {
+  return {
+    type: 'CLASSROOM_ATTENDEE',
+    room: room,
+    socket: socket,
+  }
+}
+
+export type EditorMode = RegularMode | ClassroomControllerMode | ClassroomAttendeeMode
+
 export type EditorStore = {
   editor: EditorState
   derived: DerivedState
@@ -228,6 +272,7 @@ export type EditorStore = {
   workers: UtopiaTsWorkers
   dispatch: EditorDispatch
   alreadySaved: boolean
+  editorMode: EditorMode
 }
 
 export interface FileDeleteModal {

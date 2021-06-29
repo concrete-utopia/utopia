@@ -106,6 +106,7 @@ import {
   getVSCodeChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
+import { SendActionsClassroomMessage } from '../../../templates/editor'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -125,6 +126,51 @@ function simpleStringifyAction(action: EditorAction): string {
 
 export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): string {
   return `[\n\t${actions.map(simpleStringifyAction).join(',\n')}\n]`
+}
+
+function filterActions(actions: Array<EditorAction>): Array<EditorAction> {
+  return actions.map((action) => {
+    // Sidestep around the local actions so that we definitely run them locally.
+    if (action.action === 'TRANSIENT_ACTIONS') {
+      // Drill into the array.
+      return EditorActions.transientActions(filterActions(action.transientActions))
+    } else if (action.action === 'ATOMIC') {
+      // Drill into the array.
+      return EditorActions.atomic(action.actions)
+    } else if (action.action === 'SET_LOGIN_STATE') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'UPDATE_FROM_WORKER') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'LOAD') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'SAVE_DOM_REPORT') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'MARK_VSCODE_BRIDGE_READY') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'UPDATE_CODE_RESULT_CACHE') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'SET_CODE_EDITOR_BUILD_ERRORS') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'SET_CODE_EDITOR_LINT_ERRORS') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'SET_CODE_EDITOR_VISIBILITY') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'PROPERTY_CONTROLS_IFRAME_READY') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'UPDATE_PROPERTY_CONTROLS_INFO') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'SEND_CODE_EDITOR_INITIALISATION') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'UPDATE_CONFIG_FROM_VSCODE') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'SHOW_MODAL') {
+      return EditorActions.transientActions([])
+    } else if (action.action === 'SHOW_CONTEXT_MENU') {
+      return EditorActions.transientActions([])
+    } else {
+      return action
+    }
+  })
 }
 
 function processAction(
@@ -206,6 +252,7 @@ function processAction(
       workers: working.workers,
       dispatch: dispatchEvent,
       alreadySaved: working.alreadySaved,
+      editorMode: working.editorMode,
     }
   }
 }
@@ -389,6 +436,16 @@ export function editorDispatch(
         allTransient,
         spyCollector,
       )
+
+      const filteredActions = filterActions(actions)
+      if (newStore.editorMode.type === 'CLASSROOM_CONTROLLER' && newStore.editorMode.ready) {
+        const sendActions: SendActionsClassroomMessage = {
+          type: 'SEND_ACTIONS',
+          actions: filteredActions,
+        }
+        newStore.editorMode.socket.send(JSON.stringify(sendActions))
+      }
+
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
@@ -450,6 +507,7 @@ export function editorDispatch(
       editorWithModelChecked.modelUpdateFinished,
     ]),
     alreadySaved: alreadySaved || shouldSave,
+    editorMode: result.editorMode,
   }
 
   if (!finalStore.nothingChanged) {
@@ -620,6 +678,7 @@ function editorDispatchInner(
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       alreadySaved: storedState.alreadySaved,
+      editorMode: result.editorMode,
     }
   } else {
     //empty return
