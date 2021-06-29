@@ -27,6 +27,7 @@ import {
   UtopiaJSXComponent,
   JSXElement,
   getJSXElementNameLastPart,
+  isIntrinsicElement,
 } from '../shared/element-template'
 import {
   esCodeFile,
@@ -42,6 +43,7 @@ import {
   getOpenUIJSFileKey,
   EditorState,
   withUnderlyingTarget,
+  packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
@@ -49,6 +51,8 @@ import { ExportsInfo } from '../workers/ts/ts-worker'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { importedFromWhere } from '../../components/editor/import-utils'
+import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
+import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -397,20 +401,35 @@ export function getPropertyControlsForTarget(
 
       let filenameForLookup: string | null = null
       if (importedFrom == null) {
-        if (isIntrinsicHTMLElement(element.name)) {
-          /**
-           * We detected an intrinsic HTML Element (such as div, a, span, etc...)
-           * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
-           * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
-           * but for now, I just return a one-size-fits-all PropertyControls result here
-           */
-          return HtmlElementStyleObjectProps
+        if (isIntrinsicElement(element.name)) {
+          if (isIntrinsicHTMLElement(element.name)) {
+            /**
+             * We detected an intrinsic HTML Element (such as div, a, span, etc...)
+             * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
+             * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
+             * but for now, I just return a one-size-fits-all PropertyControls result here
+             */
+            return HtmlElementStyleObjectProps
+          } else {
+            // you can add more intrinsic (ie not imported) element types here
+            const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
+            const dependencies = dependenciesFromPackageJson(packageJsonFile)
+            if (dependencies.some((dependency) => dependency.name === '@react-three/fiber')) {
+              if (ReactThreeFiberControls[element.name.baseVariable] != null) {
+                return ReactThreeFiberControls[element.name.baseVariable]
+              }
+            }
+
+            // we found no match for our intrinsic element
+            return null
+          }
         } else if (openFilePath != null) {
           filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
         }
       } else {
         filenameForLookup = importedFrom
       }
+
       if (filenameForLookup == null) {
         return null
       } else {
