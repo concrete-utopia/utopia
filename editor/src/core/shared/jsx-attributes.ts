@@ -479,7 +479,7 @@ export function setJSXValueInAttributeAtPath(
             )
             return setJSXValueInAttributeAtPath(
               jsxAttributeNestedObject(newProps, emptyComments),
-              tailPath,
+              path,
               newAttrib,
             )
           }

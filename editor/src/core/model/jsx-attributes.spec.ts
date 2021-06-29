@@ -260,6 +260,18 @@ describe('setJSXValueAtPath', () => {
     expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
   })
 
+  it('updating a NESTED_ARRAY with a string key converts it to object', () => {
+    const updatedAttributes = forceRight(
+      setJSXValueAtPath(
+        sampleJsxAttributes(),
+        PP.create(['objectWithNestedArray', 'array', 'wee']),
+        jsxAttributeValue('wee', emptyComments),
+      ),
+    )
+    const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
+    expect(compiledProps.objectWithNestedArray.array).toEqual({ 0: 0, 1: 1, 2: 2, wee: 'wee' })
+  })
+
   it('updating part of an ATTRIBUTE_VALUE which is a string throws error', () => {
     expect(() => {
       const updatedAttributes = forceRight(
