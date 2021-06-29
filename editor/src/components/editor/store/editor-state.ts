@@ -143,6 +143,7 @@ import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
+import { MapLike } from 'typescript'
 const ObjectPathImmutable: any = OPI
 
 export const enum LeftMenuTab {
@@ -397,6 +398,7 @@ export interface EditorState {
   focusedElementPath: ElementPath | null
   config: UtopiaVSCodeConfig
   theme: Theme
+  componentStateData: MapLike<MapLike<any>>
 }
 
 export interface StoredEditorState {
@@ -1162,6 +1164,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     focusedElementPath: null,
     config: defaultConfig(),
     theme: 'light',
+    componentStateData: {},
   }
 }
 
@@ -1398,6 +1401,7 @@ export function editorModelFromPersistentModel(
     focusedElementPath: null,
     config: defaultConfig(),
     theme: 'light',
+    componentStateData: {},
   }
   return editor
 }

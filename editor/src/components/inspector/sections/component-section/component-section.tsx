@@ -568,6 +568,10 @@ export const ComponentSectionInner = betterReactMemo(
 
     const target = selectedViews[0]
 
+    const stateData = useEditorState((state) => {
+      return state.editor.componentStateData[EP.toString(target)]
+    }, 'componentSectionInner componentStateData')
+
     const isFocused = EP.isFocused(focusedElementPath, target)
 
     const toggleFocusMode = React.useCallback(() => {
@@ -765,6 +769,14 @@ export const ComponentSectionInner = betterReactMemo(
             </div>
           </UIGridRow>
         ) : null}
+        {stateData != null &&
+          Object.keys(stateData).map((key) => {
+            return (
+              <UIGridRow key={key} padded tall={false} variant={'<-------------1fr------------->'}>
+                {key}: {JSON.stringify(stateData[key])}
+              </UIGridRow>
+            )
+          })}
       </>
     )
   },

@@ -1,3 +1,4 @@
+import { MapLike } from 'typescript'
 import { LayoutSystem } from 'utopia-api' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
@@ -185,6 +186,7 @@ import type {
   SetFilebrowserDropTarget,
   SetForkedFromProjectID,
   SetCurrentTheme,
+  UpdateComponentStateData,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1315,5 +1317,11 @@ export function setCurrentTheme(theme: Theme): SetCurrentTheme {
   return {
     action: 'SET_CURRENT_THEME',
     theme: theme,
+  }
+}
+export function updateComponentStateData(value: MapLike<MapLike<any>>): UpdateComponentStateData {
+  return {
+    action: 'UPDATE_COMPONENT_STATE_DATA',
+    value: value,
   }
 }

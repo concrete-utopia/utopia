@@ -353,6 +353,7 @@ import {
   SetFilebrowserDropTarget,
   SetForkedFromProjectID,
   SetCurrentTheme,
+  UpdateComponentStateData,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1023,6 +1024,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     focusedElementPath: currentEditor.focusedElementPath,
     config: defaultConfig(),
     theme: currentEditor.theme,
+    componentStateData: currentEditor.componentStateData,
   }
 }
 
@@ -4322,6 +4324,15 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       theme: action.theme,
+    }
+  },
+  UPDATE_COMPONENT_STATE_DATA: (
+    action: UpdateComponentStateData,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      componentStateData: action.value,
     }
   },
 }

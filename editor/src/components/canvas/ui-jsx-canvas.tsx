@@ -78,6 +78,8 @@ import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-exe
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
+import { useRefEditorState } from '../editor/store/store-hook'
+import { updateComponentStateData } from '../editor/actions/action-creators'
 
 applyUIDMonkeyPatch()
 
@@ -90,6 +92,7 @@ export type SpyValues = {
 export interface UiJsxCanvasContextData {
   current: {
     spyValues: SpyValues
+    componentStateValues: MapLike<MapLike<any>> // key componentpath, value useStates and its values
   }
 }
 
@@ -99,6 +102,7 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
       spyValues: {
         metadata: {},
       },
+      componentStateValues: {},
     },
   }
 }
@@ -284,8 +288,8 @@ export const UiJsxCanvas = betterReactMemo(
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
-    clearConsoleLogs()
-    proxyConsole(console, addToConsoleLogs)
+    // clearConsoleLogs()
+    // proxyConsole(console, addToConsoleLogs)
 
     if (clearErrors != null) {
       // a new canvas render, a new chance at having no errors
@@ -298,6 +302,15 @@ export const UiJsxCanvas = betterReactMemo(
     )
     useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
+    const dispatch = useRefEditorState((state) => state.dispatch)
+    window.setInterval(() => {
+      if (Object.keys(metadataContext.current.componentStateValues).length > 0) {
+        dispatch.current(
+          [updateComponentStateData(metadataContext.current.componentStateValues)],
+          'everyone',
+        )
+      }
+    }, 2000)
     // Handle the imports changing, this needs to run _before_ any require function
     // calls as it's modifying the underlying DOM elements. This is somewhat working
     // like useEffect, except that runs after everything has rendered.

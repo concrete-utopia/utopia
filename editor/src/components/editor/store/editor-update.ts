@@ -297,6 +297,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
     case 'SET_CURRENT_THEME':
       return UPDATE_FNS.SET_CURRENT_THEME(action, state)
+    case 'UPDATE_COMPONENT_STATE_DATA':
+      return UPDATE_FNS.UPDATE_COMPONENT_STATE_DATA(action, state)
     default:
       return state
   }

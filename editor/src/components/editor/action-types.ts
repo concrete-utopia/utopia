@@ -51,6 +51,7 @@ import { BuildType } from '../../core/workers/ts/ts-worker'
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
+import { MapLike } from 'typescript'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -830,6 +831,11 @@ export interface SetCurrentTheme {
   theme: Theme
 }
 
+export interface UpdateComponentStateData {
+  action: 'UPDATE_COMPONENT_STATE_DATA'
+  value: MapLike<MapLike<any>>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -967,6 +973,7 @@ export type EditorAction =
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
+  | UpdateComponentStateData
 
 export type DispatchPriority =
   | 'everyone'
