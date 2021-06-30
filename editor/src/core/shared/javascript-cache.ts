@@ -35,37 +35,18 @@ export function resolveParamsAndRunJsCode(
     hookCounter += 1
     const hookId = `useState${hookCounter}`
     const useStateResult = React.useState(initialState)
-    const monkeySetState = (newValue: any) => {
-      useStateResult[1](newValue)
 
-      if (elementPath != null && metadataContext != null) {
-        const componentPath = { ...elementPath, parts: dropLast(elementPath.parts) }
-        if (metadataContext.current.componentStateValues[EP.toString(componentPath)] == null) {
-          metadataContext.current.componentStateValues[EP.toString(componentPath)] = {}
-        }
-        metadataContext.current.componentStateValues[EP.toString(componentPath)][hookId] = [
-          newValue,
-          monkeySetState,
-        ]
-      }
-    }
-
-    const resultToReturn = [useStateResult[0], monkeySetState]
     if (elementPath != null && metadataContext != null) {
       const componentPath = { ...elementPath, parts: dropLast(elementPath.parts) }
       if (metadataContext.current.componentStateValues[EP.toString(componentPath)] == null) {
         metadataContext.current.componentStateValues[EP.toString(componentPath)] = {}
       }
-      if (
-        metadataContext.current.componentStateValues[EP.toString(componentPath)][hookId] == null
-      ) {
-        metadataContext.current.componentStateValues[EP.toString(componentPath)][
-          hookId
-        ] = resultToReturn
-      }
+      metadataContext.current.componentStateValues[EP.toString(componentPath)][
+        hookId
+      ] = useStateResult
     }
 
-    return resultToReturn
+    return useStateResult
   }
   const MonkeyReact = {
     ...React,
