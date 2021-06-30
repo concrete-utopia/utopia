@@ -46,6 +46,7 @@ import {
   paddingTop,
   Subdued,
   VerySubdued,
+  InspectorSubsectionHeader,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -769,14 +770,23 @@ export const ComponentSectionInner = betterReactMemo(
             </div>
           </UIGridRow>
         ) : null}
-        {stateData != null &&
-          Object.keys(stateData).map((key) => {
-            return (
-              <UIGridRow key={key} padded tall={false} variant={'<-------------1fr------------->'}>
-                {key}: {JSON.stringify(stateData[key])}
-              </UIGridRow>
-            )
-          })}
+        {stateData != null && (
+          <>
+            <InspectorSubsectionHeader>Initial State</InspectorSubsectionHeader>
+            {Object.keys(stateData).map((key) => {
+              return (
+                <UIGridRow
+                  key={key}
+                  padded
+                  tall={false}
+                  variant={'<-------------1fr------------->'}
+                >
+                  {key}: {JSON.stringify(stateData[key])}
+                </UIGridRow>
+              )
+            })}
+          </>
+        )}
       </>
     )
   },

@@ -31,38 +31,39 @@ export function resolveParamsAndRunJsCode(
   elementPath?: ElementPath,
 ): any {
   let hookCounter = 0
+  const useStateMonkey = (initialState: any) => {
+    hookCounter += 1
+    const hookId = `useState${hookCounter}`
+    let stateToUse = initialState
+    if (elementPath != null && metadataContext != null) {
+      const componentPath = { ...elementPath, parts: dropLast(elementPath.parts) }
+      if (metadataContext.current.componentStateValues[EP.toString(componentPath)] == null) {
+        metadataContext.current.componentStateValues[EP.toString(componentPath)] = {}
+      }
+      if (
+        metadataContext.current.componentStateValues[EP.toString(componentPath)][hookId] == null
+      ) {
+        metadataContext.current.componentStateValues[EP.toString(componentPath)][
+          hookId
+        ] = initialState
+      } else {
+        stateToUse =
+          metadataContext.current.componentStateValues[EP.toString(componentPath)][hookId]
+      }
+    }
+    return React.useState(stateToUse)
+  }
   const MonkeyReact = {
     ...React,
-    useState: (initialState: any) => {
-      hookCounter += 1
-      const hookId = `useState${hookCounter}`
-      let stateToUse = initialState
-      if (elementPath != null && metadataContext != null) {
-        const componentPath = { ...elementPath, parts: dropLast(elementPath.parts) }
-        if (metadataContext.current.componentStateValues[EP.toString(componentPath)] == null) {
-          metadataContext.current.componentStateValues[EP.toString(componentPath)] = {}
-        }
-        if (
-          metadataContext.current.componentStateValues[EP.toString(componentPath)][hookId] == null
-        ) {
-          metadataContext.current.componentStateValues[EP.toString(componentPath)][
-            hookId
-          ] = initialState
-        } else {
-          stateToUse =
-            metadataContext.current.componentStateValues[EP.toString(componentPath)][hookId]
-        }
-      }
-      return React.useState(stateToUse)
-    },
+    useState: useStateMonkey,
   }
   const definedElsewhereInfo = resolveDefinedElsewhere(
     javascriptBlock.definedElsewhere,
     requireResult,
     currentScope,
   )
-  // console.log('definedElsewhereInfo', definedElsewhereInfo, componentPath, javascriptBlock)
   definedElsewhereInfo['React'] = MonkeyReact
+  definedElsewhereInfo['useState'] = useStateMonkey
   const updatedBlock = {
     ...javascriptBlock,
     definedElsewhere: Object.keys(definedElsewhereInfo),
