@@ -13,11 +13,11 @@ import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
-import { auth0Url, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
+import { auth0Url, BASE_URL, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
 import {
-  colorTheme,
+  useColorTheme,
   UtopiaTheme,
   FlexColumn,
   Section,
@@ -31,10 +31,11 @@ import {
   Subdued,
   UIRow,
   H2,
+  PopupList,
   Icons,
   Avatar,
 } from '../../uuiui'
-import { betterReactMemo, User } from '../../uuiui-deps'
+import { betterReactMemo, SelectOption, User } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -57,6 +58,9 @@ import { StoryboardFilePath } from '../editor/store/editor-state'
 import { getContentsTreeFileFromString } from '../assets'
 import { Link } from '../../uuiui/link'
 import { useTriggerForkProject } from '../editor/persistence-hooks'
+import urljoin = require('url-join')
+import { parseGithubProjectString } from '../../core/shared/github'
+
 export interface LeftPaneProps {
   editorState: EditorState
   derivedState: DerivedState
@@ -82,6 +86,8 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
     (store) => User.isLoggedIn(store.userState.loginState),
     'LeftPaneComponent loggedIn',
   )
+
+  const colorTheme = useColorTheme()
 
   return (
     <div
@@ -125,6 +131,8 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
 })
 
 const ForksGiven = betterReactMemo('ForkPanel', () => {
+  const colorTheme = useColorTheme()
+
   const { id, projectName, description, isLoggedIn, forkedFrom } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -657,6 +665,28 @@ const SharingPane = betterReactMemo('SharingPane', () => {
 })
 
 const GithubPane = betterReactMemo('GithubPane', () => {
+  const [githubRepoStr, setGithubRepoStr] = React.useState('')
+  const parsedRepo = parseGithubProjectString(githubRepoStr)
+
+  const onStartImport = React.useCallback(() => {
+    if (parsedRepo != null) {
+      const { owner, repo } = parsedRepo
+
+      const url = new URL(urljoin(BASE_URL, 'p'))
+      url.searchParams.set('github_owner', owner)
+      url.searchParams.set('github_repo', repo)
+
+      window.open(url.toString())
+    }
+  }, [parsedRepo])
+
+  const onChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setGithubRepoStr(e.currentTarget.value)
+    },
+    [setGithubRepoStr],
+  )
+
   return (
     <FlexColumn
       id='leftPaneGithub'
@@ -685,12 +715,12 @@ const GithubPane = betterReactMemo('GithubPane', () => {
           fontSize: '11px',
         }}
       >
-        You can import a new project from Github. It might take a few minutes, and will show up in{' '}
-        <a href='/projects'>your projects</a> (not here).
+        You can import a new project from Github. It might take a few minutes, and will show up in a
+        new tab.
       </div>
       <UIGridRow padded variant='<--------auto-------->|--45px--|'>
-        <StringInput testId='importProject' value='' />
-        <Button spotlight highlight>
+        <StringInput testId='importProject' value={githubRepoStr} onChange={onChange} />
+        <Button spotlight highlight disabled={parsedRepo == null} onMouseUp={onStartImport}>
           Start
         </Button>
       </UIGridRow>
@@ -732,7 +762,19 @@ export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
   )
 })
 
+const themeOptions = [
+  {
+    label: 'Dark',
+    value: 'dark',
+  },
+  {
+    label: 'Light',
+    value: 'light',
+  },
+]
+
 const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
+  const colorTheme = useColorTheme()
   const {
     dispatch,
     projectName,
@@ -760,6 +802,10 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   const [name, changeProjectName] = React.useState(projectName)
   const [description, changeProjectDescription] = React.useState(projectDescription)
   const [requestingPreviewImage, setRequestingPreviewImage] = React.useState(false)
+  const [theme, setTheme] = React.useState<SelectOption>({
+    label: 'Light',
+    value: 'light',
+  })
   const forkedFromMetadata = useGetProjectMetadata(forkedFrom)
 
   const forkedFromText =
@@ -832,6 +878,13 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
       changeProjectDescription(event.target.value)
     },
     [],
+  )
+  const handleSubmitValueTheme = React.useCallback(
+    (option: SelectOption) => {
+      setTheme(option)
+      dispatch([EditorActions.setCurrentTheme(option.value)])
+    },
+    [dispatch],
   )
 
   const urlToRequest = `${thumbnailURL(projectId!)}?lastUpdated=${thumbnailLastGenerated}`
@@ -964,6 +1017,44 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                     </Button>
                   </FlexColumn>
                 </UIGridRow>
+                {/** Theme Toggle: */}
+                <UIGridRow
+                  style={{ marginTop: 16 }}
+                  padded
+                  variant='<---1fr--->|------172px-------|'
+                >
+                  <H2> Theme </H2>
+                </UIGridRow>
+                <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+                  <span> Utopia </span>
+                  <PopupList
+                    value={theme}
+                    options={themeOptions}
+                    onSubmitValue={handleSubmitValueTheme}
+                    style={{ width: 150 }}
+                  />
+                </UIGridRow>
+                <UIGridRow
+                  padded
+                  variant='<-------------1fr------------->'
+                  style={{
+                    height: 'inherit',
+                    wordWrap: 'normal',
+                    whiteSpace: 'normal',
+                    alignItems: 'flex-start',
+                    minHeight: 34,
+                    paddingTop: 8,
+                    paddingLeft: 8,
+                    paddingRight: 8,
+                    paddingBottom: 8,
+                    letterSpacing: 0.1,
+                    lineHeight: '17px',
+                    fontSize: '11px',
+                  }}
+                >
+                  <Subdued>You can change the VSCode theme from the code editor.</Subdued>
+                </UIGridRow>
+
                 <UIGridRow
                   style={{ marginTop: 16 }}
                   padded

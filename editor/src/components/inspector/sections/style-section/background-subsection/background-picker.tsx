@@ -2,7 +2,7 @@ import * as fastDeepEquals from 'fast-deep-equal'
 import React = require('react')
 import {
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
-  colorTheme,
+  useColorTheme,
   FlexRow,
   Icn,
   NumberInput,
@@ -407,6 +407,7 @@ function setColor(
 }
 
 export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = (props) => {
+  const colorTheme = useColorTheme()
   useHandleCloseOnESCOrEnter(props.closePopup)
   const [showSettings, setShowSettings] = React.useState(false)
   const toggleSettings = React.useCallback(() => setShowSettings((value) => !value), [

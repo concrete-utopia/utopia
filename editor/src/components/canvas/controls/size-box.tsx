@@ -25,6 +25,7 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { SizeBoxLabel } from './size-box-label'
+//TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme } from '../../../uuiui'
 
 interface ResizeControlProps extends ResizeRectangleProps {

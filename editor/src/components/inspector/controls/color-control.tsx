@@ -4,7 +4,7 @@ import { ColorPicker } from './color-picker'
 import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../common/css-utils'
 import { StringControl } from './string-control'
 import { ControlStatus, ControlStyles } from '../common/control-status'
-import { colorTheme, UtopiaTheme } from '../../../uuiui'
+import { useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import Utils from '../../../utils/utils'
 
@@ -40,6 +40,7 @@ export function updateStringCSSColor(newValue: string, oldValue: CSSColor) {
 
 export const ColorControl = betterReactMemo('ColorControl', (props: ColorControlProps) => {
   const [popupOpen, setPopupOpen] = React.useState(false)
+  const colorTheme = useColorTheme()
 
   const stringInput =
     props.showString && props.onSubmitSolidStringValue != null ? (

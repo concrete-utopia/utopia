@@ -184,6 +184,7 @@ import type {
   ResetCanvas,
   SetFilebrowserDropTarget,
   SetForkedFromProjectID,
+  SetCurrentTheme,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -193,6 +194,7 @@ import type {
   ModalDialog,
   OriginalFrame,
   RightMenuTab,
+  Theme,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -1306,5 +1308,12 @@ export function setFilebrowserDropTarget(target: string | null): SetFilebrowserD
   return {
     action: 'SET_FILEBROWSER_DROPTARGET',
     target: target,
+  }
+}
+
+export function setCurrentTheme(theme: Theme): SetCurrentTheme {
+  return {
+    action: 'SET_CURRENT_THEME',
+    theme: theme,
   }
 }

@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Isolator } from './isolator'
 import { FlexColumn } from './widgets/layout/flex-column'
 import { FlexRow } from './widgets/layout/flex-row'
-import { colorTheme, UtopiaTheme } from './styles/theme'
+import { useColorTheme } from './styles/theme'
 
 interface DialogProps {
   title: string
@@ -14,91 +14,94 @@ interface DialogProps {
   closeCallback: () => void
 }
 
-export const Dialog = (props: DialogProps) => (
-  <Isolator onAbandonIntent={props.closeCallback}>
-    <ScreenCenter>
-      <div
-        id='outerDialog'
-        onMouseDown={(e) => e.stopPropagation()}
-        onMouseUp={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '450px',
-          height: '220px',
-          transform: 'translateY(-150px)',
-          backgroundColor: colorTheme.emphasizedBackground.value,
-          overflow: 'hidden',
-          borderRadius: '4px',
-          boxShadow: '0px 10px 30px 0px hsla(0,0%,30%,.5)',
-        }}
-      >
-        <FlexColumn
+export const Dialog = (props: DialogProps) => {
+  const colorTheme = useColorTheme()
+  return (
+    <Isolator onAbandonIntent={props.closeCallback}>
+      <ScreenCenter>
+        <div
+          id='outerDialog'
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
           style={{
-            height: '200px',
-            whiteSpace: 'initial',
-            alignItems: 'stretch',
+            width: '450px',
+            height: '220px',
+            transform: 'translateY(-150px)',
+            backgroundColor: colorTheme.emphasizedBackground.value,
+            overflow: 'hidden',
+            borderRadius: '4px',
+            boxShadow: '0px 10px 30px 0px hsla(0,0%,30%,.5)',
           }}
         >
-          <FlexRow
-            id='DialogTitleRow'
+          <FlexColumn
             style={{
-              padding: '16px 16px',
+              height: '200px',
               whiteSpace: 'initial',
-              minHeight: 42,
+              alignItems: 'stretch',
             }}
           >
-            <span
+            <FlexRow
+              id='DialogTitleRow'
               style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                color: colorTheme.emphasizedForeground.value,
+                padding: '16px 16px',
+                whiteSpace: 'initial',
+                minHeight: 42,
               }}
             >
-              {props.title}
-            </span>
-          </FlexRow>
-          <div
-            className='DialogContent'
-            style={{
-              padding: '16px 16px',
-              flexGrow: 1,
-              maxHeight: '400px',
-              overflow: 'scroll',
-              width: '100%',
-              whiteSpace: 'initial',
-            }}
-          >
+              <span
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: colorTheme.emphasizedForeground.value,
+                }}
+              >
+                {props.title}
+              </span>
+            </FlexRow>
             <div
+              className='DialogContent'
               style={{
-                fontSize: '12px',
-                fontWeight: 400,
-                color: colorTheme.neutralForeground.value,
-                lineHeight: '1.4',
+                padding: '16px 16px',
+                flexGrow: 1,
+                maxHeight: '400px',
+                overflow: 'scroll',
+                width: '100%',
+                whiteSpace: 'initial',
               }}
             >
-              {props.content}
+              <div
+                style={{
+                  fontSize: '12px',
+                  fontWeight: 400,
+                  color: colorTheme.neutralForeground.value,
+                  lineHeight: '1.4',
+                }}
+              >
+                {props.content}
+              </div>
             </div>
-          </div>
-          <FlexRow
-            id='DialogButtonRow'
-            style={{
-              height: '40px',
-              padding: '16px',
-              flexShrink: 0,
-              width: '100%',
-              whiteSpace: 'initial',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <span>{props.subduedButton}</span>
-            <span style={{ marginLeft: 8 }}>{props.secondaryButton}</span>
-            <span style={{ marginLeft: 8 }}>{props.defaultButton}</span>
-          </FlexRow>
-        </FlexColumn>
-      </div>
-    </ScreenCenter>
-  </Isolator>
-)
+            <FlexRow
+              id='DialogButtonRow'
+              style={{
+                height: '40px',
+                padding: '16px',
+                flexShrink: 0,
+                width: '100%',
+                whiteSpace: 'initial',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <span>{props.subduedButton}</span>
+              <span style={{ marginLeft: 8 }}>{props.secondaryButton}</span>
+              <span style={{ marginLeft: 8 }}>{props.defaultButton}</span>
+            </FlexRow>
+          </FlexColumn>
+        </div>
+      </ScreenCenter>
+    </Isolator>
+  )
+}
 
 const ScreenCenter = styled.div({
   position: 'fixed',

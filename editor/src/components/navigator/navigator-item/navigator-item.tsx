@@ -21,7 +21,7 @@ import {
   betterReactMemo,
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
-import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
+import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -100,38 +100,41 @@ const collapseItem = (
   e.stopPropagation()
 }
 
-const defaultUnselected: ComputedLook = {
+const defaultUnselected = (colorTheme: any): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.neutralForeground.value },
   iconColor: 'black',
-}
-const defaultSelected: ComputedLook = {
+})
+
+const defaultSelected = (colorTheme: any): ComputedLook => ({
   style: { background: UtopiaStyles.backgrounds.blue, color: colorTheme.white.value },
   iconColor: 'white',
-}
+})
 
-const dynamicUnselected: ComputedLook = {
+const dynamicUnselected = (colorTheme: any): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.primary.value },
   iconColor: 'blue',
-}
-const dynamicSelected: ComputedLook = {
+})
+
+const dynamicSelected = (colorTheme: any): ComputedLook => ({
   style: { background: UtopiaStyles.backgrounds.lightblue, color: colorTheme.white.value },
   iconColor: 'white',
-}
+})
 
-const componentUnselected: ComputedLook = {
+const componentUnselected = (colorTheme: any): ComputedLook => ({
   style: {
     background: colorTheme.emphasizedBackground.value,
     color: colorTheme.neutralForeground.value,
   },
   iconColor: 'orange',
-}
-const componentSelected: ComputedLook = {
+})
+
+const componentSelected = (colorTheme: any): ComputedLook => ({
   style: {
     background: colorTheme.navigatorComponentSelected.value,
     color: colorTheme.neutralForeground.value,
   },
   iconColor: 'orange',
-}
+})
 
 const computeResultingStyle = (
   selected: boolean,
@@ -141,8 +144,9 @@ const computeResultingStyle = (
   fullyVisible: boolean,
   isFocusedComponent: boolean,
   isFocusableComponent: boolean,
+  colorTheme: any,
 ) => {
-  let result = defaultUnselected
+  let result = defaultUnselected(colorTheme)
   if (selected) {
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
@@ -150,20 +154,20 @@ const computeResultingStyle = (
         iconColor: 'white',
       }
     } else if (isInsideComponent) {
-      result = componentSelected
+      result = componentSelected(colorTheme)
     } else if (isDynamic) {
-      result = dynamicSelected
+      result = dynamicSelected(colorTheme)
     } else {
-      result = defaultSelected
+      result = defaultSelected(colorTheme)
     }
   } else {
     // unselected
     if (isInsideComponent) {
-      result = componentUnselected
+      result = componentUnselected(colorTheme)
     } else if (isDynamic) {
-      result = dynamicUnselected
+      result = dynamicUnselected(colorTheme)
     } else {
-      result = defaultUnselected
+      result = defaultUnselected(colorTheme)
     }
   }
 
@@ -255,6 +259,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       elementWarnings,
     } = props
 
+    const colorTheme = useColorTheme()
     const domElementRef = useScrollToThisIfSelected(selected)
     const isFocusedComponent = useEditorState(
       (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
@@ -283,6 +288,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       fullyVisible,
       isFocusedComponent,
       isFocusableComponent,
+      colorTheme,
     )
 
     let warningText: string | null = null

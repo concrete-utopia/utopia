@@ -414,6 +414,17 @@ export function deeplyCreatedValue(path: PropertyPath, value: JSXAttribute): JSX
   }, value)
 }
 
+const PositiveIntegerRegex = /^(0|[1-9]\d*)$/
+
+function isArrayIndex(maybeIndex: string | number): maybeIndex is number {
+  if (typeof maybeIndex === 'number') {
+    return Number.isInteger(maybeIndex)
+  } else if (typeof maybeIndex === 'string') {
+    return PositiveIntegerRegex.test(maybeIndex)
+  } else {
+    return false
+  }
+}
 export function setJSXValueInAttributeAtPath(
   attribute: JSXAttribute,
   path: PropertyPath,
@@ -439,7 +450,7 @@ export function setJSXValueInAttributeAtPath(
             return left(`Unable to set an indexed value in an array containing spread elements`)
           }
 
-          if (typeof attributeKey === 'number') {
+          if (isArrayIndex(attributeKey)) {
             let newArray: Array<JSXArrayElement> = [...attribute.content]
             if (lastPartOfPath) {
               newArray[attributeKey] = jsxArrayValue(newAttrib, emptyComments)
@@ -476,7 +487,7 @@ export function setJSXValueInAttributeAtPath(
             )
             return setJSXValueInAttributeAtPath(
               jsxAttributeNestedObject(newProps, emptyComments),
-              tailPath,
+              path,
               newAttrib,
             )
           }

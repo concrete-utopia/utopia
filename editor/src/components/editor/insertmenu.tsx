@@ -65,7 +65,7 @@ import {
   FlexRow,
   UtopiaTheme,
   InspectorSubsectionHeader,
-  colorTheme,
+  useColorTheme,
   Icn,
   UtopiaStyles,
   UIRow,
@@ -369,6 +369,7 @@ interface InsertGroupProps {
 export const InsertGroup: React.FunctionComponent<InsertGroupProps> = betterReactMemo(
   'InsertGroup',
   (props) => {
+    const colorTheme = useColorTheme()
     return (
       <div style={{ paddingBottom: 12 }}>
         <UIRow rowHeight={'normal'}>
@@ -406,6 +407,7 @@ interface InsertItemProps {
 }
 
 export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => {
+  const colorTheme = useColorTheme()
   const regularIcon = (
     <Icn
       category={props.category ?? 'element'}

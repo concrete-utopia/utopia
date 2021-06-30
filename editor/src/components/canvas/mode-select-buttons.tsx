@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { colorTheme, FlexRow } from '../../uuiui'
+import { useColorTheme, FlexRow } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isLiveMode, isSelectLiteMode, isSelectMode } from '../editor/editor-modes'
@@ -15,6 +15,7 @@ interface ModeSelectButtonProps {
 }
 
 const ModeSelectButton = betterReactMemo('ModeSelectButton', (props: ModeSelectButtonProps) => {
+  const colorTheme = useColorTheme()
   return props.selected ? (
     <div
       // this is the selected variant. No hover effects on this one
@@ -52,6 +53,7 @@ const ModeSelectButton = betterReactMemo('ModeSelectButton', (props: ModeSelectB
 })
 
 export const ModeSelectButtons = betterReactMemo('ModeSelectButtons', () => {
+  const colorTheme = useColorTheme()
   const currentMode = useEditorState((store) => store.editor.mode, 'ModeSelectButtons editor.mode')
   const dispatch = useEditorState((store) => store.dispatch, 'ModeSelectButtons dispatch')
 

@@ -60,7 +60,7 @@ export async function startPolledLoad({
   const loadLocalProject = async () => {
     const project = await fetchLocalProject(projectId)
     const model = Utils.forceNotNull(`Local project ${projectId} could not be found.`, project)
-      .model
+      .model.projectContents
     onModelChanged(model)
   }
 

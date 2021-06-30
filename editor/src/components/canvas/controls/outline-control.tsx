@@ -16,13 +16,14 @@ import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { colorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 
 export function getSelectionColor(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   focusedElementPath: ElementPath | null,
+  colorTheme: any,
 ): string {
   if (EP.isInsideFocusedComponent(path)) {
     if (MetadataUtils.isFocusableComponent(path, metadata)) {
@@ -53,6 +54,7 @@ function isDraggingToMove(
 }
 
 export const OutlineControls = (props: OutlineControlsProps) => {
+  const colorTheme = useColorTheme()
   const { dragState } = props
   const getDragStateFrame = React.useCallback(
     (target: ElementPath): CanvasRectangle | null => {
@@ -133,7 +135,12 @@ export const OutlineControls = (props: OutlineControlsProps) => {
 
   const selectionColors = useEditorState((store) => {
     return targetPaths.map((path) => {
-      return getSelectionColor(path, store.editor.jsxMetadata, store.editor.focusedElementPath)
+      return getSelectionColor(
+        path,
+        store.editor.jsxMetadata,
+        store.editor.focusedElementPath,
+        colorTheme,
+      )
     })
   }, 'OutlineControls')
 

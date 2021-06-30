@@ -1,4 +1,6 @@
+import { useEditorState } from './../../components/editor/store/store-hook'
 import { Interpolation } from '@emotion/react'
+import { Theme } from './../../components/editor/store/editor-state'
 import { createUtopiColor } from './utopi-color-helpers'
 
 const base = {
@@ -49,40 +51,6 @@ const lightBase = {
   border1: createUtopiColor('hsl(0,0%,91%)', '', ''),
   border2: createUtopiColor('hsl(0,0%,86%)', '', ''),
   border3: createUtopiColor('hsl(0,0%,83%)', '', ''),
-}
-
-const darkBase = {
-  darkPrimary: base.blue.shade(150),
-  primary: base.blue,
-  component: base.purple,
-  componentChild: base.orange,
-  css: base.neongreen,
-  white: base.white,
-  transparent: base.transparent,
-  brandPurple: base.purple,
-  brandNeonYellow: base.neonyellow,
-  brandNeonPink: base.neonpink,
-  spectrumTop: base.white,
-  spectrumBottom: base.black,
-  bg0: createUtopiColor('#000000', 'brightest', 'white'),
-  bg1: createUtopiColor('#181C20', '', 'white'),
-  bg2: createUtopiColor('#373C4A', 'eg inputs', 'white'),
-  bg3: createUtopiColor('#55575F', 'visible buttons', 'white'),
-  bg4: createUtopiColor('#4C4D5B', 'hover states for buttons', 'white'),
-  bg5: createUtopiColor('#848998', 'selected elements', 'grey'),
-  fg0: createUtopiColor('#ffffff', 'emphasized foreground', 'black'),
-  fg1: createUtopiColor('#D9DCE3', 'default foreground', 'black'),
-  // fg2: createUtopiColor('red', 'black', 'black'),
-  fg3: createUtopiColor('pink', 'darkgray', 'darkgray'),
-  // fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
-  fg5: createUtopiColor('#8B91A0', 'leva', 'grey'),
-  fg6: createUtopiColor('#6F778B', 'grey', 'grey'),
-  fg7: createUtopiColor('#525B72', 'grey', 'grey'),
-  fg8: createUtopiColor('#2F374A', 'lightgrey', 'lightgrey'),
-  fg9: createUtopiColor('#151A27', 'lightgrey', 'lightgrey'),
-  border1: createUtopiColor('#181C20', '', ''),
-  border2: createUtopiColor('#181C20', '', ''),
-  border3: createUtopiColor('#181C20', '', ''),
 }
 
 const lightPrimitives = {
@@ -190,7 +158,153 @@ const light = {
   flasherHookColor: base.neonpink,
 }
 
+/** DARK **/
+const darkBase = {
+  darkPrimary: base.blue.shade(150),
+  primary: base.blue,
+  component: base.purple,
+  componentChild: base.orange,
+  css: base.neongreen,
+  white: base.white,
+  transparent: base.transparent,
+  brandPurple: base.purple,
+  brandNeonYellow: base.neonyellow,
+  brandNeonPink: base.neonpink,
+  spectrumTop: base.white,
+  spectrumBottom: base.black,
+  bg0: createUtopiColor('#000000', 'brightest', 'white'),
+  bg1: createUtopiColor('#181C20', '', 'white'),
+  bg2: createUtopiColor('#373C4A', 'eg inputs', 'white'),
+  bg3: createUtopiColor('#55575F', 'visible buttons', 'white'),
+  bg4: createUtopiColor('#4C4D5B', 'hover states for buttons', 'white'),
+  bg5: createUtopiColor('#848998', 'selected elements', 'grey'),
+  fg0: createUtopiColor('#ffffff', 'emphasized foreground', 'black'),
+  fg1: createUtopiColor('#D9DCE3', 'default foreground', 'black'),
+  // fg2: createUtopiColor('red', 'black', 'black'),
+  fg3: createUtopiColor('pink', 'darkgray', 'darkgray'),
+  // fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
+  fg5: createUtopiColor('#8B91A0', 'leva', 'grey'),
+  fg6: createUtopiColor('#6F778B', 'grey', 'grey'),
+  fg7: createUtopiColor('#525B72', 'grey', 'grey'),
+  fg8: createUtopiColor('#2F374A', 'lightgrey', 'lightgrey'),
+  fg9: createUtopiColor('#151A27', 'lightgrey', 'lightgrey'),
+  border1: createUtopiColor('#181C20', '', ''),
+  border2: createUtopiColor('#181C20', '', ''),
+  border3: createUtopiColor('#181C20', '', ''),
+}
+
+const darkPrimitives = {
+  // backgrounds
+  emphasizedBackground: darkBase.bg0,
+  neutralBackground: darkBase.bg1,
+  secondaryBackground: darkBase.bg2,
+  subtleBackground: darkBase.bg3,
+  neutralInvertedBackground: darkBase.fg1,
+
+  emphasizedForeground: darkBase.fg0,
+  neutralForeground: darkBase.fg1,
+  subduedForeground: darkBase.fg5,
+  verySubduedForeground: darkBase.fg8,
+  neutralInvertedForeground: darkBase.bg0,
+
+  neutralBorder: darkBase.border1,
+  secondaryBorder: darkBase.border2,
+  subduedBorder: darkBase.border3,
+}
+
+const darkErrorStates = {
+  errorForeground: base.red,
+  errorBgSolid: base.red.shade(70),
+  warningForeground: base.orange,
+  warningBgTranslucent: base.orange.o(20),
+  warningBgSolid: base.orange.shade(70),
+}
+const dark = {
+  ...darkBase,
+  ...darkPrimitives,
+  ...darkErrorStates,
+
+  // big sections
+  leftMenuBackground: darkPrimitives.neutralBackground,
+  leftPaneBackground: darkPrimitives.neutralBackground,
+  inspectorBackground: darkPrimitives.neutralBackground,
+  canvasBackground: darkPrimitives.secondaryBackground,
+  canvasLiveBackground: darkPrimitives.secondaryBackground.shade(30),
+  canvasLiveBorder: darkBase.primary,
+
+  // tabs. Nb: active tab matches canvasBackground
+  tabSelectedForeground: darkPrimitives.emphasizedForeground,
+  tabHoveredBackground: darkPrimitives.secondaryBackground,
+
+  // lists
+  listNewItemFlashBackground: createUtopiColor('rgb(211, 254, 162)', '', ''),
+
+  // canvas controls
+  canvasControlsSizeBoxBackground: createUtopiColor('white', 'white', 'white'),
+  canvasControlsSizeBoxShadowColor: createUtopiColor('black', 'black', 'black'),
+  canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)', '', ''),
+  canvasControlsCoordinateSystemMarks: base.neonpink,
+  canvasControlsImmediateParentMarks: base.black.o(25),
+
+  canvasSelectionPrimaryOutline: darkBase.primary,
+  canvasSelectionInstanceOutline: base.purple,
+  canvasSelectionSceneOutline: base.purple,
+  canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
+  canvasSelectionAlternateOutlineYogaParent: base.neonpink,
+  canvasSelectionAlternateOutlineYogaChild: base.neonpink.shade(80),
+  canvasSelectionSecondaryOutline: base.almostBlack.o(50),
+  CanvasSelectionNotFocusable: base.darkgray,
+  canvasDraggingPlaceholderYoga: base.neonpink.o(30),
+
+  canvasSelectionFocusable: base.purple,
+  canvasSelectionIsolatedComponent: base.purple,
+  //Children of isolated component
+  canvasSelectionNotFocusableChild: base.darkorange,
+  canvasSelectionFocusableChild: base.purple,
+
+  canvasLayoutForeground: base.neonpink,
+  canvasLayoutFillSolid: base.neonpink,
+  canvasLayoutFillTranslucent: base.neonpink.shade(10).o(90),
+  canvasLayoutStroke: base.neonpink,
+
+  paddingForeground: base.neongreen,
+  paddingFillSolid: base.neongreen,
+  paddingFillTranslucent: base.neongreen.shade(10).o(90),
+  paddingStroke: base.neongreen,
+
+  // interface elements: buttons, segment controls, checkboxes etc
+
+  inlineButtonColor: darkBase.primary,
+  buttonBackground: darkBase.bg2,
+  buttonHoverBackground: darkBase.bg3,
+
+  // application utilities:
+  resizingDisplayBackground: darkBase.fg3,
+  resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)', '90%', 'dark'),
+  navigatorResizeHintBorder: darkBase.primary,
+  navigatorComponentName: darkBase.primary,
+  navigatorComponentSelected: base.orange.o(20),
+  navigatorComponentIconBorder: base.orange,
+
+  contextMenuBackground: darkPrimitives.secondaryBackground,
+  contextMenuForeground: darkPrimitives.neutralForeground,
+  contextMenuHighlightForeground: base.white,
+  contextMenuHighlightBackground: darkBase.primary,
+  contextMenuSeparator: base.black.o(10),
+
+  inspectorFocusedColor: darkBase.primary,
+  inspectorSetBorderColor: darkPrimitives.neutralBorder,
+  flasherHookColor: base.neonpink,
+}
+
 export const colorTheme = light
+
+// TODO: don't export colorTheme anymore and just export useUtopiaTheme() hook
+// prerequisites: no class components and usage of UtopiaTheme.color instead of colorTheme
+export const useColorTheme = () => {
+  const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
+  return currentTheme === 'dark' ? dark : light
+}
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38

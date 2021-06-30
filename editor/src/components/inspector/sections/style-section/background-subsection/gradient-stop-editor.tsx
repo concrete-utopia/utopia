@@ -22,7 +22,7 @@ import {
 } from '../../../controls/color-picker'
 import { inspectorEdgePadding } from './background-picker'
 import { clampValue } from '../../../../../core/shared/math-utils'
-import { colorTheme, FlexColumn, UtopiaTheme } from '../../../../../uuiui'
+import { useColorTheme, FlexColumn, UtopiaTheme } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface GradientStopProps {
@@ -46,6 +46,7 @@ const GradientStop = betterReactMemo<GradientStopProps>(
     indexedUpdateStop,
     indexedDeleteStop,
   }) => {
+    const colorTheme = useColorTheme()
     const valueAtDragOrigin = React.useRef<number | undefined>(undefined)
     const dragScreenOrigin = React.useRef<
       | {
@@ -368,7 +369,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
     onSubmitValueAndUpdateLocalStops: setLocalAndEditorStops,
   }) => {
     const ref: React.RefObject<HTMLDivElement> = React.useRef(null)
-
+    const colorTheme = useColorTheme()
     const onMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
         if (ref.current != null) {

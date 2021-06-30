@@ -1,6 +1,7 @@
 import * as UtopiaAPI from 'utopia-api'
 import * as UUIUI from '../../../uuiui'
 import * as UUIUIDeps from '../../../uuiui-deps'
+import * as ReactJsxRuntime from 'react/jsx-runtime'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'
@@ -57,6 +58,7 @@ export const BuiltInDependencies = (mode: 'preview' | 'canvas'): Array<BuiltInDe
   builtInDependency('utopia-api', UtopiaAPI, utopiaAPIPackageJSON.version),
   builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
   builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
+  builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
   builtInDependency('react', React, editorPackageJSON.dependencies.react),
   builtInDependency('react-dom', SafeReactDOM(mode), editorPackageJSON.dependencies['react-dom']),
   builtInDependency(

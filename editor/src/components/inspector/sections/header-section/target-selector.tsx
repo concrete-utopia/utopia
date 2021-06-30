@@ -4,7 +4,7 @@ import * as React from 'react'
 import Utils from '../../../../utils/utils'
 import {
   FlexColumn,
-  colorTheme,
+  useColorTheme,
   FlexRow,
   UtopiaTheme,
   UtopiaStyles,
@@ -47,6 +47,7 @@ interface TargetSelectorPanelProps {
 export const TargetSelectorPanel = betterReactMemo(
   'TargetSelectorPanel',
   (props: TargetSelectorPanelProps) => {
+    const colorTheme = useColorTheme()
     const {
       targets,
       onSelect,
@@ -227,6 +228,7 @@ interface TargetListItemProps {
 TargetList.displayName = 'TargetList'
 
 const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemProps) => {
+  const colorTheme = useColorTheme()
   const {
     itemIndex,
     target,
@@ -388,6 +390,7 @@ interface TargetListHeaderProps {
 }
 
 const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListHeaderProps) => {
+  const colorTheme = useColorTheme()
   const { isOpen, setIsOpen, setAddingIndex, selectedTargetPath: selectedItem, isAdding } = props
 
   const startAdding = React.useCallback(() => {

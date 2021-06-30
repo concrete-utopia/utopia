@@ -6,7 +6,7 @@ import {
   BackgroundThumbnailControlProps,
 } from '../controls/background-solid-or-gradient-thumbnail-control'
 import { clampString } from '../common/inspector-utils'
-import { Tooltip, FlexRow, UtopiaTheme, colorTheme, Icn } from '../../../uuiui'
+import { Tooltip, FlexRow, UtopiaTheme, useColorTheme, Icn } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 
 interface ImageThumbnailControlProps extends BackgroundThumbnailControlProps {
@@ -16,6 +16,7 @@ interface ImageThumbnailControlProps extends BackgroundThumbnailControlProps {
 export const ImageThumbnailControl = betterReactMemo<ImageThumbnailControlProps>(
   'ImageThumbnailControl',
   (props) => {
+    const colorTheme = useColorTheme()
     const [imageNotFound, setImageNotFound] = React.useState(false)
     const onError = React.useCallback(() => {
       setImageNotFound(true)

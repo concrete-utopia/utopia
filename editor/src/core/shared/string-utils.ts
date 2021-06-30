@@ -39,3 +39,11 @@ export function splitIntoLines(s: string): Array<string> {
 export function splitAt(index: number, value: string): [string, string] {
   return [value.slice(0, index), value.slice(index, value.length)]
 }
+
+export function trimUpToAndIncluding(prefix: string, target: string): string {
+  if (target.includes(prefix)) {
+    return target.slice(target.indexOf(prefix) + prefix.length)
+  } else {
+    return target
+  }
+}

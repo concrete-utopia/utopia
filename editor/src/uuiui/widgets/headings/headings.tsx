@@ -1,5 +1,6 @@
 import styled from '@emotion/styled'
 import { disabledOpacityStyle } from '../../styles/utopitrons'
+//TODO: refactor styled components to functional components and use 'useColorTheme':
 import { colorTheme, UtopiaTheme } from '../../styles/theme'
 import { FlexRow } from '../layout/flex-row'
 

@@ -4,7 +4,7 @@ import * as React from 'react'
 import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
 import { ContextMenuItem } from '../context-menu-items'
 import { NO_OP } from '../../core/shared/utils'
-import { colorTheme, FlexRow, UtopiaTheme, Tooltip, Icons } from '../../uuiui'
+import { useColorTheme, FlexRow, UtopiaTheme, Tooltip, Icons } from '../../uuiui'
 import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
 import { handleKeyDown } from '../editor/global-shortcuts'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
@@ -18,20 +18,6 @@ interface DependencyListItemProps {
   removeDependency: (key: string) => void
 }
 
-const LoadingTextColor = colorTheme.subduedForeground.value
-const DefaultTextColor = colorTheme.neutralForeground.value
-
-const FlashAnimation = keyframes({
-  from: {
-    backgroundColor: colorTheme.listNewItemFlashBackground.o(100).value,
-    color: colorTheme.subduedForeground.value,
-  },
-  to: {
-    backgroundColor: colorTheme.listNewItemFlashBackground.o(0).value,
-    color: colorTheme.neutralForeground.value,
-  },
-})
-
 export const DependencyListItem: React.FunctionComponent<DependencyListItemProps> = ({
   packageDetails,
   editingLocked,
@@ -40,7 +26,26 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
   updateDependencyToLatestVersion,
   removeDependency,
 }) => {
+  const colorTheme = useColorTheme()
   const ref = React.useRef<HTMLDivElement>(null)
+
+  const LoadingTextColor = colorTheme.subduedForeground.value
+  const DefaultTextColor = colorTheme.neutralForeground.value
+
+  const FlashAnimation = React.useMemo(
+    () =>
+      keyframes({
+        from: {
+          backgroundColor: colorTheme.listNewItemFlashBackground.o(100).value,
+          color: colorTheme.subduedForeground.value,
+        },
+        to: {
+          backgroundColor: colorTheme.listNewItemFlashBackground.o(0).value,
+          color: colorTheme.neutralForeground.value,
+        },
+      }),
+    [colorTheme],
+  )
 
   const isLoading =
     packageDetails.status === 'loading' || packageDetails.status === 'version-lookup'

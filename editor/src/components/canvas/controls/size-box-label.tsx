@@ -14,7 +14,7 @@ import { determineElementsToOperateOnForDragging } from './select-mode/move-util
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
-import { colorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 
 interface SizeBoxLabelProps {
   visible: boolean
@@ -27,6 +27,7 @@ interface SizeBoxLabelProps {
 }
 
 export const SizeBoxLabel = React.memo((props: SizeBoxLabelProps) => {
+  const colorTheme = useColorTheme()
   const showAdvancedResizeLabel = isFeatureEnabled('Advanced Resize Box')
   const fontSize = ControlFontSize / props.scale
   const borderRadius = 2 / props.scale

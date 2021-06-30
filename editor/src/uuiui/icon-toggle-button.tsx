@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { colorTheme } from './styles/theme'
+import { useColorTheme } from './styles/theme'
 
 interface IconToggleButtonProps {
   value: boolean
@@ -13,6 +13,7 @@ interface IconToggleButtonProps {
 
 export const IconToggleButton = React.forwardRef<HTMLDivElement, IconToggleButtonProps>(
   (props, ref) => {
+    const colorTheme = useColorTheme()
     const { value, onToggle, srcOn, srcOff, className } = props
     return (
       <div

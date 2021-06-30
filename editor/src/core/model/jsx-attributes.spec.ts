@@ -100,6 +100,16 @@ function sampleJsxAttributes(): JSXAttributes {
         }),
         emptyComments,
       ),
+      objectWithNestedArray: jsxAttributeNestedObjectSimple(
+        jsxAttributesFromMap({
+          array: jsxAttributeNestedArraySimple([
+            jsxAttributeValue(0, emptyComments),
+            jsxAttributeValue(1, emptyComments),
+            jsxAttributeValue(2, emptyComments),
+          ]),
+        }),
+        emptyComments,
+      ),
       doggo: jsxAttributeOtherJavaScript('props.hello', 'return props.hello;', ['props'], null),
       objectValue: jsxAttributeValue(
         {
@@ -137,6 +147,9 @@ const expectedCompiledProps = {
     },
   },
   objectWithArray: {
+    array: [0, 1, 2],
+  },
+  objectWithNestedArray: {
     array: [0, 1, 2],
   },
   doggo: 'kitty',
@@ -221,6 +234,42 @@ describe('setJSXValueAtPath', () => {
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
     expect(compiledProps.objectWithArray.array).toEqual([0, 1, 'wee'])
+  })
+
+  it('updating a NESTED_ARRAY at a deep path works', () => {
+    const updatedAttributes = forceRight(
+      setJSXValueAtPath(
+        sampleJsxAttributes(),
+        PP.create(['objectWithNestedArray', 'array', 2]),
+        jsxAttributeValue('wee', emptyComments),
+      ),
+    )
+    const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
+    expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
+  })
+
+  it('updating a NESTED_ARRAY at a deep path works and it is resilient to string attribute keys', () => {
+    const updatedAttributes = forceRight(
+      setJSXValueAtPath(
+        sampleJsxAttributes(),
+        PP.create(['objectWithNestedArray', 'array', '2']),
+        jsxAttributeValue('wee', emptyComments),
+      ),
+    )
+    const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
+    expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
+  })
+
+  it('updating a NESTED_ARRAY with a string key converts it to object', () => {
+    const updatedAttributes = forceRight(
+      setJSXValueAtPath(
+        sampleJsxAttributes(),
+        PP.create(['objectWithNestedArray', 'array', 'wee']),
+        jsxAttributeValue('wee', emptyComments),
+      ),
+    )
+    const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
+    expect(compiledProps.objectWithNestedArray.array).toEqual({ 0: 0, 1: 1, 2: 2, wee: 'wee' })
   })
 
   it('updating part of an ATTRIBUTE_VALUE which is a string throws error', () => {

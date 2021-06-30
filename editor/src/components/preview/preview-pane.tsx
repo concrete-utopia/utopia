@@ -14,6 +14,7 @@ import { ProjectContentTreeRoot } from '../assets'
 import {
   FlexRow,
   Button,
+  //TODO: switch to functional component and make use of 'useColorTheme':
   colorTheme,
   FlexColumn,
   UtopiaTheme,
