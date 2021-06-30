@@ -953,7 +953,7 @@ export function parseAttributeOtherJavaScript(
     existingHighlightBounds,
     alreadyExistingUIDs,
     '',
-    (code, _, definedElsewhere, fileSourceNode) => {
+    (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
       const transpileEither = transpileJavascriptFromCode(
@@ -961,7 +961,7 @@ export function parseAttributeOtherJavaScript(
         sourceFile.text,
         codeFromFile,
         rawMap,
-        [],
+        parsedElementsWithin,
         true,
       )
       return mapEither((transpileResult) => {
@@ -973,10 +973,16 @@ export function parseAttributeOtherJavaScript(
           RETURN_TO_PREPEND,
           '',
         )
+        // Sneak the function in here if something needs to use it to display
+        // the element on the canvas.
+        let innerDefinedElsewhere = definedElsewhere
+        if (Object.keys(parsedElementsWithin).length > 0) {
+          innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
+        }
         return jsxAttributeOtherJavaScript(
           code,
           prependedWithReturn.code,
-          definedElsewhere,
+          innerDefinedElsewhere,
           prependedWithReturn.sourceMap,
         )
       }, transpileEither)
