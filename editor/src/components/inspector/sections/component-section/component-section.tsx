@@ -772,7 +772,7 @@ export const ComponentSectionInner = betterReactMemo(
         ) : null}
         {stateData != null && (
           <>
-            <InspectorSubsectionHeader>Initial State</InspectorSubsectionHeader>
+            <InspectorSubsectionHeader>Component UseState</InspectorSubsectionHeader>
             {Object.keys(stateData).map((key) => {
               return (
                 <UIGridRow
@@ -781,7 +781,7 @@ export const ComponentSectionInner = betterReactMemo(
                   tall={false}
                   variant={'<-------------1fr------------->'}
                 >
-                  {key}: {JSON.stringify(stateData[key])}
+                  {key}: {JSON.stringify(stateData[key][0])}
                 </UIGridRow>
               )
             })}

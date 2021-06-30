@@ -262,7 +262,7 @@ function useClearSpyMetadataOnRemount(
   canvasMountCountRef.current = canvasMountCount
   domWalkerInvalidateCountRef.current = domWalkerInvalidateCount
 }
-
+let count = 0
 export const UiJsxCanvas = betterReactMemo(
   'UiJsxCanvas',
   React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
@@ -305,6 +305,13 @@ export const UiJsxCanvas = betterReactMemo(
     const dispatch = useRefEditorState((state) => state.dispatch)
     window.setInterval(() => {
       if (Object.keys(metadataContext.current.componentStateValues).length > 0) {
+        Object.keys(metadataContext.current.componentStateValues).map((k) => {
+          try {
+            // metadataContext.current.componentStateValues[k]['useState1'][1](count++)
+          } catch (e) {
+            console.error('metadataContext.current.componentStateValues updater not found', e)
+          }
+        })
         dispatch.current(
           [updateComponentStateData(metadataContext.current.componentStateValues)],
           'everyone',

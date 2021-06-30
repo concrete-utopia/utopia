@@ -495,6 +495,7 @@ import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { reverse, uniqBy } from '../../../core/shared/array-utils'
+import { MapLike } from 'typescript'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -4330,9 +4331,13 @@ export const UPDATE_FNS = {
     action: UpdateComponentStateData,
     editor: EditorModel,
   ): EditorModel => {
+    const copiedValue: MapLike<MapLike<any>> = {}
+    fastForEach(Object.keys(action.value), (k) => {
+      copiedValue[k] = { ...action.value[k] }
+    })
     return {
       ...editor,
-      componentStateData: action.value,
+      componentStateData: copiedValue,
     }
   },
 }
