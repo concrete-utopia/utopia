@@ -136,7 +136,9 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
 }
 
 function NoOpLookupRender(element: JSXElement, scope: MapLike<any>): React.ReactChild {
-  throw new Error('Utopia Error: createLookupRender was not used properly')
+  throw new Error(
+    `Utopia Error: createLookupRender was not used properly for element: ${element.name.baseVariable}`,
+  )
 }
 
 export function renderCoreElement(
@@ -191,14 +193,16 @@ export function renderCoreElement(
           )
         : NoOpLookupRender
 
-      const blockScope = {
-        ...inScope,
-        [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
-          elementsWithinProps,
-          inScope,
-          innerRender,
-        ),
-      }
+      const blockScope = anyElementsWithin
+        ? {
+            ...inScope,
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+              elementsWithinProps,
+              inScope,
+              innerRender,
+            ),
+          }
+        : inScope
 
       const assembledProps = jsxAttributesToProps(blockScope, element.props, requireResult)
 
