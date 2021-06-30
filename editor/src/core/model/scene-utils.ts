@@ -76,6 +76,7 @@ export function mapScene(scene: SceneMetadata): JSXElement {
       `return ${scene.component}`,
       [],
       null,
+      {},
     ),
     props: jsxAttributeValue(scene.props, emptyComments),
     style: jsxAttributeValue(scene.frame, emptyComments),

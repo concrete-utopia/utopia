@@ -330,7 +330,7 @@ function printColor(value: unknown): JSXAttribute {
 }
 
 function printJS<T>(value: T): JSXAttribute {
-  return jsxAttributeOtherJavaScript(`${value}`, `return ${value}`, [], null)
+  return jsxAttributeOtherJavaScript(`${value}`, `return ${value}`, [], null, {})
 }
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {

@@ -984,6 +984,7 @@ export function parseAttributeOtherJavaScript(
           prependedWithReturn.code,
           innerDefinedElsewhere,
           prependedWithReturn.sourceMap,
+          inPositionToElementsWithin(parsedElementsWithin),
         )
       }, transpileEither)
     },
@@ -1312,7 +1313,7 @@ function getAttributeExpression(
     if (initializer.expression == null) {
       return right(
         withParserMetadata(
-          jsxAttributeOtherJavaScript('null', 'null', [], null),
+          jsxAttributeOtherJavaScript('null', 'null', [], null, {}),
           existingHighlightBounds,
           [],
           [],
