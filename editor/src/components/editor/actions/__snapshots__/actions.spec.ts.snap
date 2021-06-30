@@ -167,6 +167,7 @@ Array [
                 "definedElsewhere": Array [
                   "App",
                 ],
+                "elementsWithin": Object {},
                 "javascript": "App",
                 "sourceMap": null,
                 "transpiledJavascript": "return App",
@@ -393,6 +394,7 @@ Array [
                 "definedElsewhere": Array [
                   "App",
                 ],
+                "elementsWithin": Object {},
                 "javascript": "App",
                 "sourceMap": null,
                 "transpiledJavascript": "return App",

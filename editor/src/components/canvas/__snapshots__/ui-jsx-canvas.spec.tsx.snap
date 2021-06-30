@@ -519,6 +519,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -1413,6 +1414,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -1591,9 +1593,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <input
-      data-uid=\\"78b 567 app-entity\\"
+      data-uid=\\"00f 567 app-entity\\"
       style=\\"top: 10px;\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:78b utopia-storyboard-uid/scene-aaa/app-entity:567 utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:00f utopia-storyboard-uid/scene-aaa/app-entity:567 utopia-storyboard-uid/scene-aaa/app-entity\\"
     />
   </div>
 </div>
@@ -7247,6 +7249,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -7818,6 +7821,7 @@ Object {
                       "definedElsewhere": Array [
                         "n",
                       ],
+                      "elementsWithin": Object {},
                       "javascript": "'n' + n",
                       "sourceMap": Object {
                         "file": "code.tsx",
@@ -8062,6 +8066,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -8236,6 +8241,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -8410,6 +8416,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -8974,6 +8981,7 @@ Object {
                       "definedElsewhere": Array [
                         "n",
                       ],
+                      "elementsWithin": Object {},
                       "javascript": "'n' + n",
                       "sourceMap": Object {
                         "file": "code.tsx",
@@ -9218,6 +9226,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -9392,6 +9401,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -9566,6 +9576,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -11761,6 +11772,7 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
+                  "elementsWithin": Object {},
                   "javascript": "props.title",
                   "sourceMap": Object {
                     "file": "code.tsx",
@@ -11848,6 +11860,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -12079,6 +12092,7 @@ Object {
               "definedElsewhere": Array [
                 "props",
               ],
+              "elementsWithin": Object {},
               "javascript": "props.title",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -12699,6 +12713,7 @@ Object {
                   "definedElsewhere": Array [
                     "props",
                   ],
+                  "elementsWithin": Object {},
                   "javascript": "props.title",
                   "sourceMap": Object {
                     "file": "code.tsx",
@@ -12786,6 +12801,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -13017,6 +13033,7 @@ Object {
               "definedElsewhere": Array [
                 "props",
               ],
+              "elementsWithin": Object {},
               "javascript": "props.title",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -13650,6 +13667,7 @@ Object {
                         "definedElsewhere": Array [
                           "props",
                         ],
+                        "elementsWithin": Object {},
                         "javascript": "props.title",
                         "sourceMap": Object {
                           "file": "code.tsx",
@@ -13773,6 +13791,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -14016,6 +14035,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.title",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -14691,6 +14711,7 @@ Object {
                         "definedElsewhere": Array [
                           "props",
                         ],
+                        "elementsWithin": Object {},
                         "javascript": "props.title",
                         "sourceMap": Object {
                           "file": "code.tsx",
@@ -14814,6 +14835,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -15057,6 +15079,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.title",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -16388,6 +16411,7 @@ export var storyboard = (props) => {
                           "definedElsewhere": Array [
                             "pair",
                           ],
+                          "elementsWithin": Object {},
                           "javascript": "pair.label",
                           "sourceMap": Object {
                             "file": "code.tsx",
@@ -16545,6 +16569,7 @@ export var storyboard = (props) => {
                               "definedElsewhere": Array [
                                 "pair",
                               ],
+                              "elementsWithin": Object {},
                               "javascript": "pair.macKeys",
                               "sourceMap": Object {
                                 "file": "code.tsx",
@@ -16699,6 +16724,7 @@ export var storyboard = (props) => {
                           "definedElsewhere": Array [
                             "pair",
                           ],
+                          "elementsWithin": Object {},
                           "javascript": "pair.macKeys",
                           "sourceMap": Object {
                             "file": "code.tsx",
@@ -17019,6 +17045,7 @@ export var storyboard = (props) => {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -17572,6 +17599,7 @@ export var storyboard = (props) => {
                       "definedElsewhere": Array [
                         "pair",
                       ],
+                      "elementsWithin": Object {},
                       "javascript": "pair.label",
                       "sourceMap": Object {
                         "file": "code.tsx",
@@ -17729,6 +17757,7 @@ export var storyboard = (props) => {
                           "definedElsewhere": Array [
                             "pair",
                           ],
+                          "elementsWithin": Object {},
                           "javascript": "pair.macKeys",
                           "sourceMap": Object {
                             "file": "code.tsx",
@@ -17883,6 +17912,7 @@ export var storyboard = (props) => {
                       "definedElsewhere": Array [
                         "pair",
                       ],
+                      "elementsWithin": Object {},
                       "javascript": "pair.macKeys",
                       "sourceMap": Object {
                         "file": "code.tsx",
@@ -18414,6 +18444,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.label",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -18763,6 +18794,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.label",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -19112,6 +19144,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.label",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -19342,6 +19375,7 @@ export var storyboard = (props) => {
                   "definedElsewhere": Array [
                     "pair",
                   ],
+                  "elementsWithin": Object {},
                   "javascript": "pair.macKeys",
                   "sourceMap": Object {
                     "file": "code.tsx",
@@ -19496,6 +19530,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -19728,6 +19763,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -19979,6 +20015,7 @@ export var storyboard = (props) => {
                   "definedElsewhere": Array [
                     "pair",
                   ],
+                  "elementsWithin": Object {},
                   "javascript": "pair.macKeys",
                   "sourceMap": Object {
                     "file": "code.tsx",
@@ -20133,6 +20170,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -20361,6 +20399,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -20608,6 +20647,7 @@ export var storyboard = (props) => {
                   "definedElsewhere": Array [
                     "pair",
                   ],
+                  "elementsWithin": Object {},
                   "javascript": "pair.macKeys",
                   "sourceMap": Object {
                     "file": "code.tsx",
@@ -20762,6 +20802,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -20990,6 +21031,7 @@ export var storyboard = (props) => {
               "definedElsewhere": Array [
                 "pair",
               ],
+              "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -22439,6 +22481,7 @@ Object {
               "definedElsewhere": Array [
                 "console",
               ],
+              "elementsWithin": Object {},
               "javascript": "() => console.log('class component')",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -22964,6 +23007,7 @@ Object {
               "definedElsewhere": Array [
                 "console",
               ],
+              "elementsWithin": Object {},
               "javascript": "() => console.log('functional component')",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -23034,6 +23078,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -23205,7 +23250,9 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
         style=\\"background-color: pink; width: 100%; height: 20px;\\"
         data-paths=\\"eee/fff/app-entity:aaa/bbb:ddd eee/fff/app-entity:aaa/bbb\\"
       >
-        <div data-uid=\\"ccc\\">test</div>
+        <div data-uid=\\"ccc~~~1\\" data-paths=\\"eee/fff/app-entity:aaa/ccc~~~1\\">
+          test
+        </div>
       </div>
     </div>
   </div>
@@ -23557,15 +23604,50 @@ Object {
                 "value": Object {
                   "definedElsewhere": Array [
                     "React",
+                    "utopiaCanvasJSXLookup",
                   ],
+                  "elementsWithin": Object {
+                    "ccc": Object {
+                      "children": Array [
+                        Object {
+                          "text": "test",
+                          "type": "JSX_TEXT_BLOCK",
+                          "uniqueID": "c6709bd3-2f50-4c50-b858-289adc095612",
+                        },
+                      ],
+                      "name": Object {
+                        "baseVariable": "div",
+                        "propertyPath": Object {
+                          "propertyElements": Array [],
+                        },
+                      },
+                      "props": Array [
+                        Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "key": "data-uid",
+                          "type": "JSX_ATTRIBUTES_ENTRY",
+                          "value": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": "ccc",
+                          },
+                        },
+                      ],
+                      "type": "JSX_ELEMENT",
+                      "uid": "ccc",
+                    },
+                  },
                   "javascript": "<div data-uid={'ccc'}>test</div>",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAWuCA;AAAIC,cAAWC;AAAfF,UAADG",
+                    "mappings": "OAWsCA;AAAAA;AAAAA",
                     "names": Array [
-                      "div",
-                      "data",
-                      "ccc",
                       "<",
                     ],
                     "sources": Array [
@@ -23605,9 +23687,9 @@ export var storyboard = (
                     ],
                     "version": 3,
                   },
-                  "transpiledJavascript": "return React.createElement(\\"div\\", {
-  \\"data-uid\\": 'ccc'
-}, \\"test\\");",
+                  "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"ccc\\", {
+  callerThis: this
+});",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
                   "uniqueID": "",
                 },
@@ -23774,15 +23856,50 @@ export var storyboard = (
             "value": Object {
               "definedElsewhere": Array [
                 "React",
+                "utopiaCanvasJSXLookup",
               ],
+              "elementsWithin": Object {
+                "ccc": Object {
+                  "children": Array [
+                    Object {
+                      "text": "test",
+                      "type": "JSX_TEXT_BLOCK",
+                      "uniqueID": "c6709bd3-2f50-4c50-b858-289adc095612",
+                    },
+                  ],
+                  "name": Object {
+                    "baseVariable": "div",
+                    "propertyPath": Object {
+                      "propertyElements": Array [],
+                    },
+                  },
+                  "props": Array [
+                    Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "key": "data-uid",
+                      "type": "JSX_ATTRIBUTES_ENTRY",
+                      "value": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
+                        "type": "ATTRIBUTE_VALUE",
+                        "value": "ccc",
+                      },
+                    },
+                  ],
+                  "type": "JSX_ELEMENT",
+                  "uid": "ccc",
+                },
+              },
               "javascript": "<div data-uid={'ccc'}>test</div>",
               "sourceMap": Object {
                 "file": "code.tsx",
-                "mappings": "OAWuCA;AAAIC,cAAWC;AAAfF,UAADG",
+                "mappings": "OAWsCA;AAAAA;AAAAA",
                 "names": Array [
-                  "div",
-                  "data",
-                  "ccc",
                   "<",
                 ],
                 "sources": Array [
@@ -23822,9 +23939,9 @@ export var storyboard = (
                 ],
                 "version": 3,
               },
-              "transpiledJavascript": "return React.createElement(\\"div\\", {
-  \\"data-uid\\": 'ccc'
-}, \\"test\\");",
+              "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"ccc\\", {
+  callerThis: this
+});",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uniqueID": "",
             },
@@ -25419,6 +25536,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
@@ -26151,6 +26269,7 @@ Object {
                       "definedElsewhere": Array [
                         "n",
                       ],
+                      "elementsWithin": Object {},
                       "javascript": "'n' + n",
                       "sourceMap": Object {
                         "file": "code.tsx",
@@ -26395,6 +26514,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -26569,6 +26689,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -26743,6 +26864,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -27307,6 +27429,7 @@ Object {
                       "definedElsewhere": Array [
                         "div",
                       ],
+                      "elementsWithin": Object {},
                       "javascript": "'n' + div",
                       "sourceMap": Object {
                         "file": "code.tsx",
@@ -27552,6 +27675,7 @@ Object {
               "definedElsewhere": Array [
                 "div",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + div",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -27727,6 +27851,7 @@ Object {
               "definedElsewhere": Array [
                 "div",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + div",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -27902,6 +28027,7 @@ Object {
               "definedElsewhere": Array [
                 "div",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + div",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -28468,6 +28594,7 @@ Object {
                       "definedElsewhere": Array [
                         "n",
                       ],
+                      "elementsWithin": Object {},
                       "javascript": "'n' + n",
                       "sourceMap": Object {
                         "file": "code.tsx",
@@ -28718,6 +28845,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -28892,6 +29020,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -29066,6 +29195,7 @@ Object {
               "definedElsewhere": Array [
                 "n",
               ],
+              "elementsWithin": Object {},
               "javascript": "'n' + n",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -29690,6 +29820,7 @@ Object {
               "definedElsewhere": Array [
                 "props",
               ],
+              "elementsWithin": Object {},
               "javascript": "props",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -30918,6 +31049,7 @@ Object {
               "definedElsewhere": Array [
                 "storeRef",
               ],
+              "elementsWithin": Object {},
               "javascript": "storeRef",
               "sourceMap": Object {
                 "file": "code.tsx",
@@ -33236,6 +33368,7 @@ Object {
                     "definedElsewhere": Array [
                       "props",
                     ],
+                    "elementsWithin": Object {},
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",

@@ -482,6 +482,7 @@ return { otherFn: otherFn };",
                     "cakeFn",
                     "otherFn",
                   ],
+                  "elementsWithin": Object {},
                   "javascript": "cakeFn(otherFn('b') + 2)",
                   "sourceMap": Object {
                     "file": "code.tsx",
