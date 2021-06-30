@@ -23612,7 +23612,7 @@ Object {
                         Object {
                           "text": "test",
                           "type": "JSX_TEXT_BLOCK",
-                          "uniqueID": "c6709bd3-2f50-4c50-b858-289adc095612",
+                          "uniqueID": "",
                         },
                       ],
                       "name": Object {
@@ -23864,7 +23864,7 @@ export var storyboard = (
                     Object {
                       "text": "test",
                       "type": "JSX_TEXT_BLOCK",
-                      "uniqueID": "c6709bd3-2f50-4c50-b858-289adc095612",
+                      "uniqueID": "",
                     },
                   ],
                   "name": Object {

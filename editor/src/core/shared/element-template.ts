@@ -329,9 +329,11 @@ export type JSXAttribute =
 export function clearJSXAttributeOtherJavaScriptUniqueIDs(
   attribute: JSXAttributeOtherJavaScript,
 ): JSXAttributeOtherJavaScript {
+  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
   return {
     ...attribute,
     uniqueID: '',
+    elementsWithin: updatedElementsWithin,
   }
 }
 
