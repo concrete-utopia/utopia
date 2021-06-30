@@ -44,7 +44,7 @@ Subsequently it should be possible to just run, unless either changes have been 
 start-minimal
 ```
 
-Both of these scripts result in a tmux session with all of the various servers running and watching for changes.
+Both of these scripts result in a tmux session with all of the various servers running and watching for changes. You can see all of the active sessions in the bar along the bottom, prefixed by the "window" number that they are running in. You should be able to click on each of those to switch to viewing that session, or if that doesn't work you can use the key combo `cmd`+`b` (macOS) or `ctrl`+`b` (Linux or Windows), followed by the number for that session. (see [here](https://github.com/tmux/tmux/wiki/Getting-Started#changing-the-current-window) for the relevant tmux docs)
 
 To shut them down, in the "Scratchpad" tab of the session run the following command:
 
