@@ -76,6 +76,8 @@ import { testStaticElementPath } from '../../core/shared/element-path.test-utils
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
+import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack ?? reason)
@@ -85,6 +87,23 @@ try {
   jest.mock('../../core/vscode/vscode-bridge')
 } catch (e) {
   // mock fails don't care
+}
+
+const FailJestOnCanvasError = () => {
+  const stableCallback = React.useCallback((newRuntimeErrors: Array<RuntimeErrorInfo>) => {
+    // we have new runtime errors, let's take the tests down
+    if (newRuntimeErrors.length > 0) {
+      const errorMessage = `The test run threw the following canvas error(s): ${newRuntimeErrors
+        .map((e) => e.error)
+        .join(', ')}`
+      fail(errorMessage)
+      throw new Error(errorMessage) // just in case (?) the fail() wouldn't be effective
+    }
+  }, [])
+
+  useUpdateOnRuntimeErrors(stableCallback)
+
+  return null
 }
 
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
@@ -194,6 +213,7 @@ export async function renderTestEditorWithModel(
         numberOfCommits++
       }}
     >
+      <FailJestOnCanvasError />
       <HotRoot
         api={storeHook}
         useStore={storeHook}
