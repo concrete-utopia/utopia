@@ -97,3 +97,5 @@ declare module '@svgr/plugin-jsx'
 declare module '@root/encoding/base64'
 
 declare module 'react/jsx-runtime'
+
+declare module 'react-contexify'

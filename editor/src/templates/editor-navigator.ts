@@ -1,4 +1,4 @@
-import * as update from 'immutability-helper'
+import update from 'immutability-helper'
 import { ElementPath } from '../core/shared/project-file-types'
 import { DerivedState, EditorState } from '../components/editor/store/editor-state'
 import { LocalNavigatorAction } from '../components/navigator/actions'

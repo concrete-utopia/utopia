@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import * as classNames from 'classnames'
+import classNames from 'classnames'
 import * as React from 'react'
 import { StringInput } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'

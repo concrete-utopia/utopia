@@ -1,4 +1,4 @@
-import * as pathParse from 'path-parse'
+import pathParse from 'path-parse'
 import * as path from 'path'
 import { MultiFileBuildResult } from '../../core/workers/ts/ts-worker'
 import Utils from '../../utils/utils'

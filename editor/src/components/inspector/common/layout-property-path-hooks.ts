@@ -1,4 +1,4 @@
-import * as fastDeepEqual from 'fast-deep-equal'
+import fastDeepEqual from 'fast-deep-equal'
 import {
   AllFramePoints,
   Frame,

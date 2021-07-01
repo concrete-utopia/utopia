@@ -1,4 +1,4 @@
-import * as ChromaWrongTypes from 'chroma-js'
+import ChromaWrongTypes from 'chroma-js'
 import { clamp } from '../../core/shared/math-utils'
 const Chroma = ChromaWrongTypes as any
 

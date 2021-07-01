@@ -1,4 +1,4 @@
-import * as fastDeepEquals from 'fast-deep-equal'
+import fastDeepEquals from 'fast-deep-equal'
 import React = require('react')
 import {
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
