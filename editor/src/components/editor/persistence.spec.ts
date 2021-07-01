@@ -18,7 +18,7 @@ import { addFileToProjectContents, getContentsTreeFileFromString } from '../asse
 import { forceNotNull } from '../../core/shared/optional-utils'
 
 let saveLog: { [key: string]: Array<PersistentModel> } = {}
-let projectsToError: Set<string> = new Set<string>()
+let mockProjectsToError: Set<string> = new Set<string>()
 
 jest.mock('./server', () => ({
   updateSavedProject: async (
@@ -26,7 +26,7 @@ jest.mock('./server', () => ({
     persistentModel: PersistentModel | null,
     name: string | null,
   ): Promise<SaveProjectResponse> => {
-    if (projectsToError.has(projectId)) {
+    if (mockProjectsToError.has(projectId)) {
       return Promise.reject(`Deliberately failing for ${projectId}`)
     }
 
@@ -212,13 +212,13 @@ describe('Saving to the server', () => {
       clearSaveState()
       setBaseSaveWaitTime(10)
       const projectId = randomProjectID()
-      projectsToError.add(projectId)
+      mockProjectsToError.add(projectId)
       await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
       await delay(20)
       expect(saveLog[projectId]).toBeUndefined()
       await delay(20)
       expect(saveLog[projectId]).toBeUndefined()
-      projectsToError.delete(projectId)
+      mockProjectsToError.delete(projectId)
       await delay(40)
       expect(saveLog[projectId]).toEqual([ModelChange])
     })
@@ -228,14 +228,14 @@ describe('Saving to the server', () => {
       setBaseSaveWaitTime(10)
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
-      projectsToError.add(projectId)
+      mockProjectsToError.add(projectId)
       await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
       await delay(20)
       expect(saveLog[projectId]).toBeUndefined()
       await saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
       await delay(20)
       expect(saveLog[projectId]).toBeUndefined()
-      projectsToError.delete(projectId)
+      mockProjectsToError.delete(projectId)
       await delay(40)
       expect(saveLog[projectId]).toEqual([firstRevision])
     })
