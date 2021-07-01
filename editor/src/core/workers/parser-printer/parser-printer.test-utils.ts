@@ -418,7 +418,7 @@ export function jsxAttributeValueArbitrary(): Arbitrary<JSXAttributeValue<any>> 
 }
 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOtherJavaScript> {
-  return FastCheck.constant(jsxAttributeOtherJavaScript('1 + 2', '1 + 2', [], null))
+  return FastCheck.constant(jsxAttributeOtherJavaScript('1 + 2', '1 + 2', [], null, {}))
 }
 
 export function jsxArrayValueArbitrary(depth: number): Arbitrary<JSXArrayValue> {

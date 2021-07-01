@@ -27,6 +27,8 @@ import {
   setJSXAttributesAttribute,
   isJSXAttributeValue,
   simplifyAttributesIfPossible,
+  ElementsWithin,
+  isJSXAttributeOtherJavaScript,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
@@ -857,6 +859,17 @@ function walkAttribute(
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
   }
+}
+
+export function getAccumulatedElementsWithin(attributes: JSXAttributes): ElementsWithin {
+  let elementsWithinAccumulator: ElementsWithin = {}
+  walkAttributes(attributes, (attribute, path) => {
+    if (isJSXAttributeOtherJavaScript(attribute)) {
+      Object.assign(elementsWithinAccumulator, attribute.elementsWithin)
+    }
+  })
+
+  return elementsWithinAccumulator
 }
 
 function walkAttributes(

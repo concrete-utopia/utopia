@@ -178,6 +178,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                           javascript: 'props.style',
                           transpiledJavascript: 'return props.style;',
                           definedElsewhere: ['props'],
+                          elementsWithin: {},
                           sourceMap: {
                             version: 3,
                             sources: ['code.tsx'],
@@ -200,6 +201,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                           javascript: 'colorTheme.white.value',
                           transpiledJavascript: 'return colorTheme.white.value;',
                           definedElsewhere: ['colorTheme'],
+                          elementsWithin: {},
                           sourceMap: {
                             version: 3,
                             sources: ['code.tsx'],

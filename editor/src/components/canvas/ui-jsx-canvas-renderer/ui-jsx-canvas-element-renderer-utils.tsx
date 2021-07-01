@@ -21,13 +21,17 @@ import {
   JSXArbitraryBlock,
   getJSXAttribute,
 } from '../../../core/shared/element-template'
-import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import {
+  getAccumulatedElementsWithin,
+  jsxAttributesToProps,
+  setJSXValueAtPath,
+} from '../../../core/shared/jsx-attributes'
 import {
   ElementPath,
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
-import { fastForEach } from '../../../core/shared/utils'
+import { fastForEach, NO_OP } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
@@ -131,6 +135,12 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
   return monkeyedProps
 }
 
+function NoOpLookupRender(element: JSXElement, scope: MapLike<any>): React.ReactChild {
+  throw new Error(
+    `Utopia Error: createLookupRender was not used properly for element: ${element.name.baseVariable}`,
+  )
+}
+
 export function renderCoreElement(
   element: JSXElementChild,
   elementPath: ElementPath,
@@ -158,7 +168,43 @@ export function renderCoreElement(
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {
-      const assembledProps = jsxAttributesToProps(inScope, element.props, requireResult)
+      const elementsWithinProps = getAccumulatedElementsWithin(element.props)
+
+      const anyElementsWithin = Object.keys(elementsWithinProps).length > 0
+
+      const innerRender = anyElementsWithin
+        ? createLookupRender(
+            elementPath,
+            rootScope,
+            parentComponentInputProps,
+            requireResult,
+            hiddenInstances,
+            fileBlobs,
+            validPaths,
+            reactChildren,
+            metadataContext,
+            updateInvalidatedPaths,
+            jsxFactoryFunctionName,
+            shouldIncludeCanvasRootInTheSpy,
+            filePath,
+            imports,
+            code,
+            highlightBounds,
+          )
+        : NoOpLookupRender
+
+      const blockScope = anyElementsWithin
+        ? {
+            ...inScope,
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+              elementsWithinProps,
+              inScope,
+              innerRender,
+            ),
+          }
+        : inScope
+
+      const assembledProps = jsxAttributesToProps(blockScope, element.props, requireResult)
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
 

@@ -122,6 +122,7 @@ describe('ComponentInstanceControlDescription', () => {
     `return ${validValue}`,
     [],
     null,
+    {},
   )
 
   runBaseTestSuite(validValue, wrappedValidValue, [], componentInstanceControlDescriptionValue)
@@ -155,6 +156,7 @@ describe('EventHandlerControlDescription', () => {
     `return ${validValue}`,
     [],
     null,
+    {},
   )
 
   runBaseTestSuite(validValue, wrappedValidValue, [], eventHandlerControlDescriptionValue)

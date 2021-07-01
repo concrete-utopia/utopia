@@ -218,7 +218,7 @@ export function JSXAttributeValueKeepDeepEqualityCall<T>(): KeepDeepEqualityCall
 export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<
   JSXAttributeOtherJavaScript
 > {
-  return combine5EqualityCalls(
+  return combine6EqualityCalls(
     (attribute) => attribute.javascript,
     createCallWithTripleEquals(),
     (attribute) => attribute.transpiledJavascript,
@@ -229,7 +229,9 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     createCallFromIntrospectiveKeepDeep(),
     (attribute) => attribute.uniqueID,
     createCallWithTripleEquals(),
-    (javascript, transpiledJavascript, definedElsewhere, sourceMap, uniqueID) => {
+    (block) => block.elementsWithin,
+    ElementsWithinKeepDeepEqualityCall(),
+    (javascript, transpiledJavascript, definedElsewhere, sourceMap, uniqueID, elementsWithin) => {
       return {
         type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
         javascript: javascript,
@@ -237,6 +239,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
         definedElsewhere: definedElsewhere,
         sourceMap: sourceMap,
         uniqueID: uniqueID,
+        elementsWithin: elementsWithin,
       }
     },
   )

@@ -887,7 +887,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
           'Scene',
           'scene-0',
           jsxAttributesFromMap({
-            component: jsxAttributeOtherJavaScript('App', `return App`, ['App'], null),
+            component: jsxAttributeOtherJavaScript('App', `return App`, ['App'], null, {}),
             'data-uid': jsxAttributeValue('scene-0', emptyComments),
           }),
           [],

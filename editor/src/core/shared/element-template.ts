@@ -143,6 +143,7 @@ export interface JSXAttributeOtherJavaScript {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uniqueID: string
+  elementsWithin: ElementsWithin
 }
 
 export function jsxAttributeOtherJavaScript(
@@ -150,6 +151,7 @@ export function jsxAttributeOtherJavaScript(
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
+  elementsWithin: ElementsWithin,
 ): JSXAttributeOtherJavaScript {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -158,6 +160,7 @@ export function jsxAttributeOtherJavaScript(
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uniqueID: UUID(),
+    elementsWithin: elementsWithin,
   }
 }
 
@@ -326,9 +329,11 @@ export type JSXAttribute =
 export function clearJSXAttributeOtherJavaScriptUniqueIDs(
   attribute: JSXAttributeOtherJavaScript,
 ): JSXAttributeOtherJavaScript {
+  const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
   return {
     ...attribute,
     uniqueID: '',
+    elementsWithin: updatedElementsWithin,
   }
 }
 
