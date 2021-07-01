@@ -40,7 +40,13 @@ jest.mock('../../../components/editor/npm-dependency/npm-dependency', () => ({
     packageName: string,
     versionRange: string,
   ): Promise<VersionLookupResult> => {
-    return Promise.resolve(npmVersionLookupSuccess(versionRange))
+    return Promise.resolve({
+      type: 'VERSION_LOOKUP_SUCCESS',
+      version: {
+        type: 'NPM_VERSION',
+        version: versionRange,
+      },
+    })
   },
   checkPackageVersionExists: async (packageName: string, version: string): Promise<boolean> => {
     return Promise.resolve(true)
