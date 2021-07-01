@@ -23,7 +23,7 @@ import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
 import { CanvasPoint } from '../core/shared/math-utils'
-import json5 = require('json5')
+import * as json5 from 'json5'
 import { fastForEach } from '../core/shared/utils'
 const urljoin = require('url-join')
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
