@@ -1,6 +1,5 @@
 module.exports = {
   parserOptions: {
-    project: './tsconfig.json',
     ecmaVersion: 6,
     sourceType: 'module',
     ecmaFeatures: {
