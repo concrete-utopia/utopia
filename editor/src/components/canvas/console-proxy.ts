@@ -17,6 +17,8 @@ const ConsoleMethodsToProxy: Array<string> = [
   'assert',
 ]
 
+const SuppressedReactMessages = ['Warning: componentWillReceiveProps has been renamed']
+
 export function proxyConsole(
   targetConsole: Console,
   addToConsoleLogs: (log: ConsoleLog) => void,
@@ -34,6 +36,14 @@ export function proxyConsole(
     const originalMethod = targetConsoleAny[consoleMethodName]
     originalMethods[consoleMethodName] = originalMethod
     targetConsoleAny[consoleMethodName] = function (...args: Array<any>) {
+      if (
+        SuppressedReactMessages.some(
+          (suppressed) => typeof args[0] === 'string' && args[0].includes(suppressed),
+        )
+      ) {
+        // PRINT NOTHING, WE SUPPRESS THIS MESSAGE
+        return
+      }
       // Call the original method first.
       originalMethod(...args)
       // Invoke our dispatcher.
