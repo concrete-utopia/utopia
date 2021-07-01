@@ -210,45 +210,52 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules(
-      [requestedNpmDependency('antd', '4.2.5')],
-      'canvas',
+    fetchNodeModules([requestedNpmDependency('antd', '4.2.5')], 'canvas').then(
+      (fetchNodeModulesResult) => {
+        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+          fail(`Expected successful nodeModules fetch`)
+        }
+        const nodeModules = fetchNodeModulesResult.nodeModules
+
+        const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
+          const downloadedModules = await moduleDownload
+          const updatedNodeModules = { ...nodeModules, ...downloadedModules }
+          const innerOnRemoteModuleDownload = jest.fn()
+          const updatedReq = getRequireFn(
+            innerOnRemoteModuleDownload,
+            {},
+            updatedNodeModules,
+            {},
+            'canvas',
+            spyEvaluator,
+          )
+
+          // this is like calling `import 'antd/dist/antd.css';`, we only care about the side effect
+          updatedReq('/src/index.js', 'antd/dist/antd.css')
+
+          // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
+          const styleTag = document.getElementById('/node_modules/antd/dist/antd.css')
+          expect(styleTag).toBeDefined()
+          expect(spyEvaluator).toHaveBeenCalledTimes(940)
+          expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
+
+          done()
+        }
+
+        const req = getRequireFn(
+          onRemoteModuleDownload,
+          {},
+          nodeModules,
+          {},
+          'canvas',
+          spyEvaluator,
+        )
+        const antd = req('/src/index.js', 'antd')
+        expect(Object.keys(antd)).not.toHaveLength(0)
+        expect(antd).toHaveProperty('Button')
+        req('/src/index.js', 'antd/dist/antd.css')
+      },
     )
-    if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      fail(`Expected successful nodeModules fetch`)
-    }
-    const nodeModules = fetchNodeModulesResult.nodeModules
-
-    const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
-      const downloadedModules = await moduleDownload
-      const updatedNodeModules = { ...nodeModules, ...downloadedModules }
-      const innerOnRemoteModuleDownload = jest.fn()
-      const updatedReq = getRequireFn(
-        innerOnRemoteModuleDownload,
-        {},
-        updatedNodeModules,
-        {},
-        'canvas',
-        spyEvaluator,
-      )
-
-      // this is like calling `import 'antd/dist/antd.css';`, we only care about the side effect
-      updatedReq('/src/index.js', 'antd/dist/antd.css')
-
-      // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
-      const styleTag = document.getElementById('/node_modules/antd/dist/antd.css')
-      expect(styleTag).toBeDefined()
-      expect(spyEvaluator).toHaveBeenCalledTimes(940)
-      expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
-
-      done()
-    }
-
-    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, 'canvas', spyEvaluator)
-    const antd = req('/src/index.js', 'antd')
-    expect(Object.keys(antd)).not.toHaveLength(0)
-    expect(antd).toHaveProperty('Button')
-    req('/src/index.js', 'antd/dist/antd.css')
   })
 })
 
