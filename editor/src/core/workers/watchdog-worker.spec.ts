@@ -6,6 +6,7 @@ import {
   createWatchdogTerminateMessage,
 } from './watchdog-worker'
 import { getProjectLockedKey } from '../shared/utils'
+import { wait } from '../../utils/utils.test-utils'
 
 const projectId = 'projectid'
 
@@ -67,7 +68,7 @@ xdescribe('Watchdog worker heartbeat', () => {
       done()
     }, 50)
   })
-  it('watchdog sets back non locked up if there is heartbeat response', async (done) => {
+  it('watchdog sets back non locked up if there is heartbeat response', async () => {
     let setIntervalId: NodeJS.Timer | null = null
     await localforage.setItem(getProjectLockedKey(projectId), true)
     handleMessage(createWatchdogInitMessage(projectId, 1000, 2000), (msg) => {
@@ -80,15 +81,13 @@ xdescribe('Watchdog worker heartbeat', () => {
           break
       }
     })
-    setTimeout(async () => {
-      const isLockedUp = await localforage.getItem(getProjectLockedKey(projectId))
-      expect(isLockedUp).toEqual(false)
-      expect(setIntervalId).not.toBeNull()
-      handleMessage(createWatchdogTerminateMessage(setIntervalId!), () => {})
-      done()
-    }, 50)
+    await wait(50)
+    const isLockedUp = await localforage.getItem(getProjectLockedKey(projectId))
+    expect(isLockedUp).toEqual(false)
+    expect(setIntervalId).not.toBeNull()
+    handleMessage(createWatchdogTerminateMessage(setIntervalId!), () => {})
   }),
-    it('watchdog does not set back to non locked up if there is heartbeat response', async (done) => {
+    it('watchdog does not set back to non locked up if there is heartbeat response', async () => {
       let setIntervalId: NodeJS.Timer | null = null
       await localforage.setItem(getProjectLockedKey(projectId), true)
       handleMessage(createWatchdogInitMessage(projectId, 1000, 2000), (msg) => {
@@ -101,12 +100,10 @@ xdescribe('Watchdog worker heartbeat', () => {
             break
         }
       })
-      setTimeout(async () => {
-        const isLockedUp = await localforage.getItem(getProjectLockedKey(projectId))
-        expect(isLockedUp).toEqual(true)
-        expect(setIntervalId).not.toBeNull()
-        handleMessage(createWatchdogTerminateMessage(setIntervalId!), () => {})
-        done()
-      }, 50)
+      await wait(50)
+      const isLockedUp = await localforage.getItem(getProjectLockedKey(projectId))
+      expect(isLockedUp).toEqual(true)
+      expect(setIntervalId).not.toBeNull()
+      handleMessage(createWatchdogTerminateMessage(setIntervalId!), () => {})
     })
 })
