@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import * as PropTypes from 'prop-types'
 import { applyUIDMonkeyPatch } from './canvas-react-utils'
 applyUIDMonkeyPatch()
@@ -480,46 +480,6 @@ describe('Monkey Function', () => {
       "<div data-uid=\\"aaa\\">
         <div>huha</div>
         huha!
-      </div>
-      "
-    `)
-  })
-
-  it('the real antd datepicker works!', () => {
-    var App = (props: any) => {
-      return <div>{<DatePicker data-uid={'aaa'} />}</div>
-    }
-
-    expect(renderToFormattedString(<App />)).toMatchInlineSnapshot(`
-      "<div>
-        <div class=\\"ant-picker\\" data-uid=\\"aaa\\">
-          <div class=\\"ant-picker-input\\">
-            <input
-              readonly=\\"\\"
-              value=\\"\\"
-              placeholder=\\"Select date\\"
-              title=\\"\\"
-              size=\\"12\\"
-              data-uid=\\"aaa\\"
-              autocomplete=\\"off\\"
-            /><span class=\\"ant-picker-suffix\\"
-              ><span role=\\"img\\" aria-label=\\"calendar\\" class=\\"anticon anticon-calendar\\"
-                ><svg
-                  viewBox=\\"64 64 896 896\\"
-                  focusable=\\"false\\"
-                  class=\\"\\"
-                  data-icon=\\"calendar\\"
-                  width=\\"1em\\"
-                  height=\\"1em\\"
-                  fill=\\"currentColor\\"
-                  aria-hidden=\\"true\\"
-                >
-                  <path
-                    d=\\"M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z\\"
-                  ></path></svg></span
-            ></span>
-          </div>
-        </div>
       </div>
       "
     `)
