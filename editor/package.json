@@ -294,7 +294,7 @@
     "three": "0.129.0",
     "tmp": "0.0.31",
     "ts-jest": "27.0.3",
-    "ts-loader": "9.2.3",
+    "ts-loader": "5.3.3",
     "tsify": "3.0.1",
     "val-loader": "2.1.0",
     "webpack": "4.42.0",
