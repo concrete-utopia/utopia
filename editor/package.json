@@ -37,28 +37,6 @@
     "parse-print-analysis": "npx -s sh ts-node --require ignore-styles --transpile-only ./src/scripts/parse-print-analysis.ts",
     "parse-debug": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/parse-debug.ts"
   },
-  "jest": {
-    "testEnvironment": "jest-environment-jsdom-global",
-    "preset": "ts-jest",
-    "testRegex": "src/.*\\.spec\\.(jsx?|tsx?)$",
-    "moduleDirectories": [
-      "src",
-      "node_modules",
-      "<rootDir>/node_modules"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ],
-    "moduleNameMapper": {
-      "^domtoimage$": "<rootDir>/src/components/editor/dom-to-image-stub.ts",
-      "\\.(css)$": "<rootDir>/test/jest/__mocks__/styleMock.js"
-    }
-  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -106,7 +84,6 @@
     "@xstate/react": "0.8.1",
     "ajv": "6.4.0",
     "anser": "1.4.8",
-    "antd": "4.3.5",
     "babel-eslint": "10.0.1",
     "babel-plugin-syntax-jsx": "6.18.0",
     "babel-plugin-transform-react-jsx": "6.24.1",
@@ -195,7 +172,9 @@
   "devDependencies": {
     "@babel/cli": "7.8.4",
     "@hot-loader/react-dom": "16.13.0",
-    "@jest-runner/electron": "3.0.0",
+    "@jest-runner/electron": "3.0.1",
+    "@jest/test-result": "^27.0.6",
+    "@react-three/fiber": "7.0.1",
     "@testing-library/react": "9.1.4",
     "@testing-library/react-hooks": "5.1.2",
     "@types/chai": "3.5.1",
@@ -215,7 +194,7 @@
     "@types/hosted-git-info": "3.0.0",
     "@types/html-entities": "1.2.16",
     "@types/immutability-helper": "2.0.15",
-    "@types/jest": "26.0.3",
+    "@types/jest": "26.0.23",
     "@types/jquery": "3.3.29",
     "@types/json-schema": "6.0.0",
     "@types/json5": "0.0.29",
@@ -246,6 +225,7 @@
     "@typescript-eslint/eslint-plugin": "4.24.0",
     "@typescript-eslint/parser": "4.24.0",
     "@welldone-software/why-did-you-render": "5.0.0-rc.1",
+    "antd": "4.3.5",
     "babel-loader": "8.1.0",
     "browserify": "13.1.0",
     "chai": "4.1.2",
@@ -276,9 +256,9 @@
     "ignore-styles": "5.0.1",
     "immutable": "3.8.1",
     "jStat": "1.5.3",
-    "jest": "26.1.0",
-    "jest-clean-console-reporter": "0.2.0",
-    "jest-environment-jsdom-global": "2.0.4",
+    "jest": "27.0.6",
+    "jest-clean-console-reporter": "0.3.0",
+    "jest-environment-jsdom": "27.0.6",
     "jest-matcher-deep-close-to": "2.0.1",
     "jest-transform-stub": "2.0.0",
     "jsdom": "16.1.0",
@@ -305,9 +285,10 @@
     "style-loader": "0.18.2",
     "tar": "6.0.5",
     "terser-webpack-plugin": "2.3.5",
+    "three": "0.129.0",
     "tmp": "0.0.31",
-    "ts-jest": "26.1.1",
-    "ts-loader": "5.3.3",
+    "ts-jest": "27.0.3",
+    "ts-loader": "9.2.3",
     "tsify": "3.0.1",
     "val-loader": "2.1.0",
     "webpack": "4.42.0",
@@ -315,9 +296,7 @@
     "webpack-cli": "3.3.11",
     "webpack-dev-server": "3.10.3",
     "webpack-merge": "4.2.2",
-    "webpack-node-externals": "1.7.2",
-    "three": "0.129.0",
-    "@react-three/fiber": "7.0.1"
+    "webpack-node-externals": "1.7.2"
   },
   "optionalDependencies": {
     "fsevents": "2.1.2"

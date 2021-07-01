@@ -86,7 +86,7 @@ const rules = [
 module.exports = {
   reporters: [
     ['jest-clean-console-reporter', { rules: rules }],
-    '@jest/reporters/build/summary_reporter', // when upgrading to jest 26.6.2 or newer, replace this with "@jest/reporters/build/SummaryReporter"
+    '@jest/reporters/build/SummaryReporter', // when going to jest 26.6.2 or older, use '@jest/reporters/build/summary_reporter',
   ],
   projects: [
     '../utopia-api',
