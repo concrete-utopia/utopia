@@ -1,4 +1,4 @@
-import * as deepEqual from 'fast-deep-equal'
+import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
 import { createContext, useContextSelector } from 'use-context-selector'

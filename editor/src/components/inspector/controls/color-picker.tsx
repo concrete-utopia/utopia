@@ -1,4 +1,4 @@
-import * as Chroma from 'chroma-js'
+import Chroma from 'chroma-js'
 import { clamp, WindowPoint } from '../../../core/shared/math-utils'
 import { getControlStyles } from '../common/control-status'
 import {

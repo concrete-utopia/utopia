@@ -1,4 +1,4 @@
-import * as update from 'immutability-helper'
+import update from 'immutability-helper'
 import * as React from 'react'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'

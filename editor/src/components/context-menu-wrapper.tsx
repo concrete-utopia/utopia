@@ -11,7 +11,7 @@ import {
 } from 'react-contexify'
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
-import * as fastDeepEquals from 'fast-deep-equal'
+import fastDeepEquals from 'fast-deep-equal'
 import { Icons, UtopiaTheme } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 

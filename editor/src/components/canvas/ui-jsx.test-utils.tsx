@@ -4,12 +4,15 @@ try {
     loadStoredState: () => Promise.resolve(null),
     saveStoredState: () => Promise.resolve(),
   }))
+  jest.mock('../code-editor/console-and-errors-pane', () => ({
+    ConsoleAndErrorsPane: () => null,
+  }))
 } catch (e) {
   // not jest env, disable stored state manually
   disableStoredStateforTests()
 }
 
-import * as React from 'react'
+import React from 'react'
 
 ///// IMPORTANT NOTE - THIS MUST BE BELOW THE REACT IMPORT AND ABOVE ALL OTHER IMPORTS
 const realCreateElement = React.createElement
