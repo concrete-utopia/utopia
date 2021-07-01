@@ -47,6 +47,7 @@ import {
   Subdued,
   VerySubdued,
   InspectorSubsectionHeader,
+  StringInput,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -775,13 +776,14 @@ export const ComponentSectionInner = betterReactMemo(
             <InspectorSubsectionHeader>Component UseState</InspectorSubsectionHeader>
             {Object.keys(stateData).map((key) => {
               return (
-                <UIGridRow
-                  key={key}
-                  padded
-                  tall={false}
-                  variant={'<-------------1fr------------->'}
-                >
-                  {key}: {JSON.stringify(stateData[key][0])}
+                <UIGridRow key={key} padded tall={false} variant={'<--1fr--><--1fr-->'}>
+                  {key}:
+                  <StringInput
+                    testId=''
+                    value={stateData[key][0]}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onChange={(event) => stateData[key][1](event.target.value)}
+                  />
                 </UIGridRow>
               )
             })}
