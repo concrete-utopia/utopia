@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import fastDeepEquals from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { Scene, SceneProps } from 'utopia-api'

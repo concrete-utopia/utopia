@@ -6,6 +6,11 @@ import * as ReactDOMServer from 'react-dom/server'
 import * as Prettier from 'prettier'
 import { DatePicker } from 'antd'
 import { BakedInStoryboardUID } from '../core/model/scene-utils'
+import {
+  View as UtopiaView,
+  Scene as UtopiaScene,
+  Storyboard as UtopiaStoryboard,
+} from 'utopia-api'
 
 function renderToFormattedString(element: React.ReactElement) {
   const renderResult = ReactDOMServer.renderToStaticMarkup(element)
@@ -118,6 +123,37 @@ describe('Monkey Function', () => {
       </div>
       "
     `)
+  })
+
+  it('works for elements imported from utopia-api', () => {
+    const TestComponent = () => {
+      return (
+        <UtopiaView data-uid='component-root'>
+          <UtopiaView data-uid='kutya'>Hello!</UtopiaView>
+          <UtopiaView data-uid='majom'>Hello!</UtopiaView>
+        </UtopiaView>
+      )
+    }
+
+    const TestStoryboard: React.FunctionComponent = (props) => {
+      return (
+        <UtopiaStoryboard data-uid='scene sb test1'>
+          <UtopiaScene data-uid='scene'>
+            <TestComponent data-uid='component-instance' />
+          </UtopiaScene>
+        </UtopiaStoryboard>
+      )
+    }
+
+    expect(renderToFormattedString(<TestStoryboard data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<div data-uid=\\"scene\\">
+        <div data-uid=\\"component-root component-instance\\">
+          <div data-uid=\\"kutya\\">Hello!</div>
+          <div data-uid=\\"majom\\">Hello!</div>
+        </div>
+      </div>
+      "
+`)
   })
 
   it('works for simple function components', () => {
