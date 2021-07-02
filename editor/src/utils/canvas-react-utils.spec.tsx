@@ -146,7 +146,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestStoryboard data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene\\">
+      "<div data-uid=\\"scene sb test1\\">
         <div data-uid=\\"component-root component-instance\\">
           <div data-uid=\\"kutya\\">Hello!</div>
           <div data-uid=\\"majom\\">Hello!</div>
