@@ -269,6 +269,8 @@
     "jest-jasmine2": "27.0.6",
     "jest-matcher-deep-close-to": "2.0.1",
     "jest-matcher-utils": "27.0.6",
+    "jest-runner": "27.0.6",
+    "jest-runtime": "27.0.6",
     "jest-snapshot": "27.0.6",
     "jest-transform-stub": "2.0.0",
     "jsdom": "16.1.0",
