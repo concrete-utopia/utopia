@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react'
 import { renderHook } from '@testing-library/react-hooks'
-import * as React from 'react'
+import React from 'react'
 import { isRight } from '../../../core/shared/either'
 import {
   isJSXElement,
