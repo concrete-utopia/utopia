@@ -273,6 +273,7 @@
     "jest-runtime": "27.0.6",
     "jest-snapshot": "27.0.6",
     "jest-transform-stub": "2.0.0",
+    "jest-util": "27.0.6",
     "jsdom": "16.1.0",
     "jsdom-global": "3.0.2",
     "karma": "5.2.3",
