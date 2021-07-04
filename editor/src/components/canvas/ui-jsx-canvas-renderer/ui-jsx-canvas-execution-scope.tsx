@@ -100,6 +100,7 @@ export function createExecutionScope(
           topLevelElementName: topLevelElement.name,
           mutableContextRef: mutableContextRef,
           filePath: filePath,
+          metadataContext: metadataContext,
         })
       }
     }
@@ -137,8 +138,13 @@ export function createExecutionScope(
       executionScope,
       lookupRenderer,
     )
-
-    runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
+    runBlockUpdatingScope(
+      requireResult,
+      combinedTopLevelArbitraryBlock,
+      executionScope,
+      metadataContext,
+      null,
+    )
   }
 
   // WARNING: mutating the mutableContextRef

@@ -73,6 +73,7 @@ export function createComponentRendererComponent(params: {
   topLevelElementName: string
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>
+  metadataContext: UiJsxCanvasContextData
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
@@ -136,7 +137,11 @@ export function createComponentRendererComponent(params: {
       instancePath,
       getUtopiaID(utopiaJsxComponent.rootElement),
     )
-
+    // console.log(
+    //   'utopiaJsxComponent.arbitraryJSBlock',
+    //   EP.toString(rootElementPath),
+    //   utopiaJsxComponent.arbitraryJSBlock,
+    // )
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
@@ -167,6 +172,8 @@ export function createComponentRendererComponent(params: {
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
+        metadataContext,
+        rootElementPath,
       )
     }
 
