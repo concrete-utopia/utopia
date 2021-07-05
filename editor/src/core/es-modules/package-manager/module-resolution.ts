@@ -221,14 +221,17 @@ function processPackageJson(
   return foldEither(
     (_) => resolveNotPresent,
     (packageJson) => {
-      const moduleName: string = packageJson.name ?? makePathFromParts(containerFolder)
+      const moduleName: string | null = packageJson.name ?? last(containerFolder) ?? null
       const mainEntry: string | null = packageJson.main ?? null
       const moduleEntry: string | null = packageJson.module ?? null
-      if (moduleEntry != null && mainEntry == null) {
-        return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleName)]))
-      }
-      if (mainEntry != null) {
+      if (mainEntry != null && !mainEntry.endsWith('.cjs')) {
         return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(mainEntry)]))
+      }
+      if (moduleEntry != null && !moduleEntry.endsWith('.cjs')) {
+        return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleEntry)]))
+      }
+      if (moduleName != null) {
+        return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleName)]))
       }
       return resolveNotPresent
     },

@@ -25,10 +25,15 @@ function extractLocation(token: string): [string, number, number] {
 
 const regexValidFrame_Chrome = /^\s*(at|in)\s.+(:\d+)/
 const regexValidFrame_FireFox = /(^|@)\S+:\d+|.+line\s+\d+\s+>\s+(eval|Function).+/
+const maxParseableErrorLength = 10000
 
 export function parseStack(stack: string[]): StackFrame[] {
   const frames = stack
-    .filter((e) => regexValidFrame_Chrome.test(e) || regexValidFrame_FireFox.test(e))
+    .filter(
+      (e) =>
+        e.length < maxParseableErrorLength &&
+        (regexValidFrame_Chrome.test(e) || regexValidFrame_FireFox.test(e)),
+    )
     .map((e) => {
       if (regexValidFrame_FireFox.test(e)) {
         // Strip eval, we don't care about it
