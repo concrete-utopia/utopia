@@ -221,7 +221,7 @@ function processPackageJson(
   return foldEither(
     (_) => resolveNotPresent,
     (packageJson) => {
-      const moduleName: string | null = packageJson.name ?? last(containerFolder) ?? null
+      const moduleName: string | null = packageJson.name ?? null
       const mainEntry: string | null = packageJson.main ?? null
       const moduleEntry: string | null = packageJson.module ?? null
       if (mainEntry != null && !mainEntry.endsWith('.cjs')) {
@@ -232,6 +232,8 @@ function processPackageJson(
       }
       if (moduleName != null) {
         return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleName)]))
+      } else if (containerFolder.length > 0) {
+        return resolveSuccess(normalizePath(containerFolder))
       }
       return resolveNotPresent
     },
