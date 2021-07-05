@@ -7,12 +7,19 @@ import { useColorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
+import WindowedSelect from 'react-windowed-select'
 import * as EP from '../../../core/shared/element-path'
 import {
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXTextBlock,
 } from '../../../core/shared/element-template'
+
+// Dummy array of test values.
+const options = Array.from(new Array(1000), (_, index) => ({
+  label: `Item ${index}`,
+  value: index,
+}))
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const saveTimerRef = React.useRef<any>(null)
@@ -88,6 +95,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         height: UtopiaTheme.layout.inputHeight.default,
       }}
     >
+      <WindowedSelect isMulti={true} options={options} />
       <input
         type='text'
         css={{
