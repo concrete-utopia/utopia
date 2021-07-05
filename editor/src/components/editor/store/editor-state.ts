@@ -371,6 +371,9 @@ export interface EditorState {
     renamingTarget: ElementPath | null
     position: 'hidden' | 'left' | 'right'
   }
+  topmenu: {
+    formulaBarMode: 'css' | 'content'
+  }
   preview: {
     visible: boolean
     connected: boolean
@@ -1136,6 +1139,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       collapsedViews: [],
       renamingTarget: null,
     },
+    topmenu: {
+      formulaBarMode: 'content',
+    },
     preview: {
       visible: false,
       connected: false,
@@ -1387,6 +1393,9 @@ export function editorModelFromPersistentModel(
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
       position: 'right',
+    },
+    topmenu: {
+      formulaBarMode: 'content',
     },
     fileBrowser: {
       renamingTarget: null,

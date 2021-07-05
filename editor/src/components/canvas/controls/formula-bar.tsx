@@ -30,6 +30,11 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const saveTimerRef = React.useRef<any>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
 
+  const selectedMode = useEditorState(
+    (store) => store.editor.topmenu.formulaBarMode,
+    'FormulaBar selectedMode',
+  )
+
   const selectedElement = useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
     if (store.editor.selectedViews.length === 1) {
@@ -125,7 +130,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       }}
     >
       {selectedElement != null && <ModeToggleButton />}
-      {selectedElement != null && (
+      {selectedElement != null && selectedMode === 'css' && (
         <div
           style={{ paddingLeft: 4, paddingRight: 4, border: '0px', width: '100%', height: '100%' }}
         >
@@ -137,31 +142,34 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           />
         </div>
       )}
-      <input
-        type='text'
-        css={{
-          paddingLeft: 4,
-          paddingRight: 4,
-          border: '0px',
-          width: '100%',
-          height: '100%',
-          backgroundColor: colorTheme.canvasBackground.value,
-          borderRadius: 5,
-          transition: 'background-color .1s ease-in-out',
-          '&:hover': {
-            '&:not(:disabled)': {
-              boxShadow: 'inset 0px 0px 0px 1px lightgrey',
-            },
-          },
-          '&:focus': {
-            backgroundColor: colorTheme.bg0.value,
-            boxShadow: 'inset 0px 0px 0px 1px lightgrey',
-          },
-        }}
-        onChange={onInputChange}
-        value={simpleText}
-        disabled={disabled}
-      />
+      {selectedElement == null ||
+        (selectedMode === 'content' && (
+          <input
+            type='text'
+            css={{
+              paddingLeft: 4,
+              paddingRight: 4,
+              border: '0px',
+              width: '100%',
+              height: '100%',
+              backgroundColor: colorTheme.canvasBackground.value,
+              borderRadius: 5,
+              transition: 'background-color .1s ease-in-out',
+              '&:hover': {
+                '&:not(:disabled)': {
+                  boxShadow: 'inset 0px 0px 0px 1px lightgrey',
+                },
+              },
+              '&:focus': {
+                backgroundColor: colorTheme.bg0.value,
+                boxShadow: 'inset 0px 0px 0px 1px lightgrey',
+              },
+            }}
+            onChange={onInputChange}
+            value={simpleText}
+            disabled={disabled}
+          />
+        ))}
     </SimpleFlexRow>
   )
 })

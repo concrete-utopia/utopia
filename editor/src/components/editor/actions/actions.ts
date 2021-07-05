@@ -353,6 +353,7 @@ import {
   SetFilebrowserDropTarget,
   SetForkedFromProjectID,
   SetCurrentTheme,
+  UpdateFormulaBarMode,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -999,6 +1000,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       },
       collapsedViews: poppedEditor.navigator.collapsedViews,
       renamingTarget: null,
+    },
+    topmenu: {
+      formulaBarMode: poppedEditor.topmenu.formulaBarMode,
     },
     preview: {
       visible: currentEditor.preview.visible,
@@ -4322,6 +4326,14 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       theme: action.theme,
+    }
+  },
+  UPDATE_FORMULA_BAR_MODE: (action: UpdateFormulaBarMode, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      topmenu: {
+        formulaBarMode: action.value,
+      },
     }
   },
 }
