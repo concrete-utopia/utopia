@@ -9,13 +9,16 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
 import WindowedSelect from 'react-windowed-select'
 import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 import {
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXTextBlock,
+  jsxAttributeValue,
 } from '../../../core/shared/element-template'
 import { TailWindList } from './tailwindclassnames'
 import { ModeToggleButton } from './mode-toggle-button'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 // Dummy array of test values.
 const TailWindOptions = TailWindList.map((className, index) => ({
@@ -89,6 +92,31 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     },
     [saveTimerRef, selectedElement, dispatchUpdate],
   )
+
+  const selectOnChange = React.useCallback(
+    (newValue: Array<{ label: string; value: string }>) => {
+      if (selectedElement != null) {
+        dispatch(
+          [
+            EditorActions.setProp_UNSAFE(
+              selectedElement.elementPath,
+              PP.create(['className']),
+              jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
+            ),
+          ],
+          'everyone',
+        )
+      }
+    },
+    [dispatch, selectedElement],
+  )
+
+  const classNames = selectedElement?.props?.className ?? ''
+  const selectedValues = classNames.split(' ').map((name: string) => ({
+    label: name,
+    value: name,
+  }))
+
   return (
     <SimpleFlexRow
       style={{
@@ -96,12 +124,19 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         height: UtopiaTheme.layout.inputHeight.default,
       }}
     >
-      <ModeToggleButton />
-      <div
-        style={{ paddingLeft: 4, paddingRight: 4, border: '0px', width: '100%', height: '100%' }}
-      >
-        <WindowedSelect isMulti={true} options={TailWindOptions} />
-      </div>
+      {selectedElement != null && <ModeToggleButton />}
+      {selectedElement != null && (
+        <div
+          style={{ paddingLeft: 4, paddingRight: 4, border: '0px', width: '100%', height: '100%' }}
+        >
+          <WindowedSelect
+            isMulti={true}
+            options={TailWindOptions}
+            onChange={selectOnChange}
+            value={selectedValues}
+          />
+        </div>
+      )}
       <input
         type='text'
         css={{
