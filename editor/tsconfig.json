@@ -5,6 +5,7 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
     "declaration": false,
     "removeComments": true,
     "noLib": false,
