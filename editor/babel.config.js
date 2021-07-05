@@ -7,7 +7,7 @@ module.exports = (api) => {
     presets: [
       '@babel/preset-typescript',
       '@babel/preset-react',
-      ['@babel/preset-env', { targets: { node: '14.15' } }],
+      ['@babel/preset-env', { targets: { chrome: '50' } }],
     ],
   }
 }

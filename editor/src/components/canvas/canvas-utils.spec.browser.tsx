@@ -7,8 +7,7 @@ import {
   TestScenePath,
   TestSceneUID,
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
-import { fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { fireEvent, act } from '@testing-library/react'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import {

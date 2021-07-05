@@ -20,6 +20,7 @@ const ConsoleMethodsToProxy: Array<string> = [
 const SuppressedReactMessages = [
   'Warning: componentWillReceiveProps has been renamed',
   'Warning: useLayoutEffect does nothing on the server',
+  'inside a test was not wrapped in act',
 ]
 
 export function proxyConsole(

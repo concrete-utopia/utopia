@@ -92,6 +92,7 @@ module.exports = {
     '../utopia-api',
     {
       testEnvironment: './jest-environment',
+      testRunner: 'jest-circus/runner',
       testPathIgnorePatterns: ['/lib/', '/node_modules/', '/.github-test-projects/'],
       testRegex: 'src/.*\\.spec\\.(jsx?|tsx?)$',
       moduleDirectories: ['src', 'node_modules', '<rootDir>/node_modules'],
