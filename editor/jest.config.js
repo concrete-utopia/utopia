@@ -86,13 +86,13 @@ const rules = [
 module.exports = {
   reporters: [
     ['jest-clean-console-reporter', { rules: rules }],
-    '@jest/reporters/build/SummaryReporter', // when going to jest 26.6.2 or older, use '@jest/reporters/build/summary_reporter',
+    '@jest/reporters/build/summary_reporter', // when upgrading to jest 26.6.2 or newer, replace this with "@jest/reporters/build/SummaryReporter"
   ],
   projects: [
     '../utopia-api',
     {
       testEnvironment: './jest-environment',
-      testRunner: 'jest-circus/runner',
+      preset: 'ts-jest',
       testPathIgnorePatterns: ['/lib/', '/node_modules/', '/.github-test-projects/'],
       testRegex: 'src/.*\\.spec\\.(jsx?|tsx?)$',
       moduleDirectories: ['src', 'node_modules', '<rootDir>/node_modules'],
@@ -102,12 +102,18 @@ module.exports = {
         '^platform-detect$': '<rootDir>/src/utils/stubs/platform-detect-stub.ts',
         '\\.(css)$': '<rootDir>/test/jest/__mocks__/styleMock.js',
       },
+      globals: {
+        'ts-jest': {
+          isolatedModules: true,
+        },
+      },
       roots: ['src', 'node_modules', '<rootDir>/node_modules'],
       transformIgnorePatterns: ['/node_modules/(?!utopia-api)'], // this lets ts-jest work on `/node_modules/utopia-api` which is a simlink to `../utopia-api`.
     },
     {
       testEnvironment: '@jest-runner/electron/environment',
       runner: '@jest-runner/electron',
+      preset: 'ts-jest',
       testPathIgnorePatterns: ['/lib/', '/node_modules/', '/.github-test-projects/'],
       testRegex: 'src/.*\\.spec\\.browser\\.(jsx?|tsx?)$',
       moduleDirectories: ['src', 'node_modules', '<rootDir>/node_modules'],
@@ -116,6 +122,11 @@ module.exports = {
         '^domtoimage$': '<rootDir>/src/utils/stubs/dom-to-image-stub.ts',
         '^platform-detect$': '<rootDir>/src/utils/stubs/platform-detect-stub.ts',
         '\\.(css)$': '<rootDir>/test/jest/__mocks__/styleMock.js',
+      },
+      globals: {
+        'ts-jest': {
+          isolatedModules: true,
+        },
       },
       roots: ['src', 'node_modules', '<rootDir>/node_modules'],
     },
