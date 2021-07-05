@@ -606,13 +606,6 @@ ReactDOM.render(<App />, root);
 }
 `;
 
-exports[`Typescript worker builds the project initializing a new project 2`] = `
-Object {
-  "jobID": "9897a53d_15b6_400d_be5f_ca5d66e47087",
-  "type": "initcomplete",
-}
-`;
-
 exports[`Typescript worker builds the project updating a single file 1`] = `
 Object {
   "buildResult": Object {
