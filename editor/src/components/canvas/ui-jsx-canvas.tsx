@@ -78,6 +78,7 @@ import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-exe
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
+import { useTwind } from '../../core/tailwind/tailwind'
 
 applyUIDMonkeyPatch()
 
@@ -408,6 +409,8 @@ export const UiJsxCanvas = betterReactMemo(
       )
 
       const executionScope = scope
+
+      useTwind(projectContents, customRequire, '#canvas-container')
 
       const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 

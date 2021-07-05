@@ -227,7 +227,7 @@ export async function renderTestEditorWithModel(
   expect(noFileOpenText).toBeDefined()
 
   await act(async () => {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       load(
         async (actions) => {
           try {

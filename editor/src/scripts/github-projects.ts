@@ -108,7 +108,7 @@ export async function downloadAndExtractRepo(gitRepo: GitRepoWithRevision): Prom
     const urlToDownload = `https://github.com/${gitRepo.username}/${gitRepo.repositoryName}/tarball/${gitRepo.revision}`
     const tarballLocalFile = Path.join(localDir, `${gitRepo.revision}.tgz`)
     const writeStream = FS.createWriteStream(tarballLocalFile)
-    const writeStreamPromise = new Promise((resolve, reject) => {
+    const writeStreamPromise = new Promise<void>((resolve, reject) => {
       Got.stream(urlToDownload)
         .pipe(writeStream)
         .on('finish', () => resolve())
