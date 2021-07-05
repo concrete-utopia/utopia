@@ -14,11 +14,13 @@ import {
   isJSXElement,
   isJSXTextBlock,
 } from '../../../core/shared/element-template'
+import { TailWindList } from './tailwindclassnames'
+import { ModeToggleButton } from './mode-toggle-button'
 
 // Dummy array of test values.
-const options = Array.from(new Array(1000), (_, index) => ({
-  label: `Item ${index}`,
-  value: index,
+const TailWindOptions = TailWindList.map((className, index) => ({
+  label: className,
+  value: className,
 }))
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
@@ -87,7 +89,6 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     },
     [saveTimerRef, selectedElement, dispatchUpdate],
   )
-
   return (
     <SimpleFlexRow
       style={{
@@ -95,7 +96,12 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         height: UtopiaTheme.layout.inputHeight.default,
       }}
     >
-      <WindowedSelect isMulti={true} options={options} />
+      <ModeToggleButton />
+      <div
+        style={{ paddingLeft: 4, paddingRight: 4, border: '0px', width: '100%', height: '100%' }}
+      >
+        <WindowedSelect isMulti={true} options={TailWindOptions} />
+      </div>
       <input
         type='text'
         css={{
