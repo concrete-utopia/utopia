@@ -1,3 +1,4 @@
+import type { CSSObject } from '@emotion/styled'
 import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
 import { ControlStyles, betterReactMemo, ControlStatus } from '../../uuiui-deps'
@@ -112,35 +113,45 @@ interface InspectorInputProps extends React.InputHTMLAttributes<HTMLInputElement
   controlStyles: ControlStyles
   controlStatus: ControlStatus
   focused: boolean
-  labelInner?: string | IcnProps
+  hasLabel: boolean
   roundCorners?: BoxCorners
   mixed?: boolean
   value?: string | readonly string[] | number
 }
 
-const StyledInput = styled.input<InspectorInputProps>(
-  ({ chained = 'not-chained', controlStyles, focused, labelInner, roundCorners = 'all' }) => ({
-    outline: 'none',
-    paddingTop: 2,
-    paddingBottom: 2,
-    paddingRight: 6,
-    paddingLeft: labelInner != null ? 22 : 6,
-    background: 'transparent',
-    fontStyle: controlStyles.fontStyle,
-    fontWeight: controlStyles.fontWeight,
-    border: 0,
-    height: UtopiaTheme.layout.inputHeight.default,
-    width: '100%',
-    marginBottom: 0,
-    // ...getChainedBoxShadow(controlStyles, chained, focused, false),
-    ...getBorderRadiusStyles(chained, roundCorners),
-    disabled: !controlStyles.interactive,
-    '&:hover': {
-      // ...getChainedBoxShadow(controlStyles, chained, focused, true),
-    },
-    '&:focus': {},
-  }),
-)
+export const InspectorInputEmotionStyle = ({
+  chained = 'not-chained',
+  controlStyles,
+  hasLabel,
+  roundCorners = 'all',
+}: {
+  chained?: ChainedType
+  controlStyles: ControlStyles
+  hasLabel: boolean
+  roundCorners?: BoxCorners
+}): CSSObject => ({
+  outline: 'none',
+  paddingTop: 2,
+  paddingBottom: 2,
+  paddingRight: 6,
+  paddingLeft: hasLabel ? 22 : 6,
+  background: 'transparent',
+  fontStyle: controlStyles.fontStyle,
+  fontWeight: controlStyles.fontWeight,
+  border: 0,
+  height: UtopiaTheme.layout.inputHeight.default,
+  width: '100%',
+  marginBottom: 0,
+  // ...getChainedBoxShadow(controlStyles, chained, focused, false),
+  ...getBorderRadiusStyles(chained, roundCorners),
+  disabled: !controlStyles.interactive,
+  '&:hover': {
+    // ...getChainedBoxShadow(controlStyles, chained, focused, true),
+  },
+  '&:focus': {},
+})
+
+const StyledInput = styled.input<InspectorInputProps>(InspectorInputEmotionStyle)
 
 export const InspectorInput = betterReactMemo(
   'InspectorInput',
