@@ -371,6 +371,9 @@ export interface EditorState {
     renamingTarget: ElementPath | null
     position: 'hidden' | 'left' | 'right'
   }
+  topmenu: {
+    formulaBarFocusCounter: number
+  }
   preview: {
     visible: boolean
     connected: boolean
@@ -1136,6 +1139,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       collapsedViews: [],
       renamingTarget: null,
     },
+    topmenu: {
+      formulaBarFocusCounter: 0,
+    },
     preview: {
       visible: false,
       connected: false,
@@ -1360,6 +1366,9 @@ export function editorModelFromPersistentModel(
       minimised: true,
     },
     projectSettings: persistentModel.projectSettings,
+    topmenu: {
+      formulaBarFocusCounter: 0,
+    },
     preview: {
       visible: false,
       connected: false,

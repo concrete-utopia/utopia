@@ -90,6 +90,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RESET_CANVAS':
     case 'SET_FILEBROWSER_DROPTARGET':
     case 'SET_FORKED_FROM_PROJECT_ID':
+    case 'SET_CURRENT_THEME':
+    case 'FOCUS_FORMULA_BAR':
       return true
 
     case 'NEW':
@@ -145,7 +147,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_MISSING_DIMENSIONS':
     case 'ADD_STORYBOARD_FILE':
     case 'UPDATE_CHILD_TEXT':
-    case 'SET_CURRENT_THEME':
       return false
     case 'SAVE_ASSET':
       return (

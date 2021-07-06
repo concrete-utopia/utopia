@@ -185,6 +185,7 @@ import type {
   SetFilebrowserDropTarget,
   SetForkedFromProjectID,
   SetCurrentTheme,
+  FocusFormulaBar,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1315,5 +1316,11 @@ export function setCurrentTheme(theme: Theme): SetCurrentTheme {
   return {
     action: 'SET_CURRENT_THEME',
     theme: theme,
+  }
+}
+
+export function focusFormulaBar(): FocusFormulaBar {
+  return {
+    action: 'FOCUS_FORMULA_BAR',
   }
 }

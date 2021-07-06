@@ -831,6 +831,10 @@ export interface SetCurrentTheme {
   theme: Theme
 }
 
+export interface FocusFormulaBar {
+  action: 'FOCUS_FORMULA_BAR'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -968,6 +972,7 @@ export type EditorAction =
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
+  | FocusFormulaBar
 
 export type DispatchPriority =
   | 'everyone'
