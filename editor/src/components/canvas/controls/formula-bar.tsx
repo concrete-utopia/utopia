@@ -7,24 +7,14 @@ import { useColorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
-import WindowedSelect from 'react-windowed-select'
 import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
 import {
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXTextBlock,
-  jsxAttributeValue,
 } from '../../../core/shared/element-template'
-import { TailWindList } from './tailwindclassnames'
 import { ModeToggleButton } from './mode-toggle-button'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-
-// Dummy array of test values.
-const TailWindOptions = TailWindList.map((className, index) => ({
-  label: className,
-  value: className,
-}))
+import { ClassNameSelect } from './classname-select'
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const saveTimerRef = React.useRef<any>(null)
@@ -98,30 +88,6 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     [saveTimerRef, selectedElement, dispatchUpdate],
   )
 
-  const selectOnChange = React.useCallback(
-    (newValue: Array<{ label: string; value: string }>) => {
-      if (selectedElement != null) {
-        dispatch(
-          [
-            EditorActions.setProp_UNSAFE(
-              selectedElement.elementPath,
-              PP.create(['className']),
-              jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
-            ),
-          ],
-          'everyone',
-        )
-      }
-    },
-    [dispatch, selectedElement],
-  )
-
-  const classNames = selectedElement?.props?.className ?? ''
-  const selectedValues = classNames.split(' ').map((name: string) => ({
-    label: name,
-    value: name,
-  }))
-
   return (
     <SimpleFlexRow
       style={{
@@ -132,14 +98,16 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       {selectedElement != null && <ModeToggleButton />}
       {selectedElement != null && selectedMode === 'css' && (
         <div
-          style={{ paddingLeft: 4, paddingRight: 4, border: '0px', width: '100%', height: '100%' }}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            height: UtopiaTheme.layout.rowHeight.normal,
+            gap: 4,
+            flexGrow: 1,
+          }}
         >
-          <WindowedSelect
-            isMulti={true}
-            options={TailWindOptions}
-            onChange={selectOnChange}
-            value={selectedValues}
-          />
+          <ClassNameSelect />
         </div>
       )}
       {selectedElement == null ||

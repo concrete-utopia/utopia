@@ -63,7 +63,7 @@ const Button: React.FunctionComponent<ButtonProps> = (props) => (
       transition: 'width .2s linear',
       width: props.selected ? props.width : 4,
       flexShrink: 0,
-      flexGrow: 1,
+      flexGrow: 0,
       borderRadius: 2,
       overflow: 'hidden',
       color: props.selected ? '#000033' : 'transparent',

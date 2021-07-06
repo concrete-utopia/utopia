@@ -88,6 +88,8 @@ declare module 'friendly-words' {
 declare module 'react-windowed-select' {
   import { StateManager } from 'react-select'
   export default StateManager
+  export const components: SelectComponents<any>
+  export const createFilter: any
 }
 
 declare module 'npm-package-arg'
