@@ -84,7 +84,24 @@ export function createExecutionScope(
 
   const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback
 
-  let executionScope: MapLike<any> = { require: userRequireFn, ...requireResult }
+  let module = {
+    exports: {},
+  }
+
+  // Mirrors the same thing in evaluateJs.
+  let process = {
+    env: {
+      NODE_ENV: 'production',
+    },
+  }
+
+  let executionScope: MapLike<any> = {
+    require: userRequireFn,
+    module: module,
+    exports: module.exports,
+    process: process,
+    ...requireResult,
+  }
   // TODO All of this is run on every interaction o_O
 
   let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()

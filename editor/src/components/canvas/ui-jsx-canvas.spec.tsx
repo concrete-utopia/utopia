@@ -9,6 +9,45 @@ import {
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
 describe('UiJsxCanvas render', () => {
+  it('renders a canvas reliant on another file that uses module.exports', () => {
+    testCanvasRenderMultifile(
+      null,
+      `
+      import * as React from 'react'
+      import { View, Storyboard, Scene } from 'utopia-api'
+      import Test from '/testspecialvalue'
+      
+      export var App = (props) => {
+        return (
+          <View
+            style={{ ...props.style, backgroundColor: '#FFFFFF' }}
+            data-uid={'aaa'}
+          >
+            <View style={{position: 'absolute'}} data-uid={'bbb'}>hi</View>
+          </View>
+        )
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: Test.specialValue * 2, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+      { '/testspecialvalue.js': 'module.exports = { specialValue: 100 }' },
+    )
+  })
+
   it('renders a canvas defined by a utopia storyboard component', () => {
     testCanvasRender(
       null,

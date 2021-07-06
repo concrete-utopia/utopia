@@ -73,7 +73,7 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
-import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
+import { ProjectContentTreeRoot, getContentsTreeFileFromString, walkContentsTree } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
@@ -350,7 +350,9 @@ export const UiJsxCanvas = betterReactMemo(
                   shouldIncludeCanvasRootInTheSpy,
                 )
                 const exportsDetail = projectFile.fileContents.parsed.exportsDetail
-                let filteredScope: MapLike<any> = {}
+                let filteredScope: MapLike<any> = {
+                  ...scope.module.exports,
+                }
                 for (const s of Object.keys(scope)) {
                   if (s in exportsDetail.namedExports) {
                     filteredScope[s] = scope[s]
