@@ -1,4 +1,4 @@
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import { UTOPIA_BACKEND, THUMBNAIL_ENDPOINT, ASSET_ENDPOINT, BASE_URL } from './env-vars'
 import { ProjectListing } from './persistence'
 import {

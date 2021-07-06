@@ -1,5 +1,5 @@
-import * as ReactThreeFiber from '@react-three/fiber'
-import * as editorPackageJSON from '../../../../package.json'
+import * as MockReactThreeFiber from '@react-three/fiber'
+import * as mockWithEditorPackageJSON from '../../../../package.json'
 
 jest.mock('../../../core/es-modules/package-manager/built-in-dependencies-list', () => ({
   BuiltInDependencies: (mode: 'preview' | 'canvas'): Array<any> => [
@@ -9,10 +9,10 @@ jest.mock('../../../core/es-modules/package-manager/built-in-dependencies-list',
     {
       moduleName: '@react-three/fiber',
       nodeModule: {
-        ...ReactThreeFiber,
-        default: ReactThreeFiber,
+        ...MockReactThreeFiber,
+        default: MockReactThreeFiber,
       },
-      version: editorPackageJSON.devDependencies['@react-three/fiber'],
+      version: mockWithEditorPackageJSON.devDependencies['@react-three/fiber'],
     },
   ],
 }))
@@ -36,6 +36,7 @@ import {
 } from '../../../utils/utils.test-utils'
 import { addFileToProjectContents } from '../../assets'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
+import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 
 const exampleFiles = {
   [StoryboardFilePath]: `
@@ -138,7 +139,7 @@ function createTestProject() {
   return renderTestEditorWithModel(updatedProject)
 }
 
-describe('Spy Wrapper Tests For React Three Fiber', () => {
+xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
   it('a simple Canvas element in a scene where spy and jsx metadata has extra elements', async () => {
     // Code kept commented for any future person who needs it.
     // const currentWindow = require('electron').remote.getCurrentWindow()
@@ -149,7 +150,6 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
     // await wait(20000)
 
     const { getEditorState } = await createTestProject()
-    await wait(20000)
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
     expect(sanitizedSpyData).toMatchInlineSnapshot(`

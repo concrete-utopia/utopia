@@ -58,7 +58,7 @@ import { StoryboardFilePath } from '../editor/store/editor-state'
 import { getContentsTreeFileFromString } from '../assets'
 import { Link } from '../../uuiui/link'
 import { useTriggerForkProject } from '../editor/persistence-hooks'
-import urljoin = require('url-join')
+const urljoin = require('url-join')
 import { parseGithubProjectString } from '../../core/shared/github'
 
 export interface LeftPaneProps {

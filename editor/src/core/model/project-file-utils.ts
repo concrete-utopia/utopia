@@ -1,5 +1,5 @@
 import * as MimeTypes from 'mime-types'
-import * as pathParse from 'path-parse'
+import pathParse from 'path-parse'
 import * as PP from '../shared/property-path'
 import { isText } from 'istextorbinary'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
