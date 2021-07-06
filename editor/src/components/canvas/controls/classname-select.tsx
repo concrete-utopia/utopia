@@ -22,7 +22,7 @@ const TailWindOptions = TailWindList.map((className, index) => ({
   value: className,
 }))
 
-export const ClassNameSelect: React.FunctionComponent = () => {
+export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
 
   const selectedElement = useEditorState((store) => {
@@ -68,4 +68,4 @@ export const ClassNameSelect: React.FunctionComponent = () => {
       value={selectedValues}
     />
   )
-}
+})
