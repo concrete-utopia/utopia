@@ -15,6 +15,7 @@ import {
 } from '../../../core/shared/element-template'
 import { ModeToggleButton } from './mode-toggle-button'
 import { ClassNameSelect } from './classname-select'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const saveTimerRef = React.useRef<any>(null)
@@ -88,6 +89,11 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     [saveTimerRef, selectedElement, dispatchUpdate],
   )
 
+  const buttonsVisible = isFeatureEnabled('TopMenu ClassNames') && selectedElement != null
+  const classNameFieldVisible =
+    isFeatureEnabled('TopMenu ClassNames') && selectedElement != null && selectedMode === 'css'
+  const inputFieldVisible = !classNameFieldVisible
+
   return (
     <SimpleFlexRow
       style={{
@@ -95,8 +101,8 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         height: UtopiaTheme.layout.inputHeight.default,
       }}
     >
-      {selectedElement != null && <ModeToggleButton />}
-      {selectedElement != null && selectedMode === 'css' && (
+      {buttonsVisible && <ModeToggleButton />}
+      {classNameFieldVisible && selectedMode === 'css' && (
         <div
           style={{
             display: 'flex',
@@ -110,34 +116,33 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           <ClassNameSelect />
         </div>
       )}
-      {selectedElement == null ||
-        (selectedMode === 'content' && (
-          <input
-            type='text'
-            css={{
-              paddingLeft: 4,
-              paddingRight: 4,
-              border: '0px',
-              width: '100%',
-              height: '100%',
-              backgroundColor: colorTheme.canvasBackground.value,
-              borderRadius: 5,
-              transition: 'background-color .1s ease-in-out',
-              '&:hover': {
-                '&:not(:disabled)': {
-                  boxShadow: 'inset 0px 0px 0px 1px lightgrey',
-                },
-              },
-              '&:focus': {
-                backgroundColor: colorTheme.bg0.value,
+      {inputFieldVisible && (
+        <input
+          type='text'
+          css={{
+            paddingLeft: 4,
+            paddingRight: 4,
+            border: '0px',
+            width: '100%',
+            height: '100%',
+            backgroundColor: colorTheme.canvasBackground.value,
+            borderRadius: 5,
+            transition: 'background-color .1s ease-in-out',
+            '&:hover': {
+              '&:not(:disabled)': {
                 boxShadow: 'inset 0px 0px 0px 1px lightgrey',
               },
-            }}
-            onChange={onInputChange}
-            value={simpleText}
-            disabled={disabled}
-          />
-        ))}
+            },
+            '&:focus': {
+              backgroundColor: colorTheme.bg0.value,
+              boxShadow: 'inset 0px 0px 0px 1px lightgrey',
+            },
+          }}
+          onChange={onInputChange}
+          value={simpleText}
+          disabled={disabled}
+        />
+      )}
     </SimpleFlexRow>
   )
 })

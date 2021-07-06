@@ -9,6 +9,7 @@ export type FeatureName =
   | 'Advanced Resize Box'
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
+  | 'TopMenu ClassNames'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -16,6 +17,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Advanced Resize Box',
   'Re-parse Project Button',
   'Performance Test Triggers',
+  'TopMenu ClassNames',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -25,6 +27,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Advanced Resize Box': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
+  'TopMenu ClassNames': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
