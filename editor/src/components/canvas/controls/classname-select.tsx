@@ -3,7 +3,7 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 
-import { TailWindList } from './tailwindclassnames'
+import TailWindList from '../../../core/third-party/tailwind-all-classnames.json'
 import WindowedSelect from 'react-windowed-select'
 
 import * as EditorActions from '../../editor/actions/action-creators'
@@ -16,8 +16,7 @@ import * as PP from '../../../core/shared/property-path'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
-// Dummy array of test values.
-const TailWindOptions = TailWindList.map((className, index) => ({
+const TailWindOptions = TailWindList.classNames.map((className, index) => ({
   label: className,
   value: className,
 }))
