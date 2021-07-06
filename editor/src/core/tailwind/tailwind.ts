@@ -1,22 +1,37 @@
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { Either, isRight, left, right } from '../shared/either'
 import { RequireFn } from '../shared/npm-dependency-types'
-import { isTextFile } from '../shared/project-file-types'
+import { isTextFile, ProjectFile } from '../shared/project-file-types'
 import { Configuration, Sheet, silent } from 'twind'
 import { create, observe, cssomSheet, TwindObserver } from 'twind/observe'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import * as React from 'react'
+import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
+import { includesDependency } from '../../components/editor/npm-dependency/npm-dependency'
 
 const PostCSSPath = '/postcss.config.js'
 const TailwindConfigPath = '/tailwind.config.js'
 
-function hasPostCSSConfig(projectContents: ProjectContentTreeRoot): boolean {
-  const possibleFile = getContentsTreeFileFromString(projectContents, PostCSSPath)
-  return possibleFile != null && isTextFile(possibleFile)
+function hasRequiredDependenciesForTailwind(packageJsonFile: ProjectFile): boolean {
+  const hasTailwindDependency = includesDependency(packageJsonFile, 'tailwindcss')
+  const hasPostCSSDependency = includesDependency(packageJsonFile, 'postcss')
+
+  return hasTailwindDependency && hasPostCSSDependency
 }
 
-function usesTailwind(projectContents: ProjectContentTreeRoot, requireFn: RequireFn): boolean {
-  if (hasPostCSSConfig(projectContents)) {
+function useGetPackageJson(projectContents: ProjectContentTreeRoot): ProjectFile | null {
+  return React.useMemo(() => packageJsonFileFromProjectContents(projectContents), [projectContents])
+}
+
+function useHasRequiredDependenciesForTailwind(projectContents: ProjectContentTreeRoot): boolean {
+  const packageJsonFile = useGetPackageJson(projectContents)
+  return React.useMemo(() => {
+    return packageJsonFile != null && hasRequiredDependenciesForTailwind(packageJsonFile)
+  }, [packageJsonFile])
+}
+
+function postCSSIncludesTailwindPlugin(postCSSFile: ProjectFile, requireFn: RequireFn): boolean {
+  if (isTextFile(postCSSFile)) {
     try {
       const requireResult = requireFn('/', PostCSSPath)
       if (requireResult?.default != null) {
@@ -30,16 +45,27 @@ function usesTailwind(projectContents: ProjectContentTreeRoot, requireFn: Requir
   return false
 }
 
-function hasTailwindConfig(projectContents: ProjectContentTreeRoot): boolean {
-  const possibleFile = getContentsTreeFileFromString(projectContents, TailwindConfigPath)
-  return possibleFile != null && isTextFile(possibleFile)
+function useGetPostCSSConfigFile(projectContents: ProjectContentTreeRoot): ProjectFile | null {
+  return React.useMemo(() => getContentsTreeFileFromString(projectContents, PostCSSPath), [
+    projectContents,
+  ])
+}
+
+function usePostCSSIncludesTailwindPlugin(
+  projectContents: ProjectContentTreeRoot,
+  requireFn: RequireFn,
+): boolean {
+  const postCSSFile = useGetPostCSSConfigFile(projectContents)
+  return React.useMemo(() => {
+    return postCSSFile != null && postCSSIncludesTailwindPlugin(postCSSFile, requireFn)
+  }, [postCSSFile, requireFn])
 }
 
 function getTailwindConfig(
-  projectContents: ProjectContentTreeRoot,
+  tailwindFile: ProjectFile | null,
   requireFn: RequireFn,
 ): Either<any, Configuration> {
-  if (hasTailwindConfig(projectContents)) {
+  if (tailwindFile != null && isTextFile(tailwindFile)) {
     try {
       const requireResult = requireFn('/', TailwindConfigPath)
       if (requireResult?.default != null) {
@@ -50,9 +76,30 @@ function getTailwindConfig(
     } catch (error) {
       return left(error)
     }
-  } else {
-    return left('No valid tailwind config available.')
   }
+
+  return left('Invalid or missing tailwind config file type')
+}
+
+function useGetTailwindConfigFile(projectContents: ProjectContentTreeRoot): ProjectFile | null {
+  return React.useMemo(() => getContentsTreeFileFromString(projectContents, TailwindConfigPath), [
+    projectContents,
+  ])
+}
+
+function useGetTailwindConfig(
+  projectContents: ProjectContentTreeRoot,
+  requireFn: RequireFn,
+): Configuration {
+  const tailwindConfigFile = useGetTailwindConfigFile(projectContents)
+  return React.useMemo(() => {
+    const maybeConfig = getTailwindConfig(tailwindConfigFile, requireFn)
+    if (isRight(maybeConfig)) {
+      return maybeConfig.value
+    } else {
+      return {}
+    }
+  }, [tailwindConfigFile, requireFn])
 }
 
 interface TwindInstance {
@@ -99,19 +146,20 @@ export function useTwind(
   requireFn: RequireFn,
   prefixSelector: string,
 ) {
-  const shouldUseTwind = usesTailwind(projectContents, requireFn)
-  const tailwindConfig = useKeepReferenceEqualityIfPossible(
-    getTailwindConfig(projectContents, requireFn),
-  )
+  const hasDependencies = useHasRequiredDependenciesForTailwind(projectContents)
+  const hasPostCSSPlugin = usePostCSSIncludesTailwindPlugin(projectContents, requireFn)
+  const shouldUseTwind = hasDependencies && hasPostCSSPlugin
+  const tailwindConfig = useGetTailwindConfig(projectContents, requireFn)
   React.useMemo(() => {
     if (shouldUseTwind) {
-      const configToUse = isRight(tailwindConfig) ? tailwindConfig.value : {}
-      updateTwind(configToUse, prefixSelector)
+      updateTwind(tailwindConfig, prefixSelector)
     } else {
       clearTwind()
     }
   }, [prefixSelector, shouldUseTwind, tailwindConfig])
 }
 
+// [ ] Check for tailwind and postcss dependencies
+// [ ] Consider using ref for require function
 // [ ] Map tailwindcss preflight config to twind
 // [ ] Hook into preview
