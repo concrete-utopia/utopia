@@ -8,6 +8,7 @@ import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performanc
 import * as React from 'react'
 import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
 import { includesDependency } from '../../components/editor/npm-dependency/npm-dependency'
+import { propOrNull } from '../shared/object-utils'
 
 const PostCSSPath = '/postcss.config.js'
 const TailwindConfigPath = '/tailwind.config.js'
@@ -61,6 +62,33 @@ function usePostCSSIncludesTailwindPlugin(
   }, [postCSSFile, requireFn])
 }
 
+const PreflightKey = 'preflight'
+
+function enablesPreflight(tailwindConfig: any): boolean {
+  const corePlugins = propOrNull('corePlugins', tailwindConfig)
+  if (corePlugins != null && typeof corePlugins === 'object') {
+    if (Array.isArray(corePlugins)) {
+      // This means we have an explicit list of all allowed core plugins
+      return corePlugins.includes(PreflightKey)
+    } else {
+      // We have an object that enables or disables specific plugins - all unlisted plugins are enabled
+      const explicitDisabled = corePlugins[PreflightKey] === false // Tailwind doesn't use truthiness here
+      return !explicitDisabled
+    }
+  }
+
+  return true
+}
+
+function convertTailwindToTwindConfig(tailwindConfig: any): Configuration {
+  const preflightEnabled = enablesPreflight(tailwindConfig)
+
+  return {
+    ...tailwindConfig,
+    preflight: preflightEnabled,
+  }
+}
+
 function getTailwindConfig(
   tailwindFile: ProjectFile | null,
   requireFn: RequireFn,
@@ -69,7 +97,8 @@ function getTailwindConfig(
     try {
       const requireResult = requireFn('/', TailwindConfigPath)
       if (requireResult?.default != null) {
-        return right(requireResult.default)
+        const twindConfig = convertTailwindToTwindConfig(requireResult.default)
+        return right(twindConfig)
       } else {
         return left('Tailwind config contains no default export')
       }
@@ -159,7 +188,4 @@ export function useTwind(
   }, [prefixSelector, shouldUseTwind, tailwindConfig])
 }
 
-// [ ] Check for tailwind and postcss dependencies
-// [ ] Consider using ref for require function
-// [ ] Map tailwindcss preflight config to twind
 // [ ] Hook into preview
