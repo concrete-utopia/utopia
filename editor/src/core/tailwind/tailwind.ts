@@ -7,21 +7,46 @@ import { create, observe, cssomSheet, TwindObserver } from 'twind/observe'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import * as React from 'react'
 
-export const TailwindConfigPath = '/tailwind.config.js'
+const PostCSSPath = '/postcss.config.js'
+const TailwindConfigPath = '/tailwind.config.js'
 
-export function hasTailwindConfig(projectContents: ProjectContentTreeRoot): boolean {
+function hasPostCSSConfig(projectContents: ProjectContentTreeRoot): boolean {
+  const possibleFile = getContentsTreeFileFromString(projectContents, PostCSSPath)
+  return possibleFile != null && isTextFile(possibleFile)
+}
+
+function usesTailwind(projectContents: ProjectContentTreeRoot, requireFn: RequireFn): boolean {
+  if (hasPostCSSConfig(projectContents)) {
+    try {
+      const requireResult = requireFn('/', PostCSSPath)
+      if (requireResult?.default != null) {
+        return requireResult?.default?.plugins?.tailwindcss != null
+      }
+    } catch (e) {
+      /* Do nothing */
+    }
+  }
+
+  return false
+}
+
+function hasTailwindConfig(projectContents: ProjectContentTreeRoot): boolean {
   const possibleFile = getContentsTreeFileFromString(projectContents, TailwindConfigPath)
   return possibleFile != null && isTextFile(possibleFile)
 }
 
-export function getTailwindConfig(
+function getTailwindConfig(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
-): Either<any, unknown> {
+): Either<any, Configuration> {
   if (hasTailwindConfig(projectContents)) {
     try {
       const requireResult = requireFn('/', TailwindConfigPath)
-      return right(requireResult)
+      if (requireResult?.default != null) {
+        return right(requireResult.default)
+      } else {
+        return left('Tailwind config contains no default export')
+      }
     } catch (error) {
       return left(error)
     }
@@ -37,14 +62,14 @@ interface TwindInstance {
 
 let twindInstance: TwindInstance | null = null
 
-export function clearTwind() {
+function clearTwind() {
   if (twindInstance != null) {
     twindInstance.observer.disconnect()
     twindInstance.element.parentNode?.removeChild(twindInstance.element)
   }
 }
 
-export function updateTwind(config: Configuration, prefixSelector: string) {
+function updateTwind(config: Configuration, prefixSelector: string) {
   const element = document.head.appendChild(document.createElement('style'))
   element.appendChild(document.createTextNode('')) // Avoid Edge bug where empty style elements doesn't create sheets
 
@@ -74,14 +99,19 @@ export function useTwind(
   requireFn: RequireFn,
   prefixSelector: string,
 ) {
+  const shouldUseTwind = usesTailwind(projectContents, requireFn)
   const tailwindConfig = useKeepReferenceEqualityIfPossible(
     getTailwindConfig(projectContents, requireFn),
   )
   React.useMemo(() => {
-    if (isRight(tailwindConfig)) {
-      updateTwind((tailwindConfig.value as any).default as any, prefixSelector)
+    if (shouldUseTwind) {
+      const configToUse = isRight(tailwindConfig) ? tailwindConfig.value : {}
+      updateTwind(configToUse, prefixSelector)
     } else {
       clearTwind()
     }
-  }, [tailwindConfig, prefixSelector])
+  }, [prefixSelector, shouldUseTwind, tailwindConfig])
 }
+
+// [ ] Map tailwindcss preflight config to twind
+// [ ] Hook into preview
