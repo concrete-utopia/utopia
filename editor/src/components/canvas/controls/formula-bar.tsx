@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import * as React from 'react'
+import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -7,7 +7,6 @@ import { useColorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
-import * as EP from '../../../core/shared/element-path'
 import {
   isJSXArbitraryBlock,
   isJSXElement,
