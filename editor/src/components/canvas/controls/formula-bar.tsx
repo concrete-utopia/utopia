@@ -3,7 +3,7 @@ import * as React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { useColorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
+import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
@@ -15,7 +15,6 @@ import {
 } from '../../../core/shared/element-template'
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
-  const saveTimerRef = React.useRef<any>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
 
   const selectedElement = useEditorState((store) => {
@@ -32,9 +31,6 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const [disabled, setDisabled] = React.useState(false)
 
   React.useEffect(() => {
-    if (saveTimerRef.current != null) {
-      return
-    }
     let foundText = ''
     let isDisabled = true
     if (
@@ -59,26 +55,26 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     setDisabled(isDisabled)
   }, [selectedElement])
 
-  const dispatchUpdate = React.useCallback(
-    ({ path, text }) => {
-      dispatch([EditorActions.updateChildText(path, text)], 'canvas')
-      saveTimerRef.current = null
-    },
-    [dispatch],
-  )
-
   const onInputChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (selectedElement != null) {
-        clearTimeout(saveTimerRef.current)
-        saveTimerRef.current = setTimeout(dispatchUpdate, 300, {
-          path: selectedElement.elementPath,
-          text: event.target.value,
-        })
         setSimpleText(event.target.value)
       }
     },
-    [saveTimerRef, selectedElement, dispatchUpdate],
+    [selectedElement],
+  )
+
+  const onSubmitValue = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (selectedElement != null) {
+        setSimpleText(event.target.value)
+        dispatch(
+          [EditorActions.updateChildText(selectedElement.elementPath, event.target.value)],
+          'canvas',
+        )
+      }
+    },
+    [dispatch, selectedElement],
   )
 
   return (
@@ -88,7 +84,8 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         height: UtopiaTheme.layout.inputHeight.default,
       }}
     >
-      <input
+      <HeadlessStringInput
+        data-testid='formula-bar-input'
         type='text'
         css={{
           paddingLeft: 4,
@@ -110,6 +107,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           },
         }}
         onChange={onInputChange}
+        onBlur={onSubmitValue}
         value={simpleText}
         disabled={disabled}
       />
