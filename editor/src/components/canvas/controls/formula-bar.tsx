@@ -100,8 +100,8 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         height: UtopiaTheme.layout.inputHeight.default,
       }}
     >
-      {buttonsVisible && <ModeToggleButton />}
-      {classNameFieldVisible && (
+      {buttonsVisible ? <ModeToggleButton /> : null}
+      {classNameFieldVisible ? (
         <div
           style={{
             display: 'flex',
@@ -114,8 +114,8 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         >
           <ClassNameSelect />
         </div>
-      )}
-      {inputFieldVisible && (
+      ) : null}
+      {inputFieldVisible ? (
         <input
           type='text'
           css={{
@@ -141,7 +141,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           value={simpleText}
           disabled={disabled}
         />
-      )}
+      ) : null}
     </SimpleFlexRow>
   )
 })
