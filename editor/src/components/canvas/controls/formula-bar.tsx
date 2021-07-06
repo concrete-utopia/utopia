@@ -13,6 +13,8 @@ import {
   isJSXElement,
   isJSXTextBlock,
 } from '../../../core/shared/element-template'
+import { optionalMap } from '../../../core/shared/optional-utils'
+
 function useFocusOnCountIncrease(triggerCount: number): React.RefObject<HTMLInputElement> {
   const ref = React.useRef<HTMLInputElement>(null)
   const previousTriggerCountRef = React.useRef(triggerCount)
@@ -52,27 +54,9 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     if (saveTimerRef.current != null) {
       return
     }
-    let foundText = ''
-    let isDisabled = true
-    if (
-      selectedElement != null &&
-      isRight(selectedElement.element) &&
-      isJSXElement(selectedElement.element.value)
-    ) {
-      if (selectedElement.element.value.children.length === 1) {
-        const childElement = selectedElement.element.value.children[0]
-        if (isJSXTextBlock(childElement)) {
-          foundText = childElement.text
-          isDisabled = false
-        } else if (isJSXArbitraryBlock(childElement)) {
-          foundText = `{${childElement.originalJavascript}}`
-          isDisabled = false
-        }
-      } else if (selectedElement.element.value.children.length === 0) {
-        isDisabled = false
-      }
-    }
-    setSimpleText(foundText)
+    const foundText = optionalMap(MetadataUtils.getTextContentOfElement, selectedElement)
+    const isDisabled = foundText == null
+    setSimpleText(foundText ?? '')
     setDisabled(isDisabled)
   }, [selectedElement])
 

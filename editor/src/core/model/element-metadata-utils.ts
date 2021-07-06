@@ -699,6 +699,21 @@ export const MetadataUtils = {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
     return instance == null ? false : MetadataUtils.targetElementSupportsChildren(instance)
   },
+  getTextContentOfElement(element: ElementInstanceMetadata): string | null {
+    if (isRight(element.element) && isJSXElement(element.element.value)) {
+      if (element.element.value.children.length === 1) {
+        const childElement = element.element.value.children[0]
+        if (isJSXTextBlock(childElement)) {
+          return childElement.text
+        } else if (isJSXArbitraryBlock(childElement)) {
+          return `{${childElement.originalJavascript}}`
+        }
+      } else if (element.element.value.children.length === 0) {
+        return ''
+      }
+    }
+    return null
+  },
   // TODO update this to work with the natural width / height
   getImageMultiplier(
     metadata: ElementInstanceMetadataMap,
