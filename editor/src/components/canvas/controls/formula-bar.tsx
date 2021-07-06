@@ -101,7 +101,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       }}
     >
       {buttonsVisible && <ModeToggleButton />}
-      {classNameFieldVisible && selectedMode === 'css' && (
+      {classNameFieldVisible && (
         <div
           style={{
             display: 'flex',
