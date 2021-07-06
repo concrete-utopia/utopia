@@ -4,8 +4,9 @@ import * as React from 'react'
 import { css, jsx, useTheme } from '@emotion/react'
 import { useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'
+import { betterReactMemo } from '../../../uuiui-deps'
 
-export const ModeToggleButton = () => {
+export const ModeToggleButton = betterReactMemo('ModeToggleButton', () => {
   const selectedMode = useEditorState(
     (store) => store.editor.topmenu.formulaBarMode,
     'ModeToggleButton selectedMode',
@@ -44,7 +45,7 @@ export const ModeToggleButton = () => {
       </Button>
     </React.Fragment>
   )
-}
+})
 
 interface ButtonProps {
   width: number
