@@ -1151,31 +1151,33 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       `,
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        id=\\"canvas-container\\"
-        style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
-      >
+      "<div style=\\"all: initial;\\">
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-          style=\\"
-            position: absolute;
-            background-color: rgba(255, 255, 255, 1);
-            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-            left: 0;
-            top: 0;
-            width: 400px;
-            height: 400px;
-          \\"
-          data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
-            data-uid=\\"ccc-unparsed-no-template-path aaa app-entity\\"
-            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 0;
+              top: 0;
+              width: 400px;
+              height: 400px;
+            \\"
+            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
           >
-            hello
+            <div
+              data-uid=\\"ccc-unparsed-no-template-path aaa app-entity\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+            >
+              hello
+            </div>
           </div>
         </div>
       </div>
@@ -1247,32 +1249,34 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       `,
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        id=\\"canvas-container\\"
-        style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-        data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
-      >
+      "<div style=\\"all: initial;\\">
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-          style=\\"
-            position: absolute;
-            background-color: rgba(255, 255, 255, 1);
-            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-            left: 0;
-            top: 0;
-            width: 400px;
-            height: 400px;
-          \\"
-          data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
-            id=\\"nasty-div\\"
-            data-uid=\\"77f~~~1 833~~~2 65e~~~1 aaa app-entity\\"
-            data-paths=\\"833~~~2/77f~~~1 833~~~2 65e~~~1 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 0;
+              top: 0;
+              width: 400px;
+              height: 400px;
+            \\"
+            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
           >
-            huhahuha
+            <div
+              id=\\"nasty-div\\"
+              data-uid=\\"77f~~~1 833~~~2 65e~~~1 aaa app-entity\\"
+              data-paths=\\"833~~~2/77f~~~1 833~~~2 65e~~~1 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+            >
+              huhahuha
+            </div>
           </div>
         </div>
       </div>
@@ -1315,66 +1319,68 @@ export var storyboard = (
     )
 
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        id=\\"canvas-container\\"
-        style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\"storyboard storyboard/scene storyboard/scene/app-entity storyboard/scene/app-entity:aaa storyboard/scene/app-entity:aaa/antd-date-picker\\"
-        data-utopia-root-element-path=\\"storyboard\\"
-      >
+      "<div style=\\"all: initial;\\">
         <div
-          data-utopia-scene-id=\\"storyboard/scene\\"
-          data-paths=\\"storyboard/scene storyboard\\"
-          style=\\"
-            position: absolute;
-            background-color: rgba(255, 255, 255, 1);
-            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-            height: 812px;
-            left: 0;
-            width: 375px;
-            top: 0;
-          \\"
-          data-uid=\\"scene storyboard\\"
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"storyboard storyboard/scene storyboard/scene/app-entity storyboard/scene/app-entity:aaa storyboard/scene/app-entity:aaa/antd-date-picker\\"
+          data-utopia-root-element-path=\\"storyboard\\"
         >
           <div
-            style=\\"bottom: 0; left: 0; right: 0; top: 0; background-color: #ffffff;\\"
-            data-paths=\\"storyboard/scene/app-entity:aaa storyboard/scene/app-entity\\"
-            data-uid=\\"aaa app-entity\\"
+            data-utopia-scene-id=\\"storyboard/scene\\"
+            data-paths=\\"storyboard/scene storyboard\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              height: 812px;
+              left: 0;
+              width: 375px;
+              top: 0;
+            \\"
+            data-uid=\\"scene storyboard\\"
           >
             <div
-              class=\\"ant-picker\\"
-              style=\\"width: 123px; height: 51px; left: 113px; top: 395px;\\"
-              data-uid=\\"antd-date-picker\\"
-              data-paths=\\"storyboard/scene/app-entity:aaa/antd-date-picker\\"
+              style=\\"bottom: 0; left: 0; right: 0; top: 0; background-color: #ffffff;\\"
+              data-paths=\\"storyboard/scene/app-entity:aaa storyboard/scene/app-entity\\"
+              data-uid=\\"aaa app-entity\\"
             >
-              <div class=\\"ant-picker-input\\">
-                <input
-                  readonly=\\"\\"
-                  value=\\"\\"
-                  placeholder=\\"Select date\\"
-                  title=\\"\\"
-                  size=\\"12\\"
-                  data-uid=\\"antd-date-picker\\"
-                  data-paths=\\"storyboard/scene/app-entity:aaa/antd-date-picker\\"
-                  autocomplete=\\"off\\"
-                /><span class=\\"ant-picker-suffix\\"
-                  ><span
-                    role=\\"img\\"
-                    aria-label=\\"calendar\\"
-                    class=\\"anticon anticon-calendar\\"
-                    ><svg
-                      viewBox=\\"64 64 896 896\\"
-                      focusable=\\"false\\"
-                      class=\\"\\"
-                      data-icon=\\"calendar\\"
-                      width=\\"1em\\"
-                      height=\\"1em\\"
-                      fill=\\"currentColor\\"
-                      aria-hidden=\\"true\\"
-                    >
-                      <path
-                        d=\\"M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z\\"
-                      ></path></svg></span
-                ></span>
+              <div
+                class=\\"ant-picker\\"
+                style=\\"width: 123px; height: 51px; left: 113px; top: 395px;\\"
+                data-uid=\\"antd-date-picker\\"
+                data-paths=\\"storyboard/scene/app-entity:aaa/antd-date-picker\\"
+              >
+                <div class=\\"ant-picker-input\\">
+                  <input
+                    readonly=\\"\\"
+                    value=\\"\\"
+                    placeholder=\\"Select date\\"
+                    title=\\"\\"
+                    size=\\"12\\"
+                    data-uid=\\"antd-date-picker\\"
+                    data-paths=\\"storyboard/scene/app-entity:aaa/antd-date-picker\\"
+                    autocomplete=\\"off\\"
+                  /><span class=\\"ant-picker-suffix\\"
+                    ><span
+                      role=\\"img\\"
+                      aria-label=\\"calendar\\"
+                      class=\\"anticon anticon-calendar\\"
+                      ><svg
+                        viewBox=\\"64 64 896 896\\"
+                        focusable=\\"false\\"
+                        class=\\"\\"
+                        data-icon=\\"calendar\\"
+                        width=\\"1em\\"
+                        height=\\"1em\\"
+                        fill=\\"currentColor\\"
+                        aria-hidden=\\"true\\"
+                      >
+                        <path
+                          d=\\"M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z\\"
+                        ></path></svg></span
+                  ></span>
+                </div>
               </div>
             </div>
           </div>
@@ -1788,35 +1794,37 @@ describe('UiJsxCanvas render multifile projects', () => {
       },
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        id=\\"canvas-container\\"
-        style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
-        data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
-      >
+      "<div style=\\"all: initial;\\">
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-          style=\\"
-            position: absolute;
-            background-color: rgba(255, 255, 255, 1);
-            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-            height: 200px;
-            left: 59px;
-            width: 200px;
-            top: 79px;
-          \\"
-          data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
-            data-uid=\\"app-outer-div app-entity\\"
-            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity\\"
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
           >
             <div
-              data-uid=\\"inner-div\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
+              data-uid=\\"app-outer-div app-entity\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity\\"
             >
-              hello
+              <div
+                data-uid=\\"inner-div\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
+              >
+                hello
+              </div>
             </div>
           </div>
         </div>
@@ -1870,45 +1878,47 @@ describe('UiJsxCanvas render multifile projects', () => {
       },
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        id=\\"canvas-container\\"
-        style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
-        data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
-      >
+      "<div style=\\"all: initial;\\">
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-          style=\\"
-            position: absolute;
-            background-color: rgba(255, 255, 255, 1);
-            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-            height: 200px;
-            left: 59px;
-            width: 200px;
-            top: 79px;
-          \\"
-          data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
-            data-uid=\\"app-outer-div app-entity\\"
-            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity\\"
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
           >
             <div
-              data-uid=\\"card-outer-div card-instance\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance\\"
+              data-uid=\\"app-outer-div app-entity\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity\\"
             >
               <div
-                data-uid=\\"card-header\\"
-                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div/card-header\\"
+                data-uid=\\"card-outer-div card-instance\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance\\"
               >
-                Card
+                <div
+                  data-uid=\\"card-header\\"
+                  data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div/card-header\\"
+                >
+                  Card
+                </div>
+                <span
+                  data-uid=\\"card-content\\"
+                  data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
+                  >hello</span
+                >
               </div>
-              <span
-                data-uid=\\"card-content\\"
-                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
-                >hello</span
-              >
             </div>
           </div>
         </div>

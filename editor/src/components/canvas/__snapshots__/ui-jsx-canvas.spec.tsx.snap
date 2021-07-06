@@ -1,46 +1,48 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
-      data-uid=\\"aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"bbb~~~1\\"
-        data-label=\\"Plane\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
-      ></div>
-      <div
-        data-uid=\\"bbb~~~2\\"
-        data-label=\\"Plane\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
-      ></div>
-      <div
-        data-uid=\\"bbb~~~3\\"
-        data-label=\\"Plane\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
-      ></div>
+        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
+        data-uid=\\"aaa app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      >
+        <div
+          data-uid=\\"bbb~~~1\\"
+          data-label=\\"Plane\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        ></div>
+        <div
+          data-uid=\\"bbb~~~2\\"
+          data-label=\\"Plane\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
+        ></div>
+        <div
+          data-uid=\\"bbb~~~3\\"
+          data-label=\\"Plane\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
+        ></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1015,32 +1017,34 @@ Object {
 `;
 
 exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
-      data-uid=\\"aaa app-entity\\"
-      data-label=\\"Hat\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-    ></div>
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    >
+      <div
+        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
+        data-uid=\\"aaa app-entity\\"
+        data-label=\\"Hat\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      ></div>
+    </div>
   </div>
 </div>
 "
@@ -1572,31 +1576,33 @@ Object {
 `;
 
 exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:567\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:567\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
-    <input
-      data-uid=\\"00f 567 app-entity\\"
-      style=\\"top: 10px;\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:00f utopia-storyboard-uid/scene-aaa/app-entity:567 utopia-storyboard-uid/scene-aaa/app-entity\\"
-    />
+    <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    >
+      <input
+        data-uid=\\"00f 567 app-entity\\"
+        style=\\"top: 10px;\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:00f utopia-storyboard-uid/scene-aaa/app-entity:567 utopia-storyboard-uid/scene-aaa/app-entity\\"
+      />
+    </div>
   </div>
 </div>
 "
@@ -2047,47 +2053,49 @@ Object {
 `;
 
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"zzz app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"aaa~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1\\"
+        data-uid=\\"zzz app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
       >
-        1
-      </div>
-      <div
-        data-uid=\\"aaa~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2\\"
-      >
-        2
-      </div>
-      <div
-        data-uid=\\"aaa~~~3\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3\\"
-      >
-        3
+        <div
+          data-uid=\\"aaa~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1\\"
+        >
+          1
+        </div>
+        <div
+          data-uid=\\"aaa~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2\\"
+        >
+          2
+        </div>
+        <div
+          data-uid=\\"aaa~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3\\"
+        >
+          3
+        </div>
       </div>
     </div>
   </div>
@@ -3120,97 +3128,99 @@ Object {
 `;
 
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block inside an element inside an arbitrary jsx block 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"zzz app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"aaa~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1\\"
+        data-uid=\\"zzz app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
       >
         <div
-          data-uid=\\"bbb~~~1\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~1\\"
+          data-uid=\\"aaa~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1\\"
         >
-          4
+          <div
+            data-uid=\\"bbb~~~1\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~1\\"
+          >
+            4
+          </div>
+          <div
+            data-uid=\\"bbb~~~2\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~2\\"
+          >
+            5
+          </div>
+          <div
+            data-uid=\\"bbb~~~3\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~3\\"
+          >
+            6
+          </div>
         </div>
         <div
-          data-uid=\\"bbb~~~2\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~2\\"
+          data-uid=\\"aaa~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2\\"
         >
-          5
+          <div
+            data-uid=\\"bbb~~~1\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~1\\"
+          >
+            8
+          </div>
+          <div
+            data-uid=\\"bbb~~~2\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~2\\"
+          >
+            10
+          </div>
+          <div
+            data-uid=\\"bbb~~~3\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~3\\"
+          >
+            12
+          </div>
         </div>
         <div
-          data-uid=\\"bbb~~~3\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~3\\"
+          data-uid=\\"aaa~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3\\"
         >
-          6
-        </div>
-      </div>
-      <div
-        data-uid=\\"aaa~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2\\"
-      >
-        <div
-          data-uid=\\"bbb~~~1\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~1\\"
-        >
-          8
-        </div>
-        <div
-          data-uid=\\"bbb~~~2\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~2\\"
-        >
-          10
-        </div>
-        <div
-          data-uid=\\"bbb~~~3\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~3\\"
-        >
-          12
-        </div>
-      </div>
-      <div
-        data-uid=\\"aaa~~~3\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3\\"
-      >
-        <div
-          data-uid=\\"bbb~~~1\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~1\\"
-        >
-          12
-        </div>
-        <div
-          data-uid=\\"bbb~~~2\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~2\\"
-        >
-          15
-        </div>
-        <div
-          data-uid=\\"bbb~~~3\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~3\\"
-        >
-          18
+          <div
+            data-uid=\\"bbb~~~1\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~1\\"
+          >
+            12
+          </div>
+          <div
+            data-uid=\\"bbb~~~2\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~2\\"
+          >
+            15
+          </div>
+          <div
+            data-uid=\\"bbb~~~3\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~3\\"
+          >
+            18
+          </div>
         </div>
       </div>
     </div>
@@ -6089,41 +6099,43 @@ Object {
 `;
 
 exports[`UiJsxCanvas render class component is available from arbitrary block in JSX element 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"zzz app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"ccc-unparsed-no-template-path aaa\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+        data-uid=\\"zzz app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
       >
-        Thing
-      </div>
-      <div
-        data-uid=\\"ccc-unparsed-no-template-path bbb\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
-      >
-        Thing
+        <div
+          data-uid=\\"ccc-unparsed-no-template-path aaa\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+        >
+          Thing
+        </div>
+        <div
+          data-uid=\\"ccc-unparsed-no-template-path bbb\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
+        >
+          Thing
+        </div>
       </div>
     </div>
   </div>
@@ -6851,31 +6863,33 @@ Object {
 `;
 
 exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
-      data-uid=\\"aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-    ></div>
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    >
+      <div
+        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
+        data-uid=\\"aaa app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      ></div>
+    </div>
   </div>
 </div>
 "
@@ -7392,47 +7406,49 @@ Object {
 `;
 
 exports[`UiJsxCanvas render does not crash if the metadata scenes are not the appropriate value 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"xxx bbb~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        n1
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
-      >
-        n2
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~3\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
-      >
-        n3
+        <div
+          data-uid=\\"xxx bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        >
+          n1
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
+        >
+          n2
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
+        >
+          n3
+        </div>
       </div>
     </div>
   </div>
@@ -8552,47 +8568,49 @@ Object {
 `;
 
 exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"xxx bbb~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        n1
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
-      >
-        n2
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~3\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
-      >
-        n3
+        <div
+          data-uid=\\"xxx bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        >
+          n1
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
+        >
+          n2
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
+        >
+          n3
+        </div>
       </div>
     </div>
   </div>
@@ -9712,41 +9730,43 @@ Object {
 `;
 
 exports[`UiJsxCanvas render function component is available from arbitrary block in JSX element 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"zzz app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"ccc aaa\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+        data-uid=\\"zzz app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
       >
-        Thing
-      </div>
-      <div
-        data-uid=\\"ccc bbb\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
-      >
-        Thing
+        <div
+          data-uid=\\"ccc aaa\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+        >
+          Thing
+        </div>
+        <div
+          data-uid=\\"ccc bbb\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
+        >
+          Thing
+        </div>
       </div>
     </div>
   </div>
@@ -10502,41 +10522,43 @@ Object {
 `;
 
 exports[`UiJsxCanvas render function component works inside a map 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"zzz app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"ccc aaa~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1\\"
+        data-uid=\\"zzz app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
       >
-        Thing
-      </div>
-      <div
-        data-uid=\\"ccc aaa~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2\\"
-      >
-        Thing
+        <div
+          data-uid=\\"ccc aaa~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1\\"
+        >
+          Thing
+        </div>
+        <div
+          data-uid=\\"ccc aaa~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2\\"
+        >
+          Thing
+        </div>
       </div>
     </div>
   </div>
@@ -11294,42 +11316,44 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles a component that destructures its props object 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      height: 200px;
-      left: 59px;
-      width: 200px;
-      top: 79px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
       style=\\"
         position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
       \\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        style=\\"position: absolute; background-color: #000000;\\"
-        data-uid=\\"xxx bbb\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        style=\\"
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          background-color: #ffffff;
+        \\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        Hi there!
+        <div
+          style=\\"position: absolute; background-color: #000000;\\"
+          data-uid=\\"xxx bbb\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        >
+          Hi there!
+        </div>
       </div>
     </div>
   </div>
@@ -12236,41 +12260,43 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles a component that renames its props object 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      height: 200px;
-      left: 59px;
-      width: 200px;
-      top: 79px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
       style=\\"
         position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
       \\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"xxx bbb\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        style=\\"
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          background-color: #ffffff;
+        \\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        Hi there!
+        <div
+          data-uid=\\"xxx bbb\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        >
+          Hi there!
+        </div>
       </div>
     </div>
   </div>
@@ -13177,42 +13203,44 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      height: 200px;
-      left: 59px;
-      width: 200px;
-      top: 79px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
       style=\\"
         position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
       \\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        style=\\"position: absolute; background-color: #000000;\\"
-        data-uid=\\"xxx bbb\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        style=\\"
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          background-color: #ffffff;
+        \\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        Hi there! - and hello!
+        <div
+          style=\\"position: absolute; background-color: #000000;\\"
+          data-uid=\\"xxx bbb\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        >
+          Hi there! - and hello!
+        </div>
       </div>
     </div>
   </div>
@@ -14221,42 +14249,44 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn and also loves defaults 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      height: 200px;
-      left: 59px;
-      width: 200px;
-      top: 79px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
       style=\\"
         position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
       \\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        style=\\"position: absolute; background-color: #000000;\\"
-        data-uid=\\"xxx bbb\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        style=\\"
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          background-color: #ffffff;
+        \\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        Hi there! - and hello! - Now begone!
+        <div
+          style=\\"position: absolute; background-color: #000000;\\"
+          data-uid=\\"xxx bbb\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        >
+          Hi there! - and hello! - Now begone!
+        </div>
       </div>
     </div>
   </div>
@@ -15265,30 +15295,32 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles chaining dependencies into the appropriate order 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:bbb:aaa utopia-storyboard-uid/scene-aaa/app-entity:bbb utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa bbb app-entity\\"
-    ></div>
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    >
+      <div
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:bbb:aaa utopia-storyboard-uid/scene-aaa/app-entity:bbb utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa bbb app-entity\\"
+      ></div>
+    </div>
   </div>
 </div>
 "
@@ -15739,150 +15771,152 @@ Object {
 `;
 
 exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999/000\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 375px;
-      height: 812px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999/000\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
       style=\\"
         position: absolute;
-        bottom: 0;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
         left: 0;
-        right: 0;
         top: 0;
-        font-size: 12px;
-        font-family: Inter;
-        color: #237aff;
-        width: 376px;
+        width: 375px;
         height: 812px;
-        background-color: #171111;
       \\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
         style=\\"
-          display: grid;
-          grid-template-columns: 2fr 1fr;
-          grid-auto-rows: 31px;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          top: 0;
+          font-size: 12px;
+          font-family: Inter;
+          color: #237aff;
+          width: 376px;
+          height: 812px;
+          background-color: #171111;
         \\"
-        data-uid=\\"eb1 03a\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a:eb1 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
         <div
-          data-uid=\\"834~~~1\\"
-          data-label=\\"Copy\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~1\\"
+          style=\\"
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-auto-rows: 31px;
+          \\"
+          data-uid=\\"eb1 03a\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a:eb1 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a\\"
         >
-          Copy
-        </div>
-        <div
-          data-uid=\\"999~~~2\\"
-          data-label=\\"⌘,⎇,C\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2\\"
-        >
-          <span
-            data-uid=\\"6a8 000\\"
-            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000\\"
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~1\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~1\\"
-              >⌘</span
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~2\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~2\\"
-              >⎇</span
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~3\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~3\\"
-              >C</span
-            ></span
+          <div
+            data-uid=\\"834~~~1\\"
+            data-label=\\"Copy\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~1\\"
           >
-        </div>
-        <div
-          data-uid=\\"834~~~3\\"
-          data-label=\\"Paste\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~3\\"
-        >
-          Paste
-        </div>
-        <div
-          data-uid=\\"999~~~4\\"
-          data-label=\\"⌘⎇V\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4\\"
-        >
-          <span
-            data-uid=\\"6a8 000\\"
-            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000\\"
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~1\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~1\\"
-              >⌘</span
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~2\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~2\\"
-              >⎇</span
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~3\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~3\\"
-              >V</span
-            ></span
+            Copy
+          </div>
+          <div
+            data-uid=\\"999~~~2\\"
+            data-label=\\"⌘,⎇,C\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2\\"
           >
-        </div>
-        <div
-          data-uid=\\"834~~~5\\"
-          data-label=\\"Cut\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~5\\"
-        >
-          Cut
-        </div>
-        <div
-          data-uid=\\"999~~~6\\"
-          data-label=\\"⌘⎇C\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6\\"
-        >
-          <span
-            data-uid=\\"6a8 000\\"
-            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000\\"
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~1\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~1\\"
-              >⌘</span
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~2\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~2\\"
-              >⎇</span
-            ><span
-              style=\\"padding: 6px;\\"
-              data-uid=\\"726~~~3\\"
-              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~3\\"
-              >C</span
-            ></span
+            <span
+              data-uid=\\"6a8 000\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000\\"
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~1\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~1\\"
+                >⌘</span
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~2\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~2\\"
+                >⎇</span
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~3\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000:6a8/726~~~3\\"
+                >C</span
+              ></span
+            >
+          </div>
+          <div
+            data-uid=\\"834~~~3\\"
+            data-label=\\"Paste\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~3\\"
           >
+            Paste
+          </div>
+          <div
+            data-uid=\\"999~~~4\\"
+            data-label=\\"⌘⎇V\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4\\"
+          >
+            <span
+              data-uid=\\"6a8 000\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000\\"
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~1\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~1\\"
+                >⌘</span
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~2\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~2\\"
+                >⎇</span
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~3\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000:6a8/726~~~3\\"
+                >V</span
+              ></span
+            >
+          </div>
+          <div
+            data-uid=\\"834~~~5\\"
+            data-label=\\"Cut\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~5\\"
+          >
+            Cut
+          </div>
+          <div
+            data-uid=\\"999~~~6\\"
+            data-label=\\"⌘⎇C\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6\\"
+          >
+            <span
+              data-uid=\\"6a8 000\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000\\"
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~1\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~1\\"
+                >⌘</span
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~2\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~2\\"
+                >⎇</span
+              ><span
+                style=\\"padding: 6px;\\"
+                data-uid=\\"726~~~3\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000:6a8/726~~~3\\"
+                >C</span
+              ></span
+            >
+          </div>
         </div>
       </div>
     </div>
@@ -21238,41 +21272,43 @@ export var storyboard = (props) => {
 `;
 
 exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block inside a text range 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"zzz app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"ccc aaa\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+        data-uid=\\"zzz app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
       >
-        Hello World!!
-      </div>
-      <div
-        data-uid=\\"ddd bbb\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ddd utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
-      >
-        Hello Dolly!!
+        <div
+          data-uid=\\"ccc aaa\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa:ccc utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
+        >
+          Hello World!!
+        </div>
+        <div
+          data-uid=\\"ddd bbb\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb:ddd utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
+        >
+          Hello Dolly!!
+        </div>
       </div>
     </div>
   </div>
@@ -22094,31 +22130,33 @@ Object {
 `;
 
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a class component 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"ccc-unparsed-no-template-path aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
-      Thing
+      <div
+        data-uid=\\"ccc-unparsed-no-template-path aaa app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      >
+        Thing
+      </div>
     </div>
   </div>
 </div>
@@ -22621,31 +22659,33 @@ Object {
 `;
 
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a functional component 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
-      data-uid=\\"aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-    ></div>
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    >
+      <div
+        style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
+        data-uid=\\"aaa app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      ></div>
+    </div>
   </div>
 </div>
 "
@@ -23219,39 +23259,41 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renderrs correctly when a component is passed in via a prop 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"eee eee/fff eee/fff/app-entity eee/fff/app-entity:aaa eee/fff/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"eee\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"eee/fff\\"
-    data-paths=\\"eee/fff eee\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 375px;
-      height: 812px;
-    \\"
-    data-uid=\\"fff eee\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app-entity eee/fff/app-entity:aaa eee/fff/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"eee\\"
   >
     <div
-      data-uid=\\"aaa app-entity\\"
-      style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
-      data-paths=\\"eee/fff/app-entity:aaa eee/fff/app-entity\\"
+      data-utopia-scene-id=\\"eee/fff\\"
+      data-paths=\\"eee/fff eee\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 375px;
+        height: 812px;
+      \\"
+      data-uid=\\"fff eee\\"
     >
-      Test
       <div
-        data-uid=\\"ddd bbb\\"
-        style=\\"background-color: pink; width: 100%; height: 20px;\\"
-        data-paths=\\"eee/fff/app-entity:aaa/bbb:ddd eee/fff/app-entity:aaa/bbb\\"
+        data-uid=\\"aaa app-entity\\"
+        style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
+        data-paths=\\"eee/fff/app-entity:aaa eee/fff/app-entity\\"
       >
-        <div data-uid=\\"ccc~~~1\\" data-paths=\\"eee/fff/app-entity:aaa/ccc~~~1\\">
-          test
+        Test
+        <div
+          data-uid=\\"ddd bbb\\"
+          style=\\"background-color: pink; width: 100%; height: 20px;\\"
+          data-paths=\\"eee/fff/app-entity:aaa/bbb:ddd eee/fff/app-entity:aaa/bbb\\"
+        >
+          <div data-uid=\\"ccc~~~1\\" data-paths=\\"eee/fff/app-entity:aaa/ccc~~~1\\">
+            test
+          </div>
         </div>
       </div>
     </div>
@@ -24033,75 +24075,77 @@ export var storyboard = (
 `;
 
 exports[`UiJsxCanvas render renders a 1st party component with uids correctly, using the passed uid instead inside App 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59 utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59 utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; background-color: lightgrey;\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        style=\\"
-          left: 28px;
-          top: 27px;
-          width: 221px;
-          height: 348px;
-          background-color: #dddddd;
-        \\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59\\"
-        data-uid=\\"6be d59\\"
+        style=\\"position: absolute; background-color: lightgrey;\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
         <div
           style=\\"
-            background-color: #000000;
-            left: 10px;
-            top: 10px;
-            right: 10px;
-            height: 30px;
+            left: 28px;
+            top: 27px;
+            width: 221px;
+            height: 348px;
+            background-color: #dddddd;
           \\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/d03\\"
-          data-uid=\\"d03\\"
-        ></div>
-        <div
-          style=\\"
-            background-color: #fff;
-            left: 14px;
-            top: 21px;
-            width: 193px;
-            height: 244px;
-          \\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
-          data-uid=\\"dd5\\"
-        ></div>
-        <div
-          style=\\"
-            background-color: #000000;
-            left: 10px;
-            top: 100px;
-            right: 10px;
-            height: 30px;
-          \\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/41e\\"
-          data-uid=\\"41e\\"
-        ></div>
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59\\"
+          data-uid=\\"6be d59\\"
+        >
+          <div
+            style=\\"
+              background-color: #000000;
+              left: 10px;
+              top: 10px;
+              right: 10px;
+              height: 30px;
+            \\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/d03\\"
+            data-uid=\\"d03\\"
+          ></div>
+          <div
+            style=\\"
+              background-color: #fff;
+              left: 14px;
+              top: 21px;
+              width: 193px;
+              height: 244px;
+            \\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
+            data-uid=\\"dd5\\"
+          ></div>
+          <div
+            style=\\"
+              background-color: #000000;
+              left: 10px;
+              top: 100px;
+              right: 10px;
+              height: 30px;
+            \\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/41e\\"
+            data-uid=\\"41e\\"
+          ></div>
+        </div>
       </div>
     </div>
   </div>
@@ -25029,42 +25073,44 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard component 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      height: 200px;
-      left: 59px;
-      width: 200px;
-      top: 79px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
       style=\\"
         position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
       \\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        style=\\"position: absolute;\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-        data-uid=\\"bbb\\"
+        style=\\"
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          background-color: #ffffff;
+        \\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        hi
+        <div
+          style=\\"position: absolute;\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+          data-uid=\\"bbb\\"
+        >
+          hi
+        </div>
       </div>
     </div>
   </div>
@@ -25840,42 +25886,44 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a canvas reliant on another file that uses module.exports 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      height: 200px;
-      left: 59px;
-      width: 200px;
-      top: 79px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
       style=\\"
         position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: #ffffff;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
       \\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        style=\\"position: absolute;\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-        data-uid=\\"bbb\\"
+        style=\\"
+          position: absolute;
+          height: 100%;
+          width: 100%;
+          background-color: #ffffff;
+        \\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        hi
+        <div
+          style=\\"position: absolute;\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+          data-uid=\\"bbb\\"
+        >
+          hi
+        </div>
       </div>
     </div>
   </div>
@@ -26796,47 +26844,49 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"xxx bbb~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        n1
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
-      >
-        n2
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~3\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
-      >
-        n3
+        <div
+          data-uid=\\"xxx bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        >
+          n1
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
+        >
+          n2
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
+        >
+          n3
+        </div>
       </div>
     </div>
   </div>
@@ -27956,47 +28006,49 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly, with an HTML element name as a parameter name 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"xxx bbb~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        n1
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
-      >
-        n2
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~3\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
-      >
-        n3
+        <div
+          data-uid=\\"xxx bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        >
+          n1
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
+        >
+          n2
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
+        >
+          n3
+        </div>
       </div>
     </div>
   </div>
@@ -29120,47 +29172,49 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component used in an arbitrary block with eye-stabbingly awful nested destructuring correctly 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"xxx bbb~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        n1
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
-      >
-        n2
-      </div>
-      <div
-        data-uid=\\"xxx bbb~~~3\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
-      >
-        n3
+        <div
+          data-uid=\\"xxx bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        >
+          n1
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
+        >
+          n2
+        </div>
+        <div
+          data-uid=\\"xxx bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
+        >
+          n3
+        </div>
       </div>
     </div>
   </div>
@@ -30287,38 +30341,40 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component using the spread operator 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      height: 200px;
-      left: 59px;
-      width: 200px;
-      top: 79px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; height: 99.9; width: 77.7;\\"
-      title=\\"Hi there!\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        height: 200px;
+        left: 59px;
+        width: 200px;
+        top: 79px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        style=\\"position: absolute;\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-        data-uid=\\"bbb\\"
+        style=\\"position: absolute; height: 99.9; width: 77.7;\\"
+        title=\\"Hi there!\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
-        hi
+        <div
+          style=\\"position: absolute;\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+          data-uid=\\"bbb\\"
+        >
+          hi
+        </div>
       </div>
     </div>
   </div>
@@ -31056,38 +31112,40 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 406px;
-      top: 62px;
-      width: 212px;
-      height: 188px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
-    data-label=\\"Scene 2\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 406px;
+        top: 62px;
+        width: 212px;
+        height: 188px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+      data-label=\\"Scene 2\\"
     >
-      hello
-    </div>
-    <div
-      data-uid=\\"bbb app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:bbb utopia-storyboard-uid/scene-aaa/app-entity\\"
-    >
-      bello
+      <div
+        data-uid=\\"aaa app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      >
+        hello
+      </div>
+      <div
+        data-uid=\\"bbb app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:bbb utopia-storyboard-uid/scene-aaa/app-entity\\"
+      >
+        bello
+      </div>
     </div>
   </div>
 </div>
@@ -31603,31 +31661,33 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders correctly with a context 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"ccc ccc/ddd ccc/ddd/app-entity ccc/ddd/app-entity:aaa ccc/ddd/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"ccc\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"ccc/ddd\\"
-    data-paths=\\"ccc/ddd ccc\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 375px;
-      height: 812px;
-    \\"
-    data-uid=\\"ddd ccc\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"ccc ccc/ddd ccc/ddd/app-entity ccc/ddd/app-entity:aaa ccc/ddd/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"ccc\\"
   >
     <div
-      data-uid=\\"bbb aaa app-entity\\"
-      style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
-      data-paths=\\"ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity:aaa ccc/ddd/app-entity\\"
-    ></div>
+      data-utopia-scene-id=\\"ccc/ddd\\"
+      data-paths=\\"ccc/ddd ccc\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 375px;
+        height: 812px;
+      \\"
+      data-uid=\\"ddd ccc\\"
+    >
+      <div
+        data-uid=\\"bbb aaa app-entity\\"
+        style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
+        data-paths=\\"ccc/ddd/app-entity:aaa/bbb ccc/ddd/app-entity:aaa ccc/ddd/app-entity\\"
+      ></div>
+    </div>
   </div>
 </div>
 "
@@ -32269,31 +32329,33 @@ export var storyboard = (
 `;
 
 exports[`UiJsxCanvas render renders correctly with a nested context in another component 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"ccc ccc/ddd ccc/ddd/app-entity ccc/ddd/app-entity:card\\"
-  data-utopia-root-element-path=\\"ccc\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"ccc/ddd\\"
-    data-paths=\\"ccc/ddd ccc\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 375px;
-      height: 812px;
-    \\"
-    data-uid=\\"ddd ccc\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"ccc ccc/ddd ccc/ddd/app-entity ccc/ddd/app-entity:card\\"
+    data-utopia-root-element-path=\\"ccc\\"
   >
     <div
-      data-uid=\\"bbb inner aaa card app-entity\\"
-      style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
-      data-paths=\\"ccc/ddd/app-entity:card:aaa/inner/bbb ccc/ddd/app-entity:card:aaa/inner ccc/ddd/app-entity:card:aaa ccc/ddd/app-entity:card ccc/ddd/app-entity\\"
-    ></div>
+      data-utopia-scene-id=\\"ccc/ddd\\"
+      data-paths=\\"ccc/ddd ccc\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 375px;
+        height: 812px;
+      \\"
+      data-uid=\\"ddd ccc\\"
+    >
+      <div
+        data-uid=\\"bbb inner aaa card app-entity\\"
+        style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
+        data-paths=\\"ccc/ddd/app-entity:card:aaa/inner/bbb ccc/ddd/app-entity:card:aaa/inner ccc/ddd/app-entity:card:aaa ccc/ddd/app-entity:card ccc/ddd/app-entity\\"
+      ></div>
+    </div>
   </div>
 </div>
 "
@@ -32693,32 +32755,34 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders fine with two circularly referencing arbitrary blocks 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
-    data-paths=\\"utopia-storyboard-uid/scene utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 375px;
-      height: 812px;
-    \\"
-    data-uid=\\"scene utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"aaa app-entity\\"
-      style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
-      data-paths=\\"utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
+      data-paths=\\"utopia-storyboard-uid/scene utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 375px;
+        height: 812px;
+      \\"
+      data-uid=\\"scene utopia-storyboard-uid\\"
     >
-      0 - 0
+      <div
+        data-uid=\\"aaa app-entity\\"
+        style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
+        data-paths=\\"utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity\\"
+      >
+        0 - 0
+      </div>
     </div>
   </div>
 </div>
@@ -33263,31 +33327,33 @@ export var storyboard = (
 `;
 
 exports[`UiJsxCanvas render renders fine with two components that reference each other 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:BBB\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
-    data-paths=\\"utopia-storyboard-uid/scene utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 375px;
-      height: 812px;
-    \\"
-    data-uid=\\"scene utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:BBB\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"1a9~~~1 aaa-unparsed-no-template-path bbb-unparsed-no-template-path BBB app-entity\\"
-      data-paths=\\"1a9~~~1 utopia-storyboard-uid/scene/app-entity:BBB utopia-storyboard-uid/scene/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
+      data-paths=\\"utopia-storyboard-uid/scene utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 375px;
+        height: 812px;
+      \\"
+      data-uid=\\"scene utopia-storyboard-uid\\"
     >
-      great
+      <div
+        data-uid=\\"1a9~~~1 aaa-unparsed-no-template-path bbb-unparsed-no-template-path BBB app-entity\\"
+        data-paths=\\"1a9~~~1 utopia-storyboard-uid/scene/app-entity:BBB utopia-storyboard-uid/scene/app-entity\\"
+      >
+        great
+      </div>
     </div>
   </div>
 </div>
@@ -33692,53 +33758,55 @@ Object {
 `;
 
 exports[`UiJsxCanvas render renders fragments correctly 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/bbb eee/fff/app:aaa/bbb/ccc eee/fff/app:aaa/ddd\\"
-  data-utopia-root-element-path=\\"eee\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"eee/fff\\"
-    data-paths=\\"eee/fff eee\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      height: 812px;
-      left: 0;
-      width: 375px;
-      top: 0;
-    \\"
-    data-uid=\\"fff eee\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"eee eee/fff eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/bbb eee/fff/app:aaa/bbb/ccc eee/fff/app:aaa/ddd\\"
+    data-utopia-root-element-path=\\"eee\\"
   >
     <div
+      data-utopia-scene-id=\\"eee/fff\\"
+      data-paths=\\"eee/fff eee\\"
       style=\\"
-        position: relative;
-        bottom: 0;
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        height: 812px;
         left: 0;
-        right: 0;
+        width: 375px;
         top: 0;
-        background-color: #ffffff;
       \\"
-      data-paths=\\"eee/fff/app:aaa eee/fff/app\\"
-      data-uid=\\"aaa app\\"
+      data-uid=\\"fff eee\\"
     >
       <div
-        data-label=\\"random-div\\"
-        style=\\"width: 100px; height: 100px;\\"
-        data-uid=\\"bbb\\"
-        data-paths=\\"eee/fff/app:aaa/bbb\\"
+        style=\\"
+          position: relative;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          top: 0;
+          background-color: #ffffff;
+        \\"
+        data-paths=\\"eee/fff/app:aaa eee/fff/app\\"
+        data-uid=\\"aaa app\\"
       >
-        Hello
         <div
-          data-label=\\"some-other-div\\"
+          data-label=\\"random-div\\"
           style=\\"width: 100px; height: 100px;\\"
-          data-uid=\\"ccc\\"
-          data-paths=\\"eee/fff/app:aaa/bbb/ccc\\"
-        ></div>
+          data-uid=\\"bbb\\"
+          data-paths=\\"eee/fff/app:aaa/bbb\\"
+        >
+          Hello
+          <div
+            data-label=\\"some-other-div\\"
+            style=\\"width: 100px; height: 100px;\\"
+            data-uid=\\"ccc\\"
+            data-paths=\\"eee/fff/app:aaa/bbb/ccc\\"
+          ></div>
+        </div>
+        <div data-uid=\\"ddd\\" data-paths=\\"eee/fff/app:aaa/ddd\\">World</div>
       </div>
-      <div data-uid=\\"ddd\\" data-paths=\\"eee/fff/app:aaa/ddd\\">World</div>
     </div>
   </div>
 </div>
@@ -34981,35 +35049,37 @@ export var storyboard = (
 `;
 
 exports[`UiJsxCanvas render renders img tag 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
-      <img
-        data-uid=\\"bbb\\"
-        src=\\"data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
-      />
+      <div
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
+      >
+        <img
+          data-uid=\\"bbb\\"
+          src=\\"data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
+        />
+      </div>
     </div>
   </div>
 </div>
@@ -35630,33 +35700,35 @@ Object {
 `;
 
 exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    data-factory-function-works=\\"true\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"4cf aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:4cf utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
       data-factory-function-works=\\"true\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
-      Utopia
+      <div
+        data-uid=\\"4cf aaa app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:4cf utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-factory-function-works=\\"true\\"
+      >
+        Utopia
+      </div>
     </div>
   </div>
 </div>
@@ -36111,61 +36183,63 @@ Object {
 `;
 
 exports[`UiJsxCanvas render supports passing down the scope to children of components 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      data-uid=\\"aaa app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"bbb~~~1\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"aaa app-entity\\"
       >
         <div
-          data-uid=\\"ccc\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1/ccc\\"
+          data-uid=\\"bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1\\"
         >
-          1
+          <div
+            data-uid=\\"ccc\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1/ccc\\"
+          >
+            1
+          </div>
         </div>
-      </div>
-      <div
-        data-uid=\\"bbb~~~2\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
-      >
         <div
-          data-uid=\\"ccc\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2/ccc\\"
+          data-uid=\\"bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2\\"
         >
-          2
+          <div
+            data-uid=\\"ccc\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2/ccc\\"
+          >
+            2
+          </div>
         </div>
-      </div>
-      <div
-        data-uid=\\"bbb~~~3\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
-      >
         <div
-          data-uid=\\"ccc\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3/ccc\\"
+          data-uid=\\"bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3\\"
         >
-          3
+          <div
+            data-uid=\\"ccc\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3/ccc\\"
+          >
+            3
+          </div>
         </div>
       </div>
     </div>
@@ -37807,32 +37881,34 @@ Object {
 `;
 
 exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"ba3 aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:ba3 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      class=\\"css-16au7uv\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
-      Utopia
+      <div
+        data-uid=\\"ba3 aaa app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:ba3 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+        class=\\"css-16au7uv\\"
+      >
+        Utopia
+      </div>
     </div>
   </div>
 </div>
@@ -38284,40 +38360,42 @@ Object {
 `;
 
 exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElement 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
-  data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
+    data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"zzz app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 400px;
+        height: 400px;
+      \\"
+      data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"cloner-root cloner\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner:cloner-root utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner\\"
+        data-uid=\\"zzz app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity\\"
       >
         <div
-          data-uid=\\"cloned\\"
-          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
-          style=\\"color: red; font-weight: 800;\\"
+          data-uid=\\"cloner-root cloner\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner:cloner-root utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner\\"
         >
-          ha
+          <div
+            data-uid=\\"cloned\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
+            style=\\"color: red; font-weight: 800;\\"
+          >
+            ha
+          </div>
         </div>
       </div>
     </div>
