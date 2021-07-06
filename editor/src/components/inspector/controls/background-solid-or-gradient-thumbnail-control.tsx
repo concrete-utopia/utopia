@@ -1,4 +1,4 @@
-import React = require('react')
+import * as React from 'react'
 import { UseSubmitValueFactory } from '../common/property-path-hooks'
 import { isRight } from '../../../core/shared/either'
 import { ControlStatus, ControlStyles } from '../common/control-status'

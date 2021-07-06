@@ -14,7 +14,7 @@ import { applicative3Either, forEachRight } from '../core/shared/either'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
 import { objectKeyParser, parseAny, ParseResult } from '../utils/value-parser-utils'
-import * as deepEquals from 'fast-deep-equal'
+import deepEquals from 'fast-deep-equal'
 
 // Not a full parse, just checks the primary fields are there.
 function fastPropertyControlsParse(value: unknown): ParseResult<GetPropertyControlsInfoMessage> {

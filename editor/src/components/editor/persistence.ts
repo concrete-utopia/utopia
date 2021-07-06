@@ -1,4 +1,4 @@
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import {
   fetchLocalProject as fetchLocalProjectCommon,
   localProjectKey,

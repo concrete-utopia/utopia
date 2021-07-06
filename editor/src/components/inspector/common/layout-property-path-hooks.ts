@@ -1,4 +1,4 @@
-import * as fastDeepEqual from 'fast-deep-equal'
+import fastDeepEqual from 'fast-deep-equal'
 import {
   AllFramePoints,
   Frame,
@@ -34,7 +34,7 @@ import {
   useRefSelectedViews,
 } from './property-path-hooks'
 
-import React = require('react')
+import * as React from 'react'
 import { usePropControlledRef_DANGEROUS } from './inspector-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { CSSNumber, cssNumberToString } from './css-utils'

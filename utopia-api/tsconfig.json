@@ -4,6 +4,7 @@
     "declarationDir": "./dist",
     "module": "es2020",
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "declaration": true,
     "removeComments": true,
     "noImplicitAny": true,

@@ -96,7 +96,9 @@ const workers = new MockUtopiaTsWorkers()
 const testScenePath = ScenePath1ForTestUiJsFile
 const testElementPath = EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['pancake'])
 
-jest.useFakeTimers()
+afterAll(() => {
+  jest.useRealTimers()
+})
 
 describe('action SELECT_VIEWS', () => {
   it('updates selectedview in editor', () => {
@@ -897,6 +899,7 @@ describe('action ADD_TOAST and REMOVE_TOAST', () => {
   })
 
   it('ADD_TOAST schedules a REMOVE_TOAST', () => {
+    jest.useFakeTimers()
     const { editor, derivedState } = createEditorStates()
     const mockDispatch = jest.fn()
 

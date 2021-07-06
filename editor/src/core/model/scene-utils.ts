@@ -1,4 +1,4 @@
-import * as Hash from 'object-hash'
+import Hash from 'object-hash'
 import {
   SceneMetadata,
   StaticElementPath,
@@ -34,7 +34,7 @@ import {
   right,
 } from '../shared/either'
 import { memoize } from '../shared/memoize'
-import * as fastDeepEqual from 'fast-deep-equal'
+import fastDeepEqual from 'fast-deep-equal'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
