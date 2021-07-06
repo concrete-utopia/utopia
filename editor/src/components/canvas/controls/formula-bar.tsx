@@ -15,6 +15,7 @@ import {
 } from '../../../core/shared/element-template'
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
+  const saveTimerRef = React.useRef<any>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
 
   const selectedElement = useEditorState((store) => {
@@ -31,6 +32,9 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const [disabled, setDisabled] = React.useState(false)
 
   React.useEffect(() => {
+    if (saveTimerRef.current != null) {
+      return
+    }
     let foundText = ''
     let isDisabled = true
     if (
@@ -55,26 +59,38 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     setDisabled(isDisabled)
   }, [selectedElement])
 
+  const dispatchUpdate = React.useCallback(
+    ({ path, text }) => {
+      dispatch([EditorActions.updateChildText(path, text)], 'canvas')
+      clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = null
+    },
+    [dispatch],
+  )
+
   const onInputChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (selectedElement != null) {
+        clearTimeout(saveTimerRef.current)
+        saveTimerRef.current = setTimeout(dispatchUpdate, 300, {
+          path: selectedElement.elementPath,
+          text: event.target.value,
+        })
         setSimpleText(event.target.value)
       }
     },
-    [selectedElement],
+    [saveTimerRef, selectedElement, dispatchUpdate],
   )
 
-  const onSubmitValue = React.useCallback(
+  const onBlur = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (selectedElement != null) {
+        clearTimeout(saveTimerRef.current)
+        dispatchUpdate({ path: selectedElement.elementPath, text: event.target.value })
         setSimpleText(event.target.value)
-        dispatch(
-          [EditorActions.updateChildText(selectedElement.elementPath, event.target.value)],
-          'canvas',
-        )
       }
     },
-    [dispatch, selectedElement],
+    [saveTimerRef, selectedElement, dispatchUpdate],
   )
 
   return (
@@ -85,7 +101,6 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       }}
     >
       <HeadlessStringInput
-        data-testid='formula-bar-input'
         type='text'
         css={{
           paddingLeft: 4,
@@ -107,7 +122,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           },
         }}
         onChange={onInputChange}
-        onBlur={onSubmitValue}
+        onBlur={onBlur}
         value={simpleText}
         disabled={disabled}
       />
