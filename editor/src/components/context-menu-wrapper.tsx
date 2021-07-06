@@ -11,7 +11,7 @@ import {
 } from 'react-contexify'
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
-import * as fastDeepEquals from 'fast-deep-equal'
+import fastDeepEquals from 'fast-deep-equal'
 import { Icons, UtopiaTheme } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 
@@ -106,9 +106,9 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
         key={`context-menu-${index}-item`}
         disabled={this.isDisabled(item)}
         // eslint-disable-next-line react/jsx-no-bind
-        onClick={({ event }: { event: React.MouseEvent<HTMLElement> }) => {
+        onClick={({ event }) => {
           event.stopPropagation()
-          item.action(this.props.getData(), this.props.dispatch, event.nativeEvent)
+          item.action(this.props.getData(), this.props.dispatch, (event as any)?.nativeEvent)
           contextMenu.hideAll()
         }}
         hidden={this.isHidden(item)}

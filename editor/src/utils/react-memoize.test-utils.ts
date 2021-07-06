@@ -1,9 +1,9 @@
-import * as React from 'react'
+import React from 'react'
 import { UpdateInfo } from '@welldone-software/why-did-you-render'
 import * as WDYRTypes from '@welldone-software/why-did-you-render'
 // another sad case where the typescript typing is erroneous.
 // unfortunately it claims that whyDidYouRender is a default export whereas it's a module export
-export const whyDidYouRender = require('@welldone-software/why-did-you-render') as typeof WDYRTypes.default
+import whyDidYouRender from '@welldone-software/why-did-you-render'
 
 /**
  * sets up why-did-you-render and

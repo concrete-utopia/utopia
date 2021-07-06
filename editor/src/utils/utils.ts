@@ -1,4 +1,4 @@
-import * as chroma from 'chroma-js'
+import chroma from 'chroma-js'
 import { v4 as UUID } from 'uuid'
 import { PackageType } from '../core/shared/project-file-types'
 import { AnyJson, JsonMap } from '../missing-types/json'

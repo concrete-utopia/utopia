@@ -9,7 +9,7 @@ import {
 } from '../../shared/project-file-types'
 import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 
-import * as SampleTypeDefinitions from './sample-type-definitions.json'
+import SampleTypeDefinitions from './sample-type-definitions.json'
 import { contentsToTree } from '../../../components/assets'
 import { emptyComments } from '../parser-printer/parser-printer-comments'
 import { jsxAttributesFromMap } from '../../shared/element-template'
@@ -17,8 +17,10 @@ import { jsxAttributesFromMap } from '../../shared/element-template'
 describe('Typescript worker builds the project', () => {
   it('initializing a new project', (done) => {
     handleMessage(SampleInitTSWorkerMessage, (msg) => {
-      expect(msg).toMatchSnapshot()
-      done()
+      if (msg.type === 'build') {
+        expect(msg).toMatchSnapshot()
+        done()
+      }
     })
   }),
     it('updating a single file', (done) => {

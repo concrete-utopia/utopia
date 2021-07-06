@@ -2,7 +2,7 @@ import * as UtopiaAPI from 'utopia-api'
 import * as UUIUI from '../../../uuiui'
 import * as UUIUIDeps from '../../../uuiui-deps'
 import * as ReactJsxRuntime from 'react/jsx-runtime'
-import * as React from 'react'
+import React from 'react' // this is imported like this so that the monkey patching will run
 import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'
 import * as EmotionStyled from '@emotion/styled'

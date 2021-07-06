@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { MapLike } from 'typescript'
 import { PropertyControls } from 'utopia-api'
 import { getUtopiaID } from '../../../core/model/element-template-utils'

@@ -1,5 +1,5 @@
-import React = require('react')
-import ReactDOM = require('react-dom')
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 import { useHandleCloseOnESCOrEnter } from '../common/inspector-utils'
 import { EditorID, PortalTargetID } from '../../../core/shared/utils'
 import ResizeObserver from 'resize-observer-polyfill'

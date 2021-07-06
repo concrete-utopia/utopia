@@ -15,7 +15,7 @@ import {
   githubProjects,
   githubProjectsFileFilters,
 } from './github-projects'
-import * as minimatch from 'minimatch'
+import minimatch from 'minimatch'
 import { emptySet } from '../core/shared/set-utils'
 
 const javascriptFileEndings = ['.js', '.ts', '.jsx', '.tsx']

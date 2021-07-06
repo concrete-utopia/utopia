@@ -1,4 +1,4 @@
-import * as deepEqual from 'fast-deep-equal'
+import deepEqual from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { jsxAttributeValue } from '../../../core/shared/element-template'

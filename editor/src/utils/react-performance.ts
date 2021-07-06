@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as fastDeepEqual from 'fast-deep-equal'
+import fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
 import { KeepDeepEqualityCall, keepDeepEqualityResult } from './deep-equality'
 import { shallowEqual } from '../core/shared/equality-utils'

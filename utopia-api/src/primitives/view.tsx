@@ -1,5 +1,5 @@
 import { Interpolation, Theme } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import { UtopiaComponentProps, addEventHandlersToDivProps } from './common'
 
 export interface ViewProps

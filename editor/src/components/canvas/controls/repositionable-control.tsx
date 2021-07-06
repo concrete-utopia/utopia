@@ -48,6 +48,6 @@ export const RepositionableControl = betterReactMemo(
       )
     })
 
-    return <>{...indicators}</>
+    return <>{indicators}</>
   },
 )

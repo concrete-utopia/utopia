@@ -1,12 +1,11 @@
 const Prettier = jest != null ? require('prettier') : require('prettier/standalone') // TODO split these files, standalone prettier is not working in unit tests
-import * as React from 'react'
+import React from 'react'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 applyUIDMonkeyPatch()
 import * as ReactDOM from 'react-dom'
 import * as ReactDOMServer from 'react-dom/server'
 import * as UtopiaAPI from 'utopia-api'
 import * as UUIUI from '../../uuiui'
-import * as ANTD from 'antd'
 import * as EmotionReact from '@emotion/react'
 
 import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
@@ -155,8 +154,7 @@ export function renderCanvasReturnResultAndError(
   const baseRequireFn = getRequireFn(NO_OP, updatedContents, {}, {}, 'canvas')
   const requireFn: UiJsxCanvasProps['requireFn'] = (importOrigin: string, toImport: string) => {
     switch (toImport) {
-      case 'antd':
-        return ANTD
+      // here we can manually insert extra dependencies, such as antd
       default:
         return baseRequireFn(importOrigin, toImport)
     }

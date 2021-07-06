@@ -15,7 +15,7 @@ import {
   ProjectContentTreeRoot,
   treeToContents,
 } from './assets'
-import * as fastDeepEquals from 'fast-deep-equal'
+import fastDeepEquals from 'fast-deep-equal'
 
 function codeFileArbitrary(): FastCheck.Arbitrary<TextFile> {
   return FastCheck.string().map((content) => codeFile(content, null))

@@ -1,5 +1,5 @@
-import * as fastDeepEquals from 'fast-deep-equal'
-import React = require('react')
+import fastDeepEquals from 'fast-deep-equal'
+import * as React from 'react'
 import {
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
   useColorTheme,

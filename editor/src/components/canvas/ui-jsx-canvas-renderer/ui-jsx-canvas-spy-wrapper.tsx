@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { MapLike } from 'typescript'
 import { right } from '../../../core/shared/either'
 import {

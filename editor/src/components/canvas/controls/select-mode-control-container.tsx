@@ -526,7 +526,7 @@ export class SelectModeControlContainer extends React.Component<
             ) : null}
           </>
         ) : null}
-        {...this.getMoveGuidelines()}
+        {this.getMoveGuidelines()}
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
       </div>

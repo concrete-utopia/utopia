@@ -4,12 +4,15 @@ try {
     loadStoredState: () => Promise.resolve(null),
     saveStoredState: () => Promise.resolve(),
   }))
+  jest.mock('../code-editor/console-and-errors-pane', () => ({
+    ConsoleAndErrorsPane: () => null,
+  }))
 } catch (e) {
   // not jest env, disable stored state manually
   disableStoredStateforTests()
 }
 
-import * as React from 'react'
+import React from 'react'
 
 ///// IMPORTANT NOTE - THIS MUST BE BELOW THE REACT IMPORT AND ABOVE ALL OTHER IMPORTS
 const realCreateElement = React.createElement
@@ -93,11 +96,7 @@ const FailJestOnCanvasError = () => {
   const stableCallback = React.useCallback((newRuntimeErrors: Array<RuntimeErrorInfo>) => {
     // we have new runtime errors, let's take the tests down
     if (newRuntimeErrors.length > 0) {
-      const errorMessage = `The test run threw the following canvas error(s): ${newRuntimeErrors
-        .map((e) => e.error)
-        .join(', ')}`
-      fail(errorMessage)
-      throw new Error(errorMessage) // just in case (?) the fail() wouldn't be effective
+      expect(newRuntimeErrors[0]?.error ?? null).toEqual(null)
     }
   }, [])
 

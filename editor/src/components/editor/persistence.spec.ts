@@ -17,8 +17,8 @@ import { MockUtopiaTsWorkers } from '../../core/workers/workers'
 import { addFileToProjectContents, getContentsTreeFileFromString } from '../assets'
 import { forceNotNull } from '../../core/shared/optional-utils'
 
-let saveLog: { [key: string]: Array<PersistentModel> } = {}
-let projectsToError: Set<string> = new Set<string>()
+let mockSaveLog: { [key: string]: Array<PersistentModel> } = {}
+let mockProjectsToError: Set<string> = new Set<string>()
 
 jest.mock('./server', () => ({
   updateSavedProject: async (
@@ -26,14 +26,14 @@ jest.mock('./server', () => ({
     persistentModel: PersistentModel | null,
     name: string | null,
   ): Promise<SaveProjectResponse> => {
-    if (projectsToError.has(projectId)) {
+    if (mockProjectsToError.has(projectId)) {
       return Promise.reject(`Deliberately failing for ${projectId}`)
     }
 
     if (persistentModel != null) {
-      let currentLog = saveLog[projectId] ?? []
+      let currentLog = mockSaveLog[projectId] ?? []
       currentLog.push(persistentModel)
-      saveLog[projectId] = currentLog
+      mockSaveLog[projectId] = currentLog
     }
 
     return Promise.resolve({ id: projectId, ownerId: 'Owner' })
@@ -116,7 +116,7 @@ describe('Saving to the server', () => {
       clearSaveState()
       const projectId = randomProjectID()
       await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, true)
-      expect(saveLog[projectId]).toEqual([ModelChange])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange])
     })
 
     it('Clears a throttled save', async () => {
@@ -130,7 +130,7 @@ describe('Saving to the server', () => {
         saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false),
         saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, true),
       ])
-      expect(saveLog[projectId]).toEqual([ModelChange, secondRevision])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange, secondRevision])
     })
 
     it('Queues the save to be immediately triggered if a save is in progress', async () => {
@@ -142,7 +142,7 @@ describe('Saving to the server', () => {
         saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false),
         saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, true),
       ])
-      expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange, firstRevision])
     })
 
     it('Forces the next queued save if the original forced save is still queued', async () => {
@@ -156,7 +156,7 @@ describe('Saving to the server', () => {
         saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, true),
         saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false),
       ])
-      expect(saveLog[projectId]).toEqual([ModelChange, secondRevision])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange, secondRevision])
     })
 
     it('Does not affect future save throttling after being saved', async () => {
@@ -171,7 +171,7 @@ describe('Saving to the server', () => {
       ])
       const nextSave = saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false)
       await delay(10)
-      expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange, firstRevision])
       await nextSave
     })
   })
@@ -181,7 +181,7 @@ describe('Saving to the server', () => {
       clearSaveState()
       const projectId = randomProjectID()
       await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
-      expect(saveLog[projectId]).toEqual([ModelChange])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange])
     })
 
     it('Saves to the server when past the threshold', async () => {
@@ -192,7 +192,7 @@ describe('Saving to the server', () => {
       await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
       await saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
       await delay(20)
-      expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange, firstRevision])
     })
 
     it('Sets a timeout when not past the threshold', async () => {
@@ -202,25 +202,25 @@ describe('Saving to the server', () => {
       const firstRevision = updateModel(ModelChange)
       await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
       const save = saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
-      expect(saveLog[projectId]).toEqual([ModelChange])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange])
       await save
       await delay(20)
-      expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange, firstRevision])
     })
 
     it('Does not spam the server if there was an error during saving', async () => {
       clearSaveState()
       setBaseSaveWaitTime(10)
       const projectId = randomProjectID()
-      projectsToError.add(projectId)
+      mockProjectsToError.add(projectId)
       await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
       await delay(20)
-      expect(saveLog[projectId]).toBeUndefined()
+      expect(mockSaveLog[projectId]).toBeUndefined()
       await delay(20)
-      expect(saveLog[projectId]).toBeUndefined()
-      projectsToError.delete(projectId)
+      expect(mockSaveLog[projectId]).toBeUndefined()
+      mockProjectsToError.delete(projectId)
       await delay(40)
-      expect(saveLog[projectId]).toEqual([ModelChange])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange])
     })
 
     it('Replaces an errored save when a model change is made', async () => {
@@ -228,16 +228,16 @@ describe('Saving to the server', () => {
       setBaseSaveWaitTime(10)
       const projectId = randomProjectID()
       const firstRevision = updateModel(ModelChange)
-      projectsToError.add(projectId)
+      mockProjectsToError.add(projectId)
       await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, false)
       await delay(20)
-      expect(saveLog[projectId]).toBeUndefined()
+      expect(mockSaveLog[projectId]).toBeUndefined()
       await saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false)
       await delay(20)
-      expect(saveLog[projectId]).toBeUndefined()
-      projectsToError.delete(projectId)
+      expect(mockSaveLog[projectId]).toBeUndefined()
+      mockProjectsToError.delete(projectId)
       await delay(40)
-      expect(saveLog[projectId]).toEqual([firstRevision])
+      expect(mockSaveLog[projectId]).toEqual([firstRevision])
     })
 
     it('Queues saves to be throttled if a save is in progress', async () => {
@@ -251,9 +251,9 @@ describe('Saving to the server', () => {
         saveToServer(NO_OP, projectId, ProjectName, firstRevision, null, false),
         saveToServer(NO_OP, projectId, ProjectName, secondRevision, null, false),
       ]
-      expect(saveLog[projectId]).toEqual([ModelChange])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange])
       await delay(40)
-      expect(saveLog[projectId]).toEqual([ModelChange, secondRevision])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange, secondRevision])
       await Promise.all(saves)
     })
 
@@ -267,7 +267,7 @@ describe('Saving to the server', () => {
       await delay(10)
       await forceQueuedSave()
       await delay(10)
-      expect(saveLog[projectId]).toEqual([ModelChange, firstRevision])
+      expect(mockSaveLog[projectId]).toEqual([ModelChange, firstRevision])
     })
   })
 
@@ -279,7 +279,7 @@ describe('Saving to the server', () => {
     await loadFromLocalStorage(projectId, NO_OP, false, new MockUtopiaTsWorkers(), NO_OP) // Load without triggering the upload
     expect(localProjects[localProjectKey(projectId)]).toBeDefined()
     await saveToServer(NO_OP, projectId, ProjectName, ModelChange, null, true) // Forcibly save to bypass throttling
-    expect(saveLog[projectId]).toEqual([ModelChange])
+    expect(mockSaveLog[projectId]).toEqual([ModelChange])
     expect(localProjects[localProjectKey(projectId)]).toBeUndefined()
   })
 })
@@ -293,7 +293,7 @@ describe('Loading a local project', () => {
     expect(localProjects[localProjectKey(projectId)]).toBeDefined()
     await loadFromLocalStorage(projectId, NO_OP, true, new MockUtopiaTsWorkers(), NO_OP)
     await delay(20)
-    expect(saveLog[projectId]).toEqual([ModelChange])
+    expect(mockSaveLog[projectId]).toEqual([ModelChange])
     expect(localProjects[localProjectKey(projectId)]).toBeUndefined()
   })
 })

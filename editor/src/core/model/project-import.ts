@@ -1,4 +1,4 @@
-import * as JSZip from 'jszip'
+import JSZip from 'jszip'
 import { JSZipObject } from 'jszip'
 import { isText } from 'istextorbinary'
 import { RevisionsState, textFile, textFileContents, unparsed } from '../shared/project-file-types'

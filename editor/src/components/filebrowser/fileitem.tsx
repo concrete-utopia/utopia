@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as Path from 'path'
-import * as pathParse from 'path-parse'
+import pathParse from 'path-parse'
 import * as React from 'react'
 import {
   ConnectableElement,

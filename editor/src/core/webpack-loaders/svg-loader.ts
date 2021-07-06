@@ -1,7 +1,7 @@
 import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
 import * as Babel from '@babel/standalone'
-import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
-import * as ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
+import BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
+import ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
 import svgToJSX from '@svgr/plugin-jsx'
 import { svgToBase64 } from '../shared/file-utils'
 

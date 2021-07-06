@@ -1,4 +1,4 @@
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import { getProjectLockedKey } from '../shared/utils'
 
 export const DEFAULT_HEARTBEAT_TIMEOUT_MS = 2000

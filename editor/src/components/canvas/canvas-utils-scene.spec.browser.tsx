@@ -6,8 +6,7 @@ import {
   TestSceneUID,
   makeTestProjectCodeWithSnippet,
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
-import { fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { fireEvent, act } from '@testing-library/react'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as Prettier from 'prettier'
 import * as EP from '../../core/shared/element-path'

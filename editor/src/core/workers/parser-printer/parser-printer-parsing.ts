@@ -90,7 +90,7 @@ import {
   ElementsWithinInPosition,
   JSX_CANVAS_LOOKUP_FUNCTION_NAME,
 } from './parser-printer-utils'
-import * as Hash from 'object-hash'
+import Hash from 'object-hash'
 import {
   emptyComments,
   getComments,

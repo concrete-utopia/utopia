@@ -1,7 +1,7 @@
 import { produce } from 'immer'
-import * as update from 'immutability-helper'
+import update from 'immutability-helper'
 import * as React from 'react'
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
 import {
   FlexAlignment,

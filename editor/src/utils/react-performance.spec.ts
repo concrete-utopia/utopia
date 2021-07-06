@@ -1,6 +1,6 @@
 import { keepDeepReferenceEqualityIfPossible } from './react-performance'
 import { deepFreeze } from './deep-freeze'
-import * as fastDeepEquals from 'fast-deep-equal'
+import fastDeepEquals from 'fast-deep-equal'
 
 describe('keepDeepReferenceEqualityIfPossible', () => {
   it('keeps simple value equality', () => {

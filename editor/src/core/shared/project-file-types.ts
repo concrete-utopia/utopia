@@ -47,7 +47,7 @@ export type ElementPropertyPath = {
 
 export type Dependencies = { [key: string]: ElementPropertyPath }
 
-export const enum PinType {
+export enum PinType {
   Absolute = 'absolute',
   Relative = 'relative',
 }
@@ -398,7 +398,7 @@ export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJ
 
 export type ParsedJSONResult = ParsedJSONSuccess | ParsedJSONFailure
 
-export const enum RevisionsState {
+export enum RevisionsState {
   ParsedAhead = 'PARSED_AHEAD',
   CodeAhead = 'CODE_AHEAD',
   BothMatch = 'BOTH_MATCH',

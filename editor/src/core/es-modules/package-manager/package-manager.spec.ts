@@ -40,7 +40,13 @@ jest.mock('../../../components/editor/npm-dependency/npm-dependency', () => ({
     packageName: string,
     versionRange: string,
   ): Promise<VersionLookupResult> => {
-    return Promise.resolve(npmVersionLookupSuccess(versionRange))
+    return Promise.resolve({
+      type: 'VERSION_LOOKUP_SUCCESS',
+      version: {
+        type: 'NPM_VERSION',
+        version: versionRange,
+      },
+    })
   },
   checkPackageVersionExists: async (packageName: string, version: string): Promise<boolean> => {
     return Promise.resolve(true)
@@ -196,7 +202,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     expect(onRemoteModuleDownload).toBeCalledTimes(0)
   })
 
-  it('antd@4.2.5', async (done) => {
+  it('antd@4.2.5', (done) => {
     const spyEvaluator = jest.fn(evaluator)
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
@@ -210,45 +216,52 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules(
-      [requestedNpmDependency('antd', '4.2.5')],
-      'canvas',
+    fetchNodeModules([requestedNpmDependency('antd', '4.2.5')], 'canvas').then(
+      (fetchNodeModulesResult) => {
+        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+          fail(`Expected successful nodeModules fetch`)
+        }
+        const nodeModules = fetchNodeModulesResult.nodeModules
+
+        const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
+          const downloadedModules = await moduleDownload
+          const updatedNodeModules = { ...nodeModules, ...downloadedModules }
+          const innerOnRemoteModuleDownload = jest.fn()
+          const updatedReq = getRequireFn(
+            innerOnRemoteModuleDownload,
+            {},
+            updatedNodeModules,
+            {},
+            'canvas',
+            spyEvaluator,
+          )
+
+          // this is like calling `import 'antd/dist/antd.css';`, we only care about the side effect
+          updatedReq('/src/index.js', 'antd/dist/antd.css')
+
+          // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
+          const styleTag = document.getElementById('/node_modules/antd/dist/antd.css')
+          expect(styleTag).toBeDefined()
+          expect(spyEvaluator).toHaveBeenCalledTimes(940)
+          expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
+
+          done()
+        }
+
+        const req = getRequireFn(
+          onRemoteModuleDownload,
+          {},
+          nodeModules,
+          {},
+          'canvas',
+          spyEvaluator,
+        )
+        const antd = req('/src/index.js', 'antd')
+        expect(Object.keys(antd)).not.toHaveLength(0)
+        expect(antd).toHaveProperty('Button')
+        req('/src/index.js', 'antd/dist/antd.css')
+      },
     )
-    if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      fail(`Expected successful nodeModules fetch`)
-    }
-    const nodeModules = fetchNodeModulesResult.nodeModules
-
-    const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
-      const downloadedModules = await moduleDownload
-      const updatedNodeModules = { ...nodeModules, ...downloadedModules }
-      const innerOnRemoteModuleDownload = jest.fn()
-      const updatedReq = getRequireFn(
-        innerOnRemoteModuleDownload,
-        {},
-        updatedNodeModules,
-        {},
-        'canvas',
-        spyEvaluator,
-      )
-
-      // this is like calling `import 'antd/dist/antd.css';`, we only care about the side effect
-      updatedReq('/src/index.js', 'antd/dist/antd.css')
-
-      // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
-      const styleTag = document.getElementById('/node_modules/antd/dist/antd.css')
-      expect(styleTag).toBeDefined()
-      expect(spyEvaluator).toHaveBeenCalledTimes(940)
-      expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
-
-      done()
-    }
-
-    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, 'canvas', spyEvaluator)
-    const antd = req('/src/index.js', 'antd')
-    expect(Object.keys(antd)).not.toHaveLength(0)
-    expect(antd).toHaveProperty('Button')
-    req('/src/index.js', 'antd/dist/antd.css')
   })
 })
 
@@ -287,7 +300,7 @@ describe('ES Dependency Manager — d.ts', () => {
 })
 
 describe('ES Dependency Manager — Downloads extra files as-needed', () => {
-  it('downloads a css file from jsdelivr, if needed', async (done) => {
+  it('downloads a css file from jsdelivr, if needed', (done) => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
@@ -300,48 +313,48 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules(
-      [requestedNpmDependency('mypackage', '0.0.1')],
-      'canvas',
+    fetchNodeModules([requestedNpmDependency('mypackage', '0.0.1')], 'canvas').then(
+      (fetchNodeModulesResult) => {
+        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+          fail(`Expected successful nodeModules fetch`)
+        }
+        const nodeModules = fetchNodeModulesResult.nodeModules
+
+        const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
+          const downloadedModules = await moduleDownload
+          const updatedNodeModules = { ...nodeModules, ...downloadedModules }
+          const innerOnRemoteModuleDownload = jest.fn()
+          const updatedReq = getRequireFn(
+            innerOnRemoteModuleDownload,
+            {},
+            updatedNodeModules,
+            {},
+            'canvas',
+          )
+
+          // this is like calling `import 'mypackage/dist/style.css';`, we only care about the side effect
+          updatedReq('/src/index.js', 'mypackage/dist/style.css')
+
+          // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
+          const styleTag = document.getElementById(
+            `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
+          )
+          expect(styleTag?.innerHTML).toEqual(simpleCssContent)
+          expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
+
+          done()
+        }
+
+        const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, 'canvas')
+        const styleCss = req('/src/index.js', 'mypackage/dist/style.css')
+        expect(Object.keys(styleCss)).toHaveLength(0)
+      },
     )
-    if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      fail(`Expected successful nodeModules fetch`)
-    }
-    const nodeModules = fetchNodeModulesResult.nodeModules
-
-    const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
-      const downloadedModules = await moduleDownload
-      const updatedNodeModules = { ...nodeModules, ...downloadedModules }
-      const innerOnRemoteModuleDownload = jest.fn()
-      const updatedReq = getRequireFn(
-        innerOnRemoteModuleDownload,
-        {},
-        updatedNodeModules,
-        {},
-        'canvas',
-      )
-
-      // this is like calling `import 'mypackage/dist/style.css';`, we only care about the side effect
-      updatedReq('/src/index.js', 'mypackage/dist/style.css')
-
-      // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
-      const styleTag = document.getElementById(
-        `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
-      )
-      expect(styleTag?.innerHTML).toEqual(simpleCssContent)
-      expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
-
-      done()
-    }
-
-    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, 'canvas')
-    const styleCss = req('/src/index.js', 'mypackage/dist/style.css')
-    expect(Object.keys(styleCss)).toHaveLength(0)
   })
 })
 
 describe('ES Dependency manager - retry behavior', () => {
-  it('retries a failed request', async (done) => {
+  it('retries a failed request', (done) => {
     let requestCounter = 0
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
@@ -372,7 +385,7 @@ describe('ES Dependency manager - retry behavior', () => {
     )
   })
 
-  it('stops retrying after retry limit reached', async (done) => {
+  it('stops retrying after retry limit reached', (done) => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         throw new Error('All requests fail')
@@ -389,7 +402,7 @@ describe('ES Dependency manager - retry behavior', () => {
     )
   })
 
-  it('does not retry if set to', async (done) => {
+  it('does not retry if set to', (done) => {
     let requestCounter = 0
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {

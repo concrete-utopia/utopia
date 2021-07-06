@@ -2,7 +2,7 @@ import * as Chai from 'chai'
 import Utils from './utils'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../core/shared/math-utils'
 import { longestCommonArray } from '../core/shared/utils'
-import * as fastDeepEquals from 'fast-deep-equal'
+import fastDeepEquals from 'fast-deep-equal'
 const expect = Chai.expect
 
 describe('longestCommonArray', () => {

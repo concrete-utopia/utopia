@@ -1,6 +1,6 @@
 // FIXME This file shouldn't live under the inspector, and shouldn't be defining types
-import * as Chroma from 'chroma-js'
-import * as fastDeepEqual from 'fast-deep-equal'
+import Chroma from 'chroma-js'
+import fastDeepEqual from 'fast-deep-equal'
 import { Property } from 'csstype'
 import {
   FlexAlignment,

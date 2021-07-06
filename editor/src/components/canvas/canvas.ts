@@ -17,7 +17,7 @@ import * as EditorActions from '../editor/actions/action-creators'
 import { DerivedState, EditorState } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
 
-export const enum TargetSearchType {
+export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
   SiblingsOfSelected = 'SiblingsOfSelected',
   ChildrenOfSelected = 'ChildrenOfSelected',

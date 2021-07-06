@@ -1,4 +1,4 @@
-import * as Chroma from 'chroma-js'
+import Chroma from 'chroma-js'
 import * as React from 'react'
 import {
   CSSBackgroundLayers,

@@ -1,6 +1,6 @@
 import { MapLike } from 'typescript'
 import { replaceAll } from './string-utils'
-import urljoin = require('url-join')
+const urljoin = require('url-join')
 import { appendHash } from './dom-utils'
 
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects

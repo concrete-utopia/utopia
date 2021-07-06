@@ -173,7 +173,7 @@ export class MultiselectResizeControl extends React.Component<
               testID={'component-resize-control-0'}
               maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
             />
-            {...guidelineElements}
+            {guidelineElements}
           </>
         )
       } else {
@@ -185,7 +185,7 @@ export class MultiselectResizeControl extends React.Component<
               obtainOriginalFrames={this.obtainOriginalFrames}
               onResizeStart={this.onResizeStart}
             />
-            {...guidelineElements}
+            {guidelineElements}
           </>
         )
       }

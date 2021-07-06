@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import Utils from './utils'
 import { keepDeepReferenceEqualityIfPossible } from './react-performance'
 import { omitWithPredicate } from '../core/shared/object-utils'

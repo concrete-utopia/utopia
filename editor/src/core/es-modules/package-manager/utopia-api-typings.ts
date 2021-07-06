@@ -290,7 +290,7 @@ declare module 'utopia-api/layout/pins.spec' {
 
 }
 declare module 'utopia-api/primitives/common' {
-  import * as React from 'react';
+  import React from 'react';
   export interface UtopiaComponentProps {
       'data-uid'?: string;
       'data-label'?: string;
@@ -300,7 +300,7 @@ declare module 'utopia-api/primitives/common' {
 
 }
 declare module 'utopia-api/primitives/ellipse' {
-  import * as React from 'react';
+  import React from 'react';
   import { UtopiaComponentProps } from 'utopia-api/primitives/common';
   export interface EllipseProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
   }
@@ -308,7 +308,7 @@ declare module 'utopia-api/primitives/ellipse' {
 
 }
 declare module 'utopia-api/primitives/rectangle' {
-  import * as React from 'react';
+  import React from 'react';
   import { UtopiaComponentProps } from 'utopia-api/primitives/common';
   export interface RectangleProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
   }
@@ -316,7 +316,7 @@ declare module 'utopia-api/primitives/rectangle' {
 
 }
 declare module 'utopia-api/primitives/scene' {
-  import * as React from 'react';
+  import React from 'react';
   export interface SceneProps {
       style?: React.CSSProperties;
       'data-label'?: string;
@@ -326,12 +326,12 @@ declare module 'utopia-api/primitives/scene' {
 
 }
 declare module 'utopia-api/primitives/storyboard' {
-  import * as React from 'react';
+  import React from 'react';
   export const Storyboard: React.MemoExoticComponent<(props: React.PropsWithChildren<any>) => JSX.Element>;
 
 }
 declare module 'utopia-api/primitives/text' {
-  import * as React from 'react';
+  import React from 'react';
   import { EditorState as DraftEditorState, RawDraftContentState } from 'draft-js';
   import { UtopiaComponentProps } from 'utopia-api/primitives/common';
   export type TextSizing = 'auto' | 'fixed';
@@ -351,7 +351,7 @@ declare module 'utopia-api/primitives/text' {
 }
 declare module 'utopia-api/primitives/view' {
   import { Interpolation, Theme } from '@emotion/react';
-  import * as React from 'react';
+  import React from 'react';
   import { UtopiaComponentProps } from 'utopia-api/primitives/common';
   export interface ViewProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
       css?: Interpolation<Theme>;

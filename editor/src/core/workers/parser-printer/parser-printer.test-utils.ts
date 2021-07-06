@@ -1,7 +1,7 @@
 import * as Babel from '@babel/standalone'
 import * as BabelTraverse from '@babel/traverse'
 import * as BabelTypes from '@babel/types'
-import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
+import ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import * as FastCheck from 'fast-check'
 import { Arbitrary } from 'fast-check'
 import { MapLike } from 'typescript'

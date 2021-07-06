@@ -1,4 +1,4 @@
-import * as localforage from 'localforage'
+import localforage from 'localforage'
 import type { StoredEditorState } from './store/editor-state'
 
 const StoredStateKey = 'stored-state'

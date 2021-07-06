@@ -1,7 +1,7 @@
 // Above everything else as it needs to be set before the ESLint
 // import is fired.
 import * as BrowserFS from 'browserfs'
-import * as stripAnsi from 'strip-ansi'
+import stripAnsi from 'strip-ansi'
 
 // eslint react plugin uses this
 BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
@@ -12,10 +12,10 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
 ;(global as any).BrowserFS = BrowserFS
 
 import type { Linter as ESLintLinter } from 'eslint'
-import * as Linter from 'eslint4b'
+import Linter from 'eslint4b'
 import { ESLINT_CONFIG, EslintPluginRules } from './eslint-config'
 import { ErrorMessage } from '../../shared/error-messages'
-import * as BabelEslint from 'babel-eslint'
+import BabelEslint from 'babel-eslint'
 import { getFileExtension } from '../../shared/file-utils'
 
 class CustomUtopiaLinter extends Linter {

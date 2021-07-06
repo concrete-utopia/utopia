@@ -210,7 +210,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   }
   return (
     <>
-      {...selectionOutlines}
+      {selectionOutlines}
       {multiSelectOutline}
     </>
   )

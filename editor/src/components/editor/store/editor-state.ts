@@ -145,7 +145,7 @@ import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import * as OPI from 'object-path-immutable'
 const ObjectPathImmutable: any = OPI
 
-export const enum LeftMenuTab {
+export enum LeftMenuTab {
   UIInsert = 'ui-insert',
   Project = 'project',
   Storyboards = 'storyboards',
@@ -159,7 +159,7 @@ export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = 260
 
-export const enum RightMenuTab {
+export enum RightMenuTab {
   Insert = 'insert',
   Inspector = 'inspector',
 }

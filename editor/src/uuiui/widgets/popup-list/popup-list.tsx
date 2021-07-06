@@ -511,152 +511,157 @@ const Input = (props: InputProps) => {
 
 export const PopupList = betterReactMemo<PopupListProps>(
   'PopupList',
-  ({
-    id,
-    options,
-    value,
-    onSubmitValue,
-    style,
-    containerMode = 'default',
-    controlStyles = getControlStyles('simple'),
-    disabled = !controlStyles.interactive,
-  }) => {
-    const selectOnSubmitValue = React.useCallback(
-      (newValue: ValueType<SelectOption>) => {
-        if (isOptionType(newValue)) {
-          onSubmitValue(newValue)
-        }
+  React.forwardRef(
+    (
+      {
+        id,
+        options,
+        value,
+        onSubmitValue,
+        style,
+        containerMode = 'default',
+        controlStyles = getControlStyles('simple'),
+        disabled = !controlStyles.interactive,
       },
-      [onSubmitValue],
-    )
+      ref,
+    ) => {
+      const selectOnSubmitValue = React.useCallback(
+        (newValue: ValueType<SelectOption>) => {
+          if (isOptionType(newValue)) {
+            onSubmitValue(newValue)
+          }
+        },
+        [onSubmitValue],
+      )
 
-    const container: styleFn = getContainer(containerMode, controlStyles, style)
+      const container: styleFn = getContainer(containerMode, controlStyles, style)
 
-    return (
-      <Select
-        id={id}
-        components={{
-          Option,
-          MenuList,
-          MenuPortal,
-          DropdownIndicator,
-          SingleValue,
-        }}
-        openMenuOnFocus={true}
-        openMenuOnClick={true}
-        value={value}
-        onChange={selectOnSubmitValue}
-        options={options}
-        menuPortalTarget={document.getElementById(CommonUtils.PortalTargetID)}
-        filterOption={createFilter({ ignoreAccents: true })}
-        isDisabled={disabled}
-        styles={{
-          container,
-          indicatorsContainer: (base) => ({
-            ...base,
-            width: 14,
-            flexBasis: 14,
-            background: 'transparent',
-            // the control is on top of the input not inside it, so need to make space for input borders
-            height: OptionHeight - 2,
-            marginRight: 1,
-            marginTop: 1,
-            padding: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            '&:hover': {
-              filter: 'brightness(.99)',
-            },
-            '&:active': {
-              filter: 'brightness(.98)',
-            },
-          }),
-          control: () => ({
-            minHeight: OptionHeight,
-            height: OptionHeight,
-            backgroundColor: 'transparent',
-            alignItems: 'center',
-            cursor: 'default',
-            display: 'flex',
-            label: 'control',
-            outline: '0 !important',
-            position: 'relative',
-            transition: 'all 100ms',
-          }),
-          singleValue: () => ({
-            label: 'singleValue',
-            color: controlStyles.mainColor,
-            display: 'flex',
-            alignItems: 'center',
-            overflowX: 'scroll',
-            whiteSpace: 'nowrap',
-          }),
-          menu: () => ({
-            label: 'menu',
-            boxSizing: 'border-box',
-            height: '100%',
-            width: '100%',
-            padding: `${menuVerticalPadding}px 2px`,
-          }),
-          menuList: (_, menuListProps) => {
-            return {
+      return (
+        <Select
+          id={id}
+          components={{
+            Option,
+            MenuList,
+            MenuPortal,
+            DropdownIndicator,
+            SingleValue,
+          }}
+          openMenuOnFocus={true}
+          openMenuOnClick={true}
+          value={value}
+          onChange={selectOnSubmitValue}
+          options={options}
+          menuPortalTarget={document.getElementById(CommonUtils.PortalTargetID)}
+          filterOption={createFilter({ ignoreAccents: true })}
+          isDisabled={disabled}
+          styles={{
+            container,
+            indicatorsContainer: (base) => ({
+              ...base,
+              width: 14,
+              flexBasis: 14,
+              background: 'transparent',
+              // the control is on top of the input not inside it, so need to make space for input borders
+              height: OptionHeight - 2,
+              marginRight: 1,
+              marginTop: 1,
               padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              '&:hover': {
+                filter: 'brightness(.99)',
+              },
+              '&:active': {
+                filter: 'brightness(.98)',
+              },
+            }),
+            control: () => ({
+              minHeight: OptionHeight,
+              height: OptionHeight,
+              backgroundColor: 'transparent',
+              alignItems: 'center',
+              cursor: 'default',
+              display: 'flex',
+              label: 'control',
+              outline: '0 !important',
+              position: 'relative',
+              transition: 'all 100ms',
+            }),
+            singleValue: () => ({
+              label: 'singleValue',
+              color: controlStyles.mainColor,
+              display: 'flex',
+              alignItems: 'center',
+              overflowX: 'scroll',
+              whiteSpace: 'nowrap',
+            }),
+            menu: () => ({
+              label: 'menu',
               boxSizing: 'border-box',
-              label: 'menuList',
-              height: menuListProps.children.length * OptionHeight,
-            }
-          },
-          option: (_, optionProps) => ({
-            paddingBottom: 0,
-            paddingRight: '24px',
-            paddingLeft: '4px',
-            fontWeight: 400,
-            userSelect: 'none',
-            borderRadius: 2,
-            fontSize: 11,
-            backgroundColor:
-              optionProps.isFocused === true
-                ? colorTheme.contextMenuHighlightBackground.value
-                : 'transparent',
-            color:
-              optionProps.isFocused === true
-                ? colorTheme.contextMenuHighlightForeground.value
-                : colorTheme.contextMenuForeground.value,
-            height: OptionHeight,
-            textTransform: 'capitalize',
-          }),
-          input: () => ({
-            margin: 2,
-            paddingBottom: 2,
-            paddingTop: 2,
-            visibility: 'visible',
-            color: controlStyles.mainColor,
-            boxSizing: 'border-box',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-          }),
-          valueContainer: () => ({
-            label: 'valueContainer',
-            height: OptionHeight,
-            boxSizing: 'border-box',
-            overflow: 'hidden',
-            padding: `2px 2px 2px ${ValueContainerLeftPadding}px`,
-            position: 'relative',
-            borderRadius: UtopiaTheme.inputBorderRadius,
-            display: 'flex',
-            alignItems: 'center',
-            flexGrow: containerMode === 'noBorder' ? 0 : 1,
-          }),
-          indicatorSeparator: displayNone,
-          clearIndicator: displayNone,
-          loadingIndicator: displayNone,
-        }}
-      />
-    )
-  },
+              height: '100%',
+              width: '100%',
+              padding: `${menuVerticalPadding}px 2px`,
+            }),
+            menuList: (_, menuListProps) => {
+              return {
+                padding: 0,
+                boxSizing: 'border-box',
+                label: 'menuList',
+                height: menuListProps.children.length * OptionHeight,
+              }
+            },
+            option: (_, optionProps) => ({
+              paddingBottom: 0,
+              paddingRight: '24px',
+              paddingLeft: '4px',
+              fontWeight: 400,
+              userSelect: 'none',
+              borderRadius: 2,
+              fontSize: 11,
+              backgroundColor:
+                optionProps.isFocused === true
+                  ? colorTheme.contextMenuHighlightBackground.value
+                  : 'transparent',
+              color:
+                optionProps.isFocused === true
+                  ? colorTheme.contextMenuHighlightForeground.value
+                  : colorTheme.contextMenuForeground.value,
+              height: OptionHeight,
+              textTransform: 'capitalize',
+            }),
+            input: () => ({
+              margin: 2,
+              paddingBottom: 2,
+              paddingTop: 2,
+              visibility: 'visible',
+              color: controlStyles.mainColor,
+              boxSizing: 'border-box',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }),
+            valueContainer: () => ({
+              label: 'valueContainer',
+              height: OptionHeight,
+              boxSizing: 'border-box',
+              overflow: 'hidden',
+              padding: `2px 2px 2px ${ValueContainerLeftPadding}px`,
+              position: 'relative',
+              borderRadius: UtopiaTheme.inputBorderRadius,
+              display: 'flex',
+              alignItems: 'center',
+              flexGrow: containerMode === 'noBorder' ? 0 : 1,
+            }),
+            indicatorSeparator: displayNone,
+            clearIndicator: displayNone,
+            loadingIndicator: displayNone,
+          }}
+        />
+      )
+    },
+  ),
 )
 
 const OverflowIndicator = styled(FlexRow)({
