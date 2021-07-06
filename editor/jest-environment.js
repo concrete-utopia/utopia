@@ -1,6 +1,6 @@
 // The below is required because of https://github.com/jsdom/jsdom/issues/2524
 
-const Environment = require('jest-environment-jsdom-global')
+const Environment = require('jest-environment-jsdom')
 
 module.exports = class CustomTestEnvironment extends Environment {
   async setup() {

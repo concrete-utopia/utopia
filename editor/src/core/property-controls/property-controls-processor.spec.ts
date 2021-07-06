@@ -20,7 +20,7 @@ beforeEach(() => {
 })
 
 describe('Property Controls Processor', () => {
-  it('Returns the expected controls for antd', async (done) => {
+  it('Returns the expected controls for antd', (done) => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {
@@ -60,7 +60,7 @@ describe('Property Controls Processor', () => {
     )
   })
 
-  it('Calls the callback twice if a placeholder dependency is imported', async (done) => {
+  it('Calls the callback twice if a placeholder dependency is imported', (done) => {
     ;(fetch as any).mockResponse(
       (request: Request): Promise<{ body?: string; status?: number }> => {
         switch (request.url) {

@@ -190,7 +190,7 @@ function useResizeObserver(
   selectedViews: React.MutableRefObject<Array<ElementPath>>,
   canvasInteractionHappening: React.MutableRefObject<boolean>,
 ) {
-  const resizeObserver = React.useMemo((): ResizeObserver | null => {
+  const resizeObserver = React.useMemo((): typeof ResizeObserver | null => {
     if (ObserversAvailable) {
       return new ResizeObserver((entries: any) => {
         if (canvasInteractionHappening.current) {

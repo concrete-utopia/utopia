@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { Interpolation, jsx } from '@emotion/react'
-import * as classNames from 'classnames'
+import classNames from 'classnames'
 import * as React from 'react'
 import {
   cssNumber,

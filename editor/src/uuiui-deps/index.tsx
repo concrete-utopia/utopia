@@ -43,21 +43,24 @@ export const MathUtils = _math_utils
 export const ReactPerformance = _react_performance
 export const onClickOutside = _onClickOutside
 
-export {
+export type {
   ControlStyles,
   ControlStatus,
+  PropertyStatus,
+  OnSubmitValue,
+  OnSubmitValueOrEmpty,
+  OnSubmitValueOrUnknownOrEmpty,
+}
+
+export {
   isControlledStatus,
   getControlStyles,
-  PropertyStatus,
   getControlStatusFromPropertyStatus,
   calculateMultiPropertyStatusForSelection,
   calculateMultiStringPropertyStatusForSelection,
   CSSUtils,
   EitherUtils,
   CSSCursor,
-  OnSubmitValue,
-  OnSubmitValueOrEmpty,
-  OnSubmitValueOrUnknownOrEmpty,
   usePropControlledState,
   InspectorHooks,
   InspectorContextMenuItems,
@@ -68,4 +71,4 @@ export * from '../components/inspector/widgets/property-row'
 export * from '../components/inspector/controls/lightselect-control'
 export * from '../components/inspector/controls/slider-control'
 export * from '../components/context-menu-wrapper'
-export { SelectOption } from '../components/inspector/controls/select-control'
+export type { SelectOption } from '../components/inspector/controls/select-control'

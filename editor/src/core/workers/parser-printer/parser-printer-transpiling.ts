@@ -1,8 +1,8 @@
 import * as Babel from '@babel/standalone'
 import * as BabelTraverse from '@babel/traverse'
 import * as BabelTypes from '@babel/types'
-import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
-import * as ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
+import ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
+import ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
 import { SourceNode } from 'source-map'
 import { Either, left, right } from '../../shared/either'
 import {

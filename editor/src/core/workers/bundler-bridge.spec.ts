@@ -206,7 +206,7 @@ describe('Bundler State Machine', () => {
     expect(stateMachine.state.matches('worker.idle')).toBeTruthy()
   })
 
-  it('goes to a simple error state in case the init promise throws', async (done) => {
+  it('goes to a simple error state in case the init promise throws', (done) => {
     const initReadyPromise = Promise.reject('testing a promise error handler, ignore me')
     const mockInitService = jest.fn(() => initReadyPromise)
 
@@ -234,7 +234,7 @@ describe('Bundler State Machine', () => {
     })
   })
 
-  it('goes to a simple error state in case the update file promise throws', async (done) => {
+  it('goes to a simple error state in case the update file promise throws', (done) => {
     const initReadyPromise = Promise.resolve<InitCompleteMessage>({
       type: 'initcomplete',
       jobID: 'no-id',
@@ -259,19 +259,20 @@ describe('Bundler State Machine', () => {
 
     expect(mockInitService.mock.calls.length).toBe(1)
 
-    await initReadyPromise
-    // the worker should be in the Idle state now
+    initReadyPromise.then(() => {
+      // the worker should be in the Idle state now
 
-    const updateFilePromiseWillFail = utils.defer<BuildResultMessage>()
-    mockUpdateFileService.mockImplementationOnce(() => updateFilePromiseWillFail)
+      const updateFilePromiseWillFail = utils.defer<BuildResultMessage>()
+      mockUpdateFileService.mockImplementationOnce(() => updateFilePromiseWillFail)
 
-    stateMachine.send(updateFileEvent)
-    expect(mockUpdateFileService.mock.calls.length).toBe(1)
-    updateFilePromiseWillFail.reject('I am testing the error branch, ignore me')
-    updateFilePromiseWillFail.catch(async () => {
-      // check that the worker goes back to idle after the bundler promise rejects
-      expect(stateMachine.state.matches('worker.error')).toBeTruthy()
-      done()
+      stateMachine.send(updateFileEvent)
+      expect(mockUpdateFileService.mock.calls.length).toBe(1)
+      updateFilePromiseWillFail.reject('I am testing the error branch, ignore me')
+      updateFilePromiseWillFail.catch(async () => {
+        // check that the worker goes back to idle after the bundler promise rejects
+        expect(stateMachine.state.matches('worker.error')).toBeTruthy()
+        done()
+      })
     })
   })
 })
