@@ -50,7 +50,7 @@ export function isComponentRendererComponent(
   return (
     component != null &&
     typeof component === 'function' &&
-    (component as ComponentRendererComponent).topLevelElementName != null
+    (component as any).topLevelElementName != null
   )
 }
 

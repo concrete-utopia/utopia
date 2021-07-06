@@ -1,5 +1,4 @@
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
-const ForkTsCheckerAsyncOverlayWebpackPlugin = require('fork-ts-checker-async-overlay-webpack-plugin')
 const CleanTerminalPlugin = require('clean-terminal-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -88,7 +87,7 @@ const config = {
   },
 
   plugins: [
-    new CleanTerminalPlugin(),
+    // new CleanTerminalPlugin(),
 
     // This plugin was not really built for multiple output webpack projects like ours
     // Therefore you have to add it multiple times to generate a new file per output,
@@ -159,15 +158,7 @@ const config = {
     }),
 
     // Optionally run the TS compiler in a different thread, but as part of the webpack build still
-    ...(runCompiler
-      ? [
-          new ForkTsCheckerAsyncOverlayWebpackPlugin({
-            checkerPlugin: new ForkTsCheckerWebpackPlugin({
-              memoryLimit: 4096,
-            }),
-          }),
-        ]
-      : []),
+    ...(runCompiler ? [new ForkTsCheckerWebpackPlugin()] : []),
 
     // Needed when running the webpack-dev-server in hot mode
     ...(hot ? [new webpack.HotModuleReplacementPlugin()] : []),
@@ -202,6 +193,10 @@ const config = {
             'react-dom$': '@hot-loader/react-dom/profiling',
           }
         : {}),
+    },
+    fallback: {
+      os: require.resolve('os-browserify/browser'),
+      path: require.resolve('path-browserify'),
     },
   },
 
@@ -312,7 +307,7 @@ const config = {
           }),
         ]
       : [],
-    moduleIds: 'hashed', // "Short hashes as ids for better long term caching."
+    moduleIds: 'deterministic', // "Short hashes as ids for better long term caching."
     splitChunks: {
       name: false, // "It is recommended to set splitChunks.name to false for production builds so that it doesn't change names unnecessarily."
       chunks(chunk) {

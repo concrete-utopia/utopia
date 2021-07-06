@@ -2,7 +2,7 @@ import { HEADERS, MODE } from '../common/server'
 import { BASE_URL, STATIC_BASE_URL } from '../common/env-vars'
 import { isBrowserEnvironment } from '../core/shared/utils'
 import { cachedPromise } from '../core/shared/promise-utils'
-import urljoin = require('url-join')
+import urljoin from 'url-join'
 
 const HASHED_ASSETS_ENDPOINT = BASE_URL + 'hashed-assets.json'
 

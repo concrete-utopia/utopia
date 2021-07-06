@@ -2,7 +2,9 @@
   "compilerOptions": {
     "outDir": "./lib",
     "target": "es2019",
-    "module": "commonjs",
+    "module": "es6",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "declaration": false,
     "removeComments": true,
     "noLib": false,

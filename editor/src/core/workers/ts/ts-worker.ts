@@ -390,7 +390,7 @@ function getTypeInfoFromClassComponent(
   let reactClassInfo: DetailedTypeInfo | null = null
   const allAugmentedPropSymbols = typeChecker.getAugmentedPropertiesOfType(nodeType)
   const symbolCalledProps = allAugmentedPropSymbols.find((symbol) => symbol.escapedName === 'props')
-  if (symbolCalledProps != null) {
+  if (symbolCalledProps != null && symbolCalledProps.valueDeclaration != null) {
     const reactClassType = typeChecker.getTypeOfSymbolAtLocation(
       symbolCalledProps,
       symbolCalledProps.valueDeclaration,
@@ -403,7 +403,7 @@ function getTypeInfoFromClassComponent(
           // somehow it can have type and no valueDeclaration
           (symbol as any)['type'] != null
             ? (symbol as any)['type']
-            : typeChecker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration)
+            : typeChecker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!)
         memberInfo[symbol.name] = typeChecker.typeToString(detailedType)
       })
     }
@@ -451,7 +451,7 @@ function getReactExports(
       if (firstSignature != null) {
         var parameters = firstSignature.getParameters()
         parameters.forEach((param) => {
-          const paramType = typeChecker.getTypeOfSymbolAtLocation(param, param.valueDeclaration)
+          const paramType = typeChecker.getTypeOfSymbolAtLocation(param, param.valueDeclaration!)
           const augmentedProperties = typeChecker.getAugmentedPropertiesOfType(paramType)
           if (augmentedProperties.length > 0 && (paramType as any)['members'] != null) {
             let memberInfo: { type: string; members: { [member: string]: string } } = {
@@ -462,7 +462,7 @@ function getReactExports(
             augmentedProperties.forEach((augmentedProp) => {
               const memberType = typeChecker.getTypeOfSymbolAtLocation(
                 augmentedProp,
-                augmentedProp.valueDeclaration,
+                augmentedProp.valueDeclaration!,
               )
               memberInfo.members[augmentedProp.name] = typeChecker.typeToString(memberType)
             })

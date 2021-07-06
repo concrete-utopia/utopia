@@ -31,7 +31,11 @@ export interface ContextMenuItem<T> {
   shortcut?: string
   isSeparator?: boolean
   isHidden?: (data: T) => boolean
-  action: (data: T, dispatch?: EditorDispatch, event?: MouseEvent) => void
+  action: (
+    data: T,
+    dispatch?: EditorDispatch,
+    event?: MouseEvent | TouchEvent | KeyboardEvent,
+  ) => void
 }
 
 export interface CanvasData {
