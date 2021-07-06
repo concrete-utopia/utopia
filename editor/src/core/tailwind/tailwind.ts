@@ -144,7 +144,35 @@ function clearTwind() {
   }
 }
 
-function updateTwind(config: Configuration, prefixSelector: string) {
+function adjustRuleScope(rule: string, prefixSelector: string | null): string {
+  if (prefixSelector == null) {
+    return rule
+  } else {
+    const splitOnBrace = rule.split('{')
+    const splitSelectors = splitOnBrace[0].split(',')
+    const scopedSelectors = splitSelectors.map((s) => {
+      const lowerCaseSelector = s.toLowerCase().trim()
+
+      if (
+        lowerCaseSelector === ':root' ||
+        lowerCaseSelector === 'html' ||
+        lowerCaseSelector === 'head'
+      ) {
+        return prefixSelector
+      } else if (lowerCaseSelector === 'body') {
+        return `${prefixSelector} > *`
+      } else {
+        return `${prefixSelector} ${s}`
+      }
+    })
+    const joinedSelectors = scopedSelectors.join(',')
+    const afterBrace = splitOnBrace.slice(1)
+    const finalRule = [joinedSelectors, ...afterBrace].join('{')
+    return finalRule
+  }
+}
+
+function updateTwind(config: Configuration, prefixSelector: string | null) {
   const element = document.head.appendChild(document.createElement('style'))
   element.appendChild(document.createTextNode('')) // Avoid Edge bug where empty style elements doesn't create sheets
 
@@ -152,7 +180,8 @@ function updateTwind(config: Configuration, prefixSelector: string) {
   const customSheet: Sheet = {
     target: sheet.target,
     insert: (rule, index) => {
-      sheet.insert(`${prefixSelector} ${rule}`, index)
+      const scopedRule = adjustRuleScope(rule, prefixSelector)
+      sheet.insert(scopedRule, index)
     },
   }
 
@@ -172,7 +201,7 @@ function updateTwind(config: Configuration, prefixSelector: string) {
 export function useTwind(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
-  prefixSelector: string,
+  prefixSelector: string | null = null,
 ) {
   const hasDependencies = useHasRequiredDependenciesForTailwind(projectContents)
   const hasPostCSSPlugin = usePostCSSIncludesTailwindPlugin(projectContents, requireFn)
@@ -190,7 +219,7 @@ export function useTwind(
 export function injectTwind(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
-  prefixSelector: string,
+  prefixSelector: string | null = null,
 ) {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const hasDependencies =

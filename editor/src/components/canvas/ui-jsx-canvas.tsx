@@ -436,7 +436,11 @@ export const UiJsxCanvas = betterReactMemo(
       })
 
       return (
-        <>
+        <div
+          style={{
+            all: 'initial',
+          }}
+        >
           <Helmet>{parse(linkTags)}</Helmet>
           <MutableUtopiaContext.Provider value={mutableContextRef}>
             <RerenderUtopiaContext.Provider
@@ -485,7 +489,7 @@ export const UiJsxCanvas = betterReactMemo(
               </UtopiaProjectContext.Provider>
             </RerenderUtopiaContext.Provider>
           </MutableUtopiaContext.Provider>
-        </>
+        </div>
       )
     }
   }),
@@ -561,7 +565,6 @@ const CanvasContainer = React.forwardRef<
       key={'canvas-container'}
       ref={ref}
       style={{
-        all: 'initial',
         position: 'absolute',
       }}
       data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
