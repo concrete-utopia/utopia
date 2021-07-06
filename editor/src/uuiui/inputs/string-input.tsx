@@ -40,6 +40,7 @@ export const StringInput = betterReactMemo(
         focusOnMount = false,
         placeholder: initialPlaceHolder,
         DEPRECATED_labelBelow: labelBelow,
+        testId,
         ...inputProps
       },
       propsRef,
@@ -101,7 +102,7 @@ export const StringInput = betterReactMemo(
           >
             <HeadlessStringInput
               {...inputProps}
-              data-testid={inputProps.testId}
+              data-testid={testId}
               data-controlstatus={controlStatus}
               value={inputProps.value}
               css={[
