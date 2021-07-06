@@ -4,7 +4,6 @@ import { RequireFn } from '../shared/npm-dependency-types'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
 import { Configuration, Sheet, silent } from 'twind'
 import { create, observe, cssomSheet, TwindObserver } from 'twind/observe'
-import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import * as React from 'react'
 import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
 import { includesDependency } from '../../components/editor/npm-dependency/npm-dependency'
@@ -188,4 +187,24 @@ export function useTwind(
   }, [prefixSelector, shouldUseTwind, tailwindConfig])
 }
 
-// [ ] Hook into preview
+export function injectTwind(
+  projectContents: ProjectContentTreeRoot,
+  requireFn: RequireFn,
+  prefixSelector: string,
+) {
+  const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
+  const hasDependencies =
+    packageJsonFile != null && hasRequiredDependenciesForTailwind(packageJsonFile)
+  const postCSSFile = getContentsTreeFileFromString(projectContents, PostCSSPath)
+  const hasPostCSSPlugin =
+    postCSSFile != null && postCSSIncludesTailwindPlugin(postCSSFile, requireFn)
+  const shouldUseTwind = hasDependencies && hasPostCSSPlugin
+  const tailwindConfigFile = getContentsTreeFileFromString(projectContents, TailwindConfigPath)
+  const maybeTailwindConfig = getTailwindConfig(tailwindConfigFile, requireFn)
+  const tailwindConfig = isRight(maybeTailwindConfig) ? maybeTailwindConfig.value : {}
+  if (shouldUseTwind) {
+    updateTwind(tailwindConfig, prefixSelector)
+  } else {
+    clearTwind()
+  }
+}

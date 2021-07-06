@@ -14,6 +14,7 @@ import { getRequireFn } from '../core/es-modules/package-manager/package-manager
 import { pluck } from '../core/shared/array-utils'
 import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
 import { isTextFile, NodeModules } from '../core/shared/project-file-types'
+import { injectTwind } from '../core/tailwind/tailwind'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
 import Utils from '../utils/utils'
@@ -279,6 +280,8 @@ const initPreview = () => {
         console.warn(`no body found in html`, e)
       }
     }
+
+    injectTwind(projectContents, requireFn, '')
 
     const previewJSFileName = getMainJSFilename(projectContents)
     const previewJSFilePath = `/${previewJSFileName}`
