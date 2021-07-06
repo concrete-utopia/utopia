@@ -8,6 +8,7 @@ import * as React from 'react'
 import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
 import { includesDependency } from '../../components/editor/npm-dependency/npm-dependency'
 import { propOrNull } from '../shared/object-utils'
+import { memoize } from '../shared/memoize'
 
 const PostCSSPath = '/postcss.config.js'
 const TailwindConfigPath = '/tailwind.config.js'
@@ -144,33 +145,36 @@ function clearTwind() {
   }
 }
 
-function adjustRuleScope(rule: string, prefixSelector: string | null): string {
-  if (prefixSelector == null) {
-    return rule
-  } else {
-    const splitOnBrace = rule.split('{')
-    const splitSelectors = splitOnBrace[0].split(',')
-    const scopedSelectors = splitSelectors.map((s) => {
-      const lowerCaseSelector = s.toLowerCase().trim()
+const adjustRuleScope = memoize(
+  (rule: string, prefixSelector: string | null): string => {
+    if (prefixSelector == null) {
+      return rule
+    } else {
+      const splitOnBrace = rule.split('{')
+      const splitSelectors = splitOnBrace[0].split(',')
+      const scopedSelectors = splitSelectors.map((s) => {
+        const lowerCaseSelector = s.toLowerCase().trim()
 
-      if (
-        lowerCaseSelector === ':root' ||
-        lowerCaseSelector === 'html' ||
-        lowerCaseSelector === 'head'
-      ) {
-        return prefixSelector
-      } else if (lowerCaseSelector === 'body') {
-        return `${prefixSelector} > *`
-      } else {
-        return `${prefixSelector} ${s}`
-      }
-    })
-    const joinedSelectors = scopedSelectors.join(',')
-    const afterBrace = splitOnBrace.slice(1)
-    const finalRule = [joinedSelectors, ...afterBrace].join('{')
-    return finalRule
-  }
-}
+        if (
+          lowerCaseSelector === ':root' ||
+          lowerCaseSelector === 'html' ||
+          lowerCaseSelector === 'head'
+        ) {
+          return prefixSelector
+        } else if (lowerCaseSelector === 'body') {
+          return `${prefixSelector} > *`
+        } else {
+          return `${prefixSelector} ${s}`
+        }
+      })
+      const joinedSelectors = scopedSelectors.join(',')
+      const afterBrace = splitOnBrace.slice(1)
+      const finalRule = [joinedSelectors, ...afterBrace].join('{')
+      return finalRule
+    }
+  },
+  { maxSize: 100, equals: (a, b) => a === b },
+)
 
 function updateTwind(config: Configuration, prefixSelector: string | null) {
   const element = document.head.appendChild(document.createElement('style'))
