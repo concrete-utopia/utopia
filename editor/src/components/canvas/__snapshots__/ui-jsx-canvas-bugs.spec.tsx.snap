@@ -1,31 +1,33 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a function 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
-  data-utopia-root-element-path=\\"sb\\"
->
+"<div style=\\"all: initial;\\">
   <div
-    data-utopia-scene-id=\\"sb/scene\\"
-    data-paths=\\"sb/scene sb\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 375px;
-      height: 812px;
-    \\"
-    data-uid=\\"scene sb\\"
+    id=\\"canvas-container\\"
+    style=\\"position: absolute;\\"
+    data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
+    data-utopia-root-element-path=\\"sb\\"
   >
     <div
-      data-uid=\\"comment-root 5c5~~~1 app\\"
-      data-paths=\\"5c5~~~1:comment-root 5c5~~~1 sb/scene/app\\"
+      data-utopia-scene-id=\\"sb/scene\\"
+      data-paths=\\"sb/scene sb\\"
+      style=\\"
+        position: absolute;
+        background-color: rgba(255, 255, 255, 1);
+        box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+        left: 0;
+        top: 0;
+        width: 375px;
+        height: 812px;
+      \\"
+      data-uid=\\"scene sb\\"
     >
-      hat
+      <div
+        data-uid=\\"comment-root 5c5~~~1 app\\"
+        data-paths=\\"5c5~~~1:comment-root 5c5~~~1 sb/scene/app\\"
+      >
+        hat
+      </div>
     </div>
   </div>
 </div>

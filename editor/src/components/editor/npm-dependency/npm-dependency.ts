@@ -324,6 +324,26 @@ export function dependenciesFromPackageJson(
   }
 }
 
+export function includesDependency(
+  packageJsonFile: ProjectFile | null,
+  dependencyToCheck: string,
+): boolean {
+  if (packageJsonFile != null) {
+    if (isTextFile(packageJsonFile)) {
+      const parsedJSON = json5.parse(packageJsonFile.fileContents.code)
+      const fromDependencies = Utils.path<unknown>(['dependencies', dependencyToCheck], parsedJSON)
+      const fromDevDependencies = Utils.path<unknown>(
+        ['devDependencies', dependencyToCheck],
+        parsedJSON,
+      )
+
+      return fromDependencies != null || fromDevDependencies != null
+    }
+  }
+
+  return false
+}
+
 // Dependencies that the editor needs for code completion primarily.
 // Effectively these are akin to `devDependencies` in `package.json`.
 const EditorTypePackageDependencies: Array<RequestedNpmDependency> = [

@@ -267,7 +267,7 @@ describe('transpileCode', () => {
           "errors": Array [],
           "sourceMap": Object {
             "file": "app.js",
-            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD;AAAA,SAAW,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AAAA,gBAAe;AAAf,GAAA,EAAuB,UAAA,CAAA,OAAvB,CAAX;AAAA,CAAN,C",
+            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD;AAAA,SAAW,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AAAA,gBAAe;AAAf,GAAA,EAAuB,UAAA,CAAA,OAAvB,CAAX;AAAA,CAAV;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
             "names": Array [],
             "sourceRoot": "",
             "sources": Array [
@@ -333,11 +333,13 @@ describe('transpileCode', () => {
 
       var icon_css_1 = __importDefault(require(\\"./icon.css\\"));
 
-      exports.App = function (props) {
+      var App = function App(props) {
         return React.createElement(\\"div\\", {
           \\"data-uid\\": 'aaa'
         }, icon_css_1.default);
-      }; //# sourceMappingURL=app.js.map",
+      };
+
+      exports.App = App; //# sourceMappingURL=app.js.map",
         },
       }
     `)
