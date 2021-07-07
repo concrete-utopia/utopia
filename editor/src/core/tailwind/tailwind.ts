@@ -35,9 +35,8 @@ function postCSSIncludesTailwindPlugin(postCSSFile: ProjectFile, requireFn: Requ
   if (isTextFile(postCSSFile)) {
     try {
       const requireResult = requireFn('/', PostCSSPath)
-      if (requireResult?.default != null) {
-        return requireResult?.default?.plugins?.tailwindcss != null
-      }
+      const plugins = requireResult?.plugins ?? requireResult?.default?.plugins
+      return plugins?.tailwindcss != null
     } catch (e) {
       /* Do nothing */
     }
@@ -96,8 +95,9 @@ function getTailwindConfig(
   if (tailwindFile != null && isTextFile(tailwindFile)) {
     try {
       const requireResult = requireFn('/', TailwindConfigPath)
-      if (requireResult?.default != null) {
-        const twindConfig = convertTailwindToTwindConfig(requireResult.default)
+      const rawConfig = requireResult?.default ?? requireResult
+      if (rawConfig != null) {
+        const twindConfig = convertTailwindToTwindConfig(rawConfig)
         return right(twindConfig)
       } else {
         return left('Tailwind config contains no default export')
