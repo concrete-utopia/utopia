@@ -1,4 +1,15 @@
-import { jsxElementWithoutUID, JSXElementWithoutUID } from '../../core/shared/element-template'
+import {
+  defaultPropertiesForComponent,
+  defaultPropertiesForComponentInFile,
+} from '../../core/property-controls/property-controls-utils'
+import {
+  JSXAttributes,
+  jsxAttributesEntry,
+  jsxAttributeValue,
+  jsxElementWithoutUID,
+  JSXElementWithoutUID,
+} from '../../core/shared/element-template'
+import { dropFileExtension } from '../../core/shared/file-utils'
 import {
   isResolvedNpmDependency,
   PackageStatus,
@@ -14,6 +25,7 @@ import {
 } from '../../core/shared/project-file-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { PropertyControlsInfo } from '../custom-code/code-file'
@@ -170,9 +182,24 @@ export function getComponentGroups(
       )
       if (possibleExportedComponents != null) {
         const insertableComponents = possibleExportedComponents.map((exportedComponent) => {
+          const defaultProps = defaultPropertiesForComponentInFile(
+            exportedComponent.listingName,
+            dropFileExtension(fullPath),
+            propertyControlsInfo,
+          )
+          let attributes: JSXAttributes = []
+          for (const key of Object.keys(defaultProps)) {
+            attributes.push(
+              jsxAttributesEntry(
+                key,
+                jsxAttributeValue(defaultProps[key], emptyComments),
+                emptyComments,
+              ),
+            )
+          }
           return insertableComponent(
             exportedComponent.importsToAdd,
-            jsxElementWithoutUID(exportedComponent.listingName, [], []),
+            jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
             exportedComponent.listingName,
           )
         })

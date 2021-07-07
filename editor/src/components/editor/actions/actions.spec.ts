@@ -22,6 +22,8 @@ import {
   jsxAttributeOtherJavaScript,
   JSXElementChild,
   partOfJsxAttributeValue,
+  jsxElementWithoutUID,
+  jsxAttributesEntry,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -69,6 +71,7 @@ import {
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import {
+  insertWithDefaults,
   setCanvasFrames,
   setProp_UNSAFE,
   switchLayoutSystem,
@@ -100,6 +103,13 @@ import {
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { complexDefaultProject } from '../../../sample-projects/sample-project-utils'
+import {
+  getComponentGroups,
+  insertableComponent,
+  InsertableComponent,
+} from '../../shared/project-components'
+import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
+import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -1095,5 +1105,88 @@ describe('UPDATE_FILE_PATH', () => {
         ],
       }
     `)
+  })
+})
+
+describe('INSERT_WITH_DEFAULTS', () => {
+  it('inserts an element into the project with the given defaults', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const toInsert: InsertableComponent = insertableComponent(
+      emptyImports(),
+      jsxElementWithoutUID(
+        'test',
+        [
+          jsxAttributesEntry(
+            'style',
+            jsxAttributeValue({ backgroundColor: 'neonpink' }, emptyComments),
+            emptyComments,
+          ),
+        ],
+        [],
+      ),
+      'test',
+    )
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, toInsert)
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, false),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          export var Card = (props) => {
+            return (
+              <div
+                data-uid='card-outer-div'
+                style={{ ...props.style }}
+              >
+                <div
+                  data-uid='card-inner-div'
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Rectangle
+                  data-uid='card-inner-rectangle'
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
+                />
+                <test style={{ backgroundColor: 'neonpink' }} />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
   })
 })
