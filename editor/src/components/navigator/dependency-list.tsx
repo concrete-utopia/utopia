@@ -161,7 +161,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   }
 
   removeDependency = (key: string) => {
-    let npmDependencies = dependenciesFromPackageJson(this.props.packageJsonFile)
+    let npmDependencies = dependenciesFromPackageJson(this.props.packageJsonFile, false)
     // If we can't get the dependencies that implies something is broken, so avoid changing it.
     if (npmDependencies != null) {
       npmDependencies = npmDependencies.filter((dep) => dep.name != key)
@@ -313,7 +313,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
             this.packagesUpdateNotFound(editedPackageName)
           } else {
             this.setState((prevState) => {
-              const currentNpmDeps = dependenciesFromPackageJson(this.props.packageJsonFile)
+              const currentNpmDeps = dependenciesFromPackageJson(this.props.packageJsonFile, false)
               const npmDepsWithoutCurrentDep = currentNpmDeps.filter(
                 (p) => p.name !== editedPackageName && p.name !== dependencyBeingEdited,
               )
@@ -385,7 +385,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
 
   render() {
     const packagesWithStatus: Array<DependencyPackageDetails> = packageDetailsFromDependencies(
-      dependenciesFromPackageJson(this.props.packageJsonFile),
+      dependenciesFromPackageJson(this.props.packageJsonFile, false),
       this.props.packageStatus,
     )
 
