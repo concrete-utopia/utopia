@@ -85,11 +85,6 @@ declare module 'friendly-words' {
   export const collections: Array<string>
 }
 
-declare module 'react-windowed-select' {
-  import { StateManager } from 'react-select'
-  export default StateManager
-}
-
 declare module 'npm-package-arg'
 
 declare module '@svgr/plugin-jsx'
