@@ -831,6 +831,10 @@ export interface SetCurrentTheme {
   theme: Theme
 }
 
+export interface FocusFormulaBar {
+  action: 'FOCUS_FORMULA_BAR'
+}
+
 export interface UpdateFormulaBarMode {
   action: 'UPDATE_FORMULA_BAR_MODE'
   value: 'css' | 'content'
@@ -973,6 +977,7 @@ export type EditorAction =
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
+  | FocusFormulaBar
   | UpdateFormulaBarMode
 
 export type DispatchPriority =
