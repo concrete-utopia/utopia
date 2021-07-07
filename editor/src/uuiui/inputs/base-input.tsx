@@ -119,17 +119,19 @@ interface InspectorInputProps extends React.InputHTMLAttributes<HTMLInputElement
   value?: string | readonly string[] | number
 }
 
+type InspectorInputEmotionStyleProps = {
+  chained?: ChainedType
+  controlStyles: ControlStyles
+  hasLabel: boolean
+  roundCorners?: BoxCorners
+}
+
 export const InspectorInputEmotionStyle = ({
   chained = 'not-chained',
   controlStyles,
   hasLabel,
   roundCorners = 'all',
-}: {
-  chained?: ChainedType
-  controlStyles: ControlStyles
-  hasLabel: boolean
-  roundCorners?: BoxCorners
-}): CSSObject => ({
+}: InspectorInputEmotionStyleProps): CSSObject => ({
   outline: 'none',
   paddingTop: 2,
   paddingBottom: 2,

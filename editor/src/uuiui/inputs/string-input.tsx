@@ -161,9 +161,8 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
         if (e.key === 'Escape' || e.key === 'Enter') {
           e.preventDefault()
           e.stopPropagation()
-          if (typeof ref !== 'function' && ref.current != null) {
-            ref.current.blur()
-          }
+          // eslint-disable-next-line no-unused-expressions
+          ref.current?.blur()
         }
       },
       [onKeyDown, ref],

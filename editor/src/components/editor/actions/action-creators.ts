@@ -186,6 +186,7 @@ import type {
   SetForkedFromProjectID,
   SetCurrentTheme,
   FocusFormulaBar,
+  UpdateFormulaBarMode,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1322,5 +1323,12 @@ export function setCurrentTheme(theme: Theme): SetCurrentTheme {
 export function focusFormulaBar(): FocusFormulaBar {
   return {
     action: 'FOCUS_FORMULA_BAR',
+  }
+}
+
+export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBarMode {
+  return {
+    action: 'UPDATE_FORMULA_BAR_MODE',
+    value: value,
   }
 }

@@ -835,6 +835,11 @@ export interface FocusFormulaBar {
   action: 'FOCUS_FORMULA_BAR'
 }
 
+export interface UpdateFormulaBarMode {
+  action: 'UPDATE_FORMULA_BAR_MODE'
+  value: 'css' | 'content'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -973,6 +978,7 @@ export type EditorAction =
   | SetFilebrowserDropTarget
   | SetCurrentTheme
   | FocusFormulaBar
+  | UpdateFormulaBarMode
 
 export type DispatchPriority =
   | 'everyone'

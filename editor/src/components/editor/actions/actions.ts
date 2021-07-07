@@ -354,6 +354,7 @@ import {
   SetForkedFromProjectID,
   SetCurrentTheme,
   FocusFormulaBar,
+  UpdateFormulaBarMode,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1002,6 +1003,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       renamingTarget: null,
     },
     topmenu: {
+      formulaBarMode: poppedEditor.topmenu.formulaBarMode,
       formulaBarFocusCounter: currentEditor.topmenu.formulaBarFocusCounter,
     },
     preview: {
@@ -4334,6 +4336,15 @@ export const UPDATE_FNS = {
       topmenu: {
         ...editor.topmenu,
         formulaBarFocusCounter: editor.topmenu.formulaBarFocusCounter + 1,
+      },
+    }
+  },
+  UPDATE_FORMULA_BAR_MODE: (action: UpdateFormulaBarMode, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      topmenu: {
+        ...editor.topmenu,
+        formulaBarMode: action.value,
       },
     }
   },

@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import * as React from 'react'
+import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -7,13 +7,15 @@ import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
-import * as EP from '../../../core/shared/element-path'
 import {
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXTextBlock,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { ModeToggleButton } from './mode-toggle-button'
+import { ClassNameSelect } from './classname-select'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 function useFocusOnCountIncrease(triggerCount: number): React.RefObject<HTMLInputElement> {
   const ref = React.useRef<HTMLInputElement>(null)
@@ -29,6 +31,11 @@ function useFocusOnCountIncrease(triggerCount: number): React.RefObject<HTMLInpu
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const saveTimerRef = React.useRef<any>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
+
+  const selectedMode = useEditorState(
+    (store) => store.editor.topmenu.formulaBarMode,
+    'FormulaBar selectedMode',
+  )
 
   const selectedElement = useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
@@ -94,6 +101,11 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     [saveTimerRef, selectedElement, dispatchUpdate],
   )
 
+  const buttonsVisible = isFeatureEnabled('TopMenu ClassNames') && selectedElement != null
+  const classNameFieldVisible =
+    isFeatureEnabled('TopMenu ClassNames') && selectedElement != null && selectedMode === 'css'
+  const inputFieldVisible = !classNameFieldVisible
+
   return (
     <SimpleFlexRow
       style={{
@@ -101,33 +113,50 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         height: UtopiaTheme.layout.inputHeight.default,
       }}
     >
-      <HeadlessStringInput
-        ref={inputRef}
-        type='text'
-        css={{
-          paddingLeft: 4,
-          paddingRight: 4,
-          border: '0px',
-          width: '100%',
-          height: '100%',
-          backgroundColor: colorTheme.canvasBackground.value,
-          borderRadius: 5,
-          transition: 'background-color .1s ease-in-out',
-          '&:hover': {
-            '&:not(:disabled)': {
+      {buttonsVisible ? <ModeToggleButton /> : null}
+      {classNameFieldVisible ? (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            height: UtopiaTheme.layout.rowHeight.normal,
+            gap: 4,
+            flexGrow: 1,
+          }}
+        >
+          <ClassNameSelect />
+        </div>
+      ) : null}
+      {inputFieldVisible ? (
+        <HeadlessStringInput
+          ref={inputRef}
+          type='text'
+          css={{
+            paddingLeft: 4,
+            paddingRight: 4,
+            border: '0px',
+            width: '100%',
+            height: '100%',
+            backgroundColor: colorTheme.canvasBackground.value,
+            borderRadius: 5,
+            transition: 'background-color .1s ease-in-out',
+            '&:hover': {
+              '&:not(:disabled)': {
+                boxShadow: 'inset 0px 0px 0px 1px lightgrey',
+              },
+            },
+            '&:focus': {
+              backgroundColor: colorTheme.bg0.value,
               boxShadow: 'inset 0px 0px 0px 1px lightgrey',
             },
-          },
-          '&:focus': {
-            backgroundColor: colorTheme.bg0.value,
-            boxShadow: 'inset 0px 0px 0px 1px lightgrey',
-          },
-        }}
-        onChange={onInputChange}
-        onBlur={onBlur}
-        value={simpleText}
-        disabled={disabled}
-      />
+          }}
+          onChange={onInputChange}
+          onBlur={onBlur}
+          value={simpleText}
+          disabled={disabled}
+        />
+      ) : null}
     </SimpleFlexRow>
   )
 })

@@ -372,6 +372,7 @@ export interface EditorState {
     position: 'hidden' | 'left' | 'right'
   }
   topmenu: {
+    formulaBarMode: 'css' | 'content'
     formulaBarFocusCounter: number
   }
   preview: {
@@ -1140,6 +1141,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       renamingTarget: null,
     },
     topmenu: {
+      formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
     },
     preview: {
@@ -1367,6 +1369,7 @@ export function editorModelFromPersistentModel(
     },
     projectSettings: persistentModel.projectSettings,
     topmenu: {
+      formulaBarMode: 'content',
       formulaBarFocusCounter: 0,
     },
     preview: {
