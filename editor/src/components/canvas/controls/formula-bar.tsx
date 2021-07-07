@@ -101,20 +101,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       }}
     >
       {buttonsVisible ? <ModeToggleButton /> : null}
-      {classNameFieldVisible ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            height: UtopiaTheme.layout.rowHeight.normal,
-            gap: 4,
-            flexGrow: 1,
-          }}
-        >
-          <ClassNameSelect />
-        </div>
-      ) : null}
+      {classNameFieldVisible ? <ClassNameSelect /> : null}
       {inputFieldVisible ? (
         <input
           type='text'
