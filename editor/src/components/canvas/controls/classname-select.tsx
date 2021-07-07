@@ -18,6 +18,14 @@ import * as PP from '../../../core/shared/property-path'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
+interface TailWindOption {
+  label: string
+  value: string
+  categories?: string[]
+  style?: React.CSSProperties
+  options?: TailWindOption[]
+}
+
 const TailWindOptions = TailWindList.classNames.map((className, index) => ({
   label: className,
   value: className,
@@ -31,6 +39,76 @@ const DropdownIndicator = (props: any) => (
 
 const ClearIndicator = () => null
 const IndicatorSeparator = () => null
+
+const NoOptionsMessage = (props: any) => <span {...props}>No other classes available</span>
+
+const AngledStripe = (props: any) => (
+  <div
+    style={{
+      ...props.style,
+      width: 5,
+      height: 22,
+      borderRadius: 0,
+      transform: 'skewX(-11deg)',
+    }}
+  />
+)
+
+const getColorForCategory = (category: string) => {
+  if (category === 'layout') {
+    return '#5FACFF'
+  } else if (category === 'typography') {
+    return '#F7B500'
+  } else if (category === 'interaction') {
+    return '#B620E0'
+  } else return 'pink'
+}
+
+const MultiValueContainer = (props: any) => {
+  const getStriped = (data: TailWindOption) => {
+    const categories = (data?.categories as Array<string>) ?? []
+    if (categories.length > 0) {
+      return categories.map((category, index) => (
+        <AngledStripe
+          key={data?.label ?? index}
+          style={{ backgroundColor: getColorForCategory(category) }}
+        />
+      ))
+    } else {
+      return null
+    }
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: 'black',
+      }}
+    >
+      <components.MultiValueContainer {...props} />
+      <div
+        style={{
+          display: 'flex',
+          height: 16,
+          paddingRight: 4,
+          paddingLeft: 2,
+        }}
+      >
+        {getStriped(props.data)}
+      </div>
+    </div>
+  )
+}
+
+const ValueContainer = (props: any) => {
+  return (
+    <div style={{ overflowX: 'scroll', flex: 1 }}>
+      <components.ValueContainer {...props} />
+    </div>
+  )
+}
 
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
@@ -99,15 +177,14 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       // sibling to indicatorsContainer
       // default styles mess with layout, so ignore them
       // border: '1px solid green',
-      overflowX: 'auto',
       display: 'flex',
       alignItems: 'center',
       gap: 4,
-      // height: 22,
       paddingLeft: 4,
       paddingRight: 4,
       paddingTop: 0,
       paddingBottom: 0,
+      maxWidth: 0,
     }),
 
     multiValue: () => {
@@ -216,6 +293,9 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           DropdownIndicator,
           ClearIndicator,
           IndicatorSeparator,
+          NoOptionsMessage,
+          MultiValueContainer,
+          ValueContainer,
         }}
       />
     </div>
