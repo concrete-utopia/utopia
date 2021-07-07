@@ -193,6 +193,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
+        height: 20,
         // backgroundColor: color.css()
         backgroundColor: '#191818',
       }
