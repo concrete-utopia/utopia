@@ -831,6 +831,11 @@ export interface SetCurrentTheme {
   theme: Theme
 }
 
+export interface UpdateFormulaBarMode {
+  action: 'UPDATE_FORMULA_BAR_MODE'
+  value: 'css' | 'content'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -968,6 +973,7 @@ export type EditorAction =
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
+  | UpdateFormulaBarMode
 
 export type DispatchPriority =
   | 'everyone'
