@@ -3,7 +3,7 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { useColorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
+import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
@@ -69,6 +69,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const dispatchUpdate = React.useCallback(
     ({ path, text }) => {
       dispatch([EditorActions.updateChildText(path, text)], 'canvas')
+      clearTimeout(saveTimerRef.current)
       saveTimerRef.current = null
     },
     [dispatch],
@@ -82,6 +83,17 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           path: selectedElement.elementPath,
           text: event.target.value,
         })
+        setSimpleText(event.target.value)
+      }
+    },
+    [saveTimerRef, selectedElement, dispatchUpdate],
+  )
+
+  const onBlur = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (selectedElement != null) {
+        clearTimeout(saveTimerRef.current)
+        dispatchUpdate({ path: selectedElement.elementPath, text: event.target.value })
         setSimpleText(event.target.value)
       }
     },
@@ -116,7 +128,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
         </div>
       ) : null}
       {inputFieldVisible ? (
-        <input
+        <HeadlessStringInput
           type='text'
           css={{
             paddingLeft: 4,
@@ -138,6 +150,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
             },
           }}
           onChange={onInputChange}
+          onBlur={onBlur}
           value={simpleText}
           disabled={disabled}
         />
