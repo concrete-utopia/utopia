@@ -177,7 +177,7 @@ function getTextEditorTarget(editor: EditorState, derived: DerivedState): Elemen
   } else {
     const target = editor.selectedViews[0]
     const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-    if (element != null && isUtopiaAPITextElementFromMetadata(element)) {
+    if (element != null && MetadataUtils.getTextContentOfElement(element) != null) {
       return target
     } else {
       return null
@@ -402,7 +402,7 @@ export function handleKeyDown(
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           const textTarget = getTextEditorTarget(editor, derived)
           if (textTarget != null && isSelectMode(editor.mode)) {
-            return [EditorActions.openTextEditor(textTarget, null)]
+            return [EditorActions.focusFormulaBar()]
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {

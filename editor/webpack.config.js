@@ -281,7 +281,7 @@ const config = {
         contentBase: path.join(__dirname, 'resources'),
         watchContentBase: true, // Watch the above folder for changes too
         overlay: {
-          warnings: true,
+          warnings: false,
           errors: true,
         },
         disableHostCheck: true, // Because we are proxying this

@@ -73,11 +73,12 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
-import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
+import { ProjectContentTreeRoot, getContentsTreeFileFromString, walkContentsTree } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
+import { useTwind } from '../../core/tailwind/tailwind'
 
 applyUIDMonkeyPatch()
 
@@ -349,7 +350,9 @@ export const UiJsxCanvas = betterReactMemo(
                   shouldIncludeCanvasRootInTheSpy,
                 )
                 const exportsDetail = projectFile.fileContents.parsed.exportsDetail
-                let filteredScope: MapLike<any> = {}
+                let filteredScope: MapLike<any> = {
+                  ...scope.module.exports,
+                }
                 for (const s of Object.keys(scope)) {
                   if (s in exportsDetail.namedExports) {
                     filteredScope[s] = scope[s]
@@ -409,6 +412,8 @@ export const UiJsxCanvas = betterReactMemo(
 
       const executionScope = scope
 
+      useTwind(projectContents, customRequire, '#canvas-container')
+
       const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
       const {
@@ -431,7 +436,11 @@ export const UiJsxCanvas = betterReactMemo(
       })
 
       return (
-        <>
+        <div
+          style={{
+            all: 'initial',
+          }}
+        >
           <Helmet>{parse(linkTags)}</Helmet>
           <MutableUtopiaContext.Provider value={mutableContextRef}>
             <RerenderUtopiaContext.Provider
@@ -480,7 +489,7 @@ export const UiJsxCanvas = betterReactMemo(
               </UtopiaProjectContext.Provider>
             </RerenderUtopiaContext.Provider>
           </MutableUtopiaContext.Provider>
-        </>
+        </div>
       )
     }
   }),
@@ -556,7 +565,6 @@ const CanvasContainer = React.forwardRef<
       key={'canvas-container'}
       ref={ref}
       style={{
-        all: 'initial',
         position: 'absolute',
       }}
       data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}

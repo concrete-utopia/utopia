@@ -127,10 +127,7 @@ import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { notLoggedIn } from '../../../common/user'
-import {
-  dependenciesWithEditorRequirements,
-  immediatelyResolvableDependenciesWithEditorRequirements,
-} from '../npm-dependency/npm-dependency'
+import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
 import {
@@ -373,6 +370,7 @@ export interface EditorState {
   }
   topmenu: {
     formulaBarMode: 'css' | 'content'
+    formulaBarFocusCounter: number
   }
   preview: {
     visible: boolean
@@ -1141,6 +1139,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     topmenu: {
       formulaBarMode: 'content',
+      formulaBarFocusCounter: 0,
     },
     preview: {
       visible: false,
@@ -1366,6 +1365,10 @@ export function editorModelFromPersistentModel(
       minimised: true,
     },
     projectSettings: persistentModel.projectSettings,
+    topmenu: {
+      formulaBarMode: 'content',
+      formulaBarFocusCounter: 0,
+    },
     preview: {
       visible: false,
       connected: false,
@@ -1393,9 +1396,6 @@ export function editorModelFromPersistentModel(
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
       position: 'right',
-    },
-    topmenu: {
-      formulaBarMode: 'content',
     },
     fileBrowser: {
       renamingTarget: null,

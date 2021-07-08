@@ -3,7 +3,7 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { useColorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
+import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
@@ -12,9 +12,21 @@ import {
   isJSXElement,
   isJSXTextBlock,
 } from '../../../core/shared/element-template'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import { ModeToggleButton } from './mode-toggle-button'
 import { ClassNameSelect } from './classname-select'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+
+function useFocusOnCountIncrease(triggerCount: number): React.RefObject<HTMLInputElement> {
+  const ref = React.useRef<HTMLInputElement>(null)
+  const previousTriggerCountRef = React.useRef(triggerCount)
+  if (previousTriggerCountRef.current !== triggerCount) {
+    previousTriggerCountRef.current = triggerCount
+    // eslint-disable-next-line no-unused-expressions
+    ref.current?.focus()
+  }
+  return ref
+}
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const saveTimerRef = React.useRef<any>(null)
@@ -34,6 +46,13 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     }
   }, 'FormulaBar selectedElement')
 
+  const focusTriggerCount = useEditorState(
+    (store) => store.editor.topmenu.formulaBarFocusCounter,
+    'FormulaBar formulaBarFocusCounter',
+  )
+
+  const inputRef = useFocusOnCountIncrease(focusTriggerCount)
+
   const colorTheme = useColorTheme()
   const [simpleText, setSimpleText] = React.useState('')
   const [disabled, setDisabled] = React.useState(false)
@@ -42,33 +61,16 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     if (saveTimerRef.current != null) {
       return
     }
-    let foundText = ''
-    let isDisabled = true
-    if (
-      selectedElement != null &&
-      isRight(selectedElement.element) &&
-      isJSXElement(selectedElement.element.value)
-    ) {
-      if (selectedElement.element.value.children.length === 1) {
-        const childElement = selectedElement.element.value.children[0]
-        if (isJSXTextBlock(childElement)) {
-          foundText = childElement.text
-          isDisabled = false
-        } else if (isJSXArbitraryBlock(childElement)) {
-          foundText = `{${childElement.originalJavascript}}`
-          isDisabled = false
-        }
-      } else if (selectedElement.element.value.children.length === 0) {
-        isDisabled = false
-      }
-    }
-    setSimpleText(foundText)
+    const foundText = optionalMap(MetadataUtils.getTextContentOfElement, selectedElement)
+    const isDisabled = foundText == null
+    setSimpleText(foundText ?? '')
     setDisabled(isDisabled)
   }, [selectedElement])
 
   const dispatchUpdate = React.useCallback(
     ({ path, text }) => {
       dispatch([EditorActions.updateChildText(path, text)], 'canvas')
+      clearTimeout(saveTimerRef.current)
       saveTimerRef.current = null
     },
     [dispatch],
@@ -82,6 +84,17 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           path: selectedElement.elementPath,
           text: event.target.value,
         })
+        setSimpleText(event.target.value)
+      }
+    },
+    [saveTimerRef, selectedElement, dispatchUpdate],
+  )
+
+  const onBlur = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (selectedElement != null) {
+        clearTimeout(saveTimerRef.current)
+        dispatchUpdate({ path: selectedElement.elementPath, text: event.target.value })
         setSimpleText(event.target.value)
       }
     },
@@ -103,7 +116,8 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       {buttonsVisible ? <ModeToggleButton /> : null}
       {classNameFieldVisible ? <ClassNameSelect /> : null}
       {inputFieldVisible ? (
-        <input
+        <HeadlessStringInput
+          ref={inputRef}
           type='text'
           css={{
             paddingLeft: 4,
@@ -125,6 +139,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
             },
           }}
           onChange={onInputChange}
+          onBlur={onBlur}
           value={simpleText}
           disabled={disabled}
         />

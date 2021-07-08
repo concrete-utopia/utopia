@@ -628,7 +628,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             controlStatus={controlStatus}
             testId={testId}
             focused={isFocused}
-            labelInner={labelInner}
+            hasLabel={labelInner != null}
             roundCorners={roundCorners}
             mixed={mixed}
             value={stateValue}
