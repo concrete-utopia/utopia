@@ -29,8 +29,6 @@ interface TailWindOption {
   label: string
   value: string
   categories?: string[]
-  style?: React.CSSProperties
-  options?: TailWindOption[]
 }
 
 const TailWindOptions = TailWindList.classNames.map((className, index) => ({
