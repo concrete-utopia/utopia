@@ -27,6 +27,7 @@ import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 const ChromaBlack = chroma('black')
+const ChromaContrastBlack = chroma.contrast(ChromaBlack, 'white')
 
 interface TailWindOption {
   label: string
@@ -175,6 +176,9 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         }))
 
   const ChromaThemePrimary = React.useMemo(() => chroma(theme.primary.value), [theme.primary.value])
+  const ChromaContrastPrimary = React.useMemo(() => chroma.contrast(ChromaThemePrimary, 'white'), [
+    ChromaThemePrimary,
+  ])
   const colourStyles: StylesConfig = React.useMemo(
     () => ({
       container: (styles: React.CSSProperties) => ({
@@ -255,8 +259,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         const categories = data?.categories ?? []
 
         let optionColor = ChromaBlack
+        let contrast = ChromaContrastBlack
         if (categories.length === 1) {
           optionColor = ChromaThemePrimary
+          contrast = ChromaContrastPrimary
         }
 
         let backgroundColor: string | undefined = undefined
@@ -273,7 +279,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
 
         let color: string = optionColor.css()
         if (isSelected) {
-          if (chroma.contrast(optionColor, 'white') > 2) {
+          if (contrast > 2) {
             color = 'white'
           } else {
             color = 'black'
@@ -299,7 +305,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         }
       },
     }),
-    [theme, ChromaThemePrimary],
+    [theme, ChromaThemePrimary, ChromaContrastPrimary],
   )
 
   return (
