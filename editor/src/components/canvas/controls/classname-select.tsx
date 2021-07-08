@@ -125,6 +125,10 @@ const ValueContainer = betterReactMemo(
   },
 )
 
+const filterOption = (option: Option, rawInput: string) => {
+  return createFilter({ ignoreAccents: false })(option, rawInput)
+}
+
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
@@ -299,10 +303,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     }),
     [theme, ChromaThemePrimary],
   )
-
-  const filterOption = React.useCallback((option: Option, rawInput: string) => {
-    return createFilter({ ignoreAccents: false })(option, rawInput)
-  }, [])
 
   return (
     <div
