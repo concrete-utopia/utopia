@@ -2174,8 +2174,13 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    return editor
-    // hello
+    return {
+      ...editor,
+      floatingInsertMenu: {
+        ...editor.floatingInsertMenu,
+        insertMenuOpen: true,
+      },
+    }
   },
   UNWRAP_GROUP_OR_VIEW: (
     action: UnwrapGroupOrView,
