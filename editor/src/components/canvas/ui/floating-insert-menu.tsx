@@ -5,7 +5,11 @@ import { useEditorState } from '../../editor/store/store-hook'
 import styled from '@emotion/styled'
 import { FlexColumn, FlexRow } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
-import { getComponentGroups, InsertableComponentGroup } from '../../shared/project-components'
+import {
+  getComponentGroups,
+  getInsertableGroupLabel,
+  InsertableComponentGroup,
+} from '../../shared/project-components'
 
 function useGetInsertableComponents(): Array<InsertableComponentGroup> {
   const dependencies = usePossiblyResolvedPackageDependencies()
@@ -111,9 +115,21 @@ export var FloatingMenu = () => {
           }}
         >
           {insertableComponents.map((componentGroup) => {
-            return componentGroup.insertableComponents.map((insertableComponent) => {
-              return <ListItem key={insertableComponent.name}>{insertableComponent.name}</ListItem>
-            })
+            const groupLabel = getInsertableGroupLabel(componentGroup.source)
+            if (componentGroup.insertableComponents.length == 0) {
+              return null
+            } else {
+              return (
+                <React.Fragment key={groupLabel}>
+                  <Subdued>{groupLabel}</Subdued>
+                  {componentGroup.insertableComponents.map((insertableComponent) => {
+                    return (
+                      <ListItem key={insertableComponent.name}>{insertableComponent.name}</ListItem>
+                    )
+                  })}
+                </React.Fragment>
+              )
+            }
           })}
         </FlexColumn>
         <FlexColumn
