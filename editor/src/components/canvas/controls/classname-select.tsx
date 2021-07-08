@@ -26,6 +26,8 @@ import * as PP from '../../../core/shared/property-path'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
+const ChromaBlack = chroma('black')
+
 interface TailWindOption {
   label: string
   value: string
@@ -170,6 +172,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           value: name,
         }))
 
+  const ChromaThemePrimary = React.useMemo(() => chroma(theme.primary.value), [theme])
   const colourStyles: StylesConfig = React.useMemo(
     () => ({
       container: (styles: React.CSSProperties) => ({
@@ -249,9 +252,9 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         // a single entry in the options list
         const categories = data?.categories ?? []
 
-        let optionColor = chroma('black')
+        let optionColor = ChromaBlack
         if (categories.length === 1) {
-          optionColor = chroma(theme.primary.value)
+          optionColor = ChromaThemePrimary
         }
 
         let backgroundColor: string | undefined = undefined
@@ -294,7 +297,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         }
       },
     }),
-    [theme],
+    [theme, ChromaThemePrimary],
   )
 
   const filterOption = React.useCallback((option: Option, rawInput: string) => {
