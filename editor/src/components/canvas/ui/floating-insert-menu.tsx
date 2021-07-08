@@ -14,6 +14,7 @@ export const FloatingInsertMenu = betterReactMemo(
     return isVisible ? (
       <div
         style={{
+          pointerEvents: 'initial',
           position: 'absolute',
           left: '50%',
           top: '50%',

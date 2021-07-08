@@ -78,6 +78,7 @@ export const CanvasWrapperComponent = betterReactMemo(
             width: '100%',
             height: '100%',
             transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
+            pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
           }}
         >
           <div
