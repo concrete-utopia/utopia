@@ -45,7 +45,7 @@ const DropdownIndicator = (props: IndicatorProps<TailWindOption, true>) => (
 const ClearIndicator = () => null
 const IndicatorSeparator = () => null
 
-const NoOptionsMessage = (props: any) => <span {...props}>No other classes available</span>
+const NoOptionsMessage = (props: any) => <span {...props}>No results found</span>
 
 const AngledStripe = styled.div({
   width: 5,
