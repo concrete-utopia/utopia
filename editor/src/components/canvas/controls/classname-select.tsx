@@ -2,9 +2,16 @@
 
 import React from 'react'
 import { jsx } from '@emotion/react'
+import styled from '@emotion/styled'
 
 import TailWindList from '../../../core/third-party/tailwind-all-classnames.json'
-import WindowedSelect, { components, createFilter } from 'react-windowed-select'
+import WindowedSelect, {
+  components,
+  createFilter,
+  IndicatorProps,
+  MultiValueProps,
+  ValueContainerProps,
+} from 'react-windowed-select'
 import type { StylesConfig } from 'react-select'
 import chroma from 'chroma-js'
 
@@ -31,7 +38,7 @@ const TailWindOptions = TailWindList.classNames.map((className, index) => ({
   value: className,
 }))
 
-const DropdownIndicator = (props: any) => (
+const DropdownIndicator = (props: IndicatorProps<TailWindOption, true>) => (
   <components.DropdownIndicator {...props}>
     <span> ↓ </span>
   </components.DropdownIndicator>
@@ -42,17 +49,12 @@ const IndicatorSeparator = () => null
 
 const NoOptionsMessage = (props: any) => <span {...props}>No other classes available</span>
 
-const AngledStripe = (props: any) => (
-  <div
-    style={{
-      ...props.style,
-      width: 5,
-      height: 22,
-      borderRadius: 0,
-      transform: 'skewX(-11deg)',
-    }}
-  />
-)
+const AngledStripe = styled.div({
+  width: 5,
+  height: 22,
+  borderRadius: 0,
+  transform: 'skewX(-11deg)',
+})
 
 const getColorForCategory = (category: string) => {
   if (category === 'layout') {
@@ -64,7 +66,7 @@ const getColorForCategory = (category: string) => {
   } else return 'pink'
 }
 
-const MultiValueContainer = (props: any) => {
+const MultiValueContainer = (props: MultiValueProps<TailWindOption>) => {
   const getStriped = (data: TailWindOption) => {
     const categories = (data?.categories as Array<string>) ?? []
     if (categories.length > 0) {
@@ -102,7 +104,7 @@ const MultiValueContainer = (props: any) => {
   )
 }
 
-const ValueContainer = (props: any) => {
+const ValueContainer = (props: ValueContainerProps<TailWindOption, true>) => {
   return (
     <div style={{ overflowX: 'scroll', flex: 1 }}>
       <components.ValueContainer {...props} />
@@ -122,6 +124,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       return null
     }
   }, 'ClassNameSelect selectedElement')
+
   const onChange = React.useCallback(
     (newValue: Array<{ label: string; value: string }>) => {
       if (selectedElement != null) {
@@ -151,9 +154,8 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
 
   const colourStyles: StylesConfig = {
     container: (styles: React.CSSProperties) => ({
-      // the outermost element. It contains the popup menu,  so don't set a height on it!
+      // the outermost element. It contains the popup menu, so don't set a height on it!
       // shouldn't contain any sizing
-      // backgroundColor: "yellow",
       ...styles,
       width: '100%',
     }),
@@ -161,13 +163,11 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       // need to remove styles here, since that implicitly sets a height of 38
       // ...styles,
       display: 'flex',
-      // background: "rgb(0,255,0,.1)",
       alignItems: 'center',
       justifyContent: 'space-between',
       background: 'transparent',
       outline: 'none',
       ':focus-within': {
-        // backgroundColor: "rgb(0,255,0,.2)",
         outline: 'none',
         border: 'none',
       },
@@ -176,7 +176,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       // the container for added options (tags) and input
       // sibling to indicatorsContainer
       // default styles mess with layout, so ignore them
-      // border: '1px solid green',
       display: 'flex',
       alignItems: 'center',
       gap: 4,
@@ -189,12 +188,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
 
     multiValue: () => {
       return {
-        // ...styles,
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         height: 20,
-        // backgroundColor: color.css()
         backgroundColor: '#191818',
       }
     },
@@ -218,7 +215,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     input: () => {
       return {
         fontSize: 11,
-        color: 'white',
+        color: theme.fg1.value,
         letterSpacing: 0.3,
         background: 'transparent',
         display: 'flex',
@@ -233,37 +230,47 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       // a single entry in the options list
       const categories = data?.categories ?? []
 
-      let color = chroma('black')
+      let optionColor = chroma('black')
       if (categories.length === 1) {
-        color = chroma('#007aff')
+        optionColor = chroma(theme.primary.value)
       }
 
-      // const color = chroma(data.color);
+      let backgroundColor: string | undefined = undefined
+      if (isFocused) {
+        backgroundColor = optionColor.alpha(0.1).css()
+      } else if (isSelected) {
+        backgroundColor = optionColor.css()
+      } else if (isDisabled) {
+        backgroundColor = undefined
+      }
+
+      let activeBackgroundColor =
+        !isDisabled && (isSelected ? data.color : optionColor.alpha(0.3).css())
+
+      let color: string = optionColor.css()
+      if (isSelected) {
+        if (chroma.contrast(optionColor, 'white') > 2) {
+          color = 'white'
+        } else {
+          color = 'black'
+        }
+      } else if (isDisabled) {
+        color = '#ccc'
+      }
+
       return {
         minHeight: 27,
         display: 'flex',
         alignItems: 'center',
         paddingLeft: 8,
         paddingRight: 8,
-        backgroundColor: isDisabled
-          ? undefined
-          : isSelected
-          ? color.css()
-          : isFocused
-          ? color.alpha(0.1).css()
-          : undefined,
-        color: isDisabled
-          ? '#ccc'
-          : isSelected
-          ? chroma.contrast(color, 'white') > 2
-            ? 'white'
-            : 'black'
-          : color.css(),
+        backgroundColor: backgroundColor,
+        color: color,
         cursor: isDisabled ? 'not-allowed' : 'default',
 
         ':active': {
           ...(styles as any)[':active'],
-          backgroundColor: !isDisabled && (isSelected ? data.color : color.alpha(0.3).css()),
+          backgroundColor: activeBackgroundColor,
         },
       }
     },
@@ -279,7 +286,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         flexGrow: 1,
         display: 'flex',
         alignItems: 'center',
-        '&:focus-within': { boxShadow: '0px 0px 0px 1px #007aff' },
+        '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
       }}
     >
       <WindowedSelect
