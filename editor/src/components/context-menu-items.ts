@@ -217,6 +217,15 @@ export const ungroup: ContextMenuItem<CanvasData> = {
   },
 }
 
+export const wrapInPicker: ContextMenuItem<CanvasData> = {
+  name: 'Wrap in…',
+  shortcut: '⬆⌘⏎',
+  enabled: true,
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)([EditorActions.wrapInPicker(data.selectedViews)], 'everyone')
+  },
+}
+
 export const wrapInView: ContextMenuItem<CanvasData> = {
   name: 'Wrap in View',
   shortcut: '⌘⏎',

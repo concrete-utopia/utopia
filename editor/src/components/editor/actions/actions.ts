@@ -355,6 +355,7 @@ import {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
+  WrapInPicker,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -971,6 +972,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       domWalkerInvalidateCount: currentEditor.canvas.domWalkerInvalidateCount + 1,
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
+    },
+    floatingInsertMenu: {
+      insertMenuOpen: currentEditor.floatingInsertMenu.insertMenuOpen,
     },
     inspector: {
       visible: currentEditor.inspector.visible,
@@ -2163,6 +2167,15 @@ export const UPDATE_FNS = {
       },
       dispatch,
     )
+  },
+  WRAP_IN_PICKER: (
+    action: WrapInPicker,
+    editor: EditorModel,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    return editor
+    // hello
   },
   UNWRAP_GROUP_OR_VIEW: (
     action: UnwrapGroupOrView,

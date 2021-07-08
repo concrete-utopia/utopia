@@ -18,11 +18,12 @@ import CloseButton from '../../third-party/react-error-overlay/components/CloseB
 import { NO_OP } from '../../core/shared/utils'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
-import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
+import { FlexColumn, Button, UtopiaTheme, FlexRow } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { ModeSelectButtons } from './mode-select-buttons'
+import { FloatingInsertMenu } from './ui/floating-insert-menu'
 
 interface CanvasWrapperComponentProps {}
 
@@ -46,6 +47,11 @@ export const CanvasWrapperComponent = betterReactMemo(
       return store.editor.safeMode
     }, 'CanvasWrapperComponent safeMode')
 
+    const isNavigatorOverCanvas = useEditorState(
+      (store) => store.editor.navigator.position === 'right',
+      'ErrorOverlayComponent isOverlappingWithNavigator',
+    )
+
     return (
       <FlexColumn
         className='CanvasWrapperComponent'
@@ -66,8 +72,31 @@ export const CanvasWrapperComponent = betterReactMemo(
             dispatch={dispatch}
           />
         ) : null}
-        {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-        <ModeSelectButtons />
+        <FlexRow
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
+          }}
+        >
+          <div
+            style={{
+              width: isNavigatorOverCanvas ? LeftPaneDefaultWidth : 0,
+            }}
+          />
+          <FlexColumn
+            style={{
+              alignSelf: 'stretch',
+              flexGrow: 1,
+              position: 'relative',
+            }}
+          >
+            {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
+            <ModeSelectButtons />
+            <FloatingInsertMenu />
+          </FlexColumn>
+        </FlexRow>
       </FlexColumn>
     )
   },

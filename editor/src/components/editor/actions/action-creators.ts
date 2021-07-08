@@ -187,6 +187,7 @@ import type {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
+  WrapInPicker,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -608,6 +609,14 @@ export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
     action: 'UNWRAP_GROUP_OR_VIEW',
     target: target,
     onlyForGroups: false,
+  }
+}
+
+export function wrapInPicker(targets: Array<ElementPath>): WrapInPicker {
+  return {
+    action: 'WRAP_IN_PICKER',
+    targets: targets,
+    layoutSystem: LayoutSystem.PinSystem,
   }
 }
 

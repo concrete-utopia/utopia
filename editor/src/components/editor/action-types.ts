@@ -417,6 +417,12 @@ export interface WrapInView {
   layoutSystem: LayoutSystem
 }
 
+export interface WrapInPicker {
+  action: 'WRAP_IN_PICKER'
+  targets: ElementPath[]
+  layoutSystem: LayoutSystem
+}
+
 export interface UnwrapGroupOrView {
   action: 'UNWRAP_GROUP_OR_VIEW'
   target: ElementPath
@@ -898,6 +904,7 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInView
+  | WrapInPicker
   | UnwrapGroupOrView
   | SetCanvasAnimationsEnabled
   | SetNavigatorRenamingTarget

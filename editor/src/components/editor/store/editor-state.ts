@@ -344,6 +344,9 @@ export interface EditorState {
     openFile: DesignerFile | null
     scrollAnimation: boolean
   }
+  floatingInsertMenu: {
+    insertMenuOpen: boolean
+  }
   inspector: {
     visible: boolean
   }
@@ -1110,6 +1113,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       },
       scrollAnimation: false,
     },
+    floatingInsertMenu: {
+      insertMenuOpen: false,
+    },
     inspector: {
       visible: true,
     },
@@ -1356,6 +1362,9 @@ export function editorModelFromPersistentModel(
         filename: StoryboardFilePath,
       },
       scrollAnimation: false,
+    },
+    floatingInsertMenu: {
+      insertMenuOpen: false,
     },
     inspector: {
       visible: true,
