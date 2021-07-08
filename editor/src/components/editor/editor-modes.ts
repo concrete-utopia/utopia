@@ -120,6 +120,7 @@ export type LiveCanvasMode = {
 }
 
 export type Mode = InsertMode | SelectMode | SelectLiteMode | LiveCanvasMode
+export type PersistedMode = SelectMode | SelectLiteMode | LiveCanvasMode
 
 export const EditorModes = {
   insertMode: function (insertionStarted: boolean, subject: InsertionSubject): InsertMode {
@@ -159,4 +160,16 @@ export function isSelectLiteMode(value: Mode): value is SelectLiteMode {
 }
 export function isLiveMode(value: Mode): value is LiveCanvasMode {
   return value.type === 'live'
+}
+
+export function convertModeToSavedMode(mode: Mode): PersistedMode {
+  switch (mode.type) {
+    case 'live':
+      return EditorModes.liveMode()
+    case 'select-lite':
+      return EditorModes.selectLiteMode()
+    case 'select':
+    case 'insert':
+      return EditorModes.selectMode()
+  }
 }

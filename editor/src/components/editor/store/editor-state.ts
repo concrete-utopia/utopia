@@ -101,7 +101,7 @@ import {
   PropertyControlsInfo,
   ResolveFn,
 } from '../../custom-code/code-file'
-import { EditorModes, Mode } from '../editor-modes'
+import { convertModeToSavedMode, EditorModes, Mode, PersistedMode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
 import { DropTargetHint } from '../../navigator/navigator'
 import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
@@ -408,11 +408,13 @@ export interface EditorState {
 
 export interface StoredEditorState {
   selectedViews: Array<ElementPath>
+  mode: PersistedMode | null
 }
 
 export function storedEditorStateFromEditorState(editorState: EditorState): StoredEditorState {
   return {
     selectedViews: editorState.selectedViews,
+    mode: convertModeToSavedMode(editorState.mode),
   }
 }
 
@@ -426,6 +428,7 @@ export function mergeStoredEditorStateIntoEditorState(
     return {
       ...editorState,
       selectedViews: storedEditorState.selectedViews,
+      mode: storedEditorState.mode ?? EditorModes.selectLiteMode(),
     }
   }
 }
