@@ -161,7 +161,7 @@ const ErrorOverlayComponent = betterReactMemo(
         currentBuildErrorRecords={errorRecords}
         currentRuntimeErrorRecords={overlayErrors}
         onOpenFile={onOpenFile}
-        overlayOffset={isHiddenUnderNavigator ? LeftPaneDefaultWidth : 0}
+        overlayOffset={0}
       />
     )
   },
