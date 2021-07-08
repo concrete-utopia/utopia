@@ -23,11 +23,8 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { jsxAttributeValue } from '../../../core/shared/element-template'
+import { ElementInstanceMetadata, jsxAttributeValue } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-
-const ChromaBlack = chroma('black')
-const ChromaContrastBlack = chroma.contrast(ChromaBlack, 'white')
 
 interface TailWindOption {
   label: string
@@ -71,6 +68,54 @@ const getColorForCategory = (category: string) => {
   } else if (category === 'interaction') {
     return '#B620E0'
   } else return 'pink'
+}
+
+interface OptionAndSelectedColor {
+  primary: {
+    optionColor: chroma.Color
+    selectedColor: string
+  }
+  regular: {
+    optionColor: chroma.Color
+    selectedColor: string
+  }
+}
+
+const getOptionColors = (
+  optionAndSelectedColor: OptionAndSelectedColor,
+  isFocused: boolean,
+  isSelected: boolean,
+  isDisabled: boolean,
+  data: any,
+) => {
+  const categories = data?.categories ?? []
+  let optionColor = optionAndSelectedColor.regular.optionColor
+  let selectedColor = optionAndSelectedColor.regular.selectedColor
+  if (categories.length === 1) {
+    optionColor = optionAndSelectedColor.primary.optionColor
+    selectedColor = optionAndSelectedColor.primary.selectedColor
+  }
+
+  let color: string = optionColor.css()
+  let backgroundColor: string | undefined = undefined
+  let activeBackgroundColor: string | undefined = optionColor.alpha(0.3).css()
+  if (isFocused) {
+    backgroundColor = optionColor.alpha(0.1).css()
+  } else if (isSelected) {
+    backgroundColor = optionColor.css()
+    color = selectedColor
+    activeBackgroundColor = data.color
+  } else if (isDisabled) {
+    backgroundColor = undefined
+    activeBackgroundColor = undefined
+    color = '#ccc'
+  }
+
+  return {
+    color: color,
+    backgroundColor: backgroundColor,
+    activeBackgroundColor: activeBackgroundColor,
+  }
 }
 
 const MultiValueContainer = betterReactMemo(
@@ -175,10 +220,19 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           value: name,
         }))
 
-  const ChromaThemePrimary = React.useMemo(() => chroma(theme.primary.value), [theme.primary.value])
-  const ChromaContrastPrimary = React.useMemo(() => chroma.contrast(ChromaThemePrimary, 'white'), [
-    ChromaThemePrimary,
-  ])
+  const optionAndSelectedColor: OptionAndSelectedColor = React.useMemo(() => {
+    const themePrimary = chroma(theme.primary.value)
+    return {
+      primary: {
+        optionColor: themePrimary,
+        selectedColor: chroma.contrast(themePrimary, 'white') > 2 ? 'white' : 'black',
+      },
+      regular: {
+        optionColor: chroma('black'),
+        selectedColor: 'white',
+      },
+    }
+  }, [theme.primary.value])
   const colourStyles: StylesConfig = React.useMemo(
     () => ({
       container: (styles: React.CSSProperties) => ({
@@ -256,56 +310,31 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       }),
       option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
         // a single entry in the options list
-        const categories = data?.categories ?? []
-
-        let optionColor = ChromaBlack
-        let contrast = ChromaContrastBlack
-        if (categories.length === 1) {
-          optionColor = ChromaThemePrimary
-          contrast = ChromaContrastPrimary
-        }
-
-        let backgroundColor: string | undefined = undefined
-        if (isFocused) {
-          backgroundColor = optionColor.alpha(0.1).css()
-        } else if (isSelected) {
-          backgroundColor = optionColor.css()
-        } else if (isDisabled) {
-          backgroundColor = undefined
-        }
-
-        let activeBackgroundColor =
-          !isDisabled && (isSelected ? data.color : optionColor.alpha(0.3).css())
-
-        let color: string = optionColor.css()
-        if (isSelected) {
-          if (contrast > 2) {
-            color = 'white'
-          } else {
-            color = 'black'
-          }
-        } else if (isDisabled) {
-          color = '#ccc'
-        }
-
+        const optionColors = getOptionColors(
+          optionAndSelectedColor,
+          isFocused,
+          isSelected,
+          isDisabled,
+          data,
+        )
         return {
           minHeight: 27,
           display: 'flex',
           alignItems: 'center',
           paddingLeft: 8,
           paddingRight: 8,
-          backgroundColor: backgroundColor,
-          color: color,
+          backgroundColor: optionColors.backgroundColor,
+          color: optionColors.color,
           cursor: isDisabled ? 'not-allowed' : 'default',
 
           ':active': {
             ...(styles as any)[':active'],
-            backgroundColor: activeBackgroundColor,
+            backgroundColor: optionColors.activeBackgroundColor,
           },
         }
       },
     }),
-    [theme, ChromaThemePrimary, ChromaContrastPrimary],
+    [theme, optionAndSelectedColor],
   )
 
   return (
