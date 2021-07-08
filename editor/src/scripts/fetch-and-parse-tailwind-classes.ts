@@ -96,7 +96,13 @@ async function fetchAndParse(useSample: boolean): Promise<void> {
   console.log(`Extracting class text`)
   const extractedClasses = parseClasses(rawCSS)
   console.log(`Writing ${Object.keys(extractedClasses).length} classes to file`)
-  const targetPath = path.join(__dirname, 'tailwind-class-data.json')
+  const targetPath = path.join(
+    __dirname,
+    '..',
+    'core',
+    'third-party',
+    'tailwind-all-classnames.json',
+  )
   fs.writeFileSync(targetPath, JSON.stringify(extractedClasses, undefined, 2))
   console.log(`Done! Have a nice day :)`)
 }
