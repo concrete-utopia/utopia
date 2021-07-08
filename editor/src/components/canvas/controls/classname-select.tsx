@@ -77,18 +77,18 @@ const MultiValueContainer = betterReactMemo(
   (props: MultiValueProps<TailWindOption>) => {
     const { data } = props
     const stripes: jsx.JSX.Element[] = React.useMemo(() => {
-      const categories = (data?.categories as Array<string>) ?? []
+      const categories = data.categories ?? []
       if (categories.length > 0) {
         return categories.map((category, index) => (
           <AngledStripe
-            key={data?.label ?? index}
+            key={data.label ?? index}
             style={{ backgroundColor: getColorForCategory(category) }}
           />
         ))
       } else {
         return []
       }
-    }, [data])
+    }, [data.label, data.categories])
 
     return (
       <div
@@ -125,10 +125,8 @@ const ValueContainer = betterReactMemo(
   },
 )
 
-const filterIgnoreAccents = createFilter({ ignoreAccents: false })
-const filterOption = (option: Option, rawInput: string) => {
-  return filterIgnoreAccents(option, rawInput)
-}
+const filterOption = createFilter({ ignoreAccents: false })
+
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
@@ -176,7 +174,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           value: name,
         }))
 
-  const ChromaThemePrimary = React.useMemo(() => chroma(theme.primary.value), [theme])
+  const ChromaThemePrimary = React.useMemo(() => chroma(theme.primary.value), [theme.primary.value])
   const colourStyles: StylesConfig = React.useMemo(
     () => ({
       container: (styles: React.CSSProperties) => ({
