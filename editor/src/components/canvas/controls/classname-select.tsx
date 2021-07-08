@@ -23,7 +23,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { ElementInstanceMetadata, jsxAttributeValue } from '../../../core/shared/element-template'
+import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 interface TailWindOption {
