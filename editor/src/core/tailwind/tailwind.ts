@@ -9,6 +9,7 @@ import { packageJsonFileFromProjectContents } from '../../components/editor/stor
 import { includesDependency } from '../../components/editor/npm-dependency/npm-dependency'
 import { propOrNull } from '../shared/object-utils'
 import { memoize } from '../shared/memoize'
+import { importDefault } from '../es-modules/commonjs-interop'
 
 const PostCSSPath = '/postcss.config.js'
 const TailwindConfigPath = '/tailwind.config.js'
@@ -35,9 +36,9 @@ function postCSSIncludesTailwindPlugin(postCSSFile: ProjectFile, requireFn: Requ
   if (isTextFile(postCSSFile)) {
     try {
       const requireResult = requireFn('/', PostCSSPath)
-      if (requireResult?.default != null) {
-        return requireResult?.default?.plugins?.tailwindcss != null
-      }
+      const defaultImport = importDefault(requireResult)
+      const plugins = (defaultImport as any)?.plugins
+      return plugins?.tailwindcss != null
     } catch (e) {
       /* Do nothing */
     }
@@ -96,8 +97,9 @@ function getTailwindConfig(
   if (tailwindFile != null && isTextFile(tailwindFile)) {
     try {
       const requireResult = requireFn('/', TailwindConfigPath)
-      if (requireResult?.default != null) {
-        const twindConfig = convertTailwindToTwindConfig(requireResult.default)
+      const rawConfig = importDefault(requireResult)
+      if (rawConfig != null) {
+        const twindConfig = convertTailwindToTwindConfig(rawConfig)
         return right(twindConfig)
       } else {
         return left('Tailwind config contains no default export')
