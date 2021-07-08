@@ -51,10 +51,17 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   )
 
   const classNames = selectedElement?.props?.className
+  const splitClassNames =
+    typeof classNames === 'string'
+      ? classNames
+          .split(' ')
+          .map((s) => s.trim())
+          .filter((s) => s !== '')
+      : []
   const selectedValues =
-    classNames == null || classNames.length === 0
+    splitClassNames.length === 0
       ? null
-      : classNames.split(' ').map((name: string) => ({
+      : splitClassNames.map((name: string) => ({
           label: name,
           value: name,
         }))
@@ -63,7 +70,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     <WindowedSelect
       isMulti={true}
       options={TailWindOptions}
-      onSubmitValue={onSubmitValue}
+      onChange={onSubmitValue}
       value={selectedValues}
     />
   )
