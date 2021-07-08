@@ -39,7 +39,11 @@ import * as GitHost from 'hosted-git-info'
 import { importDefault, importStar } from '../../../core/es-modules/commonjs-interop'
 
 import * as OPI from 'object-path-immutable'
+import { forEachValue, propOrNull } from '../../../core/shared/object-utils'
 const ObjectPathImmutable: any = OPI
+
+const DependenciesKey = 'dependencies'
+const DevDependenciesKey = 'devDependencies'
 
 interface PackageNotFound {
   type: 'PACKAGE_NOT_FOUND'
@@ -257,46 +261,88 @@ export async function checkPackageVersionExists(
   }
 }
 
+function allDependenciesFromUnparsedPackageJson(
+  packageJson: string,
+): { dependencies: any; devDependencies: any } {
+  try {
+    const parsedJSON = json5.parse(packageJson)
+    if (typeof parsedJSON === 'object') {
+      return {
+        dependencies: propOrNull(DependenciesKey, parsedJSON),
+        devDependencies: propOrNull(DevDependenciesKey, parsedJSON),
+      }
+    } else {
+      return {
+        dependencies: {},
+        devDependencies: {},
+      }
+    }
+  } catch (error) {
+    return {
+      dependencies: {},
+      devDependencies: {},
+    }
+  }
+}
+
+interface DependenciesAndDevDependencies {
+  dependencies: Array<RequestedNpmDependency>
+  devDependencies: Array<RequestedNpmDependency>
+  combined: Array<RequestedNpmDependency>
+}
+
+const EmptyDependencies: DependenciesAndDevDependencies = deepFreeze({
+  dependencies: [],
+  devDependencies: [],
+  combined: [],
+})
+
+export function allDependenciesFromPackageJsonContents(
+  packageJson: string,
+): DependenciesAndDevDependencies {
+  function parseDependencies(dependenciesJSON: unknown): Array<RequestedNpmDependency> {
+    let result: Array<RequestedNpmDependency> = []
+    if (typeof dependenciesJSON === 'object' && dependenciesJSON != null) {
+      forEachValue((dependencyValue, dependencyKey) => {
+        if (typeof dependencyKey === 'string' && typeof dependencyValue === 'string') {
+          result.push(requestedNpmDependency(dependencyKey, dependencyValue))
+        }
+      }, dependenciesJSON)
+    }
+    return result
+  }
+
+  const { dependencies, devDependencies } = allDependenciesFromUnparsedPackageJson(packageJson)
+  const parsedDependencies = parseDependencies(dependencies)
+  const parsedDevDependencies = parseDependencies(devDependencies)
+
+  return {
+    dependencies: parsedDependencies,
+    devDependencies: parsedDevDependencies,
+    combined: [...parsedDependencies, ...parsedDevDependencies],
+  }
+}
+
 export function dependenciesFromPackageJsonContents(
   packageJson: string,
 ): Array<RequestedNpmDependency> {
-  try {
-    const parsedJSON = json5.parse(packageJson)
-
-    const dependenciesJSON = Utils.path<any>(['dependencies'], parsedJSON)
-    if (typeof dependenciesJSON === 'object') {
-      let result: Array<RequestedNpmDependency> = []
-      for (const dependencyKey of Object.keys(dependenciesJSON)) {
-        const dependencyValue = dependenciesJSON[dependencyKey]
-        if (typeof dependencyValue === 'string') {
-          result.push(requestedNpmDependency(dependencyKey, dependencyValue))
-        } else {
-          return []
-        }
-      }
-      return result
-    } else {
-      return []
-    }
-  } catch (error) {
-    return []
-  }
+  return allDependenciesFromPackageJsonContents(packageJson).combined
 }
 
 // Cache the dependencies when getting them from `EditorState` because lots of things need this information.
 // IMPORTANT: This caching is relied upon indirectly by monaco-wrapper.tsx
 interface PackageJsonAndDeps {
   packageJsonFile: ProjectFile
-  npmDependencies: Array<RequestedNpmDependency>
+  npmDependencies: DependenciesAndDevDependencies
 }
 
 let cachedDependencies: PackageJsonAndDeps | null = null
 
-export function dependenciesFromPackageJson(
+function maybeCachedDependenciesFromPackageJson(
   packageJsonFile: ProjectFile | null,
-): Array<RequestedNpmDependency> {
+): DependenciesAndDevDependencies {
   if (packageJsonFile == null) {
-    return []
+    return EmptyDependencies
   } else {
     if (
       cachedDependencies != null &&
@@ -305,7 +351,7 @@ export function dependenciesFromPackageJson(
       return cachedDependencies.npmDependencies
     } else {
       if (isTextFile(packageJsonFile)) {
-        const npmDependencies = dependenciesFromPackageJsonContents(
+        const npmDependencies = allDependenciesFromPackageJsonContents(
           packageJsonFile.fileContents.code,
         )
         if (npmDependencies == null) {
@@ -324,18 +370,31 @@ export function dependenciesFromPackageJson(
   }
 }
 
+export function dependenciesFromPackageJson(
+  packageJsonFile: ProjectFile | null,
+  combinedOrRegularOnly: 'combined' | 'regular-only',
+): Array<RequestedNpmDependency> {
+  const npmDependencies = maybeCachedDependenciesFromPackageJson(packageJsonFile)
+
+  if (combinedOrRegularOnly === 'combined') {
+    return npmDependencies.combined
+  } else {
+    return npmDependencies.dependencies
+  }
+}
+
 export function includesDependency(
   packageJsonFile: ProjectFile | null,
   dependencyToCheck: string,
 ): boolean {
   if (packageJsonFile != null) {
     if (isTextFile(packageJsonFile)) {
-      const parsedJSON = json5.parse(packageJsonFile.fileContents.code)
-      const fromDependencies = Utils.path<unknown>(['dependencies', dependencyToCheck], parsedJSON)
-      const fromDevDependencies = Utils.path<unknown>(
-        ['devDependencies', dependencyToCheck],
-        parsedJSON,
+      const { dependencies, devDependencies } = allDependenciesFromUnparsedPackageJson(
+        packageJsonFile.fileContents.code,
       )
+
+      const fromDependencies = propOrNull(dependencyToCheck, dependencies)
+      const fromDevDependencies = propOrNull(dependencyToCheck, devDependencies)
 
       return fromDependencies != null || fromDevDependencies != null
     }
@@ -355,7 +414,7 @@ export function dependenciesWithEditorRequirements(
   projectContents: ProjectContentTreeRoot,
 ): Array<RequestedNpmDependency> {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
-  const userDefinedDeps = dependenciesFromPackageJson(packageJsonFile)
+  const userDefinedDeps = dependenciesFromPackageJson(packageJsonFile, 'combined')
   return [...userDefinedDeps, ...EditorTypePackageDependencies]
 }
 
@@ -404,7 +463,7 @@ export function updateDependenciesInPackageJson(
 ): string {
   function updateDeps(parsedPackageJson: any): string {
     return JSON.stringify(
-      ObjectPathImmutable.set(parsedPackageJson, ['dependencies'], npmDependencies),
+      ObjectPathImmutable.set(parsedPackageJson, [DependenciesKey], npmDependencies),
       null,
       2,
     )

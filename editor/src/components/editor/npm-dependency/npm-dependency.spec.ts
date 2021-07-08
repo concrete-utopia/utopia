@@ -1,6 +1,8 @@
-import { importAlias, importDetails } from '../../../core/shared/project-file-types'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
+import { codeFile, importAlias, importDetails } from '../../../core/shared/project-file-types'
 import {
+  allDependenciesFromPackageJsonContents,
+  dependenciesFromPackageJson,
   findMatchingVersion,
   getVersionType,
   importResultFromModule,
@@ -192,5 +194,68 @@ describe('Importing from a resolved module', () => {
         icing: icingExport,
       },
     })
+  })
+})
+
+describe('Parsing the package.json', () => {
+  const packageJsonFileContents = `
+  {
+    "name": "myapp",
+    "version": "1.0.0",
+    "license": "MIT",
+    "dependencies": {
+      'dep1': '1.0.0',
+      'dep2': '2.0.0',
+      'dep3': '3.0.0'
+    },
+    "devDependencies": {
+      'devDep1': '1.0.0',
+      'devDep2': '2.0.0',
+      'devDep3': '3.0.0'
+    }
+  }
+  `
+  const packageJsonFile = codeFile(packageJsonFileContents, null)
+
+  const expectedDependencies = [
+    requestedNpmDependency('dep1', '1.0.0'),
+    requestedNpmDependency('dep2', '2.0.0'),
+    requestedNpmDependency('dep3', '3.0.0'),
+  ]
+
+  const expectedDevDependencies = [
+    requestedNpmDependency('devDep1', '1.0.0'),
+    requestedNpmDependency('devDep2', '2.0.0'),
+    requestedNpmDependency('devDep3', '3.0.0'),
+  ]
+
+  const expectedCombined = [...expectedDependencies, ...expectedDevDependencies]
+
+  it('allDependenciesFromPackageJsonContents parses all dependencies and dev dependencies from the package.json', () => {
+    const parsedDependencies = allDependenciesFromPackageJsonContents(packageJsonFileContents)
+    expect(parsedDependencies.dependencies).toEqual(expectedDependencies)
+    expect(parsedDependencies.devDependencies).toEqual(expectedDevDependencies)
+    expect(parsedDependencies.combined).toEqual(expectedCombined)
+  })
+
+  it('dependenciesFromPackageJson returns the combined dependencies if includeDevDependencies is true', () => {
+    const combinedDependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
+    expect(combinedDependencies).toEqual(expectedCombined)
+  })
+
+  it('dependenciesFromPackageJson returns the regular dependencies only if includeDevDependencies is false', () => {
+    const regularDependencies = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
+    expect(regularDependencies).toEqual(expectedDependencies)
+  })
+
+  it('dependenciesFromPackageJson returns a cached result if called again with the same unchanged file contents', () => {
+    const firstCombined = dependenciesFromPackageJson(packageJsonFile, 'combined')
+    const secondCombined = dependenciesFromPackageJson(packageJsonFile, 'combined')
+
+    const firstRegular = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
+    const secondRegular = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
+
+    expect(firstCombined === secondCombined).toBeTruthy()
+    expect(firstRegular === secondRegular).toBeTruthy()
   })
 })
