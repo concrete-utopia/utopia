@@ -372,11 +372,11 @@ function maybeCachedDependenciesFromPackageJson(
 
 export function dependenciesFromPackageJson(
   packageJsonFile: ProjectFile | null,
-  includeDevDependencies: boolean,
+  combinedOrRegularOnly: 'combined' | 'regular-only',
 ): Array<RequestedNpmDependency> {
   const npmDependencies = maybeCachedDependenciesFromPackageJson(packageJsonFile)
 
-  if (includeDevDependencies) {
+  if (combinedOrRegularOnly === 'combined') {
     return npmDependencies.combined
   } else {
     return npmDependencies.dependencies
@@ -414,7 +414,7 @@ export function dependenciesWithEditorRequirements(
   projectContents: ProjectContentTreeRoot,
 ): Array<RequestedNpmDependency> {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
-  const userDefinedDeps = dependenciesFromPackageJson(packageJsonFile, true)
+  const userDefinedDeps = dependenciesFromPackageJson(packageJsonFile, 'combined')
   return [...userDefinedDeps, ...EditorTypePackageDependencies]
 }
 

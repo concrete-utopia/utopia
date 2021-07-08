@@ -239,21 +239,21 @@ describe('Parsing the package.json', () => {
   })
 
   it('dependenciesFromPackageJson returns the combined dependencies if includeDevDependencies is true', () => {
-    const combinedDependencies = dependenciesFromPackageJson(packageJsonFile, true)
+    const combinedDependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
     expect(combinedDependencies).toEqual(expectedCombined)
   })
 
   it('dependenciesFromPackageJson returns the regular dependencies only if includeDevDependencies is false', () => {
-    const regularDependencies = dependenciesFromPackageJson(packageJsonFile, false)
+    const regularDependencies = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
     expect(regularDependencies).toEqual(expectedDependencies)
   })
 
   it('dependenciesFromPackageJson returns a cached result if called again with the same unchanged file contents', () => {
-    const firstCombined = dependenciesFromPackageJson(packageJsonFile, true)
-    const secondCombined = dependenciesFromPackageJson(packageJsonFile, true)
+    const firstCombined = dependenciesFromPackageJson(packageJsonFile, 'combined')
+    const secondCombined = dependenciesFromPackageJson(packageJsonFile, 'combined')
 
-    const firstRegular = dependenciesFromPackageJson(packageJsonFile, false)
-    const secondRegular = dependenciesFromPackageJson(packageJsonFile, false)
+    const firstRegular = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
+    const secondRegular = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
 
     expect(firstCombined === secondCombined).toBeTruthy()
     expect(firstRegular === secondRegular).toBeTruthy()
