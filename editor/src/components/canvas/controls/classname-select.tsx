@@ -24,6 +24,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
+  ElementInstanceMetadata,
   isJSXAttributeValue,
   isJSXElement,
   jsxAttributeValue,
@@ -186,33 +187,36 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
 
-  const selectedElement = useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
+  const { classNameAttribute, classNameFromProps, elementPath } = useEditorState((store) => {
+    let element: ElementInstanceMetadata | null = null
     if (store.editor.selectedViews.length === 1) {
-      return MetadataUtils.findElementByElementPath(metadata, store.editor.selectedViews[0])
-    } else {
-      return null
+      element = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+    }
+
+    let foundAttribute: ModifiableAttribute | null = null
+    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
+      const jsxAttributes = element.element.value.props
+      foundAttribute = eitherToMaybe(
+        getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])),
+      )
+    }
+
+    return {
+      elementPath: element?.elementPath,
+      classNameAttribute: foundAttribute,
+      classNameFromProps: element?.props['className'],
     }
   }, 'ClassNameSelect selectedElement')
-
-  const classNameAttribute = React.useMemo((): ModifiableAttribute | null => {
-    if (
-      selectedElement?.element != null &&
-      isRight(selectedElement?.element) &&
-      isJSXElement(selectedElement?.element.value)
-    ) {
-      const jsxAttributes = selectedElement?.element.value.props
-      return eitherToMaybe(getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])))
-    }
-    return null
-  }, [selectedElement?.element])
 
   const selectedValues = React.useMemo((): TailWindOption[] | null => {
     let classNameValue: string | null = null
     if (classNameAttribute != null && isJSXAttributeValue(classNameAttribute)) {
       classNameValue = classNameAttribute.value
     } else {
-      classNameValue = selectedElement?.props['className']
+      classNameValue = classNameFromProps
     }
 
     const splitClassNames =
@@ -229,7 +233,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           label: name,
           value: name,
         }))
-  }, [classNameAttribute, selectedElement?.props])
+  }, [classNameAttribute, classNameFromProps])
 
   const isMenuEnabled = React.useMemo(
     () => classNameAttribute != null && isJSXAttributeValue(classNameAttribute),
@@ -237,11 +241,11 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   )
   const onChange = React.useCallback(
     (newValue: Array<{ label: string; value: string }>) => {
-      if (selectedElement != null) {
+      if (elementPath != null) {
         dispatch(
           [
             EditorActions.setProp_UNSAFE(
-              selectedElement.elementPath,
+              elementPath,
               PP.create(['className']),
               jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
             ),
@@ -250,7 +254,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         )
       }
     },
-    [dispatch, selectedElement],
+    [dispatch, elementPath],
   )
 
   const optionAndSelectedColor: OptionAndSelectedColor = React.useMemo(() => {
