@@ -2064,7 +2064,7 @@ export const UPDATE_FNS = {
         const newUID =
           action.whatToWrapWith === 'default-empty-View'
             ? generateUidWithExistingComponents(editor.projectContents)
-            : action.whatToWrapWith.uid
+            : action.whatToWrapWith.element.uid
 
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
@@ -2124,7 +2124,7 @@ export const UPDATE_FNS = {
               const elementToInsert: JSXElement =
                 action.whatToWrapWith === 'default-empty-View'
                   ? defaultTransparentViewElement(newUID)
-                  : action.whatToWrapWith
+                  : action.whatToWrapWith.element
 
               const elementToInsertWithPositionAttribute = isParentFlex
                 ? setPositionAttribute(elementToInsert, 'relative')
@@ -2142,17 +2142,23 @@ export const UPDATE_FNS = {
 
               viewPath = EP.appendToPath(parentPath, newUID)
 
+              const importsToAdd: Imports =
+                action.whatToWrapWith === 'default-empty-View'
+                  ? {
+                      // the default View import
+                      ['utopia-api']: {
+                        importedWithName: null,
+                        importedFromWithin: [importAlias('View')],
+                        importedAs: null,
+                      },
+                    }
+                  : action.whatToWrapWith.importsToAdd
+
               return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
                 return {
                   ...success,
                   utopiaComponents: withTargetAdded,
-                  imports: addImport(
-                    'utopia-api',
-                    null,
-                    [importAlias('View')], // TODO BEFORE MERGE  this is not good here, we need to use the action data
-                    null,
-                    success.imports,
-                  ),
+                  imports: mergeImports(success.imports, importsToAdd),
                 }
               }, parseSuccess)
             },

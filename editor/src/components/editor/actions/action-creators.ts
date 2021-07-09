@@ -623,7 +623,7 @@ export function wrapInPicker(targets: Array<ElementPath>): WrapInPicker {
 
 export function wrapInView(
   targets: Array<ElementPath>,
-  whatToWrapWith: JSXElement | 'default-empty-View',
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-View',
 ): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',

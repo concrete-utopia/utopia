@@ -23,6 +23,15 @@ import {
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
+function useFocusOnMount<T extends HTMLElement>(): React.RefObject<T> {
+  const ref = React.useRef<T>(null)
+  React.useEffect(() => {
+    // eslint-disable-next-line no-unused-expressions
+    ref.current?.focus()
+  }, [ref])
+  return ref
+}
+
 function useGetInsertableComponents(): Array<InsertableComponentGroup> {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
@@ -93,6 +102,7 @@ export const Subdued = styled.div({
 const showInsertionOptions = false
 
 export var FloatingMenu = () => {
+  const inputRef = useFocusOnMount<HTMLInputElement>()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
@@ -115,7 +125,13 @@ export var FloatingMenu = () => {
         ),
         insertableComponent.element.children,
       )
-      dispatch([wrapInView(selectedViewsref.current, newElement), closeFloatingInsertMenu()])
+      dispatch([
+        wrapInView(selectedViewsref.current, {
+          element: newElement,
+          importsToAdd: insertableComponent.importsToAdd,
+        }),
+        closeFloatingInsertMenu(),
+      ])
     },
     [dispatch, projectContentsRef, selectedViewsref],
   )
@@ -154,6 +170,7 @@ export var FloatingMenu = () => {
         </FlexRow>
         <FlexRow style={{ minHeight: 34 }}>
           <HeadlessStringInput
+            ref={inputRef}
             style={{
               border: 'none',
               height: 22,
