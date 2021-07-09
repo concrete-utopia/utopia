@@ -50,9 +50,12 @@ export const ListItem = styled.div((props: { selected?: boolean }) => ({
   borderRadius: 2,
   paddingLeft: 4,
   paddingRight: 4,
-
-  background: props.selected ? '#007aff' : 'transparent',
-  color: props.selected ? 'white' : 'hsl(0,0%,10%)',
+  background: 'transparent',
+  color: 'hsl(0,0%,10%)', // theme
+  '&:hover': {
+    background: '#007aff',
+    color: 'white',
+  },
 }))
 
 export const Subdued = styled.div({
