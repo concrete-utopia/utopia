@@ -78,7 +78,6 @@ import '../utils/react-shim'
 import Utils from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
 import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
-import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
 import {
   UiJsxCanvasContextData,
   emptyUiJsxCanvasContextData,
