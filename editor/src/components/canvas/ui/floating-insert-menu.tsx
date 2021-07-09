@@ -22,6 +22,7 @@ import {
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { useHandleCloseOnESCOrEnter } from '../../inspector/common/inspector-utils'
 
 function useFocusOnMount<T extends HTMLElement>(): React.RefObject<T> {
   const ref = React.useRef<T>(null)
@@ -102,8 +103,17 @@ export const Subdued = styled.div({
 const showInsertionOptions = false
 
 export var FloatingMenu = () => {
-  const inputRef = useFocusOnMount<HTMLInputElement>()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
+  // TODO move onClickOutside to here as well?
+  useHandleCloseOnESCOrEnter(
+    React.useCallback(
+      (key: 'Escape' | 'Enter') => {
+        dispatch([closeFloatingInsertMenu()])
+      },
+      [dispatch],
+    ),
+  )
+  const inputRef = useFocusOnMount<HTMLInputElement>()
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
