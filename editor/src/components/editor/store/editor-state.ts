@@ -127,10 +127,7 @@ import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { notLoggedIn } from '../../../common/user'
-import {
-  dependenciesWithEditorRequirements,
-  immediatelyResolvableDependenciesWithEditorRequirements,
-} from '../npm-dependency/npm-dependency'
+import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
 import {
