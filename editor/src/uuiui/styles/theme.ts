@@ -85,6 +85,8 @@ const light = {
   ...lightPrimitives,
   ...lightErrorStates,
 
+  textColor: base.almostBlack,
+
   // big sections
   leftMenuBackground: lightPrimitives.neutralBackground,
   leftPaneBackground: lightPrimitives.neutralBackground,
@@ -223,6 +225,8 @@ const dark: typeof light = {
   ...darkBase,
   ...darkPrimitives,
   ...darkErrorStates,
+
+  textColor: base.white,
 
   // big sections
   leftMenuBackground: darkPrimitives.neutralBackground,
