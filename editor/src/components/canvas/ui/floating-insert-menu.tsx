@@ -1,15 +1,27 @@
+/** @jsx jsx */
 import * as React from 'react'
+import { jsx } from '@emotion/react'
+
 import { betterReactMemo } from '../../../uuiui-deps'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import styled from '@emotion/styled'
-import { FlexColumn, FlexRow, HeadlessStringInput } from '../../../uuiui'
+import { FlexColumn, FlexRow, HeadlessStringInput, OnClickOutsideHOC } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
   getComponentGroups,
   getInsertableGroupLabel,
+  InsertableComponent,
   InsertableComponentGroup,
 } from '../../shared/project-components'
+import { closeFloatingInsertMenu, wrapInView } from '../../editor/actions/action-creators'
+import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import {
+  jsxAttributeValue,
+  jsxElement,
+  setJSXAttributesAttribute,
+} from '../../../core/shared/element-template'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 function useGetInsertableComponents(): Array<InsertableComponentGroup> {
   const dependencies = usePossiblyResolvedPackageDependencies()
@@ -43,20 +55,36 @@ function useGetInsertableComponents(): Array<InsertableComponentGroup> {
   return insertableComponents
 }
 
-export const ListItem = styled.div((props: { selected?: boolean }) => ({
-  flex: '0 0 25px',
-  display: 'flex',
-  alignItems: 'center',
-  borderRadius: 2,
-  paddingLeft: 4,
-  paddingRight: 4,
-  background: 'transparent',
-  color: 'hsl(0,0%,10%)', // theme
-  '&:hover': {
-    background: '#007aff',
-    color: 'white',
-  },
-}))
+export const ListItem: React.FunctionComponent<{
+  selected?: boolean
+  insertableComponent: InsertableComponent
+  onClick: (insertableComponent: InsertableComponent) => void
+}> = ({ onClick, insertableComponent, ...props }) => {
+  const handleClick = React.useCallback(() => {
+    onClick(insertableComponent)
+  }, [insertableComponent, onClick])
+
+  return (
+    <div
+      onClick={handleClick}
+      css={{
+        flex: '0 0 25px',
+        display: 'flex',
+        alignItems: 'center',
+        borderRadius: 2,
+        paddingLeft: 4,
+        paddingRight: 4,
+        background: 'transparent',
+        color: 'hsl(0,0%,10%)', // theme
+        '&:hover': {
+          background: '#007aff',
+          color: 'white',
+        },
+      }}
+      {...props}
+    />
+  )
+}
 
 export const Subdued = styled.div({
   color: 'hsl(0,0%,70%)',
@@ -65,11 +93,32 @@ export const Subdued = styled.div({
 const showInsertionOptions = false
 
 export var FloatingMenu = () => {
+  const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
   const [filterString, setFilterString] = React.useState('')
   const onFilterInput = React.useCallback((event: React.FormEvent<HTMLInputElement>) => {
     setFilterString(event.currentTarget.value)
   }, [])
+
+  const onClickElement = React.useCallback(
+    (insertableComponent: InsertableComponent) => {
+      const newUID = generateUidWithExistingComponents(projectContentsRef.current)
+      const newElement = jsxElement(
+        insertableComponent.element.name,
+        newUID,
+        setJSXAttributesAttribute(
+          insertableComponent.element.props,
+          'data-uid',
+          jsxAttributeValue(newUID, emptyComments),
+        ),
+        insertableComponent.element.children,
+      )
+      dispatch([wrapInView(selectedViewsref.current, newElement), closeFloatingInsertMenu()])
+    },
+    [dispatch, projectContentsRef, selectedViewsref],
+  )
 
   return (
     <div
@@ -140,7 +189,13 @@ export var FloatingMenu = () => {
                   <Subdued>{groupLabel}</Subdued>
                   {filteredComponents.map((insertableComponent) => {
                     return (
-                      <ListItem key={insertableComponent.name}>{insertableComponent.name}</ListItem>
+                      <ListItem
+                        key={insertableComponent.name}
+                        onClick={onClickElement}
+                        insertableComponent={insertableComponent}
+                      >
+                        {insertableComponent.name}
+                      </ListItem>
                     )
                   })}
                 </React.Fragment>
@@ -188,22 +243,29 @@ interface FloatingInsertMenuProps {}
 export const FloatingInsertMenu = betterReactMemo(
   'FloatingInsertMenu',
   (props: FloatingInsertMenuProps) => {
+    const dispatch = useEditorState((store) => store.dispatch, 'FloatingInsertMenu dispatch')
     const isVisible = useEditorState(
       (store) => store.editor.floatingInsertMenu.insertMenuOpen,
       'FloatingInsertMenu insertMenuOpen',
     )
+    const onClickOutside = React.useCallback(() => {
+      dispatch([closeFloatingInsertMenu()])
+    }, [dispatch])
+
     return isVisible ? (
-      <div
-        style={{
-          pointerEvents: 'initial',
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: 'translateX(-50%) translateY(-50%)',
-        }}
-      >
-        <FloatingMenu />
-      </div>
+      <OnClickOutsideHOC onClickOutside={onClickOutside}>
+        <div
+          style={{
+            pointerEvents: 'initial',
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: 'translateX(-50%) translateY(-50%)',
+          }}
+        >
+          <FloatingMenu />
+        </div>
+      </OnClickOutsideHOC>
     ) : null
   },
 )

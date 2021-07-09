@@ -552,7 +552,7 @@ export function handleKeyDown(
           : []
       },
       [WRAP_ELEMENT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.wrapInGroup(editor.selectedViews)] : []
+        return isSelectMode(editor.mode) ? [EditorActions.wrapInPicker(editor.selectedViews)] : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]

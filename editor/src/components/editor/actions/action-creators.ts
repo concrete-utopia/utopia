@@ -188,6 +188,7 @@ import type {
   FocusFormulaBar,
   UpdateFormulaBarMode,
   WrapInPicker,
+  CloseFloatingInsertMenu,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -594,7 +595,7 @@ export function resetPins(target: ElementPath): ResetPins {
 }
 
 export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
-  return wrapInView(targets)
+  return wrapInView(targets, 'default-empty-View')
   // FIXME: Make Groups Great Again.
   //return {
   //  action: 'WRAP_IN_VIEW',
@@ -620,11 +621,21 @@ export function wrapInPicker(targets: Array<ElementPath>): WrapInPicker {
   }
 }
 
-export function wrapInView(targets: Array<ElementPath>): WrapInView {
+export function wrapInView(
+  targets: Array<ElementPath>,
+  whatToWrapWith: JSXElement | 'default-empty-View',
+): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
     targets: targets,
     layoutSystem: LayoutSystem.PinSystem,
+    whatToWrapWith: whatToWrapWith,
+  }
+}
+
+export function closeFloatingInsertMenu(): CloseFloatingInsertMenu {
+  return {
+    action: 'CLOSE_FLOATING_INSERT_MENU',
   }
 }
 

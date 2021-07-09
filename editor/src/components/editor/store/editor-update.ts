@@ -303,6 +303,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.FOCUS_FORMULA_BAR(action, state)
     case 'UPDATE_FORMULA_BAR_MODE':
       return UPDATE_FNS.UPDATE_FORMULA_BAR_MODE(action, state)
+    case 'CLOSE_FLOATING_INSERT_MENU':
+      return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
     default:
       return state
   }

@@ -849,7 +849,7 @@ describe('moveTemplate', () => {
     const targets = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
-    await renderResult.dispatch([wrapInView(targets)], true)
+    await renderResult.dispatch([wrapInView(targets, 'default-empty-View')], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -903,7 +903,7 @@ describe('moveTemplate', () => {
     ]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
-    await renderResult.dispatch([wrapInView(targets)], true)
+    await renderResult.dispatch([wrapInView(targets, 'default-empty-View')], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -960,7 +960,7 @@ describe('moveTemplate', () => {
     ]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
-    await renderResult.dispatch([wrapInView(targets)], true)
+    await renderResult.dispatch([wrapInView(targets, 'default-empty-View')], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -1031,7 +1031,7 @@ describe('moveTemplate', () => {
 
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
-    await renderResult.dispatch([wrapInView([targetPath])], true)
+    await renderResult.dispatch([wrapInView([targetPath], 'default-empty-View')], true)
     expect(getPrintedUiJsCode(renderResult.getEditorState(), appFilePath)).toEqual(
       Prettier.format(
         `

@@ -117,6 +117,7 @@ import {
   eitherToMaybe,
   mapEither,
   defaultEither,
+  forceRight,
 } from '../../../core/shared/either'
 import type {
   RequireFn,
@@ -356,6 +357,7 @@ import {
   FocusFormulaBar,
   UpdateFormulaBarMode,
   WrapInPicker,
+  CloseFloatingInsertMenu,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -2059,7 +2061,10 @@ export const UPDATE_FNS = {
           return editor
         }
 
-        const newUID = generateUidWithExistingComponents(editor.projectContents)
+        const newUID =
+          action.whatToWrapWith === 'default-empty-View'
+            ? generateUidWithExistingComponents(editor.projectContents)
+            : action.whatToWrapWith.uid
 
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
@@ -2089,19 +2094,48 @@ export const UPDATE_FNS = {
             uiFileKey,
             parentPath,
           )
+
+          const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+          const isParentFlex =
+            parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
+
+          function setPositionAttribute(
+            elementToWrapWith: JSXElement,
+            position: 'absolute' | 'relative',
+          ): JSXElement {
+            return {
+              ...elementToWrapWith,
+              props: forceRight(
+                setJSXValueAtPath(
+                  elementToWrapWith.props,
+                  PP.create(['style', 'position']), // todo make it optional
+                  jsxAttributeValue(position, emptyComments),
+                ),
+              ),
+            }
+          }
+
           const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
           const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
             targetSuccess.filePath,
             editor,
             (parseSuccess) => {
-              const elementToInsert: JSXElement = defaultTransparentViewElement(newUID)
+              const elementToInsert: JSXElement =
+                action.whatToWrapWith === 'default-empty-View'
+                  ? defaultTransparentViewElement(newUID)
+                  : action.whatToWrapWith
+
+              const elementToInsertWithPositionAttribute = isParentFlex
+                ? setPositionAttribute(elementToInsert, 'relative')
+                : setPositionAttribute(elementToInsert, 'absolute')
+
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
               const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
                 editor.projectContents,
                 editor.canvas.openFile?.filename ?? null,
                 parentPath,
-                elementToInsert,
+                elementToInsertWithPositionAttribute,
                 utopiaJSXComponents,
                 null,
               )
@@ -2115,7 +2149,7 @@ export const UPDATE_FNS = {
                   imports: addImport(
                     'utopia-api',
                     null,
-                    [importAlias('View')],
+                    [importAlias('View')], // TODO BEFORE MERGE  this is not good here, we need to use the action data
                     null,
                     success.imports,
                   ),
@@ -2128,9 +2162,6 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
-          const isParentFlex =
-            parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
           const frameChanges: Array<PinOrFlexFrameChange> = [
             getFrameChange(viewPath, boundingBox, isParentFlex),
           ]
@@ -2179,6 +2210,18 @@ export const UPDATE_FNS = {
       floatingInsertMenu: {
         ...editor.floatingInsertMenu,
         insertMenuOpen: true,
+      },
+    }
+  },
+  CLOSE_FLOATING_INSERT_MENU: (
+    action: CloseFloatingInsertMenu,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      floatingInsertMenu: {
+        ...editor.floatingInsertMenu,
+        insertMenuOpen: false,
       },
     }
   },

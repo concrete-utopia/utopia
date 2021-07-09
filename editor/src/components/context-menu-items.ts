@@ -231,7 +231,10 @@ export const wrapInView: ContextMenuItem<CanvasData> = {
   shortcut: '⌘⏎',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.wrapInView(data.selectedViews)], 'everyone')
+    requireDispatch(dispatch)(
+      [EditorActions.wrapInView(data.selectedViews, 'default-empty-View')],
+      'everyone',
+    )
   },
 }
 

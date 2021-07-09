@@ -94,6 +94,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FOCUS_FORMULA_BAR':
     case 'UPDATE_FORMULA_BAR_MODE':
     case 'WRAP_IN_PICKER':
+    case 'CLOSE_FLOATING_INSERT_MENU':
       return true
 
     case 'NEW':

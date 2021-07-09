@@ -415,12 +415,17 @@ export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: ElementPath[]
   layoutSystem: LayoutSystem
+  whatToWrapWith: JSXElement | 'default-empty-View'
 }
 
 export interface WrapInPicker {
   action: 'WRAP_IN_PICKER'
   targets: ElementPath[]
   layoutSystem: LayoutSystem
+}
+
+export interface CloseFloatingInsertMenu {
+  action: 'CLOSE_FLOATING_INSERT_MENU'
 }
 
 export interface UnwrapGroupOrView {
@@ -905,6 +910,7 @@ export type EditorAction =
   | ResetPins
   | WrapInView
   | WrapInPicker
+  | CloseFloatingInsertMenu
   | UnwrapGroupOrView
   | SetCanvasAnimationsEnabled
   | SetNavigatorRenamingTarget
