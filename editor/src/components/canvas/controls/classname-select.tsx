@@ -41,7 +41,7 @@ const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
   (props: IndicatorProps<TailWindOption, true>) => (
     <components.DropdownIndicator {...props}>
-      <span> ↓ </span>
+      <span style={{ lineHeight: '20px' }}> ↓ </span>
     </components.DropdownIndicator>
   ),
 )
@@ -339,7 +339,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   return (
     <div
       css={{
-        backgroundColor: theme.bg1.value,
         height: 22,
         borderRadius: 3,
         position: 'relative',
