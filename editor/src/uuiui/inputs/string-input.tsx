@@ -145,11 +145,14 @@ const LabelBelow = styled.label({
   display: 'block',
 })
 
-export type HeadlessStringInputProps = React.InputHTMLAttributes<HTMLInputElement>
+export type HeadlessStringInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  onSubmitValue?: (value: string) => void
+  onEscape?: () => void
+}
 
 export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessStringInputProps>(
   (props, propsRef) => {
-    const { disabled, onKeyDown, onFocus } = props
+    const { disabled, onKeyDown, onFocus, onSubmitValue, onEscape } = props
 
     const ref = React.useRef<HTMLInputElement>(null)
 
@@ -163,9 +166,17 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
           e.stopPropagation()
           // eslint-disable-next-line no-unused-expressions
           ref.current?.blur()
+          if (e.key === 'Enter') {
+            // eslint-disable-next-line no-unused-expressions
+            onSubmitValue?.(e.currentTarget.value)
+          }
+          if (e.key === 'Escape') {
+            // eslint-disable-next-line no-unused-expressions
+            onEscape?.()
+          }
         }
       },
-      [onKeyDown, ref],
+      [onKeyDown, ref, onSubmitValue, onEscape],
     )
 
     const handleOnFocus = React.useCallback(
