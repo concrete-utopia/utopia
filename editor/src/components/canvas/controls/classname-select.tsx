@@ -23,8 +23,17 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { jsxAttributeValue } from '../../../core/shared/element-template'
+import {
+  isJSXAttributeValue,
+  isJSXElement,
+  jsxAttributeValue,
+} from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { eitherToMaybe, isRight } from '../../../core/shared/either'
+import {
+  getModifiableJSXAttributeAtPath,
+  ModifiableAttribute,
+} from '../../../core/shared/jsx-attributes'
 
 interface TailWindOption {
   label: string
@@ -186,6 +195,46 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     }
   }, 'ClassNameSelect selectedElement')
 
+  const classNameAttribute = React.useMemo((): ModifiableAttribute | null => {
+    if (
+      selectedElement?.element != null &&
+      isRight(selectedElement?.element) &&
+      isJSXElement(selectedElement?.element.value)
+    ) {
+      const jsxAttributes = selectedElement?.element.value.props
+      return eitherToMaybe(getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])))
+    }
+    return null
+  }, [selectedElement?.element])
+
+  const selectedValues = React.useMemo((): TailWindOption[] | null => {
+    let classNameValue: string | null = null
+    if (classNameAttribute != null && isJSXAttributeValue(classNameAttribute)) {
+      classNameValue = classNameAttribute.value
+    } else {
+      classNameValue = selectedElement?.props['className']
+    }
+
+    const splitClassNames =
+      typeof classNameValue === 'string'
+        ? classNameValue
+            .split(' ')
+            .map((s) => s.trim())
+            .filter((s) => s !== '')
+        : []
+
+    return splitClassNames.length === 0
+      ? null
+      : splitClassNames.map((name: string) => ({
+          label: name,
+          value: name,
+        }))
+  }, [classNameAttribute, selectedElement?.props])
+
+  const isMenuEnabled = React.useMemo(
+    () => classNameAttribute != null && isJSXAttributeValue(classNameAttribute),
+    [classNameAttribute],
+  )
   const onChange = React.useCallback(
     (newValue: Array<{ label: string; value: string }>) => {
       if (selectedElement != null) {
@@ -203,22 +252,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     },
     [dispatch, selectedElement],
   )
-
-  const classNames = selectedElement?.props?.className
-  const splitClassNames =
-    typeof classNames === 'string'
-      ? classNames
-          .split(' ')
-          .map((s) => s.trim())
-          .filter((s) => s !== '')
-      : []
-  const selectedValues =
-    splitClassNames.length === 0
-      ? null
-      : splitClassNames.map((name: string) => ({
-          label: name,
-          value: name,
-        }))
 
   const optionAndSelectedColor: OptionAndSelectedColor = React.useMemo(() => {
     const themePrimary = chroma(theme.primary.value)
@@ -356,6 +389,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         onChange={onChange}
         value={selectedValues}
         isMulti={true}
+        isDisabled={!isMenuEnabled}
         closeMenuOnSelect={false}
         styles={colourStyles}
         components={{
