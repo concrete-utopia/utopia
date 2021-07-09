@@ -1,7 +1,10 @@
+import { PropertyControls } from 'utopia-api'
 import {
   defaultPropertiesForComponent,
   defaultPropertiesForComponentInFile,
+  parsedPropertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
+import { flatMapEither, foldEither, right } from '../../core/shared/either'
 import {
   JSXAttributes,
   jsxAttributesEntry,
@@ -31,21 +34,26 @@ import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 import { getExportedComponentImports } from '../editor/export-utils'
 
+export type StylePropOption = 'do-not-add' | 'add-size'
+
 export interface InsertableComponent {
   importsToAdd: Imports
   element: JSXElementWithoutUID
   name: string
+  stylePropOptions: Array<StylePropOption>
 }
 
 export function insertableComponent(
   importsToAdd: Imports,
   element: JSXElementWithoutUID,
   name: string,
+  stylePropOptions: Array<StylePropOption>,
 ): InsertableComponent {
   return {
     importsToAdd: importsToAdd,
     element: element,
     name: name,
+    stylePropOptions: stylePropOptions,
   }
 }
 
@@ -164,6 +172,19 @@ export function getDependencyStatus(
 const basicHTMLEntities = ['div', 'span', 'button', 'input']
 const emptyImportsValue = emptyImports()
 
+const doNotAddStyleProp: Array<StylePropOption> = ['do-not-add']
+const addSizeAndNotStyleProp: Array<StylePropOption> = ['do-not-add', 'add-size']
+
+export function stylePropOptionsForPropertyControls(
+  propertyControls: PropertyControls,
+): Array<StylePropOption> {
+  if ('style' in propertyControls) {
+    return addSizeAndNotStyleProp
+  } else {
+    return doNotAddStyleProp
+  }
+}
+
 export function getComponentGroups(
   packageStatus: PackageStatusMap,
   propertyControlsInfo: PropertyControlsInfo,
@@ -182,10 +203,39 @@ export function getComponentGroups(
       )
       if (possibleExportedComponents != null) {
         const insertableComponents = possibleExportedComponents.map((exportedComponent) => {
-          const defaultProps = defaultPropertiesForComponentInFile(
+          const pathWithoutExtension = dropFileExtension(fullPath)
+          const { defaultProps, parsedControls } = defaultPropertiesForComponentInFile(
             exportedComponent.listingName,
-            dropFileExtension(fullPath),
+            pathWithoutExtension,
             propertyControlsInfo,
+          )
+
+          // Drill down into the parsed controls to see if this has an appropriate style object entry.
+          const stylePropOptions: Array<StylePropOption> = foldEither(
+            () => {
+              return doNotAddStyleProp
+            },
+            (propertyControls) => {
+              if ('style' in propertyControls) {
+                return foldEither(
+                  () => {
+                    return doNotAddStyleProp
+                  },
+                  (controlDescription) => {
+                    switch (controlDescription.type) {
+                      case 'styleobject':
+                        return addSizeAndNotStyleProp
+                      default:
+                        return doNotAddStyleProp
+                    }
+                  },
+                  propertyControls['style'],
+                )
+              } else {
+                return doNotAddStyleProp
+              }
+            },
+            parsedControls,
           )
           let attributes: JSXAttributes = []
           for (const key of Object.keys(defaultProps)) {
@@ -201,6 +251,7 @@ export function getComponentGroups(
             exportedComponent.importsToAdd,
             jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
             exportedComponent.listingName,
+            stylePropOptions,
           )
         })
         result.push(
@@ -222,6 +273,7 @@ export function getComponentGroups(
           addImport('react', null, [], 'React', emptyImportsValue),
           jsxElementWithoutUID(basicHTMLEntity, [], []),
           basicHTMLEntity,
+          addSizeAndNotStyleProp,
         )
       }),
     ),
@@ -239,9 +291,25 @@ export function getComponentGroups(
           'loaded',
         )
         const components = dependencyStatus === 'loaded' ? componentDescriptor.components : []
-        const insertableComponents = components.map((component) =>
-          insertableComponent(component.importsToAdd, component.element, component.name),
-        )
+        const insertableComponents = components.map((component) => {
+          let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
+          // Drill down to see if this dependency component has a style object entry
+          // against style.
+          if (component.propertyControls != null) {
+            if ('style' in component.propertyControls) {
+              const styleControls = component.propertyControls['style']
+              if (styleControls?.type === 'styleobject') {
+                stylePropOptions = addSizeAndNotStyleProp
+              }
+            }
+          }
+          return insertableComponent(
+            component.importsToAdd,
+            component.element,
+            component.name,
+            stylePropOptions,
+          )
+        })
         result.push(
           insertableComponentGroup(
             insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),

@@ -83,6 +83,7 @@ import {
   getModifiableJSXAttributeAtPath,
   unsetJSXValuesAtPaths,
   setJSXValuesAtPaths,
+  ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import {
@@ -117,6 +118,7 @@ import {
   eitherToMaybe,
   mapEither,
   defaultEither,
+  traverseEither,
 } from '../../../core/shared/either'
 import type {
   RequireFn,
@@ -4363,10 +4365,29 @@ export const UPDATE_FNS = {
         (success) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
+
+          // Potentially add in some default position and sizing.
+          let props = action.toInsert.element.props
+          if (action.styleProps === 'add-size') {
+            const sizesToSet: Array<ValueAtPath> = [
+              { path: PP.create(['style', 'width']), value: jsxAttributeValue(100, emptyComments) },
+              {
+                path: PP.create(['style', 'height']),
+                value: jsxAttributeValue(100, emptyComments),
+              },
+            ]
+            const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
+            if (isRight(withSizeUpdates)) {
+              props = withSizeUpdates.value
+            } else {
+              console.error('Unable to set sizes on element.')
+              return success
+            }
+          }
           const element = jsxElement(
             action.toInsert.element.name,
             newUID,
-            action.toInsert.element.props,
+            props,
             action.toInsert.element.children,
           )
 

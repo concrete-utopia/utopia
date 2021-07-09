@@ -17,6 +17,9 @@ Array [
         },
         "importsToAdd": Object {},
         "name": "App",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
       },
     ],
     "source": Object {
@@ -52,6 +55,10 @@ Array [
           },
         },
         "name": "div",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -72,6 +79,10 @@ Array [
           },
         },
         "name": "span",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -92,6 +103,10 @@ Array [
           },
         },
         "name": "button",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -112,6 +127,10 @@ Array [
           },
         },
         "name": "input",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
     ],
     "source": Object {
@@ -149,6 +168,10 @@ Array [
           },
         },
         "name": "Date Picker",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -159,7 +182,136 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "disabled",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "type",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "default",
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "shape",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "default",
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "ghost",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "block",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "danger",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "loading",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "target",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "button",
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -179,6 +331,10 @@ Array [
           },
         },
         "name": "Button",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -209,6 +365,10 @@ Array [
           },
         },
         "name": "Number Input",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -219,7 +379,56 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "align",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "top",
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "gutter",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "justify",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "center",
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -239,6 +448,10 @@ Array [
           },
         },
         "name": "Row",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -249,7 +462,184 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "flex",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 1,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "offset",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "order",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "pull",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "push",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "xs",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "sm",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "md",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "lg",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "xl",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "xxl",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -269,6 +659,10 @@ Array [
           },
         },
         "name": "Col",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -279,7 +673,56 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "align",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "center",
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "direction",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "vertical",
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "size",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "middle",
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -299,6 +742,10 @@ Array [
           },
         },
         "name": "Space",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -309,7 +756,152 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "forceSubMenuRender",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "inlineCollapsed",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "inlineIndent",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 24,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "mode",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "inline",
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "multiple",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "selectable",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": true,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "subMenuCloseDelay",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0.1,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "subMenuOpenDelay",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": 0,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "theme",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "light",
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -329,6 +921,10 @@ Array [
           },
         },
         "name": "Menu",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -341,7 +937,40 @@ Array [
               ],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "disabled",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "danger",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -361,6 +990,10 @@ Array [
           },
         },
         "name": "Menu Item",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -373,7 +1006,24 @@ Array [
               ],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "disabled",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -393,6 +1043,10 @@ Array [
           },
         },
         "name": "Menu SubMenu",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -425,6 +1079,10 @@ Array [
           },
         },
         "name": "Menu ItemGroup",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
       Object {
         "element": Object {
@@ -437,7 +1095,168 @@ Array [
               ],
             },
           },
-          "props": Array [],
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "code",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "copyable",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "delete",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "disabled",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "editable",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "ellipsis",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "mark",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "keyboard",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "underline",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "strong",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": false,
+              },
+            },
+          ],
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -457,6 +1276,10 @@ Array [
           },
         },
         "name": "Typography Text",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
       },
     ],
     "source": Object {
