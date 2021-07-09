@@ -78,7 +78,7 @@ export var FloatingMenu = () => {
         height: '100%',
         backgroundColor: '#fefefe',
         position: 'relative',
-        padding: 20,
+        margin: 20,
         fontSize: 11,
       }}
     >
