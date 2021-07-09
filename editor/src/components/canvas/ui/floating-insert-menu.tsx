@@ -3,7 +3,7 @@ import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState } from '../../editor/store/store-hook'
 
 import styled from '@emotion/styled'
-import { FlexColumn, FlexRow } from '../../../uuiui'
+import { FlexColumn, FlexRow, HeadlessStringInput } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
   getComponentGroups,
@@ -59,8 +59,14 @@ export const Subdued = styled.div({
   color: 'hsl(0,0%,70%)',
 })
 
+const showInsertionOptions = false
+
 export var FloatingMenu = () => {
   const insertableComponents = useGetInsertableComponents()
+  const [filterString, setFilterString] = React.useState('')
+  const onFilterInput = React.useCallback((event: React.FormEvent<HTMLInputElement>) => {
+    setFilterString(event.currentTarget.value)
+  }, [])
 
   return (
     <div
@@ -86,15 +92,16 @@ export var FloatingMenu = () => {
       >
         <FlexRow
           style={{
-            height: 34,
+            paddingLeft: 8,
+            minHeight: 34,
             color: '#007aff',
             fontWeight: 600,
           }}
         >
           Insert
         </FlexRow>
-        <FlexRow style={{ height: 34 }}>
-          <input
+        <FlexRow style={{ minHeight: 34 }}>
+          <HeadlessStringInput
             style={{
               border: 'none',
               height: 22,
@@ -102,6 +109,7 @@ export var FloatingMenu = () => {
               background: 'hsl(0,0%,96%)',
               flexGrow: 1,
             }}
+            onInput={onFilterInput}
             placeholder='Type to filter'
           />
         </FlexRow>
@@ -116,13 +124,18 @@ export var FloatingMenu = () => {
         >
           {insertableComponents.map((componentGroup) => {
             const groupLabel = getInsertableGroupLabel(componentGroup.source)
-            if (componentGroup.insertableComponents.length == 0) {
+            const filterStringLowercase = filterString.toLowerCase()
+            const filteredComponents = componentGroup.insertableComponents.filter(
+              (insertableComponent) =>
+                insertableComponent.name.toLowerCase().startsWith(filterStringLowercase),
+            )
+            if (filteredComponents.length == 0) {
               return null
             } else {
               return (
                 <React.Fragment key={groupLabel}>
                   <Subdued>{groupLabel}</Subdued>
-                  {componentGroup.insertableComponents.map((insertableComponent) => {
+                  {filteredComponents.map((insertableComponent) => {
                     return (
                       <ListItem key={insertableComponent.name}>{insertableComponent.name}</ListItem>
                     )
@@ -132,33 +145,36 @@ export var FloatingMenu = () => {
             }
           })}
         </FlexColumn>
-        <FlexColumn
-          style={{
-            borderTop: '1px solid hsl(0,0%,93%)',
-            minHeight: 48,
-            paddingTop: 4,
-            paddingLeft: 8,
-            paddingRight: 8,
-          }}
-        >
-          <Subdued
+        {showInsertionOptions ? (
+          <FlexColumn
             style={{
-              lineHeight: 1.3,
-              fontFamily: 'Inter',
-              fontSize: 10,
+              borderTop: '1px solid hsl(0,0%,93%)',
+              minHeight: 48,
+              paddingTop: 4,
+              paddingLeft: 8,
+              paddingRight: 8,
             }}
           >
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
-          </Subdued>
-          <FlexRow style={{ height: 34, gap: 8, padding: 0 }}>
-            <input type='checkbox' />
-            <label htmlFor='withContent'>Add content</label>
-          </FlexRow>
-          <FlexRow style={{ height: 34, gap: 8, padding: 0 }}>
-            <input type='checkbox' />
-            <label htmlFor='withContent'>Fixed dimensions</label>
-          </FlexRow>
-        </FlexColumn>
+            <Subdued
+              style={{
+                lineHeight: 1.3,
+                fontFamily: 'Inter',
+                fontSize: 10,
+              }}
+            >
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent:
+              'center'
+            </Subdued>
+            <FlexRow style={{ height: 34, gap: 8, padding: 0 }}>
+              <input type='checkbox' />
+              <label htmlFor='withContent'>Add content</label>
+            </FlexRow>
+            <FlexRow style={{ height: 34, gap: 8, padding: 0 }}>
+              <input type='checkbox' />
+              <label htmlFor='withContent'>Fixed dimensions</label>
+            </FlexRow>
+          </FlexColumn>
+        ) : null}
       </FlexColumn>
     </div>
   )
