@@ -4,7 +4,7 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
-import TailwindClasses from '../../../core/third-party/tailwind-all-classnames.json'
+import { AllTailwindClasses } from '../../../core/third-party/tailwind-defaults'
 import WindowedSelect, {
   components,
   createFilter,
@@ -32,7 +32,7 @@ interface TailWindOption {
   categories?: string[]
 }
 
-const TailWindOptions = Object.keys(TailwindClasses).map((className, index) => ({
+const TailWindOptions = AllTailwindClasses.map((className, index) => ({
   label: className,
   value: className,
 }))
