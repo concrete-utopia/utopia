@@ -13,6 +13,7 @@ import {
   getInsertableGroupLabel,
   InsertableComponent,
   InsertableComponentGroup,
+  InsertableComponentGroupType,
 } from '../../shared/project-components'
 import { closeFloatingInsertMenu, wrapInView } from '../../editor/actions/action-creators'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
@@ -33,7 +34,32 @@ function useFocusOnMount<T extends HTMLElement>(): React.RefObject<T> {
   return ref
 }
 
-function useGetInsertableComponents(): Array<InsertableComponentGroup> {
+type InsertableComponentWithOptionalGroupHeader = InsertableComponent & {
+  source?: InsertableComponentGroupType
+}
+
+type InsertableComponentFlatList = Array<InsertableComponentWithOptionalGroupHeader>
+
+function convertInsertableComponentsToFlatList(
+  insertableComponents: InsertableComponentGroup[],
+): InsertableComponentFlatList {
+  return insertableComponents.flatMap((componentGroup) => {
+    return componentGroup.insertableComponents.map(
+      (insertableComponent, index): InsertableComponentWithOptionalGroupHeader => {
+        if (index === 0) {
+          return {
+            ...insertableComponent,
+            source: componentGroup.source,
+          }
+        } else {
+          return insertableComponent
+        }
+      },
+    )
+  })
+}
+
+function useGetInsertableComponents(): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
@@ -52,12 +78,14 @@ function useGetInsertableComponents(): Array<InsertableComponentGroup> {
     if (fullPath == null) {
       return []
     } else {
-      return getComponentGroups(
-        packageStatus,
-        propertyControlsInfo,
-        projectContents,
-        dependencies,
-        fullPath,
+      return convertInsertableComponentsToFlatList(
+        getComponentGroups(
+          packageStatus,
+          propertyControlsInfo,
+          projectContents,
+          dependencies,
+          fullPath,
+        ),
       )
     }
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath])
@@ -201,33 +229,21 @@ export var FloatingMenu = () => {
             flexGrow: 1,
           }}
         >
-          {insertableComponents.map((componentGroup) => {
-            const groupLabel = getInsertableGroupLabel(componentGroup.source)
-            const filterStringLowercase = filterString.toLowerCase()
-            const filteredComponents = componentGroup.insertableComponents.filter(
-              (insertableComponent) =>
-                insertableComponent.name.toLowerCase().startsWith(filterStringLowercase),
+          {insertableComponents.map((insertableComponent, index) => {
+            return (
+              <React.Fragment key={insertableComponent.name}>
+                {insertableComponent.source != null ? (
+                  <Subdued>{getInsertableGroupLabel(insertableComponent.source)}</Subdued>
+                ) : null}
+                <ListItem
+                  key={insertableComponent.name}
+                  onClick={onClickElement}
+                  insertableComponent={insertableComponent}
+                >
+                  {insertableComponent.name}
+                </ListItem>
+              </React.Fragment>
             )
-            if (filteredComponents.length == 0) {
-              return null
-            } else {
-              return (
-                <React.Fragment key={groupLabel}>
-                  <Subdued>{groupLabel}</Subdued>
-                  {filteredComponents.map((insertableComponent) => {
-                    return (
-                      <ListItem
-                        key={insertableComponent.name}
-                        onClick={onClickElement}
-                        insertableComponent={insertableComponent}
-                      >
-                        {insertableComponent.name}
-                      </ListItem>
-                    )
-                  })}
-                </React.Fragment>
-              )
-            }
           })}
         </FlexColumn>
         {showInsertionOptions ? (
