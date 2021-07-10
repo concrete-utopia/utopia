@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react'
 import fastDeepEquals from 'fast-deep-equal'
 import * as React from 'react'
 import {
@@ -407,7 +408,9 @@ function setColor(
 }
 
 export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = (props) => {
-  const colorTheme = useColorTheme()
+  const theme = useTheme()
+  const colorTheme = theme.color
+
   useHandleCloseOnESCOrEnter(props.closePopup)
   const [showSettings, setShowSettings] = React.useState(false)
   const toggleSettings = React.useCallback(() => setShowSettings((value) => !value), [
@@ -587,6 +590,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
                   offsetY={props.offsetY}
                   id={props.id}
                   testId={props.testId}
+                  theme={theme}
                 />
               ) : (
                 <ColorPickerInner
@@ -597,6 +601,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
                   offsetY={props.offsetY}
                   id={props.id}
                   testId={props.testId}
+                  theme={theme}
                 />
               )
             ) : null}
