@@ -340,17 +340,17 @@ export const UtopiaTheme = {
   },
 } as const
 
-type UtopiaThemeType = typeof UtopiaTheme
+type UtopiaTheme = typeof UtopiaTheme
 
 declare module '@emotion/react' {
   // This augments the Emotion Theme Provider's type
-  export interface Theme extends UtopiaThemeType {}
+  export interface Theme extends UtopiaTheme {}
   export interface ThemeProps {
-    theme: UtopiaThemeType
+    theme: UtopiaTheme
   }
 }
 
-export function useGetThemeForEditor(): UtopiaThemeType {
+export function useGetThemeForEditor(): UtopiaTheme {
   const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
   const currentColorTheme = currentTheme === 'dark' ? dark : light
 
@@ -359,10 +359,12 @@ export function useGetThemeForEditor(): UtopiaThemeType {
   }, [currentColorTheme])
 }
 
-export const useColorTheme = (): UtopiaThemeType['color'] => {
+export const useColorTheme = (): UtopiaTheme['color'] => {
   return useTheme().color
 }
 
+////// here are some (old) style declarations
+////// TODO: move these out of this file, and make them all use the ThemeProvider
 const flexRow: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'row',
@@ -386,11 +388,11 @@ const flexCenter: React.CSSProperties = {
 // unaffected by zoom/scale/offsets, since it applies to outer canvas only
 
 const canvas = {
-  live: (theme: UtopiaThemeType) => ({
+  live: (theme: UtopiaTheme) => ({
     border: `1px solid ${theme.color.canvasLiveBorder.value}`,
     backgroundColor: theme.color.canvasLiveBackground.value,
   }),
-  editing: (theme: UtopiaThemeType) => ({
+  editing: (theme: UtopiaTheme) => ({
     border: '1px solid transparent',
     backgroundColor: theme.color.canvasBackground.value,
   }),
