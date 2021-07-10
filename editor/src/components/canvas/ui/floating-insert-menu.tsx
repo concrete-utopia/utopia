@@ -94,10 +94,10 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
 }
 
 export const ListItem: React.FunctionComponent<{
-  selected?: boolean
+  highlighted: boolean
   insertableComponent: InsertableComponent
   onClick: (insertableComponent: InsertableComponent) => void
-}> = ({ onClick, insertableComponent, ...props }) => {
+}> = ({ onClick, insertableComponent, highlighted, ...props }) => {
   const handleClick = React.useCallback(() => {
     onClick(insertableComponent)
   }, [insertableComponent, onClick])
@@ -112,12 +112,8 @@ export const ListItem: React.FunctionComponent<{
         borderRadius: 2,
         paddingLeft: 4,
         paddingRight: 4,
-        background: 'transparent',
-        color: 'hsl(0,0%,10%)', // theme
-        '&:hover': {
-          background: '#007aff',
-          color: 'white',
-        },
+        background: highlighted ? '#007aff' : 'transparent', // TODO BEFORE MERGE Theme!
+        color: highlighted ? 'white' : 'hsl(0,0%,10%)', // TODO BEFORE MERGE Theme!
       }}
       {...props}
     />
@@ -131,6 +127,7 @@ export const Subdued = styled.div({
 const showInsertionOptions = false
 
 export var FloatingMenu = () => {
+  const highlightIndex = 0
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   // TODO move onClickOutside to here as well?
   useHandleCloseOnESCOrEnter(
@@ -239,6 +236,7 @@ export var FloatingMenu = () => {
                   key={insertableComponent.name}
                   onClick={onClickElement}
                   insertableComponent={insertableComponent}
+                  highlighted={index === highlightIndex}
                 >
                   {insertableComponent.name}
                 </ListItem>
