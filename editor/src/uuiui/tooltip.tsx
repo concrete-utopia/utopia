@@ -1,13 +1,11 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/react'
+import { jsx, withTheme, ThemeProps } from '@emotion/react'
 import Tippy from '@tippyjs/react'
 import { Placement } from 'tippy.js'
 import 'tippy.js/dist/tippy.css'
 import * as React from 'react'
-//TODO: switch to functional component and make use of 'useColorTheme':
-import { colorTheme } from './styles/theme'
 
-interface TooltipProps {
+interface TooltipProps extends ThemeProps {
   children?: React.ReactElement<any>
   title: React.ReactElement<any> | string
   placement?: Placement
@@ -27,12 +25,13 @@ function tooltipPropsEqual(
   )
 }
 
-export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProps>> {
+class TooltipInner extends React.Component<React.PropsWithChildren<TooltipProps>> {
   shouldComponentUpdate(nextProps: React.PropsWithChildren<TooltipProps>): boolean {
     return !tooltipPropsEqual(this.props, nextProps)
   }
 
   render() {
+    const colorTheme = this.props.theme.color
     return (
       <Tippy
         css={{
@@ -71,3 +70,5 @@ export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProp
     )
   }
 }
+
+export const Tooltip = withTheme(TooltipInner)

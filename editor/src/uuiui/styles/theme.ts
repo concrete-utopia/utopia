@@ -345,6 +345,9 @@ type UtopiaThemeType = typeof UtopiaTheme
 declare module '@emotion/react' {
   // This augments the Emotion Theme Provider's type
   export interface Theme extends UtopiaThemeType {}
+  export interface ThemeProps {
+    theme: UtopiaThemeType
+  }
 }
 
 export function useGetThemeForEditor(): UtopiaThemeType {
