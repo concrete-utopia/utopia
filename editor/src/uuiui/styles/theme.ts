@@ -386,14 +386,14 @@ const flexCenter: React.CSSProperties = {
 // unaffected by zoom/scale/offsets, since it applies to outer canvas only
 
 const canvas = {
-  live: {
-    border: `1px solid ${colorTheme.canvasLiveBorder.value}`,
-    backgroundColor: colorTheme.canvasLiveBackground.value,
-  },
-  editing: {
+  live: (theme: UtopiaThemeType) => ({
+    border: `1px solid ${theme.color.canvasLiveBorder.value}`,
+    backgroundColor: theme.color.canvasLiveBackground.value,
+  }),
+  editing: (theme: UtopiaThemeType) => ({
     border: '1px solid transparent',
-    backgroundColor: colorTheme.canvasBackground.value,
-  },
+    backgroundColor: theme.color.canvasBackground.value,
+  }),
 }
 
 const scene = {
