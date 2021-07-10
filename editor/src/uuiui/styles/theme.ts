@@ -1,3 +1,5 @@
+import * as React from 'react'
+import { ThemeProvider, useTheme } from '@emotion/react'
 import { useEditorState } from './../../components/editor/store/store-hook'
 import { Interpolation } from '@emotion/react'
 import { Theme } from './../../components/editor/store/editor-state'
@@ -180,9 +182,9 @@ const darkBase = {
   bg5: createUtopiColor('#848998', 'selected elements', 'grey'),
   fg0: createUtopiColor('#ffffff', 'emphasized foreground', 'black'),
   fg1: createUtopiColor('#D9DCE3', 'default foreground', 'black'),
-  // fg2: createUtopiColor('red', 'black', 'black'),
+  fg2: createUtopiColor('red', 'black', 'black'),
   fg3: createUtopiColor('pink', 'darkgray', 'darkgray'),
-  // fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
+  fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
   fg5: createUtopiColor('#8B91A0', 'leva', 'grey'),
   fg6: createUtopiColor('#6F778B', 'grey', 'grey'),
   fg7: createUtopiColor('#525B72', 'grey', 'grey'),
@@ -219,7 +221,7 @@ const darkErrorStates = {
   warningBgTranslucent: base.orange.o(20),
   warningBgSolid: base.orange.shade(70),
 }
-const dark = {
+const dark: typeof light = {
   ...darkBase,
   ...darkPrimitives,
   ...darkErrorStates,
@@ -297,20 +299,15 @@ const dark = {
   flasherHookColor: base.neonpink,
 }
 
+// TODO: don't export colorTheme anymore and just use useColorTheme() hook or withTheme() HOC
 export const colorTheme = light
-
-// TODO: don't export colorTheme anymore and just export useUtopiaTheme() hook
-// prerequisites: no class components and usage of UtopiaTheme.color instead of colorTheme
-export const useColorTheme = () => {
-  const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
-  return currentTheme === 'dark' ? dark : light
-}
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
 const inspectorWidth = 255
 const inspectorPaddedWidth = inspectorWidth - inspectorXPadding * 2
 
+// TODO: don't export UtopiaTheme anymore and just use useTheme() hook or withTheme() HOC
 export const UtopiaTheme = {
   layout: {
     rowHorizontalPadding: 8,
@@ -342,6 +339,26 @@ export const UtopiaTheme = {
     inspectorUnsetUnselectedOpacity: 0.3,
   },
 } as const
+
+type UtopiaThemeType = typeof UtopiaTheme
+
+declare module '@emotion/react' {
+  // This augments the Emotion Theme Provider's type
+  export interface Theme extends UtopiaThemeType {}
+}
+
+export function useGetThemeForEditor(): UtopiaThemeType {
+  const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
+  const currentColorTheme = currentTheme === 'dark' ? dark : light
+
+  return React.useMemo(() => {
+    return { ...UtopiaTheme, color: currentColorTheme }
+  }, [currentColorTheme])
+}
+
+export const useColorTheme = (): UtopiaThemeType['color'] => {
+  return useTheme().color
+}
 
 const flexRow: React.CSSProperties = {
   display: 'flex',
