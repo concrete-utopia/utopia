@@ -32,7 +32,7 @@ interface TailWindOption {
   categories?: string[]
 }
 
-const TailWindOptions = AllTailwindClasses.map((className, index) => ({
+const TailWindOptions: Array<TailWindOption> = AllTailwindClasses.map((className, index) => ({
   label: className,
   value: className,
 }))
@@ -171,11 +171,48 @@ const ValueContainer = betterReactMemo(
   },
 )
 
-const filterOption = createFilter({ ignoreAccents: false })
+const filterOption = () => true
+const MaxResults = 500
 
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
+  const [input, setInput] = React.useState('')
+  const filteredOptions = React.useMemo(() => {
+    if (input === '') {
+      return TailWindOptions.slice(0, MaxResults)
+    } else {
+      // First find all matches, and use a sparse array to keep the best matches at the front
+      let orderedMatchedResults: Array<Array<TailWindOption>> = []
+      let perfectMatchCount = 0
+      for (var i = 0; i < TailWindOptions.length && perfectMatchCount < MaxResults; i++) {
+        const nextOption = TailWindOptions[i]
+        const indexOf = nextOption.label.indexOf(input)
+        if (indexOf > -1) {
+          let existingMatched = orderedMatchedResults[indexOf] ?? []
+          existingMatched.push(nextOption)
+          orderedMatchedResults[indexOf] = existingMatched
+          if (indexOf === 0) {
+            perfectMatchCount++
+          }
+        }
+      }
+
+      // Now go through and take the first n best matches
+      let matchedResults: Array<TailWindOption> = []
+      let matchCount = 0
+
+      for (var j = 0; j < orderedMatchedResults.length && matchCount < MaxResults; j++) {
+        const nextMatches = orderedMatchedResults[j]
+        if (nextMatches != null) {
+          matchedResults.push(...nextMatches.slice(0, MaxResults - matchCount))
+          matchCount += nextMatches.length
+        }
+      }
+
+      return matchedResults
+    }
+  }, [input])
 
   const selectedElement = useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
@@ -352,8 +389,9 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     >
       <WindowedSelect
         filterOption={filterOption}
-        options={TailWindOptions}
+        options={filteredOptions}
         onChange={onChange}
+        onInputChange={setInput}
         value={selectedValues}
         isMulti={true}
         closeMenuOnSelect={false}
