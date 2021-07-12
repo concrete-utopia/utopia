@@ -223,7 +223,7 @@ export var FloatingMenu = () => {
             fontWeight: 600,
           }}
         >
-          Insert
+          Wrap in...
         </FlexRow>
         <FlexRow style={{ minHeight: 34 }}>
           <HeadlessStringInput
