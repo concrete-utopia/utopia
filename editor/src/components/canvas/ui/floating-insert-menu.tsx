@@ -6,14 +6,7 @@ import Select, { StylesConfig } from 'react-select'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
-import styled from '@emotion/styled'
-import {
-  FlexColumn,
-  FlexRow,
-  HeadlessStringInput,
-  OnClickOutsideHOC,
-  useColorTheme,
-} from '../../../uuiui'
+import { FlexColumn, OnClickOutsideHOC, useColorTheme } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
   getComponentGroups,
@@ -31,15 +24,6 @@ import {
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { useHandleCloseOnESCOrEnter } from '../../inspector/common/inspector-utils'
-
-function useFocusOnMount<T extends HTMLElement>(): React.RefObject<T> {
-  const ref = React.useRef<T>(null)
-  React.useEffect(() => {
-    // eslint-disable-next-line no-unused-expressions
-    ref.current?.focus()
-  }, [ref])
-  return ref
-}
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -114,51 +98,6 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
 
   return insertableComponents
 }
-
-export const ListItem: React.FunctionComponent<{
-  highlighted: boolean
-  insertableComponent: InsertMenuItem
-  onClick: (insertableComponent: InsertMenuItem) => void
-  onMouseOver: (insertableComponent: InsertMenuItem) => void
-}> = betterReactMemo(
-  'ListItem',
-  ({ onClick, onMouseOver, insertableComponent, highlighted, ...props }) => {
-    const colorTheme = useColorTheme()
-    const handleClick = React.useCallback(() => {
-      onClick(insertableComponent)
-    }, [insertableComponent, onClick])
-
-    const handleMouseOver = React.useCallback(() => {
-      onMouseOver(insertableComponent)
-    }, [insertableComponent, onMouseOver])
-
-    return (
-      <div
-        onClick={handleClick}
-        onMouseOver={handleMouseOver}
-        css={{
-          flex: '0 0 25px',
-          display: 'flex',
-          alignItems: 'center',
-          borderRadius: 2,
-          paddingLeft: 4,
-          paddingRight: 4,
-          background: highlighted ? colorTheme.contextMenuHighlightBackground.value : 'transparent',
-          color: highlighted
-            ? colorTheme.contextMenuHighlightForeground.value
-            : colorTheme.contextMenuForeground.value,
-        }}
-        {...props}
-      />
-    )
-  },
-)
-
-export const Subdued = styled.div({
-  color: 'hsl(0,0%,70%)',
-})
-
-const showInsertionOptions = false
 
 const componentSelectorStyles: StylesConfig = {
   container: (styles) => ({
