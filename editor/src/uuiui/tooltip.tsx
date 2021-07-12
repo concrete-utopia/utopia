@@ -21,7 +21,8 @@ function tooltipPropsEqual(
     (a.title === b.title &&
       a.placement === b.placement &&
       a.disabled === b.disabled &&
-      a.children === b.children)
+      a.children === b.children &&
+      a.theme === b.theme)
   )
 }
 
