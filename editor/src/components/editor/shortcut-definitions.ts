@@ -59,7 +59,8 @@ export const COPY_SELECTION_SHORTCUT = 'copy-selection'
 export const DUPLICATE_SELECTION_SHORTCUT = 'duplicate-selection'
 export const TOGGLE_BACKGROUND_SHORTCUT = 'toggle-background'
 export const UNWRAP_ELEMENT_SHORTCUT = 'unwrap-element'
-export const WRAP_ELEMENT_SHORTCUT = 'wrap-element'
+export const WRAP_ELEMENT_PICKER_SHORTCUT = 'wrap-element-picker'
+export const WRAP_ELEMENT_DEFAULT_SHORTCUT = 'wrap-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
 export const TOGGLE_TEXT_ITALIC_SHORTCUT = 'toggle-text-italic'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
@@ -198,7 +199,8 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Unwrap children of an element into their grandparent element.',
     key('g', ['cmd', 'shift']),
   ),
-  [WRAP_ELEMENT_SHORTCUT]: shortcut('Wrap elements with a group.', key('g', 'cmd')),
+  [WRAP_ELEMENT_PICKER_SHORTCUT]: shortcut('Wrap elements with a group.', key('g', [])),
+  [WRAP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Wrap elements with a group.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
   [TOGGLE_TEXT_ITALIC_SHORTCUT]: shortcut(
     'Toggle the italic attribute of the current text element.',
