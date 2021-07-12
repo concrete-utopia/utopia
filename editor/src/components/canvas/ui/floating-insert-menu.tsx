@@ -285,7 +285,7 @@ const componentSelectorStyles: StylesConfig = {
   },
 }
 
-export var FloatingMenu = () => {
+export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   // TODO move onClickOutside to here as well?
@@ -377,7 +377,7 @@ export var FloatingMenu = () => {
       </FlexColumn>
     </div>
   )
-}
+})
 
 interface FloatingInsertMenuProps {}
 
