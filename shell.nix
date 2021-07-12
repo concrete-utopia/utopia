@@ -317,8 +317,8 @@ let
       #!/usr/bin/env bash
       stop-dev
       set -e
+      build-vscode-with-extension
       install-editor
-      build-vscode
       start-minimal
     '')
   ] ++ vscodeDevScripts;
