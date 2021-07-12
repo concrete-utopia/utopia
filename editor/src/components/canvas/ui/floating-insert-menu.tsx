@@ -34,25 +34,24 @@ function useFocusOnMount<T extends HTMLElement>(): React.RefObject<T> {
   return ref
 }
 
-type InsertableComponentWithOptionalGroupHeader = InsertableComponent & {
-  source?: InsertableComponentGroupType
+type InsertMenuItem = InsertableComponent & {
+  source: InsertableComponentGroupType | null
+  key: string
 }
 
-type InsertableComponentFlatList = Array<InsertableComponentWithOptionalGroupHeader>
+type InsertableComponentFlatList = Array<InsertMenuItem>
 
 function convertInsertableComponentsToFlatList(
   insertableComponents: InsertableComponentGroup[],
 ): InsertableComponentFlatList {
   return insertableComponents.flatMap((componentGroup) => {
     return componentGroup.insertableComponents.map(
-      (insertableComponent, index): InsertableComponentWithOptionalGroupHeader => {
-        if (index === 0) {
-          return {
-            ...insertableComponent,
-            source: componentGroup.source,
-          }
-        } else {
-          return insertableComponent
+      (insertableComponent, index): InsertMenuItem => {
+        const source = index === 0 ? componentGroup.source : null
+        return {
+          ...insertableComponent,
+          key: `${getInsertableGroupLabel(componentGroup.source)}-${insertableComponent.name}`,
+          source: source,
         }
       },
     )
@@ -95,16 +94,22 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
 
 export const ListItem: React.FunctionComponent<{
   highlighted: boolean
-  insertableComponent: InsertableComponent
-  onClick: (insertableComponent: InsertableComponent) => void
-}> = ({ onClick, insertableComponent, highlighted, ...props }) => {
+  insertableComponent: InsertMenuItem
+  onClick: (insertableComponent: InsertMenuItem) => void
+  onMouseOver: (insertableComponent: InsertMenuItem) => void
+}> = ({ onClick, onMouseOver, insertableComponent, highlighted, ...props }) => {
   const handleClick = React.useCallback(() => {
     onClick(insertableComponent)
   }, [insertableComponent, onClick])
 
+  const handleMouseOver = React.useCallback(() => {
+    onMouseOver(insertableComponent)
+  }, [insertableComponent, onMouseOver])
+
   return (
     <div
       onClick={handleClick}
+      onMouseOver={handleMouseOver}
       css={{
         flex: '0 0 25px',
         display: 'flex',
@@ -127,7 +132,7 @@ export const Subdued = styled.div({
 const showInsertionOptions = false
 
 export var FloatingMenu = () => {
-  const highlightIndex = 0
+  const [highlightedKey, setHighlightedKey] = React.useState('')
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   // TODO move onClickOutside to here as well?
   useHandleCloseOnESCOrEnter(
@@ -171,11 +176,13 @@ export var FloatingMenu = () => {
     [dispatch, projectContentsRef, selectedViewsref],
   )
 
+  const onMouseOverElement = React.useCallback((insertableComponent: InsertMenuItem) => {
+    setHighlightedKey(insertableComponent.key)
+  }, [])
+
   return (
     <div
       style={{
-        width: '100%',
-        height: '100%',
         backgroundColor: '#fefefe',
         position: 'relative',
         margin: 20,
@@ -235,8 +242,9 @@ export var FloatingMenu = () => {
                 <ListItem
                   key={insertableComponent.name}
                   onClick={onClickElement}
+                  onMouseOver={onMouseOverElement}
                   insertableComponent={insertableComponent}
-                  highlighted={index === highlightIndex}
+                  highlighted={highlightedKey === insertableComponent.key}
                 >
                   {insertableComponent.name}
                 </ListItem>
