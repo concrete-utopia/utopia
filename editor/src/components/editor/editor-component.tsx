@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/react'
+import { jsx, ThemeProvider } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
 import * as React from 'react'
 import { DndProvider } from 'react-dnd'
@@ -42,14 +42,13 @@ import {
 import {
   SimpleFlexRow,
   SimpleFlexColumn,
-  UtopiaTheme,
   FlexRow,
   ResizableFlexColumn,
-  useColorTheme,
   TabComponent,
   LargerIcons,
   Subdued,
   FlexColumn,
+  useGetThemeForEditor,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { createIframeUrl } from '../../core/shared/utils'
@@ -86,7 +85,8 @@ export const EditorComponentInner = betterReactMemo(
   'EditorComponentInner',
   (props: EditorProps) => {
     const editorStoreRef = useRefEditorState((store) => store)
-    const colorTheme = useColorTheme()
+    const theme = useGetThemeForEditor()
+    const colorTheme = theme.color
     const onWindowMouseDown = React.useCallback(
       (event: MouseEvent) => {
         const popupId = editorStoreRef.current.editor.openPopupId
@@ -223,115 +223,117 @@ export const EditorComponentInner = betterReactMemo(
     })
 
     return (
-      <SimpleFlexRow
-        className='editor-main-vertical-and-modals'
-        style={{
-          height: '100%',
-          width: '100%',
-          overscrollBehaviorX: 'contain',
-        }}
-        onDragEnter={startDragInsertion}
-      >
-        <SimpleFlexColumn
-          className='editor-main-vertical'
+      <ThemeProvider theme={theme}>
+        <SimpleFlexRow
+          className='editor-main-vertical-and-modals'
           style={{
             height: '100%',
             width: '100%',
+            overscrollBehaviorX: 'contain',
           }}
+          onDragEnter={startDragInsertion}
         >
-          {(isChrome as boolean) ? null : <BrowserInfoBar />}
-          <LoginStatusBar />
-
-          <SimpleFlexRow
-            className='editor-main-horizontal'
+          <SimpleFlexColumn
+            className='editor-main-vertical'
             style={{
+              height: '100%',
               width: '100%',
-              flexGrow: 1,
-              overflowY: 'hidden',
-              alignItems: 'stretch',
             }}
           >
-            <SimpleFlexColumn
-              style={{
-                height: '100%',
-                width: 44,
-                backgroundColor: UtopiaTheme.color.leftMenuBackground.value,
-              }}
-            >
-              <Menubar />
-            </SimpleFlexColumn>
-            <div
-              className='LeftPaneShell'
-              style={{
-                height: '100%',
-                transition: 'all .1s linear',
-                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
-                overflowX: 'scroll',
-                backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
-              }}
-            >
-              {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
-            </div>
+            {(isChrome as boolean) ? null : <BrowserInfoBar />}
+            <LoginStatusBar />
+
             <SimpleFlexRow
-              className='editor-shell'
+              className='editor-main-horizontal'
               style={{
+                width: '100%',
                 flexGrow: 1,
+                overflowY: 'hidden',
                 alignItems: 'stretch',
-                borderRight: `1px solid ${UtopiaTheme.color.neutralBorder.value}`,
-                backgroundColor: UtopiaTheme.color.neutralBackground.value,
               }}
             >
+              <SimpleFlexColumn
+                style={{
+                  height: '100%',
+                  width: 44,
+                  backgroundColor: theme.color.leftMenuBackground.value,
+                }}
+              >
+                <Menubar />
+              </SimpleFlexColumn>
+              <div
+                className='LeftPaneShell'
+                style={{
+                  height: '100%',
+                  transition: 'all .1s linear',
+                  width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
+                  overflowX: 'scroll',
+                  backgroundColor: theme.color.leftPaneBackground.value,
+                }}
+              >
+                {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
+              </div>
               <SimpleFlexRow
-                className='openTabShell'
+                className='editor-shell'
                 style={{
                   flexGrow: 1,
                   alignItems: 'stretch',
-                  justifyContent: 'stretch',
-                  overflowX: 'hidden',
+                  borderRight: `1px solid ${theme.color.neutralBorder.value}`,
+                  backgroundColor: theme.color.neutralBackground.value,
                 }}
               >
-                <OpenFileEditor />
-              </SimpleFlexRow>
-              {/* insert more columns here */}
-
-              {previewVisible ? (
-                <ResizableFlexColumn
-                  style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
-                  enable={{
-                    left: true,
-                    right: false,
-                  }}
-                  defaultSize={{
-                    width: 350,
-                    height: '100%',
+                <SimpleFlexRow
+                  className='openTabShell'
+                  style={{
+                    flexGrow: 1,
+                    alignItems: 'stretch',
+                    justifyContent: 'stretch',
+                    overflowX: 'hidden',
                   }}
                 >
-                  <SimpleFlexRow
-                    id='PreviewTabRail'
-                    style={{
-                      height: UtopiaTheme.layout.rowHeight.smaller,
-                      borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
-                      alignItems: 'stretch',
+                  <OpenFileEditor />
+                </SimpleFlexRow>
+                {/* insert more columns here */}
+
+                {previewVisible ? (
+                  <ResizableFlexColumn
+                    style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
+                    enable={{
+                      left: true,
+                      right: false,
+                    }}
+                    defaultSize={{
+                      width: 350,
+                      height: '100%',
                     }}
                   >
-                    <TabComponent
-                      label='Preview'
-                      selected
-                      icon={<LargerIcons.PreviewPane color='blue' />}
-                      onClose={onClosePreview}
-                    />
-                  </SimpleFlexRow>
-                  <PreviewColumn />
-                </ResizableFlexColumn>
-              ) : null}
+                    <SimpleFlexRow
+                      id='PreviewTabRail'
+                      style={{
+                        height: theme.layout.rowHeight.smaller,
+                        borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+                        alignItems: 'stretch',
+                      }}
+                    >
+                      <TabComponent
+                        label='Preview'
+                        selected
+                        icon={<LargerIcons.PreviewPane color='blue' />}
+                        onClose={onClosePreview}
+                      />
+                    </SimpleFlexRow>
+                    <PreviewColumn />
+                  </ResizableFlexColumn>
+                ) : null}
+              </SimpleFlexRow>
             </SimpleFlexRow>
-          </SimpleFlexRow>
-        </SimpleFlexColumn>
-        <ModalComponent />
-        <ToastRenderer />
-        <CanvasCursorComponent />
-        {props.propertyControlsInfoSupported ? <PropertyControlsInfoComponent /> : null}
-      </SimpleFlexRow>
+          </SimpleFlexColumn>
+          <ModalComponent />
+          <ToastRenderer />
+          <CanvasCursorComponent />
+          {props.propertyControlsInfoSupported ? <PropertyControlsInfoComponent /> : null}
+        </SimpleFlexRow>
+      </ThemeProvider>
     )
   },
 )

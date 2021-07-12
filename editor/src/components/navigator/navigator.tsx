@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/react'
+import { jsx, useTheme } from '@emotion/react'
 import * as React from 'react'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
@@ -14,7 +14,7 @@ import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
-import { UtopiaTheme, Section, SectionTitleRow, FlexRow, Title, SectionBodyArea } from '../../uuiui'
+import { Section, SectionTitleRow, FlexRow, Title, SectionBodyArea } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { last } from '../../core/shared/array-utils'
 // There's some weirdness between the types and the results in the two module systems.
@@ -36,6 +36,7 @@ const NavigatorContainerId = 'navigator'
 export const NavigatorComponent = betterReactMemo(
   'NavigatorComponent',
   ({ style: navigatorStyle }) => {
+    const theme = useTheme()
     const editorSliceRef = useRefEditorState((store) => {
       const dragSelections = createDragSelections(
         store.derived.navigatorTargets,
@@ -154,7 +155,7 @@ export const NavigatorComponent = betterReactMemo(
           <FixedSizeList
             width={'100%'}
             height={size.height}
-            itemSize={UtopiaTheme.layout.rowHeight.smaller}
+            itemSize={theme.layout.rowHeight.smaller}
             itemCount={visibleNavigatorTargets.length}
             layout={'vertical'}
           >
@@ -174,7 +175,7 @@ export const NavigatorComponent = betterReactMemo(
         tabIndex={-1}
         style={{
           ...navigatorStyle,
-          backgroundColor: UtopiaTheme.color.leftPaneBackground.o(80).value,
+          backgroundColor: theme.color.leftPaneBackground.o(80).value,
           backdropFilter: 'blur(7px)',
           overflowX: 'scroll',
         }}

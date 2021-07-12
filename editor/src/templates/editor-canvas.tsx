@@ -1,5 +1,6 @@
 import update from 'immutability-helper'
 import * as React from 'react'
+import { ThemeProps, withTheme } from '@emotion/react'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'
 import CanvasActions from '../components/canvas/canvas-actions'
@@ -491,13 +492,13 @@ function createNodeConnectorsDiv(offset: CanvasPoint, scale: number) {
   })
 }
 
-interface EditorCanvasProps {
+interface EditorCanvasProps extends ThemeProps {
   model: CanvasModel
   editor: EditorState
   dispatch: EditorDispatch
 }
 
-export class EditorCanvas extends React.Component<EditorCanvasProps> {
+class EditorCanvasInner extends React.Component<EditorCanvasProps> {
   canvasWrapperRef: HTMLElement | null = null
   constructor(props: EditorCanvasProps) {
     super(props)
@@ -626,6 +627,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   render() {
     // we round the offset here, so all layers, the canvas, and controls use the same rounded value for positioning
     // instead of letting Chrome do it, because that results in funky artifacts (e.g. while scrolling, the layers don't "jump" pixels at the same time)
+    const theme = this.props.theme
 
     const nodeConnectorsDiv = createNodeConnectorsDiv(
       this.props.model.canvasOffset,
@@ -652,8 +654,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     })
 
     const canvasLiveEditingStyle = canvasIsLive
-      ? UtopiaStyles.canvas.live
-      : UtopiaStyles.canvas.editing
+      ? UtopiaStyles.canvas.live(theme)
+      : UtopiaStyles.canvas.editing(theme)
 
     return RU.create(
       'div',
@@ -1133,6 +1135,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     ;(window as any).removeEventListener('paste', this.handlePaste)
   }
 }
+
+export const EditorCanvas = withTheme(EditorCanvasInner)
 
 function isTargetContextMenu(target: HTMLElement): boolean {
   const className = target.className ?? ''

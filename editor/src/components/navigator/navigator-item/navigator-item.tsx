@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx } from '@emotion/react'
+import { jsx, useTheme } from '@emotion/react'
 import * as React from 'react'
 import {
   ElementInstanceMetadataMap,
@@ -21,7 +21,7 @@ import {
   betterReactMemo,
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
-import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
+import { IcnProps, useColorTheme, UtopiaStyles, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -259,7 +259,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       elementWarnings,
     } = props
 
-    const colorTheme = useColorTheme()
+    const theme = useTheme()
+    const colorTheme = theme.color
     const domElementRef = useScrollToThisIfSelected(selected)
     const isFocusedComponent = useEditorState(
       (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
@@ -324,7 +325,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 
     const rowStyle = useKeepReferenceEqualityIfPossible({
       paddingLeft: getElementPadding(elementPath),
-      height: UtopiaTheme.layout.rowHeight.smaller,
+      height: theme.layout.rowHeight.smaller,
       ...resultingStyle.style,
     })
 

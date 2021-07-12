@@ -1,3 +1,4 @@
+import { ThemeProps } from '@emotion/react'
 import Chroma from 'chroma-js'
 import { clamp, WindowPoint } from '../../../core/shared/math-utils'
 import { getControlStyles } from '../common/control-status'
@@ -15,8 +16,7 @@ import { inspectorEdgePadding } from '../sections/style-section/background-subse
 import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
 import * as React from 'react'
-//TODO: switch to functional component and make use of 'useColorTheme':
-import { colorTheme, SimpleNumberInput, SimplePercentInput, UtopiaStyles } from '../../../uuiui'
+import { SimpleNumberInput, SimplePercentInput, UtopiaStyles } from '../../../uuiui'
 
 export interface ColorPickerProps extends ColorPickerInnerProps {
   closePopup: () => void
@@ -51,7 +51,7 @@ export const ColorPicker: React.FunctionComponent<ColorPickerProps> = ({
           overflow: 'hidden',
           zIndex: 2,
           marginBottom: 32,
-          ...UtopiaStyles.popup,
+          ...UtopiaStyles.popup(props.theme),
         }}
       >
         <ColorPickerInner {...props} />
@@ -60,7 +60,7 @@ export const ColorPicker: React.FunctionComponent<ColorPickerProps> = ({
   )
 }
 
-export interface ColorPickerInnerProps {
+export interface ColorPickerInnerProps extends ThemeProps {
   value: CSSColor
   onSubmitValue: (value: CSSColor) => void
   onTransientSubmitValue: (value: CSSColor) => void
@@ -441,6 +441,7 @@ export class ColorPickerInner extends React.Component<
   }
 
   render() {
+    const colorTheme = this.props.theme.color
     const h = this.state.normalisedHuePosition
     const s = this.state.normalisedSaturationPosition
     const v = this.state.normalisedValuePosition

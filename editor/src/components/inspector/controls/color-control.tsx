@@ -7,6 +7,7 @@ import { ControlStatus, ControlStyles } from '../common/control-status'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import Utils from '../../../utils/utils'
+import { useTheme } from '@emotion/react'
 
 export interface ColorControlProps {
   value: CSSColor
@@ -40,7 +41,8 @@ export function updateStringCSSColor(newValue: string, oldValue: CSSColor) {
 
 export const ColorControl = betterReactMemo('ColorControl', (props: ColorControlProps) => {
   const [popupOpen, setPopupOpen] = React.useState(false)
-  const colorTheme = useColorTheme()
+  const theme = useTheme()
+  const colorTheme = theme.color
 
   const stringInput =
     props.showString && props.onSubmitSolidStringValue != null ? (
@@ -83,6 +85,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
       value={props.value}
       onSubmitValue={props.onSubmitValue}
       onTransientSubmitValue={props.onTransientSubmitValue}
+      theme={theme}
     />
   )
 

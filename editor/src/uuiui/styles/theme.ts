@@ -1,3 +1,5 @@
+import * as React from 'react'
+import { ThemeProvider, useTheme } from '@emotion/react'
 import { useEditorState } from './../../components/editor/store/store-hook'
 import { Interpolation } from '@emotion/react'
 import { Theme } from './../../components/editor/store/editor-state'
@@ -180,9 +182,9 @@ const darkBase = {
   bg5: createUtopiColor('#848998', 'selected elements', 'grey'),
   fg0: createUtopiColor('#ffffff', 'emphasized foreground', 'black'),
   fg1: createUtopiColor('#D9DCE3', 'default foreground', 'black'),
-  // fg2: createUtopiColor('red', 'black', 'black'),
+  fg2: createUtopiColor('red', 'black', 'black'),
   fg3: createUtopiColor('pink', 'darkgray', 'darkgray'),
-  // fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
+  fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
   fg5: createUtopiColor('#8B91A0', 'leva', 'grey'),
   fg6: createUtopiColor('#6F778B', 'grey', 'grey'),
   fg7: createUtopiColor('#525B72', 'grey', 'grey'),
@@ -219,7 +221,7 @@ const darkErrorStates = {
   warningBgTranslucent: base.orange.o(20),
   warningBgSolid: base.orange.shade(70),
 }
-const dark = {
+const dark: typeof light = {
   ...darkBase,
   ...darkPrimitives,
   ...darkErrorStates,
@@ -297,20 +299,15 @@ const dark = {
   flasherHookColor: base.neonpink,
 }
 
+// TODO: don't export colorTheme anymore and just use useColorTheme() hook or withTheme() HOC
 export const colorTheme = light
-
-// TODO: don't export colorTheme anymore and just export useUtopiaTheme() hook
-// prerequisites: no class components and usage of UtopiaTheme.color instead of colorTheme
-export const useColorTheme = () => {
-  const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
-  return currentTheme === 'dark' ? dark : light
-}
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
 const inspectorWidth = 255
 const inspectorPaddedWidth = inspectorWidth - inspectorXPadding * 2
 
+// TODO: don't export UtopiaTheme anymore and just use useTheme() hook or withTheme() HOC
 export const UtopiaTheme = {
   layout: {
     rowHorizontalPadding: 8,
@@ -343,6 +340,31 @@ export const UtopiaTheme = {
   },
 } as const
 
+type UtopiaTheme = typeof UtopiaTheme
+
+declare module '@emotion/react' {
+  // This augments the Emotion Theme Provider's type
+  export interface Theme extends UtopiaTheme {}
+  export interface ThemeProps {
+    theme: UtopiaTheme
+  }
+}
+
+export function useGetThemeForEditor(): UtopiaTheme {
+  const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
+  const currentColorTheme = currentTheme === 'dark' ? dark : light
+
+  return React.useMemo(() => {
+    return { ...UtopiaTheme, color: currentColorTheme }
+  }, [currentColorTheme])
+}
+
+export const useColorTheme = (): UtopiaTheme['color'] => {
+  return useTheme().color
+}
+
+////// here are some (old) style declarations
+////// TODO: move these out of this file, and make them all use the ThemeProvider
 const flexRow: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'row',
@@ -366,14 +388,14 @@ const flexCenter: React.CSSProperties = {
 // unaffected by zoom/scale/offsets, since it applies to outer canvas only
 
 const canvas = {
-  live: {
-    border: `1px solid ${colorTheme.canvasLiveBorder.value}`,
-    backgroundColor: colorTheme.canvasLiveBackground.value,
-  },
-  editing: {
+  live: (theme: UtopiaTheme) => ({
+    border: `1px solid ${theme.color.canvasLiveBorder.value}`,
+    backgroundColor: theme.color.canvasLiveBackground.value,
+  }),
+  editing: (theme: UtopiaTheme) => ({
     border: '1px solid transparent',
-    backgroundColor: colorTheme.canvasBackground.value,
-  },
+    backgroundColor: theme.color.canvasBackground.value,
+  }),
 }
 
 const scene = {
@@ -457,13 +479,13 @@ const shadowStyles = {
   },
 }
 
-const popup: React.CSSProperties = {
-  background: lightPrimitives.neutralBackground.value,
+const popup = (theme: UtopiaTheme): React.CSSProperties => ({
+  background: theme.color.neutralBackground.value,
   boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 2px 7px',
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,
-}
+})
 
 export const UtopiaStyles = {
   backgrounds: {
