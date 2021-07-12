@@ -58,7 +58,7 @@ function convertInsertableComponentsToFlatList(
   })
 }
 
-function useGetInsertableComponents(): InsertableComponentFlatList {
+function useGetInsertableComponents(filterString: string): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
@@ -85,9 +85,11 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
           dependencies,
           fullPath,
         ),
+      ).filter((insertableComponent) =>
+        insertableComponent.name.toLowerCase().includes(filterString.toLowerCase()),
       )
     }
-  }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath])
+  }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath, filterString])
 
   return insertableComponents
 }
@@ -149,8 +151,8 @@ export var FloatingMenu = () => {
   const inputRef = useFocusOnMount<HTMLInputElement>()
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
-  const insertableComponents = useGetInsertableComponents()
   const [filterString, setFilterString] = React.useState('')
+  const insertableComponents = useGetInsertableComponents(filterString)
   const onFilterInput = React.useCallback((event: React.FormEvent<HTMLInputElement>) => {
     setFilterString(event.currentTarget.value)
   }, [])
