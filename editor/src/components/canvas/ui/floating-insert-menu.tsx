@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import * as React from 'react'
 import { jsx } from '@emotion/react'
-import Select, { StylesConfig } from 'react-select'
+import Select, { StylesConfig, ValueType } from 'react-select'
 
 import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -245,26 +245,29 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
 
-  const onClickElement = React.useCallback(
-    (insertableComponent: InsertableComponent) => {
-      const newUID = generateUidWithExistingComponents(projectContentsRef.current)
-      const newElement = jsxElement(
-        insertableComponent.element.name,
-        newUID,
-        setJSXAttributesAttribute(
-          insertableComponent.element.props,
-          'data-uid',
-          jsxAttributeValue(newUID, emptyComments),
-        ),
-        insertableComponent.element.children,
-      )
-      dispatch([
-        wrapInView(selectedViewsref.current, {
-          element: newElement,
-          importsToAdd: insertableComponent.importsToAdd,
-        }),
-        closeFloatingInsertMenu(),
-      ])
+  const onChange = React.useCallback(
+    (value: ValueType<InsertMenuItem>) => {
+      if (value != null && !Array.isArray(value)) {
+        const insertableComponent = (value as InsertMenuItem).value
+        const newUID = generateUidWithExistingComponents(projectContentsRef.current)
+        const newElement = jsxElement(
+          insertableComponent.element.name,
+          newUID,
+          setJSXAttributesAttribute(
+            insertableComponent.element.props,
+            'data-uid',
+            jsxAttributeValue(newUID, emptyComments),
+          ),
+          insertableComponent.element.children,
+        )
+        dispatch([
+          wrapInView(selectedViewsref.current, {
+            element: newElement,
+            importsToAdd: insertableComponent.importsToAdd,
+          }),
+          closeFloatingInsertMenu(),
+        ])
+      }
     },
     [dispatch, projectContentsRef, selectedViewsref],
   )
@@ -307,12 +310,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
           controlShouldRenderValue={false}
           hideSelectedOptions={false}
           menuIsOpen
-          // eslint-disable-next-line react/jsx-no-bind
-          onChange={(value, action) => {
-            if (value != null && !Array.isArray(value)) {
-              onClickElement(((value as any) as InsertMenuItem).value)
-            }
-          }}
+          onChange={onChange}
           options={insertableComponents}
           placeholder='Search...'
           styles={componentSelectorStyles}
