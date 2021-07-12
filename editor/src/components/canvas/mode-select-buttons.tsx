@@ -73,6 +73,7 @@ export const ModeSelectButtons = betterReactMemo('ModeSelectButtons', () => {
   return (
     <div
       style={{
+        pointerEvents: 'initial',
         position: 'absolute',
         top: '0',
         right: '0',

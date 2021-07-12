@@ -29,6 +29,7 @@ const iframeStyle = {
 
 const overlayStyle = (overlayOffset: number) =>
   ({
+    pointerEvents: 'initial',
     position: 'absolute',
     height: '100%',
     right: 0,

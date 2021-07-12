@@ -11,6 +11,7 @@ import { Component, ReactNode } from 'react'
 import { black } from '../styles'
 
 const overlayStyle = {
+  pointerEvents: 'initial',
   position: 'relative',
   display: 'inline-flex',
   flexDirection: 'column',

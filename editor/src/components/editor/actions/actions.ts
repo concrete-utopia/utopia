@@ -118,6 +118,7 @@ import {
   eitherToMaybe,
   mapEither,
   defaultEither,
+  forceRight,
   traverseEither,
 } from '../../../core/shared/either'
 import type {
@@ -149,6 +150,7 @@ import {
   importAlias,
   Imports,
   importStatementFromImportDetails,
+  importDetails,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -357,6 +359,8 @@ import {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
+  WrapInPicker,
+  CloseFloatingInsertMenu,
   InsertWithDefaults,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
@@ -974,6 +978,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       domWalkerInvalidateCount: currentEditor.canvas.domWalkerInvalidateCount + 1,
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
+    },
+    floatingInsertMenu: {
+      insertMenuOpen: currentEditor.floatingInsertMenu.insertMenuOpen,
     },
     inspector: {
       visible: currentEditor.inspector.visible,
@@ -2058,7 +2065,10 @@ export const UPDATE_FNS = {
           return editor
         }
 
-        const newUID = generateUidWithExistingComponents(editor.projectContents)
+        const newUID =
+          action.whatToWrapWith === 'default-empty-View'
+            ? generateUidWithExistingComponents(editor.projectContents)
+            : action.whatToWrapWith.element.uid
 
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
@@ -2088,36 +2098,67 @@ export const UPDATE_FNS = {
             uiFileKey,
             parentPath,
           )
+
+          const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+          const isParentFlex =
+            parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
+
+          function setPositionAttribute(
+            elementToWrapWith: JSXElement,
+            position: 'absolute' | 'relative',
+          ): JSXElement {
+            return {
+              ...elementToWrapWith,
+              props: forceRight(
+                setJSXValueAtPath(
+                  elementToWrapWith.props,
+                  PP.create(['style', 'position']), // todo make it optional
+                  jsxAttributeValue(position, emptyComments),
+                ),
+              ),
+            }
+          }
+
           const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
           const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
             targetSuccess.filePath,
             editor,
             (parseSuccess) => {
-              const elementToInsert: JSXElement = defaultTransparentViewElement(newUID)
+              const elementToInsert: JSXElement =
+                action.whatToWrapWith === 'default-empty-View'
+                  ? defaultTransparentViewElement(newUID)
+                  : action.whatToWrapWith.element
+
+              const elementToInsertWithPositionAttribute = isParentFlex
+                ? setPositionAttribute(elementToInsert, 'relative')
+                : setPositionAttribute(elementToInsert, 'absolute')
+
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
               const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
                 editor.projectContents,
                 editor.canvas.openFile?.filename ?? null,
                 parentPath,
-                elementToInsert,
+                elementToInsertWithPositionAttribute,
                 utopiaJSXComponents,
                 null,
               )
 
               viewPath = EP.appendToPath(parentPath, newUID)
 
+              const importsToAdd: Imports =
+                action.whatToWrapWith === 'default-empty-View'
+                  ? {
+                      // the default View import
+                      ['utopia-api']: importDetails(null, [importAlias('View')], null),
+                    }
+                  : action.whatToWrapWith.importsToAdd
+
               return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
                 return {
                   ...success,
                   utopiaComponents: withTargetAdded,
-                  imports: addImport(
-                    'utopia-api',
-                    null,
-                    [importAlias('View')],
-                    null,
-                    success.imports,
-                  ),
+                  imports: mergeImports(success.imports, importsToAdd),
                 }
               }, parseSuccess)
             },
@@ -2127,9 +2168,6 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
-          const isParentFlex =
-            parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
           const frameChanges: Array<PinOrFlexFrameChange> = [
             getFrameChange(viewPath, boundingBox, isParentFlex),
           ]
@@ -2166,6 +2204,32 @@ export const UPDATE_FNS = {
       },
       dispatch,
     )
+  },
+  WRAP_IN_PICKER: (
+    action: WrapInPicker,
+    editor: EditorModel,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    return {
+      ...editor,
+      floatingInsertMenu: {
+        ...editor.floatingInsertMenu,
+        insertMenuOpen: true,
+      },
+    }
+  },
+  CLOSE_FLOATING_INSERT_MENU: (
+    action: CloseFloatingInsertMenu,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      floatingInsertMenu: {
+        ...editor.floatingInsertMenu,
+        insertMenuOpen: false,
+      },
+    }
   },
   UNWRAP_GROUP_OR_VIEW: (
     action: UnwrapGroupOrView,

@@ -105,7 +105,8 @@ import {
   TOGGLE_TEXT_UNDERLINE_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
-  WRAP_ELEMENT_SHORTCUT,
+  WRAP_ELEMENT_DEFAULT_SHORTCUT,
+  WRAP_ELEMENT_PICKER_SHORTCUT,
   ZOOM_CANVAS_IN_SHORTCUT,
   ZOOM_CANVAS_OUT_SHORTCUT,
   ZOOM_UI_IN_SHORTCUT,
@@ -551,8 +552,13 @@ export function handleKeyDown(
           ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
           : []
       },
-      [WRAP_ELEMENT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.wrapInGroup(editor.selectedViews)] : []
+      [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
+        return isSelectMode(editor.mode)
+          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-View')]
+          : []
+      },
+      [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
+        return isSelectMode(editor.mode) ? [EditorActions.wrapInPicker(editor.selectedViews)] : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]

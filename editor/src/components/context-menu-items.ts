@@ -173,7 +173,7 @@ export const scrollToElement: ContextMenuItem<CanvasData> = {
 export const toggleVisibility: ContextMenuItem<CanvasData> = {
   name: 'Toggle Hidden',
   enabled: true,
-  shortcut: '⌘⇧H',
+  shortcut: '⇧⌘H',
   action: (_, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)([toggleHidden()], 'everyone')
   },
@@ -203,9 +203,9 @@ export const group: ContextMenuItem<CanvasData> = {
   },
 }
 
-export const ungroup: ContextMenuItem<CanvasData> = {
-  name: 'Ungroup',
-  shortcut: '⌘⇧G',
+export const unwrap: ContextMenuItem<CanvasData> = {
+  name: 'Unwrap',
+  shortcut: '⇧⌘G',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
@@ -217,12 +217,24 @@ export const ungroup: ContextMenuItem<CanvasData> = {
   },
 }
 
-export const wrapInView: ContextMenuItem<CanvasData> = {
-  name: 'Wrap in View',
-  shortcut: '⌘⏎',
+export const wrapInPicker: ContextMenuItem<CanvasData> = {
+  name: 'Wrap in…',
+  shortcut: 'G',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.wrapInView(data.selectedViews)], 'everyone')
+    requireDispatch(dispatch)([EditorActions.wrapInPicker(data.selectedViews)], 'everyone')
+  },
+}
+
+export const wrapInView: ContextMenuItem<CanvasData> = {
+  name: 'Wrap in View',
+  shortcut: '⌘G',
+  enabled: true,
+  action: (data, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)(
+      [EditorActions.wrapInView(data.selectedViews, 'default-empty-View')],
+      'everyone',
+    )
   },
 }
 
