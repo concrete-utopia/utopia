@@ -25,6 +25,7 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
   ElementInstanceMetadata,
+  isJSXAttributeNotFound,
   isJSXAttributeValue,
   isJSXElement,
   jsxAttributeValue,
@@ -51,7 +52,7 @@ const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
   (props: IndicatorProps<TailWindOption, true>) => (
     <components.DropdownIndicator {...props}>
-      <span style={{ lineHeight: '20px' }}> ↓ </span>
+      <span style={{ lineHeight: '20px', opacity: props.isDisabled ? 0 : 1 }}> ↓ </span>
     </components.DropdownIndicator>
   ),
 )
@@ -237,7 +238,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   }, [classNameAttribute, classNameFromProps])
 
   const isMenuEnabled = React.useMemo(
-    () => classNameAttribute != null && isJSXAttributeValue(classNameAttribute),
+    () =>
+      classNameAttribute == null ||
+      isJSXAttributeValue(classNameAttribute) ||
+      isJSXAttributeNotFound(classNameAttribute),
     [classNameAttribute],
   )
   const onChange = React.useCallback(
