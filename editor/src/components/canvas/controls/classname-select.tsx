@@ -188,7 +188,6 @@ const MaxResults = 500
 
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
-  const refref: React.RefObject<Select<any>> = React.useRef(null)
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
   const [input, setInput] = React.useState('')
   const filteredOptions = React.useMemo(() => {
@@ -445,7 +444,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       }}
     >
       <Select
-        ref={refref}
         filterOption={filterOption}
         options={filteredOptions}
         onChange={onChange}
