@@ -262,7 +262,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
 
       // Next if we haven't hit our max result count, we find matches based on attributes
       const remainingAllowedMatches = MaxResults - matchedResults.length
-      if (remainingAllowedMatches) {
+      if (remainingAllowedMatches > 0) {
         const orderedAttributeMatchedResults = findMatchingOptions(
           trimmedLowerCaseInput,
           AllAttributes,
