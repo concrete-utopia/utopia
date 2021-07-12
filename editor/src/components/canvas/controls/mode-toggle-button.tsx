@@ -1,12 +1,14 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import * as React from 'react'
-import { css, jsx, useTheme } from '@emotion/react'
+import { css, jsx } from '@emotion/react'
 import { useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
+import { useColorTheme } from '../../../uuiui'
 
 export const ModeToggleButton = betterReactMemo('ModeToggleButton', () => {
+  const colorTheme = useColorTheme()
   const selectedMode = useEditorState(
     (store) => store.editor.topmenu.formulaBarMode,
     'ModeToggleButton selectedMode',
@@ -22,10 +24,17 @@ export const ModeToggleButton = betterReactMemo('ModeToggleButton', () => {
   const cssButtonOnClick = React.useCallback(() => toggleMode('css'), [toggleMode])
   const contentButtonOnClick = React.useCallback(() => toggleMode('content'), [toggleMode])
   return (
-    <React.Fragment>
+    <div
+      style={{
+        display: 'flex',
+        gap: 2,
+        alignItems: 'center',
+        padding: '0 2px',
+      }}
+    >
       <Button
         style={{
-          background: '#00aaff',
+          background: colorTheme.primary.value,
         }}
         selected={selectedMode === 'css'}
         width={30}
@@ -35,7 +44,7 @@ export const ModeToggleButton = betterReactMemo('ModeToggleButton', () => {
       </Button>
       <Button
         style={{
-          background: '#ffffffcc',
+          background: colorTheme.inverted.neutralForeground.value,
         }}
         selected={selectedMode === 'content'}
         width={45}
@@ -43,7 +52,7 @@ export const ModeToggleButton = betterReactMemo('ModeToggleButton', () => {
       >
         Content
       </Button>
-    </React.Fragment>
+    </div>
   )
 })
 
@@ -55,28 +64,32 @@ interface ButtonProps {
 }
 
 const Button: React.FunctionComponent<ButtonProps> = (props) => (
-  <div
+  <span
     css={{
-      paddingLeft: 2,
-      paddingRight: 2,
+      fontSize: 9,
+      fontWeight: 700,
+      borderRadius: 2,
+      paddingLeft: 4,
+      paddingRight: 4,
+      width: props.selected ? props.width : 6,
+      flexShrink: 0,
+      flexGrow: 1,
       display: 'block',
       cursor: 'pointer',
       transition: 'width .2s linear',
-      width: props.selected ? props.width : 4,
-      flexShrink: 0,
-      flexGrow: 0,
-      borderRadius: 2,
+      color: props.selected ? 'black' : 'transparent',
+      transitionDelay: '.1s',
       overflow: 'hidden',
-      color: props.selected ? '#000033' : 'transparent',
       '&:hover': {
-        color: '#000033',
+        color: 'black',
         width: props.width,
-        transition: 'width .1s linear',
+        transition: 'all .1s linear',
+        transitionDelay: '.1s',
       },
       ...props.style,
     }}
     onClick={props.onClick}
   >
     {props.children}
-  </div>
+  </span>
 )

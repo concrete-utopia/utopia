@@ -25,6 +25,7 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
   ElementInstanceMetadata,
+  isJSXAttributeNotFound,
   isJSXAttributeValue,
   isJSXElement,
   jsxAttributeValue,
@@ -51,7 +52,7 @@ const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
   (props: IndicatorProps<TailWindOption, true>) => (
     <components.DropdownIndicator {...props}>
-      <span> ↓ </span>
+      <span style={{ lineHeight: '20px', opacity: props.isDisabled ? 0 : 1 }}> ↓ </span>
     </components.DropdownIndicator>
   ),
 )
@@ -131,6 +132,7 @@ const getOptionColors = (
 const MultiValueContainer = betterReactMemo(
   'MultiValueContainer',
   (props: MultiValueProps<TailWindOption>) => {
+    const theme = useColorTheme()
     const { data } = props
     const stripes: jsx.JSX.Element[] = React.useMemo(() => {
       const categories = data.categories ?? []
@@ -151,7 +153,7 @@ const MultiValueContainer = betterReactMemo(
         style={{
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: 'black',
+          backgroundColor: theme.inverted.bg1.value,
         }}
       >
         <components.MultiValueContainer {...props} />
@@ -236,7 +238,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   }, [classNameAttribute, classNameFromProps])
 
   const isMenuEnabled = React.useMemo(
-    () => classNameAttribute != null && isJSXAttributeValue(classNameAttribute),
+    () =>
+      classNameAttribute == null ||
+      isJSXAttributeValue(classNameAttribute) ||
+      isJSXAttributeNotFound(classNameAttribute),
     [classNameAttribute],
   )
   const onChange = React.useCallback(
@@ -298,26 +303,21 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         display: 'flex',
         alignItems: 'center',
         gap: 4,
-        paddingLeft: 4,
-        paddingRight: 4,
-        paddingTop: 0,
-        paddingBottom: 0,
         maxWidth: 0,
       }),
-
       multiValue: () => {
         return {
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           height: 18,
-          backgroundColor: '#191818',
+          backgroundColor: theme.inverted.bg1.value,
         }
       },
       multiValueLabel: () => ({
         fontSize: 10,
         padding: '2px 4px',
-        color: 'white',
+        color: theme.inverted.textColor.value,
       }),
       multiValueRemove: (styles: React.CSSProperties, { data }) => ({
         width: 11,
@@ -328,7 +328,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         ':hover': {
           opacity: 1,
           backgroundColor: data.color,
-          color: 'white',
+          color: theme.inverted.textColor.value,
+        },
+        '& > svg': {
+          overflow: 'hidden',
         },
       }),
       input: () => {
@@ -377,10 +380,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   return (
     <div
       css={{
-        backgroundColor: theme.bg1.value,
         height: 22,
         borderRadius: 3,
         position: 'relative',
+        padding: 4,
         flexGrow: 1,
         display: 'flex',
         alignItems: 'center',
