@@ -375,7 +375,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       input: () => {
         return {
           fontSize: 11,
-          color: theme.fg1.value,
+          color: theme.inverted.textColor.value,
           letterSpacing: 0.3,
           background: 'transparent',
           display: 'flex',

@@ -254,7 +254,12 @@ export function generateCodeResultCache(
   incorporateBuildResult(nodeModules, projectContents, projectModules)
 
   // Trigger async call to build the property controls info.
-  sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
+  sendPropertyControlsInfoRequest(
+    nodeModules,
+    projectContents,
+    onlyProjectFiles,
+    updatedAndReverseDepFilenames,
+  )
 
   const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch, evaluationCache)
   const resolveFn = getEditorResolveFunction(projectContents, nodeModules)

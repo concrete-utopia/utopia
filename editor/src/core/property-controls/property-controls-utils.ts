@@ -128,20 +128,20 @@ export function combineUpdates(
 }
 
 export interface GetPropertyControlsInfoMessage {
-  exportsInfo: ReadonlyArray<ExportsInfo>
   nodeModulesUpdate: NodeModulesUpdate
   projectContents: ProjectContentTreeRoot
+  updatedAndReverseDepFilenames: Array<string>
 }
 
 export function createGetPropertyControlsInfoMessage(
-  exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModulesUpdate: NodeModulesUpdate,
   projectContents: ProjectContentTreeRoot,
+  updatedAndReverseDepFilenames: Array<string>,
 ): GetPropertyControlsInfoMessage {
   return {
-    exportsInfo: exportsInfo,
     nodeModulesUpdate: nodeModulesUpdate,
     projectContents: projectContents,
+    updatedAndReverseDepFilenames: updatedAndReverseDepFilenames,
   }
 }
 
@@ -488,10 +488,10 @@ export function setPropertyControlsIFrameAvailable(value: boolean): void {
 }
 
 export function sendPropertyControlsInfoRequest(
-  exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
   projectContents: ProjectContentTreeRoot,
   onlyProjectFiles: boolean,
+  updatedAndReverseDepFilenames: Array<string>,
 ): void {
   let nodeModulesUpdate: NodeModulesUpdate
   if (onlyProjectFiles) {
@@ -538,9 +538,9 @@ export function sendPropertyControlsInfoRequest(
             if (queuedNodeModulesUpdate != null) {
               contentWindow.postMessage(
                 createGetPropertyControlsInfoMessage(
-                  exportsInfo,
                   queuedNodeModulesUpdate,
                   projectContents,
+                  updatedAndReverseDepFilenames,
                 ),
                 '*',
               )
