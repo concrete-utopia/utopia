@@ -99,133 +99,140 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   return insertableComponents
 }
 
-const componentSelectorStyles: StylesConfig = {
-  container: (styles) => ({
-    // the outermost element. It contains the popup menu,  so don't set a height on it!
-    // shouldn't contain any sizing
-    // ...styles,
-    flexGrow: 1,
-    display: 'flex',
-    flexDirection: 'column',
-  }),
-  control: (styles) => ({
-    // need to remove styles here, since that implicitly sets a height of 38
-    display: 'flex',
-    background: 'transparent',
-    outline: 'none',
-    ':focus-within': {
-      outline: 'none',
-      border: 'none',
-    },
-  }),
-  valueContainer: (styles) => ({
-    // the container for added options (tags) and input
-    // sibling to indicatorsContainer
-    // default styles mess with layout, so ignore them
-    // ...styles,
-    display: 'flex',
-    position: 'relative',
-    flexGrow: 1,
-    flexShrink: 0,
-    overflowX: 'scroll',
-    alignItems: 'center',
-    gap: 4,
-    // height: 22,
-    paddingLeft: 4,
-    paddingRight: 4,
-    paddingTop: 0,
-    paddingBottom: 0,
-  }),
-  indicatorsContainer: (styles) => ({
-    display: 'none',
-  }),
+function useComponentSelectorStyles(): StylesConfig {
+  const colorTheme = useColorTheme()
+  // componentSelectorStyles will only be recreated if the theme changes, otherwise we re-use the same object
+  return React.useMemo(
+    () => ({
+      container: (styles) => ({
+        // the outermost element. It contains the popup menu,  so don't set a height on it!
+        // shouldn't contain any sizing
+        // ...styles,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }),
+      control: (styles) => ({
+        // need to remove styles here, since that implicitly sets a height of 38
+        display: 'flex',
+        background: 'transparent',
+        outline: 'none',
+        ':focus-within': {
+          outline: 'none',
+          border: 'none',
+        },
+      }),
+      valueContainer: (styles) => ({
+        // the container for added options (tags) and input
+        // sibling to indicatorsContainer
+        // default styles mess with layout, so ignore them
+        // ...styles,
+        display: 'flex',
+        position: 'relative',
+        flexGrow: 1,
+        flexShrink: 0,
+        overflowX: 'scroll',
+        alignItems: 'center',
+        gap: 4,
+        // height: 22,
+        paddingLeft: 4,
+        paddingRight: 4,
+        paddingTop: 0,
+        paddingBottom: 0,
+      }),
+      indicatorsContainer: (styles) => ({
+        display: 'none',
+      }),
 
-  multiValue: (styles, { data }) => {
-    return {
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-    }
-  },
-  multiValueLabel: (styles, { data }) => ({
-    // ...styles,
-    fontSize: 10,
-    padding: '2px 4px',
-  }),
-  multiValueRemove: (styles, { data }) => ({
-    // ...styles,
-    width: 11,
-    display: 'flex',
-    paddingTop: 2,
-    opacity: 0.4,
-    color: data.color,
-    ':hover': {
-      opacity: 1,
-      backgroundColor: data.color,
-    },
-  }),
-  menu: (styles) => {
-    // the outer shell
-    return {
-      // ...styles,
-      boxShadow: 'none',
-      borderRadius: 0,
-      background: 'transparent',
-      overflowY: 'scroll',
-      flex: 1,
-    }
-  },
-  menuList: (styles) => {
-    // the list wrapper
-    return {
-      position: 'relative',
-      maxHeight: 300,
-      padding: 4,
-      overflowY: 'scroll',
-    }
-  },
-  input: (styles) => {
-    return {
-      ...styles,
-      color: 'black',
-      fontSize: 11,
-      flexGrow: 1,
-      letterSpacing: 0.3,
-      background: 'transparent',
-      display: 'flex',
-      alignItems: 'center',
-    }
-  },
-  option: (styles, { data, isDisabled, isFocused, isSelected }) => {
-    // a single entry in the options list
+      multiValue: (styles, { data }) => {
+        return {
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+        }
+      },
+      multiValueLabel: (styles, { data }) => ({
+        // ...styles,
+        fontSize: 10,
+        padding: '2px 4px',
+      }),
+      multiValueRemove: (styles, { data }) => ({
+        // ...styles,
+        width: 11,
+        display: 'flex',
+        paddingTop: 2,
+        opacity: 0.4,
+        color: data.color,
+        ':hover': {
+          opacity: 1,
+          backgroundColor: data.color,
+        },
+      }),
+      menu: (styles) => {
+        // the outer shell
+        return {
+          // ...styles,
+          boxShadow: 'none',
+          borderRadius: 0,
+          background: 'transparent',
+          overflowY: 'scroll',
+          flex: 1,
+        }
+      },
+      menuList: (styles) => {
+        // the list wrapper
+        return {
+          position: 'relative',
+          maxHeight: 300,
+          padding: 4,
+          overflowY: 'scroll',
+        }
+      },
+      input: (styles) => {
+        return {
+          ...styles,
+          color: 'black',
+          fontSize: 11,
+          flexGrow: 1,
+          letterSpacing: 0.3,
+          background: 'transparent',
+          display: 'flex',
+          alignItems: 'center',
+        }
+      },
+      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+        // a single entry in the options list
 
-    return {
-      ...styles,
-      height: 25,
-      display: 'flex',
-      alignItems: 'center',
-      paddingLeft: 8,
-      paddingRight: 8,
-      cursor: isDisabled ? 'not-allowed' : 'default',
-    }
-  },
-  group: () => {
-    return { paddingTop: 6 }
-  },
-  groupHeading: (styles) => {
-    return {
-      color: 'hsl(0,0%,70%)', // TODO Theme
-      height: 25,
-      right: 8,
-      position: 'absolute',
-      display: 'flex',
-      alignItems: 'center',
-    }
-  },
+        return {
+          ...styles,
+          height: 25,
+          display: 'flex',
+          alignItems: 'center',
+          paddingLeft: 8,
+          paddingRight: 8,
+          cursor: isDisabled ? 'not-allowed' : 'default',
+        }
+      },
+      group: () => {
+        return { paddingTop: 6 }
+      },
+      groupHeading: (styles) => {
+        return {
+          color: colorTheme.fg7.value,
+          height: 25,
+          right: 8,
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+        }
+      },
+    }),
+    [colorTheme],
+  )
 }
-
 export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const colorTheme = useColorTheme()
+  const componentSelectorStyles = useComponentSelectorStyles()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   // TODO move onClickOutside to here as well?
   useHandleCloseOnESCOrEnter(
