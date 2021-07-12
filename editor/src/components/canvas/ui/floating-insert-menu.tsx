@@ -114,6 +114,7 @@ function useComponentSelectorStyles(): StylesConfig {
       }),
       control: (styles) => ({
         // need to remove styles here, since that implicitly sets a height of 38
+        // ...styles,
         display: 'flex',
         background: 'transparent',
         outline: 'none',
@@ -140,11 +141,13 @@ function useComponentSelectorStyles(): StylesConfig {
         paddingBottom: 0,
       }),
       indicatorsContainer: (styles) => ({
+        // ...styles,
         display: 'none',
       }),
 
       multiValue: (styles, { data }) => {
         return {
+          // ...styles,
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
@@ -181,6 +184,7 @@ function useComponentSelectorStyles(): StylesConfig {
       menuList: (styles) => {
         // the list wrapper
         return {
+          // ...styles,
           position: 'relative',
           maxHeight: 300,
           padding: 4,
@@ -213,10 +217,14 @@ function useComponentSelectorStyles(): StylesConfig {
         }
       },
       group: () => {
-        return { paddingTop: 6 }
+        return {
+          // ...styles,
+          paddingTop: 6,
+        }
       },
       groupHeading: (styles) => {
         return {
+          // ...styles,
           color: colorTheme.fg7.value,
           height: 25,
           right: 8,
