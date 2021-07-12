@@ -4,9 +4,18 @@ import {
   DependencyBoundDescriptors,
   ComponentDescriptor,
 } from './third-party-types'
-import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
+import {
+  JSXAttributes,
+  jsxAttributesEntry,
+  jsxAttributeValue,
+  jsxElementName,
+  jsxElementWithoutUID,
+} from '../shared/element-template'
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
-import { PropertyControls } from 'utopia-api'
+import { getDefaultProps, PropertyControls } from 'utopia-api'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { objectMap } from '../shared/object-utils'
+import { getDefaultPropsAsAttributes } from './shared'
 
 const StyleObjectProps: PropertyControls = {
   style: {
@@ -20,12 +29,13 @@ function createBasicComponent(
   name: string,
   propertyControls: PropertyControls | null,
 ): ComponentDescriptor {
+  const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
   return componentDescriptor(
     {
       antd: importDetails(null, [importAlias(baseVariable)], null),
       'antd/dist/antd.css': importDetails(null, [], null),
     },
-    jsxElementWithoutUID(jsxElementName(baseVariable, propertyPathParts), [], []),
+    jsxElementWithoutUID(jsxElementName(baseVariable, propertyPathParts), defaultAttributes, []),
     name,
     { ...StyleObjectProps, ...propertyControls },
   )

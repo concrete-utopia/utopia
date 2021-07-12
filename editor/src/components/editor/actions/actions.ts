@@ -83,6 +83,7 @@ import {
   getModifiableJSXAttributeAtPath,
   unsetJSXValuesAtPaths,
   setJSXValuesAtPaths,
+  ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import {
@@ -117,6 +118,7 @@ import {
   eitherToMaybe,
   mapEither,
   defaultEither,
+  traverseEither,
 } from '../../../core/shared/either'
 import type {
   RequireFn,
@@ -355,6 +357,7 @@ import {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
+  InsertWithDefaults,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -4346,6 +4349,77 @@ export const UPDATE_FNS = {
         ...editor.topmenu,
         formulaBarMode: action.value,
       },
+    }
+  },
+  INSERT_WITH_DEFAULTS: (action: InsertWithDefaults, editor: EditorModel): EditorModel => {
+    const openFilename = editor.canvas.openFile?.filename
+    if (openFilename == null) {
+      return editor
+    } else {
+      let newSelectedViews: ElementPath[] = []
+      const withNewElement = modifyUnderlyingTarget(
+        action.targetParent,
+        openFilename,
+        editor,
+        (element) => element,
+        (success) => {
+          const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
+          const newUID = generateUidWithExistingComponents(editor.projectContents)
+
+          // Potentially add in some default position and sizing.
+          let props = action.toInsert.element.props
+          if (action.styleProps === 'add-size') {
+            const sizesToSet: Array<ValueAtPath> = [
+              { path: PP.create(['style', 'width']), value: jsxAttributeValue(100, emptyComments) },
+              {
+                path: PP.create(['style', 'height']),
+                value: jsxAttributeValue(100, emptyComments),
+              },
+            ]
+            const withSizeUpdates = setJSXValuesAtPaths(props, sizesToSet)
+            if (isRight(withSizeUpdates)) {
+              props = withSizeUpdates.value
+            } else {
+              console.error('Unable to set sizes on element.')
+              return success
+            }
+          }
+          const element = jsxElement(
+            action.toInsert.element.name,
+            newUID,
+            props,
+            action.toInsert.element.children,
+          )
+
+          const withInsertedElement = insertElementAtPath(
+            editor.projectContents,
+            openFilename,
+            action.targetParent,
+            element,
+            utopiaComponents,
+            null,
+          )
+
+          const newPath = EP.appendToPath(action.targetParent, newUID)
+          newSelectedViews.push(newPath)
+
+          const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+            success.topLevelElements,
+            withInsertedElement,
+          )
+
+          const updatedImports = mergeImports(success.imports, action.toInsert.importsToAdd)
+          return {
+            ...success,
+            topLevelElements: updatedTopLevelElements,
+            imports: updatedImports,
+          }
+        },
+      )
+      return {
+        ...withNewElement,
+        selectedViews: newSelectedViews,
+      }
     }
   },
 }

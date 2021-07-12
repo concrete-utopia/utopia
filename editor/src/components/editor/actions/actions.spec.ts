@@ -22,6 +22,8 @@ import {
   jsxAttributeOtherJavaScript,
   JSXElementChild,
   partOfJsxAttributeValue,
+  jsxElementWithoutUID,
+  jsxAttributesEntry,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -69,6 +71,7 @@ import {
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import {
+  insertWithDefaults,
   setCanvasFrames,
   setProp_UNSAFE,
   switchLayoutSystem,
@@ -100,6 +103,16 @@ import {
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { complexDefaultProject } from '../../../sample-projects/sample-project-utils'
+import {
+  getComponentGroups,
+  insertableComponent,
+  InsertableComponent,
+} from '../../shared/project-components'
+import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
+import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
+import { getThirdPartyPropertyControls } from '../../../core/property-controls/property-controls-utils'
+import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -1095,5 +1108,208 @@ describe('UPDATE_FILE_PATH', () => {
         ],
       }
     `)
+  })
+})
+
+describe('INSERT_WITH_DEFAULTS', () => {
+  it('inserts an element into the project with the given defaults', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      { antd: { status: 'loaded' } },
+      getThirdPartyPropertyControls('antd', '4.0.0'),
+      editorState.projectContents,
+      [resolvedNpmDependency('antd', '4.0.0')],
+      StoryboardFilePath,
+    )
+    const antdGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return (
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+        )
+      }),
+    )
+    const menuInsertable = forceNotNull(
+      'Component should exist.',
+      antdGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'Menu'
+      }),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, menuInsertable, 'do-not-add')
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, false),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          import { Menu } from 'antd'
+          export var Card = (props) => {
+            return (
+              <div
+                data-uid='card-outer-div'
+                style={{ ...props.style }}
+              >
+                <div
+                  data-uid='card-inner-div'
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Rectangle
+                  data-uid='card-inner-rectangle'
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
+                />
+                <Menu
+                  forceSubMenuRender={false}
+                  inlineCollapsed={false}
+                  inlineIndent={24}
+                  mode='inline'
+                  multiple={false}
+                  selectable
+                  subMenuCloseDelay={0.1}
+                  subMenuOpenDelay={0}
+                  theme='light'
+                />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
+  })
+
+  it('inserts an element into the project with the given defaults, also adding style props', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      { antd: { status: 'loaded' } },
+      getThirdPartyPropertyControls('antd', '4.0.0'),
+      editorState.projectContents,
+      [resolvedNpmDependency('antd', '4.0.0')],
+      StoryboardFilePath,
+    )
+    const antdGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return (
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+        )
+      }),
+    )
+    const menuInsertable = forceNotNull(
+      'Component should exist.',
+      antdGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'Menu'
+      }),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, menuInsertable, 'add-size')
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, false),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          import { Menu } from 'antd'
+          export var Card = (props) => {
+            return (
+              <div
+                data-uid='card-outer-div'
+                style={{ ...props.style }}
+              >
+                <div
+                  data-uid='card-inner-div'
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Rectangle
+                  data-uid='card-inner-rectangle'
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
+                />
+                <Menu
+                  forceSubMenuRender={false}
+                  inlineCollapsed={false}
+                  inlineIndent={24}
+                  mode='inline'
+                  multiple={false}
+                  selectable
+                  subMenuCloseDelay={0.1}
+                  subMenuOpenDelay={0}
+                  theme='light'
+                  style={{ width: 100, height: 100 }}
+                />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
   })
 })
