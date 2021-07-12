@@ -366,6 +366,8 @@ export function handleShortcuts<T>(
     if (callback == null) {
       return defaultValue
     } else {
+      // we found a shortcut for this key combo, let's prevent default on the event
+      event.preventDefault()
       return callback()
     }
   }
