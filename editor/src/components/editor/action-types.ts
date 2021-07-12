@@ -51,6 +51,7 @@ import { BuildType } from '../../core/workers/ts/ts-worker'
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
+import { InsertableComponent, StylePropOption } from '../shared/project-components'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -851,6 +852,13 @@ export interface UpdateFormulaBarMode {
   value: 'css' | 'content'
 }
 
+export interface InsertWithDefaults {
+  action: 'INSERT_WITH_DEFAULTS'
+  targetParent: ElementPath
+  toInsert: InsertableComponent
+  styleProps: StylePropOption
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -992,6 +1000,7 @@ export type EditorAction =
   | SetCurrentTheme
   | FocusFormulaBar
   | UpdateFormulaBarMode
+  | InsertWithDefaults
 
 export type DispatchPriority =
   | 'everyone'

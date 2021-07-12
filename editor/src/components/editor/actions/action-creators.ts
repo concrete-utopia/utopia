@@ -49,6 +49,7 @@ import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/co
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
+import { InsertableComponent, StylePropOption } from '../../shared/project-components'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -189,6 +190,7 @@ import type {
   UpdateFormulaBarMode,
   WrapInPicker,
   CloseFloatingInsertMenu,
+  InsertWithDefaults,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1350,5 +1352,18 @@ export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBar
   return {
     action: 'UPDATE_FORMULA_BAR_MODE',
     value: value,
+  }
+}
+
+export function insertWithDefaults(
+  targetParent: ElementPath,
+  toInsert: InsertableComponent,
+  styleProps: StylePropOption,
+): InsertWithDefaults {
+  return {
+    action: 'INSERT_WITH_DEFAULTS',
+    targetParent: targetParent,
+    toInsert: toInsert,
+    styleProps: styleProps,
   }
 }

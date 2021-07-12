@@ -108,9 +108,23 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
 
   return (
     <SimpleFlexRow
-      style={{
+      css={{
+        height: 32,
         flexGrow: 1,
-        height: UtopiaTheme.layout.inputHeight.default,
+        padding: 4,
+        gap: 4,
+        borderRadius: 4,
+        backgroundColor: colorTheme.inverted.bg1.value,
+        color: colorTheme.inverted.fg1.value,
+        cursor: 'pointer',
+        border: '1px solid transparent',
+        '&:hover': {
+          outline: 'none',
+          border: `1px solid ${colorTheme.bg5.value}`,
+        },
+        '&:focus-within': {
+          border: `1px solid ${colorTheme.brandNeonYellow.value}`,
+        },
       }}
     >
       {buttonsVisible ? <ModeToggleButton /> : null}
@@ -122,20 +136,18 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           css={{
             paddingLeft: 4,
             paddingRight: 4,
-            border: '0px',
             width: '100%',
             height: '100%',
-            backgroundColor: colorTheme.canvasBackground.value,
-            borderRadius: 5,
+            border: '1px solid transparent',
+            borderRadius: 3,
+            backgroundColor: 'transparent',
+            color: colorTheme.inverted.fg1.value,
             transition: 'background-color .1s ease-in-out',
             '&:hover': {
-              '&:not(:disabled)': {
-                boxShadow: 'inset 0px 0px 0px 1px lightgrey',
-              },
+              outline: 'none',
             },
             '&:focus': {
-              backgroundColor: colorTheme.bg0.value,
-              boxShadow: 'inset 0px 0px 0px 1px lightgrey',
+              outline: 'none',
             },
           }}
           onChange={onInputChange}

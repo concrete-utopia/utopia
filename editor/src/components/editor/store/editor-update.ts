@@ -305,6 +305,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_FORMULA_BAR_MODE(action, state)
     case 'CLOSE_FLOATING_INSERT_MENU':
       return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
+    case 'INSERT_WITH_DEFAULTS':
+      return UPDATE_FNS.INSERT_WITH_DEFAULTS(action, state)
     default:
       return state
   }

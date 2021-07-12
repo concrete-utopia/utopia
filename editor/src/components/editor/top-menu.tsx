@@ -55,7 +55,7 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
   }, [dispatch, followSelection])
 
   return (
-    <SimpleFlexRow style={{ flexGrow: 1, gap: 12, paddingLeft: 8, paddingRight: 8 }}>
+    <SimpleFlexRow style={{ flexGrow: 1, gap: 12, paddingLeft: 8, paddingRight: 4 }}>
       <Tooltip title={'Toggle outline'} placement={'bottom'}>
         <SquareButton spotlight={false} highlight={true} onClick={onClickNavigateTab}>
           <MenuIcons.Navigator />

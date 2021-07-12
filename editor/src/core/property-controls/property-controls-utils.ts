@@ -9,9 +9,9 @@ import {
   parsePropertyControls,
 } from './property-controls-parser'
 import { PropertyControls, getDefaultProps, ControlDescription } from 'utopia-api'
-import { isRight, foldEither } from '../shared/either'
+import { isRight, foldEither, left } from '../shared/either'
 import { forEachValue, objectMap } from '../shared/object-utils'
-import { ParseResult } from '../../utils/value-parser-utils'
+import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
 import * as React from 'react'
 import { joinSpecial, pluck } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
@@ -145,17 +145,38 @@ export function createGetPropertyControlsInfoMessage(
   }
 }
 
+export function parsedPropertyControlsForComponentInFile(
+  componentName: string,
+  filePathNoExtension: string,
+  propertyControlsInfo: PropertyControlsInfo,
+): ParseResult<ParsedPropertyControls> {
+  const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
+  if (componentName in propertyControlsForFile) {
+    return parsePropertyControls(propertyControlsForFile[componentName])
+  } else {
+    return left(descriptionParseError(`No property controls for ${componentName}.`))
+  }
+}
+
+interface DefaultPropertiesForComponentInFileResult {
+  defaultProps: { [prop: string]: unknown }
+  parsedControls: ParseResult<ParsedPropertyControls>
+}
+
 export function defaultPropertiesForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
   propertyControlsInfo: PropertyControlsInfo,
-): { [prop: string]: unknown } {
-  const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
-  const parsedPropertyControlsForFile = parsePropertyControlsForFile(propertyControlsForFile)
-  const parsedPropertyControls = parsedPropertyControlsForFile[componentName]
-  return parsedPropertyControls == null
-    ? {}
-    : getDefaultPropsFromParsedControls(parsedPropertyControls)
+): DefaultPropertiesForComponentInFileResult {
+  const parsedPropertyControls = parsedPropertyControlsForComponentInFile(
+    componentName,
+    filePathNoExtension,
+    propertyControlsInfo,
+  )
+  return {
+    defaultProps: getDefaultPropsFromParsedControls(parsedPropertyControls),
+    parsedControls: parsedPropertyControls,
+  }
 }
 
 export function defaultPropertiesForComponent(

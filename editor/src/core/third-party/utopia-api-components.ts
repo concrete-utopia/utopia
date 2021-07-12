@@ -6,17 +6,19 @@ import {
 } from './third-party-types'
 import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
 import { PropertyControls } from 'utopia-api'
+import { getDefaultPropsAsAttributes } from './shared'
 
 function createBasicUtopiaComponent(
   baseVariable: string,
   name: string,
   propertyControls: PropertyControls | null,
 ): ComponentDescriptor {
+  const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
   return componentDescriptor(
     {
       'utopia-api': importDetails(null, [importAlias(baseVariable)], null),
     },
-    jsxElementWithoutUID(jsxElementName(baseVariable, []), [], []),
+    jsxElementWithoutUID(jsxElementName(baseVariable, []), defaultAttributes, []),
     name,
     propertyControls,
   )

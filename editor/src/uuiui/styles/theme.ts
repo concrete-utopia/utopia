@@ -85,6 +85,8 @@ const light = {
   ...lightPrimitives,
   ...lightErrorStates,
 
+  textColor: base.almostBlack,
+
   // big sections
   leftMenuBackground: lightPrimitives.neutralBackground,
   leftPaneBackground: lightPrimitives.neutralBackground,
@@ -180,9 +182,9 @@ const darkBase = {
   bg5: createUtopiColor('#848998', 'selected elements', 'grey'),
   fg0: createUtopiColor('#ffffff', 'emphasized foreground', 'black'),
   fg1: createUtopiColor('#D9DCE3', 'default foreground', 'black'),
-  // fg2: createUtopiColor('red', 'black', 'black'),
+  fg2: createUtopiColor('red', 'black', 'black'),
   fg3: createUtopiColor('pink', 'darkgray', 'darkgray'),
-  // fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
+  fg4: createUtopiColor('orange', 'darkgray', 'darkgray'),
   fg5: createUtopiColor('#8B91A0', 'leva', 'grey'),
   fg6: createUtopiColor('#6F778B', 'grey', 'grey'),
   fg7: createUtopiColor('#525B72', 'grey', 'grey'),
@@ -219,10 +221,12 @@ const darkErrorStates = {
   warningBgTranslucent: base.orange.o(20),
   warningBgSolid: base.orange.shade(70),
 }
-const dark = {
+const dark: typeof light = {
   ...darkBase,
   ...darkPrimitives,
   ...darkErrorStates,
+
+  textColor: base.white,
 
   // big sections
   leftMenuBackground: darkPrimitives.neutralBackground,
@@ -297,13 +301,14 @@ const dark = {
   flasherHookColor: base.neonpink,
 }
 
-export const colorTheme = light
+export const colorTheme = { ...light, inverted: dark }
+export const darkColorTheme = { ...dark, inverted: light }
 
 // TODO: don't export colorTheme anymore and just export useUtopiaTheme() hook
 // prerequisites: no class components and usage of UtopiaTheme.color instead of colorTheme
 export const useColorTheme = () => {
   const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
-  return currentTheme === 'dark' ? dark : light
+  return currentTheme === 'dark' ? darkColorTheme : colorTheme
 }
 
 const inspectorXPadding = 8

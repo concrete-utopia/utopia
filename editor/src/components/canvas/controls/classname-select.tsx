@@ -25,6 +25,7 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
   ElementInstanceMetadata,
+  isJSXAttributeNotFound,
   isJSXAttributeValue,
   isJSXElement,
   jsxAttributeValue,
@@ -42,7 +43,7 @@ interface TailWindOption {
   categories?: string[]
 }
 
-const TailWindOptions = AllTailwindClasses.map((className, index) => ({
+const TailWindOptions: Array<TailWindOption> = AllTailwindClasses.map((className, index) => ({
   label: className,
   value: className,
 }))
@@ -51,7 +52,7 @@ const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
   (props: IndicatorProps<TailWindOption, true>) => (
     <components.DropdownIndicator {...props}>
-      <span> ↓ </span>
+      <span style={{ lineHeight: '20px', opacity: props.isDisabled ? 0 : 1 }}> ↓ </span>
     </components.DropdownIndicator>
   ),
 )
@@ -131,6 +132,7 @@ const getOptionColors = (
 const MultiValueContainer = betterReactMemo(
   'MultiValueContainer',
   (props: MultiValueProps<TailWindOption>) => {
+    const theme = useColorTheme()
     const { data } = props
     const stripes: jsx.JSX.Element[] = React.useMemo(() => {
       const categories = data.categories ?? []
@@ -151,7 +153,7 @@ const MultiValueContainer = betterReactMemo(
         style={{
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: 'black',
+          backgroundColor: theme.inverted.bg1.value,
         }}
       >
         <components.MultiValueContainer {...props} />
@@ -181,11 +183,49 @@ const ValueContainer = betterReactMemo(
   },
 )
 
-const filterOption = createFilter({ ignoreAccents: false })
+const filterOption = () => true
+const MaxResults = 500
 
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
+  const [input, setInput] = React.useState('')
+  const filteredOptions = React.useMemo(() => {
+    const trimmedLowerCaseInput = input.trim().toLowerCase()
+    if (trimmedLowerCaseInput === '') {
+      return TailWindOptions.slice(0, MaxResults)
+    } else {
+      // First find all matches, and use a sparse array to keep the best matches at the front
+      let orderedMatchedResults: Array<Array<TailWindOption>> = []
+      let perfectMatchCount = 0
+      for (var i = 0; i < TailWindOptions.length && perfectMatchCount < MaxResults; i++) {
+        const nextOption = TailWindOptions[i]
+        const indexOf = nextOption.label.indexOf(trimmedLowerCaseInput)
+        if (indexOf > -1) {
+          let existingMatched = orderedMatchedResults[indexOf] ?? []
+          existingMatched.push(nextOption)
+          orderedMatchedResults[indexOf] = existingMatched
+          if (indexOf === 0) {
+            perfectMatchCount++
+          }
+        }
+      }
+
+      // Now go through and take the first n best matches
+      let matchedResults: Array<TailWindOption> = []
+      let matchCount = 0
+
+      for (var j = 0; j < orderedMatchedResults.length && matchCount < MaxResults; j++) {
+        const nextMatches = orderedMatchedResults[j]
+        if (nextMatches != null) {
+          matchedResults.push(...nextMatches.slice(0, MaxResults - matchCount))
+          matchCount += nextMatches.length
+        }
+      }
+
+      return matchedResults
+    }
+  }, [input])
 
   const { classNameAttribute, classNameFromProps, elementPath } = useEditorState((store) => {
     let element: ElementInstanceMetadata | null = null
@@ -236,7 +276,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   }, [classNameAttribute, classNameFromProps])
 
   const isMenuEnabled = React.useMemo(
-    () => classNameAttribute != null && isJSXAttributeValue(classNameAttribute),
+    () =>
+      classNameAttribute == null ||
+      isJSXAttributeValue(classNameAttribute) ||
+      isJSXAttributeNotFound(classNameAttribute),
     [classNameAttribute],
   )
   const onChange = React.useCallback(
@@ -298,26 +341,21 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         display: 'flex',
         alignItems: 'center',
         gap: 4,
-        paddingLeft: 4,
-        paddingRight: 4,
-        paddingTop: 0,
-        paddingBottom: 0,
         maxWidth: 0,
       }),
-
       multiValue: () => {
         return {
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           height: 18,
-          backgroundColor: '#191818',
+          backgroundColor: theme.inverted.bg1.value,
         }
       },
       multiValueLabel: () => ({
         fontSize: 10,
         padding: '2px 4px',
-        color: 'white',
+        color: theme.inverted.textColor.value,
       }),
       multiValueRemove: (styles: React.CSSProperties, { data }) => ({
         width: 11,
@@ -328,7 +366,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         ':hover': {
           opacity: 1,
           backgroundColor: data.color,
-          color: 'white',
+          color: theme.inverted.textColor.value,
+        },
+        '& > svg': {
+          overflow: 'hidden',
         },
       }),
       input: () => {
@@ -377,10 +418,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   return (
     <div
       css={{
-        backgroundColor: theme.bg1.value,
         height: 22,
         borderRadius: 3,
         position: 'relative',
+        padding: 4,
         flexGrow: 1,
         display: 'flex',
         alignItems: 'center',
@@ -389,8 +430,9 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     >
       <WindowedSelect
         filterOption={filterOption}
-        options={TailWindOptions}
+        options={filteredOptions}
         onChange={onChange}
+        onInputChange={setInput}
         value={selectedValues}
         isMulti={true}
         isDisabled={!isMenuEnabled}
