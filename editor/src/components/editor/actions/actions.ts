@@ -150,6 +150,7 @@ import {
   importAlias,
   Imports,
   importStatementFromImportDetails,
+  importDetails,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -2149,11 +2150,7 @@ export const UPDATE_FNS = {
                 action.whatToWrapWith === 'default-empty-View'
                   ? {
                       // the default View import
-                      ['utopia-api']: {
-                        importedWithName: null,
-                        importedFromWithin: [importAlias('View')],
-                        importedAs: null,
-                      },
+                      ['utopia-api']: importDetails(null, [importAlias('View')], null),
                     }
                   : action.whatToWrapWith.importsToAdd
 
