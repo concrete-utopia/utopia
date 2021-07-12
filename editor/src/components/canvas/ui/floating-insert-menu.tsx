@@ -214,7 +214,7 @@ const componentSelectorStyles: StylesConfig = {
   },
   groupHeading: (styles) => {
     return {
-      color: 'hsl(0,0%,70%)',
+      color: 'hsl(0,0%,70%)', // TODO Theme
       height: 25,
       right: 8,
       position: 'absolute',
@@ -267,7 +267,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   return (
     <div
       style={{
-        backgroundColor: '#fefefe',
+        backgroundColor: '#fefefe', // TODO Theme
         position: 'relative',
         margin: 20,
         fontSize: 11,
@@ -276,12 +276,12 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
       <FlexColumn
         style={{
           width: 280,
-          background: 'hsl(0,0%,96%)',
-          border: '1px solid hsl(0,0%,93%)',
+          background: 'hsl(0,0%,96%)', // TODO Theme
+          border: '1px solid hsl(0,0%,93%)', // TODO Theme
           borderRadius: 2,
           minHeight: 300,
           overflow: 'hidden',
-          boxShadow: '0px 0px 4px 1px hsla(0,0%,30%,10%)',
+          boxShadow: '0px 0px 4px 1px hsla(0,0%,30%,10%)', // TODO Theme
         }}
       >
         <div
