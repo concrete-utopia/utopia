@@ -271,10 +271,17 @@ const componentSelectorStyles: StylesConfig = {
     }
   },
   group: () => {
-    return {}
+    return { paddingTop: 6 }
   },
   groupHeading: (styles) => {
-    return { color: 'hsl(0,0%,70%)' }
+    return {
+      color: 'hsl(0,0%,70%)',
+      height: 25,
+      right: 8,
+      position: 'absolute',
+      display: 'flex',
+      alignItems: 'center',
+    }
   },
 }
 
