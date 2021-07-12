@@ -5,13 +5,13 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import { AllTailwindClasses } from '../../../core/third-party/tailwind-defaults'
-import WindowedSelect, {
+import Select, {
   components,
   createFilter,
   IndicatorProps,
   MultiValueProps,
   ValueContainerProps,
-} from 'react-windowed-select'
+} from 'react-select'
 import type { StylesConfig } from 'react-select'
 import type { Option } from 'react-select/src/filters'
 import chroma from 'chroma-js'
@@ -50,9 +50,9 @@ const TailWindOptions: Array<TailWindOption> = AllTailwindClasses.map((className
 
 const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
-  (props: IndicatorProps<TailWindOption, true>) => (
+  (props: IndicatorProps<TailWindOption>) => (
     <components.DropdownIndicator {...props}>
-      <span style={{ lineHeight: '20px', opacity: props.isDisabled ? 0 : 1 }}> ↓ </span>
+      <span style={{ lineHeight: '20px', opacity: 1 }}> ↓ </span>
     </components.DropdownIndicator>
   ),
 )
@@ -174,7 +174,7 @@ const MultiValueContainer = betterReactMemo(
 
 const ValueContainer = betterReactMemo(
   'ValueContainer',
-  (props: ValueContainerProps<TailWindOption, true>) => {
+  (props: ValueContainerProps<TailWindOption>) => {
     return (
       <div style={{ overflowX: 'scroll', flex: 1 }}>
         <components.ValueContainer {...props} />
@@ -188,6 +188,7 @@ const MaxResults = 500
 
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
+  const refref: React.RefObject<Select<any>> = React.useRef(null)
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
   const [input, setInput] = React.useState('')
   const filteredOptions = React.useMemo(() => {
@@ -283,14 +284,18 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     [classNameAttribute],
   )
   const onChange = React.useCallback(
-    (newValue: Array<{ label: string; value: string }>) => {
+    // newValue: TailWindOption[]
+    (newValue: any) => {
       if (elementPath != null) {
         dispatch(
           [
             EditorActions.setProp_UNSAFE(
               elementPath,
               PP.create(['className']),
-              jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
+              jsxAttributeValue(
+                (newValue ?? []).map((value: TailWindOption) => value.value).join(' '),
+                emptyComments,
+              ),
             ),
           ],
           'everyone',
@@ -386,6 +391,15 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         ...styles,
         height: 20,
       }),
+      menuList: () => ({
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 8,
+        rowGap: 4,
+        padding: 4,
+        height: 38,
+        overflowY: 'scroll',
+      }),
       option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
         // a single entry in the options list
         const optionColors = getOptionColors(
@@ -396,7 +410,9 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           data,
         )
         return {
-          minHeight: 27,
+          fontSize: 10,
+          height: 17,
+          padding: 2,
           display: 'flex',
           alignItems: 'center',
           paddingLeft: 8,
@@ -428,7 +444,8 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
       }}
     >
-      <WindowedSelect
+      <Select
+        ref={refref}
         filterOption={filterOption}
         options={filteredOptions}
         onChange={onChange}
