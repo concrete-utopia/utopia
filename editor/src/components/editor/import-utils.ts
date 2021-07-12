@@ -43,36 +43,3 @@ export function importedFromWhere(
   }
   return null
 }
-
-/*
-interface OriginatingNameResult {
-  filePath: string
-  variableName: string
-}
-
-export function findOriginatingName(
-  projectContents: ProjectContentTreeRoot,
-  originFilePath: string,
-  originVariableName: string,
-): OriginatingNameResult | null {
-  const file = getContentsTreeFileFromString(projectContents, originFilePath)
-  if (file == null) {
-    return null
-  } else if (isTextFile(file)) {
-    const fileParseResult = file.fileContents.parsed
-    if (isParseSuccess(fileParseResult)) {
-      const importedFromResult = importedFromWhere(
-        originFilePath,
-        originVariableName,
-        fileParseResult.topLevelElements,
-        fileParseResult.imports,
-      )
-
-    } else {
-      return null
-    }
-  } else {
-    return null
-  }
-}
-*/
