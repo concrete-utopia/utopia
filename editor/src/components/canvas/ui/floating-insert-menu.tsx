@@ -147,7 +147,7 @@ const showInsertionOptions = false
 
 export var FloatingMenu = () => {
   const colorTheme = useColorTheme()
-  const [highlightedKey, setHighlightedKey] = React.useState('')
+  const [highlightedKey, setHighlightedKey] = React.useState<string | null>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   // TODO move onClickOutside to here as well?
   useHandleCloseOnESCOrEnter(
