@@ -6,7 +6,13 @@ import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import styled from '@emotion/styled'
-import { FlexColumn, FlexRow, HeadlessStringInput, OnClickOutsideHOC } from '../../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  HeadlessStringInput,
+  OnClickOutsideHOC,
+  useColorTheme,
+} from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
   getComponentGroups,
@@ -102,6 +108,7 @@ export const ListItem: React.FunctionComponent<{
 }> = betterReactMemo(
   'ListItem',
   ({ onClick, onMouseOver, insertableComponent, highlighted, ...props }) => {
+    const colorTheme = useColorTheme()
     const handleClick = React.useCallback(() => {
       onClick(insertableComponent)
     }, [insertableComponent, onClick])
@@ -121,8 +128,10 @@ export const ListItem: React.FunctionComponent<{
           borderRadius: 2,
           paddingLeft: 4,
           paddingRight: 4,
-          background: highlighted ? '#007aff' : 'transparent', // TODO BEFORE MERGE Theme!
-          color: highlighted ? 'white' : 'hsl(0,0%,10%)', // TODO BEFORE MERGE Theme!
+          background: highlighted ? colorTheme.contextMenuHighlightBackground.value : 'transparent',
+          color: highlighted
+            ? colorTheme.contextMenuHighlightForeground.value
+            : colorTheme.contextMenuForeground.value,
         }}
         {...props}
       />
@@ -137,6 +146,7 @@ export const Subdued = styled.div({
 const showInsertionOptions = false
 
 export var FloatingMenu = () => {
+  const colorTheme = useColorTheme()
   const [highlightedKey, setHighlightedKey] = React.useState('')
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   // TODO move onClickOutside to here as well?
@@ -198,7 +208,7 @@ export var FloatingMenu = () => {
         style={{
           border: '1px solid hsl(0,0%,93%)',
           borderRadius: 3,
-          background: 'hsl(0,0%,98%)',
+          background: colorTheme.neutralBackground.value,
           boxShadow: '1px 1px 3px #00000022',
           width: 220,
           overflow: 'hidden',
@@ -209,7 +219,7 @@ export var FloatingMenu = () => {
           style={{
             paddingLeft: 8,
             minHeight: 34,
-            color: '#007aff',
+            color: colorTheme.primary.value,
             fontWeight: 600,
           }}
         >
@@ -222,7 +232,7 @@ export var FloatingMenu = () => {
               border: 'none',
               height: 22,
               paddingLeft: 4,
-              background: 'hsl(0,0%,96%)',
+              background: colorTheme.secondaryBackground.value,
               flexGrow: 1,
             }}
             onInput={onFilterInput}
