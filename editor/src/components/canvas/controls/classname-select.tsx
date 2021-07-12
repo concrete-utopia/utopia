@@ -179,7 +179,8 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
   const [input, setInput] = React.useState('')
   const filteredOptions = React.useMemo(() => {
-    if (input === '') {
+    const trimmedLowerCaseInput = input.trim().toLowerCase()
+    if (trimmedLowerCaseInput === '') {
       return TailWindOptions.slice(0, MaxResults)
     } else {
       // First find all matches, and use a sparse array to keep the best matches at the front
@@ -187,7 +188,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       let perfectMatchCount = 0
       for (var i = 0; i < TailWindOptions.length && perfectMatchCount < MaxResults; i++) {
         const nextOption = TailWindOptions[i]
-        const indexOf = nextOption.label.indexOf(input)
+        const indexOf = nextOption.label.indexOf(trimmedLowerCaseInput)
         if (indexOf > -1) {
           let existingMatched = orderedMatchedResults[indexOf] ?? []
           existingMatched.push(nextOption)
