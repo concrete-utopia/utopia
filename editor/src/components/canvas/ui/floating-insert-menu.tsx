@@ -233,7 +233,6 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const colorTheme = useColorTheme()
   const componentSelectorStyles = useComponentSelectorStyles()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
-  // TODO move onClickOutside to here as well?
   useHandleCloseOnESCOrEnter(
     React.useCallback(
       (key: 'Escape' | 'Enter') => {
