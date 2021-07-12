@@ -134,7 +134,6 @@ function useComponentSelectorStyles(): StylesConfig {
         overflowX: 'scroll',
         alignItems: 'center',
         gap: 4,
-        // height: 22,
         paddingLeft: 4,
         paddingRight: 4,
         paddingTop: 0,
