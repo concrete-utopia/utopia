@@ -97,33 +97,36 @@ export const ListItem: React.FunctionComponent<{
   insertableComponent: InsertMenuItem
   onClick: (insertableComponent: InsertMenuItem) => void
   onMouseOver: (insertableComponent: InsertMenuItem) => void
-}> = ({ onClick, onMouseOver, insertableComponent, highlighted, ...props }) => {
-  const handleClick = React.useCallback(() => {
-    onClick(insertableComponent)
-  }, [insertableComponent, onClick])
+}> = betterReactMemo(
+  'ListItem',
+  ({ onClick, onMouseOver, insertableComponent, highlighted, ...props }) => {
+    const handleClick = React.useCallback(() => {
+      onClick(insertableComponent)
+    }, [insertableComponent, onClick])
 
-  const handleMouseOver = React.useCallback(() => {
-    onMouseOver(insertableComponent)
-  }, [insertableComponent, onMouseOver])
+    const handleMouseOver = React.useCallback(() => {
+      onMouseOver(insertableComponent)
+    }, [insertableComponent, onMouseOver])
 
-  return (
-    <div
-      onClick={handleClick}
-      onMouseOver={handleMouseOver}
-      css={{
-        flex: '0 0 25px',
-        display: 'flex',
-        alignItems: 'center',
-        borderRadius: 2,
-        paddingLeft: 4,
-        paddingRight: 4,
-        background: highlighted ? '#007aff' : 'transparent', // TODO BEFORE MERGE Theme!
-        color: highlighted ? 'white' : 'hsl(0,0%,10%)', // TODO BEFORE MERGE Theme!
-      }}
-      {...props}
-    />
-  )
-}
+    return (
+      <div
+        onClick={handleClick}
+        onMouseOver={handleMouseOver}
+        css={{
+          flex: '0 0 25px',
+          display: 'flex',
+          alignItems: 'center',
+          borderRadius: 2,
+          paddingLeft: 4,
+          paddingRight: 4,
+          background: highlighted ? '#007aff' : 'transparent', // TODO BEFORE MERGE Theme!
+          color: highlighted ? 'white' : 'hsl(0,0%,10%)', // TODO BEFORE MERGE Theme!
+        }}
+        {...props}
+      />
+    )
+  },
+)
 
 export const Subdued = styled.div({
   color: 'hsl(0,0%,70%)',
@@ -235,12 +238,12 @@ export var FloatingMenu = () => {
         >
           {insertableComponents.map((insertableComponent, index) => {
             return (
-              <React.Fragment key={insertableComponent.name}>
+              <React.Fragment key={insertableComponent.key}>
                 {insertableComponent.source != null ? (
                   <Subdued>{getInsertableGroupLabel(insertableComponent.source)}</Subdued>
                 ) : null}
                 <ListItem
-                  key={insertableComponent.name}
+                  key={insertableComponent.key}
                   onClick={onClickElement}
                   onMouseOver={onMouseOverElement}
                   insertableComponent={insertableComponent}
