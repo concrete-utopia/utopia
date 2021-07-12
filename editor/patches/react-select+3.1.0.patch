@@ -1,3 +1,33 @@
+diff --git a/node_modules/react-select/dist/Select-9fdb8cd0.browser.esm.js b/node_modules/react-select/dist/Select-9fdb8cd0.browser.esm.js
+index de280c9..58fc255 100644
+--- a/node_modules/react-select/dist/Select-9fdb8cd0.browser.esm.js
++++ b/node_modules/react-select/dist/Select-9fdb8cd0.browser.esm.js
+@@ -1556,15 +1556,21 @@ function (_Component) {
+       switch (event.key) {
+         case 'ArrowLeft':
+           if (!isMulti || inputValue) return;
+-
+-          _this.focusValue('previous');
++          if (isMulti && menuIsOpen) {
++            _this.focusOption('up');
++          } else {
++            _this.focusValue('previous');
++          }
+ 
+           break;
+ 
+         case 'ArrowRight':
+           if (!isMulti || inputValue) return;
+-
+-          _this.focusValue('next');
++          if (isMulti && menuIsOpen) {
++            _this.focusOption('down');
++          } else {
++            _this.focusValue('next');
++          }
+ 
+           break;
+ 
 diff --git a/node_modules/react-select/src/.DS_Store b/node_modules/react-select/src/.DS_Store
 new file mode 100644
 index 0000000..e69de29
