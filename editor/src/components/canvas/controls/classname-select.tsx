@@ -168,7 +168,7 @@ const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) =>
   const showFooter = props.options.length > 0
   const joinedAttributes = focusedOption?.attributes?.join(', ')
   const attributesText =
-    joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : joinedAttributes
+    joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
 
   return (
     <components.Menu {...props}>
