@@ -15,7 +15,11 @@ import {
   InsertableComponentGroup,
   InsertableComponentGroupType,
 } from '../../shared/project-components'
-import { closeFloatingInsertMenu, wrapInView } from '../../editor/actions/action-creators'
+import {
+  closeFloatingInsertMenu,
+  insertWithDefaults,
+  wrapInView,
+} from '../../editor/actions/action-creators'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import {
   jsxAttributeValue,
@@ -24,6 +28,7 @@ import {
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { useHandleCloseOnESCOrEnter } from '../../inspector/common/inspector-utils'
+import { EditorAction } from '../../editor/action-types'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -278,28 +283,40 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const onChange = React.useCallback(
     (value: ValueType<InsertMenuItem>) => {
       if (value != null && !Array.isArray(value)) {
-        const insertableComponent = (value as InsertMenuItem).value
-        const newUID = generateUidWithExistingComponents(projectContentsRef.current)
-        const newElement = jsxElement(
-          insertableComponent.element.name,
-          newUID,
-          setJSXAttributesAttribute(
-            insertableComponent.element.props,
-            'data-uid',
-            jsxAttributeValue(newUID, emptyComments),
-          ),
-          insertableComponent.element.children,
-        )
-        dispatch([
-          wrapInView(selectedViewsref.current, {
-            element: newElement,
-            importsToAdd: insertableComponent.importsToAdd,
-          }),
-          closeFloatingInsertMenu(),
-        ])
+        const pickedInsertableComponent = (value as InsertMenuItem).value
+
+        let actionsToDispatch: Array<EditorAction> = []
+        if (insertMenuMode === 'wrap') {
+          const newUID = generateUidWithExistingComponents(projectContentsRef.current)
+          const newElement = jsxElement(
+            pickedInsertableComponent.element.name,
+            newUID,
+            setJSXAttributesAttribute(
+              pickedInsertableComponent.element.props,
+              'data-uid',
+              jsxAttributeValue(newUID, emptyComments),
+            ),
+            pickedInsertableComponent.element.children,
+          )
+
+          actionsToDispatch = [
+            wrapInView(selectedViewsref.current, {
+              element: newElement,
+              importsToAdd: pickedInsertableComponent.importsToAdd,
+            }),
+          ]
+        } else if (insertMenuMode === 'insert') {
+          const selectedViews = selectedViewsref.current
+
+          // TODO multiselect?
+          actionsToDispatch = [
+            insertWithDefaults(selectedViews[0], pickedInsertableComponent, 'add-size'),
+          ]
+        }
+        dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
-    [dispatch, projectContentsRef, selectedViewsref],
+    [dispatch, insertMenuMode, projectContentsRef, selectedViewsref],
   )
 
   return (
