@@ -463,9 +463,9 @@ export function joinEither<L, R>(either: Either<L, Either<L, R>>): Either<L, R> 
 // Danger Will Robinson! This defeats the purpose of an Either. I've added this for the
 // sake of testing AND ONLY FOR THE SAKE OF TESTING!
 // If you use this for *ANYTHING* other than a test, I will personally hunt you down!
-export function forceRight<L, R>(e: Either<L, R>): R {
+export function forceRight<L, R>(e: Either<L, R>, reason?: string): R {
   if (isLeft(e)) {
-    throw new Error(`Unable to force either to a right: ${JSON.stringify(e.value)}`)
+    throw new Error(reason ?? 'Unable to force either to a right' + ' - ' + JSON.stringify(e.value))
   } else {
     return e.value
   }

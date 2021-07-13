@@ -88,6 +88,7 @@ export const TOGGLE_RIGHT_MENU_SHORTCUT = 'toggle-right-menu'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
 export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
+export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -275,6 +276,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle the inspector and the left menu.',
     key('backslash', 'cmd'),
   ),
+  [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('j', [])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

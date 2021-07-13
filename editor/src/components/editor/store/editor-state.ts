@@ -342,7 +342,7 @@ export interface EditorState {
     scrollAnimation: boolean
   }
   floatingInsertMenu: {
-    insertMenuOpen: boolean
+    insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'
   }
   inspector: {
     visible: boolean
@@ -1114,7 +1114,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       scrollAnimation: false,
     },
     floatingInsertMenu: {
-      insertMenuOpen: false,
+      insertMenuMode: 'closed',
     },
     inspector: {
       visible: true,
@@ -1364,7 +1364,7 @@ export function editorModelFromPersistentModel(
       scrollAnimation: false,
     },
     floatingInsertMenu: {
-      insertMenuOpen: false,
+      insertMenuMode: 'closed',
     },
     inspector: {
       visible: true,
