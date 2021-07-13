@@ -237,8 +237,30 @@ function useComponentSelectorStyles(): StylesConfig {
     [colorTheme],
   )
 }
+
+function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'): string {
+  switch (insertMenuMode) {
+    case 'closed':
+      return ''
+    case 'convert':
+      return 'Convert selected element to...'
+    case 'insert':
+      return 'Insert element'
+    case 'wrap':
+      return 'Wrap selection in element'
+  }
+}
+
 export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const colorTheme = useColorTheme()
+
+  const insertMenuMode = useEditorState(
+    (store) => store.editor.floatingInsertMenu.insertMenuMode,
+    'FloatingMenu insertMenuMode',
+  )
+
+  const menuTitle: string = getMenuTitle(insertMenuMode)
+
   const componentSelectorStyles = useComponentSelectorStyles()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   useHandleCloseOnESCOrEnter(
@@ -309,7 +331,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             alignItems: 'center',
           }}
         >
-          <b>Wrap In...</b>
+          <b>{menuTitle}</b>
         </div>
 
         <Select
