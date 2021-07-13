@@ -233,7 +233,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const dragging = isDragging(props.editor.canvas.dragState)
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
   const draggingEnabled = !isSelectLiteMode(props.editor.mode)
-  const contextMenuEnabled = !isSelectLiteMode(props.editor.mode)
+  const contextMenuEnabled = !isLiveMode(props.editor.mode)
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
