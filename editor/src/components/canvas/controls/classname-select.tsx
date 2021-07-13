@@ -572,7 +572,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       }}
     >
       <WindowedSelect
-        menuIsOpen={true}
         ariaLiveMessages={ariaLiveMessages}
         filterOption={filterOption}
         options={filteredOptions}
