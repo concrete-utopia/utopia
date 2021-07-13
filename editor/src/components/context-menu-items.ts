@@ -194,6 +194,24 @@ export const resetPins: ContextMenuItem<unknown> = {
   },
 }
 
+export const insert: ContextMenuItem<CanvasData> = {
+  name: 'Insert Element…',
+  shortcut: 'R',
+  enabled: true,
+  action: (data, dispatch) => {
+    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('insert')])
+  },
+}
+
+export const convert: ContextMenuItem<CanvasData> = {
+  name: 'Convert Element To…',
+  shortcut: 'J',
+  enabled: true,
+  action: (data, dispatch) => {
+    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('convert')])
+  },
+}
+
 export const group: ContextMenuItem<CanvasData> = {
   name: 'Group Selection',
   shortcut: '⌘G',
