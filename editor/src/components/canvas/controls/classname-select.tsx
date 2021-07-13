@@ -163,8 +163,12 @@ const focusedOptionAtom = atomWithPubSub<TailWindOption | null>({
 })
 
 const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) => {
+  const theme = useColorTheme()
   const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom)
   const showFooter = props.options.length > 0
+  const joinedAttributes = focusedOption?.attributes?.join(', ')
+  const attributesText =
+    joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : joinedAttributes
 
   return (
     <components.Menu {...props}>
@@ -177,15 +181,14 @@ const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) =>
               overflow: 'hidden',
               boxShadow: 'inset 0px 1px 0px 0px rgba(0,0,0,.1)',
               padding: '8px 8px',
-              fontSize: '11px',
+              fontSize: '10px',
               pointerEvents: 'none',
+              color: theme.textColor.value,
             }}
           >
             <FlexColumn>
               <FlexRow>
-                <span style={{ fontWeight: 600 }}>
-                  {focusedOption?.attributes?.join(', ') ?? '\u00a0'}
-                </span>
+                <span style={{ fontWeight: 600 }}>{attributesText}</span>
               </FlexRow>
             </FlexColumn>
           </div>
@@ -569,6 +572,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       }}
     >
       <WindowedSelect
+        menuIsOpen={true}
         ariaLiveMessages={ariaLiveMessages}
         filterOption={filterOption}
         options={filteredOptions}
