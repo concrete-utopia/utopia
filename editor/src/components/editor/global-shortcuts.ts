@@ -654,9 +654,7 @@ export function handleKeyDown(
         }
       },
       [INSERT_VIEW_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return [EditorActions.openFloatingInsertMenu('insert')]
-        } else if (isInsertMode(editor.mode)) {
+        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
