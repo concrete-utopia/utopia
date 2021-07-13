@@ -195,8 +195,8 @@ export const resetPins: ContextMenuItem<unknown> = {
 }
 
 export const insert: ContextMenuItem<CanvasData> = {
-  name: 'Insert Element…',
-  shortcut: 'R',
+  name: 'Add Element…',
+  shortcut: 'A',
   enabled: true,
   action: (data, dispatch) => {
     requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('insert')])
@@ -205,7 +205,7 @@ export const insert: ContextMenuItem<CanvasData> = {
 
 export const convert: ContextMenuItem<CanvasData> = {
   name: 'Convert Element To…',
-  shortcut: 'J',
+  shortcut: 'C',
   enabled: true,
   action: (data, dispatch) => {
     requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('convert')])
@@ -245,7 +245,7 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
 }
 
 export const wrapInView: ContextMenuItem<CanvasData> = {
-  name: 'Wrap in View',
+  name: 'Wrap in div',
   shortcut: '⌘G',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
