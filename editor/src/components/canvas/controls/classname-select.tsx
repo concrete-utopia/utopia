@@ -16,11 +16,10 @@ import WindowedSelect, {
   ValueContainerProps,
 } from 'react-windowed-select'
 import type { StylesConfig } from 'react-select'
-import chroma from 'chroma-js'
 
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { useColorTheme } from '../../../uuiui'
+import { colorTheme, useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as PP from '../../../core/shared/property-path'
@@ -83,45 +82,26 @@ const getColorForCategory = (category: string) => {
   } else return 'pink'
 }
 
-interface OptionAndSelectedColor {
-  primary: {
-    optionColor: chroma.Color
-    selectedColor: string
-  }
-  regular: {
-    optionColor: chroma.Color
-    selectedColor: string
-  }
-}
-
 const getOptionColors = (
-  optionAndSelectedColor: OptionAndSelectedColor,
+  theme: typeof colorTheme,
   isFocused: boolean,
   isSelected: boolean,
   isDisabled: boolean,
   data: any,
 ) => {
-  const categories = data?.categories ?? []
-  let optionColor = optionAndSelectedColor.regular.optionColor
-  let selectedColor = optionAndSelectedColor.regular.selectedColor
-  if (categories.length === 1) {
-    optionColor = optionAndSelectedColor.primary.optionColor
-    selectedColor = optionAndSelectedColor.primary.selectedColor
-  }
-
-  let color: string = optionColor.css()
-  let backgroundColor: string | undefined = undefined
-  let activeBackgroundColor: string | undefined = optionColor.alpha(0.3).css()
+  let color: string | undefined = theme.inverted.textColor.value
+  let selectedColor = theme.inverted.primary.value
+  let backgroundColor: string | undefined = theme.inverted.bg1.value
+  let activeBackgroundColor: string | undefined = theme.primary.value
   if (isFocused) {
-    backgroundColor = optionColor.alpha(0.1).css()
+    backgroundColor = theme.inverted.primary.value
   } else if (isSelected) {
-    backgroundColor = optionColor.css()
-    color = selectedColor
-    activeBackgroundColor = data.color
+    backgroundColor = selectedColor
+    activeBackgroundColor = selectedColor
   } else if (isDisabled) {
     backgroundColor = undefined
     activeBackgroundColor = undefined
-    color = '#ccc'
+    color = undefined
   }
 
   return {
@@ -362,19 +342,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     [dispatch, elementPath],
   )
 
-  const optionAndSelectedColor: OptionAndSelectedColor = React.useMemo(() => {
-    const themePrimary = chroma(theme.primary.value)
-    return {
-      primary: {
-        optionColor: themePrimary,
-        selectedColor: chroma.contrast(themePrimary, 'white') > 2 ? 'white' : 'black',
-      },
-      regular: {
-        optionColor: chroma('black'),
-        selectedColor: 'white',
-      },
-    }
-  }, [theme.primary.value])
   const colourStyles: StylesConfig = React.useMemo(
     () => ({
       container: (styles: React.CSSProperties) => ({
@@ -448,15 +415,13 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         ...styles,
         height: 20,
       }),
+      menu: (styles) => ({
+        ...styles,
+        backgroundColor: theme.inverted.bg1.value,
+      }),
       option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
         // a single entry in the options list
-        const optionColors = getOptionColors(
-          optionAndSelectedColor,
-          isFocused,
-          isSelected,
-          isDisabled,
-          data,
-        )
+        const optionColors = getOptionColors(theme, isFocused, isSelected, isDisabled, data)
         return {
           minHeight: 27,
           display: 'flex',
@@ -474,7 +439,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         }
       },
     }),
-    [theme, optionAndSelectedColor],
+    [theme],
   )
 
   return (
