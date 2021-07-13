@@ -336,7 +336,7 @@ export const FloatingInsertMenu = betterReactMemo(
   (props: FloatingInsertMenuProps) => {
     const dispatch = useEditorState((store) => store.dispatch, 'FloatingInsertMenu dispatch')
     const isVisible = useEditorState(
-      (store) => store.editor.floatingInsertMenu.insertMenuOpen,
+      (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
       'FloatingInsertMenu insertMenuOpen',
     )
     const onClickOutside = React.useCallback(() => {

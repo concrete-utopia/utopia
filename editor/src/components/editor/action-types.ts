@@ -419,10 +419,9 @@ export interface WrapInView {
   whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-View'
 }
 
-export interface WrapInPicker {
-  action: 'WRAP_IN_PICKER'
-  targets: ElementPath[]
-  layoutSystem: LayoutSystem
+export interface OpenFloatingInsertMenu {
+  action: 'OPEN_FLOATING_INSERT_MENU'
+  mode: 'insert' | 'convert' | 'wrap'
 }
 
 export interface CloseFloatingInsertMenu {
@@ -917,7 +916,7 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInView
-  | WrapInPicker
+  | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
   | UnwrapGroupOrView
   | SetCanvasAnimationsEnabled

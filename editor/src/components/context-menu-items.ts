@@ -222,7 +222,7 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   shortcut: 'G',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.wrapInPicker(data.selectedViews)], 'everyone')
+    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('wrap')], 'everyone')
   },
 }
 

@@ -93,7 +93,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_CURRENT_THEME':
     case 'FOCUS_FORMULA_BAR':
     case 'UPDATE_FORMULA_BAR_MODE':
-    case 'WRAP_IN_PICKER':
+    case 'OPEN_FLOATING_INSERT_MENU':
     case 'CLOSE_FLOATING_INSERT_MENU':
       return true
 

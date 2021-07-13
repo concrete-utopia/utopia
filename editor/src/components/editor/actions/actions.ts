@@ -359,7 +359,7 @@ import {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
-  WrapInPicker,
+  OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
 } from '../action-types'
@@ -980,7 +980,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       scrollAnimation: currentEditor.canvas.scrollAnimation,
     },
     floatingInsertMenu: {
-      insertMenuOpen: currentEditor.floatingInsertMenu.insertMenuOpen,
+      insertMenuMode: currentEditor.floatingInsertMenu.insertMenuMode,
     },
     inspector: {
       visible: currentEditor.inspector.visible,
@@ -2205,17 +2205,12 @@ export const UPDATE_FNS = {
       dispatch,
     )
   },
-  WRAP_IN_PICKER: (
-    action: WrapInPicker,
-    editor: EditorModel,
-    derived: DerivedState,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       floatingInsertMenu: {
         ...editor.floatingInsertMenu,
-        insertMenuOpen: true,
+        insertMenuMode: action.mode,
       },
     }
   },
@@ -2227,7 +2222,7 @@ export const UPDATE_FNS = {
       ...editor,
       floatingInsertMenu: {
         ...editor.floatingInsertMenu,
-        insertMenuOpen: false,
+        insertMenuMode: 'closed',
       },
     }
   },
