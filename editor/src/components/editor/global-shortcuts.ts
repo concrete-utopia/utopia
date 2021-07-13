@@ -113,6 +113,9 @@ import {
   ZOOM_UI_OUT_SHORTCUT,
   ShortcutNamesByKey,
   CONVERT_ELEMENT_SHORTCUT,
+  ADD_ELEMENT_SHORTCUT,
+  GROUP_ELEMENT_PICKER_SHORTCUT,
+  GROUP_ELEMENT_DEFAULT_SHORTCUT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -561,6 +564,15 @@ export function handleKeyDown(
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
         return isSelectMode(editor.mode) ? [EditorActions.openFloatingInsertMenu('wrap')] : []
       },
+      // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
+      [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
+        return isSelectMode(editor.mode)
+          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+          : []
+      },
+      [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
+        return isSelectMode(editor.mode) ? [EditorActions.openFloatingInsertMenu('wrap')] : []
+      },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]
       },
@@ -594,9 +606,7 @@ export function handleKeyDown(
         }
       },
       [INSERT_RECTANGLE_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return [EditorActions.openFloatingInsertMenu('insert')]
-        } else if (isInsertMode(editor.mode)) {
+        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
@@ -715,6 +725,13 @@ export function handleKeyDown(
       [CONVERT_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           return [EditorActions.openFloatingInsertMenu('convert')]
+        } else {
+          return []
+        }
+      },
+      [ADD_ELEMENT_SHORTCUT]: () => {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+          return [EditorActions.openFloatingInsertMenu('insert')]
         } else {
           return []
         }

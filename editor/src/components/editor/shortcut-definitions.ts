@@ -61,6 +61,8 @@ export const TOGGLE_BACKGROUND_SHORTCUT = 'toggle-background'
 export const UNWRAP_ELEMENT_SHORTCUT = 'unwrap-element'
 export const WRAP_ELEMENT_PICKER_SHORTCUT = 'wrap-element-picker'
 export const WRAP_ELEMENT_DEFAULT_SHORTCUT = 'wrap-element-default'
+export const GROUP_ELEMENT_PICKER_SHORTCUT = 'group-element-picker'
+export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
 export const TOGGLE_TEXT_ITALIC_SHORTCUT = 'toggle-text-italic'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
@@ -69,6 +71,7 @@ export const TOGGLE_LIVE_CANVAS_SHORTCUT = 'toggle-live-canvas'
 export const START_RENAMING_SHORTCUT = 'start-renaming'
 export const INSERT_RECTANGLE_SHORTCUT = 'insert-rectangle'
 export const INSERT_ELLIPSE_SHORTCUT = 'insert-ellipse'
+export const ADD_ELEMENT_SHORTCUT = 'add-element'
 export const SAVE_CURRENT_FILE_SHORTCUT = 'save-current-file'
 export const TOGGLE_SHADOW_SHORTCUT = 'toggle-shadow'
 export const INSERT_TEXT_SHORTCUT = 'insert-text'
@@ -200,8 +203,13 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Unwrap children of an element into their grandparent element.',
     key('g', ['cmd', 'shift']),
   ),
-  [WRAP_ELEMENT_PICKER_SHORTCUT]: shortcut('Wrap elements with a group.', key('g', [])),
-  [WRAP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Wrap elements with a group.', key('g', 'cmd')),
+  [WRAP_ELEMENT_PICKER_SHORTCUT]: shortcut('Wrap elements with a selected element.', key('w', [])),
+  [WRAP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Wrap elements with a div.', key('w', 'cmd')),
+  [GROUP_ELEMENT_PICKER_SHORTCUT]: shortcut(
+    'Group elements with a selected element.',
+    key('g', []),
+  ),
+  [GROUP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Group elements with a div.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
   [TOGGLE_TEXT_ITALIC_SHORTCUT]: shortcut(
     'Toggle the italic attribute of the current text element.',
@@ -276,7 +284,8 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle the inspector and the left menu.',
     key('backslash', 'cmd'),
   ),
-  [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('j', [])),
+  [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('c', [])),
+  [ADD_ELEMENT_SHORTCUT]: shortcut('Add element...', key('a', [])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }
