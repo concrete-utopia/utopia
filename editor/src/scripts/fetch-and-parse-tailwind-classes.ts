@@ -2,13 +2,13 @@
 import fetch from 'node-fetch'
 import fs from 'fs'
 import path from 'path'
-import { mapValues } from '../core/shared/object-utils'
 import * as csstree from 'css-tree'
 
 type AttributeToClassNames = { [attribute: string]: Array<string> }
+type ClassNameToAttributes = { [attribute: string]: Array<string> }
 interface ParsedClasses {
-  allClassNames: Array<string>
   attributeToClassNames: AttributeToClassNames
+  classNameToAttributes: ClassNameToAttributes
 }
 
 function extractClassesFromSelector(node: csstree.CssNode): Array<string> {
@@ -58,7 +58,7 @@ function classComparator(a: string, b: string): number {
 }
 
 function parseClasses(rawCSS: string): ParsedClasses {
-  let allClassNamesSet = new Set<string>()
+  let classNameToAttributesSet: { [className: string]: Set<string> } = {}
   let attributeToClassNamesSet: { [attribute: string]: Set<string> } = {}
 
   const cssAST = csstree.parse(rawCSS)
@@ -80,23 +80,45 @@ function parseClasses(rawCSS: string): ParsedClasses {
         })
       }
 
-      classNames.forEach((className) => allClassNamesSet.add(className))
-      const baseClassNames = classNames.filter((c) => classCombinatorCount(c) === 1)
       const nonVariableAttributes = attributes.filter((a) => !a.startsWith('--'))
+
+      classNames.forEach((className) => {
+        let existingCToA = classNameToAttributesSet[className] ?? new Set()
+        nonVariableAttributes.forEach((attribute) => existingCToA.add(attribute))
+        classNameToAttributesSet[className] = existingCToA
+      })
+
+      const baseClassNames = classNames.filter((c) => classCombinatorCount(c) === 1)
       nonVariableAttributes.forEach((attribute) => {
-        let existing = attributeToClassNamesSet[attribute] ?? new Set()
-        baseClassNames.forEach((className) => existing.add(className))
-        attributeToClassNamesSet[attribute] = existing
+        let existingAToC = attributeToClassNamesSet[attribute] ?? new Set()
+        baseClassNames.forEach((className) => existingAToC.add(className))
+        attributeToClassNamesSet[attribute] = existingAToC
       })
     }
   })
 
+  let sortedClassNameToAttributes: ClassNameToAttributes = {}
+  let sortedAttributeToClassNames: AttributeToClassNames = {}
+
+  Object.keys(classNameToAttributesSet)
+    .sort(classComparator)
+    .forEach((className) => {
+      const attributesSet = classNameToAttributesSet[className] ?? new Set<string>()
+      const attributes = Array.from(attributesSet).sort()
+      sortedClassNameToAttributes[className] = attributes
+    })
+
+  Object.keys(attributeToClassNamesSet)
+    .sort()
+    .forEach((attribute) => {
+      const classNameSet = attributeToClassNamesSet[attribute] ?? new Set<string>()
+      const classNames = Array.from(classNameSet).sort(classComparator)
+      sortedAttributeToClassNames[attribute] = classNames
+    })
+
   return {
-    allClassNames: Array.from(allClassNamesSet).sort(classComparator),
-    attributeToClassNames: mapValues(
-      (set: Set<string>) => Array.from(set).sort(classComparator),
-      attributeToClassNamesSet,
-    ),
+    attributeToClassNames: sortedAttributeToClassNames,
+    classNameToAttributes: sortedClassNameToAttributes,
   }
 }
 
@@ -113,8 +135,10 @@ async function fetchFullCSS(): Promise<string> {
   }
 }
 
-function createAllClassesConst(allClassNames: Array<string>): string {
-  return `export const AllTailwindClasses: Array<string> = ${JSON.stringify(allClassNames)}`
+function createClassNameToAttributesConst(classNameToAttributes: ClassNameToAttributes): string {
+  return `export const ClassNameToAttributes: MapLike<Array<string>> = ${JSON.stringify(
+    classNameToAttributes,
+  )}`
 }
 
 function createAllAttributesConst(attributeToClassNames: AttributeToClassNames): string {
@@ -129,10 +153,10 @@ function createAttributeToClassNamesConst(attributeToClassNames: AttributeToClas
 }
 
 function createOutputFileContents(parsedClasses: ParsedClasses): string {
-  const { allClassNames, attributeToClassNames } = parsedClasses
+  const { attributeToClassNames, classNameToAttributes } = parsedClasses
   return [
     'import type { MapLike } from "typescript"',
-    createAllClassesConst(allClassNames),
+    createClassNameToAttributesConst(classNameToAttributes),
     createAllAttributesConst(attributeToClassNames),
     createAttributeToClassNamesConst(attributeToClassNames),
   ].join('\n\n')
@@ -158,7 +182,7 @@ async function fetchAndParse(useSample: boolean): Promise<void> {
   console.log(`Extracting classes`)
   const parsedClasses = parseClasses(rawCSS)
 
-  console.log(`Writing ${parsedClasses.allClassNames.length} classes to file`)
+  console.log(`Writing ${Object.keys(parsedClasses.classNameToAttributes).length} classes to file`)
   const outputFileContents = createOutputFileContents(parsedClasses)
   const targetPath = path.join(__dirname, '..', 'core', 'third-party', 'tailwind-defaults.ts')
   fs.writeFileSync(targetPath, outputFileContents)
