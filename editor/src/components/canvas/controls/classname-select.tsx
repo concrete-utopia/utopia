@@ -196,15 +196,17 @@ function findMatchingOptions<T>(
 ): Array<Array<T>> {
   let orderedMatchedResults: Array<Array<T>> = []
   let perfectMatchCount = 0
+  let splitInput = input.split(' ')
   for (var i = 0; i < options.length && perfectMatchCount < maxPerfectMatches; i++) {
     const nextOption = options[i]
     const asString = toString(nextOption)
-    const indexOf = asString.indexOf(input)
-    if (indexOf > -1) {
-      let existingMatched = orderedMatchedResults[indexOf] ?? []
+    const splitInputIndexResult = splitInput.map((s) => asString.indexOf(s))
+    const minimumIndexOf = Math.min(...splitInputIndexResult)
+    if (minimumIndexOf > -1) {
+      let existingMatched = orderedMatchedResults[minimumIndexOf] ?? []
       existingMatched.push(nextOption)
-      orderedMatchedResults[indexOf] = existingMatched
-      if (indexOf === 0) {
+      orderedMatchedResults[minimumIndexOf] = existingMatched
+      if (minimumIndexOf === 0) {
         perfectMatchCount++
       }
     }
