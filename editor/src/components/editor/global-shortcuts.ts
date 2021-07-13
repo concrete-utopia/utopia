@@ -112,6 +112,7 @@ import {
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
   ShortcutNamesByKey,
+  CONVERT_ELEMENT_SHORTCUT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -712,6 +713,13 @@ export function handleKeyDown(
       },
       [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
+      },
+      [CONVERT_ELEMENT_SHORTCUT]: () => {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+          return [EditorActions.openFloatingInsertMenu('convert')]
+        } else {
+          return []
+        }
       },
     })
   }
