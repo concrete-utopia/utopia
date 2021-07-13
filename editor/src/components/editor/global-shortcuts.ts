@@ -525,7 +525,7 @@ export function handleKeyDown(
         return toggleTextFormatting(editor, dispatch, 'bold')
       },
       [TOGGLE_BORDER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? editor.selectedViews.map((target) =>
               EditorActions.toggleProperty(
                 target,
@@ -535,30 +535,36 @@ export function handleKeyDown(
           : []
       },
       [COPY_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.copySelectionToClipboard()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.copySelectionToClipboard()]
+          : []
       },
       [DUPLICATE_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.duplicateSelected()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.duplicateSelected()]
+          : []
       },
       [TOGGLE_BACKGROUND_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? editor.selectedViews.map((target) =>
               EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
             )
           : []
       },
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
           : []
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-View')]
           : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.wrapInPicker(editor.selectedViews)] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.wrapInPicker(editor.selectedViews)]
+          : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]
@@ -666,7 +672,7 @@ export function handleKeyDown(
         }
       },
       [CUT_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
           : []
       },
@@ -680,16 +686,24 @@ export function handleKeyDown(
         return [EditorActions.setHighlightsEnabled(false), EditorActions.clearHighlightedViews()]
       },
       [MOVE_ELEMENT_BACKWARD_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedBackward()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.moveSelectedBackward()]
+          : []
       },
       [MOVE_ELEMENT_TO_BACK_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedToBack()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.moveSelectedToBack()]
+          : []
       },
       [MOVE_ELEMENT_FORWARD_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedForward()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.moveSelectedForward()]
+          : []
       },
       [MOVE_ELEMENT_TO_FRONT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedToFront()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.moveSelectedToFront()]
+          : []
       },
       [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
         return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'underline') : []
