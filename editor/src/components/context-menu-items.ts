@@ -232,7 +232,7 @@ export const wrapInView: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
-      [EditorActions.wrapInView(data.selectedViews, 'default-empty-View')],
+      [EditorActions.wrapInView(data.selectedViews, 'default-empty-div')],
       'everyone',
     )
   },

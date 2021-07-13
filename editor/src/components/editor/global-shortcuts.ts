@@ -554,7 +554,7 @@ export function handleKeyDown(
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
-          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-View')]
+          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
           : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {

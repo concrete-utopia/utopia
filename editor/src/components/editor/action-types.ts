@@ -416,7 +416,7 @@ export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: ElementPath[]
   layoutSystem: LayoutSystem
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-View'
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
 }
 
 export interface WrapInPicker {

@@ -597,7 +597,7 @@ export function resetPins(target: ElementPath): ResetPins {
 }
 
 export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
-  return wrapInView(targets, 'default-empty-View')
+  return wrapInView(targets, 'default-empty-div')
   // FIXME: Make Groups Great Again.
   //return {
   //  action: 'WRAP_IN_VIEW',
@@ -625,7 +625,7 @@ export function wrapInPicker(targets: Array<ElementPath>): WrapInPicker {
 
 export function wrapInView(
   targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-View',
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
 ): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
