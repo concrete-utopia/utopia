@@ -252,11 +252,11 @@ function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'):
     case 'closed':
       return ''
     case 'convert':
-      return 'Convert'
+      return 'Convert to'
     case 'insert':
       return 'Insert'
     case 'wrap':
-      return 'Wrap'
+      return 'Wrap in'
   }
 }
 
