@@ -5,9 +5,9 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import {
-  AllTailwindClasses,
   AllAttributes,
   AttributeToClassNames,
+  ClassNameToAttributes,
 } from '../../../core/third-party/tailwind-defaults'
 import WindowedSelect, {
   components,
@@ -44,6 +44,7 @@ import {
   usePubSubAtomWriteOnly,
 } from '../../../core/shared/atom-with-pub-sub'
 import { stripNulls } from '../../../core/shared/array-utils'
+import { mapToArray, mapValues } from '../../../core/shared/object-utils'
 
 interface TailWindOption {
   label: string
@@ -53,12 +54,24 @@ interface TailWindOption {
 }
 
 let TailWindOptions: Array<TailWindOption> = []
+let AttributeOptionLookup: { [attribute: string]: Array<TailWindOption> }
 
 async function loadTailwindOptions() {
-  TailWindOptions = AllTailwindClasses.map((className, index) => ({
-    label: className,
-    value: className,
-  }))
+  TailWindOptions = mapToArray(
+    (attributes, className) => ({
+      label: className,
+      value: className,
+      attributes: attributes,
+    }),
+    ClassNameToAttributes,
+  )
+
+  AttributeOptionLookup = mapValues((classNames: Array<string>) => {
+    const matchingOptions = classNames.map((className) =>
+      TailWindOptions.find((option) => option.value === className),
+    )
+    return stripNulls(matchingOptions)
+  }, AttributeToClassNames)
 }
 
 loadTailwindOptions()
@@ -338,14 +351,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           orderedAttributeMatchedResults,
           remainingAllowedMatches,
         )
-        const classNamesFromBestMatchedAttributes = mapToClassNames(
-          bestMatchedAttributes,
-          remainingAllowedMatches,
+        const optionsForBestMatchedAttributes = bestMatchedAttributes.flatMap(
+          (attribute) => AttributeOptionLookup[attribute] ?? [],
         )
-        const optionsForClassNames = classNamesFromBestMatchedAttributes.map((className) =>
-          TailWindOptions.find((option) => option.label === className),
-        )
-        matchedResults.push(...stripNulls(optionsForClassNames))
+        matchedResults.push(...optionsForBestMatchedAttributes)
       }
 
       results = matchedResults
