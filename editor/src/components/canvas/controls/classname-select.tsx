@@ -7,13 +7,11 @@ import styled from '@emotion/styled'
 import { AllTailwindClasses } from '../../../core/third-party/tailwind-defaults'
 import WindowedSelect, {
   components,
-  createFilter,
   IndicatorProps,
   MultiValueProps,
   ValueContainerProps,
 } from 'react-windowed-select'
 import type { StylesConfig } from 'react-select'
-import type { Option } from 'react-select/src/filters'
 import chroma from 'chroma-js'
 
 import * as EditorActions from '../../editor/actions/action-creators'
@@ -21,7 +19,6 @@ import { betterReactMemo } from '../../../uuiui-deps'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
   ElementInstanceMetadata,
@@ -36,6 +33,7 @@ import {
   getModifiableJSXAttributeAtPath,
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
+import { createContext } from 'use-context-selector'
 
 interface TailWindOption {
   label: string
@@ -129,6 +127,15 @@ const getOptionColors = (
   }
 }
 
+interface ClassNameMenuContextProps {
+  focused: TailWindOption | null
+}
+
+const ClassNameMenuContext = createContext<ClassNameMenuContextProps>({
+  focused: null,
+})
+ClassNameMenuContext.displayName = 'ClassNameMenuContext'
+
 const MultiValueContainer = betterReactMemo(
   'MultiValueContainer',
   (props: MultiValueProps<TailWindOption>) => {
@@ -190,6 +197,27 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
   const [input, setInput] = React.useState('')
+  const [focusedOption, setFocusedOption] = React.useState<TailWindOption | null>(null)
+  const updateFocusedOption = React.useCallback(
+    (value: TailWindOption | null) => {
+      const unchanged = (value == null && focusedOption == null) || value === focusedOption
+      const needsUpdate = !unchanged
+      if (needsUpdate) {
+        setFocusedOption(value)
+      }
+    },
+    [focusedOption],
+  )
+
+  const clearFocusedOption = React.useCallback(() => updateFocusedOption(null), [
+    updateFocusedOption,
+  ])
+  const ariaOnFocus = React.useCallback(
+    ({ focused }: { focused: TailWindOption }) => updateFocusedOption(focused),
+    [updateFocusedOption],
+  )
+  const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
+
   const filteredOptions = React.useMemo(() => {
     const trimmedLowerCaseInput = input.trim().toLowerCase()
     if (trimmedLowerCaseInput === '') {
@@ -226,6 +254,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       return matchedResults
     }
   }, [input])
+
+  if (filteredOptions.length === 0 && focusedOption != null) {
+    clearFocusedOption()
+  }
 
   const { classNameAttribute, classNameFromProps, elementPath } = useEditorState((store) => {
     let element: ElementInstanceMetadata | null = null
@@ -428,25 +460,33 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
       }}
     >
-      <WindowedSelect
-        filterOption={filterOption}
-        options={filteredOptions}
-        onChange={onChange}
-        onInputChange={setInput}
-        value={selectedValues}
-        isMulti={true}
-        isDisabled={!isMenuEnabled}
-        closeMenuOnSelect={false}
-        styles={colourStyles}
-        components={{
-          DropdownIndicator,
-          ClearIndicator,
-          IndicatorSeparator,
-          NoOptionsMessage,
-          MultiValueContainer,
-          ValueContainer,
+      <ClassNameMenuContext.Provider
+        value={{
+          focused: focusedOption,
         }}
-      />
+      >
+        <WindowedSelect
+          ariaLiveMessages={ariaLiveMessages}
+          filterOption={filterOption}
+          options={filteredOptions}
+          onChange={onChange}
+          onInputChange={setInput}
+          onMenuClose={clearFocusedOption}
+          value={selectedValues}
+          isMulti={true}
+          isDisabled={!isMenuEnabled}
+          closeMenuOnSelect={false}
+          styles={colourStyles}
+          components={{
+            DropdownIndicator,
+            ClearIndicator,
+            IndicatorSeparator,
+            NoOptionsMessage,
+            MultiValueContainer,
+            ValueContainer,
+          }}
+        />
+      </ClassNameMenuContext.Provider>
     </div>
   )
 })
