@@ -18,6 +18,7 @@ import {
 import {
   closeFloatingInsertMenu,
   insertWithDefaults,
+  updateJSXElementName,
   wrapInView,
 } from '../../editor/actions/action-creators'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
@@ -27,7 +28,10 @@ import {
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { useHandleCloseOnESCOrEnter } from '../../inspector/common/inspector-utils'
+import {
+  getElementsToTarget,
+  useHandleCloseOnESCOrEnter,
+} from '../../inspector/common/inspector-utils'
 import { EditorAction } from '../../editor/action-types'
 
 type InsertMenuItemValue = InsertableComponent & {
@@ -284,6 +288,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
     (value: ValueType<InsertMenuItem>) => {
       if (value != null && !Array.isArray(value)) {
         const pickedInsertableComponent = (value as InsertMenuItem).value
+        const selectedViews = selectedViewsref.current
 
         let actionsToDispatch: Array<EditorAction> = []
         if (insertMenuMode === 'wrap') {
@@ -300,18 +305,26 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
           )
 
           actionsToDispatch = [
-            wrapInView(selectedViewsref.current, {
+            wrapInView(selectedViews, {
               element: newElement,
               importsToAdd: pickedInsertableComponent.importsToAdd,
             }),
           ]
         } else if (insertMenuMode === 'insert') {
-          const selectedViews = selectedViewsref.current
-
           // TODO multiselect?
           actionsToDispatch = [
             insertWithDefaults(selectedViews[0], pickedInsertableComponent, 'add-size'),
           ]
+        } else if (insertMenuMode === 'convert') {
+          // this is taken from render-as.tsx
+          const targetsForUpdates = getElementsToTarget(selectedViews)
+          actionsToDispatch = targetsForUpdates.flatMap((path) => {
+            return updateJSXElementName(
+              path,
+              pickedInsertableComponent.element.name,
+              pickedInsertableComponent.importsToAdd,
+            )
+          })
         }
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }

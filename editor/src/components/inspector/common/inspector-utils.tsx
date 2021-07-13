@@ -185,6 +185,7 @@ export function clampString(value: string, maxLength: number) {
   return value.length > maxLength ? `${value.substring(0, maxLength)}…` : value
 }
 
+// TODO this function needs a better name :)
 export function getElementsToTarget(paths: Array<ElementPath>): Array<ElementPath> {
   let result: Array<ElementPath> = []
   fastForEach(paths, (path) => {
