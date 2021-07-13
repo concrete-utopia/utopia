@@ -4,7 +4,11 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
-import { AllTailwindClasses } from '../../../core/third-party/tailwind-defaults'
+import {
+  AllTailwindClasses,
+  AllAttributes,
+  AttributeToClassNames,
+} from '../../../core/third-party/tailwind-defaults'
 import WindowedSelect, {
   components,
   IndicatorProps,
@@ -39,6 +43,7 @@ import {
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../../core/shared/atom-with-pub-sub'
+import { stripNulls } from '../../../core/shared/array-utils'
 
 interface TailWindOption {
   label: string
@@ -234,6 +239,60 @@ const ValueContainer = betterReactMemo(
 const filterOption = () => true
 const MaxResults = 500
 
+function findMatchingOptions<T>(
+  input: string,
+  options: Array<T>,
+  toString: (t: T) => string,
+  maxPerfectMatches: number,
+): Array<Array<T>> {
+  let orderedMatchedResults: Array<Array<T>> = []
+  let perfectMatchCount = 0
+  let splitInput = input.split(' ')
+  for (var i = 0; i < options.length && perfectMatchCount < maxPerfectMatches; i++) {
+    const nextOption = options[i]
+    const asString = toString(nextOption)
+    const splitInputIndexResult = splitInput.map((s) => asString.indexOf(s))
+    const minimumIndexOf = Math.min(...splitInputIndexResult)
+    if (minimumIndexOf > -1) {
+      let existingMatched = orderedMatchedResults[minimumIndexOf] ?? []
+      existingMatched.push(nextOption)
+      orderedMatchedResults[minimumIndexOf] = existingMatched
+      if (minimumIndexOf === 0) {
+        perfectMatchCount++
+      }
+    }
+  }
+
+  return orderedMatchedResults
+}
+
+function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Array<T> {
+  let matchedResults: Array<T> = []
+  let matchCount = 0
+  for (var i = 0; i < orderedSparseArray.length && matchCount < maxMatches; i++) {
+    const nextMatches = orderedSparseArray[i]
+    if (nextMatches != null) {
+      matchedResults.push(...nextMatches.slice(0, maxMatches - matchCount))
+      matchCount += nextMatches.length
+    }
+  }
+
+  return matchedResults
+}
+
+function mapToClassNames(attributes: Array<string>, maxMatches: number): Array<string> {
+  let results: Set<string> = new Set()
+  for (var i = 0; i < attributes.length && results.size < maxMatches; i++) {
+    const nextAttribute = attributes[i]
+    const classNames = AttributeToClassNames[nextAttribute]
+    if (classNames != null) {
+      classNames.forEach((className) => results.add(className))
+    }
+  }
+
+  return Array.from(results)
+}
+
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
@@ -256,31 +315,37 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       results = TailWindOptions.slice(0, MaxResults)
     } else {
       // First find all matches, and use a sparse array to keep the best matches at the front
-      let orderedMatchedResults: Array<Array<TailWindOption>> = []
-      let perfectMatchCount = 0
-      for (var i = 0; i < TailWindOptions.length && perfectMatchCount < MaxResults; i++) {
-        const nextOption = TailWindOptions[i]
-        const indexOf = nextOption.label.indexOf(trimmedLowerCaseInput)
-        if (indexOf > -1) {
-          let existingMatched = orderedMatchedResults[indexOf] ?? []
-          existingMatched.push(nextOption)
-          orderedMatchedResults[indexOf] = existingMatched
-          if (indexOf === 0) {
-            perfectMatchCount++
-          }
-        }
-      }
+      const orderedMatchedResults = findMatchingOptions(
+        trimmedLowerCaseInput,
+        TailWindOptions,
+        (option) => option.label,
+        MaxResults,
+      )
 
       // Now go through and take the first n best matches
-      let matchedResults: Array<TailWindOption> = []
-      let matchCount = 0
+      let matchedResults = takeBestOptions(orderedMatchedResults, MaxResults)
 
-      for (var j = 0; j < orderedMatchedResults.length && matchCount < MaxResults; j++) {
-        const nextMatches = orderedMatchedResults[j]
-        if (nextMatches != null) {
-          matchedResults.push(...nextMatches.slice(0, MaxResults - matchCount))
-          matchCount += nextMatches.length
-        }
+      // Next if we haven't hit our max result count, we find matches based on attributes
+      const remainingAllowedMatches = MaxResults - matchedResults.length
+      if (remainingAllowedMatches > 0) {
+        const orderedAttributeMatchedResults = findMatchingOptions(
+          trimmedLowerCaseInput,
+          AllAttributes,
+          (a) => a,
+          remainingAllowedMatches,
+        )
+        const bestMatchedAttributes = takeBestOptions(
+          orderedAttributeMatchedResults,
+          remainingAllowedMatches,
+        )
+        const classNamesFromBestMatchedAttributes = mapToClassNames(
+          bestMatchedAttributes,
+          remainingAllowedMatches,
+        )
+        const optionsForClassNames = classNamesFromBestMatchedAttributes.map((className) =>
+          TailWindOptions.find((option) => option.label === className),
+        )
+        matchedResults.push(...stripNulls(optionsForClassNames))
       }
 
       results = matchedResults

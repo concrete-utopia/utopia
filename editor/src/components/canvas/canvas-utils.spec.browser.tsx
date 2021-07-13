@@ -849,12 +849,12 @@ describe('moveTemplate', () => {
     const targets = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
-    await renderResult.dispatch([wrapInView(targets, 'default-empty-View')], true)
+    await renderResult.dispatch([wrapInView(targets, 'default-empty-div')], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
-        <View
+        <div
           style={{ position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid='${NewUID}'
         >
@@ -862,7 +862,7 @@ describe('moveTemplate', () => {
             style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202 }}
             data-uid='bbb'
           />
-        </View>
+        </div>
       </View>
       `),
     )
@@ -903,7 +903,7 @@ describe('moveTemplate', () => {
     ]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
-    await renderResult.dispatch([wrapInView(targets, 'default-empty-View')], true)
+    await renderResult.dispatch([wrapInView(targets, 'default-empty-div')], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -918,7 +918,7 @@ describe('moveTemplate', () => {
           data-uid='fff'
         />
         <View data-uid='hhh' />
-        <View
+        <div
           style={{ position: 'absolute', left: 15, top: 10, width: 246, height: 161 }}
           data-uid='${NewUID}'
         >
@@ -932,7 +932,7 @@ describe('moveTemplate', () => {
             style={{ left: 0, top: 0, width: 246, height: 150, position: 'absolute' }}
             data-uid='ggg'
           />
-        </View>
+        </div>
       </View>
       `),
     )
@@ -960,13 +960,13 @@ describe('moveTemplate', () => {
     ]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
-    await renderResult.dispatch([wrapInView(targets, 'default-empty-View')], true)
+    await renderResult.dispatch([wrapInView(targets, 'default-empty-div')], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View data-uid='eee' />
-        <View
+        <div
           style={{ position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid='${NewUID}'
         >
@@ -978,7 +978,7 @@ describe('moveTemplate', () => {
               <View data-uid='ddd' />
             </View>
           </View>
-        </View>
+        </div>
       </View>
       `),
     )
@@ -1031,19 +1031,18 @@ describe('moveTemplate', () => {
 
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
-    await renderResult.dispatch([wrapInView([targetPath], 'default-empty-View')], true)
+    await renderResult.dispatch([wrapInView([targetPath], 'default-empty-div')], true)
     expect(getPrintedUiJsCode(renderResult.getEditorState(), appFilePath)).toEqual(
       Prettier.format(
         `
     import * as React from 'react'
-    import { View } from 'utopia-api'
     export var App = (props) => {
       return (
         <div
           data-uid='app-outer-div'
           style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
         >
-          <View
+          <div
             style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 100 }}
             data-uid='${NewUID}'
           >
@@ -1053,7 +1052,7 @@ describe('moveTemplate', () => {
             >
               <span data-uid='app-inner-span'>hello</span>
             </div>
-          </View>
+          </div>
         </div>
       )
     }`,

@@ -156,6 +156,7 @@ import {
   addImport,
   codeNeedsParsing,
   codeNeedsPrinting,
+  emptyImports,
   mergeImports,
 } from '../../../core/workers/common/project-file-utils'
 import { OutgoingWorkerMessage, isJsFile, BuildType } from '../../../core/workers/ts/ts-worker'
@@ -2066,7 +2067,7 @@ export const UPDATE_FNS = {
         }
 
         const newUID =
-          action.whatToWrapWith === 'default-empty-View'
+          action.whatToWrapWith === 'default-empty-div'
             ? generateUidWithExistingComponents(editor.projectContents)
             : action.whatToWrapWith.element.uid
 
@@ -2126,7 +2127,7 @@ export const UPDATE_FNS = {
             editor,
             (parseSuccess) => {
               const elementToInsert: JSXElement =
-                action.whatToWrapWith === 'default-empty-View'
+                action.whatToWrapWith === 'default-empty-div'
                   ? defaultTransparentViewElement(newUID)
                   : action.whatToWrapWith.element
 
@@ -2147,11 +2148,8 @@ export const UPDATE_FNS = {
               viewPath = EP.appendToPath(parentPath, newUID)
 
               const importsToAdd: Imports =
-                action.whatToWrapWith === 'default-empty-View'
-                  ? {
-                      // the default View import
-                      ['utopia-api']: importDetails(null, [importAlias('View')], null),
-                    }
+                action.whatToWrapWith === 'default-empty-div'
+                  ? emptyImports()
                   : action.whatToWrapWith.importsToAdd
 
               return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {

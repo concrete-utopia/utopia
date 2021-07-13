@@ -67,7 +67,7 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
 
 export function defaultTransparentViewElement(uid: string): JSXElement {
   return jsxElement(
-    jsxElementName('View', []),
+    jsxElementName('div', []),
     uid,
     jsxAttributesFromMap({
       style: jsxAttributeValue(
