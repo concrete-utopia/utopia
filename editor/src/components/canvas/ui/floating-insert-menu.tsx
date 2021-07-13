@@ -254,7 +254,7 @@ function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'):
     case 'convert':
       return 'Convert to'
     case 'insert':
-      return 'Insert'
+      return 'Add Element'
     case 'wrap':
       return 'Wrap in'
   }
