@@ -503,6 +503,7 @@ import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { reverse, uniqBy } from '../../../core/shared/array-utils'
+import { UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -4425,8 +4426,16 @@ export const UPDATE_FNS = {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
 
+          const propsWithUid = forceRight(
+            setJSXValueAtPath(
+              action.toInsert.element.props,
+              PP.create([UTOPIA_UIDS_KEY]),
+              jsxAttributeValue(newUID, emptyComments),
+            ),
+            `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
+          )
           // Potentially add in some default position and sizing.
-          let props = action.toInsert.element.props
+          let props = propsWithUid
           if (action.styleProps === 'add-size') {
             const sizesToSet: Array<ValueAtPath> = [
               { path: PP.create(['style', 'width']), value: jsxAttributeValue(100, emptyComments) },
