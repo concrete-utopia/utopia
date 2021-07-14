@@ -55,6 +55,7 @@ import { getContentsTreeFileFromString } from '../../assets'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { isSelectMode } from '../../editor/editor-modes'
 
 interface TailWindOption {
   label: string
@@ -409,6 +410,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       )
     }
 
+    const selectMode = isSelectMode(store.editor.mode)
     let foundAttributeAsString: string | null = null
     let menuEnabled = false
     if (element != null && isJSXElement(element)) {
@@ -420,9 +422,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         foundAttributeAsString = foundAttribute.value
       }
       if (
-        foundAttribute == null ||
-        isJSXAttributeNotFound(foundAttribute) ||
-        isJSXAttributeValue(foundAttribute)
+        selectMode &&
+        (foundAttribute == null ||
+          isJSXAttributeNotFound(foundAttribute) ||
+          isJSXAttributeValue(foundAttribute))
       ) {
         menuEnabled = true
       }
@@ -464,8 +467,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           label: name,
           value: name,
         }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classNameFromAttributes, elementPath])
+  }, [classNameFromAttributes, elementPath, metadataRef])
 
   const ariaOnFocus = React.useCallback(
     ({ focused }: { focused: TailWindOption }) => {
