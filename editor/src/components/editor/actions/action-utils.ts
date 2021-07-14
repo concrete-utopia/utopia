@@ -96,6 +96,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_FORMULA_BAR_MODE':
     case 'OPEN_FLOATING_INSERT_MENU':
     case 'CLOSE_FLOATING_INSERT_MENU':
+    case 'SET_PROP_TRANSIENT':
+    case 'CLEAR_TRANSIENT_PROPS':
       return true
 
     case 'NEW':

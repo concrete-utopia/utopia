@@ -22,8 +22,8 @@ import chroma from 'chroma-js'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
-import { useEditorState } from '../../editor/store/store-hook'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as PP from '../../../core/shared/property-path'
 import {
   ElementInstanceMetadata,
@@ -31,6 +31,7 @@ import {
   isJSXAttributeValue,
   isJSXElement,
   jsxAttributeValue,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { eitherToMaybe, isRight } from '../../../core/shared/either'
@@ -45,6 +46,11 @@ import {
 } from '../../../core/shared/atom-with-pub-sub'
 import { stripNulls } from '../../../core/shared/array-utils'
 import { mapToArray, mapValues } from '../../../core/shared/object-utils'
+import { getOpenUIJSFileKey } from '../../editor/store/editor-state'
+import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
+import { getContentsTreeFileFromString } from '../../assets'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import Highlighter from 'react-highlight-words'
 
 interface TailWindOption {
@@ -337,17 +343,14 @@ function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: num
 
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
+  const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
   const [input, setInput] = React.useState('')
   const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
-  const clearFocusedOption = React.useCallback(() => updateFocusedOption(null), [
-    updateFocusedOption,
-  ])
-  const ariaOnFocus = React.useCallback(
-    ({ focused }: { focused: TailWindOption }) => updateFocusedOption(focused),
-    [updateFocusedOption],
-  )
-  const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
+  const clearFocusedOption = React.useCallback(() => {
+    updateFocusedOption(null)
+    dispatch([EditorActions.clearTransientProps()], 'canvas')
+  }, [updateFocusedOption, dispatch])
 
   const filteredOptions = React.useMemo(() => {
     const searchTerms = searchStringToIndividualTerms(input)
@@ -396,36 +399,74 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     return results
   }, [input, clearFocusedOption])
 
-  const { classNameAttribute, classNameFromProps, elementPath } = useEditorState((store) => {
-    let element: ElementInstanceMetadata | null = null
-    if (store.editor.selectedViews.length === 1) {
-      element = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
+  const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
+    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+    if (openUIJSFileKey == null || store.editor.selectedViews.length !== 1) {
+      return {
+        elementPath: null,
+        classNameFromAttributes: null,
+        isMenuEnabled: false,
+      }
+    }
+    const underlyingTarget = normalisePathToUnderlyingTarget(
+      store.editor.projectContents,
+      store.editor.nodeModules.files,
+      openUIJSFileKey,
+      store.editor.selectedViews[0],
+    )
+    const underlyingPath =
+      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS'
+        ? underlyingTarget.filePath
+        : openUIJSFileKey
+    const projectFile = getContentsTreeFileFromString(store.editor.projectContents, underlyingPath)
+    let element: JSXElementChild | null = null
+    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+      element = findElementAtPath(
         store.editor.selectedViews[0],
+        getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
       )
     }
 
-    let foundAttribute: ModifiableAttribute | null = null
-    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
-      const jsxAttributes = element.element.value.props
-      foundAttribute = eitherToMaybe(
+    let foundAttributeAsString: string | null = null
+    let menuEnabled = false
+    if (element != null && isJSXElement(element)) {
+      const jsxAttributes = element.props
+      let foundAttribute = eitherToMaybe(
         getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])),
       )
+      if (foundAttribute != null && isJSXAttributeValue(foundAttribute)) {
+        foundAttributeAsString = foundAttribute.value
+      }
+      if (
+        foundAttribute == null ||
+        isJSXAttributeNotFound(foundAttribute) ||
+        isJSXAttributeValue(foundAttribute)
+      ) {
+        menuEnabled = true
+      }
     }
 
     return {
-      elementPath: element?.elementPath,
-      classNameAttribute: foundAttribute,
-      classNameFromProps: element?.props['className'],
+      elementPath: MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )?.elementPath,
+      classNameFromAttributes: foundAttributeAsString,
+      isMenuEnabled: menuEnabled,
     }
-  }, 'ClassNameSelect selectedElement')
+  }, 'ClassNameSelect elementPath classNameFromAttributes isMenuEnabled')
+
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const selectedValues = React.useMemo((): TailWindOption[] | null => {
     let classNameValue: string | null = null
-    if (classNameAttribute != null && isJSXAttributeValue(classNameAttribute)) {
-      classNameValue = classNameAttribute.value
+    if (classNameFromAttributes != null) {
+      classNameValue = classNameFromAttributes
     } else {
-      classNameValue = classNameFromProps
+      if (elementPath != null) {
+        const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
+        classNameValue = element?.props['className']
+      }
     }
 
     const splitClassNames =
@@ -435,22 +476,36 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
             .map((s) => s.trim())
             .filter((s) => s !== '')
         : []
-
     return splitClassNames.length === 0
       ? null
       : splitClassNames.map((name: string) => ({
           label: name,
           value: name,
         }))
-  }, [classNameAttribute, classNameFromProps])
+  }, [classNameFromAttributes, elementPath, metadataRef])
 
-  const isMenuEnabled = React.useMemo(
-    () =>
-      classNameAttribute == null ||
-      isJSXAttributeValue(classNameAttribute) ||
-      isJSXAttributeNotFound(classNameAttribute),
-    [classNameAttribute],
+  const ariaOnFocus = React.useCallback(
+    ({ focused }: { focused: TailWindOption }) => {
+      if (targets.length === 1) {
+        const newClassNameString =
+          selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
+        dispatch(
+          [
+            EditorActions.setPropTransient(
+              targets[0],
+              PP.create(['className']),
+              jsxAttributeValue(newClassNameString, emptyComments),
+            ),
+          ],
+          'canvas',
+        )
+      }
+      updateFocusedOption(focused)
+    },
+    [updateFocusedOption, dispatch, targets, selectedValues],
   )
+  const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
+
   const onChange = React.useCallback(
     (newValue: Array<{ label: string; value: string }>) => {
       if (elementPath != null) {
