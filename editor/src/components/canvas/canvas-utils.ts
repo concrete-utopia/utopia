@@ -1599,10 +1599,12 @@ export function produceCanvasTransientState(
               const _exhaustiveCheck: never = dragState
               throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
           }
-        } else if (editorState.canvas.transientProperties != null) {
-          transientState = createCanvasTransientStateFromProperties(editorState)
         }
         break
+    }
+
+    if (transientState == null && editorState.canvas.transientProperties != null) {
+      transientState = createCanvasTransientStateFromProperties(editorState)
     }
   }
 

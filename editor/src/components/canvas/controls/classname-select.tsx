@@ -51,7 +51,6 @@ import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
 import { getContentsTreeFileFromString } from '../../assets'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import { isSelectMode } from '../../editor/editor-modes'
 import Highlighter from 'react-highlight-words'
 
 interface TailWindOption {
@@ -428,7 +427,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       )
     }
 
-    const selectMode = isSelectMode(store.editor.mode)
     let foundAttributeAsString: string | null = null
     let menuEnabled = false
     if (element != null && isJSXElement(element)) {
@@ -440,10 +438,9 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         foundAttributeAsString = foundAttribute.value
       }
       if (
-        selectMode &&
-        (foundAttribute == null ||
-          isJSXAttributeNotFound(foundAttribute) ||
-          isJSXAttributeValue(foundAttribute))
+        foundAttribute == null ||
+        isJSXAttributeNotFound(foundAttribute) ||
+        isJSXAttributeValue(foundAttribute)
       ) {
         menuEnabled = true
       }
