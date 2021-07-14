@@ -188,9 +188,9 @@ const MatchHighlighter = betterReactMemo(
 
 function formatOptionLabel(
   { label }: TailWindOption,
-  { inputValue }: FormatOptionLabelMeta<TailWindOption, true>,
+  { context, inputValue }: FormatOptionLabelMeta<TailWindOption, true>,
 ) {
-  return <MatchHighlighter text={label} searchString={inputValue} />
+  return context === 'menu' ? <MatchHighlighter text={label} searchString={inputValue} /> : label
 }
 
 const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) => {
