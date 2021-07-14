@@ -155,7 +155,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (
       event: MouseEvent | TouchEvent,
       direction: ResizeDirection,
-      elementRef: HTMLDivElement,
+      elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
       if (props.isUiJsFileOpen) {
@@ -170,7 +170,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (
       event: MouseEvent | TouchEvent,
       direction: ResizeDirection,
-      elementRef: HTMLDivElement,
+      elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
       if (props.isUiJsFileOpen && navigatorPosition !== 'hidden') {
