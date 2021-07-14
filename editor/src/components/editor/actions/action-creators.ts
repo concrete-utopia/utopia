@@ -191,6 +191,8 @@ import type {
   OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
+  SetPropTransient,
+  ClearTransientProps,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1021,6 +1023,25 @@ export function setPropWithElementPath_UNSAFE(
     target: target,
     propertyPath: propertyPath,
     value: value,
+  }
+}
+
+export function setPropTransient(
+  target: ElementPath,
+  propertyPath: PropertyPath,
+  value: JSXAttribute,
+): SetPropTransient {
+  return {
+    action: 'SET_PROP_TRANSIENT',
+    target: target,
+    propertyPath: propertyPath,
+    value: value,
+  }
+}
+
+export function clearTransientProps(): ClearTransientProps {
+  return {
+    action: 'CLEAR_TRANSIENT_PROPS',
   }
 }
 
