@@ -1,7 +1,12 @@
 /** @jsx jsx */
 import * as React from 'react'
 import { jsx } from '@emotion/react'
-import Select, { StylesConfig, ValueType } from 'react-select'
+import WindowedSelect, {
+  ActionMeta,
+  InputActionMeta,
+  StylesConfig,
+  ValueType,
+} from 'react-windowed-select'
 
 import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -109,7 +114,7 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   return insertableComponents
 }
 
-function useComponentSelectorStyles(): StylesConfig {
+function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
   const colorTheme = useColorTheme()
   // componentSelectorStyles will only be recreated if the theme changes, otherwise we re-use the same object
   return React.useMemo(
@@ -174,10 +179,10 @@ function useComponentSelectorStyles(): StylesConfig {
         display: 'flex',
         paddingTop: 2,
         opacity: 0.4,
-        color: data.color,
+        color: styles.color,
         ':hover': {
           opacity: 1,
-          backgroundColor: data.color,
+          backgroundColor: styles.color,
         },
       }),
       menu: (styles) => {
@@ -305,6 +310,27 @@ function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'):
 export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const colorTheme = useColorTheme()
 
+  // This is a ref so that changing the highlighted element does not trigger a re-render loop
+  // This is FINE because we only use the value in callbacks
+  const activelySelectedInsertOptionRef = React.useRef<InsertMenuItem | null>(null)
+
+  const ariaLiveMessages = React.useMemo(
+    () => ({
+      onFocus: ({ focused }: { focused: InsertMenuItem }) => {
+        activelySelectedInsertOptionRef.current = focused
+      },
+    }),
+    [],
+  )
+
+  const [filterInputValue, setFilterInputValue] = React.useState('')
+  const onInputValueChange = React.useCallback((newValue, actionMeta: InputActionMeta) => {
+    // when the user "tabs out" to the checkboxes, prevent react-select from clearing the input text
+    if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
+      setFilterInputValue(newValue)
+    }
+  }, [])
+
   const insertMenuMode = useEditorState(
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'FloatingMenu insertMenuMode',
@@ -316,14 +342,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
 
   const componentSelectorStyles = useComponentSelectorStyles()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
-  useHandleCloseOnESCOrEnter(
-    React.useCallback(
-      (key: 'Escape' | 'Enter') => {
-        dispatch([closeFloatingInsertMenu()])
-      },
-      [dispatch],
-    ),
-  )
+
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
@@ -332,7 +351,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
 
   const onChange = React.useCallback(
-    (value: ValueType<InsertMenuItem>) => {
+    (value: ValueType<InsertMenuItem, false>) => {
       if (value != null && !Array.isArray(value)) {
         const pickedInsertableComponent = (value as InsertMenuItem).value
         const selectedViews = selectedViewsref.current
@@ -401,6 +420,19 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
     ],
   )
 
+  useHandleCloseOnESCOrEnter(
+    React.useCallback(
+      (key: 'Escape' | 'Enter') => {
+        if (key === 'Escape') {
+          dispatch([closeFloatingInsertMenu()])
+        } else {
+          onChange(activelySelectedInsertOptionRef.current)
+        }
+      },
+      [dispatch, onChange],
+    ),
+  )
+
   return (
     <div
       style={{
@@ -433,7 +465,10 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
           <b>{menuTitle}</b>
         </div>
 
-        <Select
+        <WindowedSelect
+          ariaLiveMessages={ariaLiveMessages}
+          inputValue={filterInputValue}
+          onInputChange={onInputValueChange}
           autoFocus
           isMulti={false}
           controlShouldRenderValue={false}
