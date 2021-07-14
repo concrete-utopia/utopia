@@ -66,21 +66,25 @@ let TailWindOptions: Array<TailWindOption> = []
 let AttributeOptionLookup: { [attribute: string]: Array<TailWindOption> }
 
 async function loadTailwindOptions() {
-  TailWindOptions = mapToArray(
-    (attributes, className) => ({
-      label: className,
-      value: className,
-      attributes: attributes,
-    }),
-    ClassNameToAttributes,
-  )
-
-  AttributeOptionLookup = mapValues((classNames: Array<string>) => {
-    const matchingOptions = classNames.map((className) =>
-      TailWindOptions.find((option) => option.value === className),
+  return new Promise<void>((resolve) => {
+    TailWindOptions = mapToArray(
+      (attributes, className) => ({
+        label: className,
+        value: className,
+        attributes: attributes,
+      }),
+      ClassNameToAttributes,
     )
-    return stripNulls(matchingOptions)
-  }, AttributeToClassNames)
+
+    AttributeOptionLookup = mapValues((classNames: Array<string>) => {
+      const matchingOptions = classNames.map((className) =>
+        TailWindOptions.find((option) => option.value === className),
+      )
+      return stripNulls(matchingOptions)
+    }, AttributeToClassNames)
+
+    resolve()
+  })
 }
 
 loadTailwindOptions()
