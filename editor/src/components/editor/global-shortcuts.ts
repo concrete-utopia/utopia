@@ -191,7 +191,11 @@ function getTextEditorTarget(editor: EditorState, derived: DerivedState): Elemen
 }
 
 function shouldTabBeHandledByBrowser(editor: EditorState): boolean {
-  return editor.focusedPanel === 'inspector' || editor.focusedPanel === 'dependencylist'
+  return (
+    editor.focusedPanel === 'inspector' ||
+    editor.focusedPanel === 'dependencylist' ||
+    editor.floatingInsertMenu.insertMenuMode !== 'closed'
+  )
 }
 
 export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEvent): void {
