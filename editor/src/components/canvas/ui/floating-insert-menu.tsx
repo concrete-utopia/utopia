@@ -359,7 +359,11 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
         } else if (insertMenuMode === 'insert') {
           // TODO multiselect?
           actionsToDispatch = [
-            insertWithDefaults(selectedViews[0], pickedInsertableComponent, 'add-size'),
+            insertWithDefaults(
+              selectedViews[0],
+              pickedInsertableComponent,
+              fixedSizeForInsertion ? 'add-size' : 'do-not-add',
+            ),
           ]
         } else if (insertMenuMode === 'convert') {
           // this is taken from render-as.tsx
@@ -375,7 +379,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
-    [dispatch, insertMenuMode, projectContentsRef, selectedViewsref],
+    [dispatch, insertMenuMode, projectContentsRef, selectedViewsref, fixedSizeForInsertion],
   )
 
   return (
