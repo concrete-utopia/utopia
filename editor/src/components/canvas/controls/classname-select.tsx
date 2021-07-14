@@ -54,6 +54,7 @@ import {
 import { getContentsTreeFileFromString } from '../../assets'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 interface TailWindOption {
   label: string
@@ -380,12 +381,13 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     return results
   }, [input, clearFocusedOption])
 
-  const { classNameAttribute, elementPath } = useEditorState((store) => {
+  const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
     const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
     if (openUIJSFileKey == null || store.editor.selectedViews.length !== 1) {
       return {
         elementPath: null,
-        classNameAttribute: null,
+        classNameFromAttributes: null,
+        isMenuEnabled: false,
       }
     }
     const underlyingTarget = normalisePathToUnderlyingTarget(
@@ -407,28 +409,41 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       )
     }
 
-    let foundAttribute: ModifiableAttribute | null = null
+    let foundAttributeAsString: string | null = null
+    let menuEnabled = false
     if (element != null && isJSXElement(element)) {
       const jsxAttributes = element.props
-      foundAttribute = eitherToMaybe(
+      let foundAttribute = eitherToMaybe(
         getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])),
       )
+      if (foundAttribute != null && isJSXAttributeValue(foundAttribute)) {
+        foundAttributeAsString = foundAttribute.value
+      }
+      if (
+        foundAttribute == null ||
+        isJSXAttributeNotFound(foundAttribute) ||
+        isJSXAttributeValue(foundAttribute)
+      ) {
+        menuEnabled = true
+      }
     }
+
     return {
       elementPath: MetadataUtils.findElementByElementPath(
         store.editor.jsxMetadata,
         store.editor.selectedViews[0],
       )?.elementPath,
-      classNameAttribute: foundAttribute,
+      classNameFromAttributes: foundAttributeAsString,
+      isMenuEnabled: menuEnabled,
     }
-  }, 'ClassNameSelect elementPath classNameAttribute')
+  }, 'ClassNameSelect elementPath classNameFromAttributes isMenuEnabled')
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const selectedValues = React.useMemo((): TailWindOption[] | null => {
     let classNameValue: string | null = null
-    if (classNameAttribute != null && isJSXAttributeValue(classNameAttribute)) {
-      classNameValue = classNameAttribute.value
+    if (classNameFromAttributes != null) {
+      classNameValue = classNameFromAttributes
     } else {
       if (elementPath != null) {
         const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
@@ -450,7 +465,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           value: name,
         }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classNameAttribute, elementPath])
+  }, [classNameFromAttributes, elementPath])
 
   const ariaOnFocus = React.useCallback(
     ({ focused }: { focused: TailWindOption }) => {
@@ -474,13 +489,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   )
   const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
 
-  const isMenuEnabled = React.useMemo(
-    () =>
-      classNameAttribute == null ||
-      isJSXAttributeValue(classNameAttribute) ||
-      isJSXAttributeNotFound(classNameAttribute),
-    [classNameAttribute],
-  )
   const onChange = React.useCallback(
     (newValue: Array<{ label: string; value: string }>) => {
       if (elementPath != null) {
