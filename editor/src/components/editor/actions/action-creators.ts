@@ -191,6 +191,7 @@ import type {
   OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
+  ToggleFocusedOmniboxTab,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -332,6 +333,12 @@ export function setPanelVisibility(
     action: 'SET_PANEL_VISIBILITY',
     target: target,
     visible: visible,
+  }
+}
+
+export function toggleFocusedOmniboxTab(): ToggleFocusedOmniboxTab {
+  return {
+    action: 'TOGGLE_FOCUSED_OMNIBOX_TAB',
   }
 }
 

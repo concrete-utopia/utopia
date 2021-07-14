@@ -253,6 +253,10 @@ export type SetPanelVisibility = {
   visible: boolean
 }
 
+export type ToggleFocusedOmniboxTab = {
+  action: 'TOGGLE_FOCUSED_OMNIBOX_TAB'
+}
+
 export type TogglePane = {
   action: 'TOGGLE_PANE'
   target: EditorPanel | EditorPane
@@ -888,6 +892,7 @@ export type EditorAction =
   | RenameComponent
   | NavigatorReorder
   | SetPanelVisibility
+  | ToggleFocusedOmniboxTab
   | TogglePane
   | ClosePopup
   | OpenPopup

@@ -4,7 +4,7 @@ import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
 import {
@@ -16,6 +16,11 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { ModeToggleButton } from './mode-toggle-button'
 import { ClassNameSelect } from './classname-select'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import {
+  applyShortcutConfigurationToDefaults,
+  handleShortcuts,
+  TOGGLE_FOCUSED_OMNIBOX_TAB,
+} from '../../editor/shortcut-definitions'
 
 function useFocusOnCountIncrease(triggerCount: number): React.RefObject<HTMLInputElement> {
   const ref = React.useRef<HTMLInputElement>(null)
@@ -106,6 +111,26 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     isFeatureEnabled('TopMenu ClassNames') && selectedElement != null && selectedMode === 'css'
   const inputFieldVisible = !classNameFieldVisible
 
+  const editorStoreRef = useRefEditorState((store) => store)
+  const onKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLElement>) => {
+      const namesByKey = applyShortcutConfigurationToDefaults(
+        editorStoreRef.current.userState.shortcutConfig,
+      )
+      handleShortcuts(namesByKey, event.nativeEvent, null, {
+        [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
+          event.stopPropagation()
+          event.preventDefault()
+          dispatch([EditorActions.toggleFocusedOmniboxTab()])
+
+          // We need this to happen in the next frame to ensure the field we want to focus exists
+          setTimeout(() => dispatch([EditorActions.focusFormulaBar()]), 0)
+        },
+      })
+    },
+    [editorStoreRef, dispatch],
+  )
+
   return (
     <SimpleFlexRow
       css={{
@@ -126,6 +151,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           border: `1px solid ${colorTheme.brandNeonYellow.value}`,
         },
       }}
+      onKeyDown={onKeyDown}
     >
       {buttonsVisible ? <ModeToggleButton /> : null}
       {classNameFieldVisible ? <ClassNameSelect /> : null}

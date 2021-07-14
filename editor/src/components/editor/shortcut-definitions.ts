@@ -85,6 +85,7 @@ export const MOVE_ELEMENT_FORWARD_SHORTCUT = 'move-element-forward'
 export const MOVE_ELEMENT_TO_FRONT_SHORTCUT = 'move-element-to-front'
 export const MOVE_ELEMENT_BACKWARD_SHORTCUT = 'move-element-backward'
 export const MOVE_ELEMENT_TO_BACK_SHORTCUT = 'move-element-to-back'
+export const TOGGLE_FOCUSED_OMNIBOX_TAB = 'toggle-focused-omnibox-tab'
 export const TOGGLE_TEXT_UNDERLINE_SHORTCUT = 'toggle-text-underline'
 export const TOGGLE_LEFT_MENU_SHORTCUT = 'toggle-left-menu'
 export const TOGGLE_RIGHT_MENU_SHORTCUT = 'toggle-right-menu'
@@ -261,6 +262,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [MOVE_ELEMENT_TO_BACK_SHORTCUT]: shortcut(
     'Move element to the back in relation to its siblings.',
     key('[', ['alt', 'cmd']),
+  ),
+  [TOGGLE_FOCUSED_OMNIBOX_TAB]: shortcut(
+    'Focus the omnibox or toggle its current tab.',
+    key('forwardslash', 'cmd'),
   ),
   [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: shortcut(
     'Toggle the underline attribute of the current text element.',
