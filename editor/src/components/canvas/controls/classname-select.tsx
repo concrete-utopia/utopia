@@ -456,17 +456,10 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     }
   }, 'ClassNameSelect elementPath classNameFromAttributes isMenuEnabled')
 
-  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-
   const selectedValues = React.useMemo((): TailWindOption[] | null => {
     let classNameValue: string | null = null
     if (classNameFromAttributes != null) {
       classNameValue = classNameFromAttributes
-    } else {
-      if (elementPath != null) {
-        const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
-        classNameValue = element?.props['className']
-      }
     }
 
     const splitClassNames =
@@ -482,7 +475,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           label: name,
           value: name,
         }))
-  }, [classNameFromAttributes, elementPath, metadataRef])
+  }, [classNameFromAttributes])
 
   const ariaOnFocus = React.useCallback(
     ({ focused }: { focused: TailWindOption }) => {
