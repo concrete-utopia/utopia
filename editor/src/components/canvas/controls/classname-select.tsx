@@ -308,14 +308,15 @@ function findMatchingOptions<T>(
   return orderedMatchedResults
 }
 
-function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Array<T> {
-  let matchedResults: Array<T> = []
+function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Set<T> {
+  let matchedResults: Set<T> = new Set()
   let matchCount = 0
   for (var i = 0; i < orderedSparseArray.length && matchCount < maxMatches; i++) {
     const nextMatches = orderedSparseArray[i]
     if (nextMatches != null) {
-      matchedResults.push(...nextMatches.slice(0, maxMatches - matchCount))
-      matchCount += nextMatches.length
+      const maxNextMatches = nextMatches.slice(0, maxMatches - matchCount)
+      maxNextMatches.forEach((m) => matchedResults.add(m))
+      matchCount = matchedResults.size
     }
   }
 
@@ -352,7 +353,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       let matchedResults = takeBestOptions(orderedMatchedResults, MaxResults)
 
       // Next if we haven't hit our max result count, we find matches based on attributes
-      const remainingAllowedMatches = MaxResults - matchedResults.length
+      const remainingAllowedMatches = MaxResults - matchedResults.size
       if (remainingAllowedMatches > 0) {
         const orderedAttributeMatchedResults = findMatchingOptions(
           searchTerms,
@@ -364,13 +365,14 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           orderedAttributeMatchedResults,
           remainingAllowedMatches,
         )
-        const optionsForBestMatchedAttributes = bestMatchedAttributes.flatMap(
-          (attribute) => AttributeOptionLookup[attribute] ?? [],
-        )
-        matchedResults.push(...optionsForBestMatchedAttributes)
+
+        bestMatchedAttributes.forEach((attribute) => {
+          const matchingOptions = AttributeOptionLookup[attribute] ?? []
+          matchingOptions.forEach((option) => matchedResults.add(option))
+        })
       }
 
-      results = matchedResults
+      results = Array.from(matchedResults)
     }
 
     if (results.length === 0) {
