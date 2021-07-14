@@ -384,7 +384,7 @@ let
 
   pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
