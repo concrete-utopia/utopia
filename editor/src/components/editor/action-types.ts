@@ -858,6 +858,16 @@ export interface InsertWithDefaults {
   styleProps: StylePropOption
 }
 
+export interface SetPropTransient {
+  action: 'SET_PROP_TRANSIENT'
+  target: ElementPath
+  propertyPath: PropertyPath
+  value: JSXAttribute
+}
+export interface ClearTransientProps {
+  action: 'CLEAR_TRANSIENT_PROPS'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1000,6 +1010,8 @@ export type EditorAction =
   | FocusFormulaBar
   | UpdateFormulaBarMode
   | InsertWithDefaults
+  | SetPropTransient
+  | ClearTransientProps
 
 export type DispatchPriority =
   | 'everyone'

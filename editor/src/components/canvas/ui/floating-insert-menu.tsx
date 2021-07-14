@@ -1,12 +1,17 @@
 /** @jsx jsx */
 import * as React from 'react'
 import { jsx } from '@emotion/react'
-import Select, { StylesConfig, ValueType } from 'react-select'
+import WindowedSelect, {
+  ActionMeta,
+  InputActionMeta,
+  StylesConfig,
+  ValueType,
+} from 'react-windowed-select'
 
 import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
-import { FlexColumn, OnClickOutsideHOC, useColorTheme } from '../../../uuiui'
+import { FlexColumn, FlexRow, OnClickOutsideHOC, useColorTheme } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
   getComponentGroups,
@@ -25,6 +30,7 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import {
   jsxAttributeValue,
   jsxElement,
+  jsxTextBlock,
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
@@ -108,7 +114,7 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   return insertableComponents
 }
 
-function useComponentSelectorStyles(): StylesConfig {
+function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
   const colorTheme = useColorTheme()
   // componentSelectorStyles will only be recreated if the theme changes, otherwise we re-use the same object
   return React.useMemo(
@@ -173,10 +179,10 @@ function useComponentSelectorStyles(): StylesConfig {
         display: 'flex',
         paddingTop: 2,
         opacity: 0.4,
-        color: data.color,
+        color: styles.color,
         ':hover': {
           opacity: 1,
-          backgroundColor: data.color,
+          backgroundColor: styles.color,
         },
       }),
       menu: (styles) => {
@@ -247,6 +253,47 @@ function useComponentSelectorStyles(): StylesConfig {
   )
 }
 
+interface CheckboxRowProps {
+  id: string
+  checked: boolean
+  onChange: (value: boolean) => void
+}
+
+const CheckboxRow = betterReactMemo<React.PropsWithChildren<CheckboxRowProps>>(
+  'CheckboxRow',
+  ({ id, checked, onChange, children }) => {
+    const colorTheme = useColorTheme()
+
+    const handleChange = React.useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange(event.target.checked)
+      },
+      [onChange],
+    )
+
+    return (
+      <FlexRow css={{ height: 25, gap: 8 }}>
+        <input
+          type='checkbox'
+          checked={checked}
+          onChange={handleChange}
+          css={{
+            '&:focus': {
+              outline: 'auto',
+              outlineColor: colorTheme.primary.value,
+              outlineOffset: 0,
+            },
+          }}
+          id={id}
+        />
+        <label htmlFor={id} tabIndex={1}>
+          {children}
+        </label>
+      </FlexRow>
+    )
+  },
+)
+
 function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'): string {
   switch (insertMenuMode) {
     case 'closed':
@@ -254,7 +301,7 @@ function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'):
     case 'convert':
       return 'Convert to'
     case 'insert':
-      return 'Insert'
+      return 'Add Element'
     case 'wrap':
       return 'Wrap in'
   }
@@ -263,29 +310,48 @@ function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'):
 export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const colorTheme = useColorTheme()
 
+  // This is a ref so that changing the highlighted element does not trigger a re-render loop
+  // This is FINE because we only use the value in callbacks
+  const activelySelectedInsertOptionRef = React.useRef<InsertMenuItem | null>(null)
+
+  const ariaLiveMessages = React.useMemo(
+    () => ({
+      onFocus: ({ focused }: { focused: InsertMenuItem }) => {
+        activelySelectedInsertOptionRef.current = focused
+      },
+    }),
+    [],
+  )
+
+  const [filterInputValue, setFilterInputValue] = React.useState('')
+  const onInputValueChange = React.useCallback((newValue, actionMeta: InputActionMeta) => {
+    // when the user "tabs out" to the checkboxes, prevent react-select from clearing the input text
+    if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
+      setFilterInputValue(newValue)
+    }
+  }, [])
+
   const insertMenuMode = useEditorState(
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'FloatingMenu insertMenuMode',
   )
 
+  const showInsertionControls = insertMenuMode === 'insert'
+
   const menuTitle: string = getMenuTitle(insertMenuMode)
 
   const componentSelectorStyles = useComponentSelectorStyles()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
-  useHandleCloseOnESCOrEnter(
-    React.useCallback(
-      (key: 'Escape' | 'Enter') => {
-        dispatch([closeFloatingInsertMenu()])
-      },
-      [dispatch],
-    ),
-  )
+
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
 
+  const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
+  const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
+
   const onChange = React.useCallback(
-    (value: ValueType<InsertMenuItem>) => {
+    (value: ValueType<InsertMenuItem, false>) => {
       if (value != null && !Array.isArray(value)) {
         const pickedInsertableComponent = (value as InsertMenuItem).value
         const selectedViews = selectedViewsref.current
@@ -311,9 +377,24 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             }),
           ]
         } else if (insertMenuMode === 'insert') {
+          let elementToInsert = pickedInsertableComponent
+          if (addContentForInsertion && pickedInsertableComponent.element.children.length === 0) {
+            elementToInsert = {
+              ...pickedInsertableComponent,
+              element: {
+                ...pickedInsertableComponent.element,
+                children: [jsxTextBlock('Utopia')],
+              },
+            }
+          }
+
           // TODO multiselect?
           actionsToDispatch = [
-            insertWithDefaults(selectedViews[0], pickedInsertableComponent, 'add-size'),
+            insertWithDefaults(
+              selectedViews[0],
+              elementToInsert,
+              fixedSizeForInsertion ? 'add-size' : 'do-not-add',
+            ),
           ]
         } else if (insertMenuMode === 'convert') {
           // this is taken from render-as.tsx
@@ -329,7 +410,27 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
-    [dispatch, insertMenuMode, projectContentsRef, selectedViewsref],
+    [
+      dispatch,
+      insertMenuMode,
+      projectContentsRef,
+      selectedViewsref,
+      fixedSizeForInsertion,
+      addContentForInsertion,
+    ],
+  )
+
+  useHandleCloseOnESCOrEnter(
+    React.useCallback(
+      (key: 'Escape' | 'Enter') => {
+        if (key === 'Escape') {
+          dispatch([closeFloatingInsertMenu()])
+        } else {
+          onChange(activelySelectedInsertOptionRef.current)
+        }
+      },
+      [dispatch, onChange],
+    ),
   )
 
   return (
@@ -364,7 +465,10 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
           <b>{menuTitle}</b>
         </div>
 
-        <Select
+        <WindowedSelect
+          ariaLiveMessages={ariaLiveMessages}
+          inputValue={filterInputValue}
+          onInputChange={onInputValueChange}
           autoFocus
           isMulti={false}
           controlShouldRenderValue={false}
@@ -376,6 +480,24 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
           styles={componentSelectorStyles}
           tabSelectsValue={false}
         />
+        {showInsertionControls ? (
+          <FlexColumn css={{ paddingTop: 8, paddingLeft: 8, paddingRight: 8 }}>
+            <CheckboxRow
+              id='add-content-label'
+              checked={addContentForInsertion}
+              onChange={setAddContentForInsertion}
+            >
+              Add content
+            </CheckboxRow>
+            <CheckboxRow
+              id='fixed-dimensions-label'
+              checked={fixedSizeForInsertion}
+              onChange={setFixedSizeForInsertion}
+            >
+              Fixed dimensions
+            </CheckboxRow>
+          </FlexColumn>
+        ) : null}
       </FlexColumn>
     </div>
   )
