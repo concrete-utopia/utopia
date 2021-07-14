@@ -188,7 +188,7 @@ import type {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
-  WrapInPicker,
+  OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
   SetPropTransient,
@@ -617,11 +617,12 @@ export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
   }
 }
 
-export function wrapInPicker(targets: Array<ElementPath>): WrapInPicker {
+export function openFloatingInsertMenu(
+  mode: 'insert' | 'convert' | 'wrap',
+): OpenFloatingInsertMenu {
   return {
-    action: 'WRAP_IN_PICKER',
-    targets: targets,
-    layoutSystem: LayoutSystem.PinSystem,
+    action: 'OPEN_FLOATING_INSERT_MENU',
+    mode: mode,
   }
 }
 

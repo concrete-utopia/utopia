@@ -1150,7 +1150,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
-          printCodeOptions(false, true, true, false),
+          printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -1162,12 +1162,8 @@ describe('INSERT_WITH_DEFAULTS', () => {
           import { Menu } from 'antd'
           export var Card = (props) => {
             return (
-              <div
-                data-uid='card-outer-div'
-                style={{ ...props.style }}
-              >
+              <div style={{ ...props.style }}>
                 <div
-                  data-uid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1178,7 +1174,6 @@ describe('INSERT_WITH_DEFAULTS', () => {
                   }}
                 />
                 <Rectangle
-                  data-uid='card-inner-rectangle'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1250,7 +1245,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
-          printCodeOptions(false, true, true, false),
+          printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -1262,12 +1257,8 @@ describe('INSERT_WITH_DEFAULTS', () => {
           import { Menu } from 'antd'
           export var Card = (props) => {
             return (
-              <div
-                data-uid='card-outer-div'
-                style={{ ...props.style }}
-              >
+              <div style={{ ...props.style }}>
                 <div
-                  data-uid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1278,7 +1269,6 @@ describe('INSERT_WITH_DEFAULTS', () => {
                   }}
                 />
                 <Rectangle
-                  data-uid='card-inner-rectangle'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1349,7 +1339,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
-          printCodeOptions(false, true, true, false),
+          printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
           parsed.jsxFactoryFunction,
@@ -1360,12 +1350,8 @@ describe('INSERT_WITH_DEFAULTS', () => {
           import { Rectangle } from 'utopia-api'
           export var Card = (props) => {
             return (
-              <div
-                data-uid='card-outer-div'
-                style={{ ...props.style }}
-              >
+              <div style={{ ...props.style }}>
                 <div
-                  data-uid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1376,7 +1362,6 @@ describe('INSERT_WITH_DEFAULTS', () => {
                   }}
                 />
                 <Rectangle
-                  data-uid='card-inner-rectangle'
                   style={{
                     position: 'absolute',
                     left: 100,

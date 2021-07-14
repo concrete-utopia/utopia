@@ -15,7 +15,12 @@ import {
   InsertableComponentGroup,
   InsertableComponentGroupType,
 } from '../../shared/project-components'
-import { closeFloatingInsertMenu, wrapInView } from '../../editor/actions/action-creators'
+import {
+  closeFloatingInsertMenu,
+  insertWithDefaults,
+  updateJSXElementName,
+  wrapInView,
+} from '../../editor/actions/action-creators'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import {
   jsxAttributeValue,
@@ -23,7 +28,11 @@ import {
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { useHandleCloseOnESCOrEnter } from '../../inspector/common/inspector-utils'
+import {
+  getElementsToTarget,
+  useHandleCloseOnESCOrEnter,
+} from '../../inspector/common/inspector-utils'
+import { EditorAction } from '../../editor/action-types'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -237,8 +246,30 @@ function useComponentSelectorStyles(): StylesConfig {
     [colorTheme],
   )
 }
+
+function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'): string {
+  switch (insertMenuMode) {
+    case 'closed':
+      return ''
+    case 'convert':
+      return 'Convert to'
+    case 'insert':
+      return 'Add Element'
+    case 'wrap':
+      return 'Wrap in'
+  }
+}
+
 export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const colorTheme = useColorTheme()
+
+  const insertMenuMode = useEditorState(
+    (store) => store.editor.floatingInsertMenu.insertMenuMode,
+    'FloatingMenu insertMenuMode',
+  )
+
+  const menuTitle: string = getMenuTitle(insertMenuMode)
+
   const componentSelectorStyles = useComponentSelectorStyles()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
   useHandleCloseOnESCOrEnter(
@@ -256,28 +287,49 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const onChange = React.useCallback(
     (value: ValueType<InsertMenuItem>) => {
       if (value != null && !Array.isArray(value)) {
-        const insertableComponent = (value as InsertMenuItem).value
-        const newUID = generateUidWithExistingComponents(projectContentsRef.current)
-        const newElement = jsxElement(
-          insertableComponent.element.name,
-          newUID,
-          setJSXAttributesAttribute(
-            insertableComponent.element.props,
-            'data-uid',
-            jsxAttributeValue(newUID, emptyComments),
-          ),
-          insertableComponent.element.children,
-        )
-        dispatch([
-          wrapInView(selectedViewsref.current, {
-            element: newElement,
-            importsToAdd: insertableComponent.importsToAdd,
-          }),
-          closeFloatingInsertMenu(),
-        ])
+        const pickedInsertableComponent = (value as InsertMenuItem).value
+        const selectedViews = selectedViewsref.current
+
+        let actionsToDispatch: Array<EditorAction> = []
+        if (insertMenuMode === 'wrap') {
+          const newUID = generateUidWithExistingComponents(projectContentsRef.current)
+          const newElement = jsxElement(
+            pickedInsertableComponent.element.name,
+            newUID,
+            setJSXAttributesAttribute(
+              pickedInsertableComponent.element.props,
+              'data-uid',
+              jsxAttributeValue(newUID, emptyComments),
+            ),
+            pickedInsertableComponent.element.children,
+          )
+
+          actionsToDispatch = [
+            wrapInView(selectedViews, {
+              element: newElement,
+              importsToAdd: pickedInsertableComponent.importsToAdd,
+            }),
+          ]
+        } else if (insertMenuMode === 'insert') {
+          // TODO multiselect?
+          actionsToDispatch = [
+            insertWithDefaults(selectedViews[0], pickedInsertableComponent, 'add-size'),
+          ]
+        } else if (insertMenuMode === 'convert') {
+          // this is taken from render-as.tsx
+          const targetsForUpdates = getElementsToTarget(selectedViews)
+          actionsToDispatch = targetsForUpdates.flatMap((path) => {
+            return updateJSXElementName(
+              path,
+              pickedInsertableComponent.element.name,
+              pickedInsertableComponent.importsToAdd,
+            )
+          })
+        }
+        dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
-    [dispatch, projectContentsRef, selectedViewsref],
+    [dispatch, insertMenuMode, projectContentsRef, selectedViewsref],
   )
 
   return (
@@ -309,7 +361,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             alignItems: 'center',
           }}
         >
-          <b>Wrap In...</b>
+          <b>{menuTitle}</b>
         </div>
 
         <Select
@@ -336,7 +388,7 @@ export const FloatingInsertMenu = betterReactMemo(
   (props: FloatingInsertMenuProps) => {
     const dispatch = useEditorState((store) => store.dispatch, 'FloatingInsertMenu dispatch')
     const isVisible = useEditorState(
-      (store) => store.editor.floatingInsertMenu.insertMenuOpen,
+      (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
       'FloatingInsertMenu insertMenuOpen',
     )
     const onClickOutside = React.useCallback(() => {

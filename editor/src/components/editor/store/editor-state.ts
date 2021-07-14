@@ -350,7 +350,7 @@ export interface EditorState {
     }> | null
   }
   floatingInsertMenu: {
-    insertMenuOpen: boolean
+    insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'
   }
   inspector: {
     visible: boolean
@@ -1123,7 +1123,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       transientProperties: null,
     },
     floatingInsertMenu: {
-      insertMenuOpen: false,
+      insertMenuMode: 'closed',
     },
     inspector: {
       visible: true,
@@ -1374,7 +1374,7 @@ export function editorModelFromPersistentModel(
       transientProperties: null,
     },
     floatingInsertMenu: {
-      insertMenuOpen: false,
+      insertMenuMode: 'closed',
     },
     inspector: {
       visible: true,

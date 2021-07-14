@@ -360,7 +360,7 @@ import {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
-  WrapInPicker,
+  OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
   SetPropTransient,
@@ -506,6 +506,7 @@ import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { reverse, uniqBy } from '../../../core/shared/array-utils'
+import { UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -984,7 +985,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       transientProperties: null,
     },
     floatingInsertMenu: {
-      insertMenuOpen: currentEditor.floatingInsertMenu.insertMenuOpen,
+      insertMenuMode: currentEditor.floatingInsertMenu.insertMenuMode,
     },
     inspector: {
       visible: currentEditor.inspector.visible,
@@ -2206,17 +2207,12 @@ export const UPDATE_FNS = {
       dispatch,
     )
   },
-  WRAP_IN_PICKER: (
-    action: WrapInPicker,
-    editor: EditorModel,
-    derived: DerivedState,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       floatingInsertMenu: {
         ...editor.floatingInsertMenu,
-        insertMenuOpen: true,
+        insertMenuMode: action.mode,
       },
     }
   },
@@ -2228,7 +2224,7 @@ export const UPDATE_FNS = {
       ...editor,
       floatingInsertMenu: {
         ...editor.floatingInsertMenu,
-        insertMenuOpen: false,
+        insertMenuMode: 'closed',
       },
     }
   },
@@ -4431,8 +4427,16 @@ export const UPDATE_FNS = {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
 
+          const propsWithUid = forceRight(
+            setJSXValueAtPath(
+              action.toInsert.element.props,
+              PP.create([UTOPIA_UIDS_KEY]),
+              jsxAttributeValue(newUID, emptyComments),
+            ),
+            `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
+          )
           // Potentially add in some default position and sizing.
-          let props = action.toInsert.element.props
+          let props = propsWithUid
           if (action.styleProps === 'add-size') {
             const sizesToSet: Array<ValueAtPath> = [
               { path: PP.create(['style', 'width']), value: jsxAttributeValue(100, emptyComments) },
