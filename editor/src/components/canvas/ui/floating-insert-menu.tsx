@@ -271,6 +271,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           position: 'absolute',
           display: 'flex',
           alignItems: 'center',
+          pointerEvents: 'none',
         }
       },
     }),
