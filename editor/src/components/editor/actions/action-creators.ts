@@ -192,7 +192,7 @@ import type {
   CloseFloatingInsertMenu,
   InsertWithDefaults,
   SetPropTransient,
-  UnsetPropTransient,
+  ClearTransientProps,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {

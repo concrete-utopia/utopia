@@ -1012,7 +1012,7 @@ export type EditorAction =
   | UpdateFormulaBarMode
   | InsertWithDefaults
   | SetPropTransient
-  | UnsetPropTransient
+  | ClearTransientProps
 
 export type DispatchPriority =
   | 'everyone'
