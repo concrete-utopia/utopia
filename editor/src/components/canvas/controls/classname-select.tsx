@@ -5,13 +5,14 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
 import {
-  AllTailwindClasses,
   AllAttributes,
   AttributeToClassNames,
+  ClassNameToAttributes,
 } from '../../../core/third-party/tailwind-defaults'
 import WindowedSelect, {
   components,
   IndicatorProps,
+  MenuProps,
   MultiValueProps,
   ValueContainerProps,
 } from 'react-windowed-select'
@@ -20,7 +21,7 @@ import chroma from 'chroma-js'
 
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { useColorTheme } from '../../../uuiui'
+import { FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as PP from '../../../core/shared/property-path'
@@ -37,18 +38,47 @@ import {
   getModifiableJSXAttributeAtPath,
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
+import {
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../../core/shared/atom-with-pub-sub'
 import { stripNulls } from '../../../core/shared/array-utils'
+import { mapToArray, mapValues } from '../../../core/shared/object-utils'
 
 interface TailWindOption {
   label: string
   value: string
+  attributes?: string[]
   categories?: string[]
 }
 
-const TailWindOptions: Array<TailWindOption> = AllTailwindClasses.map((className, index) => ({
-  label: className,
-  value: className,
-}))
+let TailWindOptions: Array<TailWindOption> = []
+let AttributeOptionLookup: { [attribute: string]: Array<TailWindOption> }
+
+async function loadTailwindOptions() {
+  return new Promise<void>((resolve) => {
+    TailWindOptions = mapToArray(
+      (attributes, className) => ({
+        label: className,
+        value: className,
+        attributes: attributes,
+      }),
+      ClassNameToAttributes,
+    )
+
+    AttributeOptionLookup = mapValues((classNames: Array<string>) => {
+      const matchingOptions = classNames.map((className) =>
+        TailWindOptions.find((option) => option.value === className),
+      )
+      return stripNulls(matchingOptions)
+    }, AttributeToClassNames)
+
+    resolve()
+  })
+}
+
+loadTailwindOptions()
 
 const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
@@ -130,6 +160,47 @@ const getOptionColors = (
     activeBackgroundColor: activeBackgroundColor,
   }
 }
+
+const focusedOptionAtom = atomWithPubSub<TailWindOption | null>({
+  key: 'classNameSelectFocusedOption',
+  defaultValue: null,
+})
+
+const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) => {
+  const theme = useColorTheme()
+  const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom)
+  const showFooter = props.options.length > 0
+  const joinedAttributes = focusedOption?.attributes?.join(', ')
+  const attributesText =
+    joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
+
+  return (
+    <components.Menu {...props}>
+      <React.Fragment>
+        {props.children}
+        {showFooter ? (
+          <div
+            css={{
+              label: 'focusedElementMetadata',
+              overflow: 'hidden',
+              boxShadow: 'inset 0px 1px 0px 0px rgba(0,0,0,.1)',
+              padding: '8px 8px',
+              fontSize: '10px',
+              pointerEvents: 'none',
+              color: theme.textColor.value,
+            }}
+          >
+            <FlexColumn>
+              <FlexRow>
+                <span style={{ fontWeight: 600 }}>{attributesText}</span>
+              </FlexRow>
+            </FlexColumn>
+          </div>
+        ) : null}
+      </React.Fragment>
+    </components.Menu>
+  )
+})
 
 const MultiValueContainer = betterReactMemo(
   'MultiValueContainer',
@@ -246,10 +317,22 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
   const [input, setInput] = React.useState('')
+  const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
+  const clearFocusedOption = React.useCallback(() => updateFocusedOption(null), [
+    updateFocusedOption,
+  ])
+  const ariaOnFocus = React.useCallback(
+    ({ focused }: { focused: TailWindOption }) => updateFocusedOption(focused),
+    [updateFocusedOption],
+  )
+  const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
+
   const filteredOptions = React.useMemo(() => {
     const trimmedLowerCaseInput = input.trim().toLowerCase()
+    let results: Array<TailWindOption>
+
     if (trimmedLowerCaseInput === '') {
-      return TailWindOptions.slice(0, MaxResults)
+      results = TailWindOptions.slice(0, MaxResults)
     } else {
       // First find all matches, and use a sparse array to keep the best matches at the front
       const orderedMatchedResults = findMatchingOptions(
@@ -275,19 +358,21 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           orderedAttributeMatchedResults,
           remainingAllowedMatches,
         )
-        const classNamesFromBestMatchedAttributes = mapToClassNames(
-          bestMatchedAttributes,
-          remainingAllowedMatches,
+        const optionsForBestMatchedAttributes = bestMatchedAttributes.flatMap(
+          (attribute) => AttributeOptionLookup[attribute] ?? [],
         )
-        const optionsForClassNames = classNamesFromBestMatchedAttributes.map((className) =>
-          TailWindOptions.find((option) => option.label === className),
-        )
-        matchedResults.push(...stripNulls(optionsForClassNames))
+        matchedResults.push(...optionsForBestMatchedAttributes)
       }
 
-      return matchedResults
+      results = matchedResults
     }
-  }, [input])
+
+    if (results.length === 0) {
+      clearFocusedOption()
+    }
+
+    return results
+  }, [input, clearFocusedOption])
 
   const { classNameAttribute, classNameFromProps, elementPath } = useEditorState((store) => {
     let element: ElementInstanceMetadata | null = null
@@ -491,10 +576,12 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       }}
     >
       <WindowedSelect
+        ariaLiveMessages={ariaLiveMessages}
         filterOption={filterOption}
         options={filteredOptions}
         onChange={onChange}
         onInputChange={setInput}
+        onMenuClose={clearFocusedOption}
         value={selectedValues}
         isMulti={true}
         isDisabled={!isMenuEnabled}
@@ -505,6 +592,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           ClearIndicator,
           IndicatorSeparator,
           NoOptionsMessage,
+          Menu,
           MultiValueContainer,
           ValueContainer,
         }}
