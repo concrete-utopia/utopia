@@ -156,7 +156,7 @@
     "prop-types": "15.6.2",
     "pubsub-js": "^1.9.2",
     "rc-slider": "git://github.com/momentumworks/slider.git#93a6ef5",
-    "re-resizable": "6.2.0",
+    "re-resizable": "6.9.0",
     "react": "npm:utopia-react@17.0.0-rc.1",
     "react-contexify": "5.0.0",
     "react-dnd": "10.0.2",
