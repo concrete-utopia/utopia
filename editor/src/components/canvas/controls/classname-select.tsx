@@ -11,6 +11,7 @@ import {
 } from '../../../core/third-party/tailwind-defaults'
 import WindowedSelect, {
   components,
+  FormatOptionLabelMeta,
   IndicatorProps,
   MenuProps,
   MultiValueProps,
@@ -18,7 +19,6 @@ import WindowedSelect, {
 } from 'react-windowed-select'
 import type { StylesConfig } from 'react-select'
 import chroma from 'chroma-js'
-
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
@@ -45,6 +45,7 @@ import {
 } from '../../../core/shared/atom-with-pub-sub'
 import { stripNulls } from '../../../core/shared/array-utils'
 import { mapToArray, mapValues } from '../../../core/shared/object-utils'
+import Highlighter from 'react-highlight-words'
 
 interface TailWindOption {
   label: string
@@ -166,6 +167,32 @@ const focusedOptionAtom = atomWithPubSub<TailWindOption | null>({
   defaultValue: null,
 })
 
+const Bold = betterReactMemo('Bold', ({ children }: { children: React.ReactNode }) => {
+  return <strong>{children}</strong>
+})
+
+const MatchHighlighter = betterReactMemo(
+  'MatchHighlighter',
+  ({ text, searchString }: { text: string; searchString: string | null | undefined }) => {
+    const searchTerms = searchStringToIndividualTerms(searchString ?? '')
+    return (
+      <Highlighter
+        highlightTag={Bold}
+        searchWords={searchTerms}
+        autoEscape={true}
+        textToHighlight={text}
+      />
+    )
+  },
+)
+
+function formatOptionLabel(
+  { label }: TailWindOption,
+  { context, inputValue }: FormatOptionLabelMeta<TailWindOption, true>,
+) {
+  return context === 'menu' ? <MatchHighlighter text={label} searchString={inputValue} /> : label
+}
+
 const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) => {
   const theme = useColorTheme()
   const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom)
@@ -192,7 +219,12 @@ const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) =>
           >
             <FlexColumn>
               <FlexRow>
-                <span style={{ fontWeight: 600 }}>{attributesText}</span>
+                <span>
+                  <MatchHighlighter
+                    text={attributesText}
+                    searchString={props.selectProps.inputValue}
+                  />
+                </span>
               </FlexRow>
             </FlexColumn>
           </div>
@@ -259,19 +291,22 @@ const ValueContainer = betterReactMemo(
 const filterOption = () => true
 const MaxResults = 500
 
+function searchStringToIndividualTerms(searchString: string): Array<string> {
+  return searchString.trim().toLowerCase().split(' ')
+}
+
 function findMatchingOptions<T>(
-  input: string,
+  searchTerms: Array<string>,
   options: Array<T>,
   toString: (t: T) => string,
   maxPerfectMatches: number,
 ): Array<Array<T>> {
   let orderedMatchedResults: Array<Array<T>> = []
   let perfectMatchCount = 0
-  let splitInput = input.split(' ')
   for (var i = 0; i < options.length && perfectMatchCount < maxPerfectMatches; i++) {
     const nextOption = options[i]
     const asString = toString(nextOption)
-    const splitInputIndexResult = splitInput.map((s) => asString.indexOf(s))
+    const splitInputIndexResult = searchTerms.map((s) => asString.indexOf(s))
     const minimumIndexOf = Math.min(...splitInputIndexResult)
     if (minimumIndexOf > -1) {
       let existingMatched = orderedMatchedResults[minimumIndexOf] ?? []
@@ -300,19 +335,6 @@ function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: num
   return matchedResults
 }
 
-function mapToClassNames(attributes: Array<string>, maxMatches: number): Array<string> {
-  let results: Set<string> = new Set()
-  for (var i = 0; i < attributes.length && results.size < maxMatches; i++) {
-    const nextAttribute = attributes[i]
-    const classNames = AttributeToClassNames[nextAttribute]
-    if (classNames != null) {
-      classNames.forEach((className) => results.add(className))
-    }
-  }
-
-  return Array.from(results)
-}
-
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
@@ -328,15 +350,15 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
 
   const filteredOptions = React.useMemo(() => {
-    const trimmedLowerCaseInput = input.trim().toLowerCase()
+    const searchTerms = searchStringToIndividualTerms(input)
     let results: Array<TailWindOption>
 
-    if (trimmedLowerCaseInput === '') {
+    if (searchTerms.length === 0) {
       results = TailWindOptions.slice(0, MaxResults)
     } else {
       // First find all matches, and use a sparse array to keep the best matches at the front
       const orderedMatchedResults = findMatchingOptions(
-        trimmedLowerCaseInput,
+        searchTerms,
         TailWindOptions,
         (option) => option.label,
         MaxResults,
@@ -349,7 +371,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       const remainingAllowedMatches = MaxResults - matchedResults.length
       if (remainingAllowedMatches > 0) {
         const orderedAttributeMatchedResults = findMatchingOptions(
-          trimmedLowerCaseInput,
+          searchTerms,
           AllAttributes,
           (a) => a,
           remainingAllowedMatches,
@@ -578,6 +600,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       <WindowedSelect
         ariaLiveMessages={ariaLiveMessages}
         filterOption={filterOption}
+        formatOptionLabel={formatOptionLabel}
         options={filteredOptions}
         onChange={onChange}
         onInputChange={setInput}
