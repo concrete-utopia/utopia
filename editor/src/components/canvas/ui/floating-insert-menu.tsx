@@ -6,7 +6,7 @@ import Select, { StylesConfig, ValueType } from 'react-select'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
-import { FlexColumn, OnClickOutsideHOC, useColorTheme } from '../../../uuiui'
+import { FlexColumn, FlexRow, OnClickOutsideHOC, useColorTheme } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
   getComponentGroups,
@@ -247,6 +247,47 @@ function useComponentSelectorStyles(): StylesConfig {
   )
 }
 
+interface CheckboxRowProps {
+  id: string
+  checked: boolean
+  onChange: (value: boolean) => void
+}
+
+const CheckboxRow = betterReactMemo<React.PropsWithChildren<CheckboxRowProps>>(
+  'CheckboxRow',
+  ({ id, checked, onChange, children }) => {
+    const colorTheme = useColorTheme()
+
+    const handleChange = React.useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange(event.target.checked)
+      },
+      [onChange],
+    )
+
+    return (
+      <FlexRow css={{ height: 25, gap: 8 }}>
+        <input
+          type='checkbox'
+          checked={checked}
+          onChange={handleChange}
+          css={{
+            '&:focus': {
+              outline: 'auto',
+              outlineColor: colorTheme.primary.value,
+              outlineOffset: 0,
+            },
+          }}
+          id={id}
+        />
+        <label htmlFor={id} tabIndex={1}>
+          {children}
+        </label>
+      </FlexRow>
+    )
+  },
+)
+
 function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'): string {
   switch (insertMenuMode) {
     case 'closed':
@@ -268,6 +309,8 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
     'FloatingMenu insertMenuMode',
   )
 
+  const showInsertionControls = insertMenuMode === 'insert'
+
   const menuTitle: string = getMenuTitle(insertMenuMode)
 
   const componentSelectorStyles = useComponentSelectorStyles()
@@ -283,6 +326,9 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
+
+  const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
+  const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
 
   const onChange = React.useCallback(
     (value: ValueType<InsertMenuItem>) => {
@@ -376,6 +422,24 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
           styles={componentSelectorStyles}
           tabSelectsValue={false}
         />
+        {showInsertionControls ? (
+          <FlexColumn css={{ paddingTop: 8, paddingLeft: 8, paddingRight: 8 }}>
+            <CheckboxRow
+              id='add-content-label'
+              checked={addContentForInsertion}
+              onChange={setAddContentForInsertion}
+            >
+              Add content
+            </CheckboxRow>
+            <CheckboxRow
+              id='fixed-dimensions-label'
+              checked={fixedSizeForInsertion}
+              onChange={setFixedSizeForInsertion}
+            >
+              Fixed dimensions
+            </CheckboxRow>
+          </FlexColumn>
+        ) : null}
       </FlexColumn>
     </div>
   )
