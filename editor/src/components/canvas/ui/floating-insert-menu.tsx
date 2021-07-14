@@ -8,10 +8,17 @@ import WindowedSelect, {
   ValueType,
 } from 'react-windowed-select'
 
-import { betterReactMemo } from '../../../uuiui-deps'
+import { betterReactMemo, getControlStyles } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
-import { FlexColumn, FlexRow, OnClickOutsideHOC, useColorTheme } from '../../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  OnClickOutsideHOC,
+  useColorTheme,
+  UtopiaStyles,
+  UtopiaTheme,
+} from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
   getComponentGroups,
@@ -39,6 +46,7 @@ import {
   useHandleCloseOnESCOrEnter,
 } from '../../inspector/common/inspector-utils'
 import { EditorAction } from '../../editor/action-types'
+import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -132,7 +140,10 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         // ...styles,
         display: 'flex',
         background: 'transparent',
+        height: UtopiaTheme.layout.rowHeight.normal,
         outline: 'none',
+        paddingLeft: 8,
+        paddingRight: 8,
         ':focus-within': {
           outline: 'none',
           border: 'none',
@@ -150,8 +161,8 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         overflowX: 'scroll',
         alignItems: 'center',
         gap: 4,
-        paddingLeft: 4,
-        paddingRight: 4,
+        paddingLeft: 0,
+        paddingRight: 0,
         paddingTop: 0,
         paddingBottom: 0,
       }),
@@ -201,34 +212,48 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         return {
           // ...styles,
           position: 'relative',
-          maxHeight: 300,
+          maxHeight: 150,
           padding: 4,
+          paddingLeft: 8,
+          paddingRight: 8,
           overflowY: 'scroll',
         }
       },
       input: (styles) => {
         return {
-          ...styles,
-          color: 'black',
-          fontSize: 11,
+          // ...styles,
+          ...InspectorInputEmotionStyle({
+            hasLabel: false,
+            controlStyles: getControlStyles('simple'),
+          }),
+          paddingLeft: 4,
+          backgroundColor: colorTheme.bg4.value,
+          // color: 'black',
+          // fontSize: 11,
           flexGrow: 1,
-          letterSpacing: 0.3,
-          background: 'transparent',
+          // letterSpacing: 0.3,
+          // background: 'transparent',
           display: 'flex',
           alignItems: 'center',
         }
+      },
+      placeholder: (styles) => {
+        return { ...styles, marginLeft: 4 }
       },
       option: (styles, { data, isDisabled, isFocused, isSelected }) => {
         // a single entry in the options list
 
         return {
-          ...styles,
-          height: 25,
+          // ...styles,
+          height: UtopiaTheme.layout.rowHeight.smaller,
           display: 'flex',
           alignItems: 'center',
-          paddingLeft: 8,
-          paddingRight: 8,
+          paddingLeft: 4,
+          paddingRight: 4,
           cursor: isDisabled ? 'not-allowed' : 'default',
+          color: isFocused ? colorTheme.inverted.fg0.value : colorTheme.fg0.value,
+          backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
+          borderRadius: UtopiaTheme.inputBorderRadius,
         }
       },
       group: () => {
@@ -242,7 +267,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           // ...styles,
           color: colorTheme.fg7.value,
           height: 25,
-          right: 8,
+          right: 12,
           position: 'absolute',
           display: 'flex',
           alignItems: 'center',
@@ -272,7 +297,7 @@ const CheckboxRow = betterReactMemo<React.PropsWithChildren<CheckboxRowProps>>(
     )
 
     return (
-      <FlexRow css={{ height: 25, gap: 8 }}>
+      <FlexRow css={{ height: 25, gap: 8, flex: 1 }}>
         <input
           type='checkbox'
           checked={checked}
@@ -436,29 +461,25 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   return (
     <div
       style={{
-        backgroundColor: '#fefefe', // TODO Theme
         position: 'relative',
-        margin: 20,
         fontSize: 11,
       }}
     >
       <FlexColumn
         style={{
+          ...UtopiaStyles.popup,
           width: 280,
-          background: 'hsl(0,0%,96%)', // TODO Theme
-          border: '1px solid hsl(0,0%,93%)', // TODO Theme
-          borderRadius: 2,
-          minHeight: 300,
+          height: 250,
           overflow: 'hidden',
-          boxShadow: '0px 0px 4px 1px hsla(0,0%,30%,10%)', // TODO Theme
         }}
       >
         <div
           style={{
+            color: colorTheme.primary.value,
             display: 'flex',
-            paddingLeft: 8,
+            paddingLeft: 9,
             paddingRight: 8,
-            height: 34,
+            height: UtopiaTheme.layout.rowHeight.normal,
             alignItems: 'center',
           }}
         >
@@ -481,7 +502,14 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
           tabSelectsValue={false}
         />
         {showInsertionControls ? (
-          <FlexColumn css={{ paddingTop: 8, paddingLeft: 8, paddingRight: 8 }}>
+          <FlexRow
+            css={{
+              height: UtopiaTheme.layout.rowHeight.normal,
+              paddingLeft: 8,
+              paddingRight: 8,
+              borderTop: `1px solid ${colorTheme.border1.value}`,
+            }}
+          >
             <CheckboxRow
               id='add-content-label'
               checked={addContentForInsertion}
@@ -496,7 +524,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             >
               Fixed dimensions
             </CheckboxRow>
-          </FlexColumn>
+          </FlexRow>
         ) : null}
       </FlexColumn>
     </div>
