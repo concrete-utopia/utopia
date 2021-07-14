@@ -25,6 +25,7 @@ import { generateUidWithExistingComponents } from '../../../core/model/element-t
 import {
   jsxAttributeValue,
   jsxElement,
+  jsxTextBlock,
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
@@ -357,11 +358,22 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             }),
           ]
         } else if (insertMenuMode === 'insert') {
+          let elementToInsert = pickedInsertableComponent
+          if (addContentForInsertion && pickedInsertableComponent.element.children.length === 0) {
+            elementToInsert = {
+              ...pickedInsertableComponent,
+              element: {
+                ...pickedInsertableComponent.element,
+                children: [jsxTextBlock('Utopia')],
+              },
+            }
+          }
+
           // TODO multiselect?
           actionsToDispatch = [
             insertWithDefaults(
               selectedViews[0],
-              pickedInsertableComponent,
+              elementToInsert,
               fixedSizeForInsertion ? 'add-size' : 'do-not-add',
             ),
           ]
@@ -379,7 +391,14 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
-    [dispatch, insertMenuMode, projectContentsRef, selectedViewsref, fixedSizeForInsertion],
+    [
+      dispatch,
+      insertMenuMode,
+      projectContentsRef,
+      selectedViewsref,
+      fixedSizeForInsertion,
+      addContentForInsertion,
+    ],
   )
 
   return (
