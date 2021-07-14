@@ -139,6 +139,7 @@ import {
   forUnderlyingTargetFromEditorState,
   TransientFileState,
   withUnderlyingTarget,
+  transformElementAtPath,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -1603,6 +1604,10 @@ export function produceCanvasTransientState(
     }
   }
 
+  if (editorState.canvas.transientProperties != null && editorState.canvas.dragState == null) {
+    transientState = createCanvasTransientStateFromProperties(editorState)
+  }
+
   if (transientState == null) {
     return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
   } else {
@@ -2615,5 +2620,63 @@ export function getValidElementPathsFromElement(
     return paths
   } else {
     return []
+  }
+}
+
+function createCanvasTransientStateFromProperties(
+  editor: EditorState,
+): TransientCanvasState | null {
+  if (editor.canvas.transientProperties == null) {
+    return null
+  } else {
+    const updatedEditor = Object.values(editor.canvas.transientProperties).reduce(
+      (working, currentProp) => {
+        return modifyUnderlyingTarget(
+          currentProp.elementPath,
+          Utils.forceNotNull('No open file found', getOpenUIJSFileKey(editor)),
+          working,
+          (element: JSXElement) => {
+            const valuesAtPath = Object.keys(currentProp.attributesToUpdate).map((key) => {
+              return {
+                path: PP.fromString(key),
+                value: currentProp.attributesToUpdate[key],
+              }
+            })
+            let updatedAttributes = setJSXValuesAtPaths(element.props, valuesAtPath)
+            return foldEither(
+              (_) => element,
+              (updatedProps) => {
+                return {
+                  ...element,
+                  props: updatedProps,
+                }
+              },
+              updatedAttributes,
+            )
+          },
+        )
+      },
+      editor,
+    )
+
+    let transientFilesState: TransientFilesState = {}
+    fastForEach(Object.values(editor.canvas.transientProperties) ?? [], (prop) => {
+      forUnderlyingTargetFromEditorState(
+        prop.elementPath,
+        updatedEditor,
+        (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
+          transientFilesState[underlyingFilePath] = {
+            topLevelElementsIncludingScenes: success.topLevelElements,
+            imports: success.imports,
+          }
+          return success
+        },
+      )
+    })
+    return transientCanvasState(
+      updatedEditor.selectedViews,
+      updatedEditor.highlightedViews,
+      transientFilesState,
+    )
   }
 }

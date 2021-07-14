@@ -307,6 +307,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
     case 'INSERT_WITH_DEFAULTS':
       return UPDATE_FNS.INSERT_WITH_DEFAULTS(action, state)
+    case 'SET_PROP_TRANSIENT':
+      return UPDATE_FNS.SET_PROP_TRANSIENT(action, state)
+    case 'CLEAR_TRANSIENT_PROPS':
+      return UPDATE_FNS.CLEAR_TRANSIENT_PROPS(action, state)
     default:
       return state
   }

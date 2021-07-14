@@ -363,6 +363,8 @@ import {
   WrapInPicker,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
+  SetPropTransient,
+  ClearTransientProps,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -979,6 +981,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       domWalkerInvalidateCount: currentEditor.canvas.domWalkerInvalidateCount + 1,
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
+      transientProperties: null,
     },
     floatingInsertMenu: {
       insertMenuOpen: currentEditor.floatingInsertMenu.insertMenuOpen,
@@ -4482,6 +4485,37 @@ export const UPDATE_FNS = {
         ...withNewElement,
         selectedViews: newSelectedViews,
       }
+    }
+  },
+  SET_PROP_TRANSIENT: (action: SetPropTransient, editor: EditorModel): EditorModel => {
+    const currentTransientProps =
+      editor.canvas.transientProperties != null
+        ? editor.canvas.transientProperties[EP.toString(action.target)]?.attributesToUpdate
+        : null
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        transientProperties: {
+          ...editor.canvas.transientProperties,
+          [EP.toString(action.target)]: {
+            elementPath: action.target,
+            attributesToUpdate: {
+              ...(currentTransientProps ?? {}),
+              [PP.toString(action.propertyPath)]: action.value,
+            },
+          },
+        },
+      },
+    }
+  },
+  CLEAR_TRANSIENT_PROPS: (action: ClearTransientProps, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        transientProperties: null,
+      },
     }
   },
 }

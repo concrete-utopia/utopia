@@ -11,6 +11,7 @@ import {
   UtopiaJSXComponent,
   isJSXElement,
   emptyJsxMetadata,
+  JSXAttribute,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -49,6 +50,7 @@ import {
   isParsedTextFile,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
+  PropertyPath,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -140,6 +142,8 @@ import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
+import { ValueAtPath } from '../../../core/shared/jsx-attributes'
+import { MapLike } from 'typescript'
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
@@ -340,6 +344,10 @@ export interface EditorState {
     domWalkerInvalidateCount: number
     openFile: DesignerFile | null
     scrollAnimation: boolean
+    transientProperties: MapLike<{
+      elementPath: ElementPath
+      attributesToUpdate: MapLike<JSXAttribute>
+    }> | null
   }
   floatingInsertMenu: {
     insertMenuOpen: boolean
@@ -1112,6 +1120,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         filename: StoryboardFilePath,
       },
       scrollAnimation: false,
+      transientProperties: null,
     },
     floatingInsertMenu: {
       insertMenuOpen: false,
@@ -1362,6 +1371,7 @@ export function editorModelFromPersistentModel(
         filename: StoryboardFilePath,
       },
       scrollAnimation: false,
+      transientProperties: null,
     },
     floatingInsertMenu: {
       insertMenuOpen: false,
