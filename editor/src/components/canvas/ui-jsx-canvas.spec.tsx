@@ -1621,7 +1621,7 @@ export var storyboard = (
       import * as React from 'react'
       import { View, Storyboard, Scene } from 'utopia-api'
       
-      export var App = (props) => {
+      export var App = (cica, ...props) => {
         return (
           <View
             {...props}
