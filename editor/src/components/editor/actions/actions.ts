@@ -386,6 +386,7 @@ import {
   updateDependenciesInPackageJson,
   createLoadedPackageStatusMapFromDependencies,
   dependenciesFromPackageJson,
+  findLatestVersion,
 } from '../npm-dependency/npm-dependency'
 import { updateRemoteThumbnail } from '../persistence'
 import {
@@ -516,9 +517,7 @@ import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
   PostCSSPath,
-  PostCSSVersion,
   TailwindConfigPath,
-  TailwindCSSVersion,
 } from '../../../core/tailwind/tailwind-config'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
@@ -4551,40 +4550,59 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const packageJsonFile = getContentsTreeFileFromString(editor.projectContents, '/package.json')
     const currentNpmDeps = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
-    const updatedNpmDeps = [
-      ...currentNpmDeps,
-      requestedNpmDependency('postcss', PostCSSVersion),
-      requestedNpmDependency('tailwindcss', TailwindCSSVersion),
-    ]
 
-    fetchNodeModules(updatedNpmDeps, 'canvas').then((fetchNodeModulesResult) => {
-      const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
-        updatedNpmDeps,
-        fetchNodeModulesResult.dependenciesWithError,
-        fetchNodeModulesResult.dependenciesNotFound,
-      )
-      const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
-        setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
-      )
-      dispatch([
-        ...packageErrorActions,
-        updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
-      ])
+    findLatestVersion('tailwindcss').then((tailwindResult) => {
+      if (tailwindResult.type === 'VERSION_LOOKUP_SUCCESS') {
+        const tailwindVersion = tailwindResult.version
+        findLatestVersion('postcss').then((postcssResult) => {
+          if (postcssResult.type === 'VERSION_LOOKUP_SUCCESS') {
+            const postcssVersion = postcssResult.version
+            const updatedNpmDeps = [
+              ...currentNpmDeps,
+              requestedNpmDependency('tailwindcss', tailwindVersion.version),
+              requestedNpmDependency('postcss', postcssVersion.version),
+            ]
+            fetchNodeModules(updatedNpmDeps, 'canvas').then((fetchNodeModulesResult) => {
+              const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
+                updatedNpmDeps,
+                fetchNodeModulesResult.dependenciesWithError,
+                fetchNodeModulesResult.dependenciesNotFound,
+              )
+              const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
+                setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+              )
+              dispatch([
+                ...packageErrorActions,
+                updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+              ])
+            })
+
+            const packageJsonUpdateAction = updatePackageJson(updatedNpmDeps)
+
+            dispatch([packageJsonUpdateAction], 'everyone')
+          }
+        })
+      }
     })
 
-    const projectContentsWithTailwind = addFileToProjectContents(
-      editor.projectContents,
-      TailwindConfigPath,
-      DefaultTailwindConfig(),
-    )
-    const updatedProjectContents = addFileToProjectContents(
-      projectContentsWithTailwind,
-      PostCSSPath,
-      DefaultPostCSSConfig(),
-    )
+    let updatedProjectContents = editor.projectContents
+    if (getContentsTreeFileFromString(editor.projectContents, TailwindConfigPath) == null) {
+      updatedProjectContents = addFileToProjectContents(
+        editor.projectContents,
+        TailwindConfigPath,
+        DefaultTailwindConfig(),
+      )
+    }
 
-    const packageJsonUpdateAction = updatePackageJson(updatedNpmDeps)
-    return UPDATE_FNS.UPDATE_PACKAGE_JSON(packageJsonUpdateAction, {
+    if (getContentsTreeFileFromString(editor.projectContents, PostCSSPath) == null) {
+      updatedProjectContents = addFileToProjectContents(
+        updatedProjectContents,
+        PostCSSPath,
+        DefaultPostCSSConfig(),
+      )
+    }
+
+    return {
       ...editor,
       projectContents: updatedProjectContents,
       nodeModules: {
@@ -4597,7 +4615,7 @@ export const UPDATE_FNS = {
           },
         },
       },
-    })
+    }
   },
 }
 
