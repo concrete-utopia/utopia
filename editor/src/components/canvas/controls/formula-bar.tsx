@@ -119,8 +119,6 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       )
       handleShortcuts(namesByKey, event.nativeEvent, null, {
         [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
-          event.stopPropagation()
-          event.preventDefault()
           dispatch([EditorActions.toggleFocusedOmniboxTab()])
 
           // We need this to happen in the next frame to ensure the field we want to focus exists
