@@ -1,8 +1,47 @@
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-Regular.woff') format('woff');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-Medium.woff') format('woff');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-MediumItalic.woff') format('woff');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-SemiBold.woff') format('woff');
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-SemiBoldItalic.woff') format('woff');
+  font-weight: 600;
+  font-style: italic;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   margin: 0;
+  background-color: transparent;
   font-family: utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto,
     Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* from GitHub */
   font-size: 11px !important;
+  letter-spacing: 0.2px;
+  line-height: 17px;
   overflow: hidden;
   cursor: default;
   outline: none;
@@ -53,40 +92,7 @@ svg:focus {
   outline: none;
 }
 
-#application-wrapper {
-  display: flex;
-  flex-direction: row;
-  -webkit-user-select: none;
-  user-select: none;
-  position: absolute;
-  top: 0;
-}
-
 /* todo put this near the contexify CSS after figuring out where _that_ lives */
 .shortcut {
   float: right;
-}
-
-.fadeout {
-  /* this time needs slightly exceed the toast visibility duration
-     otherwise any delay for queued-up toasts causes issues */
-  animation: fadeout 5.8s;
-  animation-iteration-count: 1;
-}
-
-@keyframes fadeout {
-  0% {
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-    transform: initial;
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(1200px);
-  }
 }
