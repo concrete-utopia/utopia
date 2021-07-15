@@ -213,18 +213,28 @@ export function testParseThenPrint(originalCode: string, expectedFinalCode: stri
   return testParseModifyPrint(originalCode, expectedFinalCode, (ps) => ps)
 }
 
+export function testParseThenPrintWithoutUids(
+  originalCode: string,
+  expectedFinalCode: string,
+): void {
+  const printedCode = parseModifyPrint(originalCode, (ps) => ps, true)
+  expect(printedCode).toEqual(expectedFinalCode)
+}
+
 export function testParseModifyPrint(
   originalCode: string,
   expectedFinalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
+  stripUids?: boolean,
 ): void {
-  const printedCode = parseModifyPrint(originalCode, transform)
+  const printedCode = parseModifyPrint(originalCode, transform, stripUids)
   expect(printedCode).toEqual(expectedFinalCode)
 }
 
 function parseModifyPrint(
   originalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
+  stripUids?: boolean,
 ): string {
   const initialParseResult = testParseCode(originalCode)
   return foldParsedTextFile(
@@ -232,7 +242,7 @@ function parseModifyPrint(
     (initialParseSuccess) => {
       const transformed = transform(initialParseSuccess)
       const printedCode = printCode(
-        printCodeOptions(false, true, true),
+        printCodeOptions(false, true, true, stripUids),
         transformed.imports,
         transformed.topLevelElements,
         transformed.jsxFactoryFunction,

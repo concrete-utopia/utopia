@@ -12,6 +12,7 @@ import {
   elementsStructure,
   testParseCode,
   testParseThenPrint,
+  testParseThenPrintWithoutUids,
 } from './parser-printer.test-utils'
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
@@ -254,6 +255,23 @@ export var ${BakedInStoryboardVariableName} = (
 `
 
     testParseThenPrint(spreadCode, spreadCode)
+  })
+  it('parses elements that use props spreading without an explicit uid - #1515', () => {
+    const spreadCode = `import * as React from 'react'
+const Test = (props) => {
+  return (
+    <div>
+      {props.data.map((entry) => (
+        <div {...entry} style={{ flexBasis: 50 }} />
+      ))}
+    </div>
+  )
+}
+
+export var ${BakedInStoryboardVariableName} = <Storyboard />
+`
+
+    testParseThenPrintWithoutUids(spreadCode, spreadCode)
   })
 })
 
