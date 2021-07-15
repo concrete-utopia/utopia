@@ -188,9 +188,11 @@ import type {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
-  WrapInPicker,
+  OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
+  SetPropTransient,
+  ClearTransientProps,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -597,7 +599,7 @@ export function resetPins(target: ElementPath): ResetPins {
 }
 
 export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
-  return wrapInView(targets, 'default-empty-View')
+  return wrapInView(targets, 'default-empty-div')
   // FIXME: Make Groups Great Again.
   //return {
   //  action: 'WRAP_IN_VIEW',
@@ -615,17 +617,18 @@ export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
   }
 }
 
-export function wrapInPicker(targets: Array<ElementPath>): WrapInPicker {
+export function openFloatingInsertMenu(
+  mode: 'insert' | 'convert' | 'wrap',
+): OpenFloatingInsertMenu {
   return {
-    action: 'WRAP_IN_PICKER',
-    targets: targets,
-    layoutSystem: LayoutSystem.PinSystem,
+    action: 'OPEN_FLOATING_INSERT_MENU',
+    mode: mode,
   }
 }
 
 export function wrapInView(
   targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-View',
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
 ): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
@@ -1020,6 +1023,25 @@ export function setPropWithElementPath_UNSAFE(
     target: target,
     propertyPath: propertyPath,
     value: value,
+  }
+}
+
+export function setPropTransient(
+  target: ElementPath,
+  propertyPath: PropertyPath,
+  value: JSXAttribute,
+): SetPropTransient {
+  return {
+    action: 'SET_PROP_TRANSIENT',
+    target: target,
+    propertyPath: propertyPath,
+    value: value,
+  }
+}
+
+export function clearTransientProps(): ClearTransientProps {
+  return {
+    action: 'CLEAR_TRANSIENT_PROPS',
   }
 }
 

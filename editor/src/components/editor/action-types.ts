@@ -416,13 +416,12 @@ export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: ElementPath[]
   layoutSystem: LayoutSystem
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-View'
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
 }
 
-export interface WrapInPicker {
-  action: 'WRAP_IN_PICKER'
-  targets: ElementPath[]
-  layoutSystem: LayoutSystem
+export interface OpenFloatingInsertMenu {
+  action: 'OPEN_FLOATING_INSERT_MENU'
+  mode: 'insert' | 'convert' | 'wrap'
 }
 
 export interface CloseFloatingInsertMenu {
@@ -859,6 +858,16 @@ export interface InsertWithDefaults {
   styleProps: StylePropOption
 }
 
+export interface SetPropTransient {
+  action: 'SET_PROP_TRANSIENT'
+  target: ElementPath
+  propertyPath: PropertyPath
+  value: JSXAttribute
+}
+export interface ClearTransientProps {
+  action: 'CLEAR_TRANSIENT_PROPS'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -917,7 +926,7 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInView
-  | WrapInPicker
+  | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
   | UnwrapGroupOrView
   | SetCanvasAnimationsEnabled
@@ -1001,6 +1010,8 @@ export type EditorAction =
   | FocusFormulaBar
   | UpdateFormulaBarMode
   | InsertWithDefaults
+  | SetPropTransient
+  | ClearTransientProps
 
 export type DispatchPriority =
   | 'everyone'

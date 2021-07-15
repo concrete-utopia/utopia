@@ -132,6 +132,66 @@ Array [
           "add-size",
         ],
       },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "img",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "height": "54px",
+                  "width": "54px",
+                },
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "src",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "/editor/icons/favicons/favicon128.png?hash=nocommit\\"",
+              },
+            },
+          ],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "img",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
     ],
     "source": Object {
       "type": "HTML_GROUP",

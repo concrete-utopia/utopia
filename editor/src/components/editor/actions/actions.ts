@@ -156,6 +156,7 @@ import {
   addImport,
   codeNeedsParsing,
   codeNeedsPrinting,
+  emptyImports,
   mergeImports,
 } from '../../../core/workers/common/project-file-utils'
 import { OutgoingWorkerMessage, isJsFile, BuildType } from '../../../core/workers/ts/ts-worker'
@@ -359,9 +360,11 @@ import {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
-  WrapInPicker,
+  OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
+  SetPropTransient,
+  ClearTransientProps,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -503,6 +506,7 @@ import { emptySet } from '../../../core/shared/set-utils'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { reverse, uniqBy } from '../../../core/shared/array-utils'
+import { UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -978,9 +982,10 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       domWalkerInvalidateCount: currentEditor.canvas.domWalkerInvalidateCount + 1,
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
+      transientProperties: null,
     },
     floatingInsertMenu: {
-      insertMenuOpen: currentEditor.floatingInsertMenu.insertMenuOpen,
+      insertMenuMode: currentEditor.floatingInsertMenu.insertMenuMode,
     },
     inspector: {
       visible: currentEditor.inspector.visible,
@@ -2066,7 +2071,7 @@ export const UPDATE_FNS = {
         }
 
         const newUID =
-          action.whatToWrapWith === 'default-empty-View'
+          action.whatToWrapWith === 'default-empty-div'
             ? generateUidWithExistingComponents(editor.projectContents)
             : action.whatToWrapWith.element.uid
 
@@ -2126,7 +2131,7 @@ export const UPDATE_FNS = {
             editor,
             (parseSuccess) => {
               const elementToInsert: JSXElement =
-                action.whatToWrapWith === 'default-empty-View'
+                action.whatToWrapWith === 'default-empty-div'
                   ? defaultTransparentViewElement(newUID)
                   : action.whatToWrapWith.element
 
@@ -2147,11 +2152,8 @@ export const UPDATE_FNS = {
               viewPath = EP.appendToPath(parentPath, newUID)
 
               const importsToAdd: Imports =
-                action.whatToWrapWith === 'default-empty-View'
-                  ? {
-                      // the default View import
-                      ['utopia-api']: importDetails(null, [importAlias('View')], null),
-                    }
+                action.whatToWrapWith === 'default-empty-div'
+                  ? emptyImports()
                   : action.whatToWrapWith.importsToAdd
 
               return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
@@ -2205,17 +2207,12 @@ export const UPDATE_FNS = {
       dispatch,
     )
   },
-  WRAP_IN_PICKER: (
-    action: WrapInPicker,
-    editor: EditorModel,
-    derived: DerivedState,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       floatingInsertMenu: {
         ...editor.floatingInsertMenu,
-        insertMenuOpen: true,
+        insertMenuMode: action.mode,
       },
     }
   },
@@ -2227,7 +2224,7 @@ export const UPDATE_FNS = {
       ...editor,
       floatingInsertMenu: {
         ...editor.floatingInsertMenu,
-        insertMenuOpen: false,
+        insertMenuMode: 'closed',
       },
     }
   },
@@ -4430,8 +4427,16 @@ export const UPDATE_FNS = {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
 
+          const propsWithUid = forceRight(
+            setJSXValueAtPath(
+              action.toInsert.element.props,
+              PP.create([UTOPIA_UIDS_KEY]),
+              jsxAttributeValue(newUID, emptyComments),
+            ),
+            `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
+          )
           // Potentially add in some default position and sizing.
-          let props = action.toInsert.element.props
+          let props = propsWithUid
           if (action.styleProps === 'add-size') {
             const sizesToSet: Array<ValueAtPath> = [
               { path: PP.create(['style', 'width']), value: jsxAttributeValue(100, emptyComments) },
@@ -4484,6 +4489,37 @@ export const UPDATE_FNS = {
         ...withNewElement,
         selectedViews: newSelectedViews,
       }
+    }
+  },
+  SET_PROP_TRANSIENT: (action: SetPropTransient, editor: EditorModel): EditorModel => {
+    const currentTransientProps =
+      editor.canvas.transientProperties != null
+        ? editor.canvas.transientProperties[EP.toString(action.target)]?.attributesToUpdate
+        : null
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        transientProperties: {
+          ...editor.canvas.transientProperties,
+          [EP.toString(action.target)]: {
+            elementPath: action.target,
+            attributesToUpdate: {
+              ...(currentTransientProps ?? {}),
+              [PP.toString(action.propertyPath)]: action.value,
+            },
+          },
+        },
+      },
+    }
+  },
+  CLEAR_TRANSIENT_PROPS: (action: ClearTransientProps, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        transientProperties: null,
+      },
     }
   },
 }

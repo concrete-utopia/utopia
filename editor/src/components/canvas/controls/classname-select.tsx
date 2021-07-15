@@ -4,24 +4,26 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 
-import { AllTailwindClasses } from '../../../core/third-party/tailwind-defaults'
+import {
+  AllAttributes,
+  AttributeToClassNames,
+  ClassNameToAttributes,
+} from '../../../core/third-party/tailwind-defaults'
 import WindowedSelect, {
   components,
-  createFilter,
+  FormatOptionLabelMeta,
   IndicatorProps,
+  MenuProps,
   MultiValueProps,
   ValueContainerProps,
 } from 'react-windowed-select'
 import type { StylesConfig } from 'react-select'
-import type { Option } from 'react-select/src/filters'
-import chroma from 'chroma-js'
 
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { useColorTheme } from '../../../uuiui'
-import { useEditorState } from '../../editor/store/store-hook'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import * as EP from '../../../core/shared/element-path'
+import { colorTheme, FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as PP from '../../../core/shared/property-path'
 import {
   ElementInstanceMetadata,
@@ -29,6 +31,7 @@ import {
   isJSXAttributeValue,
   isJSXElement,
   jsxAttributeValue,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { eitherToMaybe, isRight } from '../../../core/shared/either'
@@ -36,17 +39,53 @@ import {
   getModifiableJSXAttributeAtPath,
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
+import {
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../../core/shared/atom-with-pub-sub'
+import { stripNulls } from '../../../core/shared/array-utils'
+import { mapToArray, mapValues } from '../../../core/shared/object-utils'
+import { getOpenUIJSFileKey } from '../../editor/store/editor-state'
+import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
+import { getContentsTreeFileFromString } from '../../assets'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import Highlighter from 'react-highlight-words'
 
 interface TailWindOption {
   label: string
   value: string
+  attributes?: string[]
   categories?: string[]
 }
 
-const TailWindOptions: Array<TailWindOption> = AllTailwindClasses.map((className, index) => ({
-  label: className,
-  value: className,
-}))
+let TailWindOptions: Array<TailWindOption> = []
+let AttributeOptionLookup: { [attribute: string]: Array<TailWindOption> }
+
+async function loadTailwindOptions() {
+  return new Promise<void>((resolve) => {
+    TailWindOptions = mapToArray(
+      (attributes, className) => ({
+        label: className,
+        value: className,
+        attributes: attributes,
+      }),
+      ClassNameToAttributes,
+    )
+
+    AttributeOptionLookup = mapValues((classNames: Array<string>) => {
+      const matchingOptions = classNames.map((className) =>
+        TailWindOptions.find((option) => option.value === className),
+      )
+      return stripNulls(matchingOptions)
+    }, AttributeToClassNames)
+
+    resolve()
+  })
+}
+
+loadTailwindOptions()
 
 const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
@@ -81,45 +120,26 @@ const getColorForCategory = (category: string) => {
   } else return 'pink'
 }
 
-interface OptionAndSelectedColor {
-  primary: {
-    optionColor: chroma.Color
-    selectedColor: string
-  }
-  regular: {
-    optionColor: chroma.Color
-    selectedColor: string
-  }
-}
-
 const getOptionColors = (
-  optionAndSelectedColor: OptionAndSelectedColor,
+  theme: typeof colorTheme,
   isFocused: boolean,
   isSelected: boolean,
   isDisabled: boolean,
   data: any,
 ) => {
-  const categories = data?.categories ?? []
-  let optionColor = optionAndSelectedColor.regular.optionColor
-  let selectedColor = optionAndSelectedColor.regular.selectedColor
-  if (categories.length === 1) {
-    optionColor = optionAndSelectedColor.primary.optionColor
-    selectedColor = optionAndSelectedColor.primary.selectedColor
-  }
-
-  let color: string = optionColor.css()
-  let backgroundColor: string | undefined = undefined
-  let activeBackgroundColor: string | undefined = optionColor.alpha(0.3).css()
+  let color: string | undefined = theme.inverted.textColor.value
+  let selectedColor = theme.inverted.primary.value
+  let backgroundColor: string | undefined = theme.inverted.bg1.value
+  let activeBackgroundColor: string | undefined = theme.primary.value
   if (isFocused) {
-    backgroundColor = optionColor.alpha(0.1).css()
+    backgroundColor = theme.inverted.primary.value
   } else if (isSelected) {
-    backgroundColor = optionColor.css()
-    color = selectedColor
-    activeBackgroundColor = data.color
+    backgroundColor = selectedColor
+    activeBackgroundColor = selectedColor
   } else if (isDisabled) {
     backgroundColor = undefined
     activeBackgroundColor = undefined
-    color = '#ccc'
+    color = undefined
   }
 
   return {
@@ -128,6 +148,78 @@ const getOptionColors = (
     activeBackgroundColor: activeBackgroundColor,
   }
 }
+
+const focusedOptionAtom = atomWithPubSub<TailWindOption | null>({
+  key: 'classNameSelectFocusedOption',
+  defaultValue: null,
+})
+
+const Bold = betterReactMemo('Bold', ({ children }: { children: React.ReactNode }) => {
+  return <strong>{children}</strong>
+})
+
+const MatchHighlighter = betterReactMemo(
+  'MatchHighlighter',
+  ({ text, searchString }: { text: string; searchString: string | null | undefined }) => {
+    const searchTerms = searchStringToIndividualTerms(searchString ?? '')
+    return (
+      <Highlighter
+        highlightTag={Bold}
+        searchWords={searchTerms}
+        autoEscape={true}
+        textToHighlight={text}
+      />
+    )
+  },
+)
+
+function formatOptionLabel(
+  { label }: TailWindOption,
+  { context, inputValue }: FormatOptionLabelMeta<TailWindOption, true>,
+) {
+  return context === 'menu' ? <MatchHighlighter text={label} searchString={inputValue} /> : label
+}
+
+const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) => {
+  const theme = useColorTheme()
+  const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom)
+  const showFooter = props.options.length > 0
+  const joinedAttributes = focusedOption?.attributes?.join(', ')
+  const attributesText =
+    joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
+
+  return (
+    <components.Menu {...props}>
+      <React.Fragment>
+        {props.children}
+        {showFooter ? (
+          <div
+            css={{
+              label: 'focusedElementMetadata',
+              overflow: 'hidden',
+              boxShadow: 'inset 0px 1px 0px 0px rgba(0,0,0,.1)',
+              padding: '8px 8px',
+              fontSize: '10px',
+              pointerEvents: 'none',
+              color: theme.inverted.textColor.value,
+            }}
+          >
+            <FlexColumn>
+              <FlexRow>
+                <span>
+                  <MatchHighlighter
+                    text={attributesText}
+                    searchString={props.selectProps.inputValue}
+                  />
+                </span>
+              </FlexRow>
+            </FlexColumn>
+          </div>
+        ) : null}
+      </React.Fragment>
+    </components.Menu>
+  )
+})
 
 const MultiValueContainer = betterReactMemo(
   'MultiValueContainer',
@@ -186,77 +278,186 @@ const ValueContainer = betterReactMemo(
 const filterOption = () => true
 const MaxResults = 500
 
+function searchStringToIndividualTerms(searchString: string): Array<string> {
+  return searchString.trim().toLowerCase().split(' ')
+}
+
+function findMatchingOptions<T>(
+  searchTerms: Array<string>,
+  options: Array<T>,
+  toString: (t: T) => string,
+  maxPerfectMatches: number,
+): Array<Array<T>> {
+  let orderedMatchedResults: Array<Array<T>> = []
+  let perfectMatchCount = 0
+  for (var i = 0; i < options.length && perfectMatchCount < maxPerfectMatches; i++) {
+    const nextOption = options[i]
+    const asString = toString(nextOption)
+    const splitInputIndexResult = searchTerms.map((s) => asString.indexOf(s))
+    const minimumIndexOf = Math.min(...splitInputIndexResult)
+    if (minimumIndexOf > -1) {
+      let existingMatched = orderedMatchedResults[minimumIndexOf] ?? []
+      existingMatched.push(nextOption)
+      orderedMatchedResults[minimumIndexOf] = existingMatched
+      if (minimumIndexOf === 0) {
+        perfectMatchCount++
+      }
+    }
+  }
+
+  return orderedMatchedResults
+}
+
+function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Set<T> {
+  let matchedResults: Set<T> = new Set()
+  let matchCount = 0
+  for (var i = 0; i < orderedSparseArray.length && matchCount < maxMatches; i++) {
+    const nextMatches = orderedSparseArray[i]
+    if (nextMatches != null) {
+      const maxNextMatches = nextMatches.slice(0, maxMatches - matchCount)
+      maxNextMatches.forEach((m) => matchedResults.add(m))
+      matchCount = matchedResults.size
+    }
+  }
+
+  return matchedResults
+}
+
 export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNameSelect', () => {
   const theme = useColorTheme()
+  const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
   const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
   const [input, setInput] = React.useState('')
+  const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
+  const clearFocusedOption = React.useCallback(() => {
+    updateFocusedOption(null)
+    dispatch([EditorActions.clearTransientProps()], 'canvas')
+  }, [updateFocusedOption, dispatch])
+
   const filteredOptions = React.useMemo(() => {
-    const trimmedLowerCaseInput = input.trim().toLowerCase()
-    if (trimmedLowerCaseInput === '') {
-      return TailWindOptions.slice(0, MaxResults)
+    const searchTerms = searchStringToIndividualTerms(input)
+    let results: Array<TailWindOption>
+
+    if (searchTerms.length === 0) {
+      results = TailWindOptions.slice(0, MaxResults)
     } else {
       // First find all matches, and use a sparse array to keep the best matches at the front
-      let orderedMatchedResults: Array<Array<TailWindOption>> = []
-      let perfectMatchCount = 0
-      for (var i = 0; i < TailWindOptions.length && perfectMatchCount < MaxResults; i++) {
-        const nextOption = TailWindOptions[i]
-        const indexOf = nextOption.label.indexOf(trimmedLowerCaseInput)
-        if (indexOf > -1) {
-          let existingMatched = orderedMatchedResults[indexOf] ?? []
-          existingMatched.push(nextOption)
-          orderedMatchedResults[indexOf] = existingMatched
-          if (indexOf === 0) {
-            perfectMatchCount++
-          }
-        }
-      }
+      const orderedMatchedResults = findMatchingOptions(
+        searchTerms,
+        TailWindOptions,
+        (option) => option.label,
+        MaxResults,
+      )
 
       // Now go through and take the first n best matches
-      let matchedResults: Array<TailWindOption> = []
-      let matchCount = 0
+      let matchedResults = takeBestOptions(orderedMatchedResults, MaxResults)
 
-      for (var j = 0; j < orderedMatchedResults.length && matchCount < MaxResults; j++) {
-        const nextMatches = orderedMatchedResults[j]
-        if (nextMatches != null) {
-          matchedResults.push(...nextMatches.slice(0, MaxResults - matchCount))
-          matchCount += nextMatches.length
-        }
+      // Next if we haven't hit our max result count, we find matches based on attributes
+      const remainingAllowedMatches = MaxResults - matchedResults.size
+      if (remainingAllowedMatches > 0) {
+        const orderedAttributeMatchedResults = findMatchingOptions(
+          searchTerms,
+          AllAttributes,
+          (a) => a,
+          remainingAllowedMatches,
+        )
+        const bestMatchedAttributes = takeBestOptions(
+          orderedAttributeMatchedResults,
+          remainingAllowedMatches,
+        )
+
+        bestMatchedAttributes.forEach((attribute) => {
+          const matchingOptions = AttributeOptionLookup[attribute] ?? []
+          matchingOptions.forEach((option) => matchedResults.add(option))
+        })
       }
 
-      return matchedResults
+      results = Array.from(matchedResults)
     }
-  }, [input])
 
-  const { classNameAttribute, classNameFromProps, elementPath } = useEditorState((store) => {
-    let element: ElementInstanceMetadata | null = null
-    if (store.editor.selectedViews.length === 1) {
-      element = MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
+    if (results.length === 0) {
+      clearFocusedOption()
+    }
+
+    return results
+  }, [input, clearFocusedOption])
+
+  React.useEffect(() => {
+    return function cleanup() {
+      dispatch([EditorActions.clearTransientProps()], 'canvas')
+    }
+    /** deps is explicitly empty */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
+    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+    if (openUIJSFileKey == null || store.editor.selectedViews.length !== 1) {
+      return {
+        elementPath: null,
+        classNameFromAttributes: null,
+        isMenuEnabled: false,
+      }
+    }
+    const underlyingTarget = normalisePathToUnderlyingTarget(
+      store.editor.projectContents,
+      store.editor.nodeModules.files,
+      openUIJSFileKey,
+      store.editor.selectedViews[0],
+    )
+    const underlyingPath =
+      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS'
+        ? underlyingTarget.filePath
+        : openUIJSFileKey
+    const projectFile = getContentsTreeFileFromString(store.editor.projectContents, underlyingPath)
+    let element: JSXElementChild | null = null
+    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+      element = findElementAtPath(
         store.editor.selectedViews[0],
+        getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
       )
     }
 
-    let foundAttribute: ModifiableAttribute | null = null
-    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
-      const jsxAttributes = element.element.value.props
-      foundAttribute = eitherToMaybe(
+    let foundAttributeAsString: string | null = null
+    let menuEnabled = false
+    if (element != null && isJSXElement(element)) {
+      const jsxAttributes = element.props
+      let foundAttribute = eitherToMaybe(
         getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])),
       )
+      if (foundAttribute != null && isJSXAttributeValue(foundAttribute)) {
+        foundAttributeAsString = foundAttribute.value
+      }
+      if (
+        foundAttribute == null ||
+        isJSXAttributeNotFound(foundAttribute) ||
+        isJSXAttributeValue(foundAttribute)
+      ) {
+        menuEnabled = true
+      }
     }
 
     return {
-      elementPath: element?.elementPath,
-      classNameAttribute: foundAttribute,
-      classNameFromProps: element?.props['className'],
+      elementPath: MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )?.elementPath,
+      classNameFromAttributes: foundAttributeAsString,
+      isMenuEnabled: menuEnabled,
     }
-  }, 'ClassNameSelect selectedElement')
+  }, 'ClassNameSelect elementPath classNameFromAttributes isMenuEnabled')
+
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
   const selectedValues = React.useMemo((): TailWindOption[] | null => {
     let classNameValue: string | null = null
-    if (classNameAttribute != null && isJSXAttributeValue(classNameAttribute)) {
-      classNameValue = classNameAttribute.value
+    if (classNameFromAttributes != null) {
+      classNameValue = classNameFromAttributes
     } else {
-      classNameValue = classNameFromProps
+      if (elementPath != null) {
+        const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
+        classNameValue = element?.props['className']
+      }
     }
 
     const splitClassNames =
@@ -266,22 +467,36 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
             .map((s) => s.trim())
             .filter((s) => s !== '')
         : []
-
     return splitClassNames.length === 0
       ? null
       : splitClassNames.map((name: string) => ({
           label: name,
           value: name,
         }))
-  }, [classNameAttribute, classNameFromProps])
+  }, [classNameFromAttributes, elementPath, metadataRef])
 
-  const isMenuEnabled = React.useMemo(
-    () =>
-      classNameAttribute == null ||
-      isJSXAttributeValue(classNameAttribute) ||
-      isJSXAttributeNotFound(classNameAttribute),
-    [classNameAttribute],
+  const ariaOnFocus = React.useCallback(
+    ({ focused }: { focused: TailWindOption }) => {
+      if (targets.length === 1) {
+        const newClassNameString =
+          selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
+        dispatch(
+          [
+            EditorActions.setPropTransient(
+              targets[0],
+              PP.create(['className']),
+              jsxAttributeValue(newClassNameString, emptyComments),
+            ),
+          ],
+          'canvas',
+        )
+      }
+      updateFocusedOption(focused)
+    },
+    [updateFocusedOption, dispatch, targets, selectedValues],
   )
+  const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
+
   const onChange = React.useCallback(
     (newValue: Array<{ label: string; value: string }>) => {
       if (elementPath != null) {
@@ -300,19 +515,6 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     [dispatch, elementPath],
   )
 
-  const optionAndSelectedColor: OptionAndSelectedColor = React.useMemo(() => {
-    const themePrimary = chroma(theme.primary.value)
-    return {
-      primary: {
-        optionColor: themePrimary,
-        selectedColor: chroma.contrast(themePrimary, 'white') > 2 ? 'white' : 'black',
-      },
-      regular: {
-        optionColor: chroma('black'),
-        selectedColor: 'white',
-      },
-    }
-  }, [theme.primary.value])
   const colourStyles: StylesConfig = React.useMemo(
     () => ({
       container: (styles: React.CSSProperties) => ({
@@ -386,15 +588,13 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         ...styles,
         height: 20,
       }),
+      menu: (styles) => ({
+        ...styles,
+        backgroundColor: theme.inverted.bg1.value,
+      }),
       option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
         // a single entry in the options list
-        const optionColors = getOptionColors(
-          optionAndSelectedColor,
-          isFocused,
-          isSelected,
-          isDisabled,
-          data,
-        )
+        const optionColors = getOptionColors(theme, isFocused, isSelected, isDisabled, data)
         return {
           minHeight: 27,
           display: 'flex',
@@ -412,7 +612,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
         }
       },
     }),
-    [theme, optionAndSelectedColor],
+    [theme],
   )
 
   return (
@@ -429,10 +629,13 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
       }}
     >
       <WindowedSelect
+        ariaLiveMessages={ariaLiveMessages}
         filterOption={filterOption}
+        formatOptionLabel={formatOptionLabel}
         options={filteredOptions}
         onChange={onChange}
         onInputChange={setInput}
+        onMenuClose={clearFocusedOption}
         value={selectedValues}
         isMulti={true}
         isDisabled={!isMenuEnabled}
@@ -443,6 +646,7 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
           ClearIndicator,
           IndicatorSeparator,
           NoOptionsMessage,
+          Menu,
           MultiValueContainer,
           ValueContainer,
         }}

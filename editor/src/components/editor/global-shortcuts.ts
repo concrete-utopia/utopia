@@ -112,6 +112,10 @@ import {
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
   ShortcutNamesByKey,
+  CONVERT_ELEMENT_SHORTCUT,
+  ADD_ELEMENT_SHORTCUT,
+  GROUP_ELEMENT_PICKER_SHORTCUT,
+  GROUP_ELEMENT_DEFAULT_SHORTCUT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -187,7 +191,11 @@ function getTextEditorTarget(editor: EditorState, derived: DerivedState): Elemen
 }
 
 function shouldTabBeHandledByBrowser(editor: EditorState): boolean {
-  return editor.focusedPanel === 'inspector' || editor.focusedPanel === 'dependencylist'
+  return (
+    editor.focusedPanel === 'inspector' ||
+    editor.focusedPanel === 'dependencylist' ||
+    editor.floatingInsertMenu.insertMenuMode !== 'closed'
+  )
 }
 
 export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEvent): void {
@@ -558,12 +566,23 @@ export function handleKeyDown(
       },
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-View')]
+          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
           : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.wrapInPicker(editor.selectedViews)]
+          ? [EditorActions.openFloatingInsertMenu('wrap')]
+          : []
+      },
+      // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
+      [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+          : []
+      },
+      [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.openFloatingInsertMenu('wrap')]
           : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
@@ -722,6 +741,20 @@ export function handleKeyDown(
       },
       [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
+      },
+      [CONVERT_ELEMENT_SHORTCUT]: () => {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+          return [EditorActions.openFloatingInsertMenu('convert')]
+        } else {
+          return []
+        }
+      },
+      [ADD_ELEMENT_SHORTCUT]: () => {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+          return [EditorActions.openFloatingInsertMenu('insert')]
+        } else {
+          return []
+        }
       },
     })
   }
