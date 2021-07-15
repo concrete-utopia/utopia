@@ -154,6 +154,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_STORYBOARD_FILE':
     case 'UPDATE_CHILD_TEXT':
     case 'INSERT_WITH_DEFAULTS':
+    case 'ADD_TAILWIND_CONFIG':
       return false
     case 'SAVE_ASSET':
       return (

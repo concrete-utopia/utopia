@@ -313,6 +313,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_PROP_TRANSIENT(action, state)
     case 'CLEAR_TRANSIENT_PROPS':
       return UPDATE_FNS.CLEAR_TRANSIENT_PROPS(action, state)
+    case 'ADD_TAILWIND_CONFIG':
+      return UPDATE_FNS.ADD_TAILWIND_CONFIG(action, state, dispatch)
     default:
       return state
   }

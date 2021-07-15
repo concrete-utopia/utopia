@@ -37,6 +37,7 @@ import {
   SectionBodyArea,
   Section,
   FlexColumn,
+  Button,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 
@@ -429,6 +430,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               role='listContainer'
               style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4 }}
             >
+              <AddTailwindButton packagesWithStatus={packagesWithStatus} />
               <DependencyListItems
                 packages={packagesWithStatus}
                 editingLocked={this.state.dependencyLoadingStatus != 'not-loading'}
@@ -446,4 +448,38 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       </Section>
     )
   }
+}
+
+interface AddTailwindButtonProps {
+  packagesWithStatus: DependencyPackageDetails[]
+}
+
+const AddTailwindButton = (props: AddTailwindButtonProps) => {
+  const dispatch = useEditorState((store) => store.dispatch, 'AddTailwindButton')
+  const onButtonClicked = React.useCallback(() => {
+    dispatch([EditorActions.addTailwindConfig()])
+  }, [dispatch])
+
+  const tailwindAlreadyAdded =
+    props.packagesWithStatus.find((p) => p.name === 'tailwindcss') &&
+    props.packagesWithStatus.find((p) => p.name === 'postcss')
+  if (tailwindAlreadyAdded) {
+    return null
+  }
+  return (
+    <Button
+      primary
+      highlight
+      style={{
+        margin: 8,
+        height: 24,
+        backgroundImage: 'linear-gradient(3deg, #92ABFF 0%, #1FCCB7 99%)',
+        boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
+        borderRadius: 2,
+      }}
+      onClick={onButtonClicked}
+    >
+      Add &nbsp;<b>Tailwind</b>&nbsp; To Project
+    </Button>
+  )
 }
