@@ -191,6 +191,7 @@ import type {
   OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
   InsertWithDefaults,
+  ToggleFocusedOmniboxTab,
   SetPropTransient,
   ClearTransientProps,
 } from '../action-types'
@@ -334,6 +335,12 @@ export function setPanelVisibility(
     action: 'SET_PANEL_VISIBILITY',
     target: target,
     visible: visible,
+  }
+}
+
+export function toggleFocusedOmniboxTab(): ToggleFocusedOmniboxTab {
+  return {
+    action: 'TOGGLE_FOCUSED_OMNIBOX_TAB',
   }
 }
 

@@ -95,6 +95,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
     case 'SET_PANEL_VISIBILITY':
       return UPDATE_FNS.SET_PANEL_VISIBILITY(action, state)
+    case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
+      return UPDATE_FNS.TOGGLE_FOCUSED_OMNIBOX_TAB(state)
     case 'TOGGLE_PANE':
       return UPDATE_FNS.TOGGLE_PANE(action, state)
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':

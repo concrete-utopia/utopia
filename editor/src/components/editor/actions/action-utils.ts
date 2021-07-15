@@ -26,6 +26,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SWITCH_EDITOR_MODE':
     case 'INSERT_IMAGE_INTO_UI':
     case 'SET_PANEL_VISIBILITY':
+    case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
     case 'TOGGLE_PANE':
     case 'COPY_SELECTION_TO_CLIPBOARD':
     case 'OPEN_TEXT_EDITOR':

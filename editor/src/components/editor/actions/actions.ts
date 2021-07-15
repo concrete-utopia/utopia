@@ -2408,6 +2408,15 @@ export const UPDATE_FNS = {
         return editor
     }
   },
+  TOGGLE_FOCUSED_OMNIBOX_TAB: (editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      topmenu: {
+        ...editor.topmenu,
+        formulaBarMode: editor.topmenu.formulaBarMode === 'css' ? 'content' : 'css',
+      },
+    }
+  },
   TOGGLE_PANE: (action: TogglePane, editor: EditorModel): EditorModel => {
     switch (action.target) {
       case 'leftmenu':

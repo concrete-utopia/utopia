@@ -116,6 +116,7 @@ import {
   ADD_ELEMENT_SHORTCUT,
   GROUP_ELEMENT_PICKER_SHORTCUT,
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
+  TOGGLE_FOCUSED_OMNIBOX_TAB,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -723,6 +724,9 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? [EditorActions.moveSelectedToFront()]
           : []
+      },
+      [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
+        return [EditorActions.focusFormulaBar()]
       },
       [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
         return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'underline') : []
