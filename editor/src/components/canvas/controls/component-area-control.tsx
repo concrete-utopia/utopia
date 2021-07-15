@@ -173,7 +173,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           {label}
           {/* TODO MISSING FEATURE: states are MIA for the moment */}
           {/* {component.stateGroups.length > 0 ? (
-            <span className=' ml4 br2 ph2' style={{ fontSize: scaledFontSize }}>
+            <span style={{ fontSize: scaledFontSize }}>
               {component.stateGroups.length}
             </span>
           ) : null} */}

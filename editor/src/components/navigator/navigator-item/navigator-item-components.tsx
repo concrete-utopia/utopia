@@ -101,9 +101,11 @@ export const OriginalComponentNameLabel: React.FunctionComponent<OriginalCompone
   const colorTheme = useColorTheme()
   return (
     <div
-      className={'role-componentnanme pr4 pl4 f10 '}
       style={{
         fontStyle: 'normal',
+        paddingRight: 4,
+        paddingLeft: 4,
+        fontSize: 10,
         color: props.selected ? colorTheme.white.value : colorTheme.navigatorComponentName.value,
         display: props.instanceOriginalComponentName == null ? 'none' : undefined,
       }}

@@ -498,7 +498,6 @@ import {
   sendSelectedElement,
   sendSetFollowSelectionEnabledMessage,
 } from '../../../core/vscode/vscode-bridge'
-import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'

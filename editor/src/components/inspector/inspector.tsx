@@ -32,7 +32,7 @@ import {
   transientActions,
   unsetProperty,
 } from '../editor/actions/action-creators'
-import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
+
 import {
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
@@ -64,7 +64,14 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, useColorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
+import {
+  Icn,
+  useColorTheme,
+  InspectorSectionHeader,
+  UtopiaTheme,
+  FlexRow,
+  Button,
+} from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
@@ -94,12 +101,7 @@ const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
   'AlignDistributeButton',
   (props: AlignDistributeButtonProps) => {
     return (
-      <MiniMenuItem
-        className='mr2'
-        animationClassName='darken'
-        disabled={props.disabled}
-        onMouseUp={props.onMouseUp}
-      >
+      <Button disabled={props.disabled} onMouseUp={props.onMouseUp}>
         <Icn
           tooltipText={props.toolTip}
           category='layout/commands'
@@ -108,7 +110,7 @@ const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
           width={16}
           height={16}
         />
-      </MiniMenuItem>
+      </Button>
     )
   },
 )
@@ -149,7 +151,9 @@ const AlignmentButtons = betterReactMemo(
     ])
 
     return (
-      <MiniMenu className='justify-around'>
+      <FlexRow
+        style={{ justifyContent: 'space-around', height: UtopiaTheme.layout.rowHeight.smaller }}
+      >
         <AlignDistributeButton
           onMouseUp={alignLeft}
           toolTip={`Align to left of ${multipleTargets ? 'selection' : 'parent'}`}
@@ -198,7 +202,7 @@ const AlignmentButtons = betterReactMemo(
           iconType='distributeVertical'
           disabled={disableDistribute}
         />
-      </MiniMenu>
+      </FlexRow>
     )
   },
 )

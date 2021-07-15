@@ -21,9 +21,11 @@ export const MarginControls = betterReactMemo('MarginControls', (props: MarginCo
       props.margin.left != null && props.margin.left !== 0 ? (
         <div
           key='marginLeft'
-          className='f10 fw5 tc overflow-visible'
           style={{
             background: colorTheme.canvasLayoutFillTranslucent.value,
+            fontWeight: 500,
+            textAlign: 'center',
+            overflow: 'visible',
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
             left: props.frame.x + props.canvasOffset.x - props.margin.left,
@@ -42,8 +44,9 @@ export const MarginControls = betterReactMemo('MarginControls', (props: MarginCo
       props.margin.top != null && props.margin.top !== 0 ? (
         <div
           key='marginTop'
-          className=' f10  fw5 tc overflow-visible'
           style={{
+            fontWeight: 500,
+            overflow: 'visible',
             background: colorTheme.canvasLayoutFillTranslucent.value,
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
@@ -63,8 +66,9 @@ export const MarginControls = betterReactMemo('MarginControls', (props: MarginCo
       props.margin.right != null && props.margin.right !== 0 ? (
         <div
           key='marginRight'
-          className=' f10  fw5 tc overflow-visible'
           style={{
+            fontWeight: 500,
+            overflow: 'visible',
             background: colorTheme.canvasLayoutFillTranslucent.value,
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
@@ -85,8 +89,9 @@ export const MarginControls = betterReactMemo('MarginControls', (props: MarginCo
       props.margin.bottom != null && props.margin.bottom !== 0 ? (
         <div
           key='marginBottom'
-          className='f10 fw5 tc overflow-visible'
           style={{
+            fontWeight: 500,
+            overflow: 'visible',
             background: colorTheme.canvasLayoutFillTranslucent.value,
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
@@ -109,8 +114,8 @@ export const MarginControls = betterReactMemo('MarginControls', (props: MarginCo
       bottomElement == null ? null : (
         <div
           key='outerDiv'
-          className='bgtransparent'
           style={{
+            background: 'transparent',
             border: colorTheme.canvasLayoutStroke.o(20).value,
             position: 'absolute',
             pointerEvents: 'none',

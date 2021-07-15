@@ -427,6 +427,7 @@ export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => 
         background: props.selected ? UtopiaStyles.backgrounds.blue : 'initial',
         color: props.selected ? colorTheme.white.value : 'initial',
         opacity: props.disabled ? 0.3 : 1,
+        gap: 8,
         '&:hover': {
           border: `1px solid ${colorTheme.primary.value}`,
         },
@@ -434,7 +435,7 @@ export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => 
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
     >
       {resultingIcon}
-      <span className='pl8 '>{props.label}</span>
+      <span>{props.label}</span>
     </UIRow>
   )
 }

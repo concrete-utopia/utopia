@@ -30,8 +30,14 @@ export const LayoutIcon: React.FunctionComponent<LayoutIconProps> = betterReactM
     } else {
       return (
         <div
-          className='w20 h20 flex justify-center items-center relative'
           style={{
+            width: 18,
+            height: 18,
+            display: 'flex',
+            alignItems: 'center',
+            justifyItems: 'center',
+            position: 'relative',
+            marginLeft: 8,
             border: hasWidthOrHeight
               ? `1px solid ${borderColorForIconColor(props.color, colorTheme)}`
               : undefined,
