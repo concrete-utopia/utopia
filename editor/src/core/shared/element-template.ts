@@ -696,7 +696,7 @@ export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXA
         }
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        // Skip these for now.
+        newAttributes.push(attrPart)
         break
       default:
         const _exhaustiveCheck: never = attrPart
@@ -726,7 +726,7 @@ export function setJSXAttributesAttribute(
         }
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        // Ignore these for now.
+        result.push(attrPart)
         break
       default:
         const _exhaustiveCheck: never = attrPart
