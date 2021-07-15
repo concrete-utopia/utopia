@@ -40,6 +40,7 @@ import {
   Button,
 } from '../../uuiui'
 import { notice } from '../common/notice'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -463,7 +464,7 @@ const AddTailwindButton = (props: AddTailwindButtonProps) => {
   const tailwindAlreadyAdded =
     props.packagesWithStatus.find((p) => p.name === 'tailwindcss') &&
     props.packagesWithStatus.find((p) => p.name === 'postcss')
-  if (tailwindAlreadyAdded) {
+  if (tailwindAlreadyAdded || !isFeatureEnabled('TopMenu ClassNames')) {
     return null
   }
   return (
