@@ -383,10 +383,12 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
   }, [input, clearFocusedOption])
 
   React.useEffect(() => {
-    return () => {
+    return function cleanup() {
       dispatch([EditorActions.clearTransientProps()], 'canvas')
     }
-  })
+    /** deps is explicitly empty */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
     const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
