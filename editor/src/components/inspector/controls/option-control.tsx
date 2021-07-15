@@ -131,8 +131,14 @@ export const OptionControl: React.FunctionComponent<
           onContextMenu={props.onContextMenu}
         >
           <input
-            className='h0 w0 pa0 ma0'
-            style={{ visibility: 'hidden', display: 'none' }}
+            style={{
+              visibility: 'hidden',
+              display: 'none',
+              height: 0,
+              width: 0,
+              padding: 0,
+              margin: 0,
+            }}
             type='checkbox'
             checked={isChecked}
             disabled={!props.controlStyles.interactive}
