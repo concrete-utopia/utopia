@@ -154,7 +154,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       onKeyDown={onKeyDown}
     >
       {buttonsVisible ? <ModeToggleButton /> : null}
-      {classNameFieldVisible ? <ClassNameSelect /> : null}
+      {classNameFieldVisible ? <ClassNameSelect ref={inputRef} /> : null}
       {inputFieldVisible ? (
         <HeadlessStringInput
           ref={inputRef}
