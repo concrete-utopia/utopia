@@ -323,332 +323,335 @@ function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: num
   return matchedResults
 }
 
-export const ClassNameSelect = betterReactMemo('ClassNameSelect', React.forwardRef<HTMLInputElement>((_, ref) => {
-  const theme = useColorTheme()
-  const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
-  const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
-  const [input, setInput] = React.useState('')
-  const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
-  const clearFocusedOption = React.useCallback(() => {
-    updateFocusedOption(null)
-    dispatch([EditorActions.clearTransientProps()], 'canvas')
-  }, [updateFocusedOption, dispatch])
-
-  const filteredOptions = React.useMemo(() => {
-    const searchTerms = searchStringToIndividualTerms(input)
-    let results: Array<TailWindOption>
-
-    if (searchTerms.length === 0) {
-      results = TailWindOptions.slice(0, MaxResults)
-    } else {
-      // First find all matches, and use a sparse array to keep the best matches at the front
-      const orderedMatchedResults = findMatchingOptions(
-        searchTerms,
-        TailWindOptions,
-        (option) => option.label,
-        MaxResults,
-      )
-
-      // Now go through and take the first n best matches
-      let matchedResults = takeBestOptions(orderedMatchedResults, MaxResults)
-
-      // Next if we haven't hit our max result count, we find matches based on attributes
-      const remainingAllowedMatches = MaxResults - matchedResults.size
-      if (remainingAllowedMatches > 0) {
-        const orderedAttributeMatchedResults = findMatchingOptions(
-          searchTerms,
-          AllAttributes,
-          (a) => a,
-          remainingAllowedMatches,
-        )
-        const bestMatchedAttributes = takeBestOptions(
-          orderedAttributeMatchedResults,
-          remainingAllowedMatches,
-        )
-
-        bestMatchedAttributes.forEach((attribute) => {
-          const matchingOptions = AttributeOptionLookup[attribute] ?? []
-          matchingOptions.forEach((option) => matchedResults.add(option))
-        })
-      }
-
-      results = Array.from(matchedResults)
-    }
-
-    if (results.length === 0) {
-      clearFocusedOption()
-    }
-
-    return results
-  }, [input, clearFocusedOption])
-
-  React.useEffect(() => {
-    return function cleanup() {
+export const ClassNameSelect = betterReactMemo(
+  'ClassNameSelect',
+  React.forwardRef<HTMLInputElement>((_, ref) => {
+    const theme = useColorTheme()
+    const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
+    const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
+    const [input, setInput] = React.useState('')
+    const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
+    const clearFocusedOption = React.useCallback(() => {
+      updateFocusedOption(null)
       dispatch([EditorActions.clearTransientProps()], 'canvas')
-    }
-    /** deps is explicitly empty */
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    }, [updateFocusedOption, dispatch])
 
-  const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
-    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
-    if (openUIJSFileKey == null || store.editor.selectedViews.length !== 1) {
+    const filteredOptions = React.useMemo(() => {
+      const searchTerms = searchStringToIndividualTerms(input)
+      let results: Array<TailWindOption>
+
+      if (searchTerms.length === 0) {
+        results = TailWindOptions.slice(0, MaxResults)
+      } else {
+        // First find all matches, and use a sparse array to keep the best matches at the front
+        const orderedMatchedResults = findMatchingOptions(
+          searchTerms,
+          TailWindOptions,
+          (option) => option.label,
+          MaxResults,
+        )
+
+        // Now go through and take the first n best matches
+        let matchedResults = takeBestOptions(orderedMatchedResults, MaxResults)
+
+        // Next if we haven't hit our max result count, we find matches based on attributes
+        const remainingAllowedMatches = MaxResults - matchedResults.size
+        if (remainingAllowedMatches > 0) {
+          const orderedAttributeMatchedResults = findMatchingOptions(
+            searchTerms,
+            AllAttributes,
+            (a) => a,
+            remainingAllowedMatches,
+          )
+          const bestMatchedAttributes = takeBestOptions(
+            orderedAttributeMatchedResults,
+            remainingAllowedMatches,
+          )
+
+          bestMatchedAttributes.forEach((attribute) => {
+            const matchingOptions = AttributeOptionLookup[attribute] ?? []
+            matchingOptions.forEach((option) => matchedResults.add(option))
+          })
+        }
+
+        results = Array.from(matchedResults)
+      }
+
+      if (results.length === 0) {
+        clearFocusedOption()
+      }
+
+      return results
+    }, [input, clearFocusedOption])
+
+    React.useEffect(() => {
+      return function cleanup() {
+        dispatch([EditorActions.clearTransientProps()], 'canvas')
+      }
+      /** deps is explicitly empty */
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
+      const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+      if (openUIJSFileKey == null || store.editor.selectedViews.length !== 1) {
+        return {
+          elementPath: null,
+          classNameFromAttributes: null,
+          isMenuEnabled: false,
+        }
+      }
+      const underlyingTarget = normalisePathToUnderlyingTarget(
+        store.editor.projectContents,
+        store.editor.nodeModules.files,
+        openUIJSFileKey,
+        store.editor.selectedViews[0],
+      )
+      const underlyingPath =
+        underlyingTarget.type === 'NORMALISE_PATH_SUCCESS'
+          ? underlyingTarget.filePath
+          : openUIJSFileKey
+      const projectFile = getContentsTreeFileFromString(
+        store.editor.projectContents,
+        underlyingPath,
+      )
+      let element: JSXElementChild | null = null
+      if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+        element = findElementAtPath(
+          store.editor.selectedViews[0],
+          getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
+        )
+      }
+
+      let foundAttributeAsString: string | null = null
+      let menuEnabled = false
+      if (element != null && isJSXElement(element)) {
+        const jsxAttributes = element.props
+        let foundAttribute = eitherToMaybe(
+          getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])),
+        )
+        if (foundAttribute != null && isJSXAttributeValue(foundAttribute)) {
+          foundAttributeAsString = foundAttribute.value
+        }
+        if (
+          foundAttribute == null ||
+          isJSXAttributeNotFound(foundAttribute) ||
+          isJSXAttributeValue(foundAttribute)
+        ) {
+          menuEnabled = true
+        }
+      }
+
       return {
-        elementPath: null,
-        classNameFromAttributes: null,
-        isMenuEnabled: false,
+        elementPath: MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )?.elementPath,
+        classNameFromAttributes: foundAttributeAsString,
+        isMenuEnabled: menuEnabled,
       }
-    }
-    const underlyingTarget = normalisePathToUnderlyingTarget(
-      store.editor.projectContents,
-      store.editor.nodeModules.files,
-      openUIJSFileKey,
-      store.editor.selectedViews[0],
+    }, 'ClassNameSelect elementPath classNameFromAttributes isMenuEnabled')
+
+    const selectedValues = React.useMemo((): TailWindOption[] | null => {
+      let classNameValue: string | null = null
+      if (classNameFromAttributes != null) {
+        classNameValue = classNameFromAttributes
+      }
+
+      const splitClassNames =
+        typeof classNameValue === 'string'
+          ? classNameValue
+              .split(' ')
+              .map((s) => s.trim())
+              .filter((s) => s !== '')
+          : []
+      return splitClassNames.length === 0
+        ? null
+        : splitClassNames.map((name: string) => ({
+            label: name,
+            value: name,
+          }))
+    }, [classNameFromAttributes])
+
+    const ariaOnFocus = React.useCallback(
+      ({ focused }: { focused: TailWindOption }) => {
+        if (targets.length === 1) {
+          const newClassNameString =
+            selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
+          dispatch(
+            [
+              EditorActions.setPropTransient(
+                targets[0],
+                PP.create(['className']),
+                jsxAttributeValue(newClassNameString, emptyComments),
+              ),
+            ],
+            'canvas',
+          )
+        }
+        updateFocusedOption(focused)
+      },
+      [updateFocusedOption, dispatch, targets, selectedValues],
     )
-    const underlyingPath =
-      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS'
-        ? underlyingTarget.filePath
-        : openUIJSFileKey
-    const projectFile = getContentsTreeFileFromString(
-      store.editor.projectContents,
-      underlyingPath,
-    )
-    let element: JSXElementChild | null = null
-    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-      element = findElementAtPath(
-        store.editor.selectedViews[0],
-        getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
-      )
-    }
+    const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
 
-    let foundAttributeAsString: string | null = null
-    let menuEnabled = false
-    if (element != null && isJSXElement(element)) {
-      const jsxAttributes = element.props
-      let foundAttribute = eitherToMaybe(
-        getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])),
-      )
-      if (foundAttribute != null && isJSXAttributeValue(foundAttribute)) {
-        foundAttributeAsString = foundAttribute.value
-      }
-      if (
-        foundAttribute == null ||
-        isJSXAttributeNotFound(foundAttribute) ||
-        isJSXAttributeValue(foundAttribute)
-      ) {
-        menuEnabled = true
-      }
-    }
-
-    return {
-      elementPath: MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        store.editor.selectedViews[0],
-      )?.elementPath,
-      classNameFromAttributes: foundAttributeAsString,
-      isMenuEnabled: menuEnabled,
-    }
-  }, 'ClassNameSelect elementPath classNameFromAttributes isMenuEnabled')
-
-  const selectedValues = React.useMemo((): TailWindOption[] | null => {
-    let classNameValue: string | null = null
-    if (classNameFromAttributes != null) {
-      classNameValue = classNameFromAttributes
-    }
-
-    const splitClassNames =
-      typeof classNameValue === 'string'
-        ? classNameValue
-            .split(' ')
-            .map((s) => s.trim())
-            .filter((s) => s !== '')
-        : []
-    return splitClassNames.length === 0
-      ? null
-      : splitClassNames.map((name: string) => ({
-          label: name,
-          value: name,
-        }))
-  }, [classNameFromAttributes])
-
-  const ariaOnFocus = React.useCallback(
-    ({ focused }: { focused: TailWindOption }) => {
-      if (targets.length === 1) {
-        const newClassNameString =
-          selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
-        dispatch(
-          [
-            EditorActions.setPropTransient(
-              targets[0],
-              PP.create(['className']),
-              jsxAttributeValue(newClassNameString, emptyComments),
-            ),
-          ],
-          'canvas',
-        )
-      }
-      updateFocusedOption(focused)
-    },
-    [updateFocusedOption, dispatch, targets, selectedValues],
-  )
-  const ariaLiveMessages = React.useMemo(() => ({ onFocus: ariaOnFocus }), [ariaOnFocus])
-
-  const onChange = React.useCallback(
-    (newValue: Array<{ label: string; value: string }>) => {
-      if (elementPath != null) {
-        dispatch(
-          [
-            EditorActions.setProp_UNSAFE(
-              elementPath,
-              PP.create(['className']),
-              jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
-            ),
-          ],
-          'everyone',
-        )
-      }
-    },
-    [dispatch, elementPath],
-  )
-
-  const colourStyles: StylesConfig = React.useMemo(
-    () => ({
-      container: (styles: React.CSSProperties) => ({
-        // the outermost element. It contains the popup menu, so don't set a height on it!
-        // shouldn't contain any sizing
-        ...styles,
-        width: '100%',
-      }),
-      control: (styles) => ({
-        // need to remove styles here, since that implicitly sets a height of 38
-        // ...styles,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'transparent',
-        outline: 'none',
-        ':focus-within': {
-          outline: 'none',
-          border: 'none',
-        },
-      }),
-      valueContainer: () => ({
-        // the container for added options (tags) and input
-        // sibling to indicatorsContainer
-        // default styles mess with layout, so ignore them
-        display: 'flex',
-        alignItems: 'center',
-        gap: 4,
-        maxWidth: 0,
-      }),
-      multiValue: () => {
-        return {
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          height: 18,
-          backgroundColor: theme.inverted.bg1.value,
+    const onChange = React.useCallback(
+      (newValue: Array<{ label: string; value: string }>) => {
+        if (elementPath != null) {
+          dispatch(
+            [
+              EditorActions.setProp_UNSAFE(
+                elementPath,
+                PP.create(['className']),
+                jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
+              ),
+            ],
+            'everyone',
+          )
         }
       },
-      multiValueLabel: () => ({
-        fontSize: 10,
-        padding: '2px 4px',
-        color: theme.inverted.textColor.value,
-      }),
-      multiValueRemove: (styles: React.CSSProperties, { data }) => ({
-        width: 11,
-        display: 'flex',
-        paddingTop: 2,
-        opacity: 0.4,
-        color: data.color,
-        ':hover': {
-          opacity: 1,
-          backgroundColor: data.color,
-          color: theme.inverted.textColor.value,
-        },
-        '& > svg': {
-          overflow: 'hidden',
-        },
-      }),
-      input: () => {
-        return {
-          fontSize: 11,
-          color: theme.inverted.textColor.value,
-          letterSpacing: 0.3,
+      [dispatch, elementPath],
+    )
+
+    const colourStyles: StylesConfig = React.useMemo(
+      () => ({
+        container: (styles: React.CSSProperties) => ({
+          // the outermost element. It contains the popup menu, so don't set a height on it!
+          // shouldn't contain any sizing
+          ...styles,
+          width: '100%',
+        }),
+        control: (styles) => ({
+          // need to remove styles here, since that implicitly sets a height of 38
+          // ...styles,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           background: 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-        }
-      },
-      indicatorsContainer: (styles) => ({
-        ...styles,
-        height: 20,
-      }),
-      menu: (styles) => ({
-        ...styles,
-        backgroundColor: theme.inverted.bg1.value,
-      }),
-      option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
-        // a single entry in the options list
-        const optionColors = getOptionColors(theme, isFocused, isSelected, isDisabled, data)
-        return {
-          minHeight: 27,
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: 8,
-          paddingRight: 8,
-          backgroundColor: optionColors.backgroundColor,
-          color: optionColors.color,
-          cursor: isDisabled ? 'not-allowed' : 'default',
-
-          ':active': {
-            ...(styles as any)[':active'],
-            backgroundColor: optionColors.activeBackgroundColor,
+          outline: 'none',
+          ':focus-within': {
+            outline: 'none',
+            border: 'none',
           },
-        }
-      },
-    }),
-    [theme],
-  )
+        }),
+        valueContainer: () => ({
+          // the container for added options (tags) and input
+          // sibling to indicatorsContainer
+          // default styles mess with layout, so ignore them
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          maxWidth: 0,
+        }),
+        multiValue: () => {
+          return {
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            height: 18,
+            backgroundColor: theme.inverted.bg1.value,
+          }
+        },
+        multiValueLabel: () => ({
+          fontSize: 10,
+          padding: '2px 4px',
+          color: theme.inverted.textColor.value,
+        }),
+        multiValueRemove: (styles: React.CSSProperties, { data }) => ({
+          width: 11,
+          display: 'flex',
+          paddingTop: 2,
+          opacity: 0.4,
+          color: data.color,
+          ':hover': {
+            opacity: 1,
+            backgroundColor: data.color,
+            color: theme.inverted.textColor.value,
+          },
+          '& > svg': {
+            overflow: 'hidden',
+          },
+        }),
+        input: () => {
+          return {
+            fontSize: 11,
+            color: theme.inverted.textColor.value,
+            letterSpacing: 0.3,
+            background: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+          }
+        },
+        indicatorsContainer: (styles) => ({
+          ...styles,
+          height: 20,
+        }),
+        menu: (styles) => ({
+          ...styles,
+          backgroundColor: theme.inverted.bg1.value,
+        }),
+        option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
+          // a single entry in the options list
+          const optionColors = getOptionColors(theme, isFocused, isSelected, isDisabled, data)
+          return {
+            minHeight: 27,
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: 8,
+            paddingRight: 8,
+            backgroundColor: optionColors.backgroundColor,
+            color: optionColors.color,
+            cursor: isDisabled ? 'not-allowed' : 'default',
 
-  return (
-    <div
-      css={{
-        height: 22,
-        borderRadius: 3,
-        position: 'relative',
-        padding: 4,
-        flexGrow: 1,
-        display: 'flex',
-        alignItems: 'center',
-        '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
-      }}
-    >
-      <WindowedSelect
-        ref={ref}
-        ariaLiveMessages={ariaLiveMessages}
-        filterOption={filterOption}
-        formatOptionLabel={formatOptionLabel}
-        openMenuOnFocus={true}
-        options={filteredOptions}
-        onChange={onChange}
-        onInputChange={setInput}
-        onMenuClose={clearFocusedOption}
-        value={selectedValues}
-        isMulti={true}
-        isDisabled={!isMenuEnabled}
-        closeMenuOnSelect={false}
-        styles={colourStyles}
-        components={{
-          DropdownIndicator,
-          ClearIndicator,
-          IndicatorSeparator,
-          NoOptionsMessage,
-          Menu,
-          MultiValueContainer,
-          ValueContainer,
+            ':active': {
+              ...(styles as any)[':active'],
+              backgroundColor: optionColors.activeBackgroundColor,
+            },
+          }
+        },
+      }),
+      [theme],
+    )
+
+    return (
+      <div
+        css={{
+          height: 22,
+          borderRadius: 3,
+          position: 'relative',
+          padding: 4,
+          flexGrow: 1,
+          display: 'flex',
+          alignItems: 'center',
+          '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
         }}
-      />
-    </div>
-  )
-}))
+      >
+        <WindowedSelect
+          ref={ref}
+          ariaLiveMessages={ariaLiveMessages}
+          filterOption={filterOption}
+          formatOptionLabel={formatOptionLabel}
+          openMenuOnFocus={true}
+          options={filteredOptions}
+          onChange={onChange}
+          onInputChange={setInput}
+          onMenuClose={clearFocusedOption}
+          value={selectedValues}
+          isMulti={true}
+          isDisabled={!isMenuEnabled}
+          closeMenuOnSelect={false}
+          styles={colourStyles}
+          components={{
+            DropdownIndicator,
+            ClearIndicator,
+            IndicatorSeparator,
+            NoOptionsMessage,
+            Menu,
+            MultiValueContainer,
+            ValueContainer,
+          }}
+        />
+      </div>
+    )
+  }),
+)
