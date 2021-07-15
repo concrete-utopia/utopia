@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { useColorTheme, FlexRow } from '../../uuiui'
+import { useColorTheme, FlexRow, UtopiaStyles } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isLiveMode, isSelectLiteMode, isSelectMode } from '../editor/editor-modes'
@@ -91,7 +91,7 @@ export const ModeSelectButtons = betterReactMemo('ModeSelectButtons', () => {
             gap: 4,
             borderRadius: 4,
             background: colorTheme.bg0.value,
-            boxShadow: 'inset 0px 0px 0px .5px hsl(0,0%,83%), 0px 2px 4px 0px hsla(0,0%,65%,50%)',
+            boxShadow: UtopiaStyles.popup.boxShadow,
             cursor: 'pointer',
           }}
         >

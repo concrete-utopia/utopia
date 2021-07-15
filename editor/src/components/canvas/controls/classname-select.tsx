@@ -18,10 +18,10 @@ import WindowedSelect, {
   ValueContainerProps,
 } from 'react-windowed-select'
 import type { StylesConfig } from 'react-select'
-import chroma from 'chroma-js'
+
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
+import { colorTheme, FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as PP from '../../../core/shared/property-path'
@@ -120,45 +120,26 @@ const getColorForCategory = (category: string) => {
   } else return 'pink'
 }
 
-interface OptionAndSelectedColor {
-  primary: {
-    optionColor: chroma.Color
-    selectedColor: string
-  }
-  regular: {
-    optionColor: chroma.Color
-    selectedColor: string
-  }
-}
-
 const getOptionColors = (
-  optionAndSelectedColor: OptionAndSelectedColor,
+  theme: typeof colorTheme,
   isFocused: boolean,
   isSelected: boolean,
   isDisabled: boolean,
   data: any,
 ) => {
-  const categories = data?.categories ?? []
-  let optionColor = optionAndSelectedColor.regular.optionColor
-  let selectedColor = optionAndSelectedColor.regular.selectedColor
-  if (categories.length === 1) {
-    optionColor = optionAndSelectedColor.primary.optionColor
-    selectedColor = optionAndSelectedColor.primary.selectedColor
-  }
-
-  let color: string = optionColor.css()
-  let backgroundColor: string | undefined = undefined
-  let activeBackgroundColor: string | undefined = optionColor.alpha(0.3).css()
+  let color: string | undefined = theme.inverted.textColor.value
+  let selectedColor = theme.inverted.primary.value
+  let backgroundColor: string | undefined = theme.inverted.bg1.value
+  let activeBackgroundColor: string | undefined = theme.primary.value
   if (isFocused) {
-    backgroundColor = optionColor.alpha(0.1).css()
+    backgroundColor = theme.inverted.primary.value
   } else if (isSelected) {
-    backgroundColor = optionColor.css()
-    color = selectedColor
-    activeBackgroundColor = data.color
+    backgroundColor = selectedColor
+    activeBackgroundColor = selectedColor
   } else if (isDisabled) {
     backgroundColor = undefined
     activeBackgroundColor = undefined
-    color = '#ccc'
+    color = undefined
   }
 
   return {
@@ -220,7 +201,7 @@ const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) =>
               padding: '8px 8px',
               fontSize: '10px',
               pointerEvents: 'none',
-              color: theme.textColor.value,
+              color: theme.inverted.textColor.value,
             }}
           >
             <FlexColumn>
@@ -327,14 +308,15 @@ function findMatchingOptions<T>(
   return orderedMatchedResults
 }
 
-function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Array<T> {
-  let matchedResults: Array<T> = []
+function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Set<T> {
+  let matchedResults: Set<T> = new Set()
   let matchCount = 0
   for (var i = 0; i < orderedSparseArray.length && matchCount < maxMatches; i++) {
     const nextMatches = orderedSparseArray[i]
     if (nextMatches != null) {
-      matchedResults.push(...nextMatches.slice(0, maxMatches - matchCount))
-      matchCount += nextMatches.length
+      const maxNextMatches = nextMatches.slice(0, maxMatches - matchCount)
+      maxNextMatches.forEach((m) => matchedResults.add(m))
+      matchCount = matchedResults.size
     }
   }
 
@@ -371,7 +353,7 @@ export const ClassNameSelect = betterReactMemo('ClassNameSelect', React.forwardR
       let matchedResults = takeBestOptions(orderedMatchedResults, MaxResults)
 
       // Next if we haven't hit our max result count, we find matches based on attributes
-      const remainingAllowedMatches = MaxResults - matchedResults.length
+      const remainingAllowedMatches = MaxResults - matchedResults.size
       if (remainingAllowedMatches > 0) {
         const orderedAttributeMatchedResults = findMatchingOptions(
           searchTerms,
@@ -383,13 +365,14 @@ export const ClassNameSelect = betterReactMemo('ClassNameSelect', React.forwardR
           orderedAttributeMatchedResults,
           remainingAllowedMatches,
         )
-        const optionsForBestMatchedAttributes = bestMatchedAttributes.flatMap(
-          (attribute) => AttributeOptionLookup[attribute] ?? [],
-        )
-        matchedResults.push(...optionsForBestMatchedAttributes)
+
+        bestMatchedAttributes.forEach((attribute) => {
+          const matchingOptions = AttributeOptionLookup[attribute] ?? []
+          matchingOptions.forEach((option) => matchedResults.add(option))
+        })
       }
 
-      results = matchedResults
+      results = Array.from(matchedResults)
     }
 
     if (results.length === 0) {
@@ -398,6 +381,14 @@ export const ClassNameSelect = betterReactMemo('ClassNameSelect', React.forwardR
 
     return results
   }, [input, clearFocusedOption])
+
+  React.useEffect(() => {
+    return function cleanup() {
+      dispatch([EditorActions.clearTransientProps()], 'canvas')
+    }
+    /** deps is explicitly empty */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
     const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
@@ -520,19 +511,6 @@ export const ClassNameSelect = betterReactMemo('ClassNameSelect', React.forwardR
     [dispatch, elementPath],
   )
 
-  const optionAndSelectedColor: OptionAndSelectedColor = React.useMemo(() => {
-    const themePrimary = chroma(theme.primary.value)
-    return {
-      primary: {
-        optionColor: themePrimary,
-        selectedColor: chroma.contrast(themePrimary, 'white') > 2 ? 'white' : 'black',
-      },
-      regular: {
-        optionColor: chroma('black'),
-        selectedColor: 'white',
-      },
-    }
-  }, [theme.primary.value])
   const colourStyles: StylesConfig = React.useMemo(
     () => ({
       container: (styles: React.CSSProperties) => ({
@@ -606,15 +584,13 @@ export const ClassNameSelect = betterReactMemo('ClassNameSelect', React.forwardR
         ...styles,
         height: 20,
       }),
+      menu: (styles) => ({
+        ...styles,
+        backgroundColor: theme.inverted.bg1.value,
+      }),
       option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
         // a single entry in the options list
-        const optionColors = getOptionColors(
-          optionAndSelectedColor,
-          isFocused,
-          isSelected,
-          isDisabled,
-          data,
-        )
+        const optionColors = getOptionColors(theme, isFocused, isSelected, isDisabled, data)
         return {
           minHeight: 27,
           display: 'flex',
@@ -632,7 +608,7 @@ export const ClassNameSelect = betterReactMemo('ClassNameSelect', React.forwardR
         }
       },
     }),
-    [theme, optionAndSelectedColor],
+    [theme],
   )
 
   return (

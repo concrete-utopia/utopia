@@ -464,7 +464,9 @@ const shadowStyles = {
 
 const popup: React.CSSProperties = {
   background: lightPrimitives.neutralBackground.value,
-  boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 2px 7px',
+  boxShadow: `inset 0px 0px 0px .5px ${UtopiaTheme.color.border3.value} , 0px 2px 4px 0px ${
+    UtopiaTheme.color.fg6.o(50).value
+  }`,
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,
@@ -483,4 +485,4 @@ export const UtopiaStyles = {
   flexCenter,
   scene,
   canvas,
-}
+} as const
