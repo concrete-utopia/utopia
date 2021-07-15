@@ -52,8 +52,14 @@ function classComparator(a: string, b: string): number {
   if (aIsBaseClass !== bIsBaseClass) {
     return aCount - bCount
   } else {
-    // Next just sort alphabetically
-    return removeNegativeOffsetFromFront(a).localeCompare(removeNegativeOffsetFromFront(b))
+    // Failing that, remove any negative offset, and sort alphabetically but also supporting the numeric parts
+    return removeNegativeOffsetFromFront(a).localeCompare(
+      removeNegativeOffsetFromFront(b),
+      undefined,
+      {
+        numeric: true,
+      },
+    )
   }
 }
 
