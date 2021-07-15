@@ -382,6 +382,12 @@ export const ClassNameSelect: React.FunctionComponent = betterReactMemo('ClassNa
     return results
   }, [input, clearFocusedOption])
 
+  React.useEffect(() => {
+    return () => {
+      dispatch([EditorActions.clearTransientProps()], 'canvas')
+    }
+  })
+
   const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
     const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
     if (openUIJSFileKey == null || store.editor.selectedViews.length !== 1) {
