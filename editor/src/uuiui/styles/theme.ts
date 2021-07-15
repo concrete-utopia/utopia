@@ -67,9 +67,9 @@ const lightPrimitives = {
   verySubduedForeground: lightBase.fg8,
   neutralInvertedForeground: lightBase.bg0,
 
-  neutralBorder: lightBase.border1,
+  neutralBorder: lightBase.border3,
   secondaryBorder: lightBase.border2,
-  subduedBorder: lightBase.border3,
+  subduedBorder: lightBase.border1,
 }
 
 const lightErrorStates = {

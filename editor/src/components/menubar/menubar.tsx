@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
-import { IconMap } from 'antd/lib/result'
 import * as React from 'react'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import {
@@ -61,7 +60,9 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
         height: 44,
         transition: 'all .1s ease-in-out',
         borderLeft:
-          props.menuExpanded && props.selected ? '2px solid darkgray' : '1px solid transparent',
+          props.menuExpanded && props.selected
+            ? `2px solid ${UtopiaTheme.color.primary.value}`
+            : '1px solid transparent',
         cursor: 'pointer',
         '& > *': {
           opacity: props.selected ? 1 : 0.33,
@@ -92,7 +93,7 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
         }}
       >
         {React.cloneElement(props.icon, {
-          color: foregroundColor,
+          color: props.selected ? 'blue' : 'darkgray',
         })}
       </div>
     </Tile>
