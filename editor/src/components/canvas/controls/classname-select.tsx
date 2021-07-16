@@ -337,20 +337,20 @@ export const ClassNameSelect = betterReactMemo(
       dispatch([EditorActions.clearTransientProps()], 'canvas')
     }, [updateFocusedOption, dispatch])
 
-    const isMenuOpen = React.useRef(false)
-    const shouldPreviewOnFocus = React.useRef(false)
+    const isMenuOpenRef = React.useRef(false)
+    const shouldPreviewOnFocusRef = React.useRef(false)
     const onMenuClose = React.useCallback(() => {
-      shouldPreviewOnFocus.current = false
-      isMenuOpen.current = false
+      shouldPreviewOnFocusRef.current = false
+      isMenuOpenRef.current = false
       clearFocusedOption()
     }, [clearFocusedOption])
     const onMenuOpen = React.useCallback(() => {
-      isMenuOpen.current = true
+      isMenuOpenRef.current = true
     }, [])
     const onInputChange = React.useCallback(
       (newInput: string) => {
         if (newInput === '') {
-          shouldPreviewOnFocus.current = false
+          shouldPreviewOnFocusRef.current = false
           dispatch([EditorActions.clearTransientProps()], 'canvas')
         }
         setInput(newInput)
@@ -504,8 +504,8 @@ export const ClassNameSelect = betterReactMemo(
 
     const ariaOnFocus = React.useCallback(
       ({ focused }: { focused: TailWindOption }) => {
-        if (isMenuOpen.current) {
-          if (shouldPreviewOnFocus.current && targets.length === 1) {
+        if (isMenuOpenRef.current) {
+          if (shouldPreviewOnFocusRef.current && targets.length === 1) {
             const newClassNameString =
               selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
             dispatch(
@@ -519,7 +519,7 @@ export const ClassNameSelect = betterReactMemo(
               'canvas',
             )
           }
-          shouldPreviewOnFocus.current = true
+          shouldPreviewOnFocusRef.current = true
           updateFocusedOption(focused)
         }
       },
@@ -541,7 +541,7 @@ export const ClassNameSelect = betterReactMemo(
             ],
             'everyone',
           )
-          shouldPreviewOnFocus.current = false
+          shouldPreviewOnFocusRef.current = false
         }
       },
       [dispatch, elementPath],
@@ -651,7 +651,7 @@ export const ClassNameSelect = betterReactMemo(
 
     const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        shouldPreviewOnFocus.current = true
+        shouldPreviewOnFocusRef.current = true
       }
     }, [])
 
