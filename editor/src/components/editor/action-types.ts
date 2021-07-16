@@ -872,6 +872,9 @@ export interface SetPropTransient {
 export interface ClearTransientProps {
   action: 'CLEAR_TRANSIENT_PROPS'
 }
+export interface AddTailwindConfig {
+  action: 'ADD_TAILWIND_CONFIG'
+}
 
 export type EditorAction =
   | ClearSelection
@@ -1018,6 +1021,7 @@ export type EditorAction =
   | InsertWithDefaults
   | SetPropTransient
   | ClearTransientProps
+  | AddTailwindConfig
 
 export type DispatchPriority =
   | 'everyone'

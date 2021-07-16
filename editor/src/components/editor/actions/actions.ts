@@ -121,12 +121,13 @@ import {
   forceRight,
   traverseEither,
 } from '../../../core/shared/either'
-import type {
+import {
   RequireFn,
   TypeDefinitions,
   PackageStatus,
   PackageStatusMap,
   RequestedNpmDependency,
+  requestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
   isParseSuccess,
@@ -365,6 +366,7 @@ import {
   InsertWithDefaults,
   SetPropTransient,
   ClearTransientProps,
+  AddTailwindConfig,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -383,6 +385,8 @@ import {
   updateDependenciesInEditorState,
   updateDependenciesInPackageJson,
   createLoadedPackageStatusMapFromDependencies,
+  dependenciesFromPackageJson,
+  findLatestVersion,
 } from '../npm-dependency/npm-dependency'
 import { updateRemoteThumbnail } from '../persistence'
 import {
@@ -444,6 +448,7 @@ import {
   LeftMenuTab,
   RightMenuTab,
   persistentModelFromEditorModel,
+  getPackageJsonFromEditorState,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -488,6 +493,7 @@ import {
   markVSCodeBridgeReady,
   addImports,
   setScrollAnimation,
+  updatePackageJson,
 } from './action-creators'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
@@ -506,6 +512,12 @@ import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { reverse, uniqBy } from '../../../core/shared/array-utils'
 import { UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
+import {
+  DefaultPostCSSConfig,
+  DefaultTailwindConfig,
+  PostCSSPath,
+  TailwindConfigPath,
+} from '../../../core/tailwind/tailwind-config'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -4522,6 +4534,80 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         transientProperties: null,
+      },
+    }
+  },
+  ADD_TAILWIND_CONFIG: (
+    action: AddTailwindConfig,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const packageJsonFile = getContentsTreeFileFromString(editor.projectContents, '/package.json')
+    const currentNpmDeps = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
+
+    findLatestVersion('tailwindcss').then((tailwindResult) => {
+      if (tailwindResult.type === 'VERSION_LOOKUP_SUCCESS') {
+        const tailwindVersion = tailwindResult.version
+        findLatestVersion('postcss').then((postcssResult) => {
+          if (postcssResult.type === 'VERSION_LOOKUP_SUCCESS') {
+            const postcssVersion = postcssResult.version
+            const updatedNpmDeps = [
+              ...currentNpmDeps,
+              requestedNpmDependency('tailwindcss', tailwindVersion.version),
+              requestedNpmDependency('postcss', postcssVersion.version),
+            ]
+            fetchNodeModules(updatedNpmDeps, 'canvas').then((fetchNodeModulesResult) => {
+              const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
+                updatedNpmDeps,
+                fetchNodeModulesResult.dependenciesWithError,
+                fetchNodeModulesResult.dependenciesNotFound,
+              )
+              const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
+                setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+              )
+              dispatch([
+                ...packageErrorActions,
+                updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+              ])
+            })
+
+            const packageJsonUpdateAction = updatePackageJson(updatedNpmDeps)
+
+            dispatch([packageJsonUpdateAction], 'everyone')
+          }
+        })
+      }
+    })
+
+    let updatedProjectContents = editor.projectContents
+    if (getContentsTreeFileFromString(editor.projectContents, TailwindConfigPath) == null) {
+      updatedProjectContents = addFileToProjectContents(
+        editor.projectContents,
+        TailwindConfigPath,
+        DefaultTailwindConfig(),
+      )
+    }
+
+    if (getContentsTreeFileFromString(editor.projectContents, PostCSSPath) == null) {
+      updatedProjectContents = addFileToProjectContents(
+        updatedProjectContents,
+        PostCSSPath,
+        DefaultPostCSSConfig(),
+      )
+    }
+
+    return {
+      ...editor,
+      projectContents: updatedProjectContents,
+      nodeModules: {
+        ...editor.nodeModules,
+        packageStatus: {
+          ...editor.nodeModules.packageStatus,
+          ...{
+            postcss: { status: 'loading' },
+            tailwindcss: { status: 'loading' },
+          },
+        },
       },
     }
   },

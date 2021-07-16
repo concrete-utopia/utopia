@@ -10,9 +10,7 @@ import { includesDependency } from '../../components/editor/npm-dependency/npm-d
 import { propOrNull } from '../shared/object-utils'
 import { memoize } from '../shared/memoize'
 import { importDefault } from '../es-modules/commonjs-interop'
-
-const PostCSSPath = '/postcss.config.js'
-const TailwindConfigPath = '/tailwind.config.js'
+import { PostCSSPath, TailwindConfigPath } from './tailwind-config'
 
 function hasRequiredDependenciesForTailwind(packageJsonFile: ProjectFile): boolean {
   const hasTailwindDependency = includesDependency(packageJsonFile, 'tailwindcss')

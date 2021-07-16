@@ -194,6 +194,7 @@ import type {
   ToggleFocusedOmniboxTab,
   SetPropTransient,
   ClearTransientProps,
+  AddTailwindConfig,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1395,5 +1396,11 @@ export function insertWithDefaults(
     targetParent: targetParent,
     toInsert: toInsert,
     styleProps: styleProps,
+  }
+}
+
+export function addTailwindConfig(): AddTailwindConfig {
+  return {
+    action: 'ADD_TAILWIND_CONFIG',
   }
 }
