@@ -324,6 +324,8 @@ function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: num
   return matchedResults
 }
 
+let queuedDispatchTimeout: number | undefined = undefined
+
 export const ClassNameSelect = betterReactMemo(
   'ClassNameSelect',
   React.forwardRef<HTMLInputElement>((_, ref) => {
@@ -508,16 +510,22 @@ export const ClassNameSelect = betterReactMemo(
           if (shouldPreviewOnFocusRef.current && targets.length === 1) {
             const newClassNameString =
               selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
-            dispatch(
-              [
-                EditorActions.setPropTransient(
-                  targets[0],
-                  PP.create(['className']),
-                  jsxAttributeValue(newClassNameString, emptyComments),
-                ),
-              ],
-              'canvas',
-            )
+
+            if (queuedDispatchTimeout != null) {
+              window.clearTimeout(queuedDispatchTimeout)
+            }
+            queuedDispatchTimeout = window.setTimeout(() => {
+              dispatch(
+                [
+                  EditorActions.setPropTransient(
+                    targets[0],
+                    PP.create(['className']),
+                    jsxAttributeValue(newClassNameString, emptyComments),
+                  ),
+                ],
+                'canvas',
+              )
+            }, 10)
           }
           shouldPreviewOnFocusRef.current = true
           updateFocusedOption(focused)
@@ -530,6 +538,11 @@ export const ClassNameSelect = betterReactMemo(
     const onChange = React.useCallback(
       (newValue: Array<{ label: string; value: string }>) => {
         if (elementPath != null) {
+          if (queuedDispatchTimeout != null) {
+            window.clearTimeout(queuedDispatchTimeout)
+            queuedDispatchTimeout = undefined
+          }
+
           dispatch(
             [
               EditorActions.setProp_UNSAFE(
