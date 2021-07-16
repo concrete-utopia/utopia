@@ -4,7 +4,7 @@ import { lintAndParse } from '../workers/parser-printer/parser-printer'
 export const PostCSSPath = '/postcss.config.js'
 export const TailwindConfigPath = '/tailwind.config.js'
 
-const TailwindConfigJs = `// tailwind.config.js
+const TailwindConfigJs = `
 module.exports = {
   purge: [],
   darkMode: false, // or 'media' or 'class'
