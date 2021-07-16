@@ -326,7 +326,9 @@ function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: num
 }
 
 export const Input = (props: InputProps) => {
-  return <components.Input {...props} isHidden={false} />
+  const value = (props as any).value
+  const isHidden = value.length !== 0 ? false : props.isHidden
+  return <components.Input {...props} isHidden={isHidden} />
 }
 
 export const ClassNameSelect = betterReactMemo(
