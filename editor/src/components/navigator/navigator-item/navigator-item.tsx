@@ -313,6 +313,10 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       () => highlightItem(dispatch, elementPath, selected, isHighlighted),
       [dispatch, elementPath, selected, isHighlighted],
     )
+    const focusComponent = React.useCallback(() => {
+      dispatch([EditorActions.setFocusedElement(elementPath)])
+    }, [dispatch, elementPath])
+
     const containerStyle: React.CSSProperties = React.useMemo(() => {
       return {
         opacity: isElementVisible ? undefined : 0.5,
@@ -329,7 +333,13 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     })
 
     return (
-      <FlexRow ref={domElementRef} style={rowStyle} onMouseDown={select} onMouseMove={highlight}>
+      <FlexRow
+        ref={domElementRef}
+        style={rowStyle}
+        onMouseDown={select}
+        onMouseMove={highlight}
+        onDoubleClick={focusComponent}
+      >
         <FlexRow style={containerStyle}>
           <ExpandableIndicator
             key='expandable-indicator'

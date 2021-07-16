@@ -10,6 +10,8 @@ export type FeatureName =
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
   | 'TopMenu ClassNames'
+  | 'Click on empty canvas unfocuses'
+
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -18,9 +20,10 @@ export const AllFeatureNames: FeatureName[] = [
   'Re-parse Project Button',
   'Performance Test Triggers',
   'TopMenu ClassNames',
+  'Click on empty canvas unfocuses',
 ]
 
-let FeatureSwitches: { [feature: string]: boolean } = {
+let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Dragging Reparents By Default': false,
   'Dragging Shows Overlay': false,
   'Invisible Element Controls': false,
@@ -28,6 +31,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'TopMenu ClassNames': false,
+  'Click on empty canvas unfocuses': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
