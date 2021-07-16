@@ -647,10 +647,13 @@ export const ClassNameSelect = betterReactMemo(
           if (focusedValueRef.current != null) {
             setInput(focusedValueRef.current)
             focusedValueRef.current = null
+            if (ref != null) {
+              ;(ref as any).current.focus()
+            }
           }
         }
       },
-      [setInput],
+      [setInput, ref],
     )
 
     return (
