@@ -52,6 +52,7 @@ import { getContentsTreeFileFromString } from '../../assets'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import Highlighter from 'react-highlight-words'
+import { transduce } from 'ramda'
 
 interface TailWindOption {
   label: string
@@ -336,6 +337,27 @@ export const ClassNameSelect = betterReactMemo(
       dispatch([EditorActions.clearTransientProps()], 'canvas')
     }, [updateFocusedOption, dispatch])
 
+    const isMenuOpen = React.useRef(false)
+    const shouldPreviewOnFocus = React.useRef(false)
+    const onMenuClose = React.useCallback(() => {
+      shouldPreviewOnFocus.current = true
+      isMenuOpen.current = false
+      clearFocusedOption()
+    }, [clearFocusedOption])
+    const onMenuOpen = React.useCallback(() => {
+      isMenuOpen.current = true
+    }, [])
+    const onInputChange = React.useCallback(
+      (newInput: string) => {
+        if (newInput === '') {
+          shouldPreviewOnFocus.current = false
+          dispatch([EditorActions.clearTransientProps()], 'canvas')
+        }
+        setInput(newInput)
+      },
+      [dispatch, setInput],
+    )
+
     const filteredOptions = React.useMemo(() => {
       const searchTerms = searchStringToIndividualTerms(input)
       let results: Array<TailWindOption>
@@ -482,21 +504,24 @@ export const ClassNameSelect = betterReactMemo(
 
     const ariaOnFocus = React.useCallback(
       ({ focused }: { focused: TailWindOption }) => {
-        if (targets.length === 1) {
-          const newClassNameString =
-            selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
-          dispatch(
-            [
-              EditorActions.setPropTransient(
-                targets[0],
-                PP.create(['className']),
-                jsxAttributeValue(newClassNameString, emptyComments),
-              ),
-            ],
-            'canvas',
-          )
+        if (isMenuOpen.current) {
+          if (shouldPreviewOnFocus.current && targets.length === 1) {
+            const newClassNameString =
+              selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
+            dispatch(
+              [
+                EditorActions.setPropTransient(
+                  targets[0],
+                  PP.create(['className']),
+                  jsxAttributeValue(newClassNameString, emptyComments),
+                ),
+              ],
+              'canvas',
+            )
+          }
+          shouldPreviewOnFocus.current = true
+          updateFocusedOption(focused)
         }
-        updateFocusedOption(focused)
       },
       [updateFocusedOption, dispatch, targets, selectedValues],
     )
@@ -512,9 +537,11 @@ export const ClassNameSelect = betterReactMemo(
                 PP.create(['className']),
                 jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
               ),
+              EditorActions.clearTransientProps(),
             ],
             'everyone',
           )
+          shouldPreviewOnFocus.current = false
         }
       },
       [dispatch, elementPath],
@@ -643,8 +670,9 @@ export const ClassNameSelect = betterReactMemo(
           openMenuOnFocus={true}
           options={filteredOptions}
           onChange={onChange}
-          onInputChange={setInput}
-          onMenuClose={clearFocusedOption}
+          onInputChange={onInputChange}
+          onMenuClose={onMenuClose}
+          onMenuOpen={onMenuOpen}
           value={selectedValues}
           isMulti={true}
           isDisabled={!isMenuEnabled}
