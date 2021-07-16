@@ -227,7 +227,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           overflowX: 'hidden',
           flexGrow: 1,
           flexShrink: 0,
-          borderRight: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
         }}
       >
         {!isCanvasVisible && !interfaceDesigner.codePaneVisible ? (

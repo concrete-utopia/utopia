@@ -190,7 +190,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
       id='canvas-menu'
       style={{
         alignSelf: 'stretch',
-        borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
+        borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
         width: 38,
       }}
     >
