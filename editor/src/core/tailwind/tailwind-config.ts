@@ -15,7 +15,7 @@ module.exports = {
   plugins: [],
 }`
 
-const PostCSSConfigJs = `// postcss.config.js
+const PostCSSConfigJs = `
 module.exports = {
   plugins: {
     tailwindcss: {},
