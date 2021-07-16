@@ -13,6 +13,8 @@ import WindowedSelect, {
   components,
   FormatOptionLabelMeta,
   IndicatorProps,
+  InputActionMeta,
+  InputProps,
   MenuProps,
   MultiValueProps,
   ValueContainerProps,
@@ -323,6 +325,10 @@ function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: num
   return matchedResults
 }
 
+export const Input = (props: InputProps) => {
+  return <components.Input {...props} isHidden={false} />
+}
+
 export const ClassNameSelect = betterReactMemo(
   'ClassNameSelect',
   React.forwardRef<HTMLInputElement>((_, ref) => {
@@ -330,6 +336,7 @@ export const ClassNameSelect = betterReactMemo(
     const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
     const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
     const [input, setInput] = React.useState('')
+    const focusedValueRef = React.useRef<string | null>(null)
     const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
     const clearFocusedOption = React.useCallback(() => {
       updateFocusedOption(null)
@@ -481,22 +488,26 @@ export const ClassNameSelect = betterReactMemo(
     }, [classNameFromAttributes, elementPath, metadataRef])
 
     const ariaOnFocus = React.useCallback(
-      ({ focused }: { focused: TailWindOption }) => {
-        if (targets.length === 1) {
-          const newClassNameString =
-            selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
-          dispatch(
-            [
-              EditorActions.setPropTransient(
-                targets[0],
-                PP.create(['className']),
-                jsxAttributeValue(newClassNameString, emptyComments),
-              ),
-            ],
-            'canvas',
-          )
+      ({ focused, context }: { focused: TailWindOption; context: 'menu' | 'value' }) => {
+        if (context === 'menu') {
+          if (targets.length === 1) {
+            const newClassNameString =
+              selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
+            dispatch(
+              [
+                EditorActions.setPropTransient(
+                  targets[0],
+                  PP.create(['className']),
+                  jsxAttributeValue(newClassNameString, emptyComments),
+                ),
+              ],
+              'canvas',
+            )
+          }
+          updateFocusedOption(focused)
+        } else if (context === 'value') {
+          focusedValueRef.current = focused.value
         }
-        updateFocusedOption(focused)
       },
       [updateFocusedOption, dispatch, targets, selectedValues],
     )
@@ -622,6 +633,26 @@ export const ClassNameSelect = betterReactMemo(
       [theme],
     )
 
+    const onInputChange = React.useCallback(
+      (newValue, actionMeta: InputActionMeta) => {
+        setInput(newValue)
+        focusedValueRef.current = null
+      },
+      [setInput],
+    )
+
+    const handleKeyDown = React.useCallback(
+      (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Backspace') {
+          if (focusedValueRef.current != null) {
+            setInput(focusedValueRef.current)
+            focusedValueRef.current = null
+          }
+        }
+      },
+      [setInput],
+    )
+
     return (
       <div
         css={{
@@ -634,6 +665,7 @@ export const ClassNameSelect = betterReactMemo(
           alignItems: 'center',
           '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
         }}
+        onKeyDown={handleKeyDown}
       >
         <WindowedSelect
           ref={ref}
@@ -643,7 +675,8 @@ export const ClassNameSelect = betterReactMemo(
           openMenuOnFocus={true}
           options={filteredOptions}
           onChange={onChange}
-          onInputChange={setInput}
+          onInputChange={onInputChange}
+          inputValue={input}
           onMenuClose={clearFocusedOption}
           value={selectedValues}
           isMulti={true}
@@ -658,6 +691,7 @@ export const ClassNameSelect = betterReactMemo(
             Menu,
             MultiValueContainer,
             ValueContainer,
+            Input,
           }}
         />
       </div>
