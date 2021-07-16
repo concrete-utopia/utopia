@@ -13,6 +13,8 @@ import WindowedSelect, {
   components,
   FormatOptionLabelMeta,
   IndicatorProps,
+  InputActionMeta,
+  InputProps,
   MenuProps,
   MultiValueProps,
   ValueContainerProps,
@@ -52,7 +54,6 @@ import { getContentsTreeFileFromString } from '../../assets'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import Highlighter from 'react-highlight-words'
-import { transduce } from 'ramda'
 
 interface TailWindOption {
   label: string
@@ -324,6 +325,11 @@ function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: num
   return matchedResults
 }
 
+export const Input = (props: InputProps) => {
+  const value = (props as any).value
+  const isHidden = value.length !== 0 ? false : props.isHidden
+  return <components.Input {...props} isHidden={isHidden} />
+}
 let queuedDispatchTimeout: number | undefined = undefined
 
 export const ClassNameSelect = betterReactMemo(
@@ -333,6 +339,7 @@ export const ClassNameSelect = betterReactMemo(
     const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')
     const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
     const [input, setInput] = React.useState('')
+    const focusedValueRef = React.useRef<string | null>(null)
     const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
     const clearFocusedOption = React.useCallback(() => {
       updateFocusedOption(null)
@@ -349,16 +356,6 @@ export const ClassNameSelect = betterReactMemo(
     const onMenuOpen = React.useCallback(() => {
       isMenuOpenRef.current = true
     }, [])
-    const onInputChange = React.useCallback(
-      (newInput: string) => {
-        if (newInput === '') {
-          shouldPreviewOnFocusRef.current = false
-          dispatch([EditorActions.clearTransientProps()], 'canvas')
-        }
-        setInput(newInput)
-      },
-      [dispatch, setInput],
-    )
 
     const filteredOptions = React.useMemo(() => {
       const searchTerms = searchStringToIndividualTerms(input)
@@ -505,30 +502,33 @@ export const ClassNameSelect = betterReactMemo(
     }, [classNameFromAttributes, elementPath, metadataRef])
 
     const ariaOnFocus = React.useCallback(
-      ({ focused }: { focused: TailWindOption }) => {
-        if (isMenuOpenRef.current) {
-          if (shouldPreviewOnFocusRef.current && targets.length === 1) {
-            const newClassNameString =
-              selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
-
-            if (queuedDispatchTimeout != null) {
-              window.clearTimeout(queuedDispatchTimeout)
+      ({ focused, context }: { focused: TailWindOption; context: 'menu' | 'value' }) => {
+        if (context === 'menu') {
+          if (isMenuOpenRef.current) {
+            if (shouldPreviewOnFocusRef.current && targets.length === 1) {
+              const newClassNameString =
+                selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
+              if (queuedDispatchTimeout != null) {
+                window.clearTimeout(queuedDispatchTimeout)
+              }
+              queuedDispatchTimeout = window.setTimeout(() => {
+                dispatch(
+                  [
+                    EditorActions.setPropTransient(
+                      targets[0],
+                      PP.create(['className']),
+                      jsxAttributeValue(newClassNameString, emptyComments),
+                    ),
+                  ],
+                  'canvas',
+                )
+              }, 10)
             }
-            queuedDispatchTimeout = window.setTimeout(() => {
-              dispatch(
-                [
-                  EditorActions.setPropTransient(
-                    targets[0],
-                    PP.create(['className']),
-                    jsxAttributeValue(newClassNameString, emptyComments),
-                  ),
-                ],
-                'canvas',
-              )
-            }, 10)
+            updateFocusedOption(focused)
+            shouldPreviewOnFocusRef.current = true
           }
-          shouldPreviewOnFocusRef.current = true
-          updateFocusedOption(focused)
+        } else if (context === 'value') {
+          focusedValueRef.current = focused.value
         }
       },
       [updateFocusedOption, dispatch, targets, selectedValues],
@@ -662,11 +662,35 @@ export const ClassNameSelect = betterReactMemo(
       [theme],
     )
 
-    const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        shouldPreviewOnFocusRef.current = true
-      }
-    }, [])
+    const onInputChange = React.useCallback(
+      (newInput, actionMeta: InputActionMeta) => {
+        if (newInput === '') {
+          shouldPreviewOnFocusRef.current = false
+          dispatch([EditorActions.clearTransientProps()], 'canvas')
+        }
+        setInput(newInput)
+        focusedValueRef.current = null
+      },
+      [dispatch, setInput],
+    )
+
+    const handleKeyDown = React.useCallback(
+      (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          shouldPreviewOnFocusRef.current = true
+        }
+        if (event.key === 'Backspace') {
+          if (focusedValueRef.current != null) {
+            setInput(focusedValueRef.current)
+            focusedValueRef.current = null
+            if (ref != null) {
+              ;(ref as any).current.focus()
+            }
+          }
+        }
+      },
+      [setInput, ref],
+    )
 
     return (
       <div
@@ -691,6 +715,7 @@ export const ClassNameSelect = betterReactMemo(
           options={filteredOptions}
           onChange={onChange}
           onInputChange={onInputChange}
+          inputValue={input}
           onMenuClose={onMenuClose}
           onMenuOpen={onMenuOpen}
           value={selectedValues}
@@ -706,6 +731,7 @@ export const ClassNameSelect = betterReactMemo(
             Menu,
             MultiValueContainer,
             ValueContainer,
+            Input,
           }}
         />
       </div>
