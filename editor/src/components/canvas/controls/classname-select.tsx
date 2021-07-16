@@ -52,6 +52,7 @@ import { getContentsTreeFileFromString } from '../../assets'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import Highlighter from 'react-highlight-words'
+import { transduce } from 'ramda'
 
 interface TailWindOption {
   label: string
@@ -336,6 +337,27 @@ export const ClassNameSelect = betterReactMemo(
       dispatch([EditorActions.clearTransientProps()], 'canvas')
     }, [updateFocusedOption, dispatch])
 
+    const isMenuOpenRef = React.useRef(false)
+    const shouldPreviewOnFocusRef = React.useRef(false)
+    const onMenuClose = React.useCallback(() => {
+      shouldPreviewOnFocusRef.current = false
+      isMenuOpenRef.current = false
+      clearFocusedOption()
+    }, [clearFocusedOption])
+    const onMenuOpen = React.useCallback(() => {
+      isMenuOpenRef.current = true
+    }, [])
+    const onInputChange = React.useCallback(
+      (newInput: string) => {
+        if (newInput === '') {
+          shouldPreviewOnFocusRef.current = false
+          dispatch([EditorActions.clearTransientProps()], 'canvas')
+        }
+        setInput(newInput)
+      },
+      [dispatch, setInput],
+    )
+
     const filteredOptions = React.useMemo(() => {
       const searchTerms = searchStringToIndividualTerms(input)
       let results: Array<TailWindOption>
@@ -482,21 +504,24 @@ export const ClassNameSelect = betterReactMemo(
 
     const ariaOnFocus = React.useCallback(
       ({ focused }: { focused: TailWindOption }) => {
-        if (targets.length === 1) {
-          const newClassNameString =
-            selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
-          dispatch(
-            [
-              EditorActions.setPropTransient(
-                targets[0],
-                PP.create(['className']),
-                jsxAttributeValue(newClassNameString, emptyComments),
-              ),
-            ],
-            'canvas',
-          )
+        if (isMenuOpenRef.current) {
+          if (shouldPreviewOnFocusRef.current && targets.length === 1) {
+            const newClassNameString =
+              selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
+            dispatch(
+              [
+                EditorActions.setPropTransient(
+                  targets[0],
+                  PP.create(['className']),
+                  jsxAttributeValue(newClassNameString, emptyComments),
+                ),
+              ],
+              'canvas',
+            )
+          }
+          shouldPreviewOnFocusRef.current = true
+          updateFocusedOption(focused)
         }
-        updateFocusedOption(focused)
       },
       [updateFocusedOption, dispatch, targets, selectedValues],
     )
@@ -512,9 +537,11 @@ export const ClassNameSelect = betterReactMemo(
                 PP.create(['className']),
                 jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
               ),
+              EditorActions.clearTransientProps(),
             ],
             'everyone',
           )
+          shouldPreviewOnFocusRef.current = false
         }
       },
       [dispatch, elementPath],
@@ -622,6 +649,12 @@ export const ClassNameSelect = betterReactMemo(
       [theme],
     )
 
+    const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        shouldPreviewOnFocusRef.current = true
+      }
+    }, [])
+
     return (
       <div
         css={{
@@ -634,6 +667,7 @@ export const ClassNameSelect = betterReactMemo(
           alignItems: 'center',
           '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
         }}
+        onKeyDown={handleKeyDown}
       >
         <WindowedSelect
           ref={ref}
@@ -643,8 +677,9 @@ export const ClassNameSelect = betterReactMemo(
           openMenuOnFocus={true}
           options={filteredOptions}
           onChange={onChange}
-          onInputChange={setInput}
-          onMenuClose={clearFocusedOption}
+          onInputChange={onInputChange}
+          onMenuClose={onMenuClose}
+          onMenuOpen={onMenuOpen}
           value={selectedValues}
           isMulti={true}
           isDisabled={!isMenuEnabled}
