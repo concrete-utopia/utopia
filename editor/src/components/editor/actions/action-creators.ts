@@ -877,10 +877,11 @@ export function deleteFile(filename: string): DeleteFile {
   }
 }
 
-export function addFolder(parentPath: string): AddFolder {
+export function addFolder(parentPath: string, fileName: string): AddFolder {
   return {
     action: 'ADD_FOLDER',
     parentPath: parentPath,
+    fileName: fileName,
   }
 }
 

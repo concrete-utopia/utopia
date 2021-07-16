@@ -597,6 +597,7 @@ export interface ClearImageFileBlob {
 export interface AddFolder {
   action: 'ADD_FOLDER'
   parentPath: string
+  fileName: string
 }
 
 export interface DeleteFile {

@@ -35,7 +35,7 @@ import {
   getOpenUIJSFileKey,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { FileBrowserItem } from './fileitem'
+import { addingChildElement, FileBrowserItem } from './fileitem'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
@@ -53,6 +53,8 @@ import {
   Icons,
 } from '../../uuiui'
 import { isLocal } from '../editor/persistence'
+import { unless, when } from '../../utils/react-conditionals'
+import { AddingFile, applyAddingFile } from './filepath-utils'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -152,17 +154,72 @@ export const FileBrowser = betterReactMemo('FileBrowser', () => {
     [dispatch, focusedPanel],
   )
 
+  const [addingFile, setAddingFile] = React.useState<AddingFile | null>(null)
+
+  const confirmAddingFile = React.useCallback(() => {
+    applyAddingFile(dispatch, '', addingFile)
+    setAddingFile(null)
+  }, [dispatch, addingFile])
+
+  const abandonAddingFile = React.useCallback(() => {
+    setAddingFile(null)
+  }, [])
+
+  const inputLabelKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        confirmAddingFile()
+      }
+      if (event.key === 'Escape') {
+        abandonAddingFile()
+      }
+    },
+    [confirmAddingFile, abandonAddingFile],
+  )
+
+  const inputLabelChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (addingFile != null) {
+        setAddingFile({
+          fileOrFolder: addingFile.fileOrFolder,
+          filename: event.target.value,
+        })
+      }
+    },
+    [addingFile],
+  )
+
+  const setAddingFileOrFolder = React.useCallback((fileOrFolder: AddingFile['fileOrFolder']) => {
+    setAddingFile({ fileOrFolder: fileOrFolder, filename: '' })
+  }, [])
+
   return (
     <>
       <Section data-name='FileBrowser' onFocus={onFocus} tabIndex={-1}>
         <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
           <FlexRow flexGrow={1} style={{ position: 'relative' }}>
             <Title>Project</Title>
-            <FileBrowserActionSheet visible={!minimised} />
+            <FileBrowserActionSheet
+              visible={!minimised}
+              setAddingFileOrFolder={setAddingFileOrFolder}
+            />
           </FlexRow>
         </SectionTitleRow>
         <SectionBodyArea minimised={minimised}>
-          {minimised ? null : <FileBrowserItems />}
+          {unless(minimised, () => (
+            <>
+              {addingFile == null
+                ? null
+                : addingChildElement(
+                    0,
+                    addingFile.filename,
+                    inputLabelKeyDown,
+                    inputLabelChange,
+                    abandonAddingFile,
+                  )}
+              <FileBrowserItems />
+            </>
+          ))}
         </SectionBodyArea>
       </Section>
     </>
@@ -171,6 +228,7 @@ export const FileBrowser = betterReactMemo('FileBrowser', () => {
 
 interface FileBrowserActionSheetProps {
   visible: boolean
+  setAddingFileOrFolder: (fileOrFolder: 'file' | 'folder') => void
 }
 
 const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
@@ -244,7 +302,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
             key={`filebrowser-${index}`}
             dispatch={dispatch}
             toggleCollapse={toggleCollapse}
-            Expand={Expand}
+            expand={Expand}
             setSelected={setSelected}
             collapsed={element.type === 'file' && collapsedPaths.indexOf(element.path) > -1}
             hasErrorMessages={fileHasErrorMessages(element.path, errorMessages)}
@@ -263,14 +321,8 @@ const FileBrowserActionSheet = betterReactMemo(
       (store) => ({ dispatch: store.dispatch }),
       'FileBrowserActionSheet dispatch',
     )
-    const addFolderClick = React.useCallback(
-      () => dispatch([EditorActions.addFolder('')], 'everyone'),
-      [dispatch],
-    )
-    const addTextFileClick = React.useCallback(
-      () => dispatch([EditorActions.addTextFile('', 'untitled')], 'everyone'),
-      [dispatch],
-    )
+    const addFolderClick = React.useCallback(() => props.setAddingFileOrFolder('folder'), [props])
+    const addTextFileClick = React.useCallback(() => props.setAddingFileOrFolder('file'), [props])
     if (props.visible) {
       return (
         <ActionSheet>

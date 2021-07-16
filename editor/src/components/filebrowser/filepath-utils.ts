@@ -1,4 +1,6 @@
 import Utils from '../../utils/utils'
+import { EditorDispatch } from '../editor/action-types'
+import { addFolder, addTextFile } from '../editor/actions/action-creators'
 
 // Important: getFilePathToImport uses file paths with a leading `/`!
 export function getFilePathToImport(importFromPath: string, targetFilePath: string): string {
@@ -53,5 +55,30 @@ export function dropLeadingSlash(path: string): string {
     return path.slice(1)
   } else {
     return path
+  }
+}
+
+export interface AddingFile {
+  fileOrFolder: 'file' | 'folder'
+  filename: string
+}
+
+export function applyAddingFile(
+  dispatch: EditorDispatch,
+  parentPath: string,
+  addingFile: AddingFile | null,
+): void {
+  if (addingFile != null) {
+    switch (addingFile.fileOrFolder) {
+      case 'file':
+        dispatch([addTextFile(parentPath, addingFile.filename)], 'everyone')
+        break
+      case 'folder':
+        dispatch([addFolder(parentPath, addingFile.filename)], 'everyone')
+        break
+      default:
+        const _exhaustiveCheck: never = addingFile.fileOrFolder
+        throw new Error(`Unhandled type ${JSON.stringify(addingFile)}`)
+    }
   }
 }

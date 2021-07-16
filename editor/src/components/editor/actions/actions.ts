@@ -3658,14 +3658,13 @@ export const UPDATE_FNS = {
   },
   ADD_FOLDER: (action: AddFolder, editor: EditorModel): EditorModel => {
     const pathPrefix = action.parentPath == '' ? '' : action.parentPath + '/'
-    const newFolderKey = uniqueProjectContentID(pathPrefix + 'folder', editor.projectContents)
+    const newFolderKey = uniqueProjectContentID(
+      pathPrefix + action.fileName,
+      editor.projectContents,
+    )
     return {
       ...editor,
       projectContents: addFileToProjectContents(editor.projectContents, newFolderKey, directory()),
-      fileBrowser: {
-        ...editor.fileBrowser,
-        renamingTarget: newFolderKey,
-      },
     }
   },
   ADD_TEXT_FILE: (action: AddTextFile, editor: EditorModel): EditorModel => {
@@ -3683,10 +3682,6 @@ export const UPDATE_FNS = {
     const updatedEditor: EditorModel = {
       ...editor,
       projectContents: updatedProjectContents,
-      fileBrowser: {
-        ...editor.fileBrowser,
-        renamingTarget: newFileKey,
-      },
     }
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
   },
