@@ -330,6 +330,7 @@ export const Input = (props: InputProps) => {
   const isHidden = value.length !== 0 ? false : props.isHidden
   return <components.Input {...props} isHidden={isHidden} />
 }
+let queuedDispatchTimeout: number | undefined = undefined
 
 export const ClassNameSelect = betterReactMemo(
   'ClassNameSelect',
@@ -507,16 +508,21 @@ export const ClassNameSelect = betterReactMemo(
             if (shouldPreviewOnFocusRef.current && targets.length === 1) {
               const newClassNameString =
                 selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
-              dispatch(
-                [
-                  EditorActions.setPropTransient(
-                    targets[0],
-                    PP.create(['className']),
-                    jsxAttributeValue(newClassNameString, emptyComments),
-                  ),
-                ],
-                'canvas',
-              )
+              if (queuedDispatchTimeout != null) {
+                window.clearTimeout(queuedDispatchTimeout)
+              }
+              queuedDispatchTimeout = window.setTimeout(() => {
+                dispatch(
+                  [
+                    EditorActions.setPropTransient(
+                      targets[0],
+                      PP.create(['className']),
+                      jsxAttributeValue(newClassNameString, emptyComments),
+                    ),
+                  ],
+                  'canvas',
+                )
+              }, 10)
             }
             updateFocusedOption(focused)
             shouldPreviewOnFocusRef.current = true
@@ -532,6 +538,11 @@ export const ClassNameSelect = betterReactMemo(
     const onChange = React.useCallback(
       (newValue: Array<{ label: string; value: string }>) => {
         if (elementPath != null) {
+          if (queuedDispatchTimeout != null) {
+            window.clearTimeout(queuedDispatchTimeout)
+            queuedDispatchTimeout = undefined
+          }
+
           dispatch(
             [
               EditorActions.setProp_UNSAFE(
