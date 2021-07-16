@@ -550,13 +550,15 @@ export const ClassNameSelect = betterReactMemo(
           gap: 4,
           maxWidth: 0,
         }),
-        multiValue: () => {
+        multiValue: (style, state) => {
           return {
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             height: 18,
-            backgroundColor: theme.inverted.bg1.value,
+            backgroundColor: state.isFocused
+              ? theme.inverted.primary.value
+              : theme.inverted.bg1.value,
           }
         },
         multiValueLabel: () => ({
