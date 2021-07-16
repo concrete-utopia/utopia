@@ -36,6 +36,7 @@ import {
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
+import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -497,7 +498,13 @@ function useSelectOrLiveModeSelectAndHover(
             requestAnimationFrame(() => {
               // then we set the selected views for the editor state, 1 frame later
               if (updatedSelection.length === 0) {
-                dispatch([clearSelection(), setFocusedElement(null)])
+                const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
+                  'Click on empty canvas unfocuses',
+                )
+                  ? [setFocusedElement(null)]
+                  : []
+
+                dispatch([clearSelection(), ...clearFocusedElementIfFeatureSwitchEnabled])
               } else {
                 dispatch([selectComponents(updatedSelection, event.shiftKey)])
               }
