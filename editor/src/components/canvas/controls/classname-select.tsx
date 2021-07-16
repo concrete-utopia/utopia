@@ -340,7 +340,7 @@ export const ClassNameSelect = betterReactMemo(
     const isMenuOpen = React.useRef(false)
     const shouldPreviewOnFocus = React.useRef(false)
     const onMenuClose = React.useCallback(() => {
-      shouldPreviewOnFocus.current = true
+      shouldPreviewOnFocus.current = false
       isMenuOpen.current = false
       clearFocusedOption()
     }, [clearFocusedOption])
@@ -649,6 +649,12 @@ export const ClassNameSelect = betterReactMemo(
       [theme],
     )
 
+    const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        shouldPreviewOnFocus.current = true
+      }
+    }, [])
+
     return (
       <div
         css={{
@@ -661,6 +667,7 @@ export const ClassNameSelect = betterReactMemo(
           alignItems: 'center',
           '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
         }}
+        onKeyDown={handleKeyDown}
       >
         <WindowedSelect
           ref={ref}
