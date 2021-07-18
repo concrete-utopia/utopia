@@ -1,7 +1,7 @@
 import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
 
 const matchFile: MatchFile = (filename: string) => {
-  return ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.json'].some((extension) =>
+  return ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.d.ts', '.json'].some((extension) =>
     filename.endsWith(extension),
   )
 }
