@@ -10,22 +10,23 @@
 module Utopia.Web.Ekg where
 -- Stolen wholesale from: https://github.com/jkachmar/servant-ekg/blob/test-without-mvar/lib/Servant/Ekg.hs
 
-import qualified Data.HashMap.Strict         as H
-import           Data.Text                   (Text)
-import qualified Data.Text                   as T
-import qualified Data.Text.Encoding          as T
+import qualified Data.HashMap.Strict          as H
+import           Data.Text                    (Text)
+import qualified Data.Text                    as T
+import qualified Data.Text.Encoding           as T
 import           Data.Time.Clock
-import           Network.HTTP.Types          (Status (..))
+import           Network.HTTP.Types           (Status (..))
 import           Network.Wai
 import           Protolude
 import           Servant.API
 import           Servant.API.WebSocket
+import           Servant.API.WebSocketConduit
 import           Servant.RawM.Server
 import           Servant.Server
 import           System.Metrics
-import qualified System.Metrics.Counter      as Counter
-import qualified System.Metrics.Distribution as Distribution
-import qualified System.Metrics.Gauge        as Gauge
+import qualified System.Metrics.Counter       as Counter
+import qualified System.Metrics.Distribution  as Distribution
+import qualified System.Metrics.Gauge         as Gauge
 
 gaugeInflight :: Gauge.Gauge -> Middleware
 gaugeInflight inflight application request respond =
@@ -194,6 +195,10 @@ instance HasEndpoint (sub :: *) => HasEndpoint (CaptureAll (h :: Symbol) a :> su
     mkPaths _ = mkPaths (Proxy :: Proxy sub)
 
 instance HasEndpoint WebSocket where
+    getEndpoint _ _ = Nothing
+    mkPaths _ = []
+
+instance HasEndpoint (WebSocketConduit i o) where
     getEndpoint _ _ = Nothing
     mkPaths _ = []
 

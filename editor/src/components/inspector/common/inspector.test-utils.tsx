@@ -17,6 +17,7 @@ import {
   modifyOpenJsxElementAtStaticPath,
   defaultUserState,
   StoryboardFilePath,
+  regularMode,
 } from '../../editor/store/editor-state'
 import { EditorStateContext, EditorStateContextData } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
@@ -55,6 +56,7 @@ export function getStoreHook(
     workers: null as any,
     dispatch: mockDispatch,
     alreadySaved: false,
+    editorMode: regularMode,
   }
 
   const storeHook = create<EditorStore & UpdateFunctionHelpers>((set) => ({

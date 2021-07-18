@@ -13,6 +13,7 @@
 -}
 module Utopia.Web.Endpoints where
 
+import           Conduit
 import           Control.Lens
 import           Data.Aeson
 import           Data.Aeson.Lens
@@ -36,6 +37,7 @@ import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
 import qualified Text.Blaze.Html5.Attributes     as HA
 import           Utopia.Web.Assets
+import           Utopia.Web.Classroom            hiding (title)
 import           Utopia.Web.ClientModel
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
@@ -43,7 +45,7 @@ import           Utopia.Web.Executors.Common
 import           Utopia.Web.Proxy
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
-import           Utopia.Web.Types
+import           Utopia.Web.Types                hiding (title)
 import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
@@ -206,6 +208,9 @@ previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = d
 
 emptyPreviewPage :: Maybe Text -> ServerMonad H.Html
 emptyPreviewPage branchName = innerPreviewPage Nothing UnknownProject branchName
+
+classroomEndpoint :: Chan ClassroomMessage -> ClassroomConduit (ResourceT IO)
+classroomEndpoint classroomChan = getClassroomSocket classroomChan
 
 getUserEndpoint :: Maybe Text -> ServerMonad UserResponse
 getUserEndpoint cookie = checkForUser cookie maybeSessionUserToUser
@@ -524,8 +529,9 @@ protected authCookie = logoutPage authCookie
                   :<|> saveProjectThumbnailEndpoint authCookie
                   :<|> downloadGithubProjectEndpoint authCookie
 
-unprotected :: ServerT Unprotected ServerMonad
-unprotected = authenticate
+unprotected :: Chan ClassroomMessage -> ServerT Unprotected ServerMonad
+unprotected classroomChan = authenticate
+         :<|> classroomEndpoint classroomChan
          :<|> emptyProjectPage
          :<|> projectPage
          :<|> emptyPreviewPage
@@ -553,5 +559,5 @@ unprotected = authenticate
          :<|> servePath "./public/.well-known" Nothing
          :<|> websiteAssetsEndpoint "./public"
 
-server :: ServerT API ServerMonad
-server = protected :<|> unprotected
+server :: Chan ClassroomMessage -> ServerT API ServerMonad
+server classroomChan = protected :<|> unprotected classroomChan

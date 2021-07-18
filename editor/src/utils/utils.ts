@@ -5,7 +5,7 @@ import { AnyJson, JsonMap } from '../missing-types/json'
 import { JsonSchema, PropSchema } from '../missing-types/json-schema'
 import { ControlStyles } from '../components/inspector/common/control-status'
 import { NormalisedFrame } from 'utopia-api'
-import { fastForEach, NO_OP } from '../core/shared/utils'
+import { fastForEach, NO_OP, NO_OP_ASYNC } from '../core/shared/utils'
 import {
   CanvasRectangle,
   RectangleInner,
@@ -973,6 +973,7 @@ export default {
   pluck: pluck,
   traverseArray: traverseArray,
   NO_OP: NO_OP,
+  NO_OP_ASYNC: NO_OP_ASYNC,
   stepInArray: stepInArray,
   arrayToObject: arrayToObject,
   angleOfPointFromVertical: angleOfPointFromVertical,

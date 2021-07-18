@@ -210,7 +210,7 @@ export async function createNewProjectFromImportedProject(
   importedProject: ProjectImportSuccess,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
-  renderEditorRoot: () => void,
+  renderEditorRoot: () => Promise<void>,
 ): Promise<void> {
   _lastThumbnailGenerated = 0
   _saveState = neverSaved()
@@ -246,7 +246,7 @@ export async function createNewProjectFromSampleProject(
   projectId: string,
   dispatch: EditorDispatch,
   workers: UtopiaTsWorkers,
-  renderEditorRoot: () => void,
+  renderEditorRoot: () => Promise<void>,
 ): Promise<void> {
   _saveState = saved(true, Date.now(), projectId, projectId, dispatch, null, null, null)
   _lastThumbnailGenerated = 0
@@ -605,7 +605,7 @@ export async function loadFromServer(
   projectId: string,
   dispatch: EditorDispatch,
   workers: UtopiaTsWorkers,
-  renderEditorRoot: () => void,
+  renderEditorRoot: () => Promise<void>,
   renderProjectNotFound: () => void,
 ): Promise<void> {
   const project = await loadProject(projectId)
@@ -638,7 +638,7 @@ export async function loadFromLocalStorage(
   dispatch: EditorDispatch,
   shouldUploadToServer: boolean,
   workers: UtopiaTsWorkers,
-  renderEditorRoot: () => void,
+  renderEditorRoot: () => Promise<void>,
 ): Promise<void> {
   const localProject = await fetchLocalProject(projectId)
   if (localProject == null) {

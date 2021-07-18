@@ -11,15 +11,20 @@
 module Utopia.Web.Types where
 
 import           Conduit
+import           Control.Lens                 hiding (Strict, (.=))
+import           Control.Monad.Fail
 import           Data.Aeson
+import           Data.Aeson.Lens
 import           Data.Aeson.TH
-import qualified Data.ByteString.Lazy    as BL
+import qualified Data.ByteString.Lazy         as BL
 import           Data.Time
 import           Protolude
 import           Servant
+import           Servant.API.WebSocketConduit
 import           Servant.HTML.Blaze
 import           Servant.RawM.Server
-import qualified Text.Blaze.Html5        as H
+import qualified Text.Blaze.Html5             as H
+import           Utopia.Web.Classroom         hiding (title)
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
@@ -65,6 +70,8 @@ type BranchNameParam = QueryParam' '[Optional] "branch_name" Text
 type AuthenticateAPI a = "authenticate" :> QueryParam "code" Text :> QueryParam "onto" Text :> Get '[HTML] (SetSessionCookies a)
 
 type LogoutAPI = "logout" :> Get '[HTML] (SetSessionCookies H.Html)
+
+type ClassroomAPI = "v1" :> "classroom" :> ClassroomWebSocket
 
 type GetUserAPI = "v1" :> "user" :> Get '[JSON] UserResponse
 
@@ -169,6 +176,7 @@ type Protected = LogoutAPI
             :<|> DownloadGithubProjectAPI
 
 type Unprotected = AuthenticateAPI H.Html
+              :<|> ClassroomAPI
               :<|> EmptyProjectPageAPI
               :<|> ProjectPageAPI
               :<|> EmptyPreviewPageAPI

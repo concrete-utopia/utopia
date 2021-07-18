@@ -3,7 +3,7 @@ import { o } from 'ramda'
 import create, { UseStore } from 'zustand'
 import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext, useSelectorWithCallback } from './store-hook'
-import { createEditorState, EditorState, EditorStore } from './editor-state'
+import { createEditorState, EditorState, EditorStore, regularMode } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -19,6 +19,7 @@ function createEmptyEditorStoreHook() {
     workers: null as any,
     dispatch: null as any,
     alreadySaved: false,
+    editorMode: regularMode,
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

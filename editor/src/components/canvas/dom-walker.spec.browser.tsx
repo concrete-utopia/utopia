@@ -24,7 +24,12 @@ import { EditorDispatch } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch } from '../editor/store/dispatch'
-import { createEditorState, deriveState, EditorStore } from '../editor/store/editor-state'
+import {
+  createEditorState,
+  deriveState,
+  EditorStore,
+  regularMode,
+} from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
@@ -72,6 +77,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     ),
     dispatch: dispatch,
     alreadySaved: false,
+    editorMode: regularMode,
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)
@@ -94,7 +100,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       'Test',
       '0',
       initialEditorStore.workers,
-      Utils.NO_OP,
+      Utils.NO_OP_ASYNC,
       false,
     )
   })

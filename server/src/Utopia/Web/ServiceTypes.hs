@@ -27,6 +27,7 @@ import qualified Data.ByteString.Lazy      as BL
 import           Servant
 import qualified Text.Blaze.Html5          as H
 import           Utopia.Web.Assets
+import           Utopia.Web.Classroom      hiding (title)
 import           Utopia.Web.Database.Types
 import           Utopia.Web.JSON
 
