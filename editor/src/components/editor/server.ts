@@ -398,6 +398,8 @@ export async function downloadGithubRepo(
 
 const loginLostNoticeID: string = 'login-lost-notice'
 
+const LoginStatePollingInterval = 30 * 1000
+
 export function startPollingLoginState(
   dispatch: EditorDispatch,
   initialLoginState: LoginState,
@@ -436,5 +438,5 @@ export function startPollingLoginState(
       }
     }
     previousLoginState = loginState
-  }, 5000)
+  }, LoginStatePollingInterval)
 }
