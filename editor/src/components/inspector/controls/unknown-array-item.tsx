@@ -84,7 +84,7 @@ export function UnknownArrayItem<T>(props: UnknownArrayItemProps<T>) {
         controlStatus={props.controlStatus}
         onMouseDown={stopPropagation}
       />
-      <Tooltip title='Value may be valid, but can’t be parsed by Utopia' placement='left'>
+      <Tooltip title='Value may be valid, but can’t be parsed by Utopia'>
         <div>
           <StringControl
             style={{ height: 22 }}

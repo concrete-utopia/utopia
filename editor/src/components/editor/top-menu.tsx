@@ -56,12 +56,12 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
 
   return (
     <SimpleFlexRow style={{ flexGrow: 1, gap: 12, paddingLeft: 8, paddingRight: 4 }}>
-      <Tooltip title={'Toggle outline'} placement={'bottom'}>
+      <Tooltip title={'Toggle outline'}>
         <SquareButton spotlight={false} highlight={true} onClick={onClickNavigateTab}>
           <MenuIcons.Navigator />
         </SquareButton>
       </Tooltip>
-      <Tooltip title='Mirror selection between canvas and code editor' placement='bottom'>
+      <Tooltip title='Mirror selection between canvas and code editor'>
         <IconToggleButton
           onToggle={onToggleFollow}
           value={followSelection.enabled}

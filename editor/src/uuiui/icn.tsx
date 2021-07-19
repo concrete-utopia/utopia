@@ -1,4 +1,3 @@
-import { Placement } from 'tippy.js'
 import * as React from 'react'
 import { betterReactMemo } from '../utils/react-performance'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
@@ -29,7 +28,6 @@ export interface IcnProps extends IcnPropsBase {
   className?: string
   isDisabled?: boolean
   tooltipText?: string
-  tooltipPlacement?: Placement
   onMouseDown?: (event: React.MouseEvent<HTMLImageElement>) => void
   onClick?: (event: React.MouseEvent<HTMLImageElement>) => void
   onDoubleClick?: (event: React.MouseEvent<HTMLImageElement>) => void
@@ -106,11 +104,7 @@ export const Icn = betterReactMemo(
     if (props.tooltipText == null) {
       return imageElement
     } else {
-      return (
-        <Tooltip title={props.tooltipText} placement={props.tooltipPlacement}>
-          {imageElement}
-        </Tooltip>
-      )
+      return <Tooltip title={props.tooltipText}>{imageElement}</Tooltip>
     }
   },
 )
