@@ -28,9 +28,9 @@ import {
   OnSubmitValueOrEmpty,
   OnSubmitValueOrUnknownOrEmpty,
 } from '../../components/inspector/controls/control'
+import { Either, foldEither, isRight, mapEither, right } from '../../core/shared/either'
 import { clampValue } from '../../core/shared/math-utils'
 import {
-  EitherUtils,
   betterReactMemo,
   getControlStyles,
   usePropControlledState,
@@ -68,9 +68,9 @@ const parseDisplayValue = (
   input: string,
   numberType: CSSNumberType,
   defaultUnit: CSSNumberUnit | null,
-): EitherUtils.Either<string, CSSNumber> => {
+): Either<string, CSSNumber> => {
   const parsedInput = parseCSSNumber(input, numberType)
-  return EitherUtils.mapEither((value: CSSNumber) => {
+  return mapEither((value: CSSNumber) => {
     if (value.unit == null) {
       return cssNumber(value.value, defaultUnit)
     } else {
@@ -172,10 +172,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
-    const backgroundImage = React.useMemo(
-      () => `linear-gradient(to right, transparent 0, ${controlStyles.backgroundColor} 6px)`,
-      [controlStyles],
-    )
 
     const { showContent } = controlStyles
 
@@ -193,9 +189,10 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       [defaultUnitToHide, setStateValueDirectly],
     )
     const parsedStateValue = parseDisplayValue(stateValue, numberType, defaultUnitToHide)
-    const parsedStateValueUnit = EitherUtils.unwrapEither(
-      EitherUtils.mapEither((v) => v.unit, parsedStateValue),
-      null,
+    const parsedStateValueUnit = foldEither(
+      () => null,
+      (v) => v.unit,
+      parsedStateValue,
     )
 
     const [isActuallyFocused, setIsActuallyFocused] = React.useState<boolean>(false)
@@ -454,7 +451,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             if (stateValue === '') {
               onSubmitValue(emptyInputValue())
               forceStateValueToUpdateFromProps()
-            } else if (EitherUtils.isRight(parsedStateValue)) {
+            } else if (isRight(parsedStateValue)) {
               onSubmitValue(parsedStateValue.value)
             } else {
               onSubmitValue(unknownInputValue(stateValue))
@@ -633,7 +630,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             mixed={mixed}
             value={stateValue}
             ref={ref}
-            css={{ color: controlStyles.mainColor }}
+            style={{ color: controlStyles.mainColor }}
             className='number-input'
             height={height}
             id={id}
@@ -647,7 +644,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           {labelInner != null ? (
             <div
               className='number-input-innerLabel'
-              css={{
+              style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
@@ -785,7 +782,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 paddingTop: 2,
               }}
             >
-              {DEPRECATED_labelBelow != null ? DEPRECATED_labelBelow : null}
+              {DEPRECATED_labelBelow}
             </div>
           </React.Fragment>
         )}
@@ -793,6 +790,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     )
   },
 )
+
 interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
   onSubmitValue: OnSubmitValueOrEmpty<number>
   onTransientSubmitValue: OnSubmitValueOrEmpty<number>

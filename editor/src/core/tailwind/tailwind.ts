@@ -11,6 +11,10 @@ import { propOrNull } from '../shared/object-utils'
 import { memoize } from '../shared/memoize'
 import { importDefault } from '../es-modules/commonjs-interop'
 import { PostCSSPath, TailwindConfigPath } from './tailwind-config'
+import {
+  useHookUpdateAnalysisStrictEquals,
+  useKeepReferenceEqualityIfPossible,
+} from '../../utils/react-performance'
 
 function hasRequiredDependenciesForTailwind(packageJsonFile: ProjectFile): boolean {
   const hasTailwindDependency = includesDependency(packageJsonFile, 'tailwindcss')
@@ -121,7 +125,7 @@ function useGetTailwindConfig(
   requireFn: RequireFn,
 ): Configuration {
   const tailwindConfigFile = useGetTailwindConfigFile(projectContents)
-  return React.useMemo(() => {
+  const tailwindConfig = React.useMemo(() => {
     const maybeConfig = getTailwindConfig(tailwindConfigFile, requireFn)
     if (isRight(maybeConfig)) {
       return maybeConfig.value
@@ -129,6 +133,7 @@ function useGetTailwindConfig(
       return {}
     }
   }, [tailwindConfigFile, requireFn])
+  return useKeepReferenceEqualityIfPossible(tailwindConfig)
 }
 
 interface TwindInstance {
@@ -206,12 +211,15 @@ export function useTwind(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
   prefixSelector: string | null = null,
-) {
+): void {
   const hasDependencies = useHasRequiredDependenciesForTailwind(projectContents)
   const hasPostCSSPlugin = usePostCSSIncludesTailwindPlugin(projectContents, requireFn)
   const shouldUseTwind = hasDependencies && hasPostCSSPlugin
   const tailwindConfig = useGetTailwindConfig(projectContents, requireFn)
-  React.useMemo(() => {
+  useHookUpdateAnalysisStrictEquals('prefixSelector', prefixSelector)
+  useHookUpdateAnalysisStrictEquals('shouldUseTwind', shouldUseTwind)
+  useHookUpdateAnalysisStrictEquals('tailwindConfig', tailwindConfig)
+  React.useEffect(() => {
     if (shouldUseTwind) {
       updateTwind(tailwindConfig, prefixSelector)
     } else {
@@ -224,7 +232,7 @@ export function injectTwind(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
   prefixSelector: string | null = null,
-) {
+): void {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const hasDependencies =
     packageJsonFile != null && hasRequiredDependenciesForTailwind(packageJsonFile)
