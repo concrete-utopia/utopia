@@ -11,10 +11,7 @@ import { propOrNull } from '../shared/object-utils'
 import { memoize } from '../shared/memoize'
 import { importDefault } from '../es-modules/commonjs-interop'
 import { PostCSSPath, TailwindConfigPath } from './tailwind-config'
-import {
-  useHookUpdateAnalysisStrictEquals,
-  useKeepReferenceEqualityIfPossible,
-} from '../../utils/react-performance'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 function hasRequiredDependenciesForTailwind(packageJsonFile: ProjectFile): boolean {
   const hasTailwindDependency = includesDependency(packageJsonFile, 'tailwindcss')
@@ -216,9 +213,6 @@ export function useTwind(
   const hasPostCSSPlugin = usePostCSSIncludesTailwindPlugin(projectContents, requireFn)
   const shouldUseTwind = hasDependencies && hasPostCSSPlugin
   const tailwindConfig = useGetTailwindConfig(projectContents, requireFn)
-  useHookUpdateAnalysisStrictEquals('prefixSelector', prefixSelector)
-  useHookUpdateAnalysisStrictEquals('shouldUseTwind', shouldUseTwind)
-  useHookUpdateAnalysisStrictEquals('tailwindConfig', tailwindConfig)
   React.useEffect(() => {
     if (shouldUseTwind) {
       updateTwind(tailwindConfig, prefixSelector)
