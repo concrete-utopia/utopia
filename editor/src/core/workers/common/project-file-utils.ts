@@ -19,6 +19,8 @@ import { ErrorMessage } from '../../shared/error-messages'
 
 import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
 import { ArbitraryJSBlock, Comment, TopLevelElement } from '../../shared/element-template'
+import { emptySet } from '../../shared/set-utils'
+import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -75,25 +77,28 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
 }
 
 export function mergeImports(fileUri: string, first: Imports, second: Imports): Imports {
-  let combinedKeys: Array<string> = Object.keys(first)
-  fastForEach(Object.keys(second), (s) => {
-    if (!combinedKeys.includes(s)) {
-      combinedKeys.push(s)
-    }
-  })
+  const allKeys = new Set([...Object.keys(first), ...Object.keys(second)])
+  let absoluteKeysToRelativeKeys: { [absolutePath: string]: string } = {}
   let imports: Imports = {}
-  combinedKeys.forEach((key) => {
-    const firstValue = first[key]
+  allKeys.forEach((key) => {
+    let existingKeyToUse = key
+    const absoluteKey = absolutePathFromRelativePath(fileUri, false, key)
+    if (absoluteKeysToRelativeKeys[absoluteKey] != null) {
+      existingKeyToUse = absoluteKeysToRelativeKeys[absoluteKey]
+    } else {
+      absoluteKeysToRelativeKeys[absoluteKey] = key
+    }
+    const firstValue = first[existingKeyToUse]
     const secondValue = second[key]
     if (firstValue === undefined) {
       if (secondValue !== undefined) {
-        imports[key] = secondValue
+        imports[existingKeyToUse] = secondValue
       }
     } else {
       if (secondValue === undefined) {
-        imports[key] = firstValue
+        imports[existingKeyToUse] = firstValue
       } else {
-        imports[key] = mergeImportDetails(firstValue, secondValue)
+        imports[existingKeyToUse] = mergeImportDetails(firstValue, secondValue)
       }
     }
   })
