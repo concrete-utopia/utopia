@@ -122,7 +122,14 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -177,7 +184,14 @@ export var whatever = () => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -242,7 +256,14 @@ export function whatever(props) {
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -301,7 +322,14 @@ export function whatever() {
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -366,7 +394,14 @@ export default function whatever(props) {
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -425,7 +460,14 @@ export default function whatever() {
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -487,8 +529,15 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const importsWithCake = addImport('cake', 'cake', [], null, sampleImportsForTests)
-    const importsWithStylecss = addImport('./style.css', null, [], null, importsWithCake)
+    const importsWithCake = addImport('/code.js', 'cake', 'cake', [], null, sampleImportsForTests)
+    const importsWithStylecss = addImport(
+      '/code.js',
+      './style.css',
+      null,
+      [],
+      null,
+      importsWithCake,
+    )
     const expectedResult = parseSuccess(
       importsWithStylecss,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -564,7 +613,14 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport('cake', 'cake', [importAlias('cake2')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      'cake',
+      [importAlias('cake2')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -626,6 +682,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         emptyComments,
       )
       const imports = addImport(
+        '/code.js',
         'cake',
         null,
         [importAlias('cake', 'cake2')],
@@ -709,7 +766,14 @@ export var whatever = (props) => <View data-uid='aaa'>
         false,
         emptyComments,
       )
-      const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+      const imports = addImport(
+        '/code.js',
+        'cake',
+        null,
+        [importAlias('cake')],
+        null,
+        sampleImportsForTests,
+      )
       const expectedResult = parseSuccess(
         imports,
         expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -779,7 +843,14 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -920,7 +991,14 @@ return { getSizing: getSizing, spacing: spacing };`
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -1006,7 +1084,14 @@ return { getSizing: getSizing };`
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -1111,7 +1196,14 @@ return { getSizing: getSizing };`
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -1200,7 +1292,14 @@ return {  };`
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -1281,7 +1380,14 @@ return { spacing: spacing };`
       {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -1876,7 +1982,14 @@ return { count: count };`
       {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -1958,7 +2071,14 @@ return { use20: use20 };`
       {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -2101,7 +2221,14 @@ return { spacing: spacing };`
       {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -2474,7 +2601,14 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -2530,7 +2664,14 @@ export var whatever = <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported]),
@@ -2641,7 +2782,14 @@ export var App = (props) => <View data-uid='bbb'>
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2758,7 +2906,14 @@ return { getSizing: getSizing, spacing: spacing };`
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true, false, true),
@@ -2806,7 +2961,14 @@ return { getSizing: getSizing, spacing: spacing };`
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2926,7 +3088,14 @@ export var whatever = props => {
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -2978,7 +3147,14 @@ export var whatever = props => {
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -3061,7 +3237,14 @@ export var whatever = props => {
       false,
       emptyComments,
     )
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
       printCodeOptions(false, true, true),
@@ -3143,7 +3326,14 @@ export var whatever = props => {
 }
 return { test: test };`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      '/code.js',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const arbitraryBlock = arbitraryJSBlock(
       jsCode,
       transpiledJSCode,
@@ -3217,7 +3407,14 @@ return { test: test };`
   return n * 2;
 }
 return { test: test };`
-    const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
+    const imports = addImport(
+      'code.jsx',
+      'cake',
+      null,
+      [importAlias('cake')],
+      null,
+      sampleImportsForTests,
+    )
     const components = [
       clearTopLevelElementUniqueIDsAndEmptyBlocks(
         utopiaJSXComponent(

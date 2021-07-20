@@ -208,7 +208,7 @@ function makeHTMLDescriptor(
     }
   }
   return componentDescriptor(
-    addImport('react', null, [], 'React', emptyImportsValue),
+    addImport('', 'react', null, [], 'React', emptyImportsValue),
     jsxElementWithoutUID(tag, defaultProps, []),
     tag,
     propertyControls,

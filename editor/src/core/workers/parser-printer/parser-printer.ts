@@ -1235,7 +1235,14 @@ export function parseCode(
 
           // this import looks like `import Cat from './src/cats'`
           const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
-          imports = addImport(importFrom, importedWithName, importedFromWithin, importedAs, imports)
+          imports = addImport(
+            filename,
+            importFrom,
+            importedWithName,
+            importedFromWithin,
+            importedAs,
+            imports,
+          )
           const rawImportStatement = importStatement(
             topLevelElement.getText(sourceFile),
             importedAs != null,

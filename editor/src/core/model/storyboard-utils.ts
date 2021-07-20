@@ -224,8 +224,9 @@ function addStoryboardFileForComponent(
   editorModel: EditorState,
 ): EditorState {
   // Add import of storyboard and scene components.
-  let imports = addImport('react', null, [], 'React', {})
+  let imports = addImport(StoryboardFilePath, 'react', null, [], 'React', {})
   imports = addImport(
+    StoryboardFilePath,
     'utopia-api',
     null,
     [importAlias('Storyboard'), importAlias('Scene')],
@@ -243,6 +244,7 @@ function addStoryboardFileForComponent(
         'scene-1',
       )
       imports = addImport(
+        StoryboardFilePath,
         createFileWithComponent.path,
         null,
         [importAlias(createFileWithComponent.toImport)],
@@ -252,7 +254,14 @@ function addStoryboardFileForComponent(
       break
     case 'DEFAULT_COMPONENT_TO_IMPORT':
       sceneElement = createSceneFromComponent(StoryboardFilePath, 'StoryboardComponent', 'scene-1')
-      imports = addImport(createFileWithComponent.path, 'StoryboardComponent', [], null, imports)
+      imports = addImport(
+        StoryboardFilePath,
+        createFileWithComponent.path,
+        'StoryboardComponent',
+        [],
+        null,
+        imports,
+      )
       break
     case 'UNEXPORTED_RENDERED_COMPONENT':
       sceneElement = createSceneFromComponent(
@@ -261,6 +270,7 @@ function addStoryboardFileForComponent(
         'scene-1',
       )
       imports = addImport(
+        StoryboardFilePath,
         createFileWithComponent.path,
         null,
         [importAlias(createFileWithComponent.elementName)],

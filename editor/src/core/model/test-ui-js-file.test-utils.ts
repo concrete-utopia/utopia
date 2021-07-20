@@ -35,7 +35,7 @@ export const onlyImportReact: Imports = {
   },
 }
 
-export const sampleDefaultImports: Imports = mergeImports(onlyImportReact, {
+export const sampleDefaultImports: Imports = mergeImports('/code.js', onlyImportReact, {
   'utopia-api': {
     importedWithName: null,
     importedFromWithin: [importAlias('UtopiaUtils')],
@@ -44,10 +44,11 @@ export const sampleDefaultImports: Imports = mergeImports(onlyImportReact, {
 })
 
 export const sampleImportsForTests: Imports = mergeImports(
+  '/code.js',
   sampleDefaultImports,
   sampleIncludedElementTypes.reduce<Imports>(
     (working, elementType) =>
-      addImport('utopia-api', null, [importAlias(elementType)], null, working),
+      addImport('/code.js', 'utopia-api', null, [importAlias(elementType)], null, working),
     emptyImports(),
   ),
 )
