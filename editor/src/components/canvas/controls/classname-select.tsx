@@ -1,14 +1,9 @@
 /** @jsx jsx */
 
-import React from 'react'
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
-
-import {
-  AllAttributes,
-  AttributeToClassNames,
-  ClassNameToAttributes,
-} from '../../../core/third-party/tailwind-defaults'
+import React from 'react'
+import type { StylesConfig } from 'react-select'
 import WindowedSelect, {
   components,
   FormatOptionLabelMeta,
@@ -19,75 +14,37 @@ import WindowedSelect, {
   MultiValueProps,
   ValueContainerProps,
 } from 'react-windowed-select'
-import type { StylesConfig } from 'react-select'
-
-import * as EditorActions from '../../editor/actions/action-creators'
-import { betterReactMemo } from '../../../uuiui-deps'
-import { colorTheme, FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
-import * as PP from '../../../core/shared/property-path'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import {
-  ElementInstanceMetadata,
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../../core/shared/atom-with-pub-sub'
+import { eitherToMaybe } from '../../../core/shared/either'
+import {
   isJSXAttributeNotFound,
   isJSXAttributeValue,
   isJSXElement,
   jsxAttributeValue,
   JSXElementChild,
 } from '../../../core/shared/element-template'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { eitherToMaybe, isRight } from '../../../core/shared/either'
-import {
-  getModifiableJSXAttributeAtPath,
-  ModifiableAttribute,
-} from '../../../core/shared/jsx-attributes'
-import {
-  atomWithPubSub,
-  usePubSubAtomReadOnly,
-  usePubSubAtomWriteOnly,
-} from '../../../core/shared/atom-with-pub-sub'
-import { stripNulls } from '../../../core/shared/array-utils'
-import { mapToArray, mapValues } from '../../../core/shared/object-utils'
-import { getOpenUIJSFileKey } from '../../editor/store/editor-state'
-import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
-import { getContentsTreeFileFromString } from '../../assets'
+import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import Highlighter from 'react-highlight-words'
-
-interface TailWindOption {
-  label: string
-  value: string
-  attributes?: string[]
-  categories?: string[]
-}
-
-let TailWindOptions: Array<TailWindOption> = []
-let AttributeOptionLookup: { [attribute: string]: Array<TailWindOption> }
-
-async function loadTailwindOptions() {
-  return new Promise<void>((resolve) => {
-    TailWindOptions = mapToArray(
-      (attributes, className) => ({
-        label: className,
-        value: className,
-        attributes: attributes,
-      }),
-      ClassNameToAttributes,
-    )
-
-    AttributeOptionLookup = mapValues((classNames: Array<string>) => {
-      const matchingOptions = classNames.map((className) =>
-        TailWindOptions.find((option) => option.value === className),
-      )
-      return stripNulls(matchingOptions)
-    }, AttributeToClassNames)
-
-    resolve()
-  })
-}
-
-loadTailwindOptions()
+import * as PP from '../../../core/shared/property-path'
+import {
+  MatchHighlighter,
+  TailWindOption,
+  useFilteredOptions,
+} from '../../../core/tailwind/tailwind-options'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { colorTheme, FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
+import { getContentsTreeFileFromString } from '../../assets'
+import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
+import * as EditorActions from '../../editor/actions/action-creators'
+import { getOpenUIJSFileKey } from '../../editor/store/editor-state'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
@@ -155,25 +112,6 @@ const focusedOptionAtom = atomWithPubSub<TailWindOption | null>({
   key: 'classNameSelectFocusedOption',
   defaultValue: null,
 })
-
-const Bold = betterReactMemo('Bold', ({ children }: { children: React.ReactNode }) => {
-  return <strong>{children}</strong>
-})
-
-const MatchHighlighter = betterReactMemo(
-  'MatchHighlighter',
-  ({ text, searchString }: { text: string; searchString: string | null | undefined }) => {
-    const searchTerms = searchStringToIndividualTerms(searchString ?? '')
-    return (
-      <Highlighter
-        highlightTag={Bold}
-        searchWords={searchTerms}
-        autoEscape={true}
-        textToHighlight={text}
-      />
-    )
-  },
-)
 
 function formatOptionLabel(
   { label }: TailWindOption,
@@ -280,51 +218,6 @@ const ValueContainer = betterReactMemo(
 const filterOption = () => true
 const MaxResults = 500
 
-function searchStringToIndividualTerms(searchString: string): Array<string> {
-  return searchString.trim().toLowerCase().split(' ')
-}
-
-function findMatchingOptions<T>(
-  searchTerms: Array<string>,
-  options: Array<T>,
-  toString: (t: T) => string,
-  maxPerfectMatches: number,
-): Array<Array<T>> {
-  let orderedMatchedResults: Array<Array<T>> = []
-  let perfectMatchCount = 0
-  for (var i = 0; i < options.length && perfectMatchCount < maxPerfectMatches; i++) {
-    const nextOption = options[i]
-    const asString = toString(nextOption)
-    const splitInputIndexResult = searchTerms.map((s) => asString.indexOf(s))
-    const minimumIndexOf = Math.min(...splitInputIndexResult)
-    if (minimumIndexOf > -1) {
-      let existingMatched = orderedMatchedResults[minimumIndexOf] ?? []
-      existingMatched.push(nextOption)
-      orderedMatchedResults[minimumIndexOf] = existingMatched
-      if (minimumIndexOf === 0) {
-        perfectMatchCount++
-      }
-    }
-  }
-
-  return orderedMatchedResults
-}
-
-function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Set<T> {
-  let matchedResults: Set<T> = new Set()
-  let matchCount = 0
-  for (var i = 0; i < orderedSparseArray.length && matchCount < maxMatches; i++) {
-    const nextMatches = orderedSparseArray[i]
-    if (nextMatches != null) {
-      const maxNextMatches = nextMatches.slice(0, maxMatches - matchCount)
-      maxNextMatches.forEach((m) => matchedResults.add(m))
-      matchCount = matchedResults.size
-    }
-  }
-
-  return matchedResults
-}
-
 export const Input = (props: InputProps) => {
   const value = (props as any).value
   const isHidden = value.length !== 0 ? false : props.isHidden
@@ -347,9 +240,7 @@ export const ClassNameSelect = betterReactMemo(
     }, [updateFocusedOption, dispatch])
 
     const isMenuOpenRef = React.useRef(false)
-    const shouldPreviewOnFocusRef = React.useRef(false)
     const onMenuClose = React.useCallback(() => {
-      shouldPreviewOnFocusRef.current = false
       isMenuOpenRef.current = false
       clearFocusedOption()
     }, [clearFocusedOption])
@@ -357,53 +248,7 @@ export const ClassNameSelect = betterReactMemo(
       isMenuOpenRef.current = true
     }, [])
 
-    const filteredOptions = React.useMemo(() => {
-      const searchTerms = searchStringToIndividualTerms(input)
-      let results: Array<TailWindOption>
-
-      if (searchTerms.length === 0) {
-        results = TailWindOptions.slice(0, MaxResults)
-      } else {
-        // First find all matches, and use a sparse array to keep the best matches at the front
-        const orderedMatchedResults = findMatchingOptions(
-          searchTerms,
-          TailWindOptions,
-          (option) => option.label,
-          MaxResults,
-        )
-
-        // Now go through and take the first n best matches
-        let matchedResults = takeBestOptions(orderedMatchedResults, MaxResults)
-
-        // Next if we haven't hit our max result count, we find matches based on attributes
-        const remainingAllowedMatches = MaxResults - matchedResults.size
-        if (remainingAllowedMatches > 0) {
-          const orderedAttributeMatchedResults = findMatchingOptions(
-            searchTerms,
-            AllAttributes,
-            (a) => a,
-            remainingAllowedMatches,
-          )
-          const bestMatchedAttributes = takeBestOptions(
-            orderedAttributeMatchedResults,
-            remainingAllowedMatches,
-          )
-
-          bestMatchedAttributes.forEach((attribute) => {
-            const matchingOptions = AttributeOptionLookup[attribute] ?? []
-            matchingOptions.forEach((option) => matchedResults.add(option))
-          })
-        }
-
-        results = Array.from(matchedResults)
-      }
-
-      if (results.length === 0) {
-        clearFocusedOption()
-      }
-
-      return results
-    }, [input, clearFocusedOption])
+    const filteredOptions = useFilteredOptions(input, MaxResults, clearFocusedOption)
 
     React.useEffect(() => {
       return function cleanup() {
@@ -505,7 +350,7 @@ export const ClassNameSelect = betterReactMemo(
       ({ focused, context }: { focused: TailWindOption; context: 'menu' | 'value' }) => {
         if (context === 'menu') {
           if (isMenuOpenRef.current) {
-            if (shouldPreviewOnFocusRef.current && targets.length === 1) {
+            if (targets.length === 1) {
               const newClassNameString =
                 selectedValues?.map((v) => v.label).join(' ') + ' ' + focused.label
               if (queuedDispatchTimeout != null) {
@@ -525,7 +370,6 @@ export const ClassNameSelect = betterReactMemo(
               }, 10)
             }
             updateFocusedOption(focused)
-            shouldPreviewOnFocusRef.current = true
           }
         } else if (context === 'value') {
           focusedValueRef.current = focused.value
@@ -554,7 +398,6 @@ export const ClassNameSelect = betterReactMemo(
             ],
             'everyone',
           )
-          shouldPreviewOnFocusRef.current = false
         }
       },
       [dispatch, elementPath],
@@ -665,7 +508,6 @@ export const ClassNameSelect = betterReactMemo(
     const onInputChange = React.useCallback(
       (newInput, actionMeta: InputActionMeta) => {
         if (newInput === '') {
-          shouldPreviewOnFocusRef.current = false
           dispatch([EditorActions.clearTransientProps()], 'canvas')
         }
         setInput(newInput)
@@ -676,9 +518,6 @@ export const ClassNameSelect = betterReactMemo(
 
     const handleKeyDown = React.useCallback(
       (event: React.KeyboardEvent<HTMLDivElement>) => {
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-          shouldPreviewOnFocusRef.current = true
-        }
         if (event.key === 'Backspace') {
           if (focusedValueRef.current != null) {
             setInput(focusedValueRef.current)
@@ -711,7 +550,6 @@ export const ClassNameSelect = betterReactMemo(
           ariaLiveMessages={ariaLiveMessages}
           filterOption={filterOption}
           formatOptionLabel={formatOptionLabel}
-          openMenuOnFocus={true}
           options={filteredOptions}
           onChange={onChange}
           onInputChange={onInputChange}
@@ -721,7 +559,7 @@ export const ClassNameSelect = betterReactMemo(
           value={selectedValues}
           isMulti={true}
           isDisabled={!isMenuEnabled}
-          closeMenuOnSelect={false}
+          maxMenuHeight={138}
           styles={colourStyles}
           components={{
             DropdownIndicator,
@@ -730,7 +568,7 @@ export const ClassNameSelect = betterReactMemo(
             NoOptionsMessage,
             Menu,
             MultiValueContainer,
-            ValueContainer,
+            // ValueContainer,
             Input,
           }}
         />
