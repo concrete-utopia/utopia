@@ -1,21 +1,18 @@
 /** @jsx jsx */
 
 import { jsx } from '@emotion/react'
-import styled from '@emotion/styled'
 import * as React from 'react'
 import { FormatOptionLabelMeta, MenuProps, ValueType, components } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
 import { CustomReactSelectInput, SelectOption } from '../../../controls/select-control'
 import {
   UtopiaTheme,
   UNSAFE_getIconURL,
-  Section,
   InspectorSectionHeader,
   useColorTheme,
   FlexColumn,
@@ -414,7 +411,6 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
           overflow: 'visible',
         }}
       >
-        {/* <ClassNameSelect container='inspector' /> */}
         <ClassNameControl
           values={values}
           controlStyles={controlStyles}
