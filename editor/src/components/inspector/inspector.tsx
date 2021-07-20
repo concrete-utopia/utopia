@@ -294,6 +294,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     } else {
       return (
         <React.Fragment>
+          <ClassNameSubsection />
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           <LayoutSection
@@ -312,7 +313,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <ClassNameSubsection />
           <EventHandlersSection />
         </React.Fragment>
       )

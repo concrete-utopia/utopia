@@ -1,5 +1,9 @@
+/** @jsx jsx */
+
+import { jsx } from '@emotion/react'
+import styled from '@emotion/styled'
 import * as React from 'react'
-import { ValueType } from 'react-select'
+import { FormatOptionLabelMeta, MenuProps, ValueType, components } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
@@ -13,19 +17,37 @@ import {
   UNSAFE_getIconURL,
   Section,
   InspectorSectionHeader,
+  useColorTheme,
+  FlexColumn,
+  FlexRow,
 } from '../../../../../uuiui'
 import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
+import {
+  useFilteredOptions,
+  TailWindOption,
+  MatchHighlighter,
+} from '../../../../../core/tailwind/tailwind-options'
+import { useEditorState } from '../../../../editor/store/store-hook'
+import * as EditorActions from '../../../../editor/actions/action-creators'
+import * as PP from '../../../../../core/shared/property-path'
+import { jsxAttributeValue } from '../../../../../core/shared/element-template'
+import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
+import {
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../../../../core/shared/atom-with-pub-sub'
 
-const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<SelectOption>> = () =>
+const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
 
-const MultiValueRemove: React.FunctionComponent<MultiValueRemoveProps<SelectOption>> = (props) => (
-  <div {...props.innerProps} />
-)
+const MultiValueRemove: React.FunctionComponent<MultiValueRemoveProps<TailWindOption>> = (
+  props,
+) => <div {...props.innerProps} />
 
 interface ClassNameControlProps<T extends string> {
   controlStyles: ControlStyles
-  values: ReadonlyArray<SelectOption>
+  values: ReadonlyArray<TailWindOption>
   onSubmitValue: (newTransformedValues: string, transient?: boolean) => void
   onUnsetValues: () => void
 }
@@ -78,7 +100,68 @@ const placeholder: styleFn = (base) => ({
   paddingRight: 6,
 })
 
-const menu: styleFn = () => ({ display: 'none' })
+const menu: styleFn = (base) => ({
+  ...base,
+  position: 'relative',
+})
+
+const AlwaysTrue = () => true
+let queuedDispatchTimeout: number | undefined = undefined
+
+const focusedOptionAtom = atomWithPubSub<string | null>({
+  key: 'classNameSubsectionFocusedOption',
+  defaultValue: null,
+})
+
+function formatOptionLabel(
+  { label }: TailWindOption,
+  { context, inputValue }: FormatOptionLabelMeta<TailWindOption>,
+) {
+  return context === 'menu' ? <MatchHighlighter text={label} searchString={inputValue} /> : label
+}
+
+const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption>) => {
+  const theme = useColorTheme()
+  const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom)
+  const focusedOption =
+    focusedOptionValue == null ? null : props.options.find((o) => o.value === focusedOptionValue)
+  const showFooter = props.options.length > 0
+  const joinedAttributes = focusedOption?.attributes?.join(', ')
+  const attributesText =
+    joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
+
+  return (
+    <components.Menu {...props}>
+      <React.Fragment>
+        {props.children}
+        {showFooter ? (
+          <div
+            css={{
+              label: 'focusedElementMetadata',
+              overflow: 'hidden',
+              boxShadow: 'inset 0px 1px 0px 0px rgba(0,0,0,.1)',
+              padding: '8px 8px',
+              fontSize: '10px',
+              pointerEvents: 'none',
+              color: theme.textColor.value,
+            }}
+          >
+            <FlexColumn>
+              <FlexRow>
+                <span>
+                  <MatchHighlighter
+                    text={attributesText}
+                    searchString={props.selectProps.inputValue}
+                  />
+                </span>
+              </FlexRow>
+            </FlexColumn>
+          </div>
+        ) : null}
+      </React.Fragment>
+    </components.Menu>
+  )
+})
 
 const ClassNameControl = betterReactMemo(
   'ClassNameControl',
@@ -88,8 +171,37 @@ const ClassNameControl = betterReactMemo(
     onSubmitValue,
     onUnsetValues,
   }: ClassNameControlProps<T>) => {
+    const targets = useEditorState(
+      (store) => store.editor.selectedViews,
+      'ClassNameSubsection targets',
+    )
+    const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSubsection dispatch')
+
+    const [filter, setFilter] = React.useState('')
+
+    const options = useFilteredOptions(filter, 100)
+    const isFocusedRef = React.useRef(false)
+    const shouldPreviewOnFocusRef = React.useRef(false)
+    const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
+
+    const clearFocusedOption = React.useCallback(() => {
+      shouldPreviewOnFocusRef.current = false
+      updateFocusedOption(null)
+      dispatch([EditorActions.clearTransientProps()], 'canvas')
+    }, [updateFocusedOption, dispatch])
+
+    const onBlur = React.useCallback(() => {
+      isFocusedRef.current = false
+      shouldPreviewOnFocusRef.current = false
+      clearFocusedOption()
+    }, [clearFocusedOption])
+
+    const onFocus = React.useCallback(() => {
+      isFocusedRef.current = true
+    }, [])
+
     const onChange = React.useCallback(
-      (newValues: ValueType<SelectOption>) => {
+      (newValues: ValueType<TailWindOption>) => {
         if (Array.isArray(newValues) && newValues.length > 0) {
           onSubmitValue(
             Utils.stripNulls(
@@ -104,14 +216,30 @@ const ClassNameControl = betterReactMemo(
               }),
             ).join(' '),
           )
+
+          clearFocusedOption()
         } else if (newValues === null) {
           onUnsetValues()
+
+          clearFocusedOption()
         }
       },
-      [onSubmitValue, onUnsetValues],
+      [clearFocusedOption, onSubmitValue, onUnsetValues],
     )
 
-    const valuesLength = values.length
+    const onInputChange = React.useCallback(
+      (newInput) => {
+        if (newInput === '') {
+          clearFocusedOption()
+        }
+        setFilter(newInput)
+      },
+      [clearFocusedOption, setFilter],
+    )
+
+    const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLElement>) => {
+      shouldPreviewOnFocusRef.current = true
+    }, [])
 
     const input: styleFn = React.useCallback(
       (base) => ({
@@ -136,16 +264,14 @@ const ClassNameControl = betterReactMemo(
       }),
       [controlStyles],
     )
-
     const container: styleFn = React.useCallback(
       (base) => ({
         ...base,
-        transform: valuesLength === 0 && !controlStyles.mixed ? 'translateX(-8px)' : undefined,
         minHeight: UtopiaTheme.layout.inputHeight.default,
         paddingTop: 2,
         paddingBottom: 2,
       }),
-      [controlStyles, valuesLength],
+      [],
     )
     const control: styleFn = React.useCallback(
       () => ({
@@ -184,9 +310,42 @@ const ClassNameControl = betterReactMemo(
       }),
       [controlStyles],
     )
+    const option: styleFn = React.useCallback(
+      (base, state) => {
+        if (
+          isFocusedRef.current &&
+          shouldPreviewOnFocusRef.current &&
+          state.isFocused &&
+          targets.length === 1
+        ) {
+          const newClassNameString = values.map((v) => v.value).join(' ') + ' ' + state.value
+          if (queuedDispatchTimeout != null) {
+            window.clearTimeout(queuedDispatchTimeout)
+          }
+          queuedDispatchTimeout = window.setTimeout(() => {
+            dispatch(
+              [
+                EditorActions.setPropTransient(
+                  targets[0],
+                  PP.create(['className']),
+                  jsxAttributeValue(newClassNameString, emptyComments),
+                ),
+              ],
+              'canvas',
+            )
+          }, 10)
+
+          updateFocusedOption(state.value)
+        }
+
+        return base
+      },
+      [dispatch, targets, values, updateFocusedOption],
+    )
 
     return (
       <CreatableSelect
+        autoFocus={false}
         placeholder='Add class…'
         isMulti
         value={
@@ -195,17 +354,18 @@ const ClassNameControl = betterReactMemo(
                 {
                   value: '',
                   label: 'mixed',
-                  style: { fontFamily: controlStyles.fontStyle },
                 },
               ]
             : values
         }
         isDisabled={!controlStyles.interactive}
         onChange={onChange}
+        onInputChange={onInputChange}
         components={{
           IndicatorsContainer,
           MultiValueRemove,
           Input: CustomReactSelectInput,
+          Menu,
         }}
         className='className-inspector-control'
         styles={{
@@ -218,7 +378,16 @@ const ClassNameControl = betterReactMemo(
           input,
           placeholder,
           menu,
+          option,
         }}
+        filterOption={AlwaysTrue}
+        options={options}
+        menuIsOpen={true}
+        onBlur={onBlur}
+        onFocus={onFocus}
+        escapeClearsValue={true}
+        formatOptionLabel={formatOptionLabel}
+        onKeyDown={handleKeyDown}
       />
     )
   },
@@ -232,16 +401,20 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
     controlStyles,
     controlStatus,
   } = useInspectorElementInfo('className')
-
-  const values: ReadonlyArray<SelectOption> =
+  const values: ReadonlyArray<TailWindOption> =
     value === '' ? [] : value.split(' ').map((v) => ({ value: v, label: `.${v}` }))
-
-  const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
   return (
     <React.Fragment>
       <InspectorSectionHeader>Class names</InspectorSectionHeader>
-      <UIGridRow padded variant='<-------------1fr------------->' style={{ height: undefined }}>
+      <UIGridRow
+        padded
+        variant='<-------------1fr------------->'
+        style={{
+          overflow: 'visible',
+        }}
+      >
+        {/* <ClassNameSelect container='inspector' /> */}
         <ClassNameControl
           values={values}
           controlStyles={controlStyles}
