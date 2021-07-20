@@ -46,25 +46,16 @@ export function isResolveSuccess<T>(
   return resolveResult.type === 'RESOLVE_SUCCESS'
 }
 
-type ResolveResultType = ResolveResult<any>['type']
-
-const resolveResultTypes: Array<ResolveResultType> = ['RESOLVE_NOT_PRESENT', 'RESOLVE_SUCCESS']
-
 function failoverResolveResults<T>(
   resolveResultCalls: Array<() => ResolveResult<T>>,
 ): ResolveResult<T> {
-  let result: ResolveResult<T> = resolveNotPresent
   for (const call of resolveResultCalls) {
+    const result = call()
     if (isResolveSuccess(result)) {
-      break
-    }
-    const newResult = call()
-    // Prefer elements further along in the array of the types.
-    if (resolveResultTypes.indexOf(newResult.type) > resolveResultTypes.indexOf(result.type)) {
-      result = newResult
+      return result
     }
   }
-  return result
+  return resolveNotPresent
 }
 
 interface FoundFile {
@@ -178,9 +169,13 @@ const combinedFileLookup: (lookupFns: Array<FileLookupFn>) => FileLookupFn = (
   lookupFns: Array<FileLookupFn>,
 ) => {
   return (path: string[]) => {
-    return lookupFns.reduce<FileLookupResult>((result, lookupFn) => {
-      return isResolveSuccess(result) ? result : lookupFn(path)
-    }, resolveNotPresent)
+    for (const lookupFn of lookupFns) {
+      const result = lookupFn(path)
+      if (isResolveSuccess(result)) {
+        return result
+      }
+    }
+    return resolveNotPresent
   }
 }
 

@@ -5,6 +5,7 @@ import { IcnProps, UtopiaTheme } from '../../../uuiui'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
 import Utils from '../../../utils/utils'
+import { betterReactMemo } from '../../../utils/react-performance'
 
 export interface OptionChainOption<T> {
   value: T
@@ -14,10 +15,9 @@ export interface OptionChainOption<T> {
 }
 
 // TODO come up with a typed OptionChainControl types!
-export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps<any>> = ({
-  style,
-  ...props
-}) => {
+export const OptionChainControl: React.FunctionComponent<DEPRECATEDControlProps<
+  any
+>> = betterReactMemo('OptionChainControl', ({ style, ...props }) => {
   const options = props.options as Array<OptionChainOption<string | number>>
   const labelBelow = (props.DEPRECATED_controlOptions as DEPRECATEDGenericControlOptions)
     ?.labelBelow
@@ -25,30 +25,32 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     throw new Error('OptionControl needs an array of `options`')
   }
 
-  const optionCSS: Interpolation<any> = {
-    position: 'relative',
-    // This is the divider in between controls
-    '&:not(:first-of-type)::after': {
-      content: '""',
-      height: 10,
-      backgroundColor: props.controlStyles.borderColor,
-      position: 'absolute',
-      left: 0,
-      top: 6,
-    },
-  }
+  const optionCSS: Interpolation<any> = React.useMemo(() => {
+    return {
+      position: 'relative',
+      // This is the divider in between controls
+      '&:not(:first-of-type)::after': {
+        content: '""',
+        height: 10,
+        backgroundColor: props.controlStyles.borderColor,
+        position: 'absolute',
+        left: 0,
+        top: 6,
+      },
+    }
+  }, [props.controlStyles.borderColor])
+
+  const containerCSS: Interpolation<any> = React.useMemo(() => {
+    return {
+      display: 'flex',
+      flexDirection: 'column',
+      marginBottom: 0,
+      ...style,
+    }
+  }, [style])
 
   return (
-    <div
-      id={props.id}
-      key={props.key}
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        marginBottom: 0,
-        ...style,
-      }}
-    >
+    <div id={props.id} key={props.key} css={containerCSS}>
       <div
         style={{
           display: 'flex',
@@ -93,4 +95,4 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
       )}
     </div>
   )
-}
+})

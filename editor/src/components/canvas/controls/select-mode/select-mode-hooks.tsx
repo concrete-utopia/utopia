@@ -455,6 +455,8 @@ function useSelectOrLiveModeSelectAndHover(
     derived: store.derived,
   }))
 
+  const innerAnimationFrameRef = React.useRef<number | null>(null)
+
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
@@ -495,7 +497,10 @@ function useSelectOrLiveModeSelectAndHover(
           setSelectedViewsForCanvasControlsOnly(updatedSelection)
 
           requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
+            if (innerAnimationFrameRef.current != null) {
+              window.cancelAnimationFrame(innerAnimationFrameRef.current)
+            }
+            innerAnimationFrameRef.current = requestAnimationFrame(() => {
               // then we set the selected views for the editor state, 1 frame later
               if (updatedSelection.length === 0) {
                 const clearFocusedElementIfFeatureSwitchEnabled = isFeatureEnabled(
