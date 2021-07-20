@@ -74,7 +74,7 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
   }
 }
 
-export function mergeImports(first: Imports, second: Imports): Imports {
+export function mergeImports(fileUri: string, first: Imports, second: Imports): Imports {
   let combinedKeys: Array<string> = Object.keys(first)
   fastForEach(Object.keys(second), (s) => {
     if (!combinedKeys.includes(s)) {
@@ -101,6 +101,7 @@ export function mergeImports(first: Imports, second: Imports): Imports {
 }
 
 export function addImport(
+  fileUri: string,
   importedFrom: string,
   importedWithName: string | null,
   importedFromWithin: Array<ImportAlias>,
@@ -114,7 +115,7 @@ export function addImport(
       importedAs: importedAs,
     },
   }
-  return mergeImports(imports, toAdd)
+  return mergeImports(fileUri, imports, toAdd)
 }
 
 export function parseSuccess(

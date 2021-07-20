@@ -560,7 +560,11 @@ export interface ParseSuccessAndEditorChanges<T> {
 }
 
 export function modifyOpenParseSuccess(
-  transform: (success: ParseSuccess) => ParseSuccess,
+  transform: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticElementPath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess,
   model: EditorState,
 ): EditorState {
   return modifyUnderlyingTarget(
