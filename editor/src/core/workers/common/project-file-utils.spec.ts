@@ -43,7 +43,7 @@ describe('mergeImports', () => {
     const result = mergeImports(
       '/src/code.js',
       { '/src/fileA.js': importDetails(null, [importAlias('Card')], null) },
-      { './fileA.js': importDetails(null, [importAlias('FlexRow')], null) },
+      { './fileA': importDetails(null, [importAlias('FlexRow')], null) },
     )
 
     expect(result).toEqual({
@@ -67,11 +67,14 @@ describe('mergeImports', () => {
     const result = mergeImports(
       '/src/code.js',
       { '/src/fileA.js': importDetails(null, [importAlias('Card')], null) },
-      { './fileA.js': importDetails(null, [importAlias('Card')], null) },
+      {
+        './fileA.js': importDetails(null, [importAlias('Card')], null),
+        '../src/fileA.js': importDetails(null, [importAlias('FlexRow')], null),
+      },
     )
 
     expect(result).toEqual({
-      '/src/fileA.js': importDetails(null, [importAlias('Card')], null),
+      '/src/fileA.js': importDetails(null, [importAlias('Card'), importAlias('FlexRow')], null),
     })
   })
 

@@ -21,6 +21,7 @@ import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
 import { ArbitraryJSBlock, Comment, TopLevelElement } from '../../shared/element-template'
 import { emptySet } from '../../shared/set-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
+import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -82,7 +83,7 @@ export function mergeImports(fileUri: string, first: Imports, second: Imports): 
   let imports: Imports = {}
   allKeys.forEach((key) => {
     let existingKeyToUse = key
-    const absoluteKey = absolutePathFromRelativePath(fileUri, false, key)
+    const absoluteKey = stripExtension(absolutePathFromRelativePath(fileUri, false, key))
     if (absoluteKeysToRelativeKeys[absoluteKey] != null) {
       existingKeyToUse = absoluteKeysToRelativeKeys[absoluteKey]
     } else {
