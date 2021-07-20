@@ -78,6 +78,20 @@ describe('mergeImports', () => {
     })
   })
 
+  it('combines the same thing imported smartly, even if the relative path are written differently, with omitted file extension', () => {
+    const result = mergeImports(
+      '/src/code.js',
+      { '/src/fileA.js': importDetails(null, [importAlias('Card')], null) },
+      {
+        '../src/fileA': importDetails(null, [importAlias('FlexRow')], null),
+      },
+    )
+
+    expect(result).toEqual({
+      '/src/fileA.js': importDetails(null, [importAlias('Card'), importAlias('FlexRow')], null),
+    })
+  })
+
   it('default import doesnt override existing default import', () => {
     const result = mergeImports(
       '/src/code.js',
