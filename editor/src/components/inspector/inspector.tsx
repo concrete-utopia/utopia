@@ -75,6 +75,7 @@ import {
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import { when } from '../../utils/react-conditionals'
 
 export interface ElementPathElement {
   name?: string
@@ -88,6 +89,7 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps extends TargetSelectorSectionProps {
   selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
+  key: string
 }
 
 interface AlignDistributeButtonProps {
@@ -327,6 +329,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         position: 'relative',
         color: colorTheme.neutralForeground.value,
       }}
+      key={props.key}
       onFocus={onFocus}
     >
       {renderInspectorContents()}
@@ -354,21 +357,32 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
 
     const showSceneInspector = selectedViews.length === 1 && rootViewsForSelectedElement.length > 0
 
-    if (showSceneInspector) {
-      return (
-        <>
-          <SingleInspectorEntryPoint selectedViews={selectedViews} />
-          <InspectorSectionHeader style={{ paddingTop: 32 }}>Root View</InspectorSectionHeader>
-          <SingleInspectorEntryPoint selectedViews={rootViewsForSelectedElement} />
-        </>
-      )
-    } else {
-      return <SingleInspectorEntryPoint selectedViews={selectedViews} />
-    }
+    return (
+      <>
+        <SingleInspectorEntryPoint
+          key={'inspector-entry-selected-views'}
+          selectedViews={selectedViews}
+        />
+        {when(showSceneInspector, () => {
+          return (
+            <InspectorSectionHeader style={{ paddingTop: 32 }}>Root View</InspectorSectionHeader>
+          )
+        })}
+        {when(showSceneInspector, () => {
+          return (
+            <SingleInspectorEntryPoint
+              key={'inspector-entry-roots-views'}
+              selectedViews={rootViewsForSelectedElement}
+            />
+          )
+        })}
+      </>
+    )
   },
 )
 
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
+  key: string
   selectedViews: Array<ElementPath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
@@ -511,6 +525,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
+        key={props.key}
         selectedViews={selectedViews}
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}

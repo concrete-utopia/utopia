@@ -377,7 +377,7 @@ interface NavigatorRowProps extends NavigatorItemInnerProps {
   warningText: string | null
 }
 
-const NavigatorRowLabel = (props: NavigatorRowProps) => {
+const NavigatorRowLabel = betterReactMemo('NavigatorRowLabel', (props: NavigatorRowProps) => {
   return (
     <React.Fragment>
       <LayoutIcon
@@ -404,4 +404,4 @@ const NavigatorRowLabel = (props: NavigatorRowProps) => {
       />
     </React.Fragment>
   )
-}
+})
