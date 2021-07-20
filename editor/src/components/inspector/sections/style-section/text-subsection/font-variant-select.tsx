@@ -143,7 +143,7 @@ export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
       data={null}
       style={{ gridColumn: '1' }}
     >
-      <Tooltip title='Font Weight and Style'>
+      <Tooltip title='Font Weight and Style' placement='top'>
         <PopupList
           id={'fontWeightAndStyle'}
           onSubmitValue={onSubmitValue}

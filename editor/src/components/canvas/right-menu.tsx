@@ -195,7 +195,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
-        <Tooltip title={'Inspector'}>
+        <Tooltip title={'Inspector'} placement='left'>
           <span>
             <MenuTile
               selected={isInspectorSelected}
@@ -207,7 +207,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           </span>
         </Tooltip>
 
-        <Tooltip title={'Insert'}>
+        <Tooltip title={'Insert'} placement='left'>
           <span>
             <MenuTile
               selected={isInsertMenuSelected}
@@ -219,7 +219,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           </span>
         </Tooltip>
 
-        <Tooltip title={'Live Preview'}>
+        <Tooltip title={'Live Preview'} placement='left'>
           <span>
             <MenuTile
               selected={isCanvasLive}
@@ -231,7 +231,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           </span>
         </Tooltip>
 
-        <Tooltip title='Reset canvas'>
+        <Tooltip title='Reset canvas' placement='left'>
           <span>
             <MenuTile
               selected={shouldResetCanvas}
@@ -243,7 +243,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           </span>
         </Tooltip>
 
-        <Tooltip title='Zoom in'>
+        <Tooltip title='Zoom in' placement='left'>
           <span>
             <MenuTile
               selected={false}
@@ -259,7 +259,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           {zoomLevel}x
         </span>
 
-        <Tooltip title='Zoom out'>
+        <Tooltip title='Zoom out' placement='left'>
           <span>
             <MenuTile
               selected={false}
@@ -271,7 +271,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           </span>
         </Tooltip>
 
-        <Tooltip title={'Show or hide extra canvas controls'}>
+        <Tooltip title={'Show or hide extra canvas controls'} placement={'left'}>
           <span>
             <MenuTile
               selected={isAdditionalControlsVisible}
@@ -283,7 +283,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           </span>
         </Tooltip>
 
-        <Tooltip title={'Show or hide code'}>
+        <Tooltip title={'Show or hide code'} placement={'left'}>
           <span>
             <MenuTile
               selected={isCodePaneVisible}
@@ -295,7 +295,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
           </span>
         </Tooltip>
 
-        <Tooltip title={'Show or hide preview'}>
+        <Tooltip title={'Show or hide preview'} placement={'left'}>
           <span>
             <MenuTile
               selected={isPreviewPaneVisible}

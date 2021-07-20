@@ -10,7 +10,10 @@ export const WarningSubsection = betterReactMemo('WarningSubsection', (props) =>
   const shouldShowWarning = useInspectorWarningStatus()
   if (shouldShowWarning) {
     return (
-      <Tooltip title='The inspector only shows values from css-in-js, styled-systems, and emotion. You can use css classes to style content, but they will not show up here.'>
+      <Tooltip
+        title='The inspector only shows values from css-in-js, styled-systems, and emotion. You can use css classes to style content, but they will not show up here.'
+        placement='bottom'
+      >
         <UIRow padded={true}>
           <InfoBox
             level='WARNING'

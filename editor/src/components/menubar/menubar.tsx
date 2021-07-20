@@ -218,7 +218,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </a>
         </Tile>
 
-        <Tooltip title={'Project Info'}>
+        <Tooltip title={'Project Info'} placement={'right'}>
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Project}
@@ -230,7 +230,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Storyboards'}>
+        <Tooltip title={'Storyboards'} placement={'right'}>
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Storyboards}
@@ -242,7 +242,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Files, Dependencies, Fonts'}>
+        <Tooltip title={'Files, Dependencies, Fonts'} placement={'right'}>
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Contents}
@@ -254,7 +254,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Settings'}>
+        <Tooltip title={'Settings'} placement={'right'}>
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Settings}
@@ -266,7 +266,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Sharing'}>
+        <Tooltip title={'Sharing'} placement={'right'}>
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Sharing}
@@ -278,7 +278,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <Tooltip title={'Github'}>
+        <Tooltip title={'Github'} placement={'right'}>
           <span>
             <MenuTile
               selected={selectedTab === LeftMenuTab.Github}
@@ -291,7 +291,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
         </Tooltip>
 
         <a style={{ marginTop: 32 }} target='_blank' rel='noopener noreferrer' href={previewURL}>
-          <Tooltip title={'Launch External Preview'}>
+          <Tooltip title={'Launch External Preview'} placement={'right'}>
             <span>
               <MenuTile
                 selected={false}
@@ -303,7 +303,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </Tooltip>
         </a>
 
-        <Tooltip title={'Show or hide the code editor'}>
+        <Tooltip title={'Show or hide the code editor'} placement={'left'}>
           <span>
             <MenuTile
               selected={isCodeEditorVisible}
@@ -314,7 +314,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
             />
           </span>
         </Tooltip>
-        <Tooltip title={'Show or hide the canvas'}>
+        <Tooltip title={'Show or hide the canvas'} placement={'right'}>
           <span>
             <MenuTile
               selected={isCanvasVisible}
@@ -325,7 +325,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
             />
           </span>
         </Tooltip>
-        <Tooltip title={'Embedded Preview'}>
+        <Tooltip title={'Embedded Preview'} placement={'right'}>
           <span>
             <MenuTile
               selected={isPreviewPaneVisible}

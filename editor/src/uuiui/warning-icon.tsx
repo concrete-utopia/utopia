@@ -19,10 +19,12 @@ export function getWarningIconProps(
   color: IcnColor = 'orange',
   style: React.CSSProperties | undefined = undefined,
 ): IcnProps {
+  const tooltipPlacement = tooltipText == null ? undefined : 'right'
   return {
     type: 'warningtriangle',
     color: color,
     tooltipText: tooltipText,
+    tooltipPlacement: tooltipPlacement,
     style: style,
   }
 }

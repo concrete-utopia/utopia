@@ -71,6 +71,7 @@ export const OptionControl: React.FunctionComponent<
       <Tooltip
         disabled={controlOptions.tooltip == null}
         title={controlOptions.tooltip != null ? controlOptions.tooltip : ''}
+        placement={'top'}
       >
         <label
           css={{
