@@ -186,7 +186,6 @@ export function renderCanvasReturnResultAndError(
   if (possibleProps == null) {
     canvasProps = {
       uiFilePath: UiFilePath,
-      selectedViews: [],
       requireFn: requireFn,
       resolve: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
@@ -214,7 +213,6 @@ export function renderCanvasReturnResultAndError(
     canvasProps = {
       ...possibleProps,
       uiFilePath: UiFilePath,
-      selectedViews: [],
       requireFn: requireFn,
       resolve: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},

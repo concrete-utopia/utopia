@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { Interpolation, jsx } from '@emotion/react'
 import classNames from 'classnames'
 import * as React from 'react'
@@ -30,6 +31,7 @@ import {
 } from '../../components/inspector/controls/control'
 import { Either, foldEither, isRight, mapEither, right } from '../../core/shared/either'
 import { clampValue } from '../../core/shared/math-utils'
+import { memoize } from '../../core/shared/memoize'
 import {
   betterReactMemo,
   getControlStyles,
@@ -49,12 +51,12 @@ import {
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
-const getDisplayValue = (
+function getDisplayValueNotMemoized(
   value: CSSNumber | null,
   defaultUnitToHide: CSSNumberUnit | null,
   mixed: boolean,
   showContent: boolean,
-): string => {
+): string {
   if (!mixed && value != null && showContent) {
     const unit = getCSSNumberUnit(value)
     const showUnit = unit !== defaultUnitToHide
@@ -64,11 +66,13 @@ const getDisplayValue = (
   }
 }
 
-const parseDisplayValue = (
+const getDisplayValue = memoize(getDisplayValueNotMemoized, { maxSize: 1000 })
+
+function parseDisplayValueNotMemoized(
   input: string,
   numberType: CSSNumberType,
   defaultUnit: CSSNumberUnit | null,
-): Either<string, CSSNumber> => {
+): Either<string, CSSNumber> {
   const parsedInput = parseCSSNumber(input, numberType)
   return mapEither((value: CSSNumber) => {
     if (value.unit == null) {
@@ -78,6 +82,8 @@ const parseDisplayValue = (
     }
   }, parsedInput)
 }
+
+const parseDisplayValue = memoize(parseDisplayValueNotMemoized, { maxSize: 1000 })
 
 const dragDeltaSign = (start: number, end: number, directionAdjustment: 1 | -1): 1 | -1 => {
   const raw = (start - end) * directionAdjustment
@@ -566,8 +572,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       [propsValue, scrubOnMouseMove, scrubOnMouseUp],
     )
 
-    const formClassName = classNames('number-input-wrapper', className)
-
     let placeholder: string = ''
     if (controlStyles.unknown) {
       placeholder = 'unknown'
@@ -593,8 +597,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         : undefined
 
     return (
-      // this form madness is a hack due to chrome ignoring autoComplete='off' on individual `input`s
-      <form className={formClassName} style={style} autoComplete='off'>
+      <>
         <div
           className='number-input-container'
           css={{
@@ -786,7 +789,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             </div>
           </React.Fragment>
         )}
-      </form>
+      </>
     )
   },
 )
