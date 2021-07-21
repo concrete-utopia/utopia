@@ -5,8 +5,8 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
-import { DropTargetType } from '../navigator'
 import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
+import { DropTargetType } from '../../editor/store/editor-state'
 
 interface NavigatorHintProps {
   isOver: boolean
