@@ -148,10 +148,13 @@ function clearTwind() {
 }
 
 export function adjustRuleScopeImpl(rule: string, prefixSelector: string | null): string {
-  if (prefixSelector == null || rule.startsWith('@keyframes')) {
+  // TODO Use css-tree to handle more complex cases. That doesn't seem necessary right now since Tailwind
+  // as at 2.2.4 only uses @media and @keyframes
+  const isMediaQuery = rule.startsWith('@media')
+  const isOtherAtRule = rule.startsWith('@') && !isMediaQuery
+  if (prefixSelector == null || isOtherAtRule) {
     return rule
   } else {
-    const isMediaQuery = rule.startsWith('@media')
     const splitOnBrace = rule.split('{')
     const selectorIndex = isMediaQuery ? 1 : 0
     const splitSelectors = splitOnBrace[selectorIndex].split(',')

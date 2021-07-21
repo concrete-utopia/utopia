@@ -8,7 +8,7 @@ describe('adjustRuleScope', () => {
     expect(output).toEqual(expected)
   })
 
-  it('Returns a rule unchanged if it is a keyframe', () => {
+  it('Returns a rule unchanged if it is an at-rule but not a media query', () => {
     const input = '@keyframes spin{to{transform:rotate(360deg)}}'
     const output = adjustRuleScopeImpl(input, '#canvas-container')
     const expected = input
