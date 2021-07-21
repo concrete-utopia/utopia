@@ -149,11 +149,13 @@ function clearTwind() {
 
 const adjustRuleScope = memoize(
   (rule: string, prefixSelector: string | null): string => {
-    if (prefixSelector == null) {
+    if (prefixSelector == null || rule.startsWith('@keyframes')) {
       return rule
     } else {
+      const isMediaQuery = rule.startsWith('@media')
       const splitOnBrace = rule.split('{')
-      const splitSelectors = splitOnBrace[0].split(',')
+      const selectorIndex = isMediaQuery ? 1 : 0
+      const splitSelectors = splitOnBrace[selectorIndex].split(',')
       const scopedSelectors = splitSelectors.map((s) => {
         const lowerCaseSelector = s.toLowerCase().trim()
 
@@ -170,8 +172,9 @@ const adjustRuleScope = memoize(
         }
       })
       const joinedSelectors = scopedSelectors.join(',')
-      const afterBrace = splitOnBrace.slice(1)
-      const finalRule = [joinedSelectors, ...afterBrace].join('{')
+      const theRest = splitOnBrace.slice(selectorIndex + 1)
+      const front = splitOnBrace.slice(0, selectorIndex)
+      const finalRule = [...front, joinedSelectors, ...theRest].join('{')
       return finalRule
     }
   },
