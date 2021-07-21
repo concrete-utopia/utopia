@@ -42,18 +42,16 @@ export const CanvasComponentEntry = betterReactMemo(
     const { onRuntimeError, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
     const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
-    const canvasProps = useEditorState(
-      (store) =>
-        pickUiJsxCanvasProps(
-          store.editor,
-          store.derived,
-          true,
-          onDomReport,
-          clearConsoleLogs,
-          addToConsoleLogs,
-        ),
-      'CanvasComponentEntry canvasProps',
-    )
+    const canvasProps = useEditorState((store) => {
+      return pickUiJsxCanvasProps(
+        store.editor,
+        store.derived,
+        true,
+        onDomReport,
+        clearConsoleLogs,
+        addToConsoleLogs,
+      )
+    }, 'CanvasComponentEntry canvasProps')
 
     if (canvasProps == null) {
       return null
@@ -86,8 +84,12 @@ export const CanvasComponentEntry = betterReactMemo(
 )
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'DomWalkerWrapper selectedViews',
+  )
   let [updateInvalidatedPaths, updateInvalidatedScenes, containerRef] = useDomWalker({
-    selectedViews: props.selectedViews,
+    selectedViews: selectedViews,
     canvasInteractionHappening: props.transientFilesState != null,
     mountCount: props.mountCount,
     domWalkerInvalidateCount: props.domWalkerInvalidateCount,
