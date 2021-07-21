@@ -1542,7 +1542,11 @@ export function produceCanvasTransientState(
                   type: 'front',
                 },
               )
-              const updatedImports: Imports = mergeImports(parseSuccess.imports, importsToAdd)
+              const updatedImports: Imports = mergeImports(
+                underlyingFilePath,
+                parseSuccess.imports,
+                importsToAdd,
+              )
 
               // Sync these back up.
               const topLevelElements = applyUtopiaJSXComponentsChanges(
