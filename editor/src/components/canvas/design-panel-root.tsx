@@ -114,6 +114,8 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (store) => store.editor.interfaceDesigner,
     'DesignPanelRoot interfaceDesigner',
   )
+
+  const colorTheme = useColorTheme()
   const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
     interfaceDesigner.codePaneWidth,
   )
@@ -227,7 +229,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           overflowX: 'hidden',
           flexGrow: 1,
           flexShrink: 0,
-          borderRight: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
+          borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
         }}
       >
         {!isCanvasVisible && !interfaceDesigner.codePaneVisible ? (
@@ -279,7 +281,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
               overflow: 'hidden',
               justifyContent: 'stretch',
               alignItems: 'stretch',
-              borderLeft: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
+              borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
             }}
           >
             <CodeEditorWrapper />
@@ -294,7 +296,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
               style={{
                 minHeight: TopMenuHeight,
                 height: TopMenuHeight,
-                borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
+                borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
                 alignItems: 'stretch',
                 justifyContent: 'stretch',
                 backgroundColor: 'transparent',
@@ -327,7 +329,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
                 alignItems: 'stretch',
                 flexDirection: 'column',
                 width: UtopiaTheme.layout.inspectorWidth,
-                backgroundColor: UtopiaTheme.color.inspectorBackground.value,
+                backgroundColor: colorTheme.inspectorBackground.value,
                 flexGrow: 0,
                 flexShrink: 0,
                 overflowY: 'scroll',

@@ -214,8 +214,8 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
               width: 28,
               height: 28,
               borderRadius: '50%',
-              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.subduedForeground.o(50).value}`,
-              background: UtopiaTheme.color.subtleBackground.value,
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.subduedForeground.o(50).value}`,
+              background: colorTheme.subtleBackground.value,
             }}
           >
             <Avatar
@@ -274,6 +274,7 @@ const ForkButton = betterReactMemo('ForkButton', () => {
 })
 
 const LoggedOutPane = betterReactMemo('LogInPane', () => {
+  const colorTheme = useColorTheme()
   return (
     <Section data-name='Storyboards' tabIndex={-1}>
       <SectionTitleRow minimised={false}>
@@ -331,6 +332,7 @@ const StoryboardListItem = styled.div<StoryboardListItemProps>((props) => ({
   justifyContent: 'flex-end',
   cursor: 'pointer',
   fontWeight: 500,
+  // TOODO colortheme
   backgroundColor: 'hsl(0,0%,90%)',
   boxShadow: props.selected ? 'inset 0px 0px 0px 2px #007AFF' : undefined,
   '&:hover': {
@@ -348,6 +350,7 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
     }
   }, 'StoryboardsPane')
 
+  const colorTheme = useColorTheme()
   const handleStoryboardAdd = React.useCallback(() => {
     dispatch([EditorActions.addStoryboardFile()])
   }, [dispatch])
@@ -404,7 +407,7 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
             {storyboardList.map((item) => (
               <StoryboardListItem
                 selected={isCanvasVisible && openFile === item}
-                style={{ background: UtopiaTheme.color.secondaryBackground.value }}
+                style={{ background: colorTheme.secondaryBackground.value }}
                 key='mainStoryboard'
                 onClick={handleStoryboardListItemClick}
               >
@@ -469,6 +472,23 @@ const ContentsPane = betterReactMemo('ProjectStructurePane', () => {
 })
 
 const SettingsPane = betterReactMemo('SettingsPane', () => {
+  const { dispatch } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+    }
+  }, 'ProjectPane')
+  const [theme, setTheme] = React.useState<SelectOption>({
+    label: 'Light',
+    value: 'light',
+  })
+  const handleSubmitValueTheme = React.useCallback(
+    (option: SelectOption) => {
+      setTheme(option)
+      dispatch([EditorActions.setCurrentTheme(option.value)])
+    },
+    [dispatch],
+  )
+
   return (
     <FlexColumn
       id='leftPaneSettings'
@@ -484,6 +504,27 @@ const SettingsPane = betterReactMemo('SettingsPane', () => {
           <Title style={{ flexGrow: 1 }}>Settings</Title>
         </SectionTitleRow>
         <SectionBodyArea minimised={false}>
+          {/** Theme Toggle: */}
+          <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
+            <H2> Theme </H2>
+          </UIGridRow>
+          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+            <span>Application </span>
+            <PopupList
+              value={theme}
+              options={themeOptions}
+              onSubmitValue={handleSubmitValueTheme}
+              style={{ width: 150 }}
+            />
+          </UIGridRow>
+          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+            <span>VSCode </span>
+            <Subdued>Change from code editor.</Subdued>
+          </UIGridRow>
+          <UIGridRow style={{ marginTop: 16 }} padded variant='<---1fr--->|------172px-------|'>
+            <H2>VSCode </H2>
+          </UIGridRow>
+
           <FlexRow>
             <div
               style={{
@@ -773,7 +814,7 @@ const themeOptions = [
   },
 ]
 
-const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
+const ProjectPane = betterReactMemo('ProjectPane', () => {
   const colorTheme = useColorTheme()
   const {
     dispatch,
@@ -797,15 +838,12 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
       minimised: store.editor.projectSettings.minimised,
       forkedFrom: store.editor.forkedFromProjectId,
     }
-  }, 'ProjectSettingsPanel')
+  }, 'ProjectPane')
 
   const [name, changeProjectName] = React.useState(projectName)
   const [description, changeProjectDescription] = React.useState(projectDescription)
   const [requestingPreviewImage, setRequestingPreviewImage] = React.useState(false)
-  const [theme, setTheme] = React.useState<SelectOption>({
-    label: 'Light',
-    value: 'light',
-  })
+
   const forkedFromMetadata = useGetProjectMetadata(forkedFrom)
 
   const forkedFromText =
@@ -878,13 +916,6 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
       changeProjectDescription(event.target.value)
     },
     [],
-  )
-  const handleSubmitValueTheme = React.useCallback(
-    (option: SelectOption) => {
-      setTheme(option)
-      dispatch([EditorActions.setCurrentTheme(option.value)])
-    },
-    [dispatch],
   )
 
   const urlToRequest = `${thumbnailURL(projectId!)}?lastUpdated=${thumbnailLastGenerated}`
@@ -1007,7 +1038,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                           bottom: 0,
                           right: requestingPreviewImage ? 0 : '100%',
                           background: requestingPreviewImage
-                            ? UtopiaTheme.color.primary.value
+                            ? colorTheme.primary.value
                             : 'transparent',
                           content: '""',
                         },
@@ -1016,43 +1047,6 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                       {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
                     </Button>
                   </FlexColumn>
-                </UIGridRow>
-                {/** Theme Toggle: */}
-                <UIGridRow
-                  style={{ marginTop: 16 }}
-                  padded
-                  variant='<---1fr--->|------172px-------|'
-                >
-                  <H2> Theme </H2>
-                </UIGridRow>
-                <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-                  <span> Utopia </span>
-                  <PopupList
-                    value={theme}
-                    options={themeOptions}
-                    onSubmitValue={handleSubmitValueTheme}
-                    style={{ width: 150 }}
-                  />
-                </UIGridRow>
-                <UIGridRow
-                  padded
-                  variant='<-------------1fr------------->'
-                  style={{
-                    height: 'inherit',
-                    wordWrap: 'normal',
-                    whiteSpace: 'normal',
-                    alignItems: 'flex-start',
-                    minHeight: 34,
-                    paddingTop: 8,
-                    paddingLeft: 8,
-                    paddingRight: 8,
-                    paddingBottom: 8,
-                    letterSpacing: 0.1,
-                    lineHeight: '17px',
-                    fontSize: '11px',
-                  }}
-                >
-                  <Subdued>You can change the VSCode theme from the code editor.</Subdued>
                 </UIGridRow>
 
                 <UIGridRow

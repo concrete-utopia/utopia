@@ -13,6 +13,7 @@ import {
   UNSAFE_getIconURL,
   Section,
   InspectorSectionHeader,
+  useColorTheme,
 } from '../../../../../uuiui'
 import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
 
@@ -88,6 +89,7 @@ const ClassNameControl = betterReactMemo(
     onSubmitValue,
     onUnsetValues,
   }: ClassNameControlProps<T>) => {
+    const colorTheme = useColorTheme()
     const onChange = React.useCallback(
       (newValues: ValueType<SelectOption>) => {
         if (Array.isArray(newValues) && newValues.length > 0) {
@@ -131,10 +133,10 @@ const ClassNameControl = betterReactMemo(
         },
         '& input': {
           fontFamily: 'Consolas, Menlo, monospace',
-          color: UtopiaTheme.color.emphasizedForeground.value,
+          color: colorTheme.emphasizedForeground.value,
         },
       }),
-      [controlStyles],
+      [controlStyles, colorTheme],
     )
 
     const container: styleFn = React.useCallback(
@@ -167,7 +169,7 @@ const ClassNameControl = betterReactMemo(
       (base, state) => ({
         label: 'multiValue',
         fontFamily: 'Consolas, Menlo, monospace',
-        color: UtopiaTheme.color.emphasizedForeground.value,
+        color: colorTheme.emphasizedForeground.value,
         borderRadius: UtopiaTheme.inputBorderRadius,
         display: 'flex',
         marginRight: 4,
@@ -177,12 +179,12 @@ const ClassNameControl = betterReactMemo(
         height: UtopiaTheme.layout.inputHeight.small,
         boxShadow: `inset 0 0 0 1px ${
           (state.isFocused as boolean)
-            ? UtopiaTheme.color.inspectorFocusedColor.value
+            ? colorTheme.inspectorFocusedColor.value
             : controlStyles.borderColor
         }`,
         overflow: 'hidden',
       }),
-      [controlStyles],
+      [controlStyles, colorTheme],
     )
 
     return (

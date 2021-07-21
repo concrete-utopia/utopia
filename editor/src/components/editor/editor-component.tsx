@@ -255,7 +255,7 @@ export const EditorComponentInner = betterReactMemo(
               style={{
                 height: '100%',
                 width: 44,
-                backgroundColor: UtopiaTheme.color.leftMenuBackground.value,
+                backgroundColor: colorTheme.leftMenuBackground.value,
               }}
             >
               <Menubar />
@@ -267,7 +267,7 @@ export const EditorComponentInner = betterReactMemo(
                 transition: 'all .1s linear',
                 width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
-                backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
+                backgroundColor: colorTheme.leftPaneBackground.value,
               }}
             >
               {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
@@ -277,8 +277,8 @@ export const EditorComponentInner = betterReactMemo(
               style={{
                 flexGrow: 1,
                 alignItems: 'stretch',
-                borderRight: `1px solid ${UtopiaTheme.color.neutralBorder.value}`,
-                backgroundColor: UtopiaTheme.color.neutralBackground.value,
+                borderRight: `1px solid ${colorTheme.neutralBorder.value}`,
+                backgroundColor: colorTheme.neutralBackground.value,
               }}
             >
               <SimpleFlexRow

@@ -35,7 +35,6 @@ import {
   InspectorSectionHeader,
   SimpleFlexRow,
   SquareButton,
-  Icn,
   PopupList,
   FunctionIcons,
   Icons,
@@ -285,6 +284,7 @@ const RowForArrayControl = betterReactMemo(
       controlDescription,
     )
 
+    const colorTheme = useColorTheme()
     const rowHeight = UtopiaTheme.layout.rowHeight.max
     const transformedValue = Array.isArray(value) ? value : [value]
     const { springs, bind } = useArraySuperControl(
@@ -321,22 +321,18 @@ const RowForArrayControl = betterReactMemo(
             {propertyStatus.overwritable ? (
               <SquareButton highlight onMouseDown={toggleInsertRow}>
                 {insertingRow ? (
-                  <Icn
+                  <Icons.Minus
                     style={{ paddingTop: 1 }}
-                    category='semantic'
-                    type='minus'
-                    color={propertyStatus.controlled ? 'blue' : 'darkgray'}
-                    width={16}
-                    height={16}
+                    color={
+                      propertyStatus.controlled ? colorTheme.icons.primary : colorTheme.icons.main
+                    }
                   />
                 ) : (
-                  <Icn
+                  <Icons.Plus
                     style={{ paddingTop: 1 }}
-                    category='semantic'
-                    type='plus'
-                    color={propertyStatus.controlled ? 'blue' : 'darkgray'}
-                    width={16}
-                    height={16}
+                    color={
+                      propertyStatus.controlled ? colorTheme.icons.primary : colorTheme.icons.main
+                    }
                   />
                 )}
               </SquareButton>
@@ -407,7 +403,7 @@ const RowForObjectControl = betterReactMemo(
         <InspectorSectionHeader>
           <SimpleFlexRow style={{ flexGrow: 1 }}>
             <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-              {warning}
+              {/* {warning} */}
               {title}
             </PropertyLabel>
           </SimpleFlexRow>

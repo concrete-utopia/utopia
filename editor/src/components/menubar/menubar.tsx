@@ -21,6 +21,7 @@ import {
   LargerIcons,
   Avatar,
   UtopiaTheme,
+  useColorTheme,
 } from '../../uuiui'
 import { betterReactMemo, User } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
@@ -49,7 +50,7 @@ export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, Til
 
 export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   const [hovered, setHovered] = React.useState(false)
-
+  const colorTheme = useColorTheme()
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
   const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
   var foregroundColor: IcnProps['color'] = 'darkgray'
@@ -61,10 +62,12 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
         height: 44,
         transition: 'all .1s ease-in-out',
         borderLeft:
-          props.menuExpanded && props.selected ? '2px solid darkgray' : '1px solid transparent',
+          props.menuExpanded && props.selected
+            ? `2px solid ${colorTheme.primary}`
+            : '2px solid transparent',
         cursor: 'pointer',
         '& > *': {
-          opacity: props.selected ? 1 : 0.33,
+          opacity: props.selected ? 1 : 0.5,
           transform: props.selected ? 'translateX(1px)' : 'inherit',
         },
         '&:hover > *': {
@@ -123,6 +126,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
       isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
     }
   }, 'Menubar')
+
+  const colorTheme = useColorTheme()
 
   const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
@@ -203,7 +208,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
       id='leftMenuBar'
       style={{
         flexGrow: 1,
-        backgroundColor: UtopiaTheme.color.leftMenuBackground.value,
+        backgroundColor: colorTheme.leftMenuBackground.value,
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>

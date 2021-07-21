@@ -1,10 +1,9 @@
 import * as React from 'react'
-import { UtopiaTheme } from '../../../../../uuiui'
+import { useColorTheme } from '../../../../../uuiui'
 
 export const ProjectFontDividerItem: React.FunctionComponent = () => {
+  const colorTheme = useColorTheme()
   return (
-    <div
-      style={{ width: '100%', height: 1, backgroundColor: UtopiaTheme.color.neutralBorder.value }}
-    />
+    <div style={{ width: '100%', height: 1, backgroundColor: colorTheme.neutralBorder.value }} />
   )
 }

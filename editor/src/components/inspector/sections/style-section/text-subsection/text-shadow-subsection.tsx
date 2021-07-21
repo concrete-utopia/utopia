@@ -26,9 +26,9 @@ import {
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
   NumberInput,
   SquareButton,
-  Icn,
   InspectorSubsectionHeader,
   FlexRow,
+  Icons,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 
@@ -240,7 +240,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
         defaultUnitToHide={'px'}
       />
       <SquareButton highlight onMouseDown={removeShadow} style={{ marginTop: 1 }}>
-        <Icn category='semantic' type='minus' color='darkgray' width={16} height={16} />
+        <Icons.Minus />
       </SquareButton>
     </PropertyRow>
   )
@@ -304,14 +304,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
             Text Shadow
           </FlexRow>
           <SquareButton highlight onMouseDown={insertShadow}>
-            <Icn
-              style={{ paddingTop: 1 }}
-              category='semantic'
-              type='plus'
-              color='darkgray'
-              width={16}
-              height={16}
-            />
+            <Icons.Plus style={{ paddingTop: 1 }} />
           </SquareButton>
         </InspectorSubsectionHeader>
         <div

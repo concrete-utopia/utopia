@@ -11,7 +11,7 @@ import {
 import { stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { OnSubmitValue } from '../../components/inspector/controls/control'
 import { betterReactMemo } from '../../uuiui-deps'
-import { UtopiaTheme } from '../styles/theme'
+import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { InspectorInput, InspectorInputEmotionStyle } from './base-input'
 
 interface StringInputOptions {
@@ -45,6 +45,7 @@ export const StringInput = betterReactMemo(
       },
       propsRef,
     ) => {
+      const colorTheme = useColorTheme()
       const ref = React.useRef<HTMLInputElement>(null)
 
       React.useEffect(() => {
@@ -93,10 +94,10 @@ export const StringInput = betterReactMemo(
               backgroundColor: controlStyles.backgroundColor,
               position: 'relative',
               '&:hover': {
-                boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
               },
               '&:focus-within': {
-                boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
               },
             }}
           >
@@ -110,7 +111,7 @@ export const StringInput = betterReactMemo(
                   color: controlStyles.mainColor,
                   '&::placeholder': {
                     fontStyle: 'italic',
-                    color: UtopiaTheme.color.subduedForeground.value,
+                    color: colorTheme.subduedForeground.value,
                   },
                 },
                 InspectorInputEmotionStyle({

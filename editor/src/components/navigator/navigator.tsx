@@ -14,7 +14,15 @@ import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
-import { UtopiaTheme, Section, SectionTitleRow, FlexRow, Title, SectionBodyArea } from '../../uuiui'
+import {
+  UtopiaTheme,
+  Section,
+  SectionTitleRow,
+  FlexRow,
+  Title,
+  SectionBodyArea,
+  useColorTheme,
+} from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { last } from '../../core/shared/array-utils'
 // There's some weirdness between the types and the results in the two module systems.
@@ -47,7 +55,7 @@ export const NavigatorComponent = betterReactMemo(
         dragSelections: dragSelections,
       }
     })
-
+    const colorTheme = useColorTheme()
     const { dispatch, minimised, visibleNavigatorTargets } = useEditorState((store) => {
       return {
         dispatch: store.dispatch,
@@ -174,7 +182,7 @@ export const NavigatorComponent = betterReactMemo(
         tabIndex={-1}
         style={{
           ...navigatorStyle,
-          backgroundColor: UtopiaTheme.color.leftPaneBackground.o(80).value,
+          backgroundColor: colorTheme.leftPaneBackground.o(80).value,
           backdropFilter: 'blur(7px)',
           overflowX: 'scroll',
         }}

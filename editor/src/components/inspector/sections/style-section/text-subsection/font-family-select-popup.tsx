@@ -3,7 +3,15 @@ import { VariableSizeList } from 'react-window'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
-import { FlexColumn, UtopiaTheme, FlexRow, StringInput, UIRow } from '../../../../../uuiui'
+import {
+  FlexColumn,
+  UtopiaTheme,
+  FlexRow,
+  StringInput,
+  UIRow,
+  colorTheme,
+  useColorTheme,
+} from '../../../../../uuiui'
 import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
 import {
@@ -496,7 +504,7 @@ export const FontFamilySelectPopup = betterReactMemo(
           tabIndex={0}
           style={{
             ...style,
-            backgroundColor: 'white',
+            backgroundColor: colorTheme.inspectorBackground.value,
             width: UtopiaTheme.layout.inspectorPaddedWidth,
             boxShadow: '#0002 0px 0px 0px 1px, #0002 0px 4px 11px',
             zIndex: 1,

@@ -1166,7 +1166,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     vscodeBridgeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
-    theme: 'light',
+    theme: 'dark',
   }
 }
 
@@ -1406,7 +1406,7 @@ export function editorModelFromPersistentModel(
     vscodeBridgeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
-    theme: 'light',
+    theme: 'dark',
   }
   return editor
 }

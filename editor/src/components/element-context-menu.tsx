@@ -31,7 +31,7 @@ import { selectComponents, setHighlightedView } from './editor/actions/action-cr
 import * as EP from '../core/shared/element-path'
 import { ElementPath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
-import { FlexRow, Icn, IcnProps } from '../uuiui'
+import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 
@@ -128,6 +128,7 @@ interface SelectableElementItemProps {
 }
 
 const SelectableElementItem = (props: SelectableElementItemProps) => {
+  const colorTheme = useColorTheme()
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
   const isHighlighted = useEditorState(
@@ -157,7 +158,10 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 
   return (
     <FlexRow ref={rawRef}>
-      <Icn {...iconProps} color={isHighlighted ? 'white' : 'darkgray'} />
+      <Icn
+        {...iconProps}
+        color={isHighlighted ? colorTheme.icons.highVisContextMain : colorTheme.icons.main}
+      />
       <span style={{ paddingLeft: 6 }}>{label}</span>
     </FlexRow>
   )

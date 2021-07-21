@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { ListChildComponentProps } from 'react-window'
-import { FlexColumn, UtopiaTheme } from '../../../../../uuiui'
+import { FlexColumn, useColorTheme } from '../../../../../uuiui'
 import { WebFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-utils'
 import { CSSFontStyle, CSSFontWeight } from '../../../common/css-utils'
 import { OnSubmitValue } from '../../../controls/control'
@@ -41,6 +41,7 @@ export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildCo
   style,
   index,
 }) => {
+  const colorTheme = useColorTheme()
   const option = itemsArray[index]
   const metadata = option.metadata
 
@@ -94,7 +95,7 @@ export const FontFamilySelectPopupItem: React.FunctionComponent<FontsListChildCo
         paddingBottom: 4,
         paddingLeft: 12,
         paddingRight: 12,
-        backgroundColor: selected ? UtopiaTheme.color.inspectorFocusedColor.value : undefined,
+        backgroundColor: selected ? colorTheme.inspectorFocusedColor.value : undefined,
         fontSize: 12,
         color: selected ? 'white' : undefined,
       }}

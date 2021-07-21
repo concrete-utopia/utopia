@@ -6,7 +6,7 @@ import Utils from '../../utils/utils'
 import { SelectOption, SelectControl } from '../inspector/controls/select-control'
 import { top1000NPMPackagesOptions } from './top1000NPMPackagesOptions'
 import { getControlStyles } from '../inspector/common/control-status'
-import { Tooltip, StringInput, OnClickOutsideHOC, UtopiaTheme } from '../../uuiui'
+import { Tooltip, StringInput, OnClickOutsideHOC, UtopiaTheme, useColorTheme } from '../../uuiui'
 
 interface DependencySearchSelectProps {
   addDependency: (packageName: string | null, packageVersion: string | null) => void
@@ -92,6 +92,7 @@ export const DependencyListItemEditing = React.forwardRef(
     }: DependencyListItemEditingProps,
     dependencyVersionInputRef: React.Ref<HTMLInputElement>,
   ) => {
+    const colorTheme = useColorTheme()
     const [stateEditedPackageName, setStateEditedPackageName] = React.useState<string>(
       editedPackageName ?? '',
     )
@@ -128,7 +129,7 @@ export const DependencyListItemEditing = React.forwardRef(
             flexDirection: 'row',
             alignItems: 'center',
             height: UtopiaTheme.layout.rowHeight.smaller,
-            backgroundColor: UtopiaTheme.color.secondaryBackground.value,
+            backgroundColor: colorTheme.secondaryBackground.value,
             borderRadius: 2,
             paddingLeft: 8,
             paddingRight: 8,
