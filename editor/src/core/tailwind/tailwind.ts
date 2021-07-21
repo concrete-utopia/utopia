@@ -147,39 +147,38 @@ function clearTwind() {
   }
 }
 
-const adjustRuleScope = memoize(
-  (rule: string, prefixSelector: string | null): string => {
-    if (prefixSelector == null || rule.startsWith('@keyframes')) {
-      return rule
-    } else {
-      const isMediaQuery = rule.startsWith('@media')
-      const splitOnBrace = rule.split('{')
-      const selectorIndex = isMediaQuery ? 1 : 0
-      const splitSelectors = splitOnBrace[selectorIndex].split(',')
-      const scopedSelectors = splitSelectors.map((s) => {
-        const lowerCaseSelector = s.toLowerCase().trim()
+export function adjustRuleScopeImpl(rule: string, prefixSelector: string | null): string {
+  if (prefixSelector == null || rule.startsWith('@keyframes')) {
+    return rule
+  } else {
+    const isMediaQuery = rule.startsWith('@media')
+    const splitOnBrace = rule.split('{')
+    const selectorIndex = isMediaQuery ? 1 : 0
+    const splitSelectors = splitOnBrace[selectorIndex].split(',')
+    const scopedSelectors = splitSelectors.map((s) => {
+      const lowerCaseSelector = s.toLowerCase().trim()
 
-        if (
-          lowerCaseSelector === ':root' ||
-          lowerCaseSelector === 'html' ||
-          lowerCaseSelector === 'head'
-        ) {
-          return prefixSelector
-        } else if (lowerCaseSelector === 'body') {
-          return `${prefixSelector} > *`
-        } else {
-          return `${prefixSelector} ${s}`
-        }
-      })
-      const joinedSelectors = scopedSelectors.join(',')
-      const theRest = splitOnBrace.slice(selectorIndex + 1)
-      const front = splitOnBrace.slice(0, selectorIndex)
-      const finalRule = [...front, joinedSelectors, ...theRest].join('{')
-      return finalRule
-    }
-  },
-  { maxSize: 100, equals: (a, b) => a === b },
-)
+      if (
+        lowerCaseSelector === ':root' ||
+        lowerCaseSelector === 'html' ||
+        lowerCaseSelector === 'head'
+      ) {
+        return prefixSelector
+      } else if (lowerCaseSelector === 'body') {
+        return `${prefixSelector} > *`
+      } else {
+        return `${prefixSelector} ${s}`
+      }
+    })
+    const joinedSelectors = scopedSelectors.join(',')
+    const theRest = splitOnBrace.slice(selectorIndex + 1)
+    const front = splitOnBrace.slice(0, selectorIndex)
+    const finalRule = [...front, joinedSelectors, ...theRest].join('{')
+    return finalRule
+  }
+}
+
+const adjustRuleScope = memoize(adjustRuleScopeImpl, { maxSize: 100, equals: (a, b) => a === b })
 
 function updateTwind(config: Configuration, prefixSelector: string | null) {
   const element = document.head.appendChild(document.createElement('style'))
