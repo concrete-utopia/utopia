@@ -11,6 +11,7 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'TopMenu ClassNames'
   | 'Click on empty canvas unfocuses'
+  | 'Layout Section Experimental'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -21,6 +22,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'TopMenu ClassNames',
   'Click on empty canvas unfocuses',
+  'Layout Section Experimental',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -32,6 +34,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'TopMenu ClassNames': false,
   'Click on empty canvas unfocuses': true,
+  'Layout Section Experimental': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
