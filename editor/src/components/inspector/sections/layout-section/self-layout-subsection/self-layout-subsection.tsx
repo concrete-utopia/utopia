@@ -154,23 +154,33 @@ const SelfLink = () => {
 
 const ChildrenLink = () => {
   const theme = useColorTheme()
-  const children = useEditorState((store) => {
+  const { hasChildren, hasContent } = useEditorState((store) => {
     if (store.editor.selectedViews.length !== 1) {
-      return 0
+      return {
+        hasChildren: false,
+        hasContent: false,
+      }
     }
-    const target = store.editor.selectedViews[0]
-    return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, target)?.children.length
+    const element = MetadataUtils.findElementByElementPath(
+      store.editor.jsxMetadata,
+      store.editor.selectedViews[0],
+    )
+    const textContent = element != null ? MetadataUtils.getTextContentOfElement(element) : null
+    return {
+      hasChildren: (element?.specialSizeMeasurements.renderedChildrenCount ?? 0) > 0,
+      hasContent: textContent != null && textContent.length > 0,
+    }
   }, 'ChildrenLink children')
 
   return (
     <InlineLink
       style={{
         fontWeight: 400,
-        color: children === 0 ? theme.brandNeonPink.value : theme.primary.value,
-        textDecoration: children === 0 ? 'line-through' : undefined,
+        color: hasChildren || hasContent ? theme.primary.value : theme.brandNeonPink.value,
+        textDecoration: hasChildren || hasContent ? undefined : 'line-through',
       }}
     >
-      Content
+      {hasChildren ? 'Children' : 'Content'}
     </InlineLink>
   )
 }

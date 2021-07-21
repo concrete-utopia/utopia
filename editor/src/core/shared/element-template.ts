@@ -1521,6 +1521,7 @@ export interface SpecialSizeMeasurements {
   parentFlexDirection: string | null
   flexDirection: string | null
   htmlElementName: string
+  renderedChildrenCount: number
 }
 
 export function specialSizeMeasurements(
@@ -1543,6 +1544,7 @@ export function specialSizeMeasurements(
   parentFlexDirection: string | null,
   flexDirection: string | null,
   htmlElementName: string,
+  renderedChildrenCount: number,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1564,6 +1566,7 @@ export function specialSizeMeasurements(
     parentFlexDirection,
     flexDirection,
     htmlElementName,
+    renderedChildrenCount,
   }
 }
 
@@ -1590,6 +1593,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   'div',
+  0,
 )
 
 export const emptyComputedStyle: ComputedStyle = {}

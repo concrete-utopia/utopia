@@ -645,6 +645,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const flexDirectionResult = oldSize.flexDirection === newSize.flexDirection
     const displayEquals = oldSize.display === newSize.display
     const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
+    const renderedChildrenCount = oldSize.renderedChildrenCount === newSize.renderedChildrenCount
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -664,7 +665,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       parentFlexDirectionResult &&
       flexDirectionResult &&
       displayEquals &&
-      htmlElementNameEquals
+      htmlElementNameEquals &&
+      renderedChildrenCount
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -688,6 +690,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentFlexDirection,
         newSize.flexDirection,
         newSize.htmlElementName,
+        newSize.renderedChildrenCount,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
