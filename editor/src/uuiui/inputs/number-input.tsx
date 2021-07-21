@@ -724,7 +724,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 }}
                 onMouseDown={onIncrementMouseDown}
               >
-                <Icn category='controls/input' type='up' color='darkgray' width={11} height={11} />
+                <Icn category='controls/input' type='up' color='secondary' width={11} height={11} />
               </div>
               <div
                 css={{
@@ -751,7 +751,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 <Icn
                   category='controls/input'
                   type='down'
-                  color='darkgray'
+                  color='secondary'
                   width={11}
                   height={11}
                 />

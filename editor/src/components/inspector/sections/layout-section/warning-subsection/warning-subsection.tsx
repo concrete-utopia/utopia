@@ -19,7 +19,7 @@ export const WarningSubsection = betterReactMemo('WarningSubsection', (props) =>
             level='WARNING'
             message={
               <React.Fragment>
-                <WarningIcon color='white' />
+                <WarningIcon color='on-highlight-main' />
                 <span
                   style={{ paddingLeft: 10, overflowWrap: 'break-word', whiteSpace: 'initial' }}
                 >

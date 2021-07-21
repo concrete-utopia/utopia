@@ -164,7 +164,7 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 
   return (
     <FlexRow ref={rawRef}>
-      <Icn {...iconProps} color={isHighlighted ? 'white' : 'darkgray'} />
+      <Icn {...iconProps} color={isHighlighted ? 'on-highlight-main' : 'secondary'} />
       <span style={{ paddingLeft: 6 }}>{label}</span>
     </FlexRow>
   )

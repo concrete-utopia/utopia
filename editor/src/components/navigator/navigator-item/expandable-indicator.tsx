@@ -19,7 +19,7 @@ export const ExpandableIndicator: React.StatelessComponent<ExpandableIndicatorPr
       <Icn
         category='semantic'
         type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
-        color={props.selected ? 'white' : 'black'}
+        color={props.selected ? 'on-highlight-main' : 'main'}
         onMouseDown={props.onMouseDown}
         onClick={props.onClick}
       />

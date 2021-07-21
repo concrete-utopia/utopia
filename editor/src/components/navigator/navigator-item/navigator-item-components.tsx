@@ -68,7 +68,7 @@ interface VisiblityIndicatorProps {
 }
 
 export const VisibilityIndicator: React.FunctionComponent<VisiblityIndicatorProps> = (props) => {
-  const color = props.selected ? 'white' : 'gray'
+  const color = props.selected ? 'on-highlight-main' : 'subdued'
 
   return (
     <Button

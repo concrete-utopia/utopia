@@ -267,7 +267,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
           }}
         >
           <SquareButton highlight onClick={this.onRestartClick}>
-            <LargerIcons.Refresh color='black' />
+            <LargerIcons.Refresh />
           </SquareButton>
           <input
             onKeyPress={this.handleKeyPress}
@@ -292,15 +292,11 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
             <Subdued>{this.props.editedFilename}</Subdued>
           )}
           <SquareButton highlight onClick={this.toggleRunning}>
-            {this.state.running ? (
-              <LargerIcons.StopButton color='black' />
-            ) : (
-              <LargerIcons.PlayButton color='black' />
-            )}
+            {this.state.running ? <LargerIcons.StopButton /> : <LargerIcons.PlayButton />}
           </SquareButton>
           <a target='_blank' rel='noopener noreferrer' href={floatingPreviewURL}>
             <SquareButton highlight>
-              <LargerIcons.ExternalLink color='black' />
+              <LargerIcons.ExternalLink />
             </SquareButton>
           </a>
         </UIRow>
@@ -376,7 +372,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
               }}
             >
               <Button onClick={this.toggleRunning} spotlight>
-                <Icn category='semantic' type='playbutton' width={24} height={24} color='black' />
+                <Icn category='semantic' type='playbutton' width={24} height={24} />
               </Button>
               <Subdued style={{ marginTop: 8 }}>Start Preview</Subdued>
             </FlexColumn>

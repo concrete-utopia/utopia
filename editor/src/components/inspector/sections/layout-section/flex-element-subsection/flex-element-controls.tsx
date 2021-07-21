@@ -33,7 +33,7 @@ export const PositionControl = betterReactMemo('PositionControl', () => {
                 type: 'absolute',
                 width: 16,
                 height: 16,
-                color: 'gray',
+                color: 'secondary',
               },
             },
             {
@@ -44,7 +44,7 @@ export const PositionControl = betterReactMemo('PositionControl', () => {
                 type: 'relative',
                 width: 16,
                 height: 16,
-                color: 'gray',
+                color: 'secondary',
               },
             },
           ] as Array<OptionChainOption<string | number>>

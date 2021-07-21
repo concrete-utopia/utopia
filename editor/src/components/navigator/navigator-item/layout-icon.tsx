@@ -12,7 +12,7 @@ interface LayoutIconProps {
 }
 
 const borderColorForIconColor = (color: IcnProps['color'], colorTheme: any): string | undefined => {
-  if (color === 'orange') {
+  if (color === 'warning') {
     return colorTheme.navigatorComponentIconBorder.value
   } else {
     return color

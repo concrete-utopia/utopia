@@ -153,7 +153,7 @@ const LinearGradientControls: React.FunctionComponent<LinearGradientControlsProp
         labelInner={{
           category: 'layout/systems',
           type: 'transform-rotate',
-          color: 'gray',
+          color: 'secondary',
           width: 10,
           height: 10,
         }}
@@ -553,11 +553,11 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
             />
           </div>
           {isCSSBackgroundImageLayer(props.value) ? (
-            <Icn type='gear' color='darkgray' width={16} height={16} onClick={toggleSettings} />
+            <Icn type='gear' color='secondary' width={16} height={16} onClick={toggleSettings} />
           ) : null}
           <Icn
             type='cross-large'
-            color='darkgray'
+            color='secondary'
             width={16}
             height={16}
             onClick={props.closePopup}
