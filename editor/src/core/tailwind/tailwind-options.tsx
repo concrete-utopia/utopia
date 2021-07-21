@@ -1,6 +1,6 @@
 import React from 'react'
 import { betterReactMemo } from '../../uuiui-deps'
-import { stripNulls } from '../shared/array-utils'
+import { flatMapArray, last, stripNulls } from '../shared/array-utils'
 import { mapToArray, mapValues } from '../shared/object-utils'
 import { NO_OP } from '../shared/utils'
 import {
@@ -61,28 +61,43 @@ async function loadTailwindOptions() {
 loadTailwindOptions()
 
 export function searchStringToIndividualTerms(searchString: string): Array<string> {
-  return searchString.trim().toLowerCase().split(' ')
+  const splitOnSpaces = searchString.trim().toLowerCase().split(' ')
+  return flatMapArray((s) => s.split(':'), splitOnSpaces)
 }
 
 function findMatchingOptions<T>(
   searchTerms: Array<string>,
   options: Array<T>,
-  toString: (t: T) => string,
+  toStringParts: (t: T) => Array<string>,
   maxPerfectMatches: number,
 ): Array<Array<T>> {
   let orderedMatchedResults: Array<Array<T>> = []
   let perfectMatchCount = 0
   for (var i = 0; i < options.length && perfectMatchCount < maxPerfectMatches; i++) {
     const nextOption = options[i]
-    const asString = toString(nextOption)
-    const splitInputIndexResult = searchTerms.map((s) => asString.indexOf(s))
-    const minimumIndexOf = Math.min(...splitInputIndexResult)
-    if (minimumIndexOf > -1) {
-      let existingMatched = orderedMatchedResults[minimumIndexOf] ?? []
-      existingMatched.push(nextOption)
-      orderedMatchedResults[minimumIndexOf] = existingMatched
-      if (minimumIndexOf === 0) {
-        perfectMatchCount++
+    const stringParts = toStringParts(nextOption)
+    const combinatorialQualifiers = stringParts.slice(0, -1) // e.g. sm: hover: etc.
+    const combinatorialPartsMatch = combinatorialQualifiers.every((combinatorialQualifier) =>
+      searchTerms.some(
+        // All combinatorial parts must be at least 50% matched by a search term
+        // This feels better than a perfect match
+        (searchTerm) =>
+          combinatorialQualifier.indexOf(searchTerm) >= 0 &&
+          combinatorialQualifier.length <= 2 * searchTerm.length,
+      ),
+    )
+    if (combinatorialPartsMatch) {
+      // Only proceed with the match if all combinatorial parts were matched
+      const combinedParts = stringParts.join('')
+      const splitInputIndexResult = searchTerms.map((s) => combinedParts.indexOf(s))
+      const minimumIndexOf = Math.min(...splitInputIndexResult)
+      if (minimumIndexOf > -1) {
+        let existingMatched = orderedMatchedResults[minimumIndexOf] ?? []
+        existingMatched.push(nextOption)
+        orderedMatchedResults[minimumIndexOf] = existingMatched
+        if (minimumIndexOf === 0) {
+          perfectMatchCount++
+        }
       }
     }
   }
@@ -121,7 +136,7 @@ export function useFilteredOptions(
       const orderedMatchedResults = findMatchingOptions(
         searchTerms,
         TailWindOptions,
-        (option) => option.label,
+        (option) => option.label.split(':'),
         maxResults,
       )
 
@@ -134,7 +149,7 @@ export function useFilteredOptions(
         const orderedAttributeMatchedResults = findMatchingOptions(
           searchTerms,
           AllAttributes,
-          (a) => a,
+          (a) => [a],
           remainingAllowedMatches,
         )
         const bestMatchedAttributes = takeBestOptions(
