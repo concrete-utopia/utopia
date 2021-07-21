@@ -560,7 +560,11 @@ export interface ParseSuccessAndEditorChanges<T> {
 }
 
 export function modifyOpenParseSuccess(
-  transform: (success: ParseSuccess) => ParseSuccess,
+  transform: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticElementPath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess,
   model: EditorState,
 ): EditorState {
   return modifyUnderlyingTarget(
@@ -681,13 +685,14 @@ export function modifyOpenJsxElementAtStaticPath(
 
 function getImportedUtopiaJSXComponents(
   filePath: string,
-  model: EditorState,
+  projectContents: ProjectContentTreeRoot,
+  resolve: ResolveFn,
   pathsToFilter: string[],
 ): Array<UtopiaJSXComponent> {
-  const file = getContentsTreeFileFromString(model.projectContents, filePath)
+  const file = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     const resolvedFilePaths = Object.keys(file.fileContents.parsed.imports)
-      .map((toImport) => model.codeResultCache.resolve(filePath, toImport))
+      .map((toImport) => resolve(filePath, toImport))
       .filter(isRight)
       .map((r) => r.value)
       .filter((v) => !pathsToFilter.includes(v))
@@ -695,7 +700,10 @@ function getImportedUtopiaJSXComponents(
     return [
       ...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed),
       ...resolvedFilePaths.flatMap((path) =>
-        getImportedUtopiaJSXComponents(path, model, [...pathsToFilter, ...resolvedFilePaths]),
+        getImportedUtopiaJSXComponents(path, projectContents, resolve, [
+          ...pathsToFilter,
+          ...resolvedFilePaths,
+        ]),
       ),
     ]
   } else {
@@ -704,13 +712,14 @@ function getImportedUtopiaJSXComponents(
 }
 
 export function getOpenUtopiaJSXComponentsFromStateMultifile(
-  model: EditorState,
+  projectContents: ProjectContentTreeRoot,
+  resolve: ResolveFn,
+  openFilePath: string | null,
 ): Array<UtopiaJSXComponent> {
-  const openUIJSFilePath = getOpenUIJSFileKey(model)
-  if (openUIJSFilePath == null) {
+  if (openFilePath == null) {
     return []
   } else {
-    return getImportedUtopiaJSXComponents(openUIJSFilePath, model, [])
+    return getImportedUtopiaJSXComponents(openFilePath, projectContents, resolve, [])
   }
 }
 

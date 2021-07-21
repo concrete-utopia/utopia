@@ -3,7 +3,7 @@ import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-
 export const InjectedCSSFilePrefix = 'injected-css-file-'
 
 const matchFile: MatchFile = (filename: string) => {
-  return ['.css'].some((extension) => filename.endsWith(extension))
+  return filename.endsWith('.css')
 }
 
 const loadModule: LoadModule = (filename: string, contents: string) => {

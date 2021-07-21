@@ -34,6 +34,7 @@ import {
 } from '../editor/actions/action-creators'
 
 import {
+  EditorStore,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
@@ -75,6 +76,8 @@ import {
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import { when } from '../../utils/react-conditionals'
+import { createSelector } from 'reselect'
 
 export interface ElementPathElement {
   name?: string
@@ -88,6 +91,7 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps extends TargetSelectorSectionProps {
   selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
+  key: string
 }
 
 interface AlignDistributeButtonProps {
@@ -327,6 +331,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         position: 'relative',
         color: colorTheme.neutralForeground.value,
       }}
+      key={props.key}
       onFocus={onFocus}
     >
       {renderInspectorContents()}
@@ -344,31 +349,18 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
-    const rootViewsForSelectedElement: Array<ElementPath> = useEditorState(
-      (store) => MetadataUtils.getRootViewPaths(store.editor.jsxMetadata, selectedViews[0]),
-      'InspectorEntryPoint',
-      (oldElementPaths, newElementPaths) => {
-        return arrayEquals(oldElementPaths, newElementPaths, EP.pathsEqual)
-      },
+
+    return (
+      <SingleInspectorEntryPoint
+        key={'inspector-entry-selected-views'}
+        selectedViews={selectedViews}
+      />
     )
-
-    const showSceneInspector = selectedViews.length === 1 && rootViewsForSelectedElement.length > 0
-
-    if (showSceneInspector) {
-      return (
-        <>
-          <SingleInspectorEntryPoint selectedViews={selectedViews} />
-          <InspectorSectionHeader style={{ paddingTop: 32 }}>Root View</InspectorSectionHeader>
-          <SingleInspectorEntryPoint selectedViews={rootViewsForSelectedElement} />
-        </>
-      )
-    } else {
-      return <SingleInspectorEntryPoint selectedViews={selectedViews} />
-    }
   },
 )
 
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
+  key: string
   selectedViews: Array<ElementPath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
@@ -511,6 +503,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
+        key={props.key}
         selectedViews={selectedViews}
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
@@ -526,6 +519,15 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   return inspector
 })
 
+const rootComponentsSelector = createSelector(
+  (store: EditorStore) => store.editor.projectContents,
+  (store: EditorStore) => store.editor.codeResultCache.resolve,
+  (store: EditorStore) => store.editor.canvas.openFile?.filename ?? null,
+  (projectContents, resolve, openFilePath) => {
+    return getOpenUtopiaJSXComponentsFromStateMultifile(projectContents, resolve, openFilePath)
+  },
+)
+
 export const InspectorContextProvider = betterReactMemo<{
   selectedViews: Array<ElementPath>
   targetPath: Array<string>
@@ -540,10 +542,7 @@ export const InspectorContextProvider = betterReactMemo<{
   }, 'InspectorContextProvider')
 
   const rootComponents = useKeepReferenceEqualityIfPossible(
-    useEditorState(
-      (store) => getOpenUtopiaJSXComponentsFromStateMultifile(store.editor),
-      'InspectorContextProvider rootComponents',
-    ),
+    useEditorState(rootComponentsSelector, 'InspectorContextProvider rootComponents'),
   )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
