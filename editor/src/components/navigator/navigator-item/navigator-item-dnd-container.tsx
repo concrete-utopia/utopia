@@ -255,13 +255,15 @@ export class NavigatorItemDndWrapper extends PureComponent<
           elementWarnings={this.props.elementWarnings}
         />
         <NavigatorHintTop
-          isOver={this.props.isOver}
-          dropTargetType={this.props.appropriateDropTargetHint?.type ?? null}
+          shouldBeShown={
+            this.props.isOver && this.props.appropriateDropTargetHint?.type === 'before'
+          }
           getMarginForHint={this.getMarginForHint}
         />
         <NavigatorHintBottom
-          isOver={this.props.isOver}
-          dropTargetType={this.props.appropriateDropTargetHint?.type ?? null}
+          shouldBeShown={
+            this.props.isOver && this.props.appropriateDropTargetHint?.type === 'after'
+          }
           getMarginForHint={this.getMarginForHint}
         />
       </div>
