@@ -82,7 +82,7 @@ function findMatchingOptions<T>(
         // All combinatorial parts must be at least 50% matched by a search term
         // This feels better than a perfect match
         (searchTerm) =>
-          combinatorialQualifier.indexOf(searchTerm) >= 0 &&
+          combinatorialQualifier.startsWith(searchTerm) &&
           combinatorialQualifier.length <= 2 * searchTerm.length,
       ),
     )
