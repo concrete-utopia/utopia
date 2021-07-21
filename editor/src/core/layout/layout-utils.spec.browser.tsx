@@ -125,6 +125,7 @@ describe('maybeSwitchLayoutProps', () => {
           null,
           null,
           'div',
+          0,
         ),
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
