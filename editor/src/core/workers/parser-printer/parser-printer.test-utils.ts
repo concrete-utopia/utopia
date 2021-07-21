@@ -885,7 +885,7 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
         }
       }, topLevelElements)
       const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
-        return addImport('testlib', baseVariable, [], null, workingImports)
+        return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports)
       }, JustImportViewAndReact)
       return {
         imports: imports,

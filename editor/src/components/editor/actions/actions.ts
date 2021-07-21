@@ -2018,7 +2018,7 @@ export const UPDATE_FNS = {
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
       editor,
       (element) => element,
-      (success) => {
+      (success, _, underlyingFilePath) => {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
         const targetParent =
           action.parent == null
@@ -2052,7 +2052,11 @@ export const UPDATE_FNS = {
           withInsertedElement,
         )
 
-        const updatedImports = mergeImports(success.imports, action.importsToAdd)
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
         return {
           ...success,
           topLevelElements: updatedTopLevelElements,
@@ -2171,7 +2175,7 @@ export const UPDATE_FNS = {
                 return {
                   ...success,
                   utopiaComponents: withTargetAdded,
-                  imports: mergeImports(success.imports, importsToAdd),
+                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
                 }
               }, parseSuccess)
             },
@@ -3933,10 +3937,10 @@ export const UPDATE_FNS = {
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
-    return modifyOpenParseSuccess((success) => {
+    return modifyOpenParseSuccess((success, _, underlyingFilePath) => {
       return {
         ...success,
-        imports: mergeImports(success.imports, action.importsToAdd),
+        imports: mergeImports(underlyingFilePath, success.imports, action.importsToAdd),
       }
     }, editor)
   },
@@ -4438,7 +4442,7 @@ export const UPDATE_FNS = {
         openFilename,
         editor,
         (element) => element,
-        (success) => {
+        (success, _, underlyingFilePath) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
           const newUID = generateUidWithExistingComponents(editor.projectContents)
 
@@ -4492,7 +4496,11 @@ export const UPDATE_FNS = {
             withInsertedElement,
           )
 
-          const updatedImports = mergeImports(success.imports, action.toInsert.importsToAdd)
+          const updatedImports = mergeImports(
+            underlyingFilePath,
+            success.imports,
+            action.toInsert.importsToAdd,
+          )
           return {
             ...success,
             topLevelElements: updatedTopLevelElements,

@@ -172,6 +172,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
 const originalModel = deepFreeze(
   parseSuccess(
     addImport(
+      '/code.js',
       'utopia-api',
       null,
       [importAlias('View'), importAlias('Scene'), importAlias('Storyboard')],
