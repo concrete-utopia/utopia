@@ -9,6 +9,22 @@ import {
   ClassNameToAttributes,
 } from '../third-party/tailwind-defaults'
 import Highlighter from 'react-highlight-words'
+import { ElementPath, isParseSuccess, isTextFile } from '../shared/project-file-types'
+import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
+import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
+import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
+import { getContentsTreeFileFromString } from '../../components/assets'
+import {
+  isJSXAttributeNotFound,
+  isJSXAttributeValue,
+  isJSXElement,
+  JSXElementChild,
+} from '../shared/element-template'
+import { findElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
+import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
+import { eitherToMaybe } from '../shared/either'
+import { getModifiableJSXAttributeAtPath } from '../shared/jsx-attributes'
+import * as PP from '../shared/property-path'
 
 export interface TailWindOption {
   label: string
@@ -141,6 +157,104 @@ export function useFilteredOptions(
 
     return results
   }, [filter, maxResults, onEmptyResults])
+}
+
+export function useGetSelectedTailwindOptions(): {
+  selectedOptions: Array<TailWindOption> | null
+  elementPath: ElementPath | null
+  isMenuEnabled: boolean
+} {
+  const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
+    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+    if (openUIJSFileKey == null || store.editor.selectedViews.length !== 1) {
+      return {
+        elementPath: null,
+        classNameFromAttributes: null,
+        isMenuEnabled: false,
+      }
+    }
+    const underlyingTarget = normalisePathToUnderlyingTarget(
+      store.editor.projectContents,
+      store.editor.nodeModules.files,
+      openUIJSFileKey,
+      store.editor.selectedViews[0],
+    )
+    const underlyingPath =
+      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS'
+        ? underlyingTarget.filePath
+        : openUIJSFileKey
+    const projectFile = getContentsTreeFileFromString(store.editor.projectContents, underlyingPath)
+    let element: JSXElementChild | null = null
+    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+      element = findElementAtPath(
+        store.editor.selectedViews[0],
+        getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
+      )
+    }
+
+    let foundAttributeAsString: string | null = null
+    let menuEnabled = false
+    if (element != null && isJSXElement(element)) {
+      const jsxAttributes = element.props
+      let foundAttribute = eitherToMaybe(
+        getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])),
+      )
+      if (foundAttribute != null && isJSXAttributeValue(foundAttribute)) {
+        foundAttributeAsString = foundAttribute.value
+      }
+      if (
+        foundAttribute == null ||
+        isJSXAttributeNotFound(foundAttribute) ||
+        isJSXAttributeValue(foundAttribute)
+      ) {
+        menuEnabled = true
+      }
+    }
+
+    return {
+      elementPath:
+        MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )?.elementPath ?? null,
+      classNameFromAttributes: foundAttributeAsString,
+      isMenuEnabled: menuEnabled,
+    }
+  }, 'ClassNameSelect elementPath classNameFromAttributes isMenuEnabled')
+
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const selectedOptions = React.useMemo((): TailWindOption[] | null => {
+    let classNameValue: string | null = null
+    if (classNameFromAttributes != null) {
+      classNameValue = classNameFromAttributes
+    } else {
+      if (elementPath != null) {
+        const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
+        classNameValue = element?.props['className']
+      }
+    }
+
+    const splitClassNames =
+      typeof classNameValue === 'string'
+        ? classNameValue
+            .split(' ')
+            .map((s) => s.trim())
+            .filter((s) => s !== '')
+        : []
+    return splitClassNames.length === 0
+      ? null
+      : splitClassNames.map((name: string) => ({
+          label: name,
+          value: name,
+        }))
+  }, [classNameFromAttributes, elementPath, metadataRef])
+
+  return {
+    selectedOptions: selectedOptions,
+    elementPath: elementPath,
+    isMenuEnabled: isMenuEnabled,
+  }
 }
 
 const Bold = betterReactMemo('Bold', ({ children }: { children: React.ReactNode }) => {
