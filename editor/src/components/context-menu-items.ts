@@ -199,7 +199,13 @@ export const insert: ContextMenuItem<CanvasData> = {
   shortcut: 'A',
   enabled: true,
   action: (data, dispatch) => {
-    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('insert')])
+    requireDispatch(dispatch)([
+      EditorActions.openFloatingInsertMenu({
+        insertMenuMode: 'insert',
+        parentPath: null,
+        indexPosition: null,
+      }),
+    ])
   },
 }
 
@@ -208,7 +214,7 @@ export const convert: ContextMenuItem<CanvasData> = {
   shortcut: 'C',
   enabled: true,
   action: (data, dispatch) => {
-    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('convert')])
+    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })])
   },
 }
 
@@ -240,7 +246,10 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   shortcut: 'G',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('wrap')], 'everyone')
+    requireDispatch(dispatch)(
+      [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
+      'everyone',
+    )
   },
 }
 

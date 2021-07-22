@@ -33,6 +33,7 @@ import type {
 } from '../../../core/shared/project-file-types'
 import type { BuildType } from '../../../core/workers/ts/ts-worker'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
+import { IndexPosition } from '../../../utils/utils'
 import type { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import type { CSSCursor } from '../../../uuiui-deps'
 import type {
@@ -200,6 +201,7 @@ import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } fro
 import type {
   DuplicationState,
   ErrorMessages,
+  FloatingInsertMenuState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -625,9 +627,7 @@ export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
   }
 }
 
-export function openFloatingInsertMenu(
-  mode: 'insert' | 'convert' | 'wrap',
-): OpenFloatingInsertMenu {
+export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloatingInsertMenu {
   return {
     action: 'OPEN_FLOATING_INSERT_MENU',
     mode: mode,
@@ -1390,12 +1390,14 @@ export function insertWithDefaults(
   targetParent: ElementPath,
   toInsert: InsertableComponent,
   styleProps: StylePropOption,
+  indexPosition: IndexPosition | null,
 ): InsertWithDefaults {
   return {
     action: 'INSERT_WITH_DEFAULTS',
     targetParent: targetParent,
     toInsert: toInsert,
     styleProps: styleProps,
+    indexPosition: indexPosition,
   }
 }
 
