@@ -2,7 +2,7 @@
 
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { FormatOptionLabelMeta, ValueType, OptionsType } from 'react-select'
+import { FormatOptionLabelMeta, ValueType, OptionsType, InputProps, components } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
@@ -34,6 +34,7 @@ import {
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../../../../core/shared/atom-with-pub-sub'
+import { last } from '../../../../../core/shared/array-utils'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
@@ -171,6 +172,12 @@ const FooterSection = betterReactMemo(
   },
 )
 
+const Input = (props: InputProps) => {
+  const value = (props as any).value
+  const isHidden = value.length !== 0 ? false : props.isHidden
+  return <components.Input {...props} isHidden={isHidden} />
+}
+
 const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   const theme = useColorTheme()
   const targets = useEditorState(
@@ -183,6 +190,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   const isFocusedRef = React.useRef(false)
   const shouldPreviewOnFocusRef = React.useRef(false)
   const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
+  const focusedValueRef = React.useRef<string | null>(null)
 
   const clearFocusedOption = React.useCallback(() => {
     shouldPreviewOnFocusRef.current = false
@@ -242,6 +250,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
       if (newInput === '') {
         clearFocusedOption()
       }
+      focusedValueRef.current = null
       setFilter(newInput)
     },
     [clearFocusedOption, setFilter],
@@ -257,8 +266,37 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
       } else {
         shouldPreviewOnFocusRef.current = true
       }
+
+      if (
+        event.key === 'ArrowUp' ||
+        event.key === 'ArrowDown' ||
+        event.key === 'PageUp' ||
+        event.key === 'PageDown' ||
+        event.key === 'Home' ||
+        event.key === 'End'
+      ) {
+        // Any of these keys will jump the focus to the menu
+        focusedValueRef.current = null
+      }
+
+      if (
+        filter === '' &&
+        selectedOptions != null &&
+        (event.key === 'Backspace' || event.key === 'Delete')
+      ) {
+        if (event.key === 'Delete' && focusedValueRef.current == null) {
+          // prevent the default react-select behaviour here, as it will delete the last value
+          // if nothing is focused, which feels wrong
+          event.preventDefault()
+        } else {
+          const updatedFilterText = focusedValueRef.current ?? last(selectedOptions)?.label
+          if (updatedFilterText != null) {
+            setFilter(updatedFilterText)
+          }
+        }
+      }
     },
-    [clearFocusedOption, filter],
+    [clearFocusedOption, filter, selectedOptions],
   )
 
   const multiValueLabel: styleFn = React.useCallback(
@@ -284,8 +322,12 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   )
 
   const multiValue: styleFn = React.useCallback(
-    (base, { isFocused }) => {
+    (base, { isFocused, data }) => {
       const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
+      if (isFocused) {
+        focusedValueRef.current = data.label
+      }
+
       return {
         label: 'multiValue',
         fontWeight: 600,
@@ -380,6 +422,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
           onInputChange={onInputChange}
           components={{
             IndicatorsContainer,
+            Input,
             MultiValueRemove,
           }}
           className='className-inspector-control'
@@ -403,6 +446,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
           formatOptionLabel={formatOptionLabel}
           onKeyDown={handleKeyDown}
           maxMenuHeight={199}
+          inputValue={filter}
         />
       </UIGridRow>
       <FooterSection options={options} filter={filter} />
