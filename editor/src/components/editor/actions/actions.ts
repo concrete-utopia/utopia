@@ -518,6 +518,7 @@ import {
   PostCSSPath,
   TailwindConfigPath,
 } from '../../../core/tailwind/tailwind-config'
+import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
@@ -955,7 +956,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
     openPopupId: null,
-    toasts: poppedEditor.toasts,
+    toasts: currentEditor.toasts,
     cursorStack: {
       fixed: null,
       mouseOver: [],
@@ -1931,14 +1932,10 @@ export const UPDATE_FNS = {
     }
   },
   ADD_TOAST: (action: AddToast, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    if (!action.toast.persistent) {
-      setTimeout(() => dispatch([removeToast(action.toast.id)], 'everyone'), 5500)
-    }
-
     const withOldToastRemoved = UPDATE_FNS.REMOVE_TOAST(removeToast(action.toast.id), editor)
     return {
       ...withOldToastRemoved,
-      toasts: [...withOldToastRemoved.toasts, action.toast],
+      toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -2613,7 +2610,8 @@ export const UPDATE_FNS = {
     }
     if (insertionAllowed) {
       return action.elements.reduce((workingEditorState, currentValue, index) => {
-        return modifyUnderlyingForOpenFile(
+        let toastsAdded: Array<Notice> = []
+        const modifyResult = modifyUnderlyingForOpenFile(
           targetParent,
           workingEditorState,
           (elem) => elem,
@@ -2635,7 +2633,7 @@ export const UPDATE_FNS = {
               updatedComponents = components
             } else {
               const newPath = EP.appendToPath(targetParent, newUID)
-              updatedComponents = maybeSwitchLayoutProps(
+              const maybeSwitchResult = maybeSwitchLayoutProps(
                 newPath,
                 originalPath,
                 targetParent,
@@ -2644,7 +2642,9 @@ export const UPDATE_FNS = {
                 components,
                 null,
                 null,
-              ).components
+              )
+              updatedComponents = maybeSwitchResult.components
+              toastsAdded.push(...maybeSwitchResult.toast)
             }
 
             return {
@@ -2656,6 +2656,10 @@ export const UPDATE_FNS = {
             }
           },
         )
+        return {
+          ...modifyResult,
+          toasts: uniqToasts([...modifyResult.toasts, ...toastsAdded]),
+        }
       }, editor)
     } else {
       const showToastAction = showToast(
