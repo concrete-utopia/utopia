@@ -2,20 +2,20 @@
 
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { FormatOptionLabelMeta, MenuProps, ValueType, components, OptionsType } from 'react-select'
+import { FormatOptionLabelMeta, ValueType, OptionsType } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { styleFn } from 'react-select/src/styles'
-import { CustomReactSelectInput, SelectOption } from '../../../controls/select-control'
 import {
   UtopiaTheme,
   UNSAFE_getIconURL,
-  InspectorSectionHeader,
+  InspectorSubsectionHeader,
   useColorTheme,
   FlexColumn,
   FlexRow,
+  colorTheme,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
@@ -44,21 +44,30 @@ const MultiValueRemove: React.FunctionComponent<MultiValueRemoveProps<TailWindOp
 
 const valueContainer: styleFn = (base) => ({
   ...base,
-  padding: 0,
+  padding: '2px 4px',
   height: '100%',
   width: '100%',
 })
 
-const multiValueLabel: styleFn = (base) => ({
+const container: styleFn = (base) => ({
   ...base,
-  label: 'multiValueLabel',
-  display: 'flex',
-  alignItems: 'center',
+  minHeight: UtopiaTheme.layout.inputHeight.default,
   paddingTop: 2,
   paddingBottom: 2,
-  paddingLeft: 6,
-  paddingRight: 2,
-  fontSize: 9,
+})
+
+const control: styleFn = () => ({
+  label: 'control',
+  alignItems: 'center',
+  backgroundColor: 'rgb(245, 245, 245)',
+  boxSizing: 'border-box',
+  cursor: 'default',
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  position: 'relative',
+  transition: 'all 100ms',
+  minHeight: UtopiaTheme.layout.inputHeight.default,
 })
 
 const multiValueRemove: styleFn = (base, state) => ({
@@ -93,6 +102,9 @@ const placeholder: styleFn = (base) => ({
 const menu: styleFn = (base) => ({
   ...base,
   position: 'relative',
+  boxShadow: 'none',
+  borderRadius: 0,
+  background: 'transparent',
 })
 
 const AlwaysTrue = () => true
@@ -110,49 +122,6 @@ function formatOptionLabel(
   return context === 'menu' ? <MatchHighlighter text={label} searchString={inputValue} /> : label
 }
 
-const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption>) => {
-  const theme = useColorTheme()
-  const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom)
-  const focusedOption =
-    focusedOptionValue == null ? null : props.options.find((o) => o.value === focusedOptionValue)
-  const showFooter = props.options.length > 0
-  const joinedAttributes = focusedOption?.attributes?.join(', ')
-  const attributesText =
-    joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
-
-  return (
-    <components.Menu {...props}>
-      <React.Fragment>
-        {props.children}
-        {showFooter ? (
-          <div
-            css={{
-              label: 'focusedElementMetadata',
-              overflow: 'hidden',
-              boxShadow: 'inset 0px 1px 0px 0px rgba(0,0,0,.1)',
-              padding: '8px 8px',
-              fontSize: '10px',
-              pointerEvents: 'none',
-              color: theme.textColor.value,
-            }}
-          >
-            <FlexColumn>
-              <FlexRow>
-                <span>
-                  <MatchHighlighter
-                    text={attributesText}
-                    searchString={props.selectProps.inputValue}
-                  />
-                </span>
-              </FlexRow>
-            </FlexColumn>
-          </div>
-        ) : null}
-      </React.Fragment>
-    </components.Menu>
-  )
-})
-
 function isOptionsType<T>(valueType: T | OptionsType<T>): valueType is OptionsType<T> {
   return Array.isArray(valueType)
 }
@@ -167,7 +136,43 @@ function valueTypeAsArray<T>(valueType: ValueType<T>): ReadonlyArray<T> {
   }
 }
 
+const FooterSection = betterReactMemo(
+  'ClassNameControlFooter',
+  (props: { filter: string; options: Array<TailWindOption> }) => {
+    const theme = useColorTheme()
+    const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom)
+    const focusedOption =
+      focusedOptionValue == null ? null : props.options.find((o) => o.value === focusedOptionValue)
+    const joinedAttributes = focusedOption?.attributes?.join(', ')
+    const attributesText =
+      joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
+
+    return (
+      <div
+        css={{
+          label: 'focusedElementMetadata',
+          overflow: 'hidden',
+          boxShadow: `inset 0px 1px 1px 0px ${theme.neutralInvertedBackground.o(10).value}`,
+          padding: '8px 8px',
+          fontSize: '10px',
+          pointerEvents: 'none',
+          color: theme.textColor.value,
+        }}
+      >
+        <FlexColumn>
+          <FlexRow>
+            <span>
+              <MatchHighlighter text={attributesText} searchString={props.filter} />
+            </span>
+          </FlexRow>
+        </FlexColumn>
+      </div>
+    )
+  },
+)
+
 const ClassNameControl = betterReactMemo('ClassNameControl', () => {
+  const theme = useColorTheme()
   const targets = useEditorState(
     (store) => store.editor.selectedViews,
     'ClassNameSubsection targets',
@@ -256,81 +261,63 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
     [clearFocusedOption, filter],
   )
 
-  const input: styleFn = React.useCallback(
-    (base) => ({
-      ...base,
-      borderRadius: UtopiaTheme.inputBorderRadius,
-      fontSize: 9,
-      height: UtopiaTheme.layout.inputHeight.small,
-      paddingTop: 0,
-      paddingBottom: 2,
-      paddingLeft: 6,
-      paddingRight: 6,
-      minWidth: 90,
-      display: 'flex',
-      alignItems: 'center',
-      '& input': {
-        fontFamily: 'Consolas, Menlo, monospace',
-        color: UtopiaTheme.color.emphasizedForeground.value,
-      },
-    }),
-    [],
+  const multiValueLabel: styleFn = React.useCallback(
+    (base, { isFocused }) => {
+      const color = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
+      return {
+        ...base,
+        label: 'multiValueLabel',
+        display: 'flex',
+        alignItems: 'center',
+        paddingTop: 2,
+        paddingBottom: 2,
+        paddingLeft: 6,
+        paddingRight: 2,
+        fontSize: 9,
+        borderRadius: 3,
+        color: color,
+        backgroundColor: backgroundColor,
+      }
+    },
+    [theme],
   )
-  const container: styleFn = React.useCallback(
-    (base) => ({
-      ...base,
-      minHeight: UtopiaTheme.layout.inputHeight.default,
-      paddingTop: 2,
-      paddingBottom: 2,
-    }),
-    [],
-  )
-  const control: styleFn = React.useCallback(
-    () => ({
-      label: 'control',
-      alignItems: 'center',
-      backgroundColor: 'rgb(245, 245, 245)',
-      boxSizing: 'border-box',
-      cursor: 'default',
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      position: 'relative',
-      transition: 'all 100ms',
-      minHeight: UtopiaTheme.layout.inputHeight.default,
-    }),
-    [],
-  )
+
   const multiValue: styleFn = React.useCallback(
-    (base, state) => ({
-      label: 'multiValue',
-      fontFamily: 'Consolas, Menlo, monospace',
-      color: UtopiaTheme.color.emphasizedForeground.value,
-      borderRadius: UtopiaTheme.inputBorderRadius,
-      display: 'flex',
-      marginRight: 4,
-      marginTop: 2,
-      marginBottom: 2,
-      minWidth: 0,
-      height: UtopiaTheme.layout.inputHeight.small,
-      boxShadow: `inset 0 0 0 1px ${
-        (state.isFocused as boolean) ? UtopiaTheme.color.inspectorFocusedColor.value : 'transparent'
-      }`,
-      overflow: 'hidden',
-    }),
-    [],
+    (base, { isFocused }) => {
+      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
+      return {
+        label: 'multiValue',
+        fontWeight: 600,
+        color: theme.emphasizedForeground.value,
+        borderRadius: UtopiaTheme.inputBorderRadius,
+        display: 'flex',
+        marginRight: 4,
+        marginTop: 2,
+        marginBottom: 2,
+        minWidth: 0,
+        height: UtopiaTheme.layout.inputHeight.small,
+        boxShadow: `inset 0 0 0 1px ${
+          isFocused ? theme.inspectorFocusedColor.value : 'transparent'
+        }`,
+        overflow: 'hidden',
+        backgroundColor: backgroundColor,
+      }
+    },
+    [theme],
   )
+
   const option: styleFn = React.useCallback(
-    (base, state) => {
+    (base, { isFocused, isDisabled, value }) => {
       if (
         isFocusedRef.current &&
         shouldPreviewOnFocusRef.current &&
-        state.isFocused &&
+        isFocused &&
         targets.length === 1
       ) {
         const oldClassNameString =
           selectedOptions == null ? '' : selectedOptions.map((v) => v.value).join(' ') + ' '
-        const newClassNameString = oldClassNameString + state.value
+        const newClassNameString = oldClassNameString + value
         if (queuedDispatchTimeout != null) {
           window.clearTimeout(queuedDispatchTimeout)
         }
@@ -347,61 +334,82 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
           )
         }, 10)
 
-        updateFocusedOption(state.value)
+        updateFocusedOption(value)
       }
 
-      return base
+      const color = isFocused ? theme.inverted.textColor.value : theme.textColor.value
+      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
+      const borderRadius = isFocused ? 3 : 0
+
+      return {
+        minHeight: 27,
+        display: 'flex',
+        alignItems: 'center',
+        paddingLeft: 8,
+        paddingRight: 8,
+        backgroundColor: backgroundColor,
+        color: color,
+        cursor: isDisabled ? 'not-allowed' : 'default',
+        borderRadius: borderRadius,
+      }
+
+      // return base
     },
-    [dispatch, targets, selectedOptions, updateFocusedOption],
+    [dispatch, targets, selectedOptions, updateFocusedOption, theme],
   )
 
   return (
-    <CreatableSelect
-      autoFocus={false}
-      placeholder='Add class…'
-      isMulti
-      value={selectedOptions}
-      isDisabled={!isMenuEnabled}
-      onChange={onChange}
-      onInputChange={onInputChange}
-      components={{
-        IndicatorsContainer,
-        MultiValueRemove,
-        Input: CustomReactSelectInput,
-        Menu,
+    <div
+      style={{
+        backgroundColor: theme.emphasizedBackground.value,
+        boxShadow: `0px 0px 1px 0px ${theme.neutralInvertedBackground.o(30).value}`,
+        margin: 4,
       }}
-      className='className-inspector-control'
-      styles={{
-        container,
-        control,
-        valueContainer,
-        multiValue,
-        multiValueLabel,
-        multiValueRemove,
-        input,
-        placeholder,
-        menu,
-        option,
-      }}
-      filterOption={AlwaysTrue}
-      options={options}
-      menuIsOpen={true}
-      onBlur={onBlur}
-      onFocus={onFocus}
-      escapeClearsValue={true}
-      formatOptionLabel={formatOptionLabel}
-      onKeyDown={handleKeyDown}
-    />
+    >
+      <InspectorSubsectionHeader style={{ color: theme.primary.value }}>
+        Class Names
+      </InspectorSubsectionHeader>
+      <UIGridRow padded variant='<-------------1fr------------->'>
+        <CreatableSelect
+          autoFocus={false}
+          placeholder='Add class…'
+          isMulti
+          value={selectedOptions}
+          isDisabled={!isMenuEnabled}
+          onChange={onChange}
+          onInputChange={onInputChange}
+          components={{
+            IndicatorsContainer,
+            MultiValueRemove,
+          }}
+          className='className-inspector-control'
+          styles={{
+            container,
+            control,
+            valueContainer,
+            multiValue,
+            multiValueLabel,
+            multiValueRemove,
+            placeholder,
+            menu,
+            option,
+          }}
+          filterOption={AlwaysTrue}
+          options={options}
+          menuIsOpen={true}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          escapeClearsValue={true}
+          formatOptionLabel={formatOptionLabel}
+          onKeyDown={handleKeyDown}
+          maxMenuHeight={199}
+        />
+      </UIGridRow>
+      <FooterSection options={options} filter={filter} />
+    </div>
   )
 })
 
 export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => {
-  return (
-    <React.Fragment>
-      <InspectorSectionHeader>Class names</InspectorSectionHeader>
-      <UIGridRow padded variant='<-------------1fr------------->'>
-        <ClassNameControl />
-      </UIGridRow>
-    </React.Fragment>
-  )
+  return <ClassNameControl />
 })
