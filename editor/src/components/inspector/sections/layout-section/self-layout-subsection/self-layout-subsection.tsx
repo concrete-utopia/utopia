@@ -20,7 +20,7 @@ import { FlexElementSubsectionExperiment } from '../flex-element-subsection/flex
 import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
 import { selectComponents } from '../../../../editor/actions/action-creators'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { when } from '../../../../../utils/react-conditionals'
+import { unless, when } from '../../../../../utils/react-conditionals'
 
 type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -59,8 +59,8 @@ export const LayoutSubsection = betterReactMemo(
       <>
         <LayoutSectionHeader layoutType={activeTab} />
         {when(activeTab === 'flex', <FlexInfoBox />)}
-        {when(
-          activeTab !== 'flex',
+        {unless(
+          activeTab === 'flex',
           <GiganticSizePinsSubsection
             layoutType={activeTab}
             parentFlexDirection={props.parentFlexDirection}
