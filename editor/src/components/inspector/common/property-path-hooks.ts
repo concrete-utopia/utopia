@@ -975,29 +975,70 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
       )
     })
     return types.every((type) => {
-      const allowedTypes = StyleSubSectionForType[sectionName]
-      if (allowedTypes == null) {
+      const subSectionAvailable = StyleSubSectionForType[sectionName]
+      if (subSectionAvailable == null) {
         return false
       } else {
-        if (typeof allowedTypes === 'boolean') {
-          return allowedTypes
+        if (type == null) {
+          return true
         } else {
-          return allowedTypes.find((t) => t === type)
+          switch (subSectionAvailable.type) {
+            case 'permit':
+              return subSectionAvailable.allowedElementTypes.includes(type)
+            case 'deny':
+              return !subSectionAvailable.deniedElementTypes.includes(type)
+            case 'allowall':
+              return true
+          }
         }
       }
     })
   }, 'useIsSubSectionVisible')
 }
 
-const StyleSubSectionForType: { [key: string]: string[] | boolean } = {
-  text: ['div', 'span', 'text'],
-  textShadow: ['div', 'span', 'text'],
-  shadow: true,
-  border: true,
-  opacity: true,
-  background: true,
-  img: ['img'],
-  transform: true,
+interface SubSectionPermitList {
+  type: 'permit'
+  allowedElementTypes: Array<string>
+}
+
+function subSectionPermitList(allowedElementTypes: Array<string>): SubSectionPermitList {
+  return {
+    type: 'permit',
+    allowedElementTypes: allowedElementTypes,
+  }
+}
+
+interface SubSectionDenyList {
+  type: 'deny'
+  deniedElementTypes: Array<string>
+}
+
+function subSectionDenyList(deniedElementTypes: Array<string>): SubSectionDenyList {
+  return {
+    type: 'deny',
+    deniedElementTypes: deniedElementTypes,
+  }
+}
+
+interface SubSectionAllowAll {
+  type: 'allowall'
+}
+
+const subSectionAllowAll: SubSectionAllowAll = {
+  type: 'allowall',
+}
+
+type SubSectionAvailable = SubSectionPermitList | SubSectionDenyList | SubSectionAllowAll
+
+const StyleSubSectionForType: { [key: string]: SubSectionAvailable } = {
+  text: subSectionDenyList(['img', 'video']),
+  textShadow: subSectionDenyList(['img', 'video']),
+  shadow: subSectionAllowAll,
+  border: subSectionAllowAll,
+  opacity: subSectionAllowAll,
+  background: subSectionAllowAll,
+  img: subSectionPermitList(['img']),
+  transform: subSectionAllowAll,
 }
 
 export function useSelectedPropertyControls(
