@@ -26,3 +26,15 @@ export function useForceUpdate() {
   const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
   return forceUpdate
 }
+
+export function useInputFocusOnCountIncrease<T extends { focus: () => void }>(
+  triggerCount: number,
+): React.RefObject<T> {
+  const ref = React.useRef<T>(null)
+  const previousTriggerCountRef = React.useRef(triggerCount)
+  if (previousTriggerCountRef.current !== triggerCount) {
+    previousTriggerCountRef.current = triggerCount
+    ref.current?.focus()
+  }
+  return ref
+}

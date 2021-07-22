@@ -117,6 +117,7 @@ import {
   GROUP_ELEMENT_PICKER_SHORTCUT,
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
   TOGGLE_FOCUSED_OMNIBOX_TAB,
+  FOCUS_CLASS_NAME_INPUT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -724,6 +725,9 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? [EditorActions.moveSelectedToFront()]
           : []
+      },
+      [FOCUS_CLASS_NAME_INPUT]: () => {
+        return [EditorActions.focusClassNameInput()]
       },
       [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
         return [EditorActions.focusFormulaBar()]

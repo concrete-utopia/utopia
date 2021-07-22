@@ -35,6 +35,7 @@ import {
   usePubSubAtomWriteOnly,
 } from '../../../../../core/shared/atom-with-pub-sub'
 import { last } from '../../../../../core/shared/array-utils'
+import { useInputFocusOnCountIncrease } from '../../../../editor/hook-utils'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
@@ -191,6 +192,12 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   const shouldPreviewOnFocusRef = React.useRef(false)
   const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
   const focusedValueRef = React.useRef<string | null>(null)
+
+  const focusTriggerCount = useEditorState(
+    (store) => store.editor.inspector.classnameFocusCounter,
+    'ClassNameSubsection classnameFocusCounter',
+  )
+  const inputRef = useInputFocusOnCountIncrease<CreatableSelect<TailWindOption>>(focusTriggerCount)
 
   const clearFocusedOption = React.useCallback(() => {
     shouldPreviewOnFocusRef.current = false
@@ -413,6 +420,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
       </InspectorSubsectionHeader>
       <UIGridRow padded variant='<-------------1fr------------->'>
         <CreatableSelect
+          ref={inputRef}
           autoFocus={false}
           placeholder='Add class…'
           isMulti

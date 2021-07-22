@@ -92,6 +92,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_FILEBROWSER_DROPTARGET':
     case 'SET_FORKED_FROM_PROJECT_ID':
     case 'SET_CURRENT_THEME':
+    case 'FOCUS_CLASS_NAME_INPUT':
     case 'FOCUS_FORMULA_BAR':
     case 'UPDATE_FORMULA_BAR_MODE':
     case 'OPEN_FLOATING_INSERT_MENU':
