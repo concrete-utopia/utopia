@@ -1,6 +1,7 @@
 import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api'
 import { transformElementAtPath } from '../../components/editor/store/editor-state'
 import * as EP from '../shared/element-path'
+import * as PP from '../shared/property-path'
 import {
   flatMapEither,
   forEachRight,
@@ -29,8 +30,9 @@ import {
   JSXAttributes,
   SettableLayoutSystem,
   ElementInstanceMetadataMap,
+  getJSXAttribute,
 } from '../shared/element-template'
-import { findJSXElementChildAtPath } from '../model/element-template-utils'
+import { findJSXElementAtStaticPath } from '../model/element-template-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -38,8 +40,9 @@ import {
   getJSXAttributeAtPath,
   ModifiableAttribute,
   setJSXValueAtPath,
+  getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
-import { PropertyPath, ElementPath } from '../shared/project-file-types'
+import { PropertyPath, ElementPath, StaticElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
 import {
   createLayoutPropertyPath,
@@ -50,11 +53,36 @@ import {
 import { getLayoutPropertyOr } from './getLayoutProperty'
 import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { notice, Notice } from '../../components/common/notice'
+export function createStylePostActionToast(
+  name: string,
+  originalPropertyPaths: PropertyPath[],
+  updatedPropertyPaths: PropertyPath[],
+): Array<Notice> {
+  const removedProps = originalPropertyPaths.filter((x) => !updatedPropertyPaths.includes(x)) // R.difference(originalPropertyPaths, updatedPropertyPaths)
+  const addedProps = updatedPropertyPaths.filter((x) => !originalPropertyPaths.includes(x)) // R.difference(updatedPropertyPaths, originalPropertyPaths)
+
+  if (removedProps.length > 0 || addedProps.length > 0) {
+    return [
+      notice(
+        `Updated the following props of the element: added: [ ${addedProps
+          .map(PP.toString)
+          .join(', ')} ], removed: [ ${removedProps.map(PP.toString).join(', ')} ]`,
+        'PRIMARY',
+        false,
+        // 'style-update-post-action-ui',
+      ),
+    ]
+  } else {
+    return []
+  }
+}
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
   componentMetadata: ElementInstanceMetadataMap
   didSwitch: boolean
+  toast: Array<Notice>
 }
 
 export function maybeSwitchChildrenLayoutProps(
@@ -68,13 +96,14 @@ export function maybeSwitchChildrenLayoutProps(
     target,
     true,
   )
-  const result = children.reduce(
+  const result = children.reduce<LayoutPropChangeResult>(
     (working, next) => {
       const { components: workingComponents, didSwitch: workingDidSwitch } = working
       const {
         components: nextComponents,
         componentMetadata: nextMetadata,
         didSwitch: nextDidSwitch,
+        toast: nextToast,
       } = maybeSwitchLayoutProps(
         next.elementPath,
         next.elementPath,
@@ -89,9 +118,15 @@ export function maybeSwitchChildrenLayoutProps(
         components: nextComponents,
         componentMetadata: nextMetadata,
         didSwitch: workingDidSwitch || nextDidSwitch,
+        toast: [...working.toast, ...nextToast],
       }
     },
-    { components: components, componentMetadata: currentContextMetadata, didSwitch: false },
+    {
+      components: components,
+      componentMetadata: currentContextMetadata,
+      didSwitch: false,
+      toast: [],
+    },
   )
   return result
 }
@@ -133,10 +168,22 @@ export function maybeSwitchLayoutProps(
       components,
       parentFrame,
     )
+
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    const originalElement = findJSXElementAtStaticPath(components, staticTarget)
+    const originalPropertyPaths = getAllPathsFromAttributes(originalElement?.props ?? [])
+    const updatedelement = findJSXElementAtStaticPath(updatedComponents, staticTarget)
+    const updatedPropertyPaths = getAllPathsFromAttributes(updatedelement?.props ?? [])
+
     return {
       components: updatedComponents,
       componentMetadata: updatedMetadata,
       didSwitch: true,
+      toast: createStylePostActionToast(
+        MetadataUtils.getElementLabel(target, targetOriginalContextMetadata),
+        originalPropertyPaths,
+        updatedPropertyPaths,
+      ),
     }
   } else {
     const switchLayoutFunction = getLayoutFunction(
@@ -152,10 +199,23 @@ export function maybeSwitchLayoutProps(
       currentContextMetadata,
       components,
     )
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    const originalElement = findJSXElementAtStaticPath(components, staticTarget)
+    const originalPropertyPaths = getAllPathsFromAttributes(originalElement?.props ?? [])
+    const updatedelement = findJSXElementAtStaticPath(updatedComponents, staticTarget)
+    const updatedPropertyPaths = getAllPathsFromAttributes(updatedelement?.props ?? [])
+
     return {
       components: updatedComponents,
       componentMetadata: updatedMetadata,
       didSwitch: switchLayoutFunction.didSwitch,
+      toast: switchLayoutFunction.didSwitch
+        ? createStylePostActionToast(
+            MetadataUtils.getElementLabel(target, targetOriginalContextMetadata),
+            originalPropertyPaths,
+            updatedPropertyPaths,
+          )
+        : [],
     }
   }
 }

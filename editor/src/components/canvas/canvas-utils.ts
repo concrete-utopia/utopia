@@ -27,6 +27,7 @@ import {
   PinningAndFlexPointsExceptSize,
   roundJSXElementLayoutValues,
   roundAttributeLayoutValues,
+  createStylePostActionToast,
 } from '../../core/layout/layout-utils'
 import {
   findElementAtPath,
@@ -69,6 +70,7 @@ import {
   jsxAttributesToProps,
   jsxSimpleAttributeToValue,
   getJSXAttributeAtPath,
+  getAllPathsFromAttributes,
 } from '../../core/shared/jsx-attributes'
 import {
   Imports,
@@ -198,6 +200,7 @@ import { mapValues } from '../../core/shared/object-utils'
 import { emptySet } from '../../core/shared/set-utils'
 import { WindowMousePositionRaw } from '../../utils/global-positions'
 import { importedFromWhere } from '../editor/import-utils'
+import { Notice } from '../common/notice'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -292,6 +295,7 @@ export function getOriginalCanvasFrames(
 
 function applyTransientFilesState(
   producedTransientFilesState: TransientFilesState | null,
+  toastsToAdd: ReadonlyArray<Notice>,
   result: EditorState,
 ): EditorState {
   let workingState = result
@@ -308,7 +312,11 @@ function applyTransientFilesState(
       })
     }
   }
-  return workingState
+
+  return {
+    ...workingState,
+    toasts: [...workingState.toasts, ...toastsToAdd], // TODO DEDUPLICATE and Filter me!
+  }
 }
 
 export function clearDragState(
@@ -324,7 +332,11 @@ export function clearDragState(
       false,
     )
     const producedTransientFilesState = producedTransientCanvasState.filesState
-    result = applyTransientFilesState(producedTransientFilesState, result)
+    result = applyTransientFilesState(
+      producedTransientFilesState,
+      producedTransientCanvasState.toastsToApply,
+      result,
+    )
   }
 
   return {
@@ -350,6 +362,7 @@ export function updateFramesOfScenesAndComponents(
   optionalParentFrame: CanvasRectangle | null,
 ): EditorState {
   let workingEditorState: EditorState = editorState
+  let toastsToAdd: Array<Notice> = []
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
     const target = frameAndTarget.target
     // Realign to aim at the static version, not the dynamic one.
@@ -702,6 +715,13 @@ export function updateFramesOfScenesAndComponents(
           return foldEither(
             (_) => elem,
             (updatedProps) => {
+              toastsToAdd.push(
+                ...createStylePostActionToast(
+                  MetadataUtils.getElementLabel(originalTarget, workingEditorState.jsxMetadata),
+                  getAllPathsFromAttributes(elem.props),
+                  getAllPathsFromAttributes(updatedProps),
+                ),
+              )
               return {
                 ...elem,
                 props: updatedProps,
@@ -722,6 +742,13 @@ export function updateFramesOfScenesAndComponents(
     // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
     // doesn't work. Once that is fixed we can re-implement keeping the children in place
   })
+
+  if (toastsToAdd.length > 0) {
+    workingEditorState = {
+      ...workingEditorState,
+      toasts: [...workingEditorState.toasts, ...toastsToAdd], // TODO removal timeout!
+    }
+  }
   return workingEditorState
 }
 
@@ -1365,6 +1392,7 @@ function getTransientCanvasStateFromFrameChanges(
     mapValues((success) => {
       return transientFileState(success.topLevelElements, success.imports)
     }, successByFilename),
+    workingEditorState.toasts, // TODO filter for relevant toasts
   )
 }
 
@@ -1391,7 +1419,7 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null)
+    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       forUnderlyingTargetFromEditorState(
@@ -1452,7 +1480,7 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1560,6 +1588,7 @@ export function produceCanvasTransientState(
                 {
                   [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
                 },
+                [],
               )
               return parseSuccess
             },
@@ -1613,7 +1642,7 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   } else {
     return transientState
   }
@@ -1797,6 +1826,7 @@ export function moveTemplate(
               components: withLayoutUpdatedForNewContext,
               componentMetadata: withMetadataUpdatedForNewContext,
               didSwitch,
+              toast,
             } = maybeSwitchLayoutProps(
               target,
               originalPath,
@@ -1939,6 +1969,7 @@ export function moveTemplate(
                 ...workingEditorState,
                 selectedViews: Utils.stripNulls(newSelectedViews),
                 highlightedViews: Utils.stripNulls(newHighlightedViews),
+                toasts: [...workingEditorState.toasts, ...toast],
               }
 
               return {
@@ -2099,6 +2130,7 @@ function produceMoveTransientCanvasState(
     selectedViews,
     workingEditorState.highlightedViews,
     transientFilesState,
+    workingEditorState.toasts, // TODO Filter for relevant toasts
   )
 }
 
@@ -2681,6 +2713,7 @@ function createCanvasTransientStateFromProperties(
       updatedEditor.selectedViews,
       updatedEditor.highlightedViews,
       transientFilesState,
+      [],
     )
   }
 }

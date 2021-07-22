@@ -2612,7 +2612,8 @@ export const UPDATE_FNS = {
     }
     if (insertionAllowed) {
       return action.elements.reduce((workingEditorState, currentValue, index) => {
-        return modifyUnderlyingForOpenFile(
+        let toastsAdded: Array<Notice> = []
+        const modifyResult = modifyUnderlyingForOpenFile(
           targetParent,
           workingEditorState,
           (elem) => elem,
@@ -2634,7 +2635,7 @@ export const UPDATE_FNS = {
               updatedComponents = components
             } else {
               const newPath = EP.appendToPath(targetParent, newUID)
-              updatedComponents = maybeSwitchLayoutProps(
+              const maybeSwitchResult = maybeSwitchLayoutProps(
                 newPath,
                 originalPath,
                 targetParent,
@@ -2643,7 +2644,9 @@ export const UPDATE_FNS = {
                 components,
                 null,
                 null,
-              ).components
+              )
+              updatedComponents = maybeSwitchResult.components
+              toastsAdded.push(...maybeSwitchResult.toast)
             }
 
             return {
@@ -2655,6 +2658,10 @@ export const UPDATE_FNS = {
             }
           },
         )
+        return {
+          ...modifyResult,
+          toasts: [...modifyResult.toasts, ...toastsAdded],
+        }
       }, editor)
     } else {
       const showToastAction = showToast(
