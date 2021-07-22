@@ -860,6 +860,7 @@ export function editorReparentNoStyleChange(
   newParentPath: ElementPath,
   editor: EditorModel,
 ): EditorModel {
+  // this code structure with the two withUnderlyingTargetFromEditorStates is copied verbatim from canvas-utils.ts@moveTemplate
   return withUnderlyingTargetFromEditorState(
     target,
     editor,
