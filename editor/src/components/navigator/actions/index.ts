@@ -1,6 +1,6 @@
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { NavigatorReorder, RenameComponent } from '../../editor/action-types'
-import { DropTargetType } from '../navigator'
+import { DropTargetType } from '../../editor/store/editor-state'
 
 export function reparentComponents(
   draggedComponents: Array<ElementPath>,
