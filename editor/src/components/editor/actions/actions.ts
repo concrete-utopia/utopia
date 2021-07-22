@@ -955,7 +955,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
     openPopupId: null,
-    toasts: poppedEditor.toasts,
+    toasts: currentEditor.toasts,
     cursorStack: {
       fixed: null,
       mouseOver: [],
