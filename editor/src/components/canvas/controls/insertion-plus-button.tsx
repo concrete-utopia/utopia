@@ -196,18 +196,23 @@ const PlusButton = betterReactMemo('PlusButton', (props: ButtonControlProps) => 
   const dispatch = useEditorState((store) => store.dispatch, 'PlusButton dispatch')
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
-  const insertElement = React.useCallback(() => {
-    dispatch(
-      [
-        openFloatingInsertMenu({
-          insertMenuMode: 'insert',
-          parentPath: parentPath,
-          indexPosition: indexPosition,
-        }),
-      ],
-      'canvas',
-    )
-  }, [dispatch, parentPath, indexPosition])
+  const insertElement = React.useCallback(
+    (event) => {
+      event.stopPropagation()
+      event.preventDefault()
+      dispatch(
+        [
+          openFloatingInsertMenu({
+            insertMenuMode: 'insert',
+            parentPath: parentPath,
+            indexPosition: indexPosition,
+          }),
+        ],
+        'canvas',
+      )
+    },
+    [dispatch, parentPath, indexPosition],
+  )
   return (
     <div
       style={{
