@@ -105,7 +105,6 @@ import {
 } from '../../custom-code/code-file'
 import { convertModeToSavedMode, EditorModes, Mode, PersistedMode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
-import { DropTargetHint } from '../../navigator/navigator'
 import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
@@ -275,6 +274,21 @@ export interface DesignerFile {
 
 export type Theme = 'light' | 'dark'
 
+export type DropTargetType = 'before' | 'after' | 'reparent' | null
+
+export interface DropTargetHint {
+  target: ElementPath | null
+  type: DropTargetType
+}
+
+export interface NavigatorState {
+  minimised: boolean
+  dropTargetHint: DropTargetHint
+  collapsedViews: ElementPath[]
+  renamingTarget: ElementPath | null
+  position: 'hidden' | 'left' | 'right'
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -372,13 +386,7 @@ export interface EditorState {
   projectSettings: {
     minimised: boolean
   }
-  navigator: {
-    minimised: boolean
-    dropTargetHint: DropTargetHint
-    collapsedViews: ElementPath[]
-    renamingTarget: ElementPath | null
-    position: 'hidden' | 'left' | 'right'
-  }
+  navigator: NavigatorState
   topmenu: {
     formulaBarMode: 'css' | 'content'
     formulaBarFocusCounter: number

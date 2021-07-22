@@ -519,6 +519,7 @@ import {
   TailwindConfigPath,
 } from '../../../core/tailwind/tailwind-config'
 import { uniqToasts } from './toast-helpers'
+import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -2732,23 +2733,23 @@ export const UPDATE_FNS = {
 
   TOGGLE_COLLAPSE: (action: ToggleCollapse, editor: EditorModel): EditorModel => {
     if (editor.navigator.collapsedViews.some((element) => EP.pathsEqual(element, action.target))) {
-      return update(editor, {
-        navigator: {
-          collapsedViews: {
-            $set: editor.navigator.collapsedViews.filter(
-              (element) => !EP.pathsEqual(element, action.target),
-            ),
-          },
-        },
-      })
+      return {
+        ...editor,
+        navigator: NavigatorStateKeepDeepEquality(editor.navigator, {
+          ...editor.navigator,
+          collapsedViews: editor.navigator.collapsedViews.filter(
+            (element) => !EP.pathsEqual(element, action.target),
+          ),
+        }).value,
+      }
     } else {
-      return update(editor, {
-        navigator: {
-          collapsedViews: {
-            $set: editor.navigator.collapsedViews.concat(action.target),
-          },
-        },
-      })
+      return {
+        ...editor,
+        navigator: NavigatorStateKeepDeepEquality(editor.navigator, {
+          ...editor.navigator,
+          collapsedViews: editor.navigator.collapsedViews.concat(action.target),
+        }).value,
+      }
     }
   },
   UPDATE_KEYS_PRESSED: (action: UpdateKeysPressed, editor: EditorModel): EditorModel => {
