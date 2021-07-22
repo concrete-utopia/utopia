@@ -367,6 +367,7 @@ import {
   SetPropTransient,
   ClearTransientProps,
   AddTailwindConfig,
+  WrapInElement,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -851,6 +852,79 @@ function switchAndUpdateFrames(
     }
   })
   return setCanvasFramesInnerNew(withChildrenUpdated, framesAndTargets, null)
+}
+
+export function editorReparentNoStyleChange(
+  target: ElementPath,
+  indexPosition: IndexPosition,
+  newParentPath: ElementPath,
+  editor: EditorModel,
+): EditorModel {
+  return withUnderlyingTargetFromEditorState(
+    target,
+    editor,
+    editor,
+    (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
+      return withUnderlyingTargetFromEditorState(
+        newParentPath,
+        editor,
+        editor,
+        (
+          newParentSuccess,
+          underlyingNewParentElement,
+          underlyingNewParentPath,
+          underlyingNewParentFilePath,
+        ) => {
+          const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
+            newParentSuccess,
+          )
+          const updatedUnderlyingElement = findElementAtPath(
+            underlyingTarget,
+            utopiaComponentsIncludingScenes,
+          )
+          if (updatedUnderlyingElement == null) {
+            return editor
+          }
+          // Remove and then insert again at the new location.
+          return modifyParseSuccessAtPath(underlyingNewParentFilePath, editor, (workingSuccess) => {
+            let updatedUtopiaComponents: UtopiaJSXComponent[] = []
+            updatedUtopiaComponents = removeElementAtPath(
+              underlyingTarget,
+              utopiaComponentsIncludingScenes,
+            )
+
+            updatedUtopiaComponents = insertElementAtPath(
+              editor.projectContents,
+              editor.canvas.openFile?.filename ?? null,
+              underlyingNewParentPath,
+              updatedUnderlyingElement,
+              updatedUtopiaComponents,
+              indexPosition,
+            )
+
+            return {
+              ...workingSuccess,
+              topLevelElements: applyUtopiaJSXComponentsChanges(
+                workingSuccess.topLevelElements,
+                updatedUtopiaComponents,
+              ),
+            }
+          })
+        },
+      )
+    },
+  )
+}
+
+export function editorMultiselectReparentNoStyleChange(
+  targets: ElementPath[],
+  indexPosition: IndexPosition,
+  newParentPath: ElementPath,
+  editor: EditorModel,
+): EditorModel {
+  return targets.reduce<EditorModel>((workingEditor, target) => {
+    return editorReparentNoStyleChange(target, indexPosition, newParentPath, workingEditor)
+  }, editor)
 }
 
 export function editorMoveMultiSelectedTemplates(
@@ -2209,6 +2283,101 @@ export const UPDATE_FNS = {
             withWrapperViewAdded,
             action.layoutSystem,
           ).editor
+
+          return {
+            ...withElementsAdded,
+            selectedViews: Utils.maybeToArray(viewPath),
+            highlightedViews: [],
+          }
+        }
+      },
+      dispatch,
+    )
+  },
+  WRAP_IN_ELEMENT: (
+    action: WrapInElement,
+    editorForAction: EditorModel,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    return toastOnGeneratedElementsSelected(
+      `Generated elements can't be wrapped into other elements.`,
+      editorForAction,
+      false,
+      (editor) => {
+        const uiFileKey = getOpenUIJSFileKey(editor)
+        if (uiFileKey == null) {
+          return editor
+        }
+
+        const newUID = action.whatToWrapWith.element.uid
+
+        const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
+          action.targets,
+          derived,
+        )
+        const parentPath = EP.getCommonParent(orderedActionTargets)
+        if (parentPath === null) {
+          return editor
+        } else {
+          let viewPath: ElementPath | null = null
+
+          const underlyingTarget = normalisePathToUnderlyingTarget(
+            editor.projectContents,
+            editor.nodeModules.files,
+            uiFileKey,
+            parentPath,
+          )
+
+          const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
+
+          const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+          const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
+            targetSuccess.filePath,
+            editor,
+            (parseSuccess) => {
+              const elementToInsert: JSXElement = action.whatToWrapWith.element
+
+              const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+              const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
+                editor.projectContents,
+                editor.canvas.openFile?.filename ?? null,
+                parentPath,
+                elementToInsert,
+                utopiaJSXComponents,
+                null,
+              )
+
+              viewPath = EP.appendToPath(parentPath, newUID)
+
+              const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
+
+              return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+                return {
+                  ...success,
+                  utopiaComponents: withTargetAdded,
+                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
+                }
+              }, parseSuccess)
+            },
+          )
+
+          if (viewPath == null) {
+            return editor
+          }
+
+          // reparent targets to the view
+          const indexPosition: IndexPosition = {
+            type: 'back',
+          }
+
+          const withElementsAdded = editorMultiselectReparentNoStyleChange(
+            orderedActionTargets,
+            indexPosition,
+            viewPath,
+            withWrapperViewAddedNoFrame,
+          )
 
           return {
             ...withElementsAdded,

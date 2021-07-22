@@ -195,6 +195,7 @@ import type {
   SetPropTransient,
   ClearTransientProps,
   AddTailwindConfig,
+  WrapInElement,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -642,6 +643,17 @@ export function wrapInView(
     action: 'WRAP_IN_VIEW',
     targets: targets,
     layoutSystem: LayoutSystem.PinSystem,
+    whatToWrapWith: whatToWrapWith,
+  }
+}
+
+export function wrapInElement(
+  targets: Array<ElementPath>,
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports },
+): WrapInElement {
+  return {
+    action: 'WRAP_IN_ELEMENT',
+    targets: targets,
     whatToWrapWith: whatToWrapWith,
   }
 }

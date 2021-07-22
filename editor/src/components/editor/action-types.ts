@@ -423,6 +423,12 @@ export interface WrapInView {
   whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
 }
 
+export interface WrapInElement {
+  action: 'WRAP_IN_ELEMENT'
+  targets: ElementPath[]
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports }
+}
+
 export interface OpenFloatingInsertMenu {
   action: 'OPEN_FLOATING_INSERT_MENU'
   mode: 'insert' | 'convert' | 'wrap'
@@ -935,6 +941,7 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInView
+  | WrapInElement
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
   | UnwrapGroupOrView
