@@ -1,3 +1,4 @@
+import React from 'react'
 import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api'
 import { transformElementAtPath } from '../../components/editor/store/editor-state'
 import * as EP from '../shared/element-path'
@@ -54,6 +55,8 @@ import { getLayoutPropertyOr } from './getLayoutProperty'
 import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { notice, Notice } from '../../components/common/notice'
+import { stripNulls } from '../shared/array-utils'
+
 export function createStylePostActionToast(
   name: string,
   originalPropertyPaths: PropertyPath[],
@@ -63,11 +66,18 @@ export function createStylePostActionToast(
   const addedProps = updatedPropertyPaths.filter((x) => !originalPropertyPaths.includes(x)) // R.difference(updatedPropertyPaths, originalPropertyPaths)
 
   if (removedProps.length > 0 || addedProps.length > 0) {
+    const added =
+      addedProps.length === 0 ? null : `Added: ${addedProps.map(PP.toString).join(', ')}`
+    const removed =
+      removedProps.length === 0 ? null : `Removed: ${removedProps.map(PP.toString).join(', ')}`
+
+    const addedRemovedProps = stripNulls([added, removed]).join('\n')
+
     return [
       notice(
-        `Updated the following props of the element: added: [ ${addedProps
-          .map(PP.toString)
-          .join(', ')} ], removed: [ ${removedProps.map(PP.toString).join(', ')} ]`,
+        <div style={{ whiteSpace: 'pre' }}>
+          {`${name} has changed props:\n${addedRemovedProps}`}
+        </div>,
         'PRIMARY',
         false,
         // 'style-update-post-action-ui',
