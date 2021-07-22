@@ -989,6 +989,9 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
               return !subSectionAvailable.deniedElementTypes.includes(type)
             case 'allowall':
               return true
+            default:
+              const _exhaustiveCheck: never = subSectionAvailable
+              throw new Error(`Unhandled type ${JSON.stringify(subSectionAvailable)}`)
           }
         }
       }
