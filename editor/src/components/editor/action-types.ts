@@ -38,6 +38,7 @@ import {
   DuplicationState,
   EditorState,
   ErrorMessages,
+  FloatingInsertMenuState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -431,7 +432,7 @@ export interface WrapInElement {
 
 export interface OpenFloatingInsertMenu {
   action: 'OPEN_FLOATING_INSERT_MENU'
-  mode: 'insert' | 'convert' | 'wrap'
+  mode: FloatingInsertMenuState
 }
 
 export interface CloseFloatingInsertMenu {
@@ -867,6 +868,7 @@ export interface InsertWithDefaults {
   targetParent: ElementPath
   toInsert: InsertableComponent
   styleProps: StylePropOption
+  indexPosition: IndexPosition | null
 }
 
 export interface SetPropTransient {

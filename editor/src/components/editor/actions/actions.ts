@@ -999,9 +999,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       scrollAnimation: currentEditor.canvas.scrollAnimation,
       transientProperties: null,
     },
-    floatingInsertMenu: {
-      insertMenuMode: currentEditor.floatingInsertMenu.insertMenuMode,
-    },
+    floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
       visible: currentEditor.inspector.visible,
     },
@@ -2320,10 +2318,7 @@ export const UPDATE_FNS = {
   OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      floatingInsertMenu: {
-        ...editor.floatingInsertMenu,
-        insertMenuMode: action.mode,
-      },
+      floatingInsertMenu: action.mode,
     }
   },
   CLOSE_FLOATING_INSERT_MENU: (
@@ -2333,7 +2328,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       floatingInsertMenu: {
-        ...editor.floatingInsertMenu,
         insertMenuMode: 'closed',
       },
     }
@@ -4587,7 +4581,7 @@ export const UPDATE_FNS = {
             action.targetParent,
             element,
             utopiaComponents,
-            null,
+            action.indexPosition,
           )
 
           const newPath = EP.appendToPath(action.targetParent, newUID)
