@@ -481,7 +481,7 @@ const flexGrowShrinkProps = [
   createLayoutPropertyPath('flexShrink'),
 ]
 
-const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
+export const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>

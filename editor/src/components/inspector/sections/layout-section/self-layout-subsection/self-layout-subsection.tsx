@@ -16,7 +16,7 @@ import { useEditorState, useRefEditorState } from '../../../../editor/store/stor
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { CSSPosition } from '../../../common/css-utils'
 import * as EP from '../../../../../core/shared/element-path'
-import { FlexElementSubsection } from '../flex-element-subsection/flex-element-subsection'
+import { FlexElementSubsectionExperiment } from '../flex-element-subsection/flex-element-subsection'
 import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
 import { selectComponents } from '../../../../editor/actions/action-creators'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
@@ -59,13 +59,19 @@ export const LayoutSubsection = betterReactMemo(
       <>
         <LayoutSectionHeader layoutType={activeTab} />
         {when(activeTab === 'flex', <FlexInfoBox />)}
-        <GiganticSizePinsSubsection
-          layoutType={activeTab}
-          parentFlexDirection={props.parentFlexDirection}
-          aspectRatioLocked={props.aspectRatioLocked}
-          toggleAspectRatioLock={props.toggleAspectRatioLock}
-        />
-        {activeTab === 'flex' ? <FlexElementSubsection /> : null}
+        {when(
+          activeTab !== 'flex',
+          <GiganticSizePinsSubsection
+            layoutType={activeTab}
+            parentFlexDirection={props.parentFlexDirection}
+            aspectRatioLocked={props.aspectRatioLocked}
+            toggleAspectRatioLock={props.toggleAspectRatioLock}
+          />,
+        )}
+        {when(
+          activeTab === 'flex',
+          <FlexElementSubsectionExperiment parentFlexDirection={props.parentFlexDirection} />,
+        )}
       </>
     )
   },
