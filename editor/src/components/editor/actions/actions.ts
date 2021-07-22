@@ -2243,6 +2243,15 @@ export const UPDATE_FNS = {
           derived,
         )
         const parentPath = EP.getCommonParent(orderedActionTargets)
+        const indexInParent = optionalMap(
+          (firstPsthMatchingCommonParent) =>
+            MetadataUtils.getViewZIndexFromMetadata(
+              editor.jsxMetadata,
+              firstPsthMatchingCommonParent,
+            ),
+          orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
+        )
+
         if (parentPath === null) {
           return editor
         } else {
@@ -2254,8 +2263,6 @@ export const UPDATE_FNS = {
             uiFileKey,
             parentPath,
           )
-
-          const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
 
           const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -2272,7 +2279,13 @@ export const UPDATE_FNS = {
                 parentPath,
                 elementToInsert,
                 utopiaJSXComponents,
-                null,
+                optionalMap(
+                  (index) => ({
+                    type: 'before',
+                    index: index,
+                  }),
+                  indexInParent,
+                ),
               )
 
               viewPath = EP.appendToPath(parentPath, newUID)
