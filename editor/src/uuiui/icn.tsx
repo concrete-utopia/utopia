@@ -3,7 +3,6 @@ import * as React from 'react'
 import { betterReactMemo } from '../utils/react-performance'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
-import { useColorTheme } from '.'
 import { useEditorState } from '../components/editor/store/store-hook'
 import { Theme } from '../components/editor/store/editor-state'
 
