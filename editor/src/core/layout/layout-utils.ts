@@ -22,7 +22,6 @@ import {
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
-  isJSXElement,
   jsxAttributeValue,
   JSXElement,
   UtopiaJSXComponent,
@@ -30,14 +29,14 @@ import {
   SettableLayoutSystem,
   ElementInstanceMetadataMap,
 } from '../shared/element-template'
-import { findJSXElementChildAtPath } from '../model/element-template-utils'
+import { findJSXElementAtStaticPath } from '../model/element-template-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
   ValueAtPath,
   getJSXAttributeAtPath,
-  ModifiableAttribute,
   setJSXValueAtPath,
+  getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
 import { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
@@ -47,14 +46,16 @@ import {
   pinnedPropForFramePoint,
   StyleLayoutProp,
 } from './layout-helpers-new'
-import { getLayoutPropertyOr } from './getLayoutProperty'
-import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
+import { CSSPosition } from '../../components/inspector/common/css-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import type { Notice } from '../../components/common/notice'
+import { createStylePostActionToast } from './layout-notice'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
   componentMetadata: ElementInstanceMetadataMap
   didSwitch: boolean
+  toast: Array<Notice>
 }
 
 export function maybeSwitchChildrenLayoutProps(
@@ -68,13 +69,14 @@ export function maybeSwitchChildrenLayoutProps(
     target,
     true,
   )
-  const result = children.reduce(
+  const result = children.reduce<LayoutPropChangeResult>(
     (working, next) => {
       const { components: workingComponents, didSwitch: workingDidSwitch } = working
       const {
         components: nextComponents,
         componentMetadata: nextMetadata,
         didSwitch: nextDidSwitch,
+        toast: nextToast,
       } = maybeSwitchLayoutProps(
         next.elementPath,
         next.elementPath,
@@ -89,9 +91,15 @@ export function maybeSwitchChildrenLayoutProps(
         components: nextComponents,
         componentMetadata: nextMetadata,
         didSwitch: workingDidSwitch || nextDidSwitch,
+        toast: [...working.toast, ...nextToast],
       }
     },
-    { components: components, componentMetadata: currentContextMetadata, didSwitch: false },
+    {
+      components: components,
+      componentMetadata: currentContextMetadata,
+      didSwitch: false,
+      toast: [],
+    },
   )
   return result
 }
@@ -133,10 +141,22 @@ export function maybeSwitchLayoutProps(
       components,
       parentFrame,
     )
+
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    const originalElement = findJSXElementAtStaticPath(components, staticTarget)
+    const originalPropertyPaths = getAllPathsFromAttributes(originalElement?.props ?? [])
+    const updatedelement = findJSXElementAtStaticPath(updatedComponents, staticTarget)
+    const updatedPropertyPaths = getAllPathsFromAttributes(updatedelement?.props ?? [])
+
     return {
       components: updatedComponents,
       componentMetadata: updatedMetadata,
       didSwitch: true,
+      toast: createStylePostActionToast(
+        MetadataUtils.getElementLabel(target, targetOriginalContextMetadata),
+        originalPropertyPaths,
+        updatedPropertyPaths,
+      ),
     }
   } else {
     const switchLayoutFunction = getLayoutFunction(
@@ -152,10 +172,23 @@ export function maybeSwitchLayoutProps(
       currentContextMetadata,
       components,
     )
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    const originalElement = findJSXElementAtStaticPath(components, staticTarget)
+    const originalPropertyPaths = getAllPathsFromAttributes(originalElement?.props ?? [])
+    const updatedelement = findJSXElementAtStaticPath(updatedComponents, staticTarget)
+    const updatedPropertyPaths = getAllPathsFromAttributes(updatedelement?.props ?? [])
+
     return {
       components: updatedComponents,
       componentMetadata: updatedMetadata,
       didSwitch: switchLayoutFunction.didSwitch,
+      toast: switchLayoutFunction.didSwitch
+        ? createStylePostActionToast(
+            MetadataUtils.getElementLabel(target, targetOriginalContextMetadata),
+            originalPropertyPaths,
+            updatedPropertyPaths,
+          )
+        : [],
     }
   }
 }

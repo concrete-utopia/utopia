@@ -1,52 +1,74 @@
+/** @jsx jsx */
+
+import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { ValueType } from 'react-select'
+import { FormatOptionLabelMeta, ValueType, OptionsType, InputProps, components } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
-import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
-import { CustomReactSelectInput, SelectOption } from '../../../controls/select-control'
 import {
   UtopiaTheme,
   UNSAFE_getIconURL,
-  Section,
-  InspectorSectionHeader,
+  InspectorSubsectionHeader,
+  useColorTheme,
+  FlexColumn,
+  FlexRow,
+  colorTheme,
 } from '../../../../../uuiui'
-import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
+import { betterReactMemo } from '../../../../../uuiui-deps'
+import {
+  useFilteredOptions,
+  TailWindOption,
+  MatchHighlighter,
+  useGetSelectedTailwindOptions,
+} from '../../../../../core/tailwind/tailwind-options'
+import { useEditorState } from '../../../../editor/store/store-hook'
+import * as EditorActions from '../../../../editor/actions/action-creators'
+import * as PP from '../../../../../core/shared/property-path'
+import { jsxAttributeValue } from '../../../../../core/shared/element-template'
+import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
+import {
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../../../../core/shared/atom-with-pub-sub'
+import { last } from '../../../../../core/shared/array-utils'
 
-const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<SelectOption>> = () =>
+const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
 
-const MultiValueRemove: React.FunctionComponent<MultiValueRemoveProps<SelectOption>> = (props) => (
-  <div {...props.innerProps} />
-)
-
-interface ClassNameControlProps<T extends string> {
-  controlStyles: ControlStyles
-  values: ReadonlyArray<SelectOption>
-  onSubmitValue: (newTransformedValues: string, transient?: boolean) => void
-  onUnsetValues: () => void
-}
+const MultiValueRemove: React.FunctionComponent<MultiValueRemoveProps<TailWindOption>> = (
+  props,
+) => <div {...props.innerProps} />
 
 const valueContainer: styleFn = (base) => ({
   ...base,
-  padding: 0,
+  padding: '2px 4px',
   height: '100%',
   width: '100%',
 })
 
-const multiValueLabel: styleFn = (base) => ({
+const container: styleFn = (base) => ({
   ...base,
-  label: 'multiValueLabel',
-  display: 'flex',
-  alignItems: 'center',
+  minHeight: UtopiaTheme.layout.inputHeight.default,
   paddingTop: 2,
   paddingBottom: 2,
-  paddingLeft: 6,
-  paddingRight: 2,
-  fontSize: 9,
+})
+
+const control: styleFn = () => ({
+  label: 'control',
+  alignItems: 'center',
+  backgroundColor: 'rgb(245, 245, 245)',
+  boxSizing: 'border-box',
+  cursor: 'default',
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  position: 'relative',
+  transition: 'all 100ms',
+  minHeight: UtopiaTheme.layout.inputHeight.default,
 })
 
 const multiValueRemove: styleFn = (base, state) => ({
@@ -78,96 +100,238 @@ const placeholder: styleFn = (base) => ({
   paddingRight: 6,
 })
 
-const menu: styleFn = () => ({ display: 'none' })
+const menu: styleFn = (base) => ({
+  ...base,
+  position: 'relative',
+  boxShadow: 'none',
+  borderRadius: 0,
+  background: 'transparent',
+})
 
-const ClassNameControl = betterReactMemo(
-  'ClassNameControl',
-  <T extends string>({
-    controlStyles,
-    values,
-    onSubmitValue,
-    onUnsetValues,
-  }: ClassNameControlProps<T>) => {
-    const onChange = React.useCallback(
-      (newValues: ValueType<SelectOption>) => {
-        if (Array.isArray(newValues) && newValues.length > 0) {
-          onSubmitValue(
-            Utils.stripNulls(
-              newValues.map((newValue) => {
-                const newValueValue = newValue.value
-                if (typeof newValueValue === 'string' && newValueValue.length > 0) {
-                  const trimmed = newValueValue.trim()
-                  return trimmed.startsWith('.') ? trimmed.slice(1) : trimmed
-                } else {
-                  return null
-                }
-              }),
-            ).join(' '),
-          )
-        } else if (newValues === null) {
-          onUnsetValues()
-        }
-      },
-      [onSubmitValue, onUnsetValues],
+const AlwaysTrue = () => true
+let queuedDispatchTimeout: number | undefined = undefined
+
+const focusedOptionAtom = atomWithPubSub<string | null>({
+  key: 'classNameSubsectionFocusedOption',
+  defaultValue: null,
+})
+
+function formatOptionLabel(
+  { label }: TailWindOption,
+  { context, inputValue }: FormatOptionLabelMeta<TailWindOption>,
+) {
+  return context === 'menu' ? <MatchHighlighter text={label} searchString={inputValue} /> : label
+}
+
+function isOptionsType<T>(valueType: T | OptionsType<T>): valueType is OptionsType<T> {
+  return Array.isArray(valueType)
+}
+
+function valueTypeAsArray<T>(valueType: ValueType<T>): ReadonlyArray<T> {
+  if (valueType == null) {
+    return []
+  } else if (isOptionsType(valueType)) {
+    return valueType
+  } else {
+    return [valueType]
+  }
+}
+
+const FooterSection = betterReactMemo(
+  'ClassNameControlFooter',
+  (props: { filter: string; options: Array<TailWindOption> }) => {
+    const theme = useColorTheme()
+    const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom)
+    const focusedOption =
+      focusedOptionValue == null ? null : props.options.find((o) => o.value === focusedOptionValue)
+    const joinedAttributes = focusedOption?.attributes?.join(', ')
+    const attributesText =
+      joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
+
+    return (
+      <div
+        css={{
+          label: 'focusedElementMetadata',
+          overflow: 'hidden',
+          boxShadow: `inset 0px 1px 1px 0px ${theme.neutralInvertedBackground.o(10).value}`,
+          padding: '8px 8px',
+          fontSize: '10px',
+          pointerEvents: 'none',
+          color: theme.textColor.value,
+        }}
+      >
+        <FlexColumn>
+          <FlexRow>
+            <span>
+              <MatchHighlighter text={attributesText} searchString={props.filter} />
+            </span>
+          </FlexRow>
+        </FlexColumn>
+      </div>
     )
+  },
+)
 
-    const valuesLength = values.length
+const Input = (props: InputProps) => {
+  const value = (props as any).value
+  const isHidden = value.length !== 0 ? false : props.isHidden
+  return <components.Input {...props} isHidden={isHidden} />
+}
 
-    const input: styleFn = React.useCallback(
-      (base) => ({
+const ClassNameControl = betterReactMemo('ClassNameControl', () => {
+  const theme = useColorTheme()
+  const targets = useEditorState(
+    (store) => store.editor.selectedViews,
+    'ClassNameSubsection targets',
+  )
+  const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSubsection dispatch')
+
+  const [filter, setFilter] = React.useState('')
+  const isFocusedRef = React.useRef(false)
+  const shouldPreviewOnFocusRef = React.useRef(false)
+  const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
+  const focusedValueRef = React.useRef<string | null>(null)
+
+  const clearFocusedOption = React.useCallback(() => {
+    shouldPreviewOnFocusRef.current = false
+    updateFocusedOption(null)
+    dispatch([EditorActions.clearTransientProps()], 'canvas')
+  }, [updateFocusedOption, dispatch])
+
+  const onBlur = React.useCallback(() => {
+    isFocusedRef.current = false
+    shouldPreviewOnFocusRef.current = false
+    clearFocusedOption()
+  }, [clearFocusedOption])
+
+  const onFocus = React.useCallback(() => {
+    isFocusedRef.current = true
+  }, [])
+
+  const options = useFilteredOptions(filter, 100)
+
+  React.useEffect(() => {
+    return function cleanup() {
+      dispatch([EditorActions.clearTransientProps()], 'canvas')
+    }
+    /** deps is explicitly empty */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const { selectedOptions, elementPath, isMenuEnabled } = useGetSelectedTailwindOptions()
+
+  const onChange = React.useCallback(
+    (newValueType: ValueType<TailWindOption>) => {
+      const newValue = valueTypeAsArray(newValueType)
+      if (elementPath != null) {
+        if (queuedDispatchTimeout != null) {
+          window.clearTimeout(queuedDispatchTimeout)
+          queuedDispatchTimeout = undefined
+        }
+
+        dispatch(
+          [
+            EditorActions.setProp_UNSAFE(
+              elementPath,
+              PP.create(['className']),
+              jsxAttributeValue(newValue.map((value) => value.value).join(' '), emptyComments),
+            ),
+            EditorActions.clearTransientProps(),
+          ],
+          'everyone',
+        )
+      }
+    },
+    [dispatch, elementPath],
+  )
+
+  const onInputChange = React.useCallback(
+    (newInput) => {
+      if (newInput === '') {
+        clearFocusedOption()
+      }
+      focusedValueRef.current = null
+      setFilter(newInput)
+    },
+    [clearFocusedOption, setFilter],
+  )
+
+  const handleKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLElement>) => {
+      const shouldStopPreviewing =
+        filter === '' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
+
+      if (shouldStopPreviewing) {
+        clearFocusedOption()
+      } else {
+        shouldPreviewOnFocusRef.current = true
+      }
+
+      if (
+        event.key === 'ArrowUp' ||
+        event.key === 'ArrowDown' ||
+        event.key === 'PageUp' ||
+        event.key === 'PageDown' ||
+        event.key === 'Home' ||
+        event.key === 'End'
+      ) {
+        // Any of these keys will jump the focus to the menu
+        focusedValueRef.current = null
+      }
+
+      if (
+        filter === '' &&
+        selectedOptions != null &&
+        (event.key === 'Backspace' || event.key === 'Delete')
+      ) {
+        if (event.key === 'Delete' && focusedValueRef.current == null) {
+          // prevent the default react-select behaviour here, as it will delete the last value
+          // if nothing is focused, which feels wrong
+          event.preventDefault()
+        } else {
+          const updatedFilterText = focusedValueRef.current ?? last(selectedOptions)?.label
+          if (updatedFilterText != null) {
+            setFilter(updatedFilterText)
+          }
+        }
+      }
+    },
+    [clearFocusedOption, filter, selectedOptions],
+  )
+
+  const multiValueLabel: styleFn = React.useCallback(
+    (base, { isFocused }) => {
+      const color = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
+      return {
         ...base,
-        borderRadius: UtopiaTheme.inputBorderRadius,
-        fontSize: 9,
-        height: UtopiaTheme.layout.inputHeight.small,
-        paddingTop: 0,
-        paddingBottom: 2,
-        paddingLeft: 6,
-        paddingRight: 6,
-        minWidth: 90,
+        label: 'multiValueLabel',
         display: 'flex',
         alignItems: 'center',
-        '.className-inspector-control:hover &, &:focus-within': {
-          boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
-        },
-        '& input': {
-          fontFamily: 'Consolas, Menlo, monospace',
-          color: UtopiaTheme.color.emphasizedForeground.value,
-        },
-      }),
-      [controlStyles],
-    )
-
-    const container: styleFn = React.useCallback(
-      (base) => ({
-        ...base,
-        transform: valuesLength === 0 && !controlStyles.mixed ? 'translateX(-8px)' : undefined,
-        minHeight: UtopiaTheme.layout.inputHeight.default,
         paddingTop: 2,
         paddingBottom: 2,
-      }),
-      [controlStyles, valuesLength],
-    )
-    const control: styleFn = React.useCallback(
-      () => ({
-        label: 'control',
-        alignItems: 'center',
-        backgroundColor: controlStyles.backgroundColor,
-        boxSizing: 'border-box',
-        cursor: 'default',
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        position: 'relative',
-        transition: 'all 100ms',
-        minHeight: UtopiaTheme.layout.inputHeight.default,
-      }),
-      [controlStyles],
-    )
-    const multiValue: styleFn = React.useCallback(
-      (base, state) => ({
+        paddingLeft: 6,
+        paddingRight: 2,
+        fontSize: 9,
+        borderRadius: 3,
+        color: color,
+        backgroundColor: backgroundColor,
+      }
+    },
+    [theme],
+  )
+
+  const multiValue: styleFn = React.useCallback(
+    (base, { isFocused, data }) => {
+      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
+      if (isFocused) {
+        focusedValueRef.current = data.label
+      }
+
+      return {
         label: 'multiValue',
-        fontFamily: 'Consolas, Menlo, monospace',
-        color: UtopiaTheme.color.emphasizedForeground.value,
+        fontWeight: 600,
+        color: theme.emphasizedForeground.value,
         borderRadius: UtopiaTheme.inputBorderRadius,
         display: 'flex',
         marginRight: 4,
@@ -176,79 +340,120 @@ const ClassNameControl = betterReactMemo(
         minWidth: 0,
         height: UtopiaTheme.layout.inputHeight.small,
         boxShadow: `inset 0 0 0 1px ${
-          (state.isFocused as boolean)
-            ? UtopiaTheme.color.inspectorFocusedColor.value
-            : controlStyles.borderColor
+          isFocused ? theme.inspectorFocusedColor.value : 'transparent'
         }`,
         overflow: 'hidden',
-      }),
-      [controlStyles],
-    )
+        backgroundColor: backgroundColor,
+      }
+    },
+    [theme],
+  )
 
-    return (
-      <CreatableSelect
-        placeholder='Add class…'
-        isMulti
-        value={
-          controlStyles.mixed
-            ? [
-                {
-                  value: '',
-                  label: 'mixed',
-                  style: { fontFamily: controlStyles.fontStyle },
-                },
-              ]
-            : values
+  const option: styleFn = React.useCallback(
+    (base, { isFocused, isDisabled, value }) => {
+      if (
+        isFocusedRef.current &&
+        shouldPreviewOnFocusRef.current &&
+        isFocused &&
+        targets.length === 1
+      ) {
+        const oldClassNameString =
+          selectedOptions == null ? '' : selectedOptions.map((v) => v.value).join(' ') + ' '
+        const newClassNameString = oldClassNameString + value
+        if (queuedDispatchTimeout != null) {
+          window.clearTimeout(queuedDispatchTimeout)
         }
-        isDisabled={!controlStyles.interactive}
-        onChange={onChange}
-        components={{
-          IndicatorsContainer,
-          MultiValueRemove,
-          Input: CustomReactSelectInput,
-        }}
-        className='className-inspector-control'
-        styles={{
-          container,
-          control,
-          valueContainer,
-          multiValue,
-          multiValueLabel,
-          multiValueRemove,
-          input,
-          placeholder,
-          menu,
-        }}
-      />
-    )
-  },
-)
+        queuedDispatchTimeout = window.setTimeout(() => {
+          dispatch(
+            [
+              EditorActions.setPropTransient(
+                targets[0],
+                PP.create(['className']),
+                jsxAttributeValue(newClassNameString, emptyComments),
+              ),
+            ],
+            'canvas',
+          )
+        }, 10)
 
-export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => {
-  const {
-    value,
-    onSubmitValue,
-    onUnsetValues,
-    controlStyles,
-    controlStatus,
-  } = useInspectorElementInfo('className')
+        updateFocusedOption(value)
+      }
 
-  const values: ReadonlyArray<SelectOption> =
-    value === '' ? [] : value.split(' ').map((v) => ({ value: v, label: `.${v}` }))
+      const color = isFocused ? theme.inverted.textColor.value : theme.textColor.value
+      const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
+      const borderRadius = isFocused ? 3 : 0
 
-  const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
+      return {
+        minHeight: 27,
+        display: 'flex',
+        alignItems: 'center',
+        paddingLeft: 8,
+        paddingRight: 8,
+        backgroundColor: backgroundColor,
+        color: color,
+        cursor: isDisabled ? 'not-allowed' : 'default',
+        borderRadius: borderRadius,
+      }
+
+      // return base
+    },
+    [dispatch, targets, selectedOptions, updateFocusedOption, theme],
+  )
 
   return (
-    <React.Fragment>
-      <InspectorSectionHeader>Class names</InspectorSectionHeader>
-      <UIGridRow padded variant='<-------------1fr------------->' style={{ height: undefined }}>
-        <ClassNameControl
-          values={values}
-          controlStyles={controlStyles}
-          onSubmitValue={onSubmitValue}
-          onUnsetValues={onUnsetValues}
+    <div
+      style={{
+        backgroundColor: theme.emphasizedBackground.value,
+        boxShadow: `0px 0px 1px 0px ${theme.neutralInvertedBackground.o(30).value}`,
+        margin: 4,
+      }}
+    >
+      <InspectorSubsectionHeader style={{ color: theme.primary.value }}>
+        Class Names
+      </InspectorSubsectionHeader>
+      <UIGridRow padded variant='<-------------1fr------------->'>
+        <CreatableSelect
+          autoFocus={false}
+          placeholder='Add class…'
+          isMulti
+          value={selectedOptions}
+          isDisabled={!isMenuEnabled}
+          onChange={onChange}
+          onInputChange={onInputChange}
+          components={{
+            IndicatorsContainer,
+            Input,
+            MultiValueRemove,
+          }}
+          className='className-inspector-control'
+          styles={{
+            container,
+            control,
+            valueContainer,
+            multiValue,
+            multiValueLabel,
+            multiValueRemove,
+            placeholder,
+            menu,
+            option,
+          }}
+          filterOption={AlwaysTrue}
+          options={options}
+          menuIsOpen={true}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          escapeClearsValue={true}
+          formatOptionLabel={formatOptionLabel}
+          onKeyDown={handleKeyDown}
+          maxMenuHeight={199}
+          inputValue={filter}
         />
       </UIGridRow>
-    </React.Fragment>
+      <FooterSection options={options} filter={filter} />
+    </div>
   )
+})
+
+export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => {
+  return <ClassNameControl />
 })

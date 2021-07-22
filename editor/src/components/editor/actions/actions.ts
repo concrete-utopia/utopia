@@ -518,6 +518,8 @@ import {
   PostCSSPath,
   TailwindConfigPath,
 } from '../../../core/tailwind/tailwind-config'
+import { uniqToasts } from './toast-helpers'
+import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -954,7 +956,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
     openPopupId: null,
-    toasts: poppedEditor.toasts,
+    toasts: currentEditor.toasts,
     cursorStack: {
       fixed: null,
       mouseOver: [],
@@ -995,9 +997,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       scrollAnimation: currentEditor.canvas.scrollAnimation,
       transientProperties: null,
     },
-    floatingInsertMenu: {
-      insertMenuMode: currentEditor.floatingInsertMenu.insertMenuMode,
-    },
+    floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
       visible: currentEditor.inspector.visible,
     },
@@ -1930,14 +1930,10 @@ export const UPDATE_FNS = {
     }
   },
   ADD_TOAST: (action: AddToast, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    if (!action.toast.persistent) {
-      setTimeout(() => dispatch([removeToast(action.toast.id)], 'everyone'), 5500)
-    }
-
     const withOldToastRemoved = UPDATE_FNS.REMOVE_TOAST(removeToast(action.toast.id), editor)
     return {
       ...withOldToastRemoved,
-      toasts: [...withOldToastRemoved.toasts, action.toast],
+      toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -2225,10 +2221,7 @@ export const UPDATE_FNS = {
   OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      floatingInsertMenu: {
-        ...editor.floatingInsertMenu,
-        insertMenuMode: action.mode,
-      },
+      floatingInsertMenu: action.mode,
     }
   },
   CLOSE_FLOATING_INSERT_MENU: (
@@ -2238,7 +2231,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       floatingInsertMenu: {
-        ...editor.floatingInsertMenu,
         insertMenuMode: 'closed',
       },
     }
@@ -2612,7 +2604,8 @@ export const UPDATE_FNS = {
     }
     if (insertionAllowed) {
       return action.elements.reduce((workingEditorState, currentValue, index) => {
-        return modifyUnderlyingForOpenFile(
+        let toastsAdded: Array<Notice> = []
+        const modifyResult = modifyUnderlyingForOpenFile(
           targetParent,
           workingEditorState,
           (elem) => elem,
@@ -2634,7 +2627,7 @@ export const UPDATE_FNS = {
               updatedComponents = components
             } else {
               const newPath = EP.appendToPath(targetParent, newUID)
-              updatedComponents = maybeSwitchLayoutProps(
+              const maybeSwitchResult = maybeSwitchLayoutProps(
                 newPath,
                 originalPath,
                 targetParent,
@@ -2643,7 +2636,9 @@ export const UPDATE_FNS = {
                 components,
                 null,
                 null,
-              ).components
+              )
+              updatedComponents = maybeSwitchResult.components
+              toastsAdded.push(...maybeSwitchResult.toast)
             }
 
             return {
@@ -2655,6 +2650,10 @@ export const UPDATE_FNS = {
             }
           },
         )
+        return {
+          ...modifyResult,
+          toasts: uniqToasts([...modifyResult.toasts, ...toastsAdded]),
+        }
       }, editor)
     } else {
       const showToastAction = showToast(
@@ -2728,23 +2727,23 @@ export const UPDATE_FNS = {
 
   TOGGLE_COLLAPSE: (action: ToggleCollapse, editor: EditorModel): EditorModel => {
     if (editor.navigator.collapsedViews.some((element) => EP.pathsEqual(element, action.target))) {
-      return update(editor, {
-        navigator: {
-          collapsedViews: {
-            $set: editor.navigator.collapsedViews.filter(
-              (element) => !EP.pathsEqual(element, action.target),
-            ),
-          },
-        },
-      })
+      return {
+        ...editor,
+        navigator: NavigatorStateKeepDeepEquality(editor.navigator, {
+          ...editor.navigator,
+          collapsedViews: editor.navigator.collapsedViews.filter(
+            (element) => !EP.pathsEqual(element, action.target),
+          ),
+        }).value,
+      }
     } else {
-      return update(editor, {
-        navigator: {
-          collapsedViews: {
-            $set: editor.navigator.collapsedViews.concat(action.target),
-          },
-        },
-      })
+      return {
+        ...editor,
+        navigator: NavigatorStateKeepDeepEquality(editor.navigator, {
+          ...editor.navigator,
+          collapsedViews: editor.navigator.collapsedViews.concat(action.target),
+        }).value,
+      }
     }
   },
   UPDATE_KEYS_PRESSED: (action: UpdateKeysPressed, editor: EditorModel): EditorModel => {
@@ -4485,7 +4484,7 @@ export const UPDATE_FNS = {
             action.targetParent,
             element,
             utopiaComponents,
-            null,
+            action.indexPosition,
           )
 
           const newPath = EP.appendToPath(action.targetParent, newUID)

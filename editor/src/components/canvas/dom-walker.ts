@@ -779,6 +779,7 @@ function getSpecialMeasurements(
   let clientWidth = roundToNearestHalf(element.clientWidth)
   let clientHeight = roundToNearestHalf(element.clientHeight)
 
+  const childrenCount = element.childElementCount
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -799,6 +800,7 @@ function getSpecialMeasurements(
     parentFlexDirection,
     flexDirection,
     element.localName,
+    childrenCount,
   )
 }
 

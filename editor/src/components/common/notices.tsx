@@ -26,6 +26,8 @@ export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
   return resultingStyle
 }
 
+const ToastTimeout = 5500
+
 /**
  * Show information in a stack of toasts at the bottom of the editor
  *
@@ -34,9 +36,17 @@ export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
  */
 export const Toast: React.FunctionComponent<NoticeProps> = (props) => {
   const dispatch = useEditorState((store) => store.dispatch, 'Toast dispatch')
-  const deleteNotice = React.useCallback(() => {
+  const deleteToast = React.useCallback(() => {
     dispatch([EditorActions.removeToast(props.id)])
   }, [dispatch, props.id])
+
+  React.useEffect(() => {
+    // timeout type conflicts between node and browser – but this will work for both, trust me
+    const timeoutId: any = props.persistent ? null : setTimeout(deleteToast, ToastTimeout)
+    return function cleanup() {
+      clearTimeout(timeoutId)
+    }
+  }, [props.persistent, deleteToast])
 
   return (
     <div
@@ -80,7 +90,7 @@ export const Toast: React.FunctionComponent<NoticeProps> = (props) => {
             backgroundColor: 'hsl(0,0%,0%,6%)',
           },
         }}
-        onClick={deleteNotice}
+        onClick={deleteToast}
         id='toast-button'
       >
         ×

@@ -572,7 +572,7 @@ export function handleKeyDown(
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu('wrap')]
+          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
           : []
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
@@ -583,7 +583,7 @@ export function handleKeyDown(
       },
       [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu('wrap')]
+          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
           : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
@@ -748,14 +748,20 @@ export function handleKeyDown(
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return [EditorActions.openFloatingInsertMenu('convert')]
+          return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
         } else {
           return []
         }
       },
       [ADD_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return [EditorActions.openFloatingInsertMenu('insert')]
+          return [
+            EditorActions.openFloatingInsertMenu({
+              insertMenuMode: 'insert',
+              parentPath: null,
+              indexPosition: null,
+            }),
+          ]
         } else {
           return []
         }

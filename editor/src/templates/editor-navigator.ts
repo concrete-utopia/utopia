@@ -1,10 +1,10 @@
-import update from 'immutability-helper'
 import { ElementPath } from '../core/shared/project-file-types'
 import { DerivedState, EditorState } from '../components/editor/store/editor-state'
 import { LocalNavigatorAction } from '../components/navigator/actions'
 import { DragSelection } from '../components/navigator/navigator-item/navigator-item-dnd-container'
 import * as EP from '../core/shared/element-path'
 import Utils from '../utils/utils'
+import { NavigatorStateKeepDeepEquality } from '../utils/deep-equality-instances'
 
 export function createDragSelections(
   elementPaths: ElementPath[],
@@ -28,17 +28,16 @@ export const runLocalNavigatorAction = function (
 ): EditorState {
   switch (action.action) {
     case 'DROP_TARGET_HINT':
-      return update(model, {
-        navigator: {
+      return {
+        ...model,
+        navigator: NavigatorStateKeepDeepEquality(model.navigator, {
+          ...model.navigator,
           dropTargetHint: {
-            $set: {
-              target: action.target,
-              type: action.type,
-            },
+            target: action.target,
+            type: action.type,
           },
-        },
-      })
-
+        }).value,
+      }
     default:
       return model
   }

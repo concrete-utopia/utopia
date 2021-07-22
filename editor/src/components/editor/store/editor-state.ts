@@ -105,7 +105,6 @@ import {
 } from '../../custom-code/code-file'
 import { convertModeToSavedMode, EditorModes, Mode, PersistedMode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
-import { DropTargetHint } from '../../navigator/navigator'
 import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
@@ -275,6 +274,45 @@ export interface DesignerFile {
 
 export type Theme = 'light' | 'dark'
 
+export type DropTargetType = 'before' | 'after' | 'reparent' | null
+
+export interface DropTargetHint {
+  target: ElementPath | null
+  type: DropTargetType
+}
+
+export interface NavigatorState {
+  minimised: boolean
+  dropTargetHint: DropTargetHint
+  collapsedViews: ElementPath[]
+  renamingTarget: ElementPath | null
+  position: 'hidden' | 'left' | 'right'
+}
+
+export interface FloatingInsertMenuStateClosed {
+  insertMenuMode: 'closed'
+}
+
+export interface FloatingInsertMenuStateInsert {
+  insertMenuMode: 'insert'
+  parentPath: ElementPath | null
+  indexPosition: IndexPosition | null
+}
+
+export interface FloatingInsertMenuStateConvert {
+  insertMenuMode: 'convert'
+}
+
+export interface FloatingInsertMenuStateWrap {
+  insertMenuMode: 'wrap'
+}
+
+export type FloatingInsertMenuState =
+  | FloatingInsertMenuStateClosed
+  | FloatingInsertMenuStateInsert
+  | FloatingInsertMenuStateConvert
+  | FloatingInsertMenuStateWrap
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -349,9 +387,7 @@ export interface EditorState {
       attributesToUpdate: MapLike<JSXAttribute>
     }> | null
   }
-  floatingInsertMenu: {
-    insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'
-  }
+  floatingInsertMenu: FloatingInsertMenuState
   inspector: {
     visible: boolean
   }
@@ -372,13 +408,7 @@ export interface EditorState {
   projectSettings: {
     minimised: boolean
   }
-  navigator: {
-    minimised: boolean
-    dropTargetHint: DropTargetHint
-    collapsedViews: ElementPath[]
-    renamingTarget: ElementPath | null
-    position: 'hidden' | 'left' | 'right'
-  }
+  navigator: NavigatorState
   topmenu: {
     formulaBarMode: 'css' | 'content'
     formulaBarFocusCounter: number
@@ -918,17 +948,20 @@ export interface TransientCanvasState {
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
   filesState: TransientFilesState | null
+  toastsToApply: ReadonlyArray<Notice>
 }
 
 export function transientCanvasState(
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
+  toastsToApply: ReadonlyArray<Notice>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     filesState: fileState,
+    toastsToApply: toastsToApply,
   }
 }
 
