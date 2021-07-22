@@ -518,6 +518,7 @@ import {
   PostCSSPath,
   TailwindConfigPath,
 } from '../../../core/tailwind/tailwind-config'
+import { uniqToasts } from './toast-helpers'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1937,7 +1938,7 @@ export const UPDATE_FNS = {
     const withOldToastRemoved = UPDATE_FNS.REMOVE_TOAST(removeToast(action.toast.id), editor)
     return {
       ...withOldToastRemoved,
-      toasts: [...withOldToastRemoved.toasts, action.toast],
+      toasts: uniqToasts([...withOldToastRemoved.toasts, action.toast]),
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
@@ -2660,7 +2661,7 @@ export const UPDATE_FNS = {
         )
         return {
           ...modifyResult,
-          toasts: [...modifyResult.toasts, ...toastsAdded],
+          toasts: uniqToasts([...modifyResult.toasts, ...toastsAdded]),
         }
       }, editor)
     } else {

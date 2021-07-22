@@ -201,6 +201,7 @@ import { WindowMousePositionRaw } from '../../utils/global-positions'
 import { importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
+import { uniqToasts } from '../editor/actions/toast-helpers'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -315,7 +316,7 @@ function applyTransientFilesState(
 
   return {
     ...workingState,
-    toasts: [...workingState.toasts, ...toastsToAdd], // TODO DEDUPLICATE and Filter me!
+    toasts: uniqToasts([...workingState.toasts, ...toastsToAdd]),
   }
 }
 
@@ -746,7 +747,7 @@ export function updateFramesOfScenesAndComponents(
   if (toastsToAdd.length > 0) {
     workingEditorState = {
       ...workingEditorState,
-      toasts: [...workingEditorState.toasts, ...toastsToAdd], // TODO removal timeout!
+      toasts: uniqToasts([...workingEditorState.toasts, ...toastsToAdd]),
     }
   }
   return workingEditorState
@@ -1969,7 +1970,7 @@ export function moveTemplate(
                 ...workingEditorState,
                 selectedViews: Utils.stripNulls(newSelectedViews),
                 highlightedViews: Utils.stripNulls(newHighlightedViews),
-                toasts: [...workingEditorState.toasts, ...toast],
+                toasts: uniqToasts([...workingEditorState.toasts, ...toast]),
               }
 
               return {
