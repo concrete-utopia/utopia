@@ -27,6 +27,9 @@ import { getAllTargetsAtPoint } from '../dom-lookup'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isSceneAgainstImports, isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { foldEither, isRight } from '../../../core/shared/either'
+import { when } from '../../../utils/react-conditionals'
+import { InsertionControls } from './insertion-plus-button'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 function getDistanceGuidelines(
   highlightedView: ElementPath,
@@ -503,6 +506,7 @@ export class SelectModeControlContainer extends React.Component<
             </React.Fragment>
           )
         })}
+        {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls {...this.props} />)}
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />

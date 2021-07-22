@@ -62,8 +62,11 @@ async function loadTailwindOptions() {
 loadTailwindOptions()
 
 export function searchStringToIndividualTerms(searchString: string): Array<string> {
-  const splitOnSpaces = searchString.trim().toLowerCase().split(' ')
-  return flatMapArray((s) => s.split(':'), splitOnSpaces)
+  return searchString
+    .trim()
+    .toLowerCase()
+    .split(/\W/)
+    .filter((s) => s != '')
 }
 
 function findMatchingOptions<T>(
