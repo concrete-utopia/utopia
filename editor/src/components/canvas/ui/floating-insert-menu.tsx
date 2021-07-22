@@ -47,6 +47,8 @@ import {
 } from '../../inspector/common/inspector-utils'
 import { EditorAction } from '../../editor/action-types'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { safeIndex } from '../../../core/shared/array-utils'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -357,14 +359,14 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
     }
   }, [])
 
-  const insertMenuMode = useEditorState(
-    (store) => store.editor.floatingInsertMenu.insertMenuMode,
-    'FloatingMenu insertMenuMode',
+  const floatingMenuState = useEditorState(
+    (store) => store.editor.floatingInsertMenu,
+    'FloatingMenu floatingMenuState',
   )
 
-  const showInsertionControls = insertMenuMode === 'insert'
+  const showInsertionControls = floatingMenuState.insertMenuMode === 'insert'
 
-  const menuTitle: string = getMenuTitle(insertMenuMode)
+  const menuTitle: string = getMenuTitle(floatingMenuState.insertMenuMode)
 
   const componentSelectorStyles = useComponentSelectorStyles()
   const dispatch = useEditorState((store) => store.dispatch, 'FloatingMenu dispatch')
@@ -383,62 +385,79 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
         const selectedViews = selectedViewsref.current
 
         let actionsToDispatch: Array<EditorAction> = []
-        if (insertMenuMode === 'wrap') {
-          const newUID = generateUidWithExistingComponents(projectContentsRef.current)
-          const newElement = jsxElement(
-            pickedInsertableComponent.element.name,
-            newUID,
-            setJSXAttributesAttribute(
-              pickedInsertableComponent.element.props,
-              'data-uid',
-              jsxAttributeValue(newUID, emptyComments),
-            ),
-            pickedInsertableComponent.element.children,
-          )
-
-          actionsToDispatch = [
-            wrapInView(selectedViews, {
-              element: newElement,
-              importsToAdd: pickedInsertableComponent.importsToAdd,
-            }),
-          ]
-        } else if (insertMenuMode === 'insert') {
-          let elementToInsert = pickedInsertableComponent
-          if (addContentForInsertion && pickedInsertableComponent.element.children.length === 0) {
-            elementToInsert = {
-              ...pickedInsertableComponent,
-              element: {
-                ...pickedInsertableComponent.element,
-                children: [jsxTextBlock('Utopia')],
-              },
-            }
-          }
-
-          // TODO multiselect?
-          actionsToDispatch = [
-            insertWithDefaults(
-              selectedViews[0],
-              elementToInsert,
-              fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-            ),
-          ]
-        } else if (insertMenuMode === 'convert') {
-          // this is taken from render-as.tsx
-          const targetsForUpdates = getElementsToTarget(selectedViews)
-          actionsToDispatch = targetsForUpdates.flatMap((path) => {
-            return updateJSXElementName(
-              path,
+        switch (floatingMenuState.insertMenuMode) {
+          case 'wrap': {
+            const newUID = generateUidWithExistingComponents(projectContentsRef.current)
+            const newElement = jsxElement(
               pickedInsertableComponent.element.name,
-              pickedInsertableComponent.importsToAdd,
+              newUID,
+              setJSXAttributesAttribute(
+                pickedInsertableComponent.element.props,
+                'data-uid',
+                jsxAttributeValue(newUID, emptyComments),
+              ),
+              pickedInsertableComponent.element.children,
             )
-          })
+
+            actionsToDispatch = [
+              wrapInView(selectedViews, {
+                element: newElement,
+                importsToAdd: pickedInsertableComponent.importsToAdd,
+              }),
+            ]
+            break
+          }
+          case 'insert': {
+            let elementToInsert = pickedInsertableComponent
+            if (addContentForInsertion && pickedInsertableComponent.element.children.length === 0) {
+              elementToInsert = {
+                ...pickedInsertableComponent,
+                element: {
+                  ...pickedInsertableComponent.element,
+                  children: [jsxTextBlock('Utopia')],
+                },
+              }
+            }
+
+            const targetParent: ElementPath | null =
+              floatingMenuState.parentPath ?? safeIndex(selectedViews, 0) ?? null
+            if (targetParent != null) {
+              // TODO multiselect?
+              actionsToDispatch = [
+                insertWithDefaults(
+                  targetParent,
+                  elementToInsert,
+                  fixedSizeForInsertion ? 'add-size' : 'do-not-add',
+                  floatingMenuState.indexPosition,
+                ),
+              ]
+            }
+            break
+          }
+          case 'convert': {
+            // this is taken from render-as.tsx
+            const targetsForUpdates = getElementsToTarget(selectedViews)
+            actionsToDispatch = targetsForUpdates.flatMap((path) => {
+              return updateJSXElementName(
+                path,
+                pickedInsertableComponent.element.name,
+                pickedInsertableComponent.importsToAdd,
+              )
+            })
+            break
+          }
+          case 'closed':
+            break
+          default:
+            const _exhaustiveCheck: never = floatingMenuState
+            throw new Error(`Unhandled type ${JSON.stringify(floatingMenuState)}`)
         }
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
     [
       dispatch,
-      insertMenuMode,
+      floatingMenuState,
       projectContentsRef,
       selectedViewsref,
       fixedSizeForInsertion,
