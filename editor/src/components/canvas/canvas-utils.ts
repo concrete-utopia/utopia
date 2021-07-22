@@ -27,7 +27,6 @@ import {
   PinningAndFlexPointsExceptSize,
   roundJSXElementLayoutValues,
   roundAttributeLayoutValues,
-  createStylePostActionToast,
 } from '../../core/layout/layout-utils'
 import {
   findElementAtPath,
@@ -201,6 +200,7 @@ import { emptySet } from '../../core/shared/set-utils'
 import { WindowMousePositionRaw } from '../../utils/global-positions'
 import { importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
+import { createStylePostActionToast } from '../../core/layout/layout-notice'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,

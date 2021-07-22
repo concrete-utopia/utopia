@@ -1,8 +1,6 @@
-import React from 'react'
 import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api'
 import { transformElementAtPath } from '../../components/editor/store/editor-state'
 import * as EP from '../shared/element-path'
-import * as PP from '../shared/property-path'
 import {
   flatMapEither,
   forEachRight,
@@ -24,14 +22,12 @@ import {
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
-  isJSXElement,
   jsxAttributeValue,
   JSXElement,
   UtopiaJSXComponent,
   JSXAttributes,
   SettableLayoutSystem,
   ElementInstanceMetadataMap,
-  getJSXAttribute,
 } from '../shared/element-template'
 import { findJSXElementAtStaticPath } from '../model/element-template-utils'
 import {
@@ -39,11 +35,10 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
   getJSXAttributeAtPath,
-  ModifiableAttribute,
   setJSXValueAtPath,
   getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
-import { PropertyPath, ElementPath, StaticElementPath } from '../shared/project-file-types'
+import { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
 import {
   createLayoutPropertyPath,
@@ -51,42 +46,10 @@ import {
   pinnedPropForFramePoint,
   StyleLayoutProp,
 } from './layout-helpers-new'
-import { getLayoutPropertyOr } from './getLayoutProperty'
-import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
+import { CSSPosition } from '../../components/inspector/common/css-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { notice, Notice } from '../../components/common/notice'
-import { stripNulls } from '../shared/array-utils'
-
-export function createStylePostActionToast(
-  name: string,
-  originalPropertyPaths: PropertyPath[],
-  updatedPropertyPaths: PropertyPath[],
-): Array<Notice> {
-  const removedProps = originalPropertyPaths.filter((x) => !updatedPropertyPaths.includes(x)) // R.difference(originalPropertyPaths, updatedPropertyPaths)
-  const addedProps = updatedPropertyPaths.filter((x) => !originalPropertyPaths.includes(x)) // R.difference(updatedPropertyPaths, originalPropertyPaths)
-
-  if (removedProps.length > 0 || addedProps.length > 0) {
-    const added =
-      addedProps.length === 0 ? null : `Added: ${addedProps.map(PP.toString).join(', ')}`
-    const removed =
-      removedProps.length === 0 ? null : `Removed: ${removedProps.map(PP.toString).join(', ')}`
-
-    const addedRemovedProps = stripNulls([added, removed]).join('\n')
-
-    return [
-      notice(
-        <div style={{ whiteSpace: 'pre' }}>
-          {`${name} has changed props:\n${addedRemovedProps}`}
-        </div>,
-        'PRIMARY',
-        false,
-        // 'style-update-post-action-ui',
-      ),
-    ]
-  } else {
-    return []
-  }
-}
+import type { Notice } from '../../components/common/notice'
+import { createStylePostActionToast } from './layout-notice'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
