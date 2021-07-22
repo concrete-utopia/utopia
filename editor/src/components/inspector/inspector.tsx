@@ -78,6 +78,7 @@ import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
+import { isTwindEnabled } from '../../core/tailwind/tailwind'
 
 export interface ElementPathElement {
   name?: string
@@ -299,6 +300,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       return (
         <React.Fragment>
           <AlignmentButtons numberOfTargets={selectedViews.length} />
+          {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           <LayoutSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
@@ -316,7 +318,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <ClassNameSubsection />
           <EventHandlersSection />
         </React.Fragment>
       )
