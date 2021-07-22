@@ -25,6 +25,7 @@ import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { eitherToMaybe } from '../shared/either'
 import { getModifiableJSXAttributeAtPath } from '../shared/jsx-attributes'
 import * as PP from '../shared/property-path'
+import { isTwindEnabled } from './tailwind'
 
 export interface TailWindOption {
   label: string
@@ -126,51 +127,55 @@ export function useFilteredOptions(
   onEmptyResults: () => void = NO_OP,
 ): Array<TailWindOption> {
   return React.useMemo(() => {
-    const searchTerms = searchStringToIndividualTerms(filter)
-    let results: Array<TailWindOption>
+    if (isTwindEnabled()) {
+      const searchTerms = searchStringToIndividualTerms(filter)
+      let results: Array<TailWindOption>
 
-    if (searchTerms.length === 0) {
-      results = TailWindOptions.slice(0, maxResults)
-    } else {
-      // First find all matches, and use a sparse array to keep the best matches at the front
-      const orderedMatchedResults = findMatchingOptions(
-        searchTerms,
-        TailWindOptions,
-        (option) => option.label.split(':'),
-        maxResults,
-      )
-
-      // Now go through and take the first n best matches
-      let matchedResults = takeBestOptions(orderedMatchedResults, maxResults)
-
-      // Next if we haven't hit our max result count, we find matches based on attributes
-      const remainingAllowedMatches = maxResults - matchedResults.size
-      if (remainingAllowedMatches > 0) {
-        const orderedAttributeMatchedResults = findMatchingOptions(
+      if (searchTerms.length === 0) {
+        results = TailWindOptions.slice(0, maxResults)
+      } else {
+        // First find all matches, and use a sparse array to keep the best matches at the front
+        const orderedMatchedResults = findMatchingOptions(
           searchTerms,
-          AllAttributes,
-          (a) => [a],
-          remainingAllowedMatches,
-        )
-        const bestMatchedAttributes = takeBestOptions(
-          orderedAttributeMatchedResults,
-          remainingAllowedMatches,
+          TailWindOptions,
+          (option) => option.label.split(':'),
+          maxResults,
         )
 
-        bestMatchedAttributes.forEach((attribute) => {
-          const matchingOptions = AttributeOptionLookup[attribute] ?? []
-          matchingOptions.forEach((option) => matchedResults.add(option))
-        })
+        // Now go through and take the first n best matches
+        let matchedResults = takeBestOptions(orderedMatchedResults, maxResults)
+
+        // Next if we haven't hit our max result count, we find matches based on attributes
+        const remainingAllowedMatches = maxResults - matchedResults.size
+        if (remainingAllowedMatches > 0) {
+          const orderedAttributeMatchedResults = findMatchingOptions(
+            searchTerms,
+            AllAttributes,
+            (a) => [a],
+            remainingAllowedMatches,
+          )
+          const bestMatchedAttributes = takeBestOptions(
+            orderedAttributeMatchedResults,
+            remainingAllowedMatches,
+          )
+
+          bestMatchedAttributes.forEach((attribute) => {
+            const matchingOptions = AttributeOptionLookup[attribute] ?? []
+            matchingOptions.forEach((option) => matchedResults.add(option))
+          })
+        }
+
+        results = Array.from(matchedResults)
       }
 
-      results = Array.from(matchedResults)
-    }
+      if (results.length === 0) {
+        onEmptyResults()
+      }
 
-    if (results.length === 0) {
-      onEmptyResults()
+      return results
+    } else {
+      return []
     }
-
-    return results
   }, [filter, maxResults, onEmptyResults])
 }
 

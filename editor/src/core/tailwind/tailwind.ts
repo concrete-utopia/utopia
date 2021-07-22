@@ -140,6 +140,10 @@ interface TwindInstance {
 
 let twindInstance: TwindInstance | null = null
 
+export function isTwindEnabled(): boolean {
+  return twindInstance != null
+}
+
 function clearTwind() {
   if (twindInstance != null) {
     twindInstance.observer.disconnect()
