@@ -284,9 +284,15 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         selectedOptions != null &&
         (event.key === 'Backspace' || event.key === 'Delete')
       ) {
-        const updatedFilterText = focusedValueRef.current ?? last(selectedOptions)?.label
-        if (updatedFilterText != null) {
-          setFilter(updatedFilterText)
+        if (event.key === 'Delete' && focusedValueRef.current == null) {
+          // prevent the default react-select behaviour here, as it will delete the last value
+          // if nothing is focused, which feels wrong
+          event.preventDefault()
+        } else {
+          const updatedFilterText = focusedValueRef.current ?? last(selectedOptions)?.label
+          if (updatedFilterText != null) {
+            setFilter(updatedFilterText)
+          }
         }
       }
     },
