@@ -5,6 +5,7 @@ import { shallowEqual } from '../../../../../core/shared/equality-utils'
 import { fastForEach } from '../../../../../core/shared/utils'
 import {
   FunctionIcons,
+  Icn,
   InspectorSubsectionHeader,
   SquareButton,
   useColorTheme,
@@ -18,6 +19,8 @@ import * as EP from '../../../../../core/shared/element-path'
 import { FlexElementSubsection } from '../flex-element-subsection/flex-element-subsection'
 import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
 import { selectComponents } from '../../../../editor/actions/action-creators'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { when } from '../../../../../utils/react-conditionals'
 
 type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -55,6 +58,7 @@ export const LayoutSubsection = betterReactMemo(
     return (
       <>
         <LayoutSectionHeader layoutType={activeTab} />
+        {when(activeTab === 'flex', <FlexInfoBox />)}
         <GiganticSizePinsSubsection
           layoutType={activeTab}
           parentFlexDirection={props.parentFlexDirection}
@@ -76,7 +80,7 @@ const LayoutSectionHeader = betterReactMemo(
   (props: LayoutSectionHeaderProps) => {
     return (
       <InspectorSubsectionHeader>
-        <div style={{ flexGrow: 1, display: 'flex', gap: 4 }}>
+        <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
           <InlineLink
             style={{
               textTransform: 'uppercase',
@@ -88,7 +92,7 @@ const LayoutSectionHeader = betterReactMemo(
           </InlineLink>
           <ParentLink />
           <SelfLink />
-          <ChildrenLink />
+          <ChildrenOrContentLink />
         </div>
         <SquareButton highlight>
           <FunctionIcons.Delete />
@@ -106,7 +110,10 @@ const LayoutSectionHeader = betterReactMemo(
   },
 )
 
-const ParentLink = () => {
+interface ParentLinkProps {
+  style?: React.CSSProperties
+}
+const ParentLink = (props: ParentLinkProps) => {
   const parentPath = useEditorState((store) => {
     if (store.editor.selectedViews.length !== 1) {
       return null
@@ -132,10 +139,14 @@ const ParentLink = () => {
     <InlineLink
       style={{
         fontWeight: 400,
+        paddingLeft: 0,
+        paddingRight: 0,
+        textTransform: 'capitalize',
+        ...props.style,
       }}
       onClick={handleClick}
     >
-      Parent
+      parent
     </InlineLink>
   )
 }
@@ -145,6 +156,8 @@ const SelfLink = () => {
     <InlineLink
       style={{
         fontWeight: 400,
+        paddingLeft: 0,
+        paddingRight: 0,
       }}
     >
       Self
@@ -152,9 +165,8 @@ const SelfLink = () => {
   )
 }
 
-const ChildrenLink = () => {
-  const theme = useColorTheme()
-  const { hasChildren, hasContent } = useEditorState((store) => {
+function useElementHasChildrenOrContent() {
+  return useEditorState((store) => {
     if (store.editor.selectedViews.length !== 1) {
       return {
         hasChildren: false,
@@ -171,10 +183,17 @@ const ChildrenLink = () => {
       hasContent: textContent != null && textContent.length > 0,
     }
   }, 'ChildrenLink children')
+}
+
+const ChildrenOrContentLink = () => {
+  const theme = useColorTheme()
+  const { hasChildren, hasContent } = useElementHasChildrenOrContent()
 
   return (
     <InlineLink
       style={{
+        paddingLeft: 0,
+        paddingRight: 0,
         fontWeight: 400,
         color: hasChildren || hasContent ? theme.primary.value : theme.brandNeonPink.value,
         textDecoration: hasChildren || hasContent ? undefined : 'line-through',
@@ -183,4 +202,52 @@ const ChildrenLink = () => {
       {hasChildren ? 'Children' : 'Content'}
     </InlineLink>
   )
+}
+
+const FlexInfoBox = betterReactMemo('FlexInfoBox', () => {
+  return (
+    <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+      <span
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Icn
+          style={{}}
+          category='layout/systems'
+          type='flexbox'
+          color={'darkgray'}
+          width={16}
+          height={16}
+        />
+      </span>
+      <p>
+        This element is positioned and sized based on its{' '}
+        <ParentLink style={{ textTransform: 'lowercase' }} /> settings and <ChildrenLinkInInfobox />
+        .
+      </p>
+    </UIGridRow>
+  )
+})
+
+const ChildrenLinkInInfobox = () => {
+  const { hasChildren } = useElementHasChildrenOrContent()
+
+  if (hasChildren) {
+    return (
+      <InlineLink
+        style={{
+          paddingLeft: 0,
+          paddingRight: 0,
+          fontWeight: 400,
+        }}
+      >
+        children
+      </InlineLink>
+    )
+  } else {
+    return <span>content</span>
+  }
 }
