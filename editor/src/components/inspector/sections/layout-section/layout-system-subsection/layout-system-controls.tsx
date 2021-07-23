@@ -273,11 +273,13 @@ const layoutSystemProperties: Array<LayoutProp | StyleLayoutProp> = [
   'display',
   'flexDirection',
   'flexWrap',
+  'FlexGap',
   'justifyContent',
   'marginBottom',
   'marginLeft',
   'marginRight',
   'marginTop',
+  'margin',
 ]
 
 const layoutSystemConfigPropertyPaths = layoutSystemProperties.map((name) =>
