@@ -5,7 +5,11 @@ import { FlexDirection } from 'utopia-api'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
-import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
+import {
+  useInspectorInfoSimpleUntyped,
+  useInspectorLayoutInfo,
+  useInspectorStyleInfo,
+} from '../../../common/property-path-hooks'
 import { SelectOption } from '../../../controls/select-control'
 import { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
@@ -19,6 +23,7 @@ import {
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { OnSubmitValueOrEmpty } from '../../../controls/control'
+import { PropertyPath } from '../../../../../core/shared/project-file-types'
 
 type uglyLabel =
   | 'left'
@@ -111,19 +116,19 @@ export const FlexAlignItemsControl = betterReactMemo(
   'FlexAlignItemsControl',
   (props: FlexAlignItemsControlProps) => {
     return (
-      <>
-        <PropertyLabel target={alignItemsProp}>Align</PropertyLabel>
-        <div
-          style={{
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'row',
-          }}
-        >
-          <InspectorContextMenuWrapper
-            id={`alignItems-context-menu`}
-            items={[unsetPropertyMenuItem('Align Items', props.onUnset)]}
-            data={{}}
+      <InspectorContextMenuWrapper
+        id={`alignItems-context-menu`}
+        items={[unsetPropertyMenuItem('Align Items', props.onUnset)]}
+        data={{}}
+      >
+        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+          <PropertyLabel target={alignItemsProp}>Align</PropertyLabel>
+          <div
+            style={{
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'row',
+            }}
           >
             <OptionChainControl
               id='flex.container.alignItems'
@@ -139,9 +144,9 @@ export const FlexAlignItemsControl = betterReactMemo(
               )}
               onSubmitValue={props.onSubmitValue}
             />
-          </InspectorContextMenuWrapper>
-        </div>
-      </>
+          </div>
+        </UIGridRow>
+      </InspectorContextMenuWrapper>
     )
   },
 )
@@ -188,6 +193,7 @@ export const FlexWrapControl = betterReactMemo('FlexWrapControl', (props: FlexWr
         value={FlexWrapOptions.find((option) => option.value === props.value)}
         options={FlexWrapOptions}
         onSubmitValue={onSubmitValue}
+        controlStyles={props.controlStyles}
         containerMode='showBorderOnHover'
       />
     </InspectorContextMenuWrapper>

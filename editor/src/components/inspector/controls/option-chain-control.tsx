@@ -45,6 +45,7 @@ export const OptionChainControl: React.FunctionComponent<DEPRECATEDControlProps<
       display: 'flex',
       flexDirection: 'column',
       marginBottom: 0,
+      width: '100%',
       ...style,
     }
   }, [style])
@@ -56,6 +57,7 @@ export const OptionChainControl: React.FunctionComponent<DEPRECATEDControlProps<
           display: 'flex',
           flexDirection: 'row',
           height: UtopiaTheme.layout.inputHeight.default,
+          width: '100%',
         }}
         className={`option-chain-control-container ${Utils.pathOr(
           '',
