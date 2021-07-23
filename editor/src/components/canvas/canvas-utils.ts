@@ -1777,6 +1777,80 @@ export function getFrameChange(
   }
 }
 
+function editorReparentNoStyleChange(
+  target: ElementPath,
+  indexPosition: IndexPosition,
+  newParentPath: ElementPath,
+  editor: EditorState,
+): EditorState {
+  // this code structure with the two withUnderlyingTargetFromEditorStates is copied verbatim from canvas-utils.ts@moveTemplate
+  return withUnderlyingTargetFromEditorState(
+    target,
+    editor,
+    editor,
+    (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
+      return withUnderlyingTargetFromEditorState(
+        newParentPath,
+        editor,
+        editor,
+        (
+          newParentSuccess,
+          underlyingNewParentElement,
+          underlyingNewParentPath,
+          underlyingNewParentFilePath,
+        ) => {
+          const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
+            newParentSuccess,
+          )
+          const updatedUnderlyingElement = findElementAtPath(
+            underlyingTarget,
+            utopiaComponentsIncludingScenes,
+          )
+          if (updatedUnderlyingElement == null) {
+            return editor
+          }
+          // Remove and then insert again at the new location.
+          return modifyParseSuccessAtPath(underlyingNewParentFilePath, editor, (workingSuccess) => {
+            let updatedUtopiaComponents: UtopiaJSXComponent[] = []
+            updatedUtopiaComponents = removeElementAtPath(
+              underlyingTarget,
+              utopiaComponentsIncludingScenes,
+            )
+
+            updatedUtopiaComponents = insertElementAtPath(
+              editor.projectContents,
+              editor.canvas.openFile?.filename ?? null,
+              underlyingNewParentPath,
+              updatedUnderlyingElement,
+              updatedUtopiaComponents,
+              indexPosition,
+            )
+
+            return {
+              ...workingSuccess,
+              topLevelElements: applyUtopiaJSXComponentsChanges(
+                workingSuccess.topLevelElements,
+                updatedUtopiaComponents,
+              ),
+            }
+          })
+        },
+      )
+    },
+  )
+}
+
+export function editorMultiselectReparentNoStyleChange(
+  targets: ElementPath[],
+  indexPosition: IndexPosition,
+  newParentPath: ElementPath,
+  editor: EditorState,
+): EditorState {
+  return targets.reduce<EditorState>((workingEditor, target) => {
+    return editorReparentNoStyleChange(target, indexPosition, newParentPath, workingEditor)
+  }, editor)
+}
+
 export function moveTemplate(
   target: ElementPath,
   originalPath: ElementPath,
