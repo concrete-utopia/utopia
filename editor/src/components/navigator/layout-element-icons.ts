@@ -26,7 +26,10 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
     },
     'useLayoutOrElementIcon',
     (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
-      return shallowEqual(oldResult.iconProps, newResult.iconProps)
+      return (
+        oldResult.isPositionAbsolute === newResult.isPositionAbsolute ||
+        shallowEqual(oldResult.iconProps, newResult.iconProps)
+      )
     },
   )
 }
