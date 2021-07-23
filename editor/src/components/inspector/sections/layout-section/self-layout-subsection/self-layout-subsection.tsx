@@ -87,7 +87,7 @@ interface LayoutSectionHeaderProps {
   layoutType: SelfLayoutTab | 'grid'
 }
 
-const layoutSystemProperties: Array<LayoutProp | StyleLayoutProp> = [
+const selfLayoutProperties: Array<LayoutProp | StyleLayoutProp> = [
   'alignSelf',
   'bottom',
   'flex',
@@ -119,7 +119,7 @@ const layoutSystemProperties: Array<LayoutProp | StyleLayoutProp> = [
   'PinnedBottom',
 ]
 
-const selfLayoutConfigPropertyPaths = layoutSystemProperties.map((name) =>
+const selfLayoutConfigPropertyPaths = selfLayoutProperties.map((name) =>
   createLayoutPropertyPath(name),
 )
 
