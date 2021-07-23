@@ -2190,9 +2190,9 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          const frameChanges: Array<PinOrFlexFrameChange> = [
-            getFrameChange(viewPath, boundingBox, isParentFlex),
-          ]
+          const frameChanges: Array<PinOrFlexFrameChange> = isParentFlex
+            ? [] // if we are wrapping something in a Flex parent, try not adding frames here
+            : [getFrameChange(viewPath, boundingBox, isParentFlex)]
           const withWrapperViewAdded = {
             ...setCanvasFramesInnerNew(withWrapperViewAddedNoFrame, frameChanges, null),
           }
