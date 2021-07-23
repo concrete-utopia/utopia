@@ -861,7 +861,8 @@ export function editorMoveMultiSelectedTemplates(
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
-  newParentLayoutType: LayoutSystem | null,
+  newParentLayoutType: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -881,6 +882,7 @@ export function editorMoveMultiSelectedTemplates(
       parentFrame,
       working,
       newParentLayoutType,
+      newParentMainAxis,
     )
     if (newPath != null) {
       // when moving multiselected elements that are in a hierarchy the editor has the ancestor with a new path
@@ -907,7 +909,8 @@ export function editorMoveTemplate(
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
-  newParentLayoutSystem: LayoutSystem | null,
+  newParentLayoutSystem: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): {
   editor: EditorModel
   newPath: ElementPath | null
@@ -924,6 +927,7 @@ export function editorMoveTemplate(
     editor.selectedViews,
     editor.highlightedViews,
     newParentLayoutSystem,
+    newParentMainAxis,
   )
   return {
     newPath: moveResult.newPath,
@@ -1185,6 +1189,7 @@ function setZIndexOnSelected(
         EP.parentPath(selectedView),
         null,
         editor,
+        null,
         null,
       ).editor
     },
@@ -1720,6 +1725,7 @@ export const UPDATE_FNS = {
       newParentSize,
       editor,
       null,
+      null,
     )
 
     return {
@@ -1737,6 +1743,7 @@ export const UPDATE_FNS = {
       EP.parentPath(action.target),
       null,
       editor,
+      null,
       null,
     ).editor
   },
@@ -2208,6 +2215,7 @@ export const UPDATE_FNS = {
             parentBounds,
             withWrapperViewAdded,
             action.layoutSystem,
+            action.newParentMainAxis,
           ).editor
 
           return {
@@ -2396,6 +2404,7 @@ export const UPDATE_FNS = {
             parentPath,
             parentFrame,
             working,
+            null,
             null,
           )
           if (result.newPath != null) {
@@ -2744,6 +2753,7 @@ export const UPDATE_FNS = {
                 action.targetOriginalContextMetadata,
                 workingEditorState.jsxMetadata,
                 components,
+                null,
                 null,
                 null,
               )

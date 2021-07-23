@@ -422,6 +422,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -465,6 +466,7 @@ describe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       editor,
+      null,
       null,
     ).editor
 
@@ -514,6 +516,7 @@ describe('moveTemplate', () => {
       } as CanvasRectangle,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -548,6 +551,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -580,6 +584,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      null,
       null,
     ).editor
 
@@ -615,6 +620,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -647,6 +653,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ccc']),
       null,
       editor,
+      null,
       null,
     ).editor
 
@@ -700,6 +707,7 @@ describe('moveTemplate', () => {
       groupFrame,
       editor,
       LayoutSystem.Group,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -760,6 +768,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -811,6 +820,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      null,
       null,
     ).editor
 

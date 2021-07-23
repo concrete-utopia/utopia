@@ -8,6 +8,9 @@ import {
   right,
   foldEither,
   defaultEither,
+  mapEither,
+  eitherToMaybe,
+  left as leftEither,
 } from '../shared/either'
 import Utils from '../../utils/utils'
 import {
@@ -28,6 +31,8 @@ import {
   JSXAttributes,
   SettableLayoutSystem,
   ElementInstanceMetadataMap,
+  isJSXElement,
+  JSXElementChild,
 } from '../shared/element-template'
 import { findJSXElementAtStaticPath } from '../model/element-template-utils'
 import {
@@ -86,6 +91,7 @@ export function maybeSwitchChildrenLayoutProps(
         workingComponents,
         null,
         null,
+        null,
       )
       return {
         components: nextComponents,
@@ -113,6 +119,7 @@ export function maybeSwitchLayoutProps(
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle | null,
   parentLayoutSystem: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): LayoutPropChangeResult {
   const originalParentPath = EP.parentPath(originalPath)
   const originalParent = MetadataUtils.findElementByElementPath(
@@ -124,11 +131,27 @@ export function maybeSwitchLayoutProps(
   let wasFlexContainer = MetadataUtils.isFlexLayoutedContainer(originalParent)
   let isFlexContainer =
     parentLayoutSystem === 'flex' || MetadataUtils.isFlexLayoutedContainer(newParent)
+
+  const parentMainAxis: 'horizontal' | 'vertical' | null =
+    newParentMainAxis ??
+    // if no newParentMainAxis is provided, let's try to find one
+    // TODO maybe overkill
+    eitherToMaybe(
+      flatMapEither<string, JSXElementChild, 'horizontal' | 'vertical'>((parentElement) => {
+        if (isJSXElement(parentElement)) {
+          return FlexLayoutHelpers.getMainAxis(right(parentElement.props))
+        } else {
+          return leftEither('parent is not JSXElement')
+        }
+      }, newParent?.element ?? leftEither('no parent provided')),
+    )
+
   let wasGroup = MetadataUtils.isGroup(originalParentPath, targetOriginalContextMetadata)
   let isGroup = MetadataUtils.isGroup(newParentPath, currentContextMetadata)
 
   // When wrapping elements in view/group the element is not available from the componentMetadata but we know the frame already.
-  if (newParent == null && parentFrame != null) {
+  // BALAZS I added a clause !isFlexContainer here but I think this whole IF should go to the bin
+  if (!isFlexContainer && newParent == null && parentFrame != null) {
     // FIXME wrapping in a view now always switches to pinned props. maybe the user wants to keep the parent layoutsystem?
     const switchLayoutFunction =
       parentLayoutSystem === LayoutSystem.Group
@@ -171,6 +194,7 @@ export function maybeSwitchLayoutProps(
       targetOriginalContextMetadata,
       currentContextMetadata,
       components,
+      parentMainAxis,
     )
     const staticTarget = EP.dynamicPathToStaticPath(target)
     const originalElement = findJSXElementAtStaticPath(components, staticTarget)
@@ -205,6 +229,7 @@ function getLayoutFunction(
     targetOriginalContextMetadata: ElementInstanceMetadataMap,
     currentContextMetadata: ElementInstanceMetadataMap,
     components: UtopiaJSXComponent[],
+    newParentMainAxis: 'horizontal' | 'vertical' | null,
   ) => SwitchLayoutTypeResult
   didSwitch: boolean
 } {
@@ -331,6 +356,7 @@ export function switchPinnedChildToFlex(
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): SwitchLayoutTypeResult {
   const currentFrame = MetadataUtils.getFrame(target, targetOriginalContextMetadata)
   const newParent = findJSXElementAtPath(newParentPath, components)
@@ -350,6 +376,7 @@ export function switchPinnedChildToFlex(
       currentFrame.height,
       element.props,
       right(newParent.props),
+      newParentMainAxis,
       null,
     )
 

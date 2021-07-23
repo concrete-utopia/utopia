@@ -48,6 +48,7 @@ import {
   isJSXArbitraryBlock,
   isJSXFragment,
   isUtopiaJSXComponent,
+  SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -451,6 +452,7 @@ export function updateFramesOfScenesAndComponents(
               frameAndTarget.newSize.height,
               element.props,
               right(parentElement.props),
+              eitherToMaybe(FlexLayoutHelpers.getMainAxis(right(parentElement.props))),
               frameAndTarget.edgePosition,
             )
             forEachRight(possibleFlexProps, (flexProps) => {
@@ -1862,7 +1864,8 @@ export function moveTemplate(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
-  newParentLayoutSystem: LayoutSystem | null,
+  newParentLayoutSystem: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
     return {
@@ -1911,6 +1914,7 @@ export function moveTemplate(
               utopiaComponentsIncludingScenes,
               parentFrame,
               newParentLayoutSystem,
+              newParentMainAxis,
             )
             const updatedUnderlyingElement = findElementAtPath(
               underlyingTarget,
@@ -2137,6 +2141,7 @@ function produceMoveTransientCanvasState(
           workingEditorState.jsxMetadata,
           selectedViews,
           workingEditorState.highlightedViews,
+          null,
           null,
         )
         selectedViews = reparentResult.updatedEditorState.selectedViews

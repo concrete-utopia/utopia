@@ -638,11 +638,14 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
 export function wrapInView(
   targets: Array<ElementPath>,
   whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
+  layoutSystem: SettableLayoutSystem = LayoutSystem.PinSystem,
+  newParentMainAxis: 'horizontal' | 'vertical' | null = null,
 ): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
     targets: targets,
-    layoutSystem: LayoutSystem.PinSystem,
+    layoutSystem: layoutSystem,
+    newParentMainAxis: newParentMainAxis,
     whatToWrapWith: whatToWrapWith,
   }
 }
