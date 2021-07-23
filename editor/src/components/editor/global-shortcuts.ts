@@ -392,7 +392,9 @@ export function handleKeyDown(
     }
     return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
       [DELETE_SELECTED_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.deleteSelected()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.deleteSelected()]
+          : []
       },
       [RESET_CANVAS_ZOOM_SHORTCUT]: () => {
         return [CanvasActions.zoom(1)]
