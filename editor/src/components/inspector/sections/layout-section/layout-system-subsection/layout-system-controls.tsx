@@ -18,7 +18,11 @@ import {
   ControlStyles,
 } from '../../../common/control-status'
 import { LayoutSystem } from 'utopia-api'
-import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
+import {
+  createLayoutPropertyPath,
+  LayoutProp,
+  StyleLayoutProp,
+} from '../../../../../core/layout/layout-helpers-new'
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
@@ -263,20 +267,22 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
   )
 })
 
-const layoutSystemConfigPropertyPaths = [
-  createLayoutPropertyPath('LayoutSystem'),
-  PP.create(['style', 'display']),
-  createLayoutPropertyPath('flexDirection'),
-  createLayoutPropertyPath('FlexGap'),
-  createLayoutPropertyPath('flexWrap'),
-  createLayoutPropertyPath('justifyContent'),
-  createLayoutPropertyPath('alignItems'),
-  createLayoutPropertyPath('alignContent'),
-  createLayoutPropertyPath('paddingLeft'),
-  createLayoutPropertyPath('paddingTop'),
-  createLayoutPropertyPath('paddingRight'),
-  createLayoutPropertyPath('paddingBottom'),
+const layoutSystemProperties: Array<LayoutProp | StyleLayoutProp> = [
+  'alignContent',
+  'alignItems',
+  'display',
+  'flexDirection',
+  'flexWrap',
+  'justifyContent',
+  'marginBottom',
+  'marginLeft',
+  'marginRight',
+  'marginTop',
 ]
+
+const layoutSystemConfigPropertyPaths = layoutSystemProperties.map((name) =>
+  createLayoutPropertyPath(name),
+)
 
 function useDeleteAllLayoutConfig() {
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
