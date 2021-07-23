@@ -3,6 +3,7 @@ import { Either } from '../core/shared/either'
 import { ElementInstanceMetadataMap, isIntrinsicElement } from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
 import { NodeModules, ElementPath } from '../core/shared/project-file-types'
+import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
@@ -44,6 +45,7 @@ export interface CanvasData {
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   scale: number
+  focusedElementPath: ElementPath | null
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -144,8 +146,9 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   },
   isHidden: (data) => {
     return data.selectedViews.every((view) => {
+      const isFocused = EP.pathsEqual(data.focusedElementPath, view)
       const elementName = MetadataUtils.getJSXElementFromMetadata(data.jsxMetadata, view)
-      return elementName != null ? isIntrinsicElement(elementName) : true
+      return isFocused || (elementName != null ? isIntrinsicElement(elementName) : true)
     })
   },
   action: (data, dispatch?: EditorDispatch) => {
@@ -155,6 +158,24 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
         EditorActions.setFocusedElement(sv),
         EditorActions.scrollToElement(sv, true),
       ])
+    }
+  },
+}
+
+export const removeAsFocusedElement: ContextMenuItem<CanvasData> = {
+  name: 'Exit Editing Component',
+  enabled: (data) => {
+    return true
+  },
+  isHidden: (data) => {
+    return data.selectedViews.every((view) => {
+      const isFocused = EP.pathsEqual(data.focusedElementPath, view)
+      return !isFocused
+    })
+  },
+  action: (data, dispatch?: EditorDispatch) => {
+    if (data.selectedViews.length > 0) {
+      requireDispatch(dispatch)([EditorActions.setFocusedElement(null)])
     }
   },
 }
@@ -199,7 +220,13 @@ export const insert: ContextMenuItem<CanvasData> = {
   shortcut: 'A',
   enabled: true,
   action: (data, dispatch) => {
-    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('insert')])
+    requireDispatch(dispatch)([
+      EditorActions.openFloatingInsertMenu({
+        insertMenuMode: 'insert',
+        parentPath: null,
+        indexPosition: null,
+      }),
+    ])
   },
 }
 
@@ -208,7 +235,7 @@ export const convert: ContextMenuItem<CanvasData> = {
   shortcut: 'C',
   enabled: true,
   action: (data, dispatch) => {
-    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('convert')])
+    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })])
   },
 }
 
@@ -240,7 +267,10 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   shortcut: 'G',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu('wrap')], 'everyone')
+    requireDispatch(dispatch)(
+      [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
+      'everyone',
+    )
   },
 }
 

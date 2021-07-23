@@ -48,6 +48,7 @@ import {
   isJSXArbitraryBlock,
   isJSXFragment,
   isUtopiaJSXComponent,
+  SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -69,6 +70,7 @@ import {
   jsxAttributesToProps,
   jsxSimpleAttributeToValue,
   getJSXAttributeAtPath,
+  getAllPathsFromAttributes,
 } from '../../core/shared/jsx-attributes'
 import {
   Imports,
@@ -198,6 +200,9 @@ import { mapValues } from '../../core/shared/object-utils'
 import { emptySet } from '../../core/shared/set-utils'
 import { WindowMousePositionRaw } from '../../utils/global-positions'
 import { importedFromWhere } from '../editor/import-utils'
+import { Notice } from '../common/notice'
+import { createStylePostActionToast } from '../../core/layout/layout-notice'
+import { uniqToasts } from '../editor/actions/toast-helpers'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -292,6 +297,7 @@ export function getOriginalCanvasFrames(
 
 function applyTransientFilesState(
   producedTransientFilesState: TransientFilesState | null,
+  toastsToAdd: ReadonlyArray<Notice>,
   result: EditorState,
 ): EditorState {
   let workingState = result
@@ -308,7 +314,11 @@ function applyTransientFilesState(
       })
     }
   }
-  return workingState
+
+  return {
+    ...workingState,
+    toasts: uniqToasts([...workingState.toasts, ...toastsToAdd]),
+  }
 }
 
 export function clearDragState(
@@ -324,7 +334,11 @@ export function clearDragState(
       false,
     )
     const producedTransientFilesState = producedTransientCanvasState.filesState
-    result = applyTransientFilesState(producedTransientFilesState, result)
+    result = applyTransientFilesState(
+      producedTransientFilesState,
+      producedTransientCanvasState.toastsToApply,
+      result,
+    )
   }
 
   return {
@@ -350,6 +364,7 @@ export function updateFramesOfScenesAndComponents(
   optionalParentFrame: CanvasRectangle | null,
 ): EditorState {
   let workingEditorState: EditorState = editorState
+  let toastsToAdd: Array<Notice> = []
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
     const target = frameAndTarget.target
     // Realign to aim at the static version, not the dynamic one.
@@ -437,6 +452,7 @@ export function updateFramesOfScenesAndComponents(
               frameAndTarget.newSize.height,
               element.props,
               right(parentElement.props),
+              eitherToMaybe(FlexLayoutHelpers.getMainAxis(right(parentElement.props))),
               frameAndTarget.edgePosition,
             )
             forEachRight(possibleFlexProps, (flexProps) => {
@@ -702,6 +718,13 @@ export function updateFramesOfScenesAndComponents(
           return foldEither(
             (_) => elem,
             (updatedProps) => {
+              toastsToAdd.push(
+                ...createStylePostActionToast(
+                  MetadataUtils.getElementLabel(originalTarget, workingEditorState.jsxMetadata),
+                  getAllPathsFromAttributes(elem.props),
+                  getAllPathsFromAttributes(updatedProps),
+                ),
+              )
               return {
                 ...elem,
                 props: updatedProps,
@@ -722,6 +745,13 @@ export function updateFramesOfScenesAndComponents(
     // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
     // doesn't work. Once that is fixed we can re-implement keeping the children in place
   })
+
+  if (toastsToAdd.length > 0) {
+    workingEditorState = {
+      ...workingEditorState,
+      toasts: uniqToasts([...workingEditorState.toasts, ...toastsToAdd]),
+    }
+  }
   return workingEditorState
 }
 
@@ -1365,6 +1395,7 @@ function getTransientCanvasStateFromFrameChanges(
     mapValues((success) => {
       return transientFileState(success.topLevelElements, success.imports)
     }, successByFilename),
+    workingEditorState.toasts, // TODO filter for relevant toasts
   )
 }
 
@@ -1391,7 +1422,7 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null)
+    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       forUnderlyingTargetFromEditorState(
@@ -1452,7 +1483,7 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1560,6 +1591,7 @@ export function produceCanvasTransientState(
                 {
                   [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
                 },
+                [],
               )
               return parseSuccess
             },
@@ -1613,7 +1645,7 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
   } else {
     return transientState
   }
@@ -1747,6 +1779,80 @@ export function getFrameChange(
   }
 }
 
+function editorReparentNoStyleChange(
+  target: ElementPath,
+  indexPosition: IndexPosition,
+  newParentPath: ElementPath,
+  editor: EditorState,
+): EditorState {
+  // this code structure with the two withUnderlyingTargetFromEditorStates is copied verbatim from canvas-utils.ts@moveTemplate
+  return withUnderlyingTargetFromEditorState(
+    target,
+    editor,
+    editor,
+    (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
+      return withUnderlyingTargetFromEditorState(
+        newParentPath,
+        editor,
+        editor,
+        (
+          newParentSuccess,
+          underlyingNewParentElement,
+          underlyingNewParentPath,
+          underlyingNewParentFilePath,
+        ) => {
+          const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
+            newParentSuccess,
+          )
+          const updatedUnderlyingElement = findElementAtPath(
+            underlyingTarget,
+            utopiaComponentsIncludingScenes,
+          )
+          if (updatedUnderlyingElement == null) {
+            return editor
+          }
+          // Remove and then insert again at the new location.
+          return modifyParseSuccessAtPath(underlyingNewParentFilePath, editor, (workingSuccess) => {
+            let updatedUtopiaComponents: UtopiaJSXComponent[] = []
+            updatedUtopiaComponents = removeElementAtPath(
+              underlyingTarget,
+              utopiaComponentsIncludingScenes,
+            )
+
+            updatedUtopiaComponents = insertElementAtPath(
+              editor.projectContents,
+              editor.canvas.openFile?.filename ?? null,
+              underlyingNewParentPath,
+              updatedUnderlyingElement,
+              updatedUtopiaComponents,
+              indexPosition,
+            )
+
+            return {
+              ...workingSuccess,
+              topLevelElements: applyUtopiaJSXComponentsChanges(
+                workingSuccess.topLevelElements,
+                updatedUtopiaComponents,
+              ),
+            }
+          })
+        },
+      )
+    },
+  )
+}
+
+export function editorMultiselectReparentNoStyleChange(
+  targets: ElementPath[],
+  indexPosition: IndexPosition,
+  newParentPath: ElementPath,
+  editor: EditorState,
+): EditorState {
+  return targets.reduce<EditorState>((workingEditor, target) => {
+    return editorReparentNoStyleChange(target, indexPosition, newParentPath, workingEditor)
+  }, editor)
+}
+
 export function moveTemplate(
   target: ElementPath,
   originalPath: ElementPath,
@@ -1758,7 +1864,8 @@ export function moveTemplate(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
-  newParentLayoutSystem: LayoutSystem | null,
+  newParentLayoutSystem: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
     return {
@@ -1797,6 +1904,7 @@ export function moveTemplate(
               components: withLayoutUpdatedForNewContext,
               componentMetadata: withMetadataUpdatedForNewContext,
               didSwitch,
+              toast,
             } = maybeSwitchLayoutProps(
               target,
               originalPath,
@@ -1806,6 +1914,7 @@ export function moveTemplate(
               utopiaComponentsIncludingScenes,
               parentFrame,
               newParentLayoutSystem,
+              newParentMainAxis,
             )
             const updatedUnderlyingElement = findElementAtPath(
               underlyingTarget,
@@ -1939,6 +2048,7 @@ export function moveTemplate(
                 ...workingEditorState,
                 selectedViews: Utils.stripNulls(newSelectedViews),
                 highlightedViews: Utils.stripNulls(newHighlightedViews),
+                toasts: uniqToasts([...workingEditorState.toasts, ...toast]),
               }
 
               return {
@@ -2032,6 +2142,7 @@ function produceMoveTransientCanvasState(
           selectedViews,
           workingEditorState.highlightedViews,
           null,
+          null,
         )
         selectedViews = reparentResult.updatedEditorState.selectedViews
         // As it has moved, we need to synchronise the paths.
@@ -2099,6 +2210,7 @@ function produceMoveTransientCanvasState(
     selectedViews,
     workingEditorState.highlightedViews,
     transientFilesState,
+    workingEditorState.toasts, // TODO Filter for relevant toasts
   )
 }
 
@@ -2681,6 +2793,7 @@ function createCanvasTransientStateFromProperties(
       updatedEditor.selectedViews,
       updatedEditor.highlightedViews,
       transientFilesState,
+      [],
     )
   }
 }

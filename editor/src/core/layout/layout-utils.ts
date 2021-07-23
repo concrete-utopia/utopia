@@ -8,6 +8,9 @@ import {
   right,
   foldEither,
   defaultEither,
+  mapEither,
+  eitherToMaybe,
+  left as leftEither,
 } from '../shared/either'
 import Utils from '../../utils/utils'
 import {
@@ -22,22 +25,24 @@ import {
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
-  isJSXElement,
   jsxAttributeValue,
   JSXElement,
   UtopiaJSXComponent,
   JSXAttributes,
   SettableLayoutSystem,
   ElementInstanceMetadataMap,
+  isJSXElement,
+  JSXElementChild,
+  ElementInstanceMetadata,
 } from '../shared/element-template'
-import { findJSXElementChildAtPath } from '../model/element-template-utils'
+import { findJSXElementAtStaticPath } from '../model/element-template-utils'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
   ValueAtPath,
   getJSXAttributeAtPath,
-  ModifiableAttribute,
   setJSXValueAtPath,
+  getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
 import { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
@@ -47,14 +52,16 @@ import {
   pinnedPropForFramePoint,
   StyleLayoutProp,
 } from './layout-helpers-new'
-import { getLayoutPropertyOr } from './getLayoutProperty'
-import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
+import { CSSPosition } from '../../components/inspector/common/css-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import type { Notice } from '../../components/common/notice'
+import { createStylePostActionToast } from './layout-notice'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
   componentMetadata: ElementInstanceMetadataMap
   didSwitch: boolean
+  toast: Array<Notice>
 }
 
 export function maybeSwitchChildrenLayoutProps(
@@ -68,13 +75,14 @@ export function maybeSwitchChildrenLayoutProps(
     target,
     true,
   )
-  const result = children.reduce(
+  const result = children.reduce<LayoutPropChangeResult>(
     (working, next) => {
       const { components: workingComponents, didSwitch: workingDidSwitch } = working
       const {
         components: nextComponents,
         componentMetadata: nextMetadata,
         didSwitch: nextDidSwitch,
+        toast: nextToast,
       } = maybeSwitchLayoutProps(
         next.elementPath,
         next.elementPath,
@@ -84,16 +92,38 @@ export function maybeSwitchChildrenLayoutProps(
         workingComponents,
         null,
         null,
+        null,
       )
       return {
         components: nextComponents,
         componentMetadata: nextMetadata,
         didSwitch: workingDidSwitch || nextDidSwitch,
+        toast: [...working.toast, ...nextToast],
       }
     },
-    { components: components, componentMetadata: currentContextMetadata, didSwitch: false },
+    {
+      components: components,
+      componentMetadata: currentContextMetadata,
+      didSwitch: false,
+      toast: [],
+    },
   )
   return result
+}
+
+function getParentAxisFromElement(
+  element: ElementInstanceMetadata | null,
+): 'horizontal' | 'vertical' | null {
+  const jsxElement = element?.element ?? leftEither('no parent provided')
+  return eitherToMaybe(
+    flatMapEither<string, JSXElementChild, 'horizontal' | 'vertical'>((foundJsxElement) => {
+      if (isJSXElement(foundJsxElement)) {
+        return FlexLayoutHelpers.getMainAxis(right(foundJsxElement.props))
+      } else {
+        return leftEither('parent is not JSXElement')
+      }
+    }, jsxElement),
+  )
 }
 
 export function maybeSwitchLayoutProps(
@@ -105,6 +135,7 @@ export function maybeSwitchLayoutProps(
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle | null,
   parentLayoutSystem: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): LayoutPropChangeResult {
   const originalParentPath = EP.parentPath(originalPath)
   const originalParent = MetadataUtils.findElementByElementPath(
@@ -114,13 +145,22 @@ export function maybeSwitchLayoutProps(
   const newParent = MetadataUtils.findElementByElementPath(currentContextMetadata, newParentPath)
 
   let wasFlexContainer = MetadataUtils.isFlexLayoutedContainer(originalParent)
+  const oldParentMainAxis: 'horizontal' | 'vertical' | null = getParentAxisFromElement(
+    originalParent,
+  )
+
   let isFlexContainer =
     parentLayoutSystem === 'flex' || MetadataUtils.isFlexLayoutedContainer(newParent)
+
+  const parentMainAxis: 'horizontal' | 'vertical' | null =
+    newParentMainAxis ?? getParentAxisFromElement(newParent) // if no newParentMainAxis is provided, let's try to find one
+
   let wasGroup = MetadataUtils.isGroup(originalParentPath, targetOriginalContextMetadata)
   let isGroup = MetadataUtils.isGroup(newParentPath, currentContextMetadata)
 
   // When wrapping elements in view/group the element is not available from the componentMetadata but we know the frame already.
-  if (newParent == null && parentFrame != null) {
+  // BALAZS I added a clause !isFlexContainer here but I think this whole IF should go to the bin
+  if (!isFlexContainer && newParent == null && parentFrame != null) {
     // FIXME wrapping in a view now always switches to pinned props. maybe the user wants to keep the parent layoutsystem?
     const switchLayoutFunction =
       parentLayoutSystem === LayoutSystem.Group
@@ -133,15 +173,29 @@ export function maybeSwitchLayoutProps(
       components,
       parentFrame,
     )
+
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    const originalElement = findJSXElementAtStaticPath(components, staticTarget)
+    const originalPropertyPaths = getAllPathsFromAttributes(originalElement?.props ?? [])
+    const updatedelement = findJSXElementAtStaticPath(updatedComponents, staticTarget)
+    const updatedPropertyPaths = getAllPathsFromAttributes(updatedelement?.props ?? [])
+
     return {
       components: updatedComponents,
       componentMetadata: updatedMetadata,
       didSwitch: true,
+      toast: createStylePostActionToast(
+        MetadataUtils.getElementLabel(target, targetOriginalContextMetadata),
+        originalPropertyPaths,
+        updatedPropertyPaths,
+      ),
     }
   } else {
     const switchLayoutFunction = getLayoutFunction(
       wasFlexContainer,
+      oldParentMainAxis,
       isFlexContainer,
+      parentMainAxis,
       wasGroup,
       isGroup,
     )
@@ -151,18 +205,34 @@ export function maybeSwitchLayoutProps(
       targetOriginalContextMetadata,
       currentContextMetadata,
       components,
+      parentMainAxis,
     )
+    const staticTarget = EP.dynamicPathToStaticPath(target)
+    const originalElement = findJSXElementAtStaticPath(components, staticTarget)
+    const originalPropertyPaths = getAllPathsFromAttributes(originalElement?.props ?? [])
+    const updatedelement = findJSXElementAtStaticPath(updatedComponents, staticTarget)
+    const updatedPropertyPaths = getAllPathsFromAttributes(updatedelement?.props ?? [])
+
     return {
       components: updatedComponents,
       componentMetadata: updatedMetadata,
       didSwitch: switchLayoutFunction.didSwitch,
+      toast: switchLayoutFunction.didSwitch
+        ? createStylePostActionToast(
+            MetadataUtils.getElementLabel(target, targetOriginalContextMetadata),
+            originalPropertyPaths,
+            updatedPropertyPaths,
+          )
+        : [],
     }
   }
 }
 
 function getLayoutFunction(
   wasFlexContainer: boolean,
+  oldMainAxis: 'horizontal' | 'vertical' | null,
   isFlexContainer: boolean,
+  newMainAxis: 'horizontal' | 'vertical' | null,
   wasGroup: boolean,
   isGroup: boolean,
 ): {
@@ -172,6 +242,7 @@ function getLayoutFunction(
     targetOriginalContextMetadata: ElementInstanceMetadataMap,
     currentContextMetadata: ElementInstanceMetadataMap,
     components: UtopiaJSXComponent[],
+    newParentMainAxis: 'horizontal' | 'vertical' | null,
   ) => SwitchLayoutTypeResult
   didSwitch: boolean
 } {
@@ -184,9 +255,16 @@ function getLayoutFunction(
       }
     } else if (isFlexContainer) {
       // From flex to flex
-      return {
-        layoutFn: keepLayoutProps,
-        didSwitch: false,
+      if (oldMainAxis === newMainAxis) {
+        return {
+          layoutFn: keepLayoutProps,
+          didSwitch: false,
+        }
+      } else {
+        return {
+          layoutFn: switchFlexToFlexDifferentAxis,
+          didSwitch: true,
+        }
       }
     } else {
       // From flex to pinned
@@ -298,6 +376,7 @@ export function switchPinnedChildToFlex(
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): SwitchLayoutTypeResult {
   const currentFrame = MetadataUtils.getFrame(target, targetOriginalContextMetadata)
   const newParent = findJSXElementAtPath(newParentPath, components)
@@ -317,6 +396,7 @@ export function switchPinnedChildToFlex(
       currentFrame.height,
       element.props,
       right(newParent.props),
+      newParentMainAxis,
       null,
     )
 
@@ -377,6 +457,43 @@ export function switchPinnedChildToFlex(
     updatedComponents: updatedComponents,
     updatedMetadata: updatedMetadata,
   }
+}
+
+export function switchFlexToFlexDifferentAxis(
+  target: ElementPath,
+  newParentPath: ElementPath,
+  targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  currentContextMetadata: ElementInstanceMetadataMap,
+  components: UtopiaJSXComponent[],
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
+): SwitchLayoutTypeResult {
+  const element = findJSXElementAtPath(target, components)
+
+  // If the element exists, has props, and the props DO NOT contain width, height or flexBasis, just skip conversion
+  if (element != null) {
+    const allAttributePaths = getAllPathsFromAttributes(element.props)
+    if (
+      !allAttributePaths.includes(createLayoutPropertyPath('Width')) &&
+      !allAttributePaths.includes(createLayoutPropertyPath('Height')) &&
+      !allAttributePaths.includes(createLayoutPropertyPath('flexBasis'))
+    ) {
+      // we leave the element alone
+      return {
+        updatedComponents: components,
+        updatedMetadata: currentContextMetadata,
+      }
+    }
+  }
+
+  // otherwise, we run a regular switchPinnedChildToFlex
+  return switchPinnedChildToFlex(
+    target,
+    newParentPath,
+    targetOriginalContextMetadata,
+    currentContextMetadata,
+    components,
+    newParentMainAxis,
+  )
 }
 
 interface SwitchLayoutTypeResult {

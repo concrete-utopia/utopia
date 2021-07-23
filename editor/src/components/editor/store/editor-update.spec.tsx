@@ -96,10 +96,6 @@ const workers = new MockUtopiaTsWorkers()
 const testScenePath = ScenePath1ForTestUiJsFile
 const testElementPath = EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['pancake'])
 
-afterAll(() => {
-  jest.useRealTimers()
-})
-
 describe('action SELECT_VIEWS', () => {
   it('updates selectedview in editor', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
@@ -896,29 +892,6 @@ describe('action ADD_TOAST and REMOVE_TOAST', () => {
     expect(updatedEditor4.toasts).toHaveLength(2)
     expect(updatedEditor4.toasts[0]).toEqual(firstToast)
     expect(updatedEditor4.toasts[1]).toEqual(thirdToast)
-  })
-
-  it('ADD_TOAST schedules a REMOVE_TOAST', () => {
-    jest.useFakeTimers()
-    const { editor, derivedState } = createEditorStates()
-    const mockDispatch = jest.fn()
-
-    const toast = notice('toast1')
-    runLocalEditorAction(
-      editor,
-      derivedState,
-      defaultUserState,
-      workers,
-      addToast(toast),
-      History.init(editor, derivedState),
-      mockDispatch,
-      emptyUiJsxCanvasContextData(),
-    )
-
-    jest.runAllTimers()
-
-    expect(mockDispatch).toBeCalledTimes(1)
-    expect(mockDispatch).toBeCalledWith([removeToast(toast.id)], 'everyone')
   })
 })
 

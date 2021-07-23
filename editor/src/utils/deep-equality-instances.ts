@@ -2,6 +2,7 @@ import {
   arrayDeepEquality,
   combine2EqualityCalls,
   combine4EqualityCalls,
+  combine5EqualityCalls,
   createCallFromEqualsFunction,
   createCallWithShallowEquals,
   createCallWithTripleEquals,
@@ -9,6 +10,7 @@ import {
   KeepDeepEqualityResult,
   keepDeepEqualityResult,
   mapKeepDeepEqualityResult,
+  nullableDeepEquality,
 } from './deep-equality'
 import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
@@ -18,6 +20,7 @@ import { ElementPath, PropertyPath } from '../core/shared/project-file-types'
 import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
+import { DropTargetHint, NavigatorState } from '../components/editor/store/editor-state'
 
 export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> = createCallFromEqualsFunction(
   (oldPath: ElementPath, newPath: ElementPath) => {
@@ -112,3 +115,38 @@ export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIcon
 export const NameAndIconResultArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
   NameAndIconResult
 >> = arrayDeepEquality(NameAndIconResultKeepDeepEquality)
+
+export const DropTargetHintKeepDeepEquality: KeepDeepEqualityCall<DropTargetHint> = combine2EqualityCalls(
+  (hint) => hint.target,
+  nullableDeepEquality(ElementPathKeepDeepEquality),
+  (hint) => hint.type,
+  createCallWithTripleEquals(),
+  (target, type) => {
+    return {
+      target: target,
+      type: type,
+    }
+  },
+)
+
+export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState> = combine5EqualityCalls(
+  (state) => state.minimised,
+  createCallWithTripleEquals(),
+  (state) => state.dropTargetHint,
+  DropTargetHintKeepDeepEquality,
+  (state) => state.collapsedViews,
+  ElementPathArrayKeepDeepEquality,
+  (state) => state.renamingTarget,
+  nullableDeepEquality(ElementPathKeepDeepEquality),
+  (state) => state.position,
+  createCallWithTripleEquals(),
+  (minimised, dropTargetHint, collapsedViews, renamingTarget, position) => {
+    return {
+      minimised: minimised,
+      dropTargetHint: dropTargetHint,
+      collapsedViews: collapsedViews,
+      renamingTarget: renamingTarget,
+      position: position,
+    }
+  },
+)

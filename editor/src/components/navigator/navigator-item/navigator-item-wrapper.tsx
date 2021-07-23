@@ -17,6 +17,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   defaultElementWarnings,
+  DropTargetHint,
   EditorStore,
   TransientFileState,
 } from '../../editor/store/editor-state'
@@ -25,7 +26,11 @@ import { getValueFromComplexMap } from '../../../utils/map'
 import { createSelector } from 'reselect'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
-import { betterReactMemo, useKeepDeepEqualityCall } from '../../../utils/react-performance'
+import {
+  betterReactMemo,
+  useHookUpdateAnalysisStrictEquals,
+  useKeepDeepEqualityCall,
+} from '../../../utils/react-performance'
 import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
@@ -116,6 +121,10 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
     },
   )
 
+const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
+  JSXElementNameKeepDeepEqualityCall(),
+)
+
 export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = betterReactMemo(
   'NavigatorItemWrapper',
   (props) => {
@@ -137,25 +146,30 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       isElementVisible,
       renamingTarget,
       collapsedViews,
-      dropTargetHint,
+      appropriateDropTargetHint,
       dispatch,
-    } = useEditorState(
-      (store) => ({
+    } = useEditorState((store) => {
+      // Only capture this if it relates to the current navigator item, as it may change while
+      // dragging around the navigator but we don't want the entire navigator to re-render each time.
+      let possiblyAppropriateDropTargetHint: DropTargetHint | null = null
+      if (EP.pathsEqual(store.editor.navigator.dropTargetHint.target, props.elementPath)) {
+        possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
+      }
+      return {
         dispatch: store.dispatch,
         selectedViews: store.editor.selectedViews,
         collapsedViews: store.editor.navigator.collapsedViews,
-        dropTargetHint: store.editor.navigator.dropTargetHint,
+        appropriateDropTargetHint: possiblyAppropriateDropTargetHint,
         renamingTarget: store.editor.navigator.renamingTarget,
         isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
-      }),
-      'NavigatorItemWrapper',
-    )
+      }
+    }, 'NavigatorItemWrapper')
 
     const isCollapsed = EP.containsPath(props.elementPath, collapsedViews)
 
     const deepReferenceStaticElementName = useKeepDeepEqualityCall(
       staticElementName,
-      nullableDeepEquality(JSXElementNameKeepDeepEqualityCall()),
+      nullableJSXElementNameKeepDeepEquality,
     )
 
     const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
@@ -168,7 +182,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       getDragSelections: props.getDragSelections,
       getMaximumDistance: props.getMaximumDistance,
       getSelectedViewsInRange: props.getSelectedViewsInRange,
-      dropTargetHint: dropTargetHint,
+      appropriateDropTargetHint: appropriateDropTargetHint,
       supportsChildren: supportsChildren,
       noOfChildren: noOfChildren,
       elementOriginType: elementOriginType,

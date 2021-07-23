@@ -351,8 +351,12 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             style={{ transform: 'scale(0.8)', opacity: 0.5 }}
           />
           <NavigatorRowLabel
-            {...props}
-            collapse={collapse}
+            elementPath={elementPath}
+            label={props.label}
+            renamingTarget={props.renamingTarget}
+            selected={props.selected}
+            elementOriginType={props.elementOriginType}
+            dispatch={props.dispatch}
             isDynamic={isDynamic}
             iconColor={resultingStyle.iconColor}
             warningText={warningText}
@@ -372,14 +376,19 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 )
 NavigatorItem.displayName = 'NavigatorItem'
 
-interface NavigatorRowProps extends NavigatorItemInnerProps {
-  collapse: (event: any) => void
-  isDynamic: boolean
+interface NavigatorRowLabelProps {
+  elementPath: ElementPath
   iconColor: IcnProps['color']
   warningText: string | null
+  label: string
+  isDynamic: boolean
+  renamingTarget: ElementPath | null
+  selected: boolean
+  elementOriginType: ElementOriginType
+  dispatch: EditorDispatch
 }
 
-const NavigatorRowLabel = betterReactMemo('NavigatorRowLabel', (props: NavigatorRowProps) => {
+const NavigatorRowLabel = betterReactMemo('NavigatorRowLabel', (props: NavigatorRowLabelProps) => {
   return (
     <React.Fragment>
       <LayoutIcon

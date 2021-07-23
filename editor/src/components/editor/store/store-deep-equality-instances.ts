@@ -89,6 +89,7 @@ import {
   combine11EqualityCalls,
   combine1EqualityCall,
   combine14EqualityCalls,
+  createCallWithShallowEquals,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -106,13 +107,15 @@ import {
 } from './editor-state'
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (state) => state.selectedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.filesState,
     createCallFromIntrospectiveKeepDeep<TransientFilesState | null>(),
+    (state) => state.toastsToApply,
+    createCallWithShallowEquals(),
     transientCanvasState,
   )
 }

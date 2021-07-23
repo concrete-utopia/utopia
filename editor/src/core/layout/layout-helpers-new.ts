@@ -60,6 +60,7 @@ export type StyleLayoutProp =
   | 'marginRight'
   | 'marginBottom'
   | 'marginLeft'
+  | 'margin'
   | 'display'
 
 export type LayoutProp =
@@ -155,6 +156,7 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
   marginRight: ['style', 'marginRight'],
   marginBottom: ['style', 'marginBottom'],
   marginLeft: ['style', 'marginLeft'],
+  margin: ['style', 'margin'],
   padding: ['style', 'padding'],
   paddingTop: ['style', 'paddingTop'],
   paddingRight: ['style', 'paddingRight'],

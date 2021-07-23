@@ -422,6 +422,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -465,6 +466,7 @@ describe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       editor,
+      null,
       null,
     ).editor
 
@@ -514,6 +516,7 @@ describe('moveTemplate', () => {
       } as CanvasRectangle,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -548,6 +551,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -580,6 +584,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      null,
       null,
     ).editor
 
@@ -615,6 +620,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -647,6 +653,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ccc']),
       null,
       editor,
+      null,
       null,
     ).editor
 
@@ -700,6 +707,7 @@ describe('moveTemplate', () => {
       groupFrame,
       editor,
       LayoutSystem.Group,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -760,6 +768,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -811,6 +820,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      null,
       null,
     ).editor
 
@@ -1144,7 +1154,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, menuInsertable, 'do-not-add')
+    const action = insertWithDefaults(targetPath, menuInsertable, 'do-not-add', null)
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1239,7 +1249,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, menuInsertable, 'add-size')
+    const action = insertWithDefaults(targetPath, menuInsertable, 'add-size', null)
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1333,7 +1343,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size')
+    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size', null)
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1375,6 +1385,91 @@ describe('INSERT_WITH_DEFAULTS', () => {
                 <img
                   style={{ width: 100, height: 100 }}
                   src='/editor/icons/favicons/favicon128.png?hash=nocommit\\"'
+                />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
+  })
+
+  it('inserts an img element into the project, also adding style props, added at the back', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      {},
+      {},
+      editorState.projectContents,
+      [],
+      StoryboardFilePath,
+    )
+    const htmlGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return group.source.type === 'HTML_GROUP'
+      }),
+    )
+    const imgInsertable = forceNotNull(
+      'Component should exist.',
+      htmlGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'img'
+      }),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size', { type: 'back' })
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, true),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          export var Card = (props) => {
+            return (
+              <div style={{ ...props.style }}>
+                <img
+                  style={{ width: 100, height: 100 }}
+                  src='/editor/icons/favicons/favicon128.png?hash=nocommit\\"'
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Rectangle
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
                 />
               </div>
             )

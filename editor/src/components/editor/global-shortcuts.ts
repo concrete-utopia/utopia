@@ -117,6 +117,7 @@ import {
   GROUP_ELEMENT_PICKER_SHORTCUT,
   GROUP_ELEMENT_DEFAULT_SHORTCUT,
   TOGGLE_FOCUSED_OMNIBOX_TAB,
+  FOCUS_CLASS_NAME_INPUT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -572,7 +573,7 @@ export function handleKeyDown(
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu('wrap')]
+          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
           : []
       },
       // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
@@ -583,7 +584,7 @@ export function handleKeyDown(
       },
       [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
-          ? [EditorActions.openFloatingInsertMenu('wrap')]
+          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
           : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
@@ -725,6 +726,9 @@ export function handleKeyDown(
           ? [EditorActions.moveSelectedToFront()]
           : []
       },
+      [FOCUS_CLASS_NAME_INPUT]: () => {
+        return [EditorActions.focusClassNameInput()]
+      },
       [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
         return [EditorActions.focusFormulaBar()]
       },
@@ -748,14 +752,20 @@ export function handleKeyDown(
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return [EditorActions.openFloatingInsertMenu('convert')]
+          return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
         } else {
           return []
         }
       },
       [ADD_ELEMENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
-          return [EditorActions.openFloatingInsertMenu('insert')]
+          return [
+            EditorActions.openFloatingInsertMenu({
+              insertMenuMode: 'insert',
+              parentPath: null,
+              indexPosition: null,
+            }),
+          ]
         } else {
           return []
         }

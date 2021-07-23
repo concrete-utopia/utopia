@@ -167,8 +167,12 @@ export function isViewAgainstImports(jsxElementName: JSXElementName, imports: Im
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'View')
 }
 
-export function isViewFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
-  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'View')
+export function isViewLikeFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
+  return (
+    isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'View') ||
+    isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'FlexRow') ||
+    isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'FlexCol')
+  )
 }
 
 export function isTextAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {

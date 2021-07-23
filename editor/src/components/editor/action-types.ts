@@ -38,6 +38,7 @@ import {
   DuplicationState,
   EditorState,
   ErrorMessages,
+  FloatingInsertMenuState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -419,13 +420,20 @@ export type ResetPins = {
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: ElementPath[]
-  layoutSystem: LayoutSystem
+  layoutSystem: SettableLayoutSystem
+  newParentMainAxis: 'horizontal' | 'vertical' | null
   whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
+}
+
+export interface WrapInElement {
+  action: 'WRAP_IN_ELEMENT'
+  targets: ElementPath[]
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports }
 }
 
 export interface OpenFloatingInsertMenu {
   action: 'OPEN_FLOATING_INSERT_MENU'
-  mode: 'insert' | 'convert' | 'wrap'
+  mode: FloatingInsertMenuState
 }
 
 export interface CloseFloatingInsertMenu {
@@ -847,6 +855,10 @@ export interface SetCurrentTheme {
   theme: Theme
 }
 
+export interface FocusClassNameInput {
+  action: 'FOCUS_CLASS_NAME_INPUT'
+}
+
 export interface FocusFormulaBar {
   action: 'FOCUS_FORMULA_BAR'
 }
@@ -861,6 +873,7 @@ export interface InsertWithDefaults {
   targetParent: ElementPath
   toInsert: InsertableComponent
   styleProps: StylePropOption
+  indexPosition: IndexPosition | null
 }
 
 export interface SetPropTransient {
@@ -935,6 +948,7 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInView
+  | WrapInElement
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
   | UnwrapGroupOrView
@@ -1016,6 +1030,7 @@ export type EditorAction =
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
+  | FocusClassNameInput
   | FocusFormulaBar
   | UpdateFormulaBarMode
   | InsertWithDefaults

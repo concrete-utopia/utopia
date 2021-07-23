@@ -38,6 +38,8 @@ export const UtopiaApiComponents: DependencyBoundDescriptors = {
       createBasicUtopiaComponent('Rectangle', 'Rectangle', StyleObjectProps),
       createBasicUtopiaComponent('Text', 'Text', StyleObjectProps),
       createBasicUtopiaComponent('View', 'View', StyleObjectProps),
+      createBasicUtopiaComponent('FlexRow', 'FlexRow', StyleObjectProps),
+      createBasicUtopiaComponent('FlexCol', 'FlexCol', StyleObjectProps),
       createBasicUtopiaComponent('Scene', 'Scene', StyleObjectProps),
     ],
   },

@@ -24,13 +24,6 @@ const AutoSizer = require('react-virtualized-auto-sizer')
 const AutoSizerComponent: typeof AutoSizer =
   (AutoSizer as any)['default'] == null ? AutoSizer : (AutoSizer as any)['default']
 
-export interface DropTargetHint {
-  target: ElementPath | null
-  type: DropTargetType
-}
-
-export type DropTargetType = 'before' | 'after' | 'reparent' | null
-
 const NavigatorContainerId = 'navigator'
 
 export const NavigatorComponent = betterReactMemo(

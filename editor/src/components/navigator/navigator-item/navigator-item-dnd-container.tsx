@@ -23,12 +23,11 @@ import {
   isCursorInTopArea,
   onDragActions,
 } from '../drag-and-drop-utils'
-import { DropTargetHint } from '../navigator'
 import { ExpansionArrowWidth } from './expandable-indicator'
 import { BasePaddingUnit, getElementPadding, NavigatorItem } from './navigator-item'
 import { NavigatorHintBottom, NavigatorHintTop } from './navigator-item-components'
 import { JSXElementName } from '../../../core/shared/element-template'
-import { ElementWarnings } from '../../editor/store/editor-state'
+import { DropTargetHint, ElementWarnings } from '../../editor/store/editor-state'
 
 const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
@@ -41,7 +40,7 @@ export interface DragSelection {
 export interface NavigatorItemDragAndDropWrapperProps {
   index: number
   elementPath: ElementPath
-  dropTargetHint: DropTargetHint
+  appropriateDropTargetHint: DropTargetHint | null
   editorDispatch: EditorDispatch
   selected: boolean
   highlighted: boolean // TODO are we sure about this?
@@ -79,10 +78,9 @@ function onDrop(
     )
     const draggedElements = filteredSelections.map((selection) => selection.elementPath)
     const clearHintAction = showNavigatorDropTargetHint(null, null)
-    const target =
-      props.dropTargetHint.target != null ? props.dropTargetHint.target : props.elementPath
+    const target = props.appropriateDropTargetHint?.target ?? props.elementPath
 
-    switch (props.dropTargetHint.type) {
+    switch (props.appropriateDropTargetHint?.type) {
       case 'before':
         return props.editorDispatch(
           [placeComponentsBefore(draggedElements, target), clearHintAction],
@@ -148,7 +146,7 @@ function onHover(
     }
 
     if (isCursorInTopArea(dropTargetRectangle, cursor.y, numberOfAreasToCut)) {
-      if (props.dropTargetHint.type !== 'before') {
+      if (props.appropriateDropTargetHint?.type !== 'before') {
         props.editorDispatch(
           [...targetAction, showNavigatorDropTargetHint('before', component.props.elementPath)],
           'leftpane',
@@ -167,8 +165,8 @@ function onHover(
         const targetDistance = Math.min(cursorTargetDepth, maximumTargetDepth)
         const targetTP = EP.getNthParent(props.elementPath, targetDistance)
         if (
-          props.dropTargetHint.type !== 'after' ||
-          !EP.pathsEqual(props.dropTargetHint.target, targetTP)
+          props.appropriateDropTargetHint?.type !== 'after' ||
+          !EP.pathsEqual(props.appropriateDropTargetHint?.target, targetTP)
         ) {
           props.editorDispatch(
             [...targetAction, showNavigatorDropTargetHint('after', targetTP)],
@@ -176,8 +174,8 @@ function onHover(
           )
         }
       } else if (
-        props.dropTargetHint.type !== 'after' ||
-        !EP.pathsEqual(props.dropTargetHint.target, component.props.elementPath)
+        props.appropriateDropTargetHint?.type !== 'after' ||
+        !EP.pathsEqual(props.appropriateDropTargetHint?.target, component.props.elementPath)
       ) {
         props.editorDispatch(
           [...targetAction, showNavigatorDropTargetHint('after', component.props.elementPath)],
@@ -185,13 +183,13 @@ function onHover(
         )
       }
     } else if (canReparent) {
-      if (props.dropTargetHint.type !== 'reparent') {
+      if (props.appropriateDropTargetHint?.type !== 'reparent') {
         props.editorDispatch(
           [...targetAction, showNavigatorDropTargetHint('reparent', component.props.elementPath)],
           'leftpane',
         )
       }
-    } else if (props.dropTargetHint.type !== null) {
+    } else if (props.appropriateDropTargetHint?.type !== null) {
       props.editorDispatch([showNavigatorDropTargetHint(null, null)], 'leftpane')
     }
   }
@@ -220,10 +218,10 @@ export class NavigatorItemDndWrapper extends PureComponent<
   getMarginForHint = (): number => {
     if (
       this.props.isOver &&
-      this.props.dropTargetHint.target != null &&
-      this.props.dropTargetHint.type !== 'reparent'
+      this.props.appropriateDropTargetHint?.target != null &&
+      this.props.appropriateDropTargetHint?.type !== 'reparent'
     ) {
-      return getHintPadding(this.props.dropTargetHint.target)
+      return getHintPadding(this.props.appropriateDropTargetHint.target)
     } else {
       return 0
     }
@@ -257,13 +255,15 @@ export class NavigatorItemDndWrapper extends PureComponent<
           elementWarnings={this.props.elementWarnings}
         />
         <NavigatorHintTop
-          isOver={this.props.isOver}
-          dropTargetType={this.props.dropTargetHint.type}
+          shouldBeShown={
+            this.props.isOver && this.props.appropriateDropTargetHint?.type === 'before'
+          }
           getMarginForHint={this.getMarginForHint}
         />
         <NavigatorHintBottom
-          isOver={this.props.isOver}
-          dropTargetType={this.props.dropTargetHint.type}
+          shouldBeShown={
+            this.props.isOver && this.props.appropriateDropTargetHint?.type === 'after'
+          }
           getMarginForHint={this.getMarginForHint}
         />
       </div>
