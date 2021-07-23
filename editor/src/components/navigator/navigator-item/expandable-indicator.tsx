@@ -14,7 +14,6 @@ interface ExpandableIndicatorProps {
   testId?: string
 }
 
-
 export const ExpandableIndicator: React.FunctionComponent<ExpandableIndicatorProps> = betterReactMemo(
   'ExpandableIndicator',
   (props) => {
@@ -31,5 +30,5 @@ export const ExpandableIndicator: React.FunctionComponent<ExpandableIndicatorPro
         ) : null}
       </div>
     )
-  }
+  },
 )

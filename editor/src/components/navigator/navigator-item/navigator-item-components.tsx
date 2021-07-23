@@ -70,7 +70,6 @@ interface VisiblityIndicatorProps {
   onClick: () => void
 }
 
-
 export const VisibilityIndicator: React.FunctionComponent<VisiblityIndicatorProps> = betterReactMemo(
   'VisibilityIndicator',
   (props) => {
