@@ -231,7 +231,6 @@ export const FlexLayoutHelpers = {
     possibleMainAxis: 'horizontal' | 'vertical' | null,
     edgePosition: EdgePosition | null,
   ): Either<string, FixedAndBases> => {
-    // const possibleMainAxis = FlexLayoutHelpers.getMainAxis(parentProps)
     const currentFlexBasis = eitherToMaybe(getSimpleAttributeAtPath(right(props), FlexBasisPath))
     const currentWidth = eitherToMaybe(
       getSimpleAttributeAtPath(right(props), createLayoutPropertyPath('Width')),
