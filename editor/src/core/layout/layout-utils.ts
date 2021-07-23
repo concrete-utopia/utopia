@@ -129,6 +129,16 @@ export function maybeSwitchLayoutProps(
   const newParent = MetadataUtils.findElementByElementPath(currentContextMetadata, newParentPath)
 
   let wasFlexContainer = MetadataUtils.isFlexLayoutedContainer(originalParent)
+  const oldParentMainAxis: 'horizontal' | 'vertical' | null = eitherToMaybe(
+    flatMapEither<string, JSXElementChild, 'horizontal' | 'vertical'>((parentElement) => {
+      if (isJSXElement(parentElement)) {
+        return FlexLayoutHelpers.getMainAxis(right(parentElement.props))
+      } else {
+        return leftEither('parent is not JSXElement')
+      }
+    }, newParent?.element ?? leftEither('no parent provided')),
+  )
+
   let isFlexContainer =
     parentLayoutSystem === 'flex' || MetadataUtils.isFlexLayoutedContainer(newParent)
 
@@ -184,7 +194,9 @@ export function maybeSwitchLayoutProps(
   } else {
     const switchLayoutFunction = getLayoutFunction(
       wasFlexContainer,
+      oldParentMainAxis,
       isFlexContainer,
+      parentMainAxis,
       wasGroup,
       isGroup,
     )
@@ -219,7 +231,9 @@ export function maybeSwitchLayoutProps(
 
 function getLayoutFunction(
   wasFlexContainer: boolean,
+  oldMainAxis: 'horizontal' | 'vertical' | null,
   isFlexContainer: boolean,
+  newMainAxis: 'horizontal' | 'vertical' | null,
   wasGroup: boolean,
   isGroup: boolean,
 ): {
@@ -242,9 +256,16 @@ function getLayoutFunction(
       }
     } else if (isFlexContainer) {
       // From flex to flex
-      return {
-        layoutFn: keepLayoutProps,
-        didSwitch: false,
+      if (oldMainAxis === newMainAxis) {
+        return {
+          layoutFn: keepLayoutProps,
+          didSwitch: false,
+        }
+      } else {
+        return {
+          layoutFn: switchFlexToFlexDifferentAxis,
+          didSwitch: true,
+        }
       }
     } else {
       // From flex to pinned
@@ -437,6 +458,43 @@ export function switchPinnedChildToFlex(
     updatedComponents: updatedComponents,
     updatedMetadata: updatedMetadata,
   }
+}
+
+export function switchFlexToFlexDifferentAxis(
+  target: ElementPath,
+  newParentPath: ElementPath,
+  targetOriginalContextMetadata: ElementInstanceMetadataMap,
+  currentContextMetadata: ElementInstanceMetadataMap,
+  components: UtopiaJSXComponent[],
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
+): SwitchLayoutTypeResult {
+  const element = findJSXElementAtPath(target, components)
+
+  // If the element exists, has props, and the props DO NOT contain width, height or flexBasis, just skip conversion
+  if (element != null) {
+    const allAttributePaths = getAllPathsFromAttributes(element.props)
+    if (
+      !allAttributePaths.includes(createLayoutPropertyPath('Width')) &&
+      !allAttributePaths.includes(createLayoutPropertyPath('Height')) &&
+      !allAttributePaths.includes(createLayoutPropertyPath('flexBasis'))
+    ) {
+      // we leave the element alone
+      return {
+        updatedComponents: components,
+        updatedMetadata: currentContextMetadata,
+      }
+    }
+  }
+
+  // otherwise, we run a regular switchPinnedChildToFlex
+  return switchPinnedChildToFlex(
+    target,
+    newParentPath,
+    targetOriginalContextMetadata,
+    currentContextMetadata,
+    components,
+    newParentMainAxis,
+  )
 }
 
 interface SwitchLayoutTypeResult {
