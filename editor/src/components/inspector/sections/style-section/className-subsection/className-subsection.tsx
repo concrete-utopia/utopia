@@ -24,7 +24,7 @@ import {
   MatchHighlighter,
   useGetSelectedTailwindOptions,
 } from '../../../../../core/tailwind/tailwind-options'
-import { useEditorState } from '../../../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import * as EditorActions from '../../../../editor/actions/action-creators'
 import * as PP from '../../../../../core/shared/property-path'
 import { jsxAttributeValue } from '../../../../../core/shared/element-template'
@@ -36,6 +36,12 @@ import {
 } from '../../../../../core/shared/atom-with-pub-sub'
 import { last } from '../../../../../core/shared/array-utils'
 import { useInputFocusOnCountIncrease } from '../../../../editor/hook-utils'
+import {
+  applyShortcutConfigurationToDefaults,
+  handleShortcuts,
+  REDO_CHANGES_SHORTCUT,
+  UNDO_CHANGES_SHORTCUT,
+} from '../../../../editor/shortcut-definitions'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
@@ -180,6 +186,7 @@ const Input = (props: InputProps) => {
 }
 
 const ClassNameControl = betterReactMemo('ClassNameControl', () => {
+  const editorStoreRef = useRefEditorState((store) => store)
   const theme = useColorTheme()
   const targets = useEditorState(
     (store) => store.editor.selectedViews,
@@ -302,8 +309,20 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
           }
         }
       }
+
+      const namesByKey = applyShortcutConfigurationToDefaults(
+        editorStoreRef.current.userState.shortcutConfig,
+      )
+      handleShortcuts(namesByKey, event.nativeEvent, null, {
+        [UNDO_CHANGES_SHORTCUT]: () => {
+          return dispatch([EditorActions.undo()])
+        },
+        [REDO_CHANGES_SHORTCUT]: () => {
+          return dispatch([EditorActions.redo()])
+        },
+      })
     },
-    [clearFocusedOption, filter, selectedOptions],
+    [clearFocusedOption, dispatch, editorStoreRef, filter, selectedOptions],
   )
 
   const multiValueLabel: styleFn = React.useCallback(
