@@ -265,7 +265,10 @@ export function getComponentGroups(
         file.fileContents.parsed,
       )
       if (possibleExportedComponents != null) {
-        const insertableComponents = possibleExportedComponents.map((exportedComponent) => {
+        const componentsWithoutApp_KILLME = possibleExportedComponents.filter(
+          (c) => c.listingName !== 'App', // TODO make this filtering smarter. Filter out the component(s) that we are currently inserting into instead of this
+        )
+        const insertableComponents = componentsWithoutApp_KILLME.map((exportedComponent) => {
           const pathWithoutExtension = dropFileExtension(fullPath)
           const { defaultProps, parsedControls } = defaultPropertiesForComponentInFile(
             exportedComponent.listingName,
