@@ -33,6 +33,7 @@ import {
   ElementInstanceMetadataMap,
   isJSXElement,
   JSXElementChild,
+  ElementInstanceMetadata,
 } from '../shared/element-template'
 import { findJSXElementAtStaticPath } from '../model/element-template-utils'
 import {
@@ -110,6 +111,21 @@ export function maybeSwitchChildrenLayoutProps(
   return result
 }
 
+function getParentAxisFromElement(
+  element: ElementInstanceMetadata | null,
+): 'horizontal' | 'vertical' | null {
+  const jsxElement = element?.element ?? leftEither('no parent provided')
+  return eitherToMaybe(
+    flatMapEither<string, JSXElementChild, 'horizontal' | 'vertical'>((foundJsxElement) => {
+      if (isJSXElement(foundJsxElement)) {
+        return FlexLayoutHelpers.getMainAxis(right(foundJsxElement.props))
+      } else {
+        return leftEither('parent is not JSXElement')
+      }
+    }, jsxElement),
+  )
+}
+
 export function maybeSwitchLayoutProps(
   target: ElementPath,
   originalPath: ElementPath,
@@ -129,32 +145,15 @@ export function maybeSwitchLayoutProps(
   const newParent = MetadataUtils.findElementByElementPath(currentContextMetadata, newParentPath)
 
   let wasFlexContainer = MetadataUtils.isFlexLayoutedContainer(originalParent)
-  const oldParentMainAxis: 'horizontal' | 'vertical' | null = eitherToMaybe(
-    flatMapEither<string, JSXElementChild, 'horizontal' | 'vertical'>((parentElement) => {
-      if (isJSXElement(parentElement)) {
-        return FlexLayoutHelpers.getMainAxis(right(parentElement.props))
-      } else {
-        return leftEither('parent is not JSXElement')
-      }
-    }, newParent?.element ?? leftEither('no parent provided')),
+  const oldParentMainAxis: 'horizontal' | 'vertical' | null = getParentAxisFromElement(
+    originalParent,
   )
 
   let isFlexContainer =
     parentLayoutSystem === 'flex' || MetadataUtils.isFlexLayoutedContainer(newParent)
 
   const parentMainAxis: 'horizontal' | 'vertical' | null =
-    newParentMainAxis ??
-    // if no newParentMainAxis is provided, let's try to find one
-    // TODO maybe overkill
-    eitherToMaybe(
-      flatMapEither<string, JSXElementChild, 'horizontal' | 'vertical'>((parentElement) => {
-        if (isJSXElement(parentElement)) {
-          return FlexLayoutHelpers.getMainAxis(right(parentElement.props))
-        } else {
-          return leftEither('parent is not JSXElement')
-        }
-      }, newParent?.element ?? leftEither('no parent provided')),
-    )
+    newParentMainAxis ?? getParentAxisFromElement(newParent) // if no newParentMainAxis is provided, let's try to find one
 
   let wasGroup = MetadataUtils.isGroup(originalParentPath, targetOriginalContextMetadata)
   let isGroup = MetadataUtils.isGroup(newParentPath, currentContextMetadata)
