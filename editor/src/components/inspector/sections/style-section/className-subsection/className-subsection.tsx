@@ -310,6 +310,10 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         }
       }
 
+      if (event.key === 'Escape') {
+        inputRef.current?.blur()
+      }
+
       const namesByKey = applyShortcutConfigurationToDefaults(
         editorStoreRef.current.userState.shortcutConfig,
       )
@@ -322,7 +326,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         },
       })
     },
-    [clearFocusedOption, dispatch, editorStoreRef, filter, selectedOptions],
+    [clearFocusedOption, dispatch, editorStoreRef, filter, inputRef, selectedOptions],
   )
 
   const multiValueLabel: styleFn = React.useCallback(
