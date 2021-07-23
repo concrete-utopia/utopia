@@ -30,13 +30,16 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
       return null
     }
     const selectedView = props.selectedViews[0]
-    const parentPath = EP.parentPath(selectedView)
+    const parentPath = selectedView
     const parentFrame =
       parentPath != null
         ? MetadataUtils.getFrameInCanvasCoords(parentPath, props.componentMetadata)
         : null
 
-    const parentElement = MetadataUtils.getParent(props.componentMetadata, selectedView)
+    const parentElement = MetadataUtils.findElementByElementPath(
+      props.componentMetadata,
+      selectedView,
+    )
     if (parentPath == null || parentFrame == null || parentElement == null) {
       return null
     }
@@ -46,6 +49,56 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
       false,
     )
     let controlProps: ButtonControlProps[] = []
+
+    if (
+      children.length === 0 &&
+      parentElement.specialSizeMeasurements.layoutSystemForChildren === 'flex'
+    ) {
+      let direction: 'row' | 'column' | null = null
+
+      switch (parentElement.specialSizeMeasurements.flexDirection) {
+        case 'row':
+        case 'column':
+          direction = parentElement.specialSizeMeasurements.flexDirection
+          break
+        default:
+        // Ignore any other values.
+      }
+
+      const beforeX =
+        direction == 'column'
+          ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
+          : parentFrame.x + props.canvasOffset.x
+      const beforeY =
+        direction == 'column'
+          ? parentFrame.y + props.canvasOffset.y
+          : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
+      const beforeLineEndX =
+        direction == 'column'
+          ? parentFrame.x + parentFrame.width + props.canvasOffset.x
+          : parentFrame.x + props.canvasOffset.x
+      const beforeLineEndY =
+        direction == 'column'
+          ? parentFrame.y + props.canvasOffset.y
+          : parentFrame.y + parentFrame.height + props.canvasOffset.y
+
+      if (direction != null) {
+        controlProps.push({
+          key: 'parent-0',
+          positionX: beforeX,
+          positionY: beforeY,
+          lineEndX: beforeLineEndX,
+          lineEndY: beforeLineEndY,
+          isHorizontalLine: direction === 'column',
+          parentPath: parentPath,
+          indexPosition: {
+            type: 'absolute',
+            index: 0,
+          },
+        })
+      }
+    }
+
     children.forEach((child, index) => {
       const childFrame = MetadataUtils.getFrameInCanvasCoords(
         child.elementPath,
