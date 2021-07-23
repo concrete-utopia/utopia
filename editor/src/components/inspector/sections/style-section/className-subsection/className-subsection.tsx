@@ -236,6 +236,10 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
 
   const onChange = React.useCallback(
     (newValueType: ValueType<TailWindOption>) => {
+      // As the value of the dropdown is changing, hide the selection
+      // controls so they can see the results of what they're doing.
+      EditorActions.hideAndShowSelectionControls(dispatch)
+
       const newValue = valueTypeAsArray(newValueType)
       if (elementPath != null) {
         if (queuedDispatchTimeout != null) {
@@ -272,6 +276,10 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLElement>) => {
+      // As someone is typing, hide the selection
+      // controls so they can see the results of what they're doing.
+      EditorActions.hideAndShowSelectionControls(dispatch)
+
       const shouldStopPreviewing =
         filter === '' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
 
