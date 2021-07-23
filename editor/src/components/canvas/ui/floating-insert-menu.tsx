@@ -380,6 +380,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
     // when the user "tabs out" to the checkboxes, prevent react-select from clearing the input text
     if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
       setFilterInputValue(newValue)
+      activelySelectedInsertOptionRef.current = null
     }
   }, [])
 
