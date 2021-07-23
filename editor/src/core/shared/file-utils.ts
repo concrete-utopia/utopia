@@ -1,4 +1,4 @@
-import * as stringHash from 'string-hash'
+import stringHash from 'string-hash'
 import { size, Size } from './math-utils'
 
 export interface ImageResult {
