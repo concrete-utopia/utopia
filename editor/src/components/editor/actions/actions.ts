@@ -643,7 +643,7 @@ function switchAndUpdateFrames(
     return editor
   }
 
-  const layoutSystemPath = createLayoutPropertyPath('LayoutSystem')
+  const stylePositionPath = createLayoutPropertyPath('position')
   const styleDisplayPath = createLayoutPropertyPath('display')
 
   let withUpdatedLayoutSystem: EditorModel = editor
@@ -653,7 +653,7 @@ function switchAndUpdateFrames(
         withUpdatedLayoutSystem,
         target,
         (attributes) => {
-          return unsetJSXValueAtPath(attributes, layoutSystemPath)
+          return unsetJSXValueAtPath(attributes, stylePositionPath)
         },
       )
       withUpdatedLayoutSystem = setPropertyOnTarget(
@@ -670,16 +670,7 @@ function switchAndUpdateFrames(
       break
     case 'flow':
     case 'grid':
-      const propsToRemove = [
-        layoutSystemPath,
-        createLayoutPropertyPath('PinnedLeft'),
-        createLayoutPropertyPath('PinnedTop'),
-        createLayoutPropertyPath('PinnedRight'),
-        createLayoutPropertyPath('PinnedBottom'),
-        createLayoutPropertyPath('PinnedCenterX'),
-        createLayoutPropertyPath('PinnedCenterY'),
-        createLayoutPropertyPath('position'),
-      ]
+      const propsToRemove = [stylePositionPath, styleDisplayPath]
       withUpdatedLayoutSystem = setPropertyOnTarget(
         withUpdatedLayoutSystem,
         target,
@@ -704,156 +695,13 @@ function switchAndUpdateFrames(
         (attributes) => {
           return setJSXValueAtPath(
             attributes,
-            createLayoutPropertyPath('position'),
+            stylePositionPath,
             jsxAttributeValue('absolute', emptyComments),
           )
         },
       )
   }
-
-  // This "fixes" an issue where inside `setCanvasFramesInnerNew` looks at the layout type in the
-  // metadata which causes a problem as it's effectively out of date after the above call.
-  switch (layoutSystem) {
-    case 'flex':
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          layoutSystemPath,
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'flex',
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          createLayoutPropertyPath('position'), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'relative',
-        ),
-      }
-      break
-    case 'flow':
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          layoutSystemPath,
-        ),
-      }
-      break
-    case LayoutSystem.PinSystem:
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          layoutSystemPath,
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          createLayoutPropertyPath('position'), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          'absolute',
-        ),
-      }
-      break
-    case LayoutSystem.Group:
-    default:
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          styleDisplayPath,
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
-          layoutSystem,
-        ),
-      }
-  }
-
-  function layoutSystemToSet(): DetectedLayoutSystem {
-    switch (layoutSystem) {
-      case 'flex':
-        return 'flex'
-      case LayoutSystem.PinSystem:
-        return 'flow'
-      case LayoutSystem.Group:
-      default:
-        return 'flow'
-    }
-  }
-
-  withUpdatedLayoutSystem = {
-    ...withUpdatedLayoutSystem,
-    jsxMetadata: setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-      withUpdatedLayoutSystem.jsxMetadata,
-      target,
-      layoutSystemToSet(),
-    ),
-  }
-  withUpdatedLayoutSystem = {
-    ...withUpdatedLayoutSystem,
-    jsxMetadata: switchLayoutMetadata(
-      withUpdatedLayoutSystem.jsxMetadata,
-      target,
-      undefined,
-      layoutSystemToSet(),
-      undefined,
-    ),
-  }
-
-  let withChildrenUpdated = modifyOpenJSXElementsAndMetadata(
-    (components, metadata) => {
-      return maybeSwitchChildrenLayoutProps(target, editor.jsxMetadata, metadata, components)
-    },
-    target,
-    withUpdatedLayoutSystem,
-  )
-
-  let framesAndTargets: Array<PinOrFlexFrameChange> = []
-  if (layoutSystem !== 'flow') {
-    const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-      target,
-      withChildrenUpdated.jsxMetadata,
-    )
-    framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
-  }
-
-  Utils.fastForEach(targetMetadata.children, (childPath) => {
-    const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
-    if (child?.globalFrame != null) {
-      // if the globalFrame is null, this child is a non-layoutable so just skip it
-      const isParentOfChildFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-        child.elementPath,
-        withChildrenUpdated.jsxMetadata,
-      )
-      framesAndTargets.push(
-        getFrameChange(child.elementPath, child.globalFrame, isParentOfChildFlex),
-      )
-    }
-  })
-  return setCanvasFramesInnerNew(withChildrenUpdated, framesAndTargets, null)
+  return withUpdatedLayoutSystem
 }
 
 export function editorMoveMultiSelectedTemplates(
