@@ -420,7 +420,8 @@ export type ResetPins = {
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: ElementPath[]
-  layoutSystem: LayoutSystem
+  layoutSystem: SettableLayoutSystem
+  newParentMainAxis: 'horizontal' | 'vertical' | null
   whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
 }
 
