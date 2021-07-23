@@ -197,6 +197,7 @@ import {
   canvasFrameToNormalisedFrame,
   clearDragState,
   duplicate,
+  editorMultiselectReparentNoStyleChange,
   getFrameChange,
   moveTemplate,
   produceCanvasTransientState,
@@ -368,6 +369,7 @@ import {
   ClearTransientProps,
   AddTailwindConfig,
   FocusClassNameInput,
+  WrapInElement,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -998,9 +1000,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       scrollAnimation: currentEditor.canvas.scrollAnimation,
       transientProperties: null,
     },
-    floatingInsertMenu: {
-      insertMenuMode: currentEditor.floatingInsertMenu.insertMenuMode,
-    },
+    floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
       visible: currentEditor.inspector.visible,
       classnameFocusCounter: currentEditor.inspector.classnameFocusCounter,
@@ -2222,13 +2222,118 @@ export const UPDATE_FNS = {
       dispatch,
     )
   },
+  WRAP_IN_ELEMENT: (
+    action: WrapInElement,
+    editorForAction: EditorModel,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    return toastOnGeneratedElementsSelected(
+      `Generated elements can't be wrapped into other elements.`,
+      editorForAction,
+      false,
+      (editor) => {
+        const uiFileKey = getOpenUIJSFileKey(editor)
+        if (uiFileKey == null) {
+          return editor
+        }
+
+        const newUID = action.whatToWrapWith.element.uid
+
+        const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
+          action.targets,
+          derived,
+        )
+        const parentPath = EP.getCommonParent(orderedActionTargets)
+        const indexInParent = optionalMap(
+          (firstPsthMatchingCommonParent) =>
+            MetadataUtils.getViewZIndexFromMetadata(
+              editor.jsxMetadata,
+              firstPsthMatchingCommonParent,
+            ),
+          orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
+        )
+
+        if (parentPath === null) {
+          return editor
+        } else {
+          let viewPath: ElementPath | null = null
+
+          const underlyingTarget = normalisePathToUnderlyingTarget(
+            editor.projectContents,
+            editor.nodeModules.files,
+            uiFileKey,
+            parentPath,
+          )
+
+          const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+          const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
+            targetSuccess.filePath,
+            editor,
+            (parseSuccess) => {
+              const elementToInsert: JSXElement = action.whatToWrapWith.element
+
+              const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+              const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
+                editor.projectContents,
+                editor.canvas.openFile?.filename ?? null,
+                parentPath,
+                elementToInsert,
+                utopiaJSXComponents,
+                optionalMap(
+                  (index) => ({
+                    type: 'before',
+                    index: index,
+                  }),
+                  indexInParent,
+                ),
+              )
+
+              viewPath = EP.appendToPath(parentPath, newUID)
+
+              const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
+
+              return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+                return {
+                  ...success,
+                  utopiaComponents: withTargetAdded,
+                  imports: mergeImports(targetSuccess.filePath, success.imports, importsToAdd),
+                }
+              }, parseSuccess)
+            },
+          )
+
+          if (viewPath == null) {
+            return editor
+          }
+
+          // reparent targets to the view
+          const indexPosition: IndexPosition = {
+            type: 'back',
+          }
+
+          const withElementsAdded = editorMultiselectReparentNoStyleChange(
+            orderedActionTargets,
+            indexPosition,
+            viewPath,
+            withWrapperViewAddedNoFrame,
+          )
+
+          return {
+            ...withElementsAdded,
+            selectedViews: Utils.maybeToArray(viewPath),
+            highlightedViews: [],
+          }
+        }
+      },
+      dispatch,
+    )
+  },
   OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      floatingInsertMenu: {
-        ...editor.floatingInsertMenu,
-        insertMenuMode: action.mode,
-      },
+      floatingInsertMenu: action.mode,
     }
   },
   CLOSE_FLOATING_INSERT_MENU: (
@@ -2238,7 +2343,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       floatingInsertMenu: {
-        ...editor.floatingInsertMenu,
         insertMenuMode: 'closed',
       },
     }
@@ -4501,7 +4605,7 @@ export const UPDATE_FNS = {
             action.targetParent,
             element,
             utopiaComponents,
-            null,
+            action.indexPosition,
           )
 
           const newPath = EP.appendToPath(action.targetParent, newUID)

@@ -289,6 +289,30 @@ export interface NavigatorState {
   position: 'hidden' | 'left' | 'right'
 }
 
+export interface FloatingInsertMenuStateClosed {
+  insertMenuMode: 'closed'
+}
+
+export interface FloatingInsertMenuStateInsert {
+  insertMenuMode: 'insert'
+  parentPath: ElementPath | null
+  indexPosition: IndexPosition | null
+}
+
+export interface FloatingInsertMenuStateConvert {
+  insertMenuMode: 'convert'
+}
+
+export interface FloatingInsertMenuStateWrap {
+  insertMenuMode: 'wrap'
+}
+
+export type FloatingInsertMenuState =
+  | FloatingInsertMenuStateClosed
+  | FloatingInsertMenuStateInsert
+  | FloatingInsertMenuStateConvert
+  | FloatingInsertMenuStateWrap
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -363,9 +387,7 @@ export interface EditorState {
       attributesToUpdate: MapLike<JSXAttribute>
     }> | null
   }
-  floatingInsertMenu: {
-    insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'
-  }
+  floatingInsertMenu: FloatingInsertMenuState
   inspector: {
     visible: boolean
     classnameFocusCounter: number
