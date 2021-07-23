@@ -21,6 +21,12 @@ import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
 import { selectComponents } from '../../../../editor/actions/action-creators'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { unless, when } from '../../../../../utils/react-conditionals'
+import { InspectorCallbackContext } from '../../../common/property-path-hooks'
+import {
+  createLayoutPropertyPath,
+  LayoutProp,
+  StyleLayoutProp,
+} from '../../../../../core/layout/layout-helpers-new'
 
 type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -81,9 +87,53 @@ interface LayoutSectionHeaderProps {
   layoutType: SelfLayoutTab | 'grid'
 }
 
+const selfLayoutProperties: Array<LayoutProp | StyleLayoutProp> = [
+  'alignSelf',
+  'bottom',
+  'flex',
+  'flexBasis',
+  'flexGrow',
+  'flexShrink',
+  'left',
+  'marginBottom',
+  'marginLeft',
+  'marginRight',
+  'marginTop',
+  'maxHeight',
+  'maxWidth',
+  'minHeight',
+  'minWidth',
+  'paddingBottom',
+  'paddingLeft',
+  'paddingRight',
+  'paddingTop',
+  'padding',
+  'position',
+  'right',
+  'top',
+  'Width',
+  'Height',
+  'PinnedLeft',
+  'PinnedTop',
+  'PinnedRight',
+  'PinnedBottom',
+]
+
+const selfLayoutConfigPropertyPaths = selfLayoutProperties.map((name) =>
+  createLayoutPropertyPath(name),
+)
+
+function useDeleteAllSelfLayoutConfig() {
+  const { onUnsetValue } = React.useContext(InspectorCallbackContext)
+  return React.useCallback(() => {
+    onUnsetValue(selfLayoutConfigPropertyPaths, false)
+  }, [onUnsetValue])
+}
+
 const LayoutSectionHeader = betterReactMemo(
   'LayoutSectionHeader',
   (props: LayoutSectionHeaderProps) => {
+    const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
     return (
       <InspectorSubsectionHeader>
         <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
@@ -100,7 +150,7 @@ const LayoutSectionHeader = betterReactMemo(
           <SelfLink />
           <ChildrenOrContentLink />
         </div>
-        <SquareButton highlight>
+        <SquareButton highlight onClick={onDeleteAllConfig}>
           <FunctionIcons.Delete />
         </SquareButton>
         <SquareButton highlight>
