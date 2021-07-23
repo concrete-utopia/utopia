@@ -16,6 +16,7 @@ import {
   FlexColumn,
   FlexRow,
   colorTheme,
+  SquareButton,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
@@ -42,6 +43,8 @@ import {
   REDO_CHANGES_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
 } from '../../../../editor/shortcut-definitions'
+import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
+import { when } from '../../../../../utils/react-conditionals'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
@@ -233,6 +236,9 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   }, [])
 
   const { selectedOptions, elementPath, isMenuEnabled } = useGetSelectedTailwindOptions()
+  const selectedOptionsLength = selectedOptions?.length ?? 0
+  const [isExpanded, setIsExpanded] = React.useState(selectedOptionsLength > 0)
+  const toggleIsExpanded = React.useCallback(() => setIsExpanded((current) => !current), [])
 
   const onChange = React.useCallback(
     (newValueType: ValueType<TailWindOption>) => {
@@ -447,48 +453,56 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
       }}
     >
       <InspectorSubsectionHeader style={{ color: theme.primary.value }}>
-        Class Names
+        <span style={{ flexGrow: 1 }}>Class Names</span>
+        <SquareButton highlight onClick={toggleIsExpanded}>
+          <ExpandableIndicator visible collapsed={!isExpanded} selected={false} />
+        </SquareButton>
       </InspectorSubsectionHeader>
-      <UIGridRow padded variant='<-------------1fr------------->'>
-        <CreatableSelect
-          ref={inputRef}
-          autoFocus={false}
-          placeholder='Add class…'
-          isMulti
-          value={selectedOptions}
-          isDisabled={!isMenuEnabled}
-          onChange={onChange}
-          onInputChange={onInputChange}
-          components={{
-            IndicatorsContainer,
-            Input,
-            MultiValueRemove,
-          }}
-          className='className-inspector-control'
-          styles={{
-            container,
-            control,
-            valueContainer,
-            multiValue,
-            multiValueLabel,
-            multiValueRemove,
-            placeholder,
-            menu,
-            option,
-          }}
-          filterOption={AlwaysTrue}
-          options={options}
-          menuIsOpen={true}
-          onBlur={onBlur}
-          onFocus={onFocus}
-          escapeClearsValue={true}
-          formatOptionLabel={formatOptionLabel}
-          onKeyDown={handleKeyDown}
-          maxMenuHeight={199}
-          inputValue={filter}
-        />
-      </UIGridRow>
-      <FooterSection options={options} filter={filter} />
+      {when(
+        isExpanded,
+        <React.Fragment>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <CreatableSelect
+              ref={inputRef}
+              autoFocus={false}
+              placeholder='Add class…'
+              isMulti
+              value={selectedOptions}
+              isDisabled={!isMenuEnabled}
+              onChange={onChange}
+              onInputChange={onInputChange}
+              components={{
+                IndicatorsContainer,
+                Input,
+                MultiValueRemove,
+              }}
+              className='className-inspector-control'
+              styles={{
+                container,
+                control,
+                valueContainer,
+                multiValue,
+                multiValueLabel,
+                multiValueRemove,
+                placeholder,
+                menu,
+                option,
+              }}
+              filterOption={AlwaysTrue}
+              options={options}
+              menuIsOpen={true}
+              onBlur={onBlur}
+              onFocus={onFocus}
+              escapeClearsValue={true}
+              formatOptionLabel={formatOptionLabel}
+              onKeyDown={handleKeyDown}
+              maxMenuHeight={199}
+              inputValue={filter}
+            />
+          </UIGridRow>
+          <FooterSection options={options} filter={filter} />
+        </React.Fragment>,
+      )}
     </div>
   )
 })
