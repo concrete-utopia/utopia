@@ -2101,10 +2101,10 @@ export const UPDATE_FNS = {
         )
         const parentPath = EP.getCommonParent(orderedActionTargets)
         const indexInParent = optionalMap(
-          (firstPsthMatchingCommonParent) =>
+          (firstPathMatchingCommonParent) =>
             MetadataUtils.getViewZIndexFromMetadata(
               editor.jsxMetadata,
-              firstPsthMatchingCommonParent,
+              firstPathMatchingCommonParent,
             ),
           orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
         )
@@ -2267,10 +2267,10 @@ export const UPDATE_FNS = {
         )
         const parentPath = EP.getCommonParent(orderedActionTargets)
         const indexInParent = optionalMap(
-          (firstPsthMatchingCommonParent) =>
+          (firstPathMatchingCommonParent) =>
             MetadataUtils.getViewZIndexFromMetadata(
               editor.jsxMetadata,
-              firstPsthMatchingCommonParent,
+              firstPathMatchingCommonParent,
             ),
           orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
         )
