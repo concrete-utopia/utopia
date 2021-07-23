@@ -965,7 +965,6 @@ describe('moveTemplate', () => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
-        <View data-uid='eee' />
         <div
           style={{ position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid='${NewUID}'
@@ -979,6 +978,7 @@ describe('moveTemplate', () => {
             </View>
           </View>
         </div>
+        <View data-uid='eee' />
       </View>
       `),
     )
