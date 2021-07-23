@@ -368,6 +368,7 @@ import {
   SetPropTransient,
   ClearTransientProps,
   AddTailwindConfig,
+  FocusClassNameInput,
   WrapInElement,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
@@ -1002,6 +1003,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
       visible: currentEditor.inspector.visible,
+      classnameFocusCounter: currentEditor.inspector.classnameFocusCounter,
     },
     fileBrowser: {
       minimised: currentEditor.fileBrowser.minimised,
@@ -4522,7 +4524,16 @@ export const UPDATE_FNS = {
       theme: action.theme,
     }
   },
-  FOCUS_FORMULA_BAR: (action: FocusFormulaBar, editor: EditorModel): EditorModel => {
+  FOCUS_CLASS_NAME_INPUT: (editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      inspector: {
+        ...editor.inspector,
+        classnameFocusCounter: editor.inspector.classnameFocusCounter + 1,
+      },
+    }
+  },
+  FOCUS_FORMULA_BAR: (editor: EditorModel): EditorModel => {
     return {
       ...editor,
       topmenu: {

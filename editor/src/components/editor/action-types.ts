@@ -854,6 +854,10 @@ export interface SetCurrentTheme {
   theme: Theme
 }
 
+export interface FocusClassNameInput {
+  action: 'FOCUS_CLASS_NAME_INPUT'
+}
+
 export interface FocusFormulaBar {
   action: 'FOCUS_FORMULA_BAR'
 }
@@ -1025,6 +1029,7 @@ export type EditorAction =
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
+  | FocusClassNameInput
   | FocusFormulaBar
   | UpdateFormulaBarMode
   | InsertWithDefaults

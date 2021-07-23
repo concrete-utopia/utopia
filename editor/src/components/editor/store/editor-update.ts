@@ -303,8 +303,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
     case 'SET_CURRENT_THEME':
       return UPDATE_FNS.SET_CURRENT_THEME(action, state)
+    case 'FOCUS_CLASS_NAME_INPUT':
+      return UPDATE_FNS.FOCUS_CLASS_NAME_INPUT(state)
     case 'FOCUS_FORMULA_BAR':
-      return UPDATE_FNS.FOCUS_FORMULA_BAR(action, state)
+      return UPDATE_FNS.FOCUS_FORMULA_BAR(state)
     case 'UPDATE_FORMULA_BAR_MODE':
       return UPDATE_FNS.UPDATE_FORMULA_BAR_MODE(action, state)
     case 'CLOSE_FLOATING_INSERT_MENU':

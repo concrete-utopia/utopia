@@ -196,6 +196,7 @@ import type {
   SetPropTransient,
   ClearTransientProps,
   AddTailwindConfig,
+  FocusClassNameInput,
   WrapInElement,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
@@ -1382,6 +1383,12 @@ export function setCurrentTheme(theme: Theme): SetCurrentTheme {
   return {
     action: 'SET_CURRENT_THEME',
     theme: theme,
+  }
+}
+
+export function focusClassNameInput(): FocusClassNameInput {
+  return {
+    action: 'FOCUS_CLASS_NAME_INPUT',
   }
 }
 
