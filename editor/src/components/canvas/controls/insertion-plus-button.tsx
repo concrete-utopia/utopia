@@ -52,10 +52,17 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
         props.componentMetadata,
       )
       if (child.specialSizeMeasurements.position !== 'absolute' && childFrame != null) {
-        let direction: 'row' | 'column' =
-          child.specialSizeMeasurements.parentLayoutSystem === 'flex'
-            ? parentElement.props?.style?.flexDirection || 'row'
-            : 'column'
+        let direction: 'row' | 'column' = 'column'
+        if (child.specialSizeMeasurements.parentLayoutSystem === 'flex') {
+          switch (child.specialSizeMeasurements.parentFlexDirection) {
+            case 'row':
+            case 'column':
+              direction = child.specialSizeMeasurements.parentFlexDirection
+              break
+            default:
+            // Ignore any other values.
+          }
+        }
         const positionX =
           direction == 'column'
             ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
