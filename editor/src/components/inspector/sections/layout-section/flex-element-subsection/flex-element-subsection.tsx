@@ -11,9 +11,13 @@ import {
   FlexBasisShorthandCSSNumberControl,
   FlexShorthandNumberControl,
   FlexStyleNumberControl,
+  PinsLayoutNumberControl,
 } from '../self-layout-subsection/gigantic-size-pins-subsection'
 import { InlineLink } from '../../../../../uuiui/inline-button'
 import { when } from '../../../../../utils/react-conditionals'
+import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
+import { isNotUnsetDefaultOrDetected } from '../../../common/control-status'
+import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 
 const marginProps = [
   createLayoutPropertyPath('marginLeft'),
@@ -64,7 +68,38 @@ export const FlexElementSubsectionExperiment = betterReactMemo(
 const MainAxisControls = betterReactMemo(
   'MainAxisControls',
   (props: FlexElementSubsectionProps) => {
-    const [mainAxisControlsOpen, setMainAxisControlsOpen] = React.useState(true)
+    const isRowLayouted =
+      props.parentFlexDirection === 'row' || props.parentFlexDirection === 'row-reverse'
+
+    const width = useInspectorLayoutInfo('Width')
+    const minWidth = useInspectorLayoutInfo('minWidth')
+    const maxWidth = useInspectorLayoutInfo('maxWidth')
+    const height = useInspectorLayoutInfo('Height')
+    const minHeight = useInspectorLayoutInfo('minHeight')
+    const maxHeight = useInspectorLayoutInfo('maxHeight')
+    const alignSelf = useInspectorLayoutInfo('alignSelf')
+    const flexBasis = useInspectorLayoutInfo('flexBasis')
+    const flexGrow = useInspectorLayoutInfo('flexGrow')
+    const flexShrink = useInspectorLayoutInfo('flexShrink')
+
+    const isMainAxisVisibleForFlexDirection = isRowLayouted
+      ? isNotUnsetDefaultOrDetected(width.controlStatus) ||
+        isNotUnsetDefaultOrDetected(minWidth.controlStatus) ||
+        isNotUnsetDefaultOrDetected(maxWidth.controlStatus)
+      : isNotUnsetDefaultOrDetected(height.controlStatus) ||
+        isNotUnsetDefaultOrDetected(minHeight.controlStatus) ||
+        isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
+
+    const isMainAxisVisible =
+      isMainAxisVisibleForFlexDirection ||
+      isNotUnsetDefaultOrDetected(alignSelf.controlStatus) ||
+      isNotUnsetDefaultOrDetected(flexBasis.controlStatus) ||
+      isNotUnsetDefaultOrDetected(flexGrow.controlStatus) ||
+      isNotUnsetDefaultOrDetected(flexShrink.controlStatus)
+
+    const [mainAxisControlsOpen, setMainAxisControlsOpen] = usePropControlledStateV2(
+      isMainAxisVisible,
+    )
     const toggleSection = React.useCallback(() => setMainAxisControlsOpen(!mainAxisControlsOpen), [
       mainAxisControlsOpen,
       setMainAxisControlsOpen,
@@ -72,7 +107,7 @@ const MainAxisControls = betterReactMemo(
     return (
       <>
         <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Main Axis</span>{' '}
+          <span>Main Axis</span>
           <SquareButton highlight onClick={toggleSection}>
             <ExpandableIndicator
               testId='flex-element-subsection'
@@ -128,17 +163,32 @@ const MainAxisControlsContent = betterReactMemo(
 const CrossAxisControls = betterReactMemo(
   'CrossAxisControls',
   (props: FlexElementSubsectionProps) => {
-    const [crossAxisControlsOpen, setCrossAxisControlsOpen] = React.useState(true)
+    const isColumnLayouted =
+      props.parentFlexDirection === 'column' || props.parentFlexDirection === 'column-reverse'
+
+    const width = useInspectorLayoutInfo('Width')
+    const minWidth = useInspectorLayoutInfo('minWidth')
+    const maxWidth = useInspectorLayoutInfo('maxWidth')
+    const height = useInspectorLayoutInfo('Height')
+    const minHeight = useInspectorLayoutInfo('minHeight')
+    const maxHeight = useInspectorLayoutInfo('maxHeight')
+
+    const isCrossAxisVisible = isColumnLayouted
+      ? isNotUnsetDefaultOrDetected(width.controlStatus) ||
+        isNotUnsetDefaultOrDetected(minWidth.controlStatus) ||
+        isNotUnsetDefaultOrDetected(maxWidth.controlStatus)
+      : isNotUnsetDefaultOrDetected(height.controlStatus) ||
+        isNotUnsetDefaultOrDetected(minHeight.controlStatus) ||
+        isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
+
+    const [crossAxisControlsOpen, setCrossAxisControlsOpen] = usePropControlledStateV2(
+      isCrossAxisVisible,
+    )
     const toggleSection = React.useCallback(
       () => setCrossAxisControlsOpen(!crossAxisControlsOpen),
       [crossAxisControlsOpen, setCrossAxisControlsOpen],
     )
-    const widthOrHeightControls =
-      props.parentFlexDirection === 'column' || props.parentFlexDirection === 'column-reverse' ? (
-        <FlexHeightControls />
-      ) : (
-        <FlexWidthControls />
-      )
+    const widthOrHeightControls = isColumnLayouted ? <FlexWidthControls /> : <FlexHeightControls />
     return (
       <>
         <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -165,7 +215,7 @@ const FlexWidthControls = betterReactMemo('FlexWidthControls', () => {
   return (
     <>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-        <FlexBasisShorthandCSSNumberControl label='W' />
+        <PinsLayoutNumberControl label='W' prop='Width' />
       </UIGridRow>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
         <FlexStyleNumberControl label='min' styleProp='minWidth' />
@@ -178,7 +228,7 @@ const FlexHeightControls = betterReactMemo('FlexWidthControls', () => {
   return (
     <>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-        <FlexBasisShorthandCSSNumberControl label='H' />
+        <PinsLayoutNumberControl label='H' prop='Height' />
       </UIGridRow>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
         <FlexStyleNumberControl label='min' styleProp='minHeight' />
