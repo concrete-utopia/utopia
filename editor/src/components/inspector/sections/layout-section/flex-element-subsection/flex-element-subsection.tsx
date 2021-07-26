@@ -15,9 +15,14 @@ import {
 } from '../self-layout-subsection/gigantic-size-pins-subsection'
 import { InlineLink } from '../../../../../uuiui/inline-button'
 import { when } from '../../../../../utils/react-conditionals'
-import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
+import {
+  InspectorCallbackContext,
+  useInspectorLayoutInfo,
+} from '../../../common/property-path-hooks'
 import { isNotUnsetDefaultOrDetected } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
+import { useEditorState } from '../../../../editor/store/store-hook'
+import { PropertyPath } from '../../../../../core/shared/project-file-types'
 
 const marginProps = [
   createLayoutPropertyPath('marginLeft'),
@@ -123,6 +128,23 @@ const MainAxisControls = betterReactMemo(
   },
 )
 
+const mainAxisFixedProps = (parentFlexDirection: string | null): PropertyPath[] => {
+  if (parentFlexDirection === 'row' || parentFlexDirection === 'row-reverse') {
+    return [
+      createLayoutPropertyPath('Width'),
+      createLayoutPropertyPath('minWidth'),
+      createLayoutPropertyPath('maxWidth'),
+    ]
+  } else {
+    return [
+      createLayoutPropertyPath('Height'),
+      createLayoutPropertyPath('minHeight'),
+      createLayoutPropertyPath('maxHeight'),
+    ]
+  }
+}
+const mainAxisAdvancedProps: PropertyPath[] = [createLayoutPropertyPath('alignSelf')]
+
 const MainAxisControlsContent = betterReactMemo(
   'MainAxisControlsContent',
   (props: FlexElementSubsectionProps) => {
@@ -132,6 +154,14 @@ const MainAxisControlsContent = betterReactMemo(
       ) : (
         <FlexHeightControls />
       )
+
+    const { onUnsetValue } = React.useContext(InspectorCallbackContext)
+    const deleteFixedProps = React.useCallback(() => {
+      onUnsetValue(mainAxisFixedProps(props.parentFlexDirection), false)
+    }, [props.parentFlexDirection, onUnsetValue])
+    const deleteAdvancedProps = React.useCallback(() => {
+      onUnsetValue(mainAxisAdvancedProps, false)
+    }, [onUnsetValue])
     return (
       <>
         <UIGridRow padded={true} variant='<-------------1fr------------->'>
@@ -140,14 +170,14 @@ const MainAxisControlsContent = betterReactMemo(
         <FlexGrowShrinkRow />
         <InspectorSubsectionHeader>
           <InlineLink>Fixed</InlineLink>
-          <SquareButton highlight>
+          <SquareButton highlight onClick={deleteFixedProps}>
             <FunctionIcons.Delete />
           </SquareButton>
         </InspectorSubsectionHeader>
         {widthOrHeightControls}
         <InspectorSubsectionHeader>
           <InlineLink>Advanced</InlineLink>
-          <SquareButton highlight>
+          <SquareButton highlight onClick={deleteAdvancedProps}>
             <FunctionIcons.Delete />
           </SquareButton>
         </InspectorSubsectionHeader>
