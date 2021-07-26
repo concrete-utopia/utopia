@@ -235,7 +235,9 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const { selectedOptions, elementPath, isMenuEnabled } = useGetSelectedTailwindOptions()
+  const { selectedOptions, elementPaths, isSettable } = useGetSelectedTailwindOptions()
+  const elementPath = elementPaths[0]
+  const isMenuEnabled = isSettable && elementPaths.length === 1
   const selectedOptionsLength = selectedOptions?.length ?? 0
   const [isExpanded, setIsExpanded] = React.useState(selectedOptionsLength > 0)
   const toggleIsExpanded = React.useCallback(() => setIsExpanded((current) => !current), [])
@@ -345,7 +347,8 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
 
   const multiValueLabel: styleFn = React.useCallback(
     (base, { isFocused }) => {
-      const color = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const enabledColor = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const color = isMenuEnabled ? enabledColor : theme.fg8.value
       const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
       return {
         ...base,
@@ -362,7 +365,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         backgroundColor: backgroundColor,
       }
     },
-    [theme],
+    [isMenuEnabled, theme],
   )
 
   const multiValue: styleFn = React.useCallback(
@@ -465,7 +468,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
             <CreatableSelect
               ref={inputRef}
               autoFocus={false}
-              placeholder='Add class…'
+              placeholder={isMenuEnabled ? 'Add class…' : ''}
               isMulti
               value={selectedOptions}
               isDisabled={!isMenuEnabled}
@@ -490,7 +493,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
               }}
               filterOption={AlwaysTrue}
               options={options}
-              menuIsOpen={true}
+              menuIsOpen={isMenuEnabled}
               onBlur={onBlur}
               onFocus={onFocus}
               escapeClearsValue={true}
@@ -500,7 +503,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
               inputValue={filter}
             />
           </UIGridRow>
-          <FooterSection options={options} filter={filter} />
+          {when(isMenuEnabled, <FooterSection options={options} filter={filter} />)}
         </React.Fragment>,
       )}
     </div>
