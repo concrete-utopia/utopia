@@ -94,24 +94,15 @@ function addOpenInUtopiaButton(): void {
     const projectId = getProjectID()
     if (projectId != null) {
       const openIcon = document.createElement('img')
-      openIcon.setAttribute('src', `${BASE_URL}static/index/logo-smiangle-16x16@2x.png`)
-      openIcon.setAttribute('style', 'width: 32px; height: 32px')
-      const openText = document.createElement('span')
-      openText.setAttribute('style', 'display: inline-flex; align-items: center; padding: 4px')
-      openText.append('Open In Utopia')
+      openIcon.setAttribute('src', `${BASE_URL}open_in_utopia@2x.png`)
+      openIcon.setAttribute('style', 'width: 186px; height: 40px')
+      openIcon.setAttribute('alt', 'Open this project in the Utopia editor')
 
       const openInUtopiaButton = document.createElement('div')
       const buttonStyle = [
         'position: fixed',
         'right: 20px',
         'bottom: 20px',
-        'height: 32px',
-        'border-color: darkgray',
-        'border-width: medium',
-        'border-style: solid',
-        'display: flex',
-        'flex-direction: row',
-        'font-family: "Helvetica", "Arial", sans-serif',
         'cursor: pointer',
       ].join('; ')
       openInUtopiaButton.setAttribute('style', buttonStyle)
@@ -121,7 +112,6 @@ function addOpenInUtopiaButton(): void {
       )
 
       openInUtopiaButton.append(openIcon)
-      openInUtopiaButton.append(openText)
 
       document.body.append(openInUtopiaButton)
     }

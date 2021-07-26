@@ -225,13 +225,13 @@ const basicHTMLElementsDescriptor: DependencyDescriptor = {
     makeHTMLDescriptor('img', {
       src: {
         type: 'string',
-        defaultValue: `/editor/icons/favicons/favicon128.png?hash=${URL_HASH}"`,
+        defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
       },
       style: {
         type: 'styleobject',
         defaultValue: {
-          width: '54px',
-          height: '54px',
+          width: '64px',
+          height: '64px',
         },
       },
     }),
