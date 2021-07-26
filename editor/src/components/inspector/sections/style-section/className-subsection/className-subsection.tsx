@@ -81,27 +81,6 @@ const control: styleFn = () => ({
   minHeight: UtopiaTheme.layout.inputHeight.default,
 })
 
-const multiValueRemove: styleFn = (base, state) => ({
-  label: 'multiValueRemove',
-  width: 16,
-  height: UtopiaTheme.layout.inputHeight.small,
-  display: 'flex',
-  alignItems: 'center',
-  padding: 0,
-  overflow: 'hidden',
-  marginRight: 2,
-  backgroundImage: `url(${
-    (state.isFocused as boolean)
-      ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
-      : UNSAFE_getIconURL('cross-small')
-  })`,
-  backgroundSize: 16,
-  backgroundPosition: 'center center',
-  ':hover': {
-    backgroundImage: `url(${UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')})`,
-  },
-})
-
 const placeholder: styleFn = (base) => ({
   ...base,
   paddingTop: 2,
@@ -366,6 +345,30 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
       }
     },
     [isMenuEnabled, theme],
+  )
+
+  const multiValueRemove: styleFn = React.useCallback(
+    (base, state) => ({
+      label: 'multiValueRemove',
+      width: isMenuEnabled ? 16 : 0,
+      height: UtopiaTheme.layout.inputHeight.small,
+      display: 'flex',
+      alignItems: 'center',
+      padding: 0,
+      overflow: 'hidden',
+      marginRight: 2,
+      backgroundImage: `url(${
+        (state.isFocused as boolean)
+          ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
+          : UNSAFE_getIconURL('cross-small')
+      })`,
+      backgroundSize: 16,
+      backgroundPosition: 'center center',
+      ':hover': {
+        backgroundImage: `url(${UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')})`,
+      },
+    }),
+    [isMenuEnabled],
   )
 
   const multiValue: styleFn = React.useCallback(
