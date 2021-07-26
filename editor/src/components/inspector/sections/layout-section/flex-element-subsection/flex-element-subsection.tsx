@@ -13,6 +13,7 @@ import {
   FlexStyleNumberControl,
 } from '../self-layout-subsection/gigantic-size-pins-subsection'
 import { InlineLink } from '../../../../../uuiui/inline-button'
+import { when } from '../../../../../utils/react-conditionals'
 
 const marginProps = [
   createLayoutPropertyPath('marginLeft'),
@@ -63,6 +64,33 @@ export const FlexElementSubsectionExperiment = betterReactMemo(
 const MainAxisControls = betterReactMemo(
   'MainAxisControls',
   (props: FlexElementSubsectionProps) => {
+    const [mainAxisControlsOpen, setMainAxisControlsOpen] = React.useState(true)
+    const toggleSection = React.useCallback(() => setMainAxisControlsOpen(!mainAxisControlsOpen), [
+      mainAxisControlsOpen,
+      setMainAxisControlsOpen,
+    ])
+    return (
+      <>
+        <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>Main Axis</span>{' '}
+          <SquareButton highlight onClick={toggleSection}>
+            <ExpandableIndicator
+              testId='flex-element-subsection'
+              visible
+              collapsed={!mainAxisControlsOpen}
+              selected={false}
+            />
+          </SquareButton>
+        </InspectorSubsectionHeader>
+        {when(mainAxisControlsOpen, <MainAxisControlsContent {...props} />)}
+      </>
+    )
+  },
+)
+
+const MainAxisControlsContent = betterReactMemo(
+  'MainAxisControlsContent',
+  (props: FlexElementSubsectionProps) => {
     const widthOrHeightControls =
       props.parentFlexDirection === 'row' || props.parentFlexDirection === 'row-reverse' ? (
         <FlexWidthControls />
@@ -71,17 +99,6 @@ const MainAxisControls = betterReactMemo(
       )
     return (
       <>
-        <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Main Axis</span>{' '}
-          <SquareButton highlight>
-            <ExpandableIndicator
-              testId='flex-element-subsection'
-              visible
-              collapsed={false}
-              selected={false}
-            />
-          </SquareButton>
-        </InspectorSubsectionHeader>
         <UIGridRow padded={true} variant='<-------------1fr------------->'>
           <FlexBasisShorthandCSSNumberControl label='B' />
         </UIGridRow>
@@ -111,6 +128,11 @@ const MainAxisControls = betterReactMemo(
 const CrossAxisControls = betterReactMemo(
   'CrossAxisControls',
   (props: FlexElementSubsectionProps) => {
+    const [crossAxisControlsOpen, setCrossAxisControlsOpen] = React.useState(true)
+    const toggleSection = React.useCallback(
+      () => setCrossAxisControlsOpen(!crossAxisControlsOpen),
+      [crossAxisControlsOpen, setCrossAxisControlsOpen],
+    )
     const widthOrHeightControls =
       props.parentFlexDirection === 'column' || props.parentFlexDirection === 'column-reverse' ? (
         <FlexHeightControls />
@@ -123,17 +145,17 @@ const CrossAxisControls = betterReactMemo(
           <div style={{ justifySelf: 'flex-start' }}>Cross Axis</div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <InlineLink>+</InlineLink>
-            <SquareButton highlight>
+            <SquareButton highlight onClick={toggleSection}>
               <ExpandableIndicator
                 testId='flex-element-subsection'
                 visible
-                collapsed={false}
+                collapsed={!crossAxisControlsOpen}
                 selected={false}
               />
             </SquareButton>
           </div>
         </InspectorSubsectionHeader>
-        {widthOrHeightControls}
+        {when(crossAxisControlsOpen, widthOrHeightControls)}
       </>
     )
   },

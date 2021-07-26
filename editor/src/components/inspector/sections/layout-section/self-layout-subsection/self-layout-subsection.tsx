@@ -60,10 +60,31 @@ interface SelfLayoutSubsectionProps {
 export const LayoutSubsection = betterReactMemo(
   'LayoutSubsection',
   (props: SelfLayoutSubsectionProps) => {
+    const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] = React.useState(true)
+    const toggleSection = React.useCallback(
+      () => setSelfLayoutSectionOpen(!selfLayoutSectionOpen),
+      [selfLayoutSectionOpen, setSelfLayoutSectionOpen],
+    )
     const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
     return (
       <>
-        <LayoutSectionHeader layoutType={activeTab} />
+        <LayoutSectionHeader
+          layoutType={activeTab}
+          toggleSection={toggleSection}
+          selfLayoutSectionOpen={selfLayoutSectionOpen}
+        />
+        {when(selfLayoutSectionOpen, <LayoutSubsectionContent {...props} />)}
+      </>
+    )
+  },
+)
+
+export const LayoutSubsectionContent = betterReactMemo(
+  'LayoutSubsection',
+  (props: SelfLayoutSubsectionProps) => {
+    const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
+    return (
+      <>
         {when(activeTab === 'flex', <FlexInfoBox />)}
         {unless(
           activeTab === 'flex',
@@ -85,6 +106,8 @@ export const LayoutSubsection = betterReactMemo(
 
 interface LayoutSectionHeaderProps {
   layoutType: SelfLayoutTab | 'grid'
+  selfLayoutSectionOpen: boolean
+  toggleSection: () => void
 }
 
 const selfLayoutProperties: Array<LayoutProp | StyleLayoutProp> = [
@@ -133,7 +156,9 @@ function useDeleteAllSelfLayoutConfig() {
 const LayoutSectionHeader = betterReactMemo(
   'LayoutSectionHeader',
   (props: LayoutSectionHeaderProps) => {
+    const { layoutType, selfLayoutSectionOpen, toggleSection } = props
     const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
+
     return (
       <InspectorSubsectionHeader>
         <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
@@ -144,20 +169,23 @@ const LayoutSectionHeader = betterReactMemo(
               paddingRight: 8,
             }}
           >
-            {props.layoutType}
+            {layoutType}
           </InlineLink>
           <ParentLink />
           <SelfLink />
           <ChildrenOrContentLink />
         </div>
-        <SquareButton highlight onClick={onDeleteAllConfig}>
-          <FunctionIcons.Delete />
-        </SquareButton>
-        <SquareButton highlight>
+        {when(
+          selfLayoutSectionOpen,
+          <SquareButton highlight onClick={onDeleteAllConfig}>
+            <FunctionIcons.Delete />
+          </SquareButton>,
+        )}
+        <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator
             testId='layout-system-expand'
             visible
-            collapsed={false}
+            collapsed={!selfLayoutSectionOpen}
             selected={false}
           />
         </SquareButton>
