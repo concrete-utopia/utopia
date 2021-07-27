@@ -81,27 +81,6 @@ const control: styleFn = () => ({
   minHeight: UtopiaTheme.layout.inputHeight.default,
 })
 
-const multiValueRemove: styleFn = (base, state) => ({
-  label: 'multiValueRemove',
-  width: 16,
-  height: UtopiaTheme.layout.inputHeight.small,
-  display: 'flex',
-  alignItems: 'center',
-  padding: 0,
-  overflow: 'hidden',
-  marginRight: 2,
-  backgroundImage: `url(${
-    (state.isFocused as boolean)
-      ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
-      : UNSAFE_getIconURL('cross-small')
-  })`,
-  backgroundSize: 16,
-  backgroundPosition: 'center center',
-  ':hover': {
-    backgroundImage: `url(${UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')})`,
-  },
-})
-
 const placeholder: styleFn = (base) => ({
   ...base,
   paddingTop: 2,
@@ -235,7 +214,9 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const { selectedOptions, elementPath, isMenuEnabled } = useGetSelectedTailwindOptions()
+  const { selectedOptions, elementPaths, isSettable } = useGetSelectedTailwindOptions()
+  const elementPath = elementPaths[0]
+  const isMenuEnabled = isSettable && elementPaths.length === 1
   const selectedOptionsLength = selectedOptions?.length ?? 0
   const [isExpanded, setIsExpanded] = React.useState(selectedOptionsLength > 0)
   const toggleIsExpanded = React.useCallback(() => setIsExpanded((current) => !current), [])
@@ -345,7 +326,8 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
 
   const multiValueLabel: styleFn = React.useCallback(
     (base, { isFocused }) => {
-      const color = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const enabledColor = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const color = isMenuEnabled ? enabledColor : theme.fg8.value
       const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
       return {
         ...base,
@@ -362,7 +344,31 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         backgroundColor: backgroundColor,
       }
     },
-    [theme],
+    [isMenuEnabled, theme],
+  )
+
+  const multiValueRemove: styleFn = React.useCallback(
+    (base, state) => ({
+      label: 'multiValueRemove',
+      width: isMenuEnabled ? 16 : 0,
+      height: UtopiaTheme.layout.inputHeight.small,
+      display: 'flex',
+      alignItems: 'center',
+      padding: 0,
+      overflow: 'hidden',
+      marginRight: 2,
+      backgroundImage: `url(${
+        (state.isFocused as boolean)
+          ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
+          : UNSAFE_getIconURL('cross-small')
+      })`,
+      backgroundSize: 16,
+      backgroundPosition: 'center center',
+      ':hover': {
+        backgroundImage: `url(${UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')})`,
+      },
+    }),
+    [isMenuEnabled],
   )
 
   const multiValue: styleFn = React.useCallback(
@@ -465,7 +471,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
             <CreatableSelect
               ref={inputRef}
               autoFocus={false}
-              placeholder='Add class…'
+              placeholder={isMenuEnabled ? 'Add class…' : ''}
               isMulti
               value={selectedOptions}
               isDisabled={!isMenuEnabled}
@@ -490,7 +496,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
               }}
               filterOption={AlwaysTrue}
               options={options}
-              menuIsOpen={true}
+              menuIsOpen={isMenuEnabled}
               onBlur={onBlur}
               onFocus={onFocus}
               escapeClearsValue={true}
@@ -500,7 +506,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
               inputValue={filter}
             />
           </UIGridRow>
-          <FooterSection options={options} filter={filter} />
+          {when(isMenuEnabled, <FooterSection options={options} filter={filter} />)}
         </React.Fragment>,
       )}
     </div>

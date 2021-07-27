@@ -261,9 +261,11 @@ export const ClassNameSelect = betterReactMemo(
 
     const {
       selectedOptions: selectedValues,
-      elementPath,
-      isMenuEnabled,
+      elementPaths,
+      isSettable,
     } = useGetSelectedTailwindOptions()
+    const elementPath = elementPaths[0]
+    const isMenuEnabled = isSettable && elementPaths.length === 1
 
     const ariaOnFocus = React.useCallback(
       ({ focused, context }: { focused: TailWindOption; context: 'menu' | 'value' }) => {

@@ -9,11 +9,11 @@ import {
   ClassNameToAttributes,
 } from '../third-party/tailwind-defaults'
 import Highlighter from 'react-highlight-words'
-import { ElementPath, isParseSuccess, isTextFile } from '../shared/project-file-types'
+import { ElementPath, isParseSuccess, isTextFile, NodeModules } from '../shared/project-file-types'
 import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
-import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
+import { EditorStore, getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
-import { getContentsTreeFileFromString } from '../../components/assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import {
   isJSXAttributeNotFound,
   isJSXAttributeValue,
@@ -22,8 +22,11 @@ import {
 } from '../shared/element-template'
 import { findElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
-import { eitherToMaybe } from '../shared/either'
-import { getModifiableJSXAttributeAtPath } from '../shared/jsx-attributes'
+import { eitherToMaybe, flatMapEither, foldEither, mapEither } from '../shared/either'
+import {
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+} from '../shared/jsx-attributes'
 import * as PP from '../shared/property-path'
 import { isTwindEnabled } from './tailwind'
 
@@ -182,101 +185,132 @@ export function useFilteredOptions(
   }, [filter, maxResults, onEmptyResults])
 }
 
-export function useGetSelectedTailwindOptions(): {
-  selectedOptions: Array<TailWindOption> | null
-  elementPath: ElementPath | null
-  isMenuEnabled: boolean
-} {
-  const { classNameFromAttributes, elementPath, isMenuEnabled } = useEditorState((store) => {
-    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
-    if (openUIJSFileKey == null || store.editor.selectedViews.length !== 1) {
-      return {
-        elementPath: null,
-        classNameFromAttributes: null,
-        isMenuEnabled: false,
-      }
-    }
-    const underlyingTarget = normalisePathToUnderlyingTarget(
-      store.editor.projectContents,
-      store.editor.nodeModules.files,
-      openUIJSFileKey,
-      store.editor.selectedViews[0],
+function getJSXElementForTarget(
+  target: ElementPath,
+  openUIJSFileKey: string,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+): JSXElementChild | null {
+  const underlyingTarget = normalisePathToUnderlyingTarget(
+    projectContents,
+    nodeModules,
+    openUIJSFileKey,
+    target,
+  )
+  const underlyingPath =
+    underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey
+  const projectFile = getContentsTreeFileFromString(projectContents, underlyingPath)
+  if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+    return findElementAtPath(
+      target,
+      getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
     )
-    const underlyingPath =
-      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS'
-        ? underlyingTarget.filePath
-        : openUIJSFileKey
-    const projectFile = getContentsTreeFileFromString(store.editor.projectContents, underlyingPath)
-    let element: JSXElementChild | null = null
-    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-      element = findElementAtPath(
-        store.editor.selectedViews[0],
-        getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
-      )
-    }
+  } else {
+    return null
+  }
+}
 
-    let foundAttributeAsString: string | null = null
-    let menuEnabled = false
-    if (element != null && isJSXElement(element)) {
-      const jsxAttributes = element.props
-      let foundAttribute = eitherToMaybe(
-        getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className'])),
-      )
-      if (foundAttribute != null && isJSXAttributeValue(foundAttribute)) {
-        foundAttributeAsString = foundAttribute.value
-      }
-      if (
-        foundAttribute == null ||
-        isJSXAttributeNotFound(foundAttribute) ||
-        isJSXAttributeValue(foundAttribute)
-      ) {
-        menuEnabled = true
-      }
-    }
+function getClassNameAttribute(
+  element: JSXElementChild | null,
+): { value: string | null; isSettable: boolean } {
+  if (element != null && isJSXElement(element)) {
+    const jsxAttributes = element.props
+    const foundAttribute = getModifiableJSXAttributeAtPath(jsxAttributes, PP.create(['className']))
+    const foundAttributeValue = flatMapEither(jsxSimpleAttributeToValue, foundAttribute)
+    const isSettable = foldEither(
+      () => false,
+      (r) => isJSXAttributeValue(r) || isJSXAttributeNotFound(r),
+      foundAttribute,
+    )
 
     return {
-      elementPath:
-        MetadataUtils.findElementByElementPath(
-          store.editor.jsxMetadata,
-          store.editor.selectedViews[0],
-        )?.elementPath ?? null,
-      classNameFromAttributes: foundAttributeAsString,
-      isMenuEnabled: menuEnabled,
+      value: eitherToMaybe(foundAttributeValue),
+      isSettable: isSettable,
     }
-  }, 'ClassNameSelect elementPath classNameFromAttributes isMenuEnabled')
+  } else {
+    return {
+      value: null,
+      isSettable: true,
+    }
+  }
+}
 
+export function useGetSelectedTailwindOptions(): {
+  selectedOptions: Array<TailWindOption> | null
+  elementPaths: Array<ElementPath>
+  isSettable: boolean
+} {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
-
-  const selectedOptions = React.useMemo((): TailWindOption[] | null => {
-    let classNameValue: string | null = null
-    if (classNameFromAttributes != null) {
-      classNameValue = classNameFromAttributes
+  const elements = useEditorState((store) => {
+    const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
+    if (openUIJSFileKey == null) {
+      return []
     } else {
-      if (elementPath != null) {
-        const element = MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
-        classNameValue = element?.props['className']
-      }
+      return store.editor.selectedViews.map((elementPath) =>
+        getJSXElementForTarget(
+          elementPath,
+          openUIJSFileKey,
+          store.editor.projectContents,
+          store.editor.nodeModules.files,
+        ),
+      )
     }
+  }, 'ClassNameSelect elements')
 
+  const elementPaths = useEditorState(
+    (store) => store.editor.selectedViews,
+    'ClassNameSelect elementPaths',
+  )
+
+  const classNamesFromAttributesOrProps = React.useMemo(
+    () =>
+      elements.map((element, index) => {
+        const fromAttributes = getClassNameAttribute(element)
+        if (fromAttributes.value != null) {
+          return fromAttributes
+        } else {
+          const elementPath = elementPaths[index]
+          const elementMetadata = MetadataUtils.findElementByElementPath(
+            metadataRef.current,
+            elementPath,
+          )
+          return {
+            value: elementMetadata?.props['className'],
+            isSettable: fromAttributes.isSettable,
+          }
+        }
+      }),
+    [elements, elementPaths, metadataRef],
+  )
+
+  const isSettable =
+    elements.length > 0 && classNamesFromAttributesOrProps.every((v) => v.isSettable)
+
+  const allClassNames = classNamesFromAttributesOrProps.reduce((working, next) => {
     const splitClassNames =
-      typeof classNameValue === 'string'
-        ? classNameValue
+      typeof next.value === 'string'
+        ? next.value
             .split(' ')
             .map((s) => s.trim())
             .filter((s) => s !== '')
         : []
-    return splitClassNames.length === 0
-      ? null
-      : splitClassNames.map((name: string) => ({
-          label: name,
-          value: name,
-        }))
-  }, [classNameFromAttributes, elementPath, metadataRef])
+    splitClassNames.forEach((className) => working.add(className))
+    return working
+  }, new Set<string>())
+
+  const selectedOptions: Array<TailWindOption> = React.useMemo(
+    () =>
+      Array.from(allClassNames).map((className) => ({
+        label: className,
+        value: className,
+      })),
+    [allClassNames],
+  )
 
   return {
+    elementPaths: elementPaths,
     selectedOptions: selectedOptions,
-    elementPath: elementPath,
-    isMenuEnabled: isMenuEnabled,
+    isSettable: isSettable,
   }
 }
 
