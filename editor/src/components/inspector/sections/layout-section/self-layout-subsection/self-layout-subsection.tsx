@@ -1,6 +1,9 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import { DetectedLayoutSystem } from '../../../../../core/shared/element-template'
+import {
+  DetectedLayoutSystem,
+  jsxAttributeValue,
+} from '../../../../../core/shared/element-template'
 import { shallowEqual } from '../../../../../core/shared/equality-utils'
 import { fastForEach } from '../../../../../core/shared/utils'
 import {
@@ -8,6 +11,7 @@ import {
   Icn,
   InspectorSubsectionHeader,
   SquareButton,
+  Tooltip,
   useColorTheme,
 } from '../../../../../uuiui'
 import { usePropControlledState, betterReactMemo } from '../../../../../uuiui-deps'
@@ -27,6 +31,7 @@ import {
   LayoutProp,
   StyleLayoutProp,
 } from '../../../../../core/layout/layout-helpers-new'
+import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
 
 type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -152,12 +157,24 @@ function useDeleteAllSelfLayoutConfig() {
     onUnsetValue(selfLayoutConfigPropertyPaths, false)
   }, [onUnsetValue])
 }
+function useAddPositionAbsolute() {
+  const { onSubmitValue } = React.useContext(InspectorCallbackContext)
+  return React.useCallback(() => {
+    onSubmitValue(
+      jsxAttributeValue('absolute', emptyComments),
+      createLayoutPropertyPath('position'),
+      false,
+    )
+  }, [onSubmitValue])
+}
 
 const LayoutSectionHeader = betterReactMemo(
   'LayoutSectionHeader',
   (props: LayoutSectionHeaderProps) => {
+    const colorTheme = useColorTheme()
     const { layoutType, selfLayoutSectionOpen, toggleSection } = props
     const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
+    const onAbsoluteButtonClick = useAddPositionAbsolute()
 
     return (
       <InspectorSubsectionHeader>
@@ -175,6 +192,14 @@ const LayoutSectionHeader = betterReactMemo(
           <SelfLink />
           <ChildrenOrContentLink />
         </div>
+        {when(
+          selfLayoutSectionOpen && layoutType !== 'absolute',
+          <Tooltip title='Use Absolute Positioning' placement='bottom'>
+            <SquareButton highlight onClick={onAbsoluteButtonClick}>
+              <div style={{ color: colorTheme.brandNeonPink.value }}>*</div>
+            </SquareButton>
+          </Tooltip>,
+        )}
         {when(
           selfLayoutSectionOpen,
           <SquareButton highlight onClick={onDeleteAllConfig}>
