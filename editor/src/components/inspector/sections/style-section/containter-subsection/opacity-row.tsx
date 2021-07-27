@@ -15,7 +15,7 @@ import {
 const sliderControlOptions = {
   minimum: 0,
   maximum: 1,
-  stepSize: 0.01,
+  stepSize: 0.05,
   origin: 1,
   filled: true,
 }
