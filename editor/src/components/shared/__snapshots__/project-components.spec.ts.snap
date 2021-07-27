@@ -138,8 +138,8 @@ Array [
                 },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
-                  "height": "54px",
-                  "width": "54px",
+                  "height": "64px",
+                  "width": "64px",
                 },
               },
             },
