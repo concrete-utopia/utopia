@@ -31,8 +31,6 @@ const marginProps = [
   createLayoutPropertyPath('marginBottom'),
 ]
 
-const alignSelfProp = [createLayoutPropertyPath('alignSelf')]
-
 export const FlexElementSubsection = betterReactMemo('FlexElementSubsection', () => {
   return (
     <>
@@ -46,10 +44,7 @@ export const FlexElementSubsection = betterReactMemo('FlexElementSubsection', ()
         </PropertyLabel>
         <MarginControl />
       </UIGridRow>
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-        <PropertyLabel target={alignSelfProp}>Align Self</PropertyLabel>
-        <AlignSelfControl />
-      </UIGridRow>
+      <AlignSelfControl variant='<---1fr--->|------172px-------|' />
     </>
   )
 })
@@ -181,10 +176,7 @@ const MainAxisControlsContent = betterReactMemo(
             <FunctionIcons.Delete />
           </SquareButton>
         </InspectorSubsectionHeader>
-        <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-          <PropertyLabel target={alignSelfProp}>Align Self</PropertyLabel>
-          <AlignSelfControl />
-        </UIGridRow>
+        <AlignSelfControl variant='<--1fr--><--1fr-->' />
       </>
     )
   },
