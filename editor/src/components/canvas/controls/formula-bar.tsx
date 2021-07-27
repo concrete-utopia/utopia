@@ -21,17 +21,7 @@ import {
   handleShortcuts,
   TOGGLE_FOCUSED_OMNIBOX_TAB,
 } from '../../editor/shortcut-definitions'
-
-function useFocusOnCountIncrease(triggerCount: number): React.RefObject<HTMLInputElement> {
-  const ref = React.useRef<HTMLInputElement>(null)
-  const previousTriggerCountRef = React.useRef(triggerCount)
-  if (previousTriggerCountRef.current !== triggerCount) {
-    previousTriggerCountRef.current = triggerCount
-    // eslint-disable-next-line no-unused-expressions
-    ref.current?.focus()
-  }
-  return ref
-}
+import { useInputFocusOnCountIncrease } from '../../editor/hook-utils'
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const saveTimerRef = React.useRef<any>(null)
@@ -56,7 +46,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     'FormulaBar formulaBarFocusCounter',
   )
 
-  const inputRef = useFocusOnCountIncrease(focusTriggerCount)
+  const inputRef = useInputFocusOnCountIncrease<HTMLInputElement>(focusTriggerCount)
 
   const colorTheme = useColorTheme()
   const [simpleText, setSimpleText] = React.useState('')

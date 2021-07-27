@@ -551,3 +551,11 @@ export function calculateMultiStringPropertyStatusForSelection(
 export function isNotUnsetOrDefault(controlStatus: ControlStatus): boolean {
   return controlStatus !== 'unset' && controlStatus !== 'trivial-default' && controlStatus !== 'off'
 }
+
+export function isNotUnsetDefaultOrDetected(controlStatus: ControlStatus): boolean {
+  return (
+    isNotUnsetOrDefault(controlStatus) &&
+    controlStatus !== 'detected' &&
+    controlStatus !== 'detected-fromcss'
+  )
+}

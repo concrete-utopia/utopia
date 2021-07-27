@@ -420,8 +420,15 @@ export type ResetPins = {
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: ElementPath[]
-  layoutSystem: LayoutSystem
+  layoutSystem: SettableLayoutSystem
+  newParentMainAxis: 'horizontal' | 'vertical' | null
   whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
+}
+
+export interface WrapInElement {
+  action: 'WRAP_IN_ELEMENT'
+  targets: ElementPath[]
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports }
 }
 
 export interface OpenFloatingInsertMenu {
@@ -848,6 +855,10 @@ export interface SetCurrentTheme {
   theme: Theme
 }
 
+export interface FocusClassNameInput {
+  action: 'FOCUS_CLASS_NAME_INPUT'
+}
+
 export interface FocusFormulaBar {
   action: 'FOCUS_FORMULA_BAR'
 }
@@ -937,6 +948,7 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInView
+  | WrapInElement
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
   | UnwrapGroupOrView
@@ -1018,6 +1030,7 @@ export type EditorAction =
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
+  | FocusClassNameInput
   | FocusFormulaBar
   | UpdateFormulaBarMode
   | InsertWithDefaults

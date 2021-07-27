@@ -323,6 +323,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
         overflowY: 'hidden',
         overflowX: 'scroll',
         flexGrow: 1,
+        flexShrink: 0,
       }
     }, [isElementVisible])
 
@@ -347,6 +348,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             collapsed={collapsed}
             selected={selected && !isInsideComponent}
             onMouseDown={collapse}
+            style={{ transform: 'scale(0.8)', opacity: 0.5 }}
           />
           <NavigatorRowLabel
             elementPath={elementPath}

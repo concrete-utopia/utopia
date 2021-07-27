@@ -48,6 +48,7 @@ import {
   isJSXArbitraryBlock,
   isJSXFragment,
   isUtopiaJSXComponent,
+  SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -451,6 +452,7 @@ export function updateFramesOfScenesAndComponents(
               frameAndTarget.newSize.height,
               element.props,
               right(parentElement.props),
+              eitherToMaybe(FlexLayoutHelpers.getMainAxis(right(parentElement.props))),
               frameAndTarget.edgePosition,
             )
             forEachRight(possibleFlexProps, (flexProps) => {
@@ -1777,6 +1779,80 @@ export function getFrameChange(
   }
 }
 
+function editorReparentNoStyleChange(
+  target: ElementPath,
+  indexPosition: IndexPosition,
+  newParentPath: ElementPath,
+  editor: EditorState,
+): EditorState {
+  // this code structure with the two withUnderlyingTargetFromEditorStates is copied verbatim from canvas-utils.ts@moveTemplate
+  return withUnderlyingTargetFromEditorState(
+    target,
+    editor,
+    editor,
+    (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
+      return withUnderlyingTargetFromEditorState(
+        newParentPath,
+        editor,
+        editor,
+        (
+          newParentSuccess,
+          underlyingNewParentElement,
+          underlyingNewParentPath,
+          underlyingNewParentFilePath,
+        ) => {
+          const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
+            newParentSuccess,
+          )
+          const updatedUnderlyingElement = findElementAtPath(
+            underlyingTarget,
+            utopiaComponentsIncludingScenes,
+          )
+          if (updatedUnderlyingElement == null) {
+            return editor
+          }
+          // Remove and then insert again at the new location.
+          return modifyParseSuccessAtPath(underlyingNewParentFilePath, editor, (workingSuccess) => {
+            let updatedUtopiaComponents: UtopiaJSXComponent[] = []
+            updatedUtopiaComponents = removeElementAtPath(
+              underlyingTarget,
+              utopiaComponentsIncludingScenes,
+            )
+
+            updatedUtopiaComponents = insertElementAtPath(
+              editor.projectContents,
+              editor.canvas.openFile?.filename ?? null,
+              underlyingNewParentPath,
+              updatedUnderlyingElement,
+              updatedUtopiaComponents,
+              indexPosition,
+            )
+
+            return {
+              ...workingSuccess,
+              topLevelElements: applyUtopiaJSXComponentsChanges(
+                workingSuccess.topLevelElements,
+                updatedUtopiaComponents,
+              ),
+            }
+          })
+        },
+      )
+    },
+  )
+}
+
+export function editorMultiselectReparentNoStyleChange(
+  targets: ElementPath[],
+  indexPosition: IndexPosition,
+  newParentPath: ElementPath,
+  editor: EditorState,
+): EditorState {
+  return targets.reduce<EditorState>((workingEditor, target) => {
+    return editorReparentNoStyleChange(target, indexPosition, newParentPath, workingEditor)
+  }, editor)
+}
+
 export function moveTemplate(
   target: ElementPath,
   originalPath: ElementPath,
@@ -1788,7 +1864,8 @@ export function moveTemplate(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
-  newParentLayoutSystem: LayoutSystem | null,
+  newParentLayoutSystem: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
     return {
@@ -1837,6 +1914,7 @@ export function moveTemplate(
               utopiaComponentsIncludingScenes,
               parentFrame,
               newParentLayoutSystem,
+              newParentMainAxis,
             )
             const updatedUnderlyingElement = findElementAtPath(
               underlyingTarget,
@@ -2063,6 +2141,7 @@ function produceMoveTransientCanvasState(
           workingEditorState.jsxMetadata,
           selectedViews,
           workingEditorState.highlightedViews,
+          null,
           null,
         )
         selectedViews = reparentResult.updatedEditorState.selectedViews

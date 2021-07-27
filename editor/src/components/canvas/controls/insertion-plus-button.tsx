@@ -30,13 +30,16 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
       return null
     }
     const selectedView = props.selectedViews[0]
-    const parentPath = EP.parentPath(selectedView)
+    const parentPath = selectedView
     const parentFrame =
       parentPath != null
         ? MetadataUtils.getFrameInCanvasCoords(parentPath, props.componentMetadata)
         : null
 
-    const parentElement = MetadataUtils.getParent(props.componentMetadata, selectedView)
+    const parentElement = MetadataUtils.findElementByElementPath(
+      props.componentMetadata,
+      selectedView,
+    )
     if (parentPath == null || parentFrame == null || parentElement == null) {
       return null
     }
@@ -46,77 +49,136 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
       false,
     )
     let controlProps: ButtonControlProps[] = []
+
+    if (
+      children.length === 0 &&
+      parentElement.specialSizeMeasurements.layoutSystemForChildren === 'flex'
+    ) {
+      let direction: 'row' | 'column' | null = null
+
+      switch (parentElement.specialSizeMeasurements.flexDirection) {
+        case 'row':
+        case 'column':
+          direction = parentElement.specialSizeMeasurements.flexDirection
+          break
+        default:
+        // Ignore any other values.
+      }
+
+      const beforeX =
+        direction == 'column'
+          ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
+          : parentFrame.x + props.canvasOffset.x
+      const beforeY =
+        direction == 'column'
+          ? parentFrame.y + props.canvasOffset.y
+          : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
+      const beforeLineEndX =
+        direction == 'column'
+          ? parentFrame.x + parentFrame.width + props.canvasOffset.x
+          : parentFrame.x + props.canvasOffset.x
+      const beforeLineEndY =
+        direction == 'column'
+          ? parentFrame.y + props.canvasOffset.y
+          : parentFrame.y + parentFrame.height + props.canvasOffset.y
+
+      if (direction != null) {
+        controlProps.push({
+          key: 'parent-0',
+          positionX: beforeX,
+          positionY: beforeY,
+          lineEndX: beforeLineEndX,
+          lineEndY: beforeLineEndY,
+          isHorizontalLine: direction === 'column',
+          parentPath: parentPath,
+          indexPosition: {
+            type: 'absolute',
+            index: 0,
+          },
+        })
+      }
+    }
+
     children.forEach((child, index) => {
       const childFrame = MetadataUtils.getFrameInCanvasCoords(
         child.elementPath,
         props.componentMetadata,
       )
       if (child.specialSizeMeasurements.position !== 'absolute' && childFrame != null) {
-        let direction: 'row' | 'column' =
-          child.specialSizeMeasurements.parentLayoutSystem === 'flex'
-            ? parentElement.props?.style?.flexDirection || 'row'
-            : 'column'
-        const positionX =
-          direction == 'column'
-            ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
-            : childFrame.x + childFrame.width + props.canvasOffset.x
-        const positionY =
-          direction == 'column'
-            ? childFrame.y + childFrame.height + props.canvasOffset.y
-            : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
-
-        const lineEndX =
-          direction == 'column'
-            ? parentFrame.x + parentFrame.width + props.canvasOffset.x
-            : childFrame.x + childFrame.width + props.canvasOffset.x
-        const lineEndY =
-          direction == 'column'
-            ? childFrame.y + childFrame.height + props.canvasOffset.y
-            : parentFrame.y + parentFrame.height + props.canvasOffset.y
-        controlProps.push({
-          key: EP.toString(child.elementPath),
-          positionX: positionX,
-          positionY: positionY,
-          lineEndX: lineEndX,
-          lineEndY: lineEndY,
-          isHorizontalLine: direction === 'column',
-          parentPath: parentPath,
-          indexPosition: {
-            type: 'absolute',
-            index: index + 1,
-          },
-        })
-        // first element has a plus button before the element too
-        if (index === 0) {
-          const beforeX =
+        let direction: 'row' | 'column' | null = null
+        if (child.specialSizeMeasurements.parentLayoutSystem === 'flex') {
+          switch (child.specialSizeMeasurements.parentFlexDirection) {
+            case 'row':
+            case 'column':
+              direction = child.specialSizeMeasurements.parentFlexDirection
+              break
+            default:
+            // Ignore any other values.
+          }
+        }
+        if (direction != null) {
+          const positionX =
             direction == 'column'
               ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
-              : childFrame.x + props.canvasOffset.x
-          const beforeY =
+              : childFrame.x + childFrame.width + props.canvasOffset.x
+          const positionY =
             direction == 'column'
-              ? childFrame.y + props.canvasOffset.y
+              ? childFrame.y + childFrame.height + props.canvasOffset.y
               : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
-          const beforeLineEndX =
+
+          const lineEndX =
             direction == 'column'
               ? parentFrame.x + parentFrame.width + props.canvasOffset.x
-              : childFrame.x + props.canvasOffset.x
-          const beforeLineEndY =
+              : childFrame.x + childFrame.width + props.canvasOffset.x
+          const lineEndY =
             direction == 'column'
-              ? childFrame.y + props.canvasOffset.y
+              ? childFrame.y + childFrame.height + props.canvasOffset.y
               : parentFrame.y + parentFrame.height + props.canvasOffset.y
           controlProps.push({
-            key: EP.toString(child.elementPath) + '0',
-            positionX: beforeX,
-            positionY: beforeY,
-            lineEndX: beforeLineEndX,
-            lineEndY: beforeLineEndY,
+            key: EP.toString(child.elementPath),
+            positionX: positionX,
+            positionY: positionY,
+            lineEndX: lineEndX,
+            lineEndY: lineEndY,
             isHorizontalLine: direction === 'column',
             parentPath: parentPath,
             indexPosition: {
               type: 'absolute',
-              index: 0,
+              index: index + 1,
             },
           })
+          // first element has a plus button before the element too
+          if (index === 0) {
+            const beforeX =
+              direction == 'column'
+                ? parentFrame.x - InsertionButtonOffset + props.canvasOffset.x
+                : childFrame.x + props.canvasOffset.x
+            const beforeY =
+              direction == 'column'
+                ? childFrame.y + props.canvasOffset.y
+                : parentFrame.y - InsertionButtonOffset + props.canvasOffset.y
+            const beforeLineEndX =
+              direction == 'column'
+                ? parentFrame.x + parentFrame.width + props.canvasOffset.x
+                : childFrame.x + props.canvasOffset.x
+            const beforeLineEndY =
+              direction == 'column'
+                ? childFrame.y + props.canvasOffset.y
+                : parentFrame.y + parentFrame.height + props.canvasOffset.y
+            controlProps.push({
+              key: EP.toString(child.elementPath) + '0',
+              positionX: beforeX,
+              positionY: beforeY,
+              lineEndX: beforeLineEndX,
+              lineEndY: beforeLineEndY,
+              isHorizontalLine: direction === 'column',
+              parentPath: parentPath,
+              indexPosition: {
+                type: 'absolute',
+                index: 0,
+              },
+            })
+          }
         }
       }
     })

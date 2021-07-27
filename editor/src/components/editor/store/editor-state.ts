@@ -390,6 +390,7 @@ export interface EditorState {
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
     visible: boolean
+    classnameFocusCounter: number
   }
   fileBrowser: {
     minimised: boolean
@@ -1169,6 +1170,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     inspector: {
       visible: true,
+      classnameFocusCounter: 0,
     },
     dependencyList: {
       minimised: false,
@@ -1420,6 +1422,7 @@ export function editorModelFromPersistentModel(
     },
     inspector: {
       visible: true,
+      classnameFocusCounter: 0,
     },
     dependencyList: persistentModel.dependencyList,
     genericExternalResources: {

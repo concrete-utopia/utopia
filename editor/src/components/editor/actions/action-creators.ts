@@ -196,6 +196,8 @@ import type {
   SetPropTransient,
   ClearTransientProps,
   AddTailwindConfig,
+  FocusClassNameInput,
+  WrapInElement,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -637,11 +639,25 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
 export function wrapInView(
   targets: Array<ElementPath>,
   whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
+  layoutSystem: SettableLayoutSystem = LayoutSystem.PinSystem,
+  newParentMainAxis: 'horizontal' | 'vertical' | null = null,
 ): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
     targets: targets,
-    layoutSystem: LayoutSystem.PinSystem,
+    layoutSystem: layoutSystem,
+    newParentMainAxis: newParentMainAxis,
+    whatToWrapWith: whatToWrapWith,
+  }
+}
+
+export function wrapInElement(
+  targets: Array<ElementPath>,
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports },
+): WrapInElement {
+  return {
+    action: 'WRAP_IN_ELEMENT',
+    targets: targets,
     whatToWrapWith: whatToWrapWith,
   }
 }
@@ -1370,6 +1386,12 @@ export function setCurrentTheme(theme: Theme): SetCurrentTheme {
   return {
     action: 'SET_CURRENT_THEME',
     theme: theme,
+  }
+}
+
+export function focusClassNameInput(): FocusClassNameInput {
+  return {
+    action: 'FOCUS_CLASS_NAME_INPUT',
   }
 }
 

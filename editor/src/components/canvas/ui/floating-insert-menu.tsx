@@ -32,11 +32,13 @@ import {
   insertWithDefaults,
   updateJSXElementName,
   wrapInView,
+  wrapInElement,
 } from '../../editor/actions/action-creators'
 import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
 import {
   jsxAttributeValue,
   jsxElement,
+  JSXElementName,
   jsxTextBlock,
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
@@ -47,8 +49,10 @@ import {
 } from '../../inspector/common/inspector-utils'
 import { EditorAction } from '../../editor/action-types'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
+import { when } from '../../../utils/react-conditionals'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
+import { LayoutSystem } from 'utopia-api'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -122,6 +126,26 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath])
 
   return insertableComponents
+}
+
+function getIsFlexBasedOnName_KILLME_EXPERIMENTAL(name: JSXElementName): boolean {
+  return (
+    name.propertyPath.propertyElements.length === 0 &&
+    (name.baseVariable === 'FlexRow' || name.baseVariable === 'FlexCol')
+  )
+}
+
+function getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(
+  name: JSXElementName,
+): 'horizontal' | 'vertical' | null {
+  if (name.propertyPath.propertyElements.length === 0) {
+    if (name.baseVariable === 'FlexRow') {
+      return 'horizontal'
+    } else if (name.baseVariable === 'FlexCol') {
+      return 'vertical'
+    }
+  }
+  return null
 }
 
 function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
@@ -356,6 +380,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
     // when the user "tabs out" to the checkboxes, prevent react-select from clearing the input text
     if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
       setFilterInputValue(newValue)
+      activelySelectedInsertOptionRef.current = null
     }
   }, [])
 
@@ -365,6 +390,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   )
 
   const showInsertionControls = floatingMenuState.insertMenuMode === 'insert'
+  const showWrapControls = floatingMenuState.insertMenuMode === 'wrap'
 
   const menuTitle: string = getMenuTitle(floatingMenuState.insertMenuMode)
 
@@ -377,6 +403,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
+  const [preserveVisualPositionForWrap, setPreserveVisualPositionForWrap] = React.useState(false)
 
   const onChange = React.useCallback(
     (value: ValueType<InsertMenuItem, false>) => {
@@ -399,11 +426,28 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
               pickedInsertableComponent.element.children,
             )
 
+            const isFlexLayoutSystemMaybe_KILLME = getIsFlexBasedOnName_KILLME_EXPERIMENTAL(
+              newElement.name,
+            )
+            const flexDirection_KILLME = getIsFlexDirectionBasedOnName_KILLME_SERIOUSLY_EXPERIMENTAL(
+              newElement.name,
+            )
+
             actionsToDispatch = [
-              wrapInView(selectedViews, {
-                element: newElement,
-                importsToAdd: pickedInsertableComponent.importsToAdd,
-              }),
+              preserveVisualPositionForWrap
+                ? wrapInView(
+                    selectedViews,
+                    {
+                      element: newElement,
+                      importsToAdd: pickedInsertableComponent.importsToAdd,
+                    },
+                    isFlexLayoutSystemMaybe_KILLME ? 'flex' : LayoutSystem.PinSystem,
+                    flexDirection_KILLME,
+                  )
+                : wrapInElement(selectedViews, {
+                    element: newElement,
+                    importsToAdd: pickedInsertableComponent.importsToAdd,
+                  }),
             ]
             break
           }
@@ -462,6 +506,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
       selectedViewsref,
       fixedSizeForInsertion,
       addContentForInsertion,
+      preserveVisualPositionForWrap,
     ],
   )
 
@@ -546,6 +591,25 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             </CheckboxRow>
           </FlexRow>
         ) : null}
+        {when(
+          showWrapControls,
+          <FlexRow
+            css={{
+              height: UtopiaTheme.layout.rowHeight.normal,
+              paddingLeft: 8,
+              paddingRight: 8,
+              borderTop: `1px solid ${colorTheme.border1.value}`,
+            }}
+          >
+            <CheckboxRow
+              id='preserve-visual-position-checkbox'
+              checked={preserveVisualPositionForWrap}
+              onChange={setPreserveVisualPositionForWrap}
+            >
+              Try to preserve visual position
+            </CheckboxRow>
+          </FlexRow>,
+        )}
       </FlexColumn>
     </div>
   )

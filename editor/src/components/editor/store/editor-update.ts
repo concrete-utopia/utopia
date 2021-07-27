@@ -231,6 +231,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
     case 'WRAP_IN_VIEW':
       return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch)
+    case 'WRAP_IN_ELEMENT':
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_GROUP_OR_VIEW':
@@ -301,8 +303,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
     case 'SET_CURRENT_THEME':
       return UPDATE_FNS.SET_CURRENT_THEME(action, state)
+    case 'FOCUS_CLASS_NAME_INPUT':
+      return UPDATE_FNS.FOCUS_CLASS_NAME_INPUT(state)
     case 'FOCUS_FORMULA_BAR':
-      return UPDATE_FNS.FOCUS_FORMULA_BAR(action, state)
+      return UPDATE_FNS.FOCUS_FORMULA_BAR(state)
     case 'UPDATE_FORMULA_BAR_MODE':
       return UPDATE_FNS.UPDATE_FORMULA_BAR_MODE(action, state)
     case 'CLOSE_FLOATING_INSERT_MENU':

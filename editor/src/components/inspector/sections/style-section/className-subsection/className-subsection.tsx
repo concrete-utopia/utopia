@@ -16,6 +16,7 @@ import {
   FlexColumn,
   FlexRow,
   colorTheme,
+  SquareButton,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
@@ -24,7 +25,7 @@ import {
   MatchHighlighter,
   useGetSelectedTailwindOptions,
 } from '../../../../../core/tailwind/tailwind-options'
-import { useEditorState } from '../../../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import * as EditorActions from '../../../../editor/actions/action-creators'
 import * as PP from '../../../../../core/shared/property-path'
 import { jsxAttributeValue } from '../../../../../core/shared/element-template'
@@ -35,6 +36,15 @@ import {
   usePubSubAtomWriteOnly,
 } from '../../../../../core/shared/atom-with-pub-sub'
 import { last } from '../../../../../core/shared/array-utils'
+import { useInputFocusOnCountIncrease } from '../../../../editor/hook-utils'
+import {
+  applyShortcutConfigurationToDefaults,
+  handleShortcuts,
+  REDO_CHANGES_SHORTCUT,
+  UNDO_CHANGES_SHORTCUT,
+} from '../../../../editor/shortcut-definitions'
+import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
+import { when } from '../../../../../utils/react-conditionals'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
@@ -179,6 +189,7 @@ const Input = (props: InputProps) => {
 }
 
 const ClassNameControl = betterReactMemo('ClassNameControl', () => {
+  const editorStoreRef = useRefEditorState((store) => store)
   const theme = useColorTheme()
   const targets = useEditorState(
     (store) => store.editor.selectedViews,
@@ -191,6 +202,12 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   const shouldPreviewOnFocusRef = React.useRef(false)
   const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
   const focusedValueRef = React.useRef<string | null>(null)
+
+  const focusTriggerCount = useEditorState(
+    (store) => store.editor.inspector.classnameFocusCounter,
+    'ClassNameSubsection classnameFocusCounter',
+  )
+  const inputRef = useInputFocusOnCountIncrease<CreatableSelect<TailWindOption>>(focusTriggerCount)
 
   const clearFocusedOption = React.useCallback(() => {
     shouldPreviewOnFocusRef.current = false
@@ -219,9 +236,16 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   }, [])
 
   const { selectedOptions, elementPath, isMenuEnabled } = useGetSelectedTailwindOptions()
+  const selectedOptionsLength = selectedOptions?.length ?? 0
+  const [isExpanded, setIsExpanded] = React.useState(selectedOptionsLength > 0)
+  const toggleIsExpanded = React.useCallback(() => setIsExpanded((current) => !current), [])
 
   const onChange = React.useCallback(
     (newValueType: ValueType<TailWindOption>) => {
+      // As the value of the dropdown is changing, hide the selection
+      // controls so they can see the results of what they're doing.
+      EditorActions.hideAndShowSelectionControls(dispatch)
+
       const newValue = valueTypeAsArray(newValueType)
       if (elementPath != null) {
         if (queuedDispatchTimeout != null) {
@@ -258,6 +282,10 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLElement>) => {
+      // As someone is typing, hide the selection
+      // controls so they can see the results of what they're doing.
+      EditorActions.hideAndShowSelectionControls(dispatch)
+
       const shouldStopPreviewing =
         filter === '' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
 
@@ -295,8 +323,24 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
           }
         }
       }
+
+      if (event.key === 'Escape') {
+        inputRef.current?.blur()
+      }
+
+      const namesByKey = applyShortcutConfigurationToDefaults(
+        editorStoreRef.current.userState.shortcutConfig,
+      )
+      handleShortcuts(namesByKey, event.nativeEvent, null, {
+        [UNDO_CHANGES_SHORTCUT]: () => {
+          return dispatch([EditorActions.undo()])
+        },
+        [REDO_CHANGES_SHORTCUT]: () => {
+          return dispatch([EditorActions.redo()])
+        },
+      })
     },
-    [clearFocusedOption, filter, selectedOptions],
+    [clearFocusedOption, dispatch, editorStoreRef, filter, inputRef, selectedOptions],
   )
 
   const multiValueLabel: styleFn = React.useCallback(
@@ -409,47 +453,56 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
       }}
     >
       <InspectorSubsectionHeader style={{ color: theme.primary.value }}>
-        Class Names
+        <span style={{ flexGrow: 1 }}>Class Names</span>
+        <SquareButton highlight onClick={toggleIsExpanded}>
+          <ExpandableIndicator visible collapsed={!isExpanded} selected={false} />
+        </SquareButton>
       </InspectorSubsectionHeader>
-      <UIGridRow padded variant='<-------------1fr------------->'>
-        <CreatableSelect
-          autoFocus={false}
-          placeholder='Add class…'
-          isMulti
-          value={selectedOptions}
-          isDisabled={!isMenuEnabled}
-          onChange={onChange}
-          onInputChange={onInputChange}
-          components={{
-            IndicatorsContainer,
-            Input,
-            MultiValueRemove,
-          }}
-          className='className-inspector-control'
-          styles={{
-            container,
-            control,
-            valueContainer,
-            multiValue,
-            multiValueLabel,
-            multiValueRemove,
-            placeholder,
-            menu,
-            option,
-          }}
-          filterOption={AlwaysTrue}
-          options={options}
-          menuIsOpen={true}
-          onBlur={onBlur}
-          onFocus={onFocus}
-          escapeClearsValue={true}
-          formatOptionLabel={formatOptionLabel}
-          onKeyDown={handleKeyDown}
-          maxMenuHeight={199}
-          inputValue={filter}
-        />
-      </UIGridRow>
-      <FooterSection options={options} filter={filter} />
+      {when(
+        isExpanded,
+        <React.Fragment>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <CreatableSelect
+              ref={inputRef}
+              autoFocus={false}
+              placeholder='Add class…'
+              isMulti
+              value={selectedOptions}
+              isDisabled={!isMenuEnabled}
+              onChange={onChange}
+              onInputChange={onInputChange}
+              components={{
+                IndicatorsContainer,
+                Input,
+                MultiValueRemove,
+              }}
+              className='className-inspector-control'
+              styles={{
+                container,
+                control,
+                valueContainer,
+                multiValue,
+                multiValueLabel,
+                multiValueRemove,
+                placeholder,
+                menu,
+                option,
+              }}
+              filterOption={AlwaysTrue}
+              options={options}
+              menuIsOpen={true}
+              onBlur={onBlur}
+              onFocus={onFocus}
+              escapeClearsValue={true}
+              formatOptionLabel={formatOptionLabel}
+              onKeyDown={handleKeyDown}
+              maxMenuHeight={199}
+              inputValue={filter}
+            />
+          </UIGridRow>
+          <FooterSection options={options} filter={filter} />
+        </React.Fragment>,
+      )}
     </div>
   )
 })
