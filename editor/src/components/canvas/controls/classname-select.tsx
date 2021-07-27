@@ -1,7 +1,6 @@
 /** @jsx jsx */
 
 import { jsx } from '@emotion/react'
-import styled from '@emotion/styled'
 import React from 'react'
 import type { StylesConfig } from 'react-select'
 import WindowedSelect, {
@@ -11,41 +10,28 @@ import WindowedSelect, {
   InputActionMeta,
   InputProps,
   MenuProps,
-  MultiValueProps,
   ValueContainerProps,
 } from 'react-windowed-select'
-import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import {
   atomWithPubSub,
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../../core/shared/atom-with-pub-sub'
-import { eitherToMaybe } from '../../../core/shared/either'
-import {
-  isJSXAttributeNotFound,
-  isJSXAttributeValue,
-  isJSXElement,
-  jsxAttributeValue,
-  JSXElementChild,
-} from '../../../core/shared/element-template'
-import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
-import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { jsxAttributeValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import {
+  getTailwindOptionForClassName,
+  LabelWithStripes,
   MatchHighlighter,
   TailWindOption,
   useFilteredOptions,
-  useGetSelectedTailwindOptions,
+  useGetSelectedClasses,
 } from '../../../core/tailwind/tailwind-options'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { colorTheme, FlexColumn, FlexRow, useColorTheme } from '../../../uuiui'
+import { colorTheme, FlexColumn, FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { getContentsTreeFileFromString } from '../../assets'
-import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { getOpenUIJSFileKey } from '../../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { useEditorState } from '../../editor/store/store-hook'
 
 const DropdownIndicator = betterReactMemo(
   'DropdownIndicator',
@@ -62,23 +48,6 @@ const IndicatorSeparator = () => null
 const NoOptionsMessage = betterReactMemo('NoOptionsMessage', (props: any) => (
   <span {...props}>No results found</span>
 ))
-
-const AngledStripe = styled.div({
-  width: 5,
-  height: 22,
-  borderRadius: 0,
-  transform: 'skewX(-11deg)',
-})
-
-const getColorForCategory = (category: string) => {
-  if (category === 'layout') {
-    return '#5FACFF'
-  } else if (category === 'typography') {
-    return '#F7B500'
-  } else if (category === 'interaction') {
-    return '#B620E0'
-  } else return 'pink'
-}
 
 const getOptionColors = (
   theme: typeof colorTheme,
@@ -115,10 +84,14 @@ const focusedOptionAtom = atomWithPubSub<TailWindOption | null>({
 })
 
 function formatOptionLabel(
-  { label }: TailWindOption,
+  { label, categories }: TailWindOption,
   { context, inputValue }: FormatOptionLabelMeta<TailWindOption, true>,
 ) {
-  return context === 'menu' ? <MatchHighlighter text={label} searchString={inputValue} /> : label
+  return context === 'menu' ? (
+    <MatchHighlighter text={label} searchString={inputValue} />
+  ) : (
+    <LabelWithStripes label={label} categories={categories ?? []} />
+  )
 }
 
 const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) => {
@@ -161,49 +134,6 @@ const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) =>
     </components.Menu>
   )
 })
-
-const MultiValueContainer = betterReactMemo(
-  'MultiValueContainer',
-  (props: MultiValueProps<TailWindOption>) => {
-    const theme = useColorTheme()
-    const { data } = props
-    const stripes: jsx.JSX.Element[] = React.useMemo(() => {
-      const categories = data.categories ?? []
-      if (categories.length > 0) {
-        return categories.map((category, index) => (
-          <AngledStripe
-            key={data.label ?? index}
-            style={{ backgroundColor: getColorForCategory(category) }}
-          />
-        ))
-      } else {
-        return []
-      }
-    }, [data.label, data.categories])
-
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          backgroundColor: theme.inverted.bg1.value,
-        }}
-      >
-        <components.MultiValueContainer {...props} />
-        <div
-          style={{
-            display: 'flex',
-            height: 16,
-            paddingRight: 4,
-            paddingLeft: 2,
-          }}
-        >
-          {stripes}
-        </div>
-      </div>
-    )
-  },
-)
 
 const ValueContainer = betterReactMemo(
   'ValueContainer',
@@ -259,11 +189,8 @@ export const ClassNameSelect = betterReactMemo(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const {
-      selectedOptions: selectedValues,
-      elementPaths,
-      isSettable,
-    } = useGetSelectedTailwindOptions()
+    const { selectedClasses, elementPaths, isSettable } = useGetSelectedClasses()
+    const selectedValues = selectedClasses.map(getTailwindOptionForClassName)
     const elementPath = elementPaths[0]
     const isMenuEnabled = isSettable && elementPaths.length === 1
 
@@ -360,6 +287,8 @@ export const ClassNameSelect = betterReactMemo(
             display: 'flex',
             alignItems: 'center',
             height: 18,
+            border: `1px solid ${theme.inverted.primary.value}`,
+            borderRadius: UtopiaTheme.inputBorderRadius,
             backgroundColor: state.isFocused
               ? theme.inverted.primary.value
               : theme.inverted.bg1.value,
@@ -488,7 +417,6 @@ export const ClassNameSelect = betterReactMemo(
             IndicatorSeparator,
             NoOptionsMessage,
             Menu,
-            MultiValueContainer,
             ValueContainer,
             Input,
           }}

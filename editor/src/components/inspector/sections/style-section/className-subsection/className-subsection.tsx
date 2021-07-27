@@ -2,40 +2,40 @@
 
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { FormatOptionLabelMeta, ValueType, OptionsType, InputProps, components } from 'react-select'
+import { components, FormatOptionLabelMeta, InputProps, OptionsType, ValueType } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
-import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { styleFn } from 'react-select/src/styles'
-import {
-  UtopiaTheme,
-  UNSAFE_getIconURL,
-  InspectorSubsectionHeader,
-  useColorTheme,
-  FlexColumn,
-  FlexRow,
-  colorTheme,
-  SquareButton,
-} from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
-import {
-  useFilteredOptions,
-  TailWindOption,
-  MatchHighlighter,
-  useGetSelectedTailwindOptions,
-} from '../../../../../core/tailwind/tailwind-options'
-import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
-import * as EditorActions from '../../../../editor/actions/action-creators'
-import * as PP from '../../../../../core/shared/property-path'
-import { jsxAttributeValue } from '../../../../../core/shared/element-template'
-import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
+import { last } from '../../../../../core/shared/array-utils'
 import {
   atomWithPubSub,
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../../../../core/shared/atom-with-pub-sub'
-import { last } from '../../../../../core/shared/array-utils'
+import { jsxAttributeValue } from '../../../../../core/shared/element-template'
+import * as PP from '../../../../../core/shared/property-path'
+import {
+  getTailwindOptionForClassName,
+  LabelWithStripes,
+  MatchHighlighter,
+  TailWindOption,
+  useFilteredOptions,
+  useGetSelectedClasses,
+} from '../../../../../core/tailwind/tailwind-options'
+import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
+import { when } from '../../../../../utils/react-conditionals'
+import {
+  FlexColumn,
+  FlexRow,
+  InspectorSubsectionHeader,
+  SquareButton,
+  UNSAFE_getIconURL,
+  useColorTheme,
+  UtopiaTheme,
+} from '../../../../../uuiui'
+import { betterReactMemo } from '../../../../../uuiui-deps'
+import * as EditorActions from '../../../../editor/actions/action-creators'
 import { useInputFocusOnCountIncrease } from '../../../../editor/hook-utils'
 import {
   applyShortcutConfigurationToDefaults,
@@ -43,8 +43,9 @@ import {
   REDO_CHANGES_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
 } from '../../../../editor/shortcut-definitions'
+import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
-import { when } from '../../../../../utils/react-conditionals'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
@@ -106,10 +107,14 @@ const focusedOptionAtom = atomWithPubSub<string | null>({
 })
 
 function formatOptionLabel(
-  { label }: TailWindOption,
+  { label, categories }: TailWindOption,
   { context, inputValue }: FormatOptionLabelMeta<TailWindOption>,
 ) {
-  return context === 'menu' ? <MatchHighlighter text={label} searchString={inputValue} /> : label
+  return context === 'menu' ? (
+    <MatchHighlighter text={label} searchString={inputValue} />
+  ) : (
+    <LabelWithStripes label={label} categories={categories ?? []} />
+  )
 }
 
 function isOptionsType<T>(valueType: T | OptionsType<T>): valueType is OptionsType<T> {
@@ -214,7 +219,8 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const { selectedOptions, elementPaths, isSettable } = useGetSelectedTailwindOptions()
+  const { selectedClasses, elementPaths, isSettable } = useGetSelectedClasses()
+  const selectedOptions = selectedClasses.map(getTailwindOptionForClassName)
   const elementPath = elementPaths[0]
   const isMenuEnabled = isSettable && elementPaths.length === 1
   const selectedOptionsLength = selectedOptions?.length ?? 0
@@ -337,7 +343,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         paddingTop: 2,
         paddingBottom: 2,
         paddingLeft: 6,
-        paddingRight: 2,
+        paddingRight: 0,
         fontSize: 9,
         borderRadius: 3,
         color: color,

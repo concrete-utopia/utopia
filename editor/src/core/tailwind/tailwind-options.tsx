@@ -29,27 +29,38 @@ import {
 } from '../shared/jsx-attributes'
 import * as PP from '../shared/property-path'
 import { isTwindEnabled } from './tailwind'
+import { AttributeCategories, AttributeCategory } from './attribute-categories'
 
 export interface TailWindOption {
   label: string
   value: string
-  attributes?: string[]
-  categories?: string[]
+  attributes?: Array<string>
+  categories?: Array<AttributeCategory>
 }
 
 export let TailWindOptions: Array<TailWindOption> = []
-export let AttributeOptionLookup: { [attribute: string]: Array<TailWindOption> }
+let TailWindOptionLookup: { [className: string]: TailWindOption } = {}
+export let AttributeOptionLookup: { [attribute: string]: Array<TailWindOption> } = {}
 
 async function loadTailwindOptions() {
   return new Promise<void>((resolve) => {
-    TailWindOptions = mapToArray(
-      (attributes, className) => ({
+    TailWindOptions = mapToArray((attributes, className) => {
+      const categories = flatMapArray(
+        (attribute) => AttributeCategories[attribute] ?? [],
+        attributes,
+      )
+
+      const option = {
         label: className,
         value: className,
         attributes: attributes,
-      }),
-      ClassNameToAttributes,
-    )
+        categories: categories,
+      }
+
+      TailWindOptionLookup[className] = option
+
+      return option
+    }, ClassNameToAttributes)
 
     AttributeOptionLookup = mapValues((classNames: Array<string>) => {
       const matchingOptions = classNames.map((className) =>
@@ -63,6 +74,16 @@ async function loadTailwindOptions() {
 }
 
 loadTailwindOptions()
+
+export function getTailwindOptionForClassName(className: string): TailWindOption {
+  const foundOption = TailWindOptionLookup[className]
+  return (
+    foundOption ?? {
+      label: className,
+      value: className,
+    }
+  )
+}
 
 export function searchStringToIndividualTerms(searchString: string): Array<string> {
   return searchString
@@ -235,8 +256,8 @@ function getClassNameAttribute(
   }
 }
 
-export function useGetSelectedTailwindOptions(): {
-  selectedOptions: Array<TailWindOption> | null
+export function useGetSelectedClasses(): {
+  selectedClasses: Array<string>
   elementPaths: Array<ElementPath>
   isSettable: boolean
 } {
@@ -298,18 +319,11 @@ export function useGetSelectedTailwindOptions(): {
     return working
   }, new Set<string>())
 
-  const selectedOptions: Array<TailWindOption> = React.useMemo(
-    () =>
-      Array.from(allClassNames).map((className) => ({
-        label: className,
-        value: className,
-      })),
-    [allClassNames],
-  )
+  const selectedClasses = Array.from(allClassNames)
 
   return {
     elementPaths: elementPaths,
-    selectedOptions: selectedOptions,
+    selectedClasses: selectedClasses,
     isSettable: isSettable,
   }
 }
@@ -329,6 +343,91 @@ export const MatchHighlighter = betterReactMemo(
         autoEscape={true}
         textToHighlight={text}
       />
+    )
+  },
+)
+
+const getColorForCategory = (category: AttributeCategory): string => {
+  switch (category) {
+    case 'animation':
+      return '#B620E0'
+    case 'aural':
+      return '#007AFF'
+    case 'background':
+      return '#574BE2'
+    case 'border':
+      return '#FD003B'
+    case 'container':
+      return '#FA5E00'
+    case 'esoteric':
+      return 'hsl(120, 100%, 37%)'
+    case 'layout-self':
+      return '#5FACFF'
+    case 'layout-system':
+      return '#FCFF42'
+    case 'meta':
+      return 'hsl(0, 0%, 50%)'
+    case 'transform':
+      return '#D05300'
+    case 'typographic':
+      return '#F7B500'
+    case 'shadow':
+      return '#FF00FF'
+
+    default:
+      const _exhaustive: never = category
+      throw new Error(`Unknown category ${category}`)
+  }
+}
+
+const AngledStripe = betterReactMemo('AngledStripe', (props: { category: AttributeCategory }) => {
+  return (
+    <div
+      style={{
+        width: 5,
+        height: 22,
+        borderRadius: 0,
+        transform: 'translateY(-2px) skewX(-11deg)',
+        backgroundColor: getColorForCategory(props.category),
+      }}
+    />
+  )
+})
+
+export const LabelWithStripes = betterReactMemo(
+  'LabelWithStripes',
+  (props: { label: string; categories: Array<AttributeCategory> }) => {
+    const { label, categories } = props
+
+    const stripes: Array<React.ReactNode> = React.useMemo(() => {
+      if (categories.length > 0) {
+        return categories.map((category, index) => (
+          <AngledStripe key={label ?? index} category={category} />
+        ))
+      } else {
+        return []
+      }
+    }, [label, categories])
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        {label}
+        <div
+          style={{
+            display: 'flex',
+            height: 16,
+            paddingRight: 4,
+            paddingLeft: 4,
+          }}
+        >
+          {stripes}
+        </div>
+      </div>
     )
   },
 )
