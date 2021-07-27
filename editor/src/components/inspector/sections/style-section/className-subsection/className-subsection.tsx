@@ -465,7 +465,9 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
       }}
     >
       <InspectorSubsectionHeader style={{ color: theme.primary.value }}>
-        <span style={{ flexGrow: 1 }}>Class Names</span>
+        <span style={{ flexGrow: 1, cursor: 'pointer' }} onClick={toggleIsExpanded}>
+          Class Names
+        </span>
         <SquareButton highlight onClick={toggleIsExpanded}>
           <ExpandableIndicator visible collapsed={!isExpanded} selected={false} />
         </SquareButton>
