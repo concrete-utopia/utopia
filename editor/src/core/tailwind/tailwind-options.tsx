@@ -1,6 +1,6 @@
 import React from 'react'
 import { betterReactMemo } from '../../uuiui-deps'
-import { flatMapArray, last, stripNulls } from '../shared/array-utils'
+import { filterDuplicates, flatMapArray, last, stripNulls } from '../shared/array-utils'
 import { mapToArray, mapValues } from '../shared/object-utils'
 import { NO_OP } from '../shared/utils'
 import {
@@ -45,9 +45,8 @@ export let AttributeOptionLookup: { [attribute: string]: Array<TailWindOption> }
 async function loadTailwindOptions() {
   return new Promise<void>((resolve) => {
     TailWindOptions = mapToArray((attributes, className) => {
-      const categories = flatMapArray(
-        (attribute) => AttributeCategories[attribute] ?? [],
-        attributes,
+      const categories = filterDuplicates(
+        flatMapArray((attribute) => AttributeCategories[attribute] ?? [], attributes),
       )
 
       const option = {
