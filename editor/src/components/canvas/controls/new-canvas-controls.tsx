@@ -49,6 +49,9 @@ import {
 import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { ProjectContentTreeRoot } from '../../assets'
+import { LayoutParentControl } from './layout-parent-control'
+import { when } from '../../../utils/react-conditionals'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -460,6 +463,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}
+      {when(isFeatureEnabled('Layout Section Experimental'), <LayoutParentControl />)}
     </div>
   )
 }
