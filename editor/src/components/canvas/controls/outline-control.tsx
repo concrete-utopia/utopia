@@ -18,6 +18,7 @@ import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
+import { KeysPressed } from '../../../utils/keyboard'
 
 export function getSelectionColor(
   path: ElementPath,
@@ -42,6 +43,7 @@ export function getSelectionColor(
 
 export interface OutlineControlsProps extends ControlProps {
   dragState: MoveDragState | ResizeDragState | null
+  keysPressed: KeysPressed
 }
 
 function isDraggingToMove(
@@ -56,6 +58,10 @@ function isDraggingToMove(
 export const OutlineControls = (props: OutlineControlsProps) => {
   const colorTheme = useColorTheme()
   const { dragState } = props
+  const layoutInspectorSectionHovered = useEditorState(
+    (store) => store.editor.inspector.layoutSectionHovered,
+    'OutlineControls layoutInspectorSectionHovered',
+  )
   const getDragStateFrame = React.useCallback(
     (target: ElementPath): CanvasRectangle | null => {
       if (isDraggingToMove(dragState, target)) {
@@ -124,10 +130,72 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     [props.canvasOffset.x, props.canvasOffset.y, props.componentMetadata, props.dragState],
   )
 
-  const anySelectedElementIsYogaLayouted = anyInstanceYogaLayouted(
-    props.componentMetadata,
-    props.selectedViews,
-  )
+  let parentHighlights: React.ReactNode = null
+  if (props.keysPressed['cmd'] || layoutInspectorSectionHovered) {
+    parentHighlights = props.selectedViews.map((view) => {
+      const parentPath = EP.parentPath(view)
+      if (parentPath != null) {
+        const parentFrame = MetadataUtils.getFrameInCanvasCoords(
+          parentPath,
+          props.componentMetadata,
+        )
+        if (parentFrame != null) {
+          return (
+            <>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: parentFrame.x + props.canvasOffset.x - 4,
+                  top: parentFrame.y + props.canvasOffset.y - 11,
+                  color: colorTheme.primary.value,
+                  fontSize: '13px',
+                }}
+              >
+                ×
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 5,
+                  top: parentFrame.y + props.canvasOffset.y - 11,
+                  color: colorTheme.primary.value,
+                  fontSize: '13px',
+                }}
+              >
+                ×
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: parentFrame.x + props.canvasOffset.x - 4,
+                  top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
+                  color: colorTheme.primary.value,
+                  fontSize: '13px',
+                }}
+              >
+                ×
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 4,
+                  top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
+                  color: colorTheme.primary.value,
+                  fontSize: '13px',
+                }}
+              >
+                ×
+              </div>
+            </>
+          )
+        } else {
+          return null
+        }
+      } else {
+        return null
+      }
+    })
+  }
 
   let selectionOutlines: Array<JSX.Element> = getOverlayControls(props.selectedViews)
   const targetPaths =
@@ -210,6 +278,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   }
   return (
     <>
+      {parentHighlights}
       {selectionOutlines}
       {multiSelectOutline}
     </>

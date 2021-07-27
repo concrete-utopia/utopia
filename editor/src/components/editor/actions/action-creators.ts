@@ -198,6 +198,7 @@ import type {
   AddTailwindConfig,
   FocusClassNameInput,
   WrapInElement,
+  SetInspectorLayoutSectionHovered,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1426,5 +1427,14 @@ export function insertWithDefaults(
 export function addTailwindConfig(): AddTailwindConfig {
   return {
     action: 'ADD_TAILWIND_CONFIG',
+  }
+}
+
+export function setInspectorLayoutSectionHovered(
+  hovered: boolean,
+): SetInspectorLayoutSectionHovered {
+  return {
+    action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED',
+    hovered: hovered,
   }
 }

@@ -99,6 +99,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'CLOSE_FLOATING_INSERT_MENU':
     case 'SET_PROP_TRANSIENT':
     case 'CLEAR_TRANSIENT_PROPS':
+    case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
       return true
 
     case 'NEW':

@@ -319,6 +319,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLEAR_TRANSIENT_PROPS(action, state)
     case 'ADD_TAILWIND_CONFIG':
       return UPDATE_FNS.ADD_TAILWIND_CONFIG(action, state, dispatch)
+    case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
+      return UPDATE_FNS.SET_INSPECTOR_LAYOUT_SECTION_HOVERED(action, state)
     default:
       return state
   }
