@@ -812,8 +812,10 @@ export function handleKeyUp(
   const editorTargeted = editorIsTarget(event, editor)
   let updatedKeysPressed: KeysPressed
   if (editorTargeted) {
-    updatedKeysPressed = updateModifiers(
+    updatedKeysPressed = updateKeysPressed(
       editor.keysPressed,
+      key,
+      false,
       Modifier.modifiersForKeyboardEvent(event),
     )
   } else {
