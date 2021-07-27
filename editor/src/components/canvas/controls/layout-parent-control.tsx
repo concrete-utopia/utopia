@@ -6,12 +6,16 @@ import * as EP from '../../../core/shared/element-path'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { when } from '../../../utils/react-conditionals'
-import { Icn, IcnProps, useColorTheme } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
+import { Icn, IcnProps, PopupList, useColorTheme } from '../../../uuiui'
+import { betterReactMemo, SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
-import { flexDirectionOptions } from '../../inspector/sections/layout-section/flex-container-subsection/flex-container-controls'
+import {
+  alignItemsOptions,
+  flexDirectionOptions,
+  getDirectionAwareLabels,
+} from '../../inspector/sections/layout-section/flex-container-subsection/flex-container-controls'
 
 const getFlexDirectionIcon = (
   flexWrap: FlexWrap | null,
@@ -38,31 +42,53 @@ export const LayoutParentControl = betterReactMemo(
         scale: store.editor.canvas.scale,
       }
     }, 'LayoutParentControl canvas')
-    const { parentTarget, parentLayout, parentFrame, flexWrap, flexDirection } = useEditorState(
-      (store) => {
-        if (store.editor.selectedViews.length !== 1) {
-          return {
-            parentTarget: null,
-            parentLayout: null,
-            parentFrame: null,
-            flexWrap: null,
-            flexDirection: null,
-          }
-        }
-        const element = MetadataUtils.getParent(
-          store.editor.jsxMetadata,
-          store.editor.selectedViews[0],
-        )
+    const {
+      parentTarget,
+      parentLayout,
+      parentFrame,
+      flexWrap,
+      flexDirection,
+      alignItems,
+    } = useEditorState((store) => {
+      if (store.editor.selectedViews.length !== 1) {
         return {
-          parentTarget: element?.elementPath,
-          parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
-          parentFrame: element?.globalFrame,
-          flexWrap: element?.props?.style?.flexWrap ?? 'nowrap',
-          flexDirection: element?.props?.style?.flexDirection ?? 'row',
+          parentTarget: null,
+          parentLayout: null,
+          parentFrame: null,
+          flexWrap: null,
+          flexDirection: null,
+          alignItems: null,
         }
-      },
-      'LayoutParentControl',
+      }
+      const element = MetadataUtils.getParent(
+        store.editor.jsxMetadata,
+        store.editor.selectedViews[0],
+      )
+      return {
+        parentTarget: element?.elementPath,
+        parentLayout: element?.specialSizeMeasurements.layoutSystemForChildren,
+        parentFrame: element?.globalFrame,
+        flexWrap: element?.props?.style?.flexWrap ?? 'nowrap',
+        flexDirection: element?.props?.style?.flexDirection ?? 'row',
+        alignItems: element?.props?.style?.alignItems ?? 'flex-start',
+      }
+    }, 'LayoutParentControl')
+
+    const {
+      justifyFlexStart,
+      justifyFlexEnd,
+      alignDirection,
+      alignItemsFlexStart,
+      alignItemsFlexEnd,
+      alignContentFlexStart,
+      alignContentFlexEnd,
+    } = getDirectionAwareLabels(flexWrap, flexDirection)
+    const allAlignmentOptions = alignItemsOptions(
+      alignDirection,
+      alignItemsFlexStart,
+      alignItemsFlexEnd,
     )
+    const selectedAlignment = allAlignmentOptions.find((option) => option.value === alignItems)
 
     const flexDirectionIcon = getFlexDirectionIcon(flexWrap, flexDirection)
     const flexDirectionClicked = React.useCallback(
@@ -82,6 +108,24 @@ export const LayoutParentControl = betterReactMemo(
         }
       },
       [parentTarget, flexDirection, dispatch],
+    )
+
+    const onSubmitValueAlignment = React.useCallback(
+      (option: SelectOption) => {
+        if (parentTarget != null) {
+          dispatch(
+            [
+              setProp_UNSAFE(
+                parentTarget,
+                createLayoutPropertyPath('alignItems'),
+                jsxAttributeValue(option.value, emptyComments),
+              ),
+            ],
+            'canvas',
+          )
+        }
+      },
+      [parentTarget, dispatch],
     )
 
     const onControlMouseDown = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -125,6 +169,22 @@ export const LayoutParentControl = betterReactMemo(
             onClick={flexDirectionClicked}
           >
             <Icn {...(flexDirectionIcon as IcnProps)} />
+          </div>,
+        )}
+        {when(
+          flexDirectionIcon != null && parentLayout === 'flex',
+          <div
+            style={{
+              padding: '0 5px',
+            }}
+          >
+            {selectedAlignment ? (
+              <PopupList
+                options={allAlignmentOptions}
+                value={selectedAlignment}
+                onSubmitValue={onSubmitValueAlignment}
+              />
+            ) : null}
           </div>,
         )}
       </div>

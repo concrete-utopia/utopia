@@ -447,7 +447,7 @@ const justifyContentOptions = (
     },
   ] as Array<OptionChainOption<string | number>>
 
-const alignItemsOptions = (
+export const alignItemsOptions = (
   alignDirection: string,
   alignItemsFlexStart: uglyLabel,
   alignItemsFlexEnd: uglyLabel,
