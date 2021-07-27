@@ -58,14 +58,14 @@ function tryToGetInstancePath(
   topLevelElementName: string,
   maybePath: ElementPath | null,
   pathsString: string | null,
-): ElementPath {
+): ElementPath | null {
   const paths = getPathsFromString(pathsString)
   if (EP.isElementPath(maybePath)) {
     return maybePath
   } else if (paths.length > 0) {
     return paths[0]
   } else {
-    throw new Error(`Utopia Error: Instance Path is not provided for ${topLevelElementName}.`)
+    return null
   }
 }
 
@@ -80,12 +80,6 @@ export function createComponentRendererComponent(params: {
       [UTOPIA_PATHS_KEY]: pathsString, // TODO types?
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
-
-    const instancePath: ElementPath = tryToGetInstancePath(
-      params.topLevelElementName,
-      instancePathAny,
-      pathsString,
-    )
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
@@ -132,9 +126,15 @@ export function createComponentRendererComponent(params: {
 
     let codeError: Error | null = null
 
-    const rootElementPath = EP.appendNewElementPath(
+    const instancePath: ElementPath | null = tryToGetInstancePath(
+      params.topLevelElementName,
+      instancePathAny,
+      pathsString,
+    )
+
+    const rootElementPath = optionalMap(
+      (path) => EP.appendNewElementPath(path, getUtopiaID(utopiaJsxComponent.rootElement)),
       instancePath,
-      getUtopiaID(utopiaJsxComponent.rootElement),
     )
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
@@ -174,7 +174,10 @@ export function createComponentRendererComponent(params: {
       if (isJSXFragment(element)) {
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
-        const ownElementPath = EP.appendNewElementPath(instancePath, getUtopiaID(element))
+        const ownElementPath = optionalMap(
+          (path) => EP.appendNewElementPath(path, getUtopiaID(element)),
+          instancePath,
+        )
 
         const renderedCoreElement = renderCoreElement(
           element,
