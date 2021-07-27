@@ -327,7 +327,7 @@ const FlexInfoBox = betterReactMemo('FlexInfoBox', () => {
           style={{}}
           category='layout/systems'
           type='flexbox'
-          color={'darkgray'}
+          color={'secondary'}
           width={16}
           height={16}
         />

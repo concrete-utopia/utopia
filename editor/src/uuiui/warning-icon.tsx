@@ -16,7 +16,7 @@ export const WarningIcon = betterReactMemo('Warning Icon', (props: WarningIconPr
 
 export function getWarningIconProps(
   tooltipText: string | undefined,
-  color: IcnColor = 'orange',
+  color: IcnColor = 'warning',
   style: React.CSSProperties | undefined = undefined,
 ): IcnProps {
   const tooltipPlacement = tooltipText == null ? undefined : 'right'

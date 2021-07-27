@@ -210,7 +210,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           >
             Type
           </div>
-          <Icons.Gear color={expanded ? 'darkgray' : 'lightgray'} onClick={toggleExpanded} />
+          <Icons.Gear color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>
       <FontFamilySelect />
@@ -276,7 +276,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                   icon: {
                     category: 'typography',
                     type: 'auto',
-                    color: 'darkgray',
+                    color: 'secondary',
                     width: 16,
                     height: 16,
                   },
@@ -287,7 +287,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                   icon: {
                     category: 'typography',
                     type: 'fixed',
-                    color: 'darkgray',
+                    color: 'secondary',
                     width: 16,
                     height: 16,
                   },
@@ -316,7 +316,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                 icon: {
                   category: 'typography',
                   type: 'leftAlign',
-                  color: 'darkgray',
+                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
@@ -326,7 +326,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                 icon: {
                   category: 'typography',
                   type: 'centerAlign',
-                  color: 'darkgray',
+                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
@@ -336,7 +336,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                 icon: {
                   category: 'typography',
                   type: 'rightAlign',
-                  color: 'darkgray',
+                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
@@ -346,7 +346,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                 icon: {
                   category: 'typography',
                   type: 'justify',
-                  color: 'darkgray',
+                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
@@ -376,7 +376,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                 icon: {
                   category: 'typography',
                   type: 'italic',
-                  color: 'darkgray',
+                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },
@@ -402,7 +402,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
                 icon: {
                   category: 'typography',
                   type: 'underline',
-                  color: 'darkgray',
+                  color: 'secondary',
                   width: 16,
                   height: 16,
                 },

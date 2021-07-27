@@ -412,7 +412,7 @@ export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => 
     <Icn
       category={props.category ?? 'element'}
       type={props.type}
-      color={props.selected ? 'white' : 'darkgray'}
+      color={props.selected ? 'primary' : 'main'}
       width={18}
       height={18}
     />

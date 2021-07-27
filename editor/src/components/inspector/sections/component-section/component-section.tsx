@@ -325,7 +325,7 @@ const RowForArrayControl = betterReactMemo(
                     style={{ paddingTop: 1 }}
                     category='semantic'
                     type='minus'
-                    color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                    color={propertyStatus.controlled ? 'primary' : 'secondary'}
                     width={16}
                     height={16}
                   />
@@ -334,7 +334,7 @@ const RowForArrayControl = betterReactMemo(
                     style={{ paddingTop: 1 }}
                     category='semantic'
                     type='plus'
-                    color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                    color={propertyStatus.controlled ? 'primary' : 'secondary'}
                     width={16}
                     height={16}
                   />

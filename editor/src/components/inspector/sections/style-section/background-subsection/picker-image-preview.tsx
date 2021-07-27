@@ -57,7 +57,7 @@ export const PickerImagePreview = betterReactMemo(
                 </div>
               ) : (
                 <SimpleFlexRow>
-                  <Icn type='warningtriangle' color='orange' width={16} height={16} />
+                  <Icn type='warningtriangle' color='warning' width={16} height={16} />
                   <span style={{ paddingLeft: 8 }}>Unable to load {props.value.url}</span>
                 </SimpleFlexRow>
               )}

@@ -362,7 +362,7 @@ const SingleLengthItem = betterReactMemo<SingleLengthItemProps>('SingleLengthIte
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
       />
       <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
-        <Icn category='semantic' type='minus' color='darkgray' width={16} height={16} />
+        <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
       </SquareButton>
     </PropertyRow>
   )
@@ -515,7 +515,7 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
         defaultUnitToHide={controlMetadata.defaultUnitToHide}
       />
       <SquareButton highlight onMouseDown={removeTransformItem} style={{ marginTop: 1 }}>
-        <Icn category='semantic' type='minus' color='darkgray' width={16} height={16} />
+        <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
       </SquareButton>
     </PropertyRow>
   )
@@ -578,7 +578,7 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
                 style={{ paddingTop: 1 }}
                 category='semantic'
                 type='plus'
-                color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+                color={propertyStatus.controlled ? 'primary' : 'secondary'}
                 width={16}
                 height={16}
               />

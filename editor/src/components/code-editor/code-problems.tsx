@@ -87,10 +87,10 @@ const ErrorMessageRow = (props: ErrorMessageRowProps) => {
 function errorMessageSeverityToColor(severity: ErrorMessageSeverity) {
   switch (severity) {
     case 'warning':
-      return 'orange'
+      return 'warning'
     case 'error':
     case 'fatal':
-      return 'red'
+      return 'error'
     default:
       const _exhaustiveCheck: never = severity
       throw new Error(`Unknown severity ${severity}}`)
