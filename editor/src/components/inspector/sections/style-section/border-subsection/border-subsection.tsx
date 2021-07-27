@@ -182,7 +182,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
               style={{ paddingTop: 1 }}
               category='semantic'
               type='plus'
-              color={propertyStatus.controlled ? 'blue' : 'darkgray'}
+              color={propertyStatus.controlled ? 'primary' : 'secondary'}
               width={16}
               height={16}
             />

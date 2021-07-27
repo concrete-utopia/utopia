@@ -62,11 +62,11 @@ export const ProjectTypefaceItem = betterReactMemo<ProjectTypefaceItemProps>(
             {hovered ? (
               <Icons.Cross
                 onClick={onCrossClick}
-                color='white'
+                color='on-highlight-main'
                 tooltipText={`Remove ${typeface.name} from the project`}
               />
             ) : (
-              <Icons.Checkmark color={selected ? 'white' : undefined} />
+              <Icons.Checkmark color={selected ? 'on-highlight-main' : undefined} />
             )}
           </div>
         </FlexRow>

@@ -16,6 +16,7 @@ import {
   FlexColumn,
   FlexRow,
   colorTheme,
+  SquareButton,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
@@ -42,6 +43,8 @@ import {
   REDO_CHANGES_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
 } from '../../../../editor/shortcut-definitions'
+import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
+import { when } from '../../../../../utils/react-conditionals'
 
 const IndicatorsContainer: React.FunctionComponent<IndicatorContainerProps<TailWindOption>> = () =>
   null
@@ -76,27 +79,6 @@ const control: styleFn = () => ({
   position: 'relative',
   transition: 'all 100ms',
   minHeight: UtopiaTheme.layout.inputHeight.default,
-})
-
-const multiValueRemove: styleFn = (base, state) => ({
-  label: 'multiValueRemove',
-  width: 16,
-  height: UtopiaTheme.layout.inputHeight.small,
-  display: 'flex',
-  alignItems: 'center',
-  padding: 0,
-  overflow: 'hidden',
-  marginRight: 2,
-  backgroundImage: `url(${
-    (state.isFocused as boolean)
-      ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
-      : UNSAFE_getIconURL('cross-small')
-  })`,
-  backgroundSize: 16,
-  backgroundPosition: 'center center',
-  ':hover': {
-    backgroundImage: `url(${UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')})`,
-  },
 })
 
 const placeholder: styleFn = (base) => ({
@@ -232,10 +214,19 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const { selectedOptions, elementPath, isMenuEnabled } = useGetSelectedTailwindOptions()
+  const { selectedOptions, elementPaths, isSettable } = useGetSelectedTailwindOptions()
+  const elementPath = elementPaths[0]
+  const isMenuEnabled = isSettable && elementPaths.length === 1
+  const selectedOptionsLength = selectedOptions?.length ?? 0
+  const [isExpanded, setIsExpanded] = React.useState(selectedOptionsLength > 0)
+  const toggleIsExpanded = React.useCallback(() => setIsExpanded((current) => !current), [])
 
   const onChange = React.useCallback(
     (newValueType: ValueType<TailWindOption>) => {
+      // As the value of the dropdown is changing, hide the selection
+      // controls so they can see the results of what they're doing.
+      EditorActions.hideAndShowSelectionControls(dispatch)
+
       const newValue = valueTypeAsArray(newValueType)
       if (elementPath != null) {
         if (queuedDispatchTimeout != null) {
@@ -272,6 +263,10 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLElement>) => {
+      // As someone is typing, hide the selection
+      // controls so they can see the results of what they're doing.
+      EditorActions.hideAndShowSelectionControls(dispatch)
+
       const shouldStopPreviewing =
         filter === '' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')
 
@@ -310,6 +305,10 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         }
       }
 
+      if (event.key === 'Escape') {
+        inputRef.current?.blur()
+      }
+
       const namesByKey = applyShortcutConfigurationToDefaults(
         editorStoreRef.current.userState.shortcutConfig,
       )
@@ -322,12 +321,13 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         },
       })
     },
-    [clearFocusedOption, dispatch, editorStoreRef, filter, selectedOptions],
+    [clearFocusedOption, dispatch, editorStoreRef, filter, inputRef, selectedOptions],
   )
 
   const multiValueLabel: styleFn = React.useCallback(
     (base, { isFocused }) => {
-      const color = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const enabledColor = isFocused ? theme.inverted.textColor.value : theme.inverted.primary.value
+      const color = isMenuEnabled ? enabledColor : theme.fg8.value
       const backgroundColor = isFocused ? theme.inverted.primary.value : theme.bg1.value
       return {
         ...base,
@@ -344,7 +344,31 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
         backgroundColor: backgroundColor,
       }
     },
-    [theme],
+    [isMenuEnabled, theme],
+  )
+
+  const multiValueRemove: styleFn = React.useCallback(
+    (base, state) => ({
+      label: 'multiValueRemove',
+      width: isMenuEnabled ? 16 : 0,
+      height: UtopiaTheme.layout.inputHeight.small,
+      display: 'flex',
+      alignItems: 'center',
+      padding: 0,
+      overflow: 'hidden',
+      marginRight: 2,
+      backgroundImage: `url(${
+        (state.isFocused as boolean)
+          ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
+          : UNSAFE_getIconURL('cross-small')
+      })`,
+      backgroundSize: 16,
+      backgroundPosition: 'center center',
+      ':hover': {
+        backgroundImage: `url(${UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')})`,
+      },
+    }),
+    [isMenuEnabled],
   )
 
   const multiValue: styleFn = React.useCallback(
@@ -435,48 +459,56 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
       }}
     >
       <InspectorSubsectionHeader style={{ color: theme.primary.value }}>
-        Class Names
+        <span style={{ flexGrow: 1 }}>Class Names</span>
+        <SquareButton highlight onClick={toggleIsExpanded}>
+          <ExpandableIndicator visible collapsed={!isExpanded} selected={false} />
+        </SquareButton>
       </InspectorSubsectionHeader>
-      <UIGridRow padded variant='<-------------1fr------------->'>
-        <CreatableSelect
-          ref={inputRef}
-          autoFocus={false}
-          placeholder='Add class…'
-          isMulti
-          value={selectedOptions}
-          isDisabled={!isMenuEnabled}
-          onChange={onChange}
-          onInputChange={onInputChange}
-          components={{
-            IndicatorsContainer,
-            Input,
-            MultiValueRemove,
-          }}
-          className='className-inspector-control'
-          styles={{
-            container,
-            control,
-            valueContainer,
-            multiValue,
-            multiValueLabel,
-            multiValueRemove,
-            placeholder,
-            menu,
-            option,
-          }}
-          filterOption={AlwaysTrue}
-          options={options}
-          menuIsOpen={true}
-          onBlur={onBlur}
-          onFocus={onFocus}
-          escapeClearsValue={true}
-          formatOptionLabel={formatOptionLabel}
-          onKeyDown={handleKeyDown}
-          maxMenuHeight={199}
-          inputValue={filter}
-        />
-      </UIGridRow>
-      <FooterSection options={options} filter={filter} />
+      {when(
+        isExpanded,
+        <React.Fragment>
+          <UIGridRow padded variant='<-------------1fr------------->'>
+            <CreatableSelect
+              ref={inputRef}
+              autoFocus={false}
+              placeholder={isMenuEnabled ? 'Add class…' : ''}
+              isMulti
+              value={selectedOptions}
+              isDisabled={!isMenuEnabled}
+              onChange={onChange}
+              onInputChange={onInputChange}
+              components={{
+                IndicatorsContainer,
+                Input,
+                MultiValueRemove,
+              }}
+              className='className-inspector-control'
+              styles={{
+                container,
+                control,
+                valueContainer,
+                multiValue,
+                multiValueLabel,
+                multiValueRemove,
+                placeholder,
+                menu,
+                option,
+              }}
+              filterOption={AlwaysTrue}
+              options={options}
+              menuIsOpen={isMenuEnabled}
+              onBlur={onBlur}
+              onFocus={onFocus}
+              escapeClearsValue={true}
+              formatOptionLabel={formatOptionLabel}
+              onKeyDown={handleKeyDown}
+              maxMenuHeight={199}
+              inputValue={filter}
+            />
+          </UIGridRow>
+          {when(isMenuEnabled, <FooterSection options={options} filter={filter} />)}
+        </React.Fragment>,
+      )}
     </div>
   )
 })

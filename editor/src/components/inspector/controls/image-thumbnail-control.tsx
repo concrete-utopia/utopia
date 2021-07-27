@@ -69,7 +69,7 @@ export const ImageThumbnailControl = betterReactMemo<ImageThumbnailControlProps>
                 justifyContent: 'center',
               }}
             >
-              <Icn type='warningtriangle' color='orange' width={16} height={16} />
+              <Icn type='warningtriangle' color='warning' width={16} height={16} />
             </FlexRow>
           </Tooltip>
         ) : (

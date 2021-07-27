@@ -71,7 +71,7 @@ const NothingOpenCard = betterReactMemo('NothingOpen', () => {
       }}
     >
       <LargerIcons.PixelatedPalm
-        color='blue'
+        color='primary'
         style={{ width: 42, height: 42, imageRendering: 'pixelated' }}
       />
       <div style={{ textAlign: 'center' }}>

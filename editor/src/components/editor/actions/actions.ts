@@ -862,7 +862,8 @@ export function editorMoveMultiSelectedTemplates(
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
-  newParentLayoutType: LayoutSystem | null,
+  newParentLayoutType: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -882,6 +883,7 @@ export function editorMoveMultiSelectedTemplates(
       parentFrame,
       working,
       newParentLayoutType,
+      newParentMainAxis,
     )
     if (newPath != null) {
       // when moving multiselected elements that are in a hierarchy the editor has the ancestor with a new path
@@ -908,7 +910,8 @@ export function editorMoveTemplate(
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
-  newParentLayoutSystem: LayoutSystem | null,
+  newParentLayoutSystem: SettableLayoutSystem | null,
+  newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): {
   editor: EditorModel
   newPath: ElementPath | null
@@ -925,6 +928,7 @@ export function editorMoveTemplate(
     editor.selectedViews,
     editor.highlightedViews,
     newParentLayoutSystem,
+    newParentMainAxis,
   )
   return {
     newPath: moveResult.newPath,
@@ -1187,6 +1191,7 @@ function setZIndexOnSelected(
         EP.parentPath(selectedView),
         null,
         editor,
+        null,
         null,
       ).editor
     },
@@ -1722,6 +1727,7 @@ export const UPDATE_FNS = {
       newParentSize,
       editor,
       null,
+      null,
     )
 
     return {
@@ -1739,6 +1745,7 @@ export const UPDATE_FNS = {
       EP.parentPath(action.target),
       null,
       editor,
+      null,
       null,
     ).editor
   },
@@ -2095,6 +2102,15 @@ export const UPDATE_FNS = {
           derived,
         )
         const parentPath = EP.getCommonParent(orderedActionTargets)
+        const indexInParent = optionalMap(
+          (firstPathMatchingCommonParent) =>
+            MetadataUtils.getViewZIndexFromMetadata(
+              editor.jsxMetadata,
+              firstPathMatchingCommonParent,
+            ),
+          orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
+        )
+
         if (parentPath === null) {
           return editor
         } else {
@@ -2161,7 +2177,13 @@ export const UPDATE_FNS = {
                 parentPath,
                 elementToInsertWithPositionAttribute,
                 utopiaJSXComponents,
-                null,
+                optionalMap(
+                  (index) => ({
+                    type: 'before',
+                    index: index,
+                  }),
+                  indexInParent,
+                ),
               )
 
               viewPath = EP.appendToPath(parentPath, newUID)
@@ -2185,9 +2207,9 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          const frameChanges: Array<PinOrFlexFrameChange> = [
-            getFrameChange(viewPath, boundingBox, isParentFlex),
-          ]
+          const frameChanges: Array<PinOrFlexFrameChange> = isParentFlex
+            ? [] // if we are wrapping something in a Flex parent, try not adding frames here
+            : [getFrameChange(viewPath, boundingBox, isParentFlex)]
           const withWrapperViewAdded = {
             ...setCanvasFramesInnerNew(withWrapperViewAddedNoFrame, frameChanges, null),
           }
@@ -2210,6 +2232,7 @@ export const UPDATE_FNS = {
             parentBounds,
             withWrapperViewAdded,
             action.layoutSystem,
+            action.newParentMainAxis,
           ).editor
 
           return {
@@ -2246,10 +2269,10 @@ export const UPDATE_FNS = {
         )
         const parentPath = EP.getCommonParent(orderedActionTargets)
         const indexInParent = optionalMap(
-          (firstPsthMatchingCommonParent) =>
+          (firstPathMatchingCommonParent) =>
             MetadataUtils.getViewZIndexFromMetadata(
               editor.jsxMetadata,
-              firstPsthMatchingCommonParent,
+              firstPathMatchingCommonParent,
             ),
           orderedActionTargets.find((target) => EP.pathsEqual(EP.parentPath(target), parentPath)),
         )
@@ -2398,6 +2421,7 @@ export const UPDATE_FNS = {
             parentPath,
             parentFrame,
             working,
+            null,
             null,
           )
           if (result.newPath != null) {
@@ -2746,6 +2770,7 @@ export const UPDATE_FNS = {
                 action.targetOriginalContextMetadata,
                 workingEditorState.jsxMetadata,
                 components,
+                null,
                 null,
                 null,
               )

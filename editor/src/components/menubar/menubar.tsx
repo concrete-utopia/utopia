@@ -51,7 +51,7 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
 
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
   const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
-  var foregroundColor: IcnProps['color'] = 'darkgray'
+  var foregroundColor: IcnProps['color'] = 'secondary'
 
   return (
     <Tile
@@ -93,7 +93,7 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
         }}
       >
         {React.cloneElement(props.icon, {
-          color: props.selected ? 'blue' : 'darkgray',
+          color: props.selected ? 'primary' : 'secondary',
         })}
       </div>
     </Tile>

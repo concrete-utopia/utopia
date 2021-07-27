@@ -1,6 +1,7 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isAnimatedElement, isImg, isImportedComponent } from '../../core/model/project-file-utils'
 import {
+  isIntrinsicHTMLElement,
   isJSXElement,
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
@@ -14,7 +15,7 @@ import { shallowEqual } from '../../core/shared/equality-utils'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
-  hasWidthOrHeight: boolean
+  isPositionAbsolute: boolean
 }
 
 export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
@@ -26,7 +27,7 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
     'useLayoutOrElementIcon',
     (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
       return (
-        oldResult.hasWidthOrHeight === newResult.hasWidthOrHeight ||
+        oldResult.isPositionAbsolute === newResult.isPositionAbsolute ||
         shallowEqual(oldResult.iconProps, newResult.iconProps)
       )
     },
@@ -51,12 +52,12 @@ export function createLayoutOrElementIconResult(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): LayoutIconResult {
-  let hasWidthOrHeight: boolean = false
+  let isPositionAbsolute: boolean = false
 
   const element = MetadataUtils.findElementByElementPath(metadata, path)
 
   if (element != null && element.props != null && element.props.style != null) {
-    hasWidthOrHeight = element.props.style['width'] != null || element.props.style['height'] != null
+    isPositionAbsolute = element.props.style['position'] === 'absolute'
   }
 
   const layoutIcon = createLayoutIconProps(path, metadata)
@@ -68,17 +69,19 @@ export function createLayoutOrElementIconResult(
         width: 18,
         height: 18,
       },
-      hasWidthOrHeight: false,
+
+      isPositionAbsolute: false,
     }
   } else if (layoutIcon != null) {
     return {
       iconProps: layoutIcon,
-      hasWidthOrHeight: hasWidthOrHeight,
+
+      isPositionAbsolute: isPositionAbsolute,
     }
   } else {
     return {
       iconProps: createElementIconProps(path, metadata),
-      hasWidthOrHeight: hasWidthOrHeight,
+      isPositionAbsolute: isPositionAbsolute,
     }
   }
 }

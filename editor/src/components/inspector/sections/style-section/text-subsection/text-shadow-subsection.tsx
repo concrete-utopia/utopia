@@ -240,7 +240,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
         defaultUnitToHide={'px'}
       />
       <SquareButton highlight onMouseDown={removeShadow} style={{ marginTop: 1 }}>
-        <Icn category='semantic' type='minus' color='darkgray' width={16} height={16} />
+        <Icn category='semantic' type='minus' color='secondary' width={16} height={16} />
       </SquareButton>
     </PropertyRow>
   )
@@ -308,7 +308,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
               style={{ paddingTop: 1 }}
               category='semantic'
               type='plus'
-              color='darkgray'
+              color='secondary'
               width={16}
               height={16}
             />

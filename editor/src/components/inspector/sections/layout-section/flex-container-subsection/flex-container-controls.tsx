@@ -350,7 +350,7 @@ const alignContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignContent-${alignDirection}-${alignContentFlexStart}`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -361,7 +361,7 @@ const alignContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignContent-${alignDirection}-center`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -372,7 +372,7 @@ const alignContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignContent-${alignDirection}-${alignContentFlexEnd}`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -383,7 +383,7 @@ const alignContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignContent-${alignDirection}-stretch`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -402,7 +402,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-${justifyFlexStart}`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -413,7 +413,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-center`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -424,7 +424,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-${justifyFlexEnd}`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -435,7 +435,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-spaceBetween`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -446,7 +446,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-spaceAround`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -465,7 +465,7 @@ const alignItemsOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignItems-${alignDirection}-${alignItemsFlexStart}`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -476,7 +476,7 @@ const alignItemsOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignItems-${alignDirection}-center`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -487,7 +487,7 @@ const alignItemsOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignItems-${alignDirection}-${alignItemsFlexEnd}`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -498,7 +498,7 @@ const alignItemsOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignItems-${alignDirection}-stretch`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -516,7 +516,7 @@ const flexDirectionOptions = (flexWrap: FlexWrap) => {
       icon: {
         category: 'layout/flex',
         type: `flexDirection-row-${flexWrapReverse}-${flexDirectionWrap}`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -527,7 +527,7 @@ const flexDirectionOptions = (flexWrap: FlexWrap) => {
       icon: {
         category: 'layout/flex',
         type: `flexDirection-column-${flexWrapReverse}-${flexDirectionWrap}`,
-        color: 'darkgray',
+        color: 'secondary',
         width: 16,
         height: 16,
       },

@@ -73,7 +73,7 @@ interface VisiblityIndicatorProps {
 export const VisibilityIndicator: React.FunctionComponent<VisiblityIndicatorProps> = betterReactMemo(
   'VisibilityIndicator',
   (props) => {
-    const color = props.selected ? 'white' : 'gray'
+    const color = props.selected ? 'on-highlight-main' : 'subdued'
 
     return (
       <Button

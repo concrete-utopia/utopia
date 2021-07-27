@@ -291,7 +291,7 @@ class FileBrowserItemInner extends React.PureComponent<
           this.props.collapsed,
           this.props.exportedFunction,
         )}
-        color={this.props.hasErrorMessages ? 'red' : 'black'}
+        color={this.props.hasErrorMessages ? 'error' : undefined}
         width={18}
         height={18}
         onDoubleClick={this.toggleCollapse}
@@ -300,7 +300,7 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   renderModifiedIcon() {
-    return this.props.modified ? <Icons.CircleSmall color='blue' /> : null
+    return this.props.modified ? <Icons.CircleSmall color='primary' /> : null
   }
 
   onChangeFilename = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -719,7 +719,7 @@ class FileBrowserItemInner extends React.PureComponent<
 
               {this.props.hasErrorMessages ? (
                 <span style={{ margin: '0px 4px' }}>
-                  <WarningIcon color='red' />
+                  <WarningIcon color='error' />
                 </span>
               ) : null}
             </SimpleFlexRow>

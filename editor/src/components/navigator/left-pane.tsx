@@ -309,7 +309,7 @@ const LoggedOutPane = betterReactMemo('LogInPane', () => {
         <UIGridRow style={{ gap: 8 }} padded variant='<--1fr--><--1fr-->'>
           <Button primary highlight>
             <b>Sign In</b>&nbsp;
-            <Icons.ExternalLinkSmaller color='white' />
+            <Icons.ExternalLinkSmaller color='on-highlight-main' />
           </Button>
           <Subdued>Free and Open Source</Subdued>
         </UIGridRow>

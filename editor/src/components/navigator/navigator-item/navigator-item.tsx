@@ -102,22 +102,22 @@ const collapseItem = (
 
 const defaultUnselected = (colorTheme: any): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.neutralForeground.value },
-  iconColor: 'black',
+  iconColor: 'main',
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
   style: { background: UtopiaStyles.backgrounds.blue, color: colorTheme.white.value },
-  iconColor: 'white',
+  iconColor: 'on-highlight-main',
 })
 
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.primary.value },
-  iconColor: 'blue',
+  iconColor: 'primary',
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
   style: { background: UtopiaStyles.backgrounds.lightblue, color: colorTheme.white.value },
-  iconColor: 'white',
+  iconColor: 'on-highlight-main',
 })
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
@@ -125,7 +125,7 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
     background: colorTheme.emphasizedBackground.value,
     color: colorTheme.neutralForeground.value,
   },
-  iconColor: 'orange',
+  iconColor: 'warning',
 })
 
 const componentSelected = (colorTheme: any): ComputedLook => ({
@@ -133,7 +133,7 @@ const componentSelected = (colorTheme: any): ComputedLook => ({
     background: colorTheme.navigatorComponentSelected.value,
     color: colorTheme.neutralForeground.value,
   },
-  iconColor: 'orange',
+  iconColor: 'warning',
 })
 
 const computeResultingStyle = (
@@ -151,7 +151,7 @@ const computeResultingStyle = (
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
         style: { backgroundColor: colorTheme.brandPurple.value, color: colorTheme.white.value },
-        iconColor: 'white',
+        iconColor: 'on-highlight-main',
       }
     } else if (isInsideComponent) {
       result = componentSelected(colorTheme)
@@ -323,6 +323,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
         overflowY: 'hidden',
         overflowX: 'scroll',
         flexGrow: 1,
+        flexShrink: 0,
       }
     }, [isElementVisible])
 
@@ -347,6 +348,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             collapsed={collapsed}
             selected={selected && !isInsideComponent}
             onMouseDown={collapse}
+            style={{ transform: 'scale(0.8)', opacity: 0.5 }}
           />
           <NavigatorRowLabel
             elementPath={elementPath}

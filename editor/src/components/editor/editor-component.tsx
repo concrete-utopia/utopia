@@ -317,7 +317,7 @@ export const EditorComponentInner = betterReactMemo(
                     <TabComponent
                       label='Preview'
                       selected
-                      icon={<LargerIcons.PreviewPane color='blue' />}
+                      icon={<LargerIcons.PreviewPane color='primary' />}
                       onClose={onClosePreview}
                     />
                   </SimpleFlexRow>

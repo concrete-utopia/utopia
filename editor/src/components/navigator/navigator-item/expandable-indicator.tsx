@@ -12,18 +12,19 @@ interface ExpandableIndicatorProps {
   onMouseDown?: (e: any) => void
   onClick?: (e: any) => void
   testId?: string
+  style?: React.CSSProperties
 }
 
 export const ExpandableIndicator: React.FunctionComponent<ExpandableIndicatorProps> = betterReactMemo(
   'ExpandableIndicator',
   (props) => {
     return (
-      <div data-testid={props.testId} style={{ width: 16, height: 16 }}>
+      <div data-testid={props.testId} style={{ width: 16, height: 16, ...props.style }}>
         {props.visible ? (
           <Icn
             category='semantic'
             type={`expansionarrow-${props.collapsed ? 'right' : 'down'}`}
-            color={props.selected ? 'white' : 'black'}
+            color={props.selected ? 'on-highlight-main' : 'main'}
             onMouseDown={props.onMouseDown}
             onClick={props.onClick}
           />
