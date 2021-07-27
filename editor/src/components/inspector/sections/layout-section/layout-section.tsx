@@ -9,6 +9,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { SpecialSizeMeasurementsKeepDeepEquality } from '../../../editor/store/store-deep-equality-instances'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { LayoutSubsection } from './self-layout-subsection/self-layout-subsection'
+import { setInspectorLayoutSectionHovered } from '../../../editor/actions/action-creators'
 
 interface LayoutSectionProps {
   hasNonDefaultPositionAttributes: boolean
@@ -30,9 +31,11 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
       })
       return foundSpecialSizeMeasurements
     },
-    'RenderedLayoutSection specialSizeMeasurements',
+    'LayoutSection specialSizeMeasurements',
     (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
   )
+
+  const dispatch = useEditorState((store) => store.dispatch, 'LayoutSection dispatch')
 
   const selfLayoutSection = isFeatureEnabled('Layout Section Experimental') ? (
     <LayoutSubsection
@@ -53,9 +56,16 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
   )
 
   return (
-    <>
+    <div
+      onMouseOver={() => {
+        dispatch([setInspectorLayoutSectionHovered(true)], 'everyone')
+      }}
+      onMouseOut={() => {
+        dispatch([setInspectorLayoutSectionHovered(false)], 'everyone')
+      }}
+    >
       {selfLayoutSection}
       <LayoutSystemSubsection specialSizeMeasurements={specialSizeMeasurements} />
-    </>
+    </div>
   )
 })

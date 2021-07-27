@@ -882,11 +882,18 @@ export interface SetPropTransient {
   propertyPath: PropertyPath
   value: JSXAttribute
 }
+
 export interface ClearTransientProps {
   action: 'CLEAR_TRANSIENT_PROPS'
 }
+
 export interface AddTailwindConfig {
   action: 'ADD_TAILWIND_CONFIG'
+}
+
+export interface SetInspectorLayoutSectionHovered {
+  action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED'
+  hovered: boolean
 }
 
 export type EditorAction =
@@ -1037,6 +1044,7 @@ export type EditorAction =
   | SetPropTransient
   | ClearTransientProps
   | AddTailwindConfig
+  | SetInspectorLayoutSectionHovered
 
 export type DispatchPriority =
   | 'everyone'
