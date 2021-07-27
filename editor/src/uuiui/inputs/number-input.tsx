@@ -597,7 +597,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         : undefined
 
     return (
-      <>
+      <div style={style}>
         <div
           className='number-input-container'
           css={{
@@ -789,7 +789,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             </div>
           </React.Fragment>
         )}
-      </>
+      </div>
     )
   },
 )
