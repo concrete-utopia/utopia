@@ -499,7 +499,7 @@ const alignItemsOptions = (
     },
   ] as Array<OptionChainOption<string | number>>
 
-const flexDirectionOptions = (flexWrap: FlexWrap) => {
+export const flexDirectionOptions = (flexWrap: FlexWrap) => {
   const flexDirectionWrap = flexWrap === 'wrap' || flexWrap === 'wrap-reverse' ? 'wrap' : 'nowrap'
   const flexWrapReverse = flexWrap === 'wrap-reverse' ? 'reverse' : 'regular'
 
