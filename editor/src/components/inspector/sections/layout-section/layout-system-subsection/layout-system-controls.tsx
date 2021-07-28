@@ -71,7 +71,7 @@ function useDefaultedLayoutSystemInfo(): {
   }
 }
 
-function useLayoutSystemData() {
+export function useLayoutSystemData() {
   const dispatch = useEditorState((store) => store.dispatch, 'useLayoutSystemData dispatch')
 
   const onLayoutSystemChange = React.useCallback(
@@ -113,11 +113,7 @@ export const LayoutSystemControl = betterReactMemo(
   'LayoutSystemControl',
   (props: LayoutSystemControlProps) => {
     const layoutSystemData = useLayoutSystemData()
-    const isDetectedLayoutSystemPinSystem =
-      props.layoutSystem === 'flow' && props.providesCoordinateSystemForChildren
-    const detectedLayoutSystem = isDetectedLayoutSystemPinSystem
-      ? 'pinSystem'
-      : props.layoutSystem ?? layoutSystemData.value
+    const detectedLayoutSystem = props.layoutSystem ?? layoutSystemData.value
     return (
       <OptionChainControl
         id={'layoutSystem'}
@@ -133,32 +129,17 @@ export const LayoutSystemControl = betterReactMemo(
   },
 )
 
-// for now, 'flow', 'grid' and 'group' are not clickable buttons, they only have an indicative role
 const layoutSystemOptions = [
-  {
-    value: 'flow',
-    tooltip: 'Default CSS Normal Flow Layout',
-    label: 'Flow',
-  },
   {
     value: 'flex',
     tooltip: 'Layout children with flexbox',
     label: 'Flex',
   },
-  {
-    value: 'pinSystem',
-    tooltip: 'Layout children with pins',
-    label: 'Pins',
-  },
+
   {
     value: 'grid',
     tooltip: 'Layout children with grid',
     label: 'Grid',
-  },
-  {
-    value: 'group',
-    tooltip: 'Group children',
-    label: 'Group',
   },
 ]
 
