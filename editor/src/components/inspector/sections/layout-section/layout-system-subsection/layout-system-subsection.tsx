@@ -1,10 +1,13 @@
+/** @jsx jsx */
 import * as React from 'react'
+import { jsx, css } from '@emotion/react'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   LayoutSystemControl,
   FlexPaddingControl,
   paddingPropsToUnset,
   DeleteAllLayoutSystemConfigButton,
+  useLayoutSystemData,
 } from './layout-system-controls'
 import { FlexContainerControls } from '../flex-container-subsection/flex-container-subsection'
 import { PropertyLabel } from '../../../widgets/property-label'
@@ -12,12 +15,17 @@ import {
   DetectedLayoutSystem,
   SpecialSizeMeasurements,
 } from '../../../../../core/shared/element-template'
-import { InspectorSubsectionHeader, SquareButton } from '../../../../../uuiui'
+import {
+  FlexRow,
+  Icons,
+  InspectorSectionHeader,
+  SquareButton,
+  useColorTheme,
+} from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import { isNotUnsetOrDefault } from '../../../common/control-status'
-import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 
 interface LayoutSystemSubsectionProps {
@@ -37,27 +45,49 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
       isFlexParent || Object.values(paddings).some((i) => isNotUnsetOrDefault(i.controlStatus))
     const [layoutSectionOpen, setLayoutSectionOpen] = usePropControlledStateV2(hasAnyLayoutProps)
 
-    const toggleSection = React.useCallback(() => setLayoutSectionOpen(!layoutSectionOpen), [
-      layoutSectionOpen,
-      setLayoutSectionOpen,
-    ])
+    const openSection = React.useCallback(() => setLayoutSectionOpen(true), [setLayoutSectionOpen])
+
+    const layoutSystemData = useLayoutSystemData()
+
+    const handleAddLayoutSystemClick = React.useCallback(() => {
+      layoutSystemData.onSubmitValue('flex')
+      openSection()
+    }, [layoutSystemData, openSection])
+
+    const colorTheme = useColorTheme()
 
     return (
-      <>
-        <InspectorSubsectionHeader>
-          <span style={{ flexGrow: 1 }}>Layout System</span>
+      <React.Fragment>
+        <InspectorSectionHeader
+          css={{
+            marginTop: 8,
+            transition: 'color .1s ease-in-out',
+            color: layoutSectionOpen ? colorTheme.fg1.value : colorTheme.fg7.value,
+            '--buttonContentOpacity': 0.3,
+            '&:hover': {
+              color: colorTheme.fg1.value,
+              '--buttonContentOpacity': 1,
+            },
+          }}
+        >
+          <FlexRow
+            onClick={handleAddLayoutSystemClick}
+            style={{
+              flexGrow: 1,
+              alignSelf: 'stretch',
+            }}
+          >
+            Layout System
+          </FlexRow>
           {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}
-          <SquareButton highlight onClick={toggleSection}>
-            <ExpandableIndicator
-              testId='layout-system-expand'
-              visible
-              collapsed={!layoutSectionOpen}
-              selected={false}
-            />
-          </SquareButton>
-        </InspectorSubsectionHeader>
+          {!layoutSectionOpen && (
+            <SquareButton highlight onClick={handleAddLayoutSystemClick}>
+              <Icons.Plus style={{ opacity: 'var(--buttonContentOpacity)' }} />
+            </SquareButton>
+          )}
+        </InspectorSectionHeader>
         {layoutSectionOpen ? (
-          <>
+          <React.Fragment>
             <UIGridRow padded={true} variant='<-------------1fr------------->'>
               <LayoutSystemControl
                 layoutSystem={props.specialSizeMeasurements.layoutSystemForChildren}
@@ -77,9 +107,9 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
               </PropertyLabel>
               <FlexPaddingControl />
             </UIGridRow>
-          </>
+          </React.Fragment>
         ) : null}
-      </>
+      </React.Fragment>
     )
   },
 )
