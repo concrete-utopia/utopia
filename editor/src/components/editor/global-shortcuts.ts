@@ -810,20 +810,13 @@ export function handleKeyUp(
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
   const editorTargeted = editorIsTarget(event, editor)
-  let updatedKeysPressed: KeysPressed
-  if (editorTargeted) {
-    updatedKeysPressed = updateModifiers(
-      editor.keysPressed,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
-  } else {
-    updatedKeysPressed = updateKeysPressed(
-      editor.keysPressed,
-      key,
-      false,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
-  }
+  const updatedKeysPressed = updateKeysPressed(
+    editor.keysPressed,
+    key,
+    false,
+    Modifier.modifiersForKeyboardEvent(event),
+  )
+
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
   function getUIFileActions(): Array<EditorAction> {
