@@ -72,38 +72,48 @@ export const FlexElementSubsectionExperiment = betterReactMemo(
   },
 )
 
+export function useInitialFixedSectionState(parentFlexDirection: string | null): boolean {
+  const isRowLayouted = parentFlexDirection === 'row' || parentFlexDirection === 'row-reverse'
+
+  const width = useInspectorLayoutInfo('Width')
+  const minWidth = useInspectorLayoutInfo('minWidth')
+  const maxWidth = useInspectorLayoutInfo('maxWidth')
+  const height = useInspectorLayoutInfo('Height')
+  const minHeight = useInspectorLayoutInfo('minHeight')
+  const maxHeight = useInspectorLayoutInfo('maxHeight')
+
+  return isRowLayouted
+    ? isNotUnsetDefaultOrDetected(width.controlStatus) ||
+        isNotUnsetDefaultOrDetected(minWidth.controlStatus) ||
+        isNotUnsetDefaultOrDetected(maxWidth.controlStatus)
+    : isNotUnsetDefaultOrDetected(height.controlStatus) ||
+        isNotUnsetDefaultOrDetected(minHeight.controlStatus) ||
+        isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
+}
+
+export function useInitialAdvancedSectionState(): boolean {
+  const alignSelf = useInspectorLayoutInfo('alignSelf')
+  return isNotUnsetDefaultOrDetected(alignSelf.controlStatus)
+}
+
+export function useInitialSizeSectionState(): boolean {
+  const flexBasis = useInspectorLayoutInfo('flexBasis')
+  const flexGrow = useInspectorLayoutInfo('flexGrow')
+  const flexShrink = useInspectorLayoutInfo('flexShrink')
+  return (
+    isNotUnsetDefaultOrDetected(flexBasis.controlStatus) ||
+    isNotUnsetDefaultOrDetected(flexGrow.controlStatus) ||
+    isNotUnsetDefaultOrDetected(flexShrink.controlStatus)
+  )
+}
+
 const MainAxisControls = betterReactMemo(
   'MainAxisControls',
   (props: FlexElementSubsectionProps) => {
     const colorTheme = useColorTheme()
-    const isRowLayouted =
-      props.parentFlexDirection === 'row' || props.parentFlexDirection === 'row-reverse'
 
-    const width = useInspectorLayoutInfo('Width')
-    const minWidth = useInspectorLayoutInfo('minWidth')
-    const maxWidth = useInspectorLayoutInfo('maxWidth')
-    const height = useInspectorLayoutInfo('Height')
-    const minHeight = useInspectorLayoutInfo('minHeight')
-    const maxHeight = useInspectorLayoutInfo('maxHeight')
-    const alignSelf = useInspectorLayoutInfo('alignSelf')
-    // const flexBasis = useInspectorLayoutInfo('flexBasis')
-    // const flexGrow = useInspectorLayoutInfo('flexGrow')
-    // const flexShrink = useInspectorLayoutInfo('flexShrink')
-
-    const initialIsFixedSectionVisible = isRowLayouted
-      ? isNotUnsetDefaultOrDetected(width.controlStatus) ||
-        isNotUnsetDefaultOrDetected(minWidth.controlStatus) ||
-        isNotUnsetDefaultOrDetected(maxWidth.controlStatus)
-      : isNotUnsetDefaultOrDetected(height.controlStatus) ||
-        isNotUnsetDefaultOrDetected(minHeight.controlStatus) ||
-        isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
-
-    const initialIsAdvancedSectionVisible = isNotUnsetDefaultOrDetected(alignSelf.controlStatus)
-
-    // const isSizeSectionVisible =
-    //   isNotUnsetDefaultOrDetected(flexBasis.controlStatus) ||
-    //   isNotUnsetDefaultOrDetected(flexGrow.controlStatus) ||
-    //   isNotUnsetDefaultOrDetected(flexShrink.controlStatus)
+    const initialIsFixedSectionVisible = useInitialFixedSectionState(props.parentFlexDirection)
+    const initialIsAdvancedSectionVisible = useInitialAdvancedSectionState()
 
     const [fixedControlsOpen, setFixedControlsOpen] = usePropControlledStateV2(
       initialIsFixedSectionVisible,
@@ -224,26 +234,30 @@ const AdvancedSubsectionControls = betterReactMemo(
   },
 )
 
+export function useInitialCrossSectionState(parentFlexDirection: string | null): boolean {
+  const isColumnLayouted =
+    parentFlexDirection === 'column' || parentFlexDirection === 'column-reverse'
+
+  const width = useInspectorLayoutInfo('Width')
+  const minWidth = useInspectorLayoutInfo('minWidth')
+  const maxWidth = useInspectorLayoutInfo('maxWidth')
+  const height = useInspectorLayoutInfo('Height')
+  const minHeight = useInspectorLayoutInfo('minHeight')
+  const maxHeight = useInspectorLayoutInfo('maxHeight')
+
+  return isColumnLayouted
+    ? isNotUnsetDefaultOrDetected(width.controlStatus) ||
+        isNotUnsetDefaultOrDetected(minWidth.controlStatus) ||
+        isNotUnsetDefaultOrDetected(maxWidth.controlStatus)
+    : isNotUnsetDefaultOrDetected(height.controlStatus) ||
+        isNotUnsetDefaultOrDetected(minHeight.controlStatus) ||
+        isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
+}
+
 const CrossAxisControls = betterReactMemo(
   'CrossAxisControls',
   (props: FlexElementSubsectionProps) => {
-    const isColumnLayouted =
-      props.parentFlexDirection === 'column' || props.parentFlexDirection === 'column-reverse'
-
-    const width = useInspectorLayoutInfo('Width')
-    const minWidth = useInspectorLayoutInfo('minWidth')
-    const maxWidth = useInspectorLayoutInfo('maxWidth')
-    const height = useInspectorLayoutInfo('Height')
-    const minHeight = useInspectorLayoutInfo('minHeight')
-    const maxHeight = useInspectorLayoutInfo('maxHeight')
-
-    const isCrossAxisVisible = isColumnLayouted
-      ? isNotUnsetDefaultOrDetected(width.controlStatus) ||
-        isNotUnsetDefaultOrDetected(minWidth.controlStatus) ||
-        isNotUnsetDefaultOrDetected(maxWidth.controlStatus)
-      : isNotUnsetDefaultOrDetected(height.controlStatus) ||
-        isNotUnsetDefaultOrDetected(minHeight.controlStatus) ||
-        isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
+    const isCrossAxisVisible = useInitialCrossSectionState(props.parentFlexDirection)
 
     const [crossAxisControlsOpen, setCrossAxisControlsOpen] = usePropControlledStateV2(
       isCrossAxisVisible,
@@ -252,6 +266,8 @@ const CrossAxisControls = betterReactMemo(
       () => setCrossAxisControlsOpen(!crossAxisControlsOpen),
       [crossAxisControlsOpen, setCrossAxisControlsOpen],
     )
+    const isColumnLayouted =
+      props.parentFlexDirection === 'column' || props.parentFlexDirection === 'column-reverse'
     const widthOrHeightControls = isColumnLayouted ? <FlexWidthControls /> : <FlexHeightControls />
     return (
       <>

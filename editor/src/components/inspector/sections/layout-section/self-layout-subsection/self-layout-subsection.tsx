@@ -20,7 +20,13 @@ import { useEditorState, useRefEditorState } from '../../../../editor/store/stor
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { CSSPosition } from '../../../common/css-utils'
 import * as EP from '../../../../../core/shared/element-path'
-import { FlexElementSubsectionExperiment } from '../flex-element-subsection/flex-element-subsection'
+import {
+  FlexElementSubsectionExperiment,
+  useInitialAdvancedSectionState,
+  useInitialCrossSectionState,
+  useInitialFixedSectionState,
+  useInitialSizeSectionState,
+} from '../flex-element-subsection/flex-element-subsection'
 import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
 import { selectComponents } from '../../../../editor/actions/action-creators'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
@@ -62,15 +68,44 @@ interface SelfLayoutSubsectionProps {
   toggleAspectRatioLock: () => void
 }
 
+const useLayoutSectionInitialToggleState = (
+  activeTab: SelfLayoutTab,
+  parentFlexDirection: string | null,
+): boolean => {
+  const initialCrossSectionState = useInitialCrossSectionState(parentFlexDirection)
+  const initialFixedSectionState = useInitialFixedSectionState(parentFlexDirection)
+  const initialAdvancedSectionState = useInitialAdvancedSectionState()
+  const initialSizeSectionState = useInitialSizeSectionState()
+  if (activeTab != 'flex') {
+    return true
+  } else {
+    return (
+      initialCrossSectionState ||
+      initialFixedSectionState ||
+      initialAdvancedSectionState ||
+      initialSizeSectionState
+    )
+  }
+}
+
 export const LayoutSubsection = betterReactMemo(
   'LayoutSubsection',
   (props: SelfLayoutSubsectionProps) => {
-    const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] = React.useState(true)
+    const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
+
+    const initialLayoutSectionOpen = useLayoutSectionInitialToggleState(
+      activeTab,
+      props.parentFlexDirection,
+    )
+
+    const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] = React.useState(
+      initialLayoutSectionOpen,
+    )
+
     const toggleSection = React.useCallback(
       () => setSelfLayoutSectionOpen(!selfLayoutSectionOpen),
       [selfLayoutSectionOpen, setSelfLayoutSectionOpen],
     )
-    const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
     return (
       <>
         <LayoutSectionHeader
@@ -85,7 +120,7 @@ export const LayoutSubsection = betterReactMemo(
 )
 
 export const LayoutSubsectionContent = betterReactMemo(
-  'LayoutSubsection',
+  'LayoutSubsectionContent',
   (props: SelfLayoutSubsectionProps) => {
     const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
     return (
