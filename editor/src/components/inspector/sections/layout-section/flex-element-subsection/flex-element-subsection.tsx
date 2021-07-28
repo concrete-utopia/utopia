@@ -29,6 +29,7 @@ import {
 import { isNotUnsetDefaultOrDetected } from '../../../common/control-status'
 import { useEditorState } from '../../../../editor/store/store-hook'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 
 const marginProps = [
   createLayoutPropertyPath('marginLeft'),
@@ -114,12 +115,14 @@ const MainAxisControls = betterReactMemo(
     const initialIsFixedSectionVisible = useInitialFixedSectionState(props.parentFlexDirection)
     const initialIsAdvancedSectionVisible = useInitialAdvancedSectionState()
 
-    const [fixedControlsOpen, setFixedControlsOpen] = React.useState(initialIsFixedSectionVisible)
+    const [fixedControlsOpen, setFixedControlsOpen] = usePropControlledStateV2(
+      initialIsFixedSectionVisible,
+    )
     const toggleFixedSection = React.useCallback(() => setFixedControlsOpen(!fixedControlsOpen), [
       fixedControlsOpen,
       setFixedControlsOpen,
     ])
-    const [advancedControlsOpen, setAdvancedControlsOpen] = React.useState(
+    const [advancedControlsOpen, setAdvancedControlsOpen] = usePropControlledStateV2(
       initialIsAdvancedSectionVisible,
     )
     const toggleAdvancedSection = React.useCallback(
@@ -256,7 +259,9 @@ const CrossAxisControls = betterReactMemo(
   (props: FlexElementSubsectionProps) => {
     const isCrossAxisVisible = useInitialCrossSectionState(props.parentFlexDirection)
 
-    const [crossAxisControlsOpen, setCrossAxisControlsOpen] = React.useState(isCrossAxisVisible)
+    const [crossAxisControlsOpen, setCrossAxisControlsOpen] = usePropControlledStateV2(
+      isCrossAxisVisible,
+    )
     const toggleSection = React.useCallback(
       () => setCrossAxisControlsOpen(!crossAxisControlsOpen),
       [crossAxisControlsOpen, setCrossAxisControlsOpen],

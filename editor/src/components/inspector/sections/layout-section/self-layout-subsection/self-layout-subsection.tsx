@@ -38,6 +38,7 @@ import {
   StyleLayoutProp,
 } from '../../../../../core/layout/layout-helpers-new'
 import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
+import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 
 type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -98,16 +99,9 @@ export const LayoutSubsection = betterReactMemo(
       props.parentFlexDirection,
     )
 
-    const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] = React.useState(
+    const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] = usePropControlledStateV2(
       initialLayoutSectionOpen,
     )
-
-    const initialLayoutSectionOpenRef = React.useRef<boolean>(initialLayoutSectionOpen)
-    // changes in the hook(selected view, delete props) should update the toggle state
-    if (initialLayoutSectionOpenRef.current !== initialLayoutSectionOpen) {
-      initialLayoutSectionOpenRef.current = initialLayoutSectionOpen
-      setSelfLayoutSectionOpen(initialLayoutSectionOpen)
-    }
 
     const toggleSection = React.useCallback(
       () => setSelfLayoutSectionOpen(!selfLayoutSectionOpen),
