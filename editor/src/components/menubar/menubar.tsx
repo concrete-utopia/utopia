@@ -205,6 +205,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
       style={{
         flexGrow: 1,
         backgroundColor: UtopiaTheme.color.leftMenuBackground.value,
+        width: 44,
+        overflowX: 'scroll',
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
