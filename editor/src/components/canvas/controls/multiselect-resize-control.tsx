@@ -16,6 +16,7 @@ import { GuidelineWithSnappingVector } from '../guideline'
 import { GuidelineControl } from './guideline-control'
 import { ControlProps } from './new-canvas-controls'
 import { ResizeRectangle } from './size-box'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 interface MultiselectResizeProps extends ControlProps {
   dragState: ResizeDragState | null
@@ -151,6 +152,7 @@ export class MultiselectResizeControl extends React.Component<
         return (
           <>
             <ResizeRectangle
+              targetComponentMetadata={null}
               dispatch={this.props.dispatch}
               scale={this.props.scale}
               canvasOffset={this.props.canvasOffset}
@@ -172,6 +174,15 @@ export class MultiselectResizeControl extends React.Component<
               onResizeStart={this.onResizeStart}
               testID={'component-resize-control-0'}
               maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
+              labels={
+                {
+                  vertical: 'Width',
+                  horizontal: 'Height',
+                } as const
+              }
+              propertyTargetOptions={this.props.propertyTargetOptions}
+              propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
+              setTargetOptionsArray={this.props.setTargetOptionsArray}
             />
             {guidelineElements}
           </>
@@ -200,12 +211,18 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
 
   render() {
     return this.props.selectedViews.map((view, index) => {
-      const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
+      const labels = {
+        vertical: 'Width',
+        horizontal: 'Height',
+      } as const
+      const target = MetadataUtils.findElementByElementPath(this.props.componentMetadata, view)
+      const frame = optionalMap((metadata) => metadata.globalFrame, target)
       if (frame == null) {
         return null
       } else {
         return (
           <ResizeRectangle
+            targetComponentMetadata={target}
             key={`single-select-resize-controls-rect-${index}`}
             dispatch={this.props.dispatch}
             scale={this.props.scale}
@@ -228,6 +245,10 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
             onResizeStart={this.props.onResizeStart}
             testID={`component-resize-control-${EP.toComponentId(view)}-${index}`}
             maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
+            labels={labels}
+            propertyTargetOptions={this.props.propertyTargetOptions}
+            propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
+            setTargetOptionsArray={this.props.setTargetOptionsArray}
           />
         )
       }

@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { FlexStretch, Sides } from 'utopia-api'
-import { LayoutHelpers } from '../../../core/layout/layout-helpers'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { FlexLayoutHelpers, LayoutHelpers } from '../../../core/layout/layout-helpers'
+import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { defaultEither, mapEither } from '../../../core/shared/either'
+import { defaultEither, eitherToMaybe, mapEither, right } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -15,6 +15,8 @@ import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { useColorTheme } from '../../../uuiui'
+import { withUnderlyingTarget } from '../../editor/store/editor-state'
+
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
   target: ElementPath
@@ -67,11 +69,44 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
       // TODO check me
       return null
     }
-
+    let labels: {
+      vertical: 'flexBasis' | 'FlexCrossBasis'
+      horizontal: 'flexBasis' | 'FlexCrossBasis'
+    } = {
+      vertical: 'flexBasis',
+      horizontal: 'FlexCrossBasis',
+    }
+    const parentPath = EP.parentPath(this.props.target)
+    const parentElement = withUnderlyingTarget(
+      parentPath,
+      this.props.projectContents,
+      this.props.nodeModules,
+      this.props.openFile,
+      null,
+      (_, element) => {
+        return element
+      },
+    )
+    if (parentElement != null) {
+      const flexDirection = eitherToMaybe(FlexLayoutHelpers.getMainAxis(right(parentElement.props)))
+      if (flexDirection === 'vertical') {
+        // column, column-reverse
+        labels = {
+          horizontal: 'FlexCrossBasis',
+          vertical: 'flexBasis',
+        }
+      } else {
+        labels = {
+          vertical: 'flexBasis',
+          horizontal: 'FlexCrossBasis',
+        }
+      }
+    }
     const yogaSize = this.getYogaSize(visualSize)
 
     return (
       <ResizeRectangle
+        targetComponentMetadata={this.props.targetElement}
         dispatch={this.props.dispatch}
         scale={this.props.scale}
         canvasOffset={this.props.canvasOffset}
@@ -90,6 +125,10 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         onResizeStart={Utils.NO_OP}
         testID={`component-resize-control-${EP.toComponentId(this.props.target)}-0`}
         maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
+        labels={labels}
+        propertyTargetOptions={this.props.propertyTargetOptions}
+        propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
+        setTargetOptionsArray={this.props.setTargetOptionsArray}
       />
     )
   }

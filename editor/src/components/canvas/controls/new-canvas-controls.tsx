@@ -52,6 +52,10 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { when } from '../../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { KeysPressed } from '../../../utils/keyboard'
+import { usePrevious } from '../../editor/hook-utils'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -103,11 +107,49 @@ export interface ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   transientState: TransientCanvasState
   resolve: ResolveFn
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 interface NewCanvasControlsProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cursor: CSSCursor
+}
+
+function useArrayAndIndex(defaultTargets: LayoutTargetableProp[]) {
+  const [targets, setTargets] = React.useState<LayoutTargetableProp[]>(defaultTargets)
+  const [targetIndex, setTargetIndex] = React.useState(0)
+
+  function incrementTargetIndex() {
+    if (targetIndex < targets.length - 1) {
+      setTargetIndex(targetIndex + 1)
+    } else {
+      setTargetIndex(0)
+    }
+  }
+
+  function setTargetsResetIndex(newTargets: LayoutTargetableProp[]) {
+    if (!shallowEqual(targets, newTargets)) {
+      setTargets(newTargets)
+      setTargetIndex(0)
+    }
+  }
+
+  return [targets, targetIndex, setTargetsResetIndex, incrementTargetIndex] as const
+}
+
+function useTargetSelector(defaultTargets: LayoutTargetableProp[], keysPressed: KeysPressed) {
+  const [targets, targetIndex, setTargets, incrementTargetIndex] = useArrayAndIndex(defaultTargets)
+
+  const shiftPressed = keysPressed.shift
+  const previousShiftPressed = usePrevious(shiftPressed)
+
+  if (shiftPressed && !previousShiftPressed) {
+    incrementTargetIndex()
+  }
+
+  return [targets, targetIndex, setTargets] as const
 }
 
 export const NewCanvasControls = betterReactMemo(
@@ -129,6 +171,11 @@ export const NewCanvasControls = betterReactMemo(
         transientCanvasState: store.derived.canvas.transientState,
       }),
       'NewCanvasControls',
+    )
+
+    const [targets, targetIndex, setTargetOptionsArray] = useTargetSelector(
+      ['Width', 'minWidth', 'maxWidth'],
+      canvasControlProps.editor.keysPressed,
     )
 
     const {
@@ -201,6 +248,9 @@ export const NewCanvasControls = betterReactMemo(
               localHighlightedViews={localHighlightedViews}
               setLocalSelectedViews={setSelectedViewsLocally}
               {...canvasControlProps}
+              propertyTargetOptions={targets}
+              propertyTargetSelectedIndex={targetIndex}
+              setTargetOptionsArray={setTargetOptionsArray}
             />
           </div>
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
@@ -221,6 +271,9 @@ interface NewCanvasControlsInnerProps {
   localSelectedViews: Array<ElementPath>
   localHighlightedViews: Array<ElementPath>
   setLocalSelectedViews: (newSelectedViews: ElementPath[]) => void
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
@@ -298,6 +351,9 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       openFile: props.editor.canvas.openFile?.filename ?? null,
       transientState: props.derived.canvas.transientState,
       resolve: props.editor.codeResultCache.resolve,
+      propertyTargetOptions: props.propertyTargetOptions,
+      propertyTargetSelectedIndex: props.propertyTargetSelectedIndex,
+      setTargetOptionsArray: props.setTargetOptionsArray,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
