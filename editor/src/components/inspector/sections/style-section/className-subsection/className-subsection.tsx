@@ -100,6 +100,7 @@ const menu: styleFn = (base) => ({
 
 const AlwaysTrue = () => true
 let queuedDispatchTimeout: number | undefined = undefined
+let queuedFocusTimeout: number | undefined = undefined
 
 const focusedOptionAtom = atomWithPubSub<string | null>({
   key: 'classNameSubsectionFocusedOption',
@@ -228,10 +229,13 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
 
   const expandSection = React.useCallback(() => {
     setIsExpanded(true)
-    window.setTimeout(() => inputRef.current?.focus(), 0)
+    queuedFocusTimeout = window.setTimeout(() => inputRef.current?.focus(), 0)
   }, [inputRef])
   const contractSection = React.useCallback(() => {
     setIsExpanded(false)
+    if (queuedFocusTimeout != null) {
+      window.clearTimeout(queuedFocusTimeout)
+    }
   }, [])
 
   const toggleIsExpanded = React.useCallback(() => {
