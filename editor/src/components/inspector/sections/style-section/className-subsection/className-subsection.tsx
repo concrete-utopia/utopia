@@ -228,7 +228,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
 
   const expandSection = React.useCallback(() => {
     setIsExpanded(true)
-    setTimeout(() => inputRef.current?.focus())
+    window.setTimeout(() => inputRef.current?.focus(), 0)
   }, [inputRef])
   const contractSection = React.useCallback(() => {
     setIsExpanded(false)
