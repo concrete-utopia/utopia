@@ -35,16 +35,11 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
     'LayoutSection specialSizeMeasurements',
     (old, next) => SpecialSizeMeasurementsKeepDeepEquality()(old, next).areEqual,
   )
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'LayoutSection selectedViews',
-  )
 
   const dispatch = useEditorState((store) => store.dispatch, 'LayoutSection dispatch')
 
   const selfLayoutSection = isFeatureEnabled('Layout Section Experimental') ? (
     <LayoutSubsection
-      key={selectedViews.map(EP.toString).join('-')}
       position={specialSizeMeasurements.position}
       parentLayoutSystem={specialSizeMeasurements.parentLayoutSystem}
       parentFlexDirection={specialSizeMeasurements.parentFlexDirection}

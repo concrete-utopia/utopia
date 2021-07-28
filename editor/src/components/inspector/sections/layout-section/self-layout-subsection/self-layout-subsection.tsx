@@ -102,6 +102,13 @@ export const LayoutSubsection = betterReactMemo(
       initialLayoutSectionOpen,
     )
 
+    const initialLayoutSectionOpenRef = React.useRef<boolean>(initialLayoutSectionOpen)
+    // changes in the hook(selected view, delete props) should update the toggle state
+    if (initialLayoutSectionOpenRef.current !== initialLayoutSectionOpen) {
+      initialLayoutSectionOpenRef.current = initialLayoutSectionOpen
+      setSelfLayoutSectionOpen(initialLayoutSectionOpen)
+    }
+
     const toggleSection = React.useCallback(
       () => setSelfLayoutSectionOpen(!selfLayoutSectionOpen),
       [selfLayoutSectionOpen, setSelfLayoutSectionOpen],
