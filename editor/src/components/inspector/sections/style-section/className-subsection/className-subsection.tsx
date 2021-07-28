@@ -225,7 +225,31 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   const isMenuEnabled = isSettable && elementPaths.length === 1
   const selectedOptionsLength = selectedOptions?.length ?? 0
   const [isExpanded, setIsExpanded] = React.useState(selectedOptionsLength > 0)
-  const toggleIsExpanded = React.useCallback(() => setIsExpanded((current) => !current), [])
+
+  const expandSection = React.useCallback(() => {
+    setIsExpanded(true)
+    setTimeout(() => inputRef.current?.focus())
+  }, [inputRef])
+  const contractSection = React.useCallback(() => {
+    setIsExpanded(false)
+  }, [])
+
+  const toggleIsExpanded = React.useCallback(() => {
+    if (isExpanded) {
+      contractSection()
+    } else {
+      expandSection()
+    }
+  }, [isExpanded, expandSection, contractSection])
+
+  const triggerCountRef = React.useRef(focusTriggerCount)
+
+  React.useEffect(() => {
+    if (!isExpanded && focusTriggerCount > triggerCountRef.current) {
+      triggerCountRef.current = focusTriggerCount
+      expandSection()
+    }
+  }, [focusTriggerCount, isExpanded, expandSection])
 
   const onChange = React.useCallback(
     (newValueType: ValueType<TailWindOption>) => {
