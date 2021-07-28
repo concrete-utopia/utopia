@@ -1384,7 +1384,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
                 />
                 <img
                   style={{ width: 100, height: 100 }}
-                  src='/editor/icons/favicons/favicon128.png?hash=nocommit\\"'
+                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit\\"'
                 />
               </div>
             )
@@ -1449,7 +1449,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
               <div style={{ ...props.style }}>
                 <img
                   style={{ width: 100, height: 100 }}
-                  src='/editor/icons/favicons/favicon128.png?hash=nocommit\\"'
+                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit\\"'
                 />
                 <div
                   style={{
