@@ -121,20 +121,25 @@ function useArrayAndIndex(defaultTargets: LayoutTargetableProp[]) {
   const [targets, setTargets] = React.useState<LayoutTargetableProp[]>(defaultTargets)
   const [targetIndex, setTargetIndex] = React.useState(0)
 
-  function incrementTargetIndex() {
+  const incrementTargetIndex = React.useCallback(() => {
     if (targetIndex < targets.length - 1) {
-      setTargetIndex(targetIndex + 1)
+      setTargetIndex((current) => {
+        return Math.min(current + 1, targets.length)
+      })
     } else {
       setTargetIndex(0)
     }
-  }
+  }, [targetIndex, targets.length])
 
-  function setTargetsResetIndex(newTargets: LayoutTargetableProp[]) {
-    if (!shallowEqual(targets, newTargets)) {
-      setTargets(newTargets)
-      setTargetIndex(0)
-    }
-  }
+  const setTargetsResetIndex = React.useCallback(
+    (newTargets: LayoutTargetableProp[]) => {
+      if (!shallowEqual(targets, newTargets)) {
+        setTargets(newTargets)
+        setTargetIndex(0)
+      }
+    },
+    [targets],
+  )
 
   return [targets, targetIndex, setTargetsResetIndex, incrementTargetIndex] as const
 }

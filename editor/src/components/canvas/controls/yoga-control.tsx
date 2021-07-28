@@ -4,7 +4,13 @@ import { FlexLayoutHelpers, LayoutHelpers } from '../../../core/layout/layout-he
 import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { defaultEither, eitherToMaybe, mapEither, right } from '../../../core/shared/either'
+import {
+  defaultEither,
+  eitherToMaybe,
+  forEachRight,
+  mapEither,
+  right,
+} from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -70,11 +76,11 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
       return null
     }
     let labels: {
-      vertical: 'flexBasis' | 'FlexCrossBasis'
-      horizontal: 'flexBasis' | 'FlexCrossBasis'
+      vertical: 'flexBasis' | 'Width' | 'Height'
+      horizontal: 'flexBasis' | 'Width' | 'Height'
     } = {
       vertical: 'flexBasis',
-      horizontal: 'FlexCrossBasis',
+      horizontal: 'Height',
     }
     const parentPath = EP.parentPath(this.props.target)
     const parentElement = withUnderlyingTarget(
@@ -88,19 +94,20 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
       },
     )
     if (parentElement != null) {
-      const flexDirection = eitherToMaybe(FlexLayoutHelpers.getMainAxis(right(parentElement.props)))
-      if (flexDirection === 'vertical') {
-        // column, column-reverse
-        labels = {
-          horizontal: 'FlexCrossBasis',
-          vertical: 'flexBasis',
+      forEachRight(FlexLayoutHelpers.getMainAxis(right(parentElement.props)), (flexDirection) => {
+        if (flexDirection === 'vertical') {
+          // column, column-reverse
+          labels = {
+            vertical: 'Width',
+            horizontal: 'flexBasis',
+          }
+        } else {
+          labels = {
+            vertical: 'flexBasis',
+            horizontal: 'Height',
+          }
         }
-      } else {
-        labels = {
-          vertical: 'flexBasis',
-          horizontal: 'FlexCrossBasis',
-        }
-      }
+      })
     }
     const yogaSize = this.getYogaSize(visualSize)
 

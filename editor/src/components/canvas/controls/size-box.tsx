@@ -31,8 +31,10 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { SizeBoxLabel } from './size-box-label'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme as fixmeColorTheme, useColorTheme } from '../../../uuiui'
-import { PropertyTargetSelector } from './property-target-selector'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import { PropertyTargetSelector } from './property-target-selector'
+import { when } from '../../../utils/react-conditionals'
+import { betterReactMemo } from '../../../uuiui-deps'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -92,23 +94,6 @@ class ResizeControl extends React.Component<ResizeControlProps> {
   }
 
   render() {
-    const currentSize = this.props.visualSize
-    const top =
-      this.props.canvasOffset.y +
-      this.props.visualSize.y +
-      this.props.position.y * this.props.visualSize.height -
-      this.props.position.y / this.props.scale
-    const left =
-      this.props.canvasOffset.x +
-      this.props.visualSize.x +
-      this.props.position.x * this.props.visualSize.width -
-      this.props.position.x / this.props.scale
-
-    const labelLeft = left + 20 / this.props.scale
-    const labelTop = top + 20 / this.props.scale
-    const shouldShowSizeLabel =
-      this.props.dragState?.edgePosition.x === this.props.position.x &&
-      this.props.dragState?.edgePosition.y === this.props.position.y
     return (
       <React.Fragment>
         {this.props.resizeStatus === 'enabled' ? (
@@ -118,17 +103,6 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         ) : (
           this.props.children
         )}
-        {/*
-        <SizeBoxLabel
-          visible={shouldShowSizeLabel}
-          left={labelLeft}
-          top={labelTop}
-          scale={this.props.scale}
-          size={currentSize}
-          imageMultiplier={this.props.imageMultiplier}
-          dragState={this.props.dragState}
-        />
-        */}
       </React.Fragment>
     )
   }
@@ -167,6 +141,14 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
   }
   reference = React.createRef<HTMLDivElement>()
 
+  mouseOver() {
+    this.setState({ showLabel: true })
+  }
+
+  mouseOut() {
+    this.setState({ showLabel: false })
+  }
+
   render() {
     if (this.props.resizeStatus != 'enabled') {
       return null
@@ -204,8 +186,8 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
       <React.Fragment>
         <div
           ref={this.reference}
-          onMouseOver={() => this.setState({ showLabel: true })}
-          onMouseOut={() => this.setState({ showLabel: false })}
+          onMouseOver={this.mouseOver}
+          onMouseOut={this.mouseOut}
           style={{
             pointerEvents: 'initial',
             position: 'absolute',
@@ -218,7 +200,8 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
             cursor: this.props.resizeStatus === 'enabled' ? this.props.cursor : undefined,
           }}
         />
-        {(this.state.showLabel || isEdgeDragged) && (
+        {when(
+          this.state.showLabel || isEdgeDragged,
           <PropertyTargetSelector
             top={
               top +
@@ -238,13 +221,13 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
             }
             options={
               this.props.direction === 'horizontal'
-                ? ['Height', 'minHeight', 'maxHeight']
-                : ['Width', 'minWidth', 'maxWidth']
+                ? ['flexBasis', 'minHeight', 'maxHeight']
+                : ['flexBasis', 'minWidth', 'maxWidth']
             }
             selected={this.props.propertyTargetSelectedIndex}
             setOptionsCallback={this.props.setTargetOptionsArray}
             targetComponentMetadata={this.props.targetComponentMetadata}
-          />
+          />,
         )}
       </React.Fragment>
     )
@@ -263,8 +246,8 @@ interface ResizeLinesProps {
   dragState: DragState | null
   color?: string
   labels: {
-    vertical: 'Width' | 'flexBasis' | 'FlexCrossBasis'
-    horizontal: 'Height' | 'flexBasis' | 'FlexCrossBasis'
+    vertical: 'flexBasis' | 'Width' | 'Height'
+    horizontal: 'flexBasis' | 'Width' | 'Height'
   }
   propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
@@ -272,7 +255,7 @@ interface ResizeLinesProps {
 }
 
 const LineOffset = 6
-const ResizeLines = (props: ResizeLinesProps) => {
+const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => {
   const [showLabel, setShowLabel] = React.useState(false)
   const reference = React.createRef<HTMLDivElement>()
   const LineSVGComponent =
@@ -293,16 +276,20 @@ const ResizeLines = (props: ResizeLinesProps) => {
 
   const catchmentSize = 12 / props.scale
 
+  const mouseEnter = React.useCallback(() => {
+    setShowLabel(true)
+  }, [])
+
+  const mouseLeave = React.useCallback(() => {
+    setShowLabel(false)
+  }, [])
+
   const mouseCatcher =
     props.resizeStatus !== 'enabled' ? null : (
       <div
         ref={reference}
-        onMouseEnter={() => {
-          setShowLabel(true)
-        }}
-        onMouseLeave={() => {
-          setShowLabel(false)
-        }}
+        onMouseEnter={mouseEnter}
+        onMouseLeave={mouseLeave}
         style={{
           pointerEvents: 'initial',
           position: 'absolute',
@@ -325,7 +312,8 @@ const ResizeLines = (props: ResizeLinesProps) => {
         edge={edge}
         color={props.color}
       />
-      {(showLabel || isEdgeDragged) && (
+      {when(
+        showLabel || isEdgeDragged,
         <PropertyTargetSelector
           top={
             top +
@@ -351,12 +339,12 @@ const ResizeLines = (props: ResizeLinesProps) => {
           setOptionsCallback={props.setTargetOptionsArray}
           selected={props.propertyTargetSelectedIndex}
           targetComponentMetadata={props.targetComponentMetadata}
-        />
+        />,
       )}
       {mouseCatcher}
     </React.Fragment>
   )
-}
+})
 
 interface DimensionableControlProps {
   centerX: number
@@ -525,8 +513,8 @@ interface ResizeRectangleProps {
   testID: string
   maybeClearHighlightsOnHoverEnd: () => void
   labels: {
-    vertical: 'Width' | 'flexBasis' | 'FlexCrossBasis'
-    horizontal: 'Height' | 'flexBasis' | 'FlexCrossBasis'
+    vertical: 'flexBasis' | 'Width' | 'Height'
+    horizontal: 'flexBasis' | 'Width' | 'Height'
   }
   propertyTargetOptions: Array<LayoutTargetableProp>
   propertyTargetSelectedIndex: number
