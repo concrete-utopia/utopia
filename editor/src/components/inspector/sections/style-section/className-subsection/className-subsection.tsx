@@ -100,6 +100,7 @@ const menu: styleFn = (base) => ({
 
 const AlwaysTrue = () => true
 let queuedDispatchTimeout: number | undefined = undefined
+let queuedFocusTimeout: number | undefined = undefined
 
 const focusedOptionAtom = atomWithPubSub<string | null>({
   key: 'classNameSubsectionFocusedOption',
@@ -225,7 +226,34 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   const isMenuEnabled = isSettable && elementPaths.length === 1
   const selectedOptionsLength = selectedOptions?.length ?? 0
   const [isExpanded, setIsExpanded] = React.useState(selectedOptionsLength > 0)
-  const toggleIsExpanded = React.useCallback(() => setIsExpanded((current) => !current), [])
+
+  const expandSection = React.useCallback(() => {
+    setIsExpanded(true)
+    queuedFocusTimeout = window.setTimeout(() => inputRef.current?.focus(), 0)
+  }, [inputRef])
+  const contractSection = React.useCallback(() => {
+    setIsExpanded(false)
+    if (queuedFocusTimeout != null) {
+      window.clearTimeout(queuedFocusTimeout)
+    }
+  }, [])
+
+  const toggleIsExpanded = React.useCallback(() => {
+    if (isExpanded) {
+      contractSection()
+    } else {
+      expandSection()
+    }
+  }, [isExpanded, expandSection, contractSection])
+
+  const triggerCountRef = React.useRef(focusTriggerCount)
+
+  React.useEffect(() => {
+    if (!isExpanded && focusTriggerCount > triggerCountRef.current) {
+      triggerCountRef.current = focusTriggerCount
+      expandSection()
+    }
+  }, [focusTriggerCount, isExpanded, expandSection])
 
   const onChange = React.useCallback(
     (newValueType: ValueType<TailWindOption>) => {
