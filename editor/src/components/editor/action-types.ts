@@ -53,6 +53,7 @@ import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
 import { InsertableComponent, StylePropOption } from '../shared/project-components'
+import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -896,6 +897,15 @@ export interface SetInspectorLayoutSectionHovered {
   hovered: boolean
 }
 
+export interface IncrementResizeOptionsSelectedIndex {
+  action: 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX'
+}
+
+export interface SetResizeOptionsTargetOptions {
+  action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS'
+  propertyTargetOptions: Array<LayoutTargetableProp>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1045,6 +1055,8 @@ export type EditorAction =
   | ClearTransientProps
   | AddTailwindConfig
   | SetInspectorLayoutSectionHovered
+  | IncrementResizeOptionsSelectedIndex
+  | SetResizeOptionsTargetOptions
 
 export type DispatchPriority =
   | 'everyone'

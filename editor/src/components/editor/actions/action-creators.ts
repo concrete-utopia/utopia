@@ -1,6 +1,7 @@
 import { LayoutSystem } from 'utopia-api' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
+import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import type { revertFile, saveFile } from '../../../core/model/project-file-utils'
 import type { foldEither } from '../../../core/shared/either'
 import type {
@@ -199,6 +200,8 @@ import type {
   FocusClassNameInput,
   WrapInElement,
   SetInspectorLayoutSectionHovered,
+  IncrementResizeOptionsSelectedIndex,
+  SetResizeOptionsTargetOptions,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1436,5 +1439,20 @@ export function setInspectorLayoutSectionHovered(
   return {
     action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED',
     hovered: hovered,
+  }
+}
+
+export function incrementResizeOptionsSelectedIndex(): IncrementResizeOptionsSelectedIndex {
+  return {
+    action: 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX',
+  }
+}
+
+export function setResizeOptionsTargetOptions(
+  propertyTargetOptions: Array<LayoutTargetableProp>,
+): SetResizeOptionsTargetOptions {
+  return {
+    action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS',
+    propertyTargetOptions: propertyTargetOptions,
   }
 }

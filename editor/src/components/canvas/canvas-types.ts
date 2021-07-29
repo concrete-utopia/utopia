@@ -19,6 +19,11 @@ import { Mode } from '../editor/editor-modes'
 import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { xor } from '../../core/shared/utils'
+import {
+  LayoutFlexElementNumericProp,
+  LayoutFlexElementProp,
+  LayoutTargetableProp,
+} from '../../core/layout/layout-helpers-new'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -209,8 +214,8 @@ export interface FlexMoveChange {
 export interface FlexResizeChange {
   type: 'FLEX_RESIZE'
   target: ElementPath
-  newSize: Size
-  edgePosition: EdgePosition | null
+  targetProperty: LayoutTargetableProp
+  delta: number
 }
 
 export interface SingleResizeChange {
@@ -272,14 +277,14 @@ export function flexMoveChange(target: ElementPath, newIndex: number): FlexMoveC
 
 export function flexResizeChange(
   target: ElementPath,
-  newSize: Size,
-  edgePosition: EdgePosition | null = null,
+  targetProperty: LayoutTargetableProp,
+  delta: number,
 ): FlexResizeChange {
   return {
     type: 'FLEX_RESIZE',
     target: target,
-    newSize: newSize,
-    edgePosition: edgePosition,
+    targetProperty: targetProperty,
+    delta: delta,
   }
 }
 
@@ -428,6 +433,7 @@ export interface ResizeDragState {
   metadata: ElementInstanceMetadataMap
   draggedElements: ElementPath[]
   isMultiSelect: boolean
+  targetProperty: LayoutTargetableProp
 }
 
 export function resizeDragState(
@@ -443,6 +449,7 @@ export function resizeDragState(
   metadata: ElementInstanceMetadataMap,
   draggedElements: ElementPath[],
   isMultiSelect: boolean,
+  targetProperty: LayoutTargetableProp,
 ): ResizeDragState {
   return {
     type: 'RESIZE_DRAG_STATE',
@@ -458,12 +465,14 @@ export function resizeDragState(
     metadata: metadata,
     draggedElements: draggedElements,
     isMultiSelect: isMultiSelect,
+    targetProperty: targetProperty,
   }
 }
 
 export function updateResizeDragState(
   current: ResizeDragState,
   drag: CanvasVector | null | undefined,
+  targetProperty: LayoutTargetableProp,
   enableSnapping: boolean | undefined,
   centerBasedResize: boolean | undefined,
   keepAspectRatio: boolean | undefined,
@@ -475,6 +484,7 @@ export function updateResizeDragState(
     centerBasedResize:
       centerBasedResize === undefined ? current.centerBasedResize : centerBasedResize,
     keepAspectRatio: keepAspectRatio === undefined ? current.keepAspectRatio : keepAspectRatio,
+    targetProperty: targetProperty,
   })
 }
 
