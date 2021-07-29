@@ -30,11 +30,9 @@ import { fromUtopiaURI } from './path-utils'
 import { TextDocumentChangeEvent, TextDocumentWillSaveEvent, Uri } from 'vscode'
 
 const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
-let rootUri: vscode.Uri
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
-  rootUri = workspaceRootUri
   const projectID = workspaceRootUri.scheme
   useFileSystemProviderErrors(projectID)
 
@@ -404,7 +402,7 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
       // Reset the highlights and selection
       updateDecorations(currentDecorations)
       if (currentSelection != null) {
-        revealRangeIfPossible(rootUri, currentSelection)
+        revealRangeIfPossibleInVisibleEditor(currentSelection)
       }
     } else {
       // Something went wrong applying the edit, so we clear the block on unsaved content fs writes
@@ -455,27 +453,36 @@ async function revealRangeIfPossible(
     if (visibleEditor == null) {
       const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
       if (opened) {
-        revealRangeIfPossible(workspaceRootUri, boundsInFile, true)
+        revealRangeIfPossibleInVisibleEditor(boundsInFile)
       }
     } else {
-      const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
-      const alreadySelected = rangesIntersectLinesOnly(visibleEditor.selection, rangeToReveal)
-      const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
-        r.contains(visibleEditor.selection),
+      revealRangeIfPossibleInVisibleEditor(boundsInFile)
+    }
+  }
+}
+
+async function revealRangeIfPossibleInVisibleEditor(boundsInFile: BoundsInFile): Promise<void> {
+  const visibleEditor = vscode.window.visibleTextEditors.find(
+    (editor) => editor.document.uri.path === boundsInFile.filePath,
+  )
+  if (visibleEditor != null) {
+    const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
+    const alreadySelected = rangesIntersectLinesOnly(visibleEditor.selection, rangeToReveal)
+    const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
+      r.contains(visibleEditor.selection),
+    )
+
+    if (!alreadySelected) {
+      const selectionRange = getVSCodeRange(boundsInFile)
+      visibleEditor.selection = new vscode.Selection(selectionRange.start, selectionRange.start)
+    }
+
+    const shouldReveal = !(alreadySelected && alreadyVisible)
+    if (shouldReveal) {
+      visibleEditor.revealRange(
+        rangeToReveal,
+        vscode.TextEditorRevealType.InCenterIfOutsideViewport,
       )
-
-      if (!alreadySelected) {
-        const selectionRange = getVSCodeRange(boundsInFile)
-        visibleEditor.selection = new vscode.Selection(selectionRange.start, selectionRange.start)
-      }
-
-      const shouldReveal = !(alreadySelected && alreadyVisible)
-      if (shouldReveal) {
-        visibleEditor.revealRange(
-          rangeToReveal,
-          vscode.TextEditorRevealType.InCenterIfOutsideViewport,
-        )
-      }
     }
   }
 }
