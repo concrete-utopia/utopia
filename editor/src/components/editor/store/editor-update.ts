@@ -321,6 +321,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_TAILWIND_CONFIG(action, state, dispatch)
     case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
       return UPDATE_FNS.SET_INSPECTOR_LAYOUT_SECTION_HOVERED(action, state)
+    case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
+      return UPDATE_FNS.INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX(state)
+    case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
+      return UPDATE_FNS.SET_RESIZE_OPTIONS_TARGET_OPTIONS(action, state)
     default:
       return state
   }

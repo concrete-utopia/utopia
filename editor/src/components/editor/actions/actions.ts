@@ -371,6 +371,8 @@ import {
   FocusClassNameInput,
   WrapInElement,
   SetInspectorLayoutSectionHovered,
+  IncrementResizeOptionsSelectedIndex,
+  SetResizeOptionsTargetOptions,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1004,6 +1006,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
       transientProperties: null,
+      resizeOptions: currentEditor.canvas.resizeOptions,
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
@@ -4775,6 +4778,36 @@ export const UPDATE_FNS = {
       inspector: {
         ...editor.inspector,
         layoutSectionHovered: action.hovered,
+      },
+    }
+  },
+  INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX: (editor: EditorModel): EditorModel => {
+    const resizeOptions = editor.canvas.resizeOptions
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        resizeOptions: {
+          ...resizeOptions,
+          propertyTargetSelectedIndex:
+            (resizeOptions.propertyTargetSelectedIndex + 1) %
+            resizeOptions.propertyTargetOptions.length,
+        },
+      },
+    }
+  },
+  SET_RESIZE_OPTIONS_TARGET_OPTIONS: (
+    action: SetResizeOptionsTargetOptions,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        resizeOptions: {
+          propertyTargetOptions: action.propertyTargetOptions,
+          propertyTargetSelectedIndex: 0,
+        },
       },
     }
   },

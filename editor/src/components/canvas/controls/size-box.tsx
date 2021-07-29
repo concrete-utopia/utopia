@@ -21,8 +21,9 @@ import {
 import { ResizeStatus } from './new-canvas-controls'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
-import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
+import { OriginalCanvasAndLocalFrame, ResizeOptions } from '../../editor/store/editor-state'
 import {
+  DetectedLayoutSystem,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
@@ -33,7 +34,7 @@ import { SizeBoxLabel } from './size-box-label'
 import { colorTheme as fixmeColorTheme, useColorTheme } from '../../../uuiui'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { PropertyTargetSelector } from './property-target-selector'
-import { when } from '../../../utils/react-conditionals'
+import { unless, when } from '../../../utils/react-conditionals'
 import { betterReactMemo } from '../../../uuiui-deps'
 
 interface ResizeControlProps extends ResizeRectangleProps {
@@ -77,7 +78,9 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         this.props.metadata,
         this.props.selectedViews,
         isMultiSelect,
-        this.props.propertyTargetOptions[this.props.propertyTargetSelectedIndex],
+        this.props.resizeOptions.propertyTargetOptions[
+          this.props.resizeOptions.propertyTargetSelectedIndex
+        ],
       )
 
       this.props.dispatch(
@@ -123,13 +126,40 @@ interface ResizeEdgeProps {
     horizontal: string
   }
   dragState: DragState | null
-  propertyTargetOptions: Array<LayoutTargetableProp>
-  propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 interface ResizeEdgeState {
   showLabel: boolean
+}
+
+function allowsInteractiveResize(layoutSystem: DetectedLayoutSystem): boolean {
+  switch (layoutSystem) {
+    case 'flex':
+    case 'flow':
+      return true
+    case 'grid':
+    case 'none':
+      return false
+    default:
+      const _exhaustiveCheck: never = layoutSystem
+      throw new Error(`Unhandled layoutSystem ${JSON.stringify(layoutSystem)}`)
+  }
+}
+
+function shiftPropertyTargetSelectorAxis(
+  primaryDirection: 'horizontal' | 'vertical',
+  actualDirection: 'horizontal' | 'vertical',
+  edge: 'before' | 'after',
+): number {
+  if (actualDirection === primaryDirection) {
+    if (edge === 'before') {
+      return 25
+    } else {
+      return 10
+    }
+  } else {
+    return 10
+  }
 }
 
 class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
@@ -138,6 +168,8 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
     this.state = {
       showLabel: false,
     }
+    this.mouseOver = this.mouseOver.bind(this)
+    this.mouseOut = this.mouseOut.bind(this)
   }
   reference = React.createRef<HTMLDivElement>()
 
@@ -182,6 +214,12 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
       this.props.dragState.edgePosition.x === this.props.position.x &&
       this.props.dragState.edgePosition.y === this.props.position.y
 
+    const interactiveResize =
+      this.props.targetComponentMetadata != null &&
+      allowsInteractiveResize(
+        this.props.targetComponentMetadata.specialSizeMeasurements.parentLayoutSystem,
+      )
+
     return (
       <React.Fragment>
         <div
@@ -201,31 +239,15 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
           }}
         />
         {when(
-          this.state.showLabel || isEdgeDragged,
+          (this.state.showLabel || isEdgeDragged) && interactiveResize,
           <PropertyTargetSelector
-            top={
-              top +
-              (this.props.direction === 'horizontal'
-                ? edge === 'before' && this.props.direction === 'horizontal'
-                  ? -25
-                  : 10
-                : -10)
-            }
-            left={
-              left +
-              (this.props.direction === 'vertical'
-                ? edge === 'before' && this.props.direction === 'vertical'
-                  ? -25
-                  : 10
-                : -10)
-            }
+            top={top + shiftPropertyTargetSelectorAxis('horizontal', this.props.direction, edge)}
+            left={left + shiftPropertyTargetSelectorAxis('vertical', this.props.direction, edge)}
             options={
               this.props.direction === 'horizontal'
-                ? ['flexBasis', 'minHeight', 'maxHeight']
-                : ['flexBasis', 'minWidth', 'maxWidth']
+                ? ['Height', 'marginTop', 'marginBottom', 'minHeight', 'maxHeight']
+                : ['Width', 'marginLeft', 'marginRight', 'minWidth', 'maxWidth']
             }
-            selected={this.props.propertyTargetSelectedIndex}
-            setOptionsCallback={this.props.setTargetOptionsArray}
             targetComponentMetadata={this.props.targetComponentMetadata}
           />,
         )}
@@ -246,12 +268,9 @@ interface ResizeLinesProps {
   dragState: DragState | null
   color?: string
   labels: {
-    vertical: 'flexBasis' | 'Width' | 'Height'
-    horizontal: 'flexBasis' | 'Width' | 'Height'
+    vertical: LayoutTargetableProp
+    horizontal: LayoutTargetableProp
   }
-  propertyTargetOptions: Array<LayoutTargetableProp>
-  propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
 }
 
 const LineOffset = 6
@@ -303,6 +322,15 @@ const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => 
       />
     )
 
+  const interactiveResize = React.useMemo(() => {
+    return (
+      props.targetComponentMetadata != null &&
+      allowsInteractiveResize(
+        props.targetComponentMetadata.specialSizeMeasurements.parentLayoutSystem,
+      )
+    )
+  }, [props.targetComponentMetadata])
+
   return (
     <React.Fragment>
       <LineSVGComponent
@@ -313,31 +341,15 @@ const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => 
         color={props.color}
       />
       {when(
-        showLabel || isEdgeDragged,
+        (showLabel || isEdgeDragged) && interactiveResize,
         <PropertyTargetSelector
-          top={
-            top +
-            (props.direction === 'horizontal'
-              ? edge === 'before' && props.direction === 'horizontal'
-                ? -25
-                : 10
-              : -10)
-          }
-          left={
-            left +
-            (props.direction === 'vertical'
-              ? edge === 'before' && props.direction === 'vertical'
-                ? -25
-                : 10
-              : -10)
-          }
+          top={top + shiftPropertyTargetSelectorAxis('horizontal', props.direction, edge)}
+          left={left + shiftPropertyTargetSelectorAxis('vertical', props.direction, edge)}
           options={
             props.direction === 'vertical'
               ? [props.labels.vertical, 'minWidth', 'maxWidth']
               : [props.labels.horizontal, 'minHeight', 'maxHeight']
           }
-          setOptionsCallback={props.setTargetOptionsArray}
-          selected={props.propertyTargetSelectedIndex}
           targetComponentMetadata={props.targetComponentMetadata}
         />,
       )}
@@ -485,13 +497,6 @@ class ResizePoint extends React.Component<ResizePointProps> {
   }
 }
 
-interface DoubleClickExtenderProps {
-  dispatch: EditorDispatch
-  canvasOffset: CanvasPoint
-  visualSize: CanvasRectangle
-  scale: number
-}
-
 interface ResizeRectangleProps {
   targetComponentMetadata: ElementInstanceMetadata | null
   dispatch: EditorDispatch
@@ -513,12 +518,10 @@ interface ResizeRectangleProps {
   testID: string
   maybeClearHighlightsOnHoverEnd: () => void
   labels: {
-    vertical: 'flexBasis' | 'Width' | 'Height'
-    horizontal: 'flexBasis' | 'Width' | 'Height'
+    vertical: LayoutTargetableProp
+    horizontal: LayoutTargetableProp
   }
-  propertyTargetOptions: Array<LayoutTargetableProp>
-  propertyTargetSelectedIndex: number
-  setTargetOptionsArray: (newArray: Array<LayoutTargetableProp>) => void
+  resizeOptions: ResizeOptions
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
@@ -613,7 +616,8 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
       this.props.resizeStatus === 'enabled' ||
       this.props.resizeStatus === 'noninteractive'
     ) {
-      const pointControls = this.props.sideResizer ? null : (
+      const pointControls = unless(
+        this.props.sideResizer,
         <React.Fragment>
           <ResizeControl
             {...controlProps}
@@ -723,10 +727,11 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
               position={{ x: 1, y: 1 }}
             />
           </ResizeControl>
-        </React.Fragment>
+        </React.Fragment>,
       )
 
-      const resizeLines = !this.props.sideResizer ? null : (
+      const resizeLines = when(
+        this.props.sideResizer,
         <React.Fragment>
           <ResizeControl
             {...controlProps}
@@ -756,7 +761,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
               position={{ x: 1, y: 0.5 }}
             />
           </ResizeControl>
-        </React.Fragment>
+        </React.Fragment>,
       )
 
       return (

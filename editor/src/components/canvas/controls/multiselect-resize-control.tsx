@@ -180,9 +180,7 @@ export class MultiselectResizeControl extends React.Component<
                   horizontal: 'Height',
                 } as const
               }
-              propertyTargetOptions={this.props.propertyTargetOptions}
-              propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
-              setTargetOptionsArray={this.props.setTargetOptionsArray}
+              resizeOptions={this.props.resizeOptions}
             />
             {guidelineElements}
           </>
@@ -246,9 +244,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
             testID={`component-resize-control-${EP.toComponentId(view)}-${index}`}
             maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
             labels={labels}
-            propertyTargetOptions={this.props.propertyTargetOptions}
-            propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
-            setTargetOptionsArray={this.props.setTargetOptionsArray}
+            resizeOptions={this.props.resizeOptions}
           />
         )
       }

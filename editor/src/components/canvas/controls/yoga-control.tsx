@@ -133,9 +133,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         testID={`component-resize-control-${EP.toComponentId(this.props.target)}-0`}
         maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
         labels={labels}
-        propertyTargetOptions={this.props.propertyTargetOptions}
-        propertyTargetSelectedIndex={this.props.propertyTargetSelectedIndex}
-        setTargetOptionsArray={this.props.setTargetOptionsArray}
+        resizeOptions={this.props.resizeOptions}
       />
     )
   }
