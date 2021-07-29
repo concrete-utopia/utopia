@@ -51,6 +51,7 @@ import {
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
   PropertyPath,
+  HighlightBoundsWithFileForUids,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -143,6 +144,7 @@ import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import * as OPI from 'object-path-immutable'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
+import { pick } from '../../../core/shared/object-utils'
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
@@ -1839,6 +1841,15 @@ export function getHighlightBoundsForElementPath(
   }
 
   return null
+}
+
+export function getHighlightBoundsForElementPaths(
+  paths: Array<ElementPath>,
+  editorState: EditorState,
+): HighlightBoundsWithFileForUids {
+  const targetUIDs = paths.map((path) => toUid(EP.dynamicPathToStaticPath(path)))
+  const projectHighlightBounds = getHighlightBoundsForProject(editorState.projectContents)
+  return pick(targetUIDs, projectHighlightBounds)
 }
 
 export function getElementPathsInBounds(

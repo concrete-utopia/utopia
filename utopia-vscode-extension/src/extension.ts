@@ -30,9 +30,11 @@ import { fromUtopiaURI } from './path-utils'
 import { TextDocumentChangeEvent, TextDocumentWillSaveEvent, Uri } from 'vscode'
 
 const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
+let rootUri: vscode.Uri
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
+  rootUri = workspaceRootUri
   const projectID = workspaceRootUri.scheme
   useFileSystemProviderErrors(projectID)
 
@@ -314,10 +316,10 @@ function getFullConfig(): UtopiaVSCodeConfig {
   }
 }
 
-function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
-  // State that needs to be stored between messages.
-  let currentDecorations: Array<DecorationRange> = []
+let currentDecorations: Array<DecorationRange> = []
+let currentSelection: BoundsInFile | null = null
 
+function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
   function handleMessage(message: ToVSCodeMessage): void {
     switch (message.type) {
       case 'OPEN_FILE':
@@ -330,6 +332,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       case 'SELECTED_ELEMENT_CHANGED':
         const followSelectionEnabled = getFollowSelectionEnabledConfig()
         if (followSelectionEnabled) {
+          currentSelection = message.boundsInFile
           revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
         }
         break
@@ -397,7 +400,13 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
     const workspaceEdit = new vscode.WorkspaceEdit()
     workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
     const editApplied = await vscode.workspace.applyEdit(workspaceEdit)
-    if (!editApplied) {
+    if (editApplied) {
+      // Reset the highlights and selection
+      updateDecorations(currentDecorations)
+      if (currentSelection != null) {
+        revealRangeIfPossible(rootUri, currentSelection)
+      }
+    } else {
       // Something went wrong applying the edit, so we clear the block on unsaved content fs writes
       incomingFileChanges.delete(filePath)
     }
@@ -413,7 +422,7 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
   } else {
     // Just in case the message is processed before the file has been written to the FS
     if (retries > 0) {
-      await new Promise((resolve) => setTimeout(() => resolve(), 100))
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 100))
       return openFile(fileUri, retries - 1)
     } else {
       return false
