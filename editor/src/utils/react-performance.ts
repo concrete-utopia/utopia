@@ -334,14 +334,22 @@ function keepDeepReferenceEqualityInner(
         return possibleNewValue
       }
     }
-    if (oldValue.valueOf !== Object.prototype.valueOf) {
+    if (
+      oldValue.valueOf !== Object.prototype.valueOf &&
+      typeof oldValue.valueOf === 'function' &&
+      typeof possibleNewValue.valueOf === 'function'
+    ) {
       if (oldValue.valueOf() === possibleNewValue.valueOf()) {
         return oldValue
       } else {
         return possibleNewValue
       }
     }
-    if (oldValue.toString !== Object.prototype.toString) {
+    if (
+      oldValue.toString !== Object.prototype.toString &&
+      typeof oldValue.toString === 'function' &&
+      typeof possibleNewValue.toString === 'function'
+    ) {
       if (oldValue.toString() === possibleNewValue.toString()) {
         return oldValue
       } else {
