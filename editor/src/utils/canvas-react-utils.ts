@@ -68,10 +68,10 @@ export function filterDataProps(props: MapLike<any>): MapLike<any> {
 }
 
 export function makeCanvasElementPropsSafe(props: any): any {
-  return keepDeepReferenceEqualityIfPossible(props, {
+  return {
     skipDeepFreeze: true,
     ...props,
-  })
+  }
 }
 
 function shouldIncludeDataUID(type: any): boolean {

@@ -79,6 +79,7 @@ import {
   getJSXAttribute,
   StyleAttributeMetadata,
   StyleAttributeMetadataEntry,
+  JSXAttribute,
 } from '../../../core/shared/element-template'
 import {
   getAllPathsFromAttributes,
@@ -682,7 +683,7 @@ function useGetSpiedProps<P extends ParsedPropertiesKeys>(
   )
 }
 
-function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
+export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: P[],
 ): MultiselectAtProps<P> {
