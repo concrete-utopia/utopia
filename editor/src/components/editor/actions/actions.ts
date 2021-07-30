@@ -4401,17 +4401,27 @@ export const UPDATE_FNS = {
     return editor
   },
   SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
+    let shouldApplyChange: boolean = false
+    if (action.focusedElementPath == null) {
+      shouldApplyChange = true
+    } else if (MetadataUtils.isFocusableComponent(action.focusedElementPath, editor.jsxMetadata)) {
+      shouldApplyChange = true
+    }
     if (EP.pathsEqual(editor.focusedElementPath, action.focusedElementPath)) {
-      return editor
+      shouldApplyChange = false
     }
 
-    return {
-      ...editor,
-      focusedElementPath: action.focusedElementPath,
-      canvas: {
-        ...editor.canvas,
-        domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
-      },
+    if (shouldApplyChange) {
+      return {
+        ...editor,
+        focusedElementPath: action.focusedElementPath,
+        canvas: {
+          ...editor.canvas,
+          domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+        },
+      }
+    } else {
+      return editor
     }
   },
   SCROLL_TO_ELEMENT: (
