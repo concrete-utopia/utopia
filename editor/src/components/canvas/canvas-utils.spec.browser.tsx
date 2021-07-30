@@ -832,7 +832,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   })
 })
 
-describe('moveTemplate', () => {
+xdescribe('moveTemplate', () => {
   beforeAll(setElectronWindow)
   it('wraps in 1 element', async () => {
     const renderResult = await renderTestEditorWithCode(
