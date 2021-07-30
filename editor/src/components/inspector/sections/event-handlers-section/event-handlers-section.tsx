@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { isRight } from '../../../../core/shared/either'
+import { forEachRight, isRight } from '../../../../core/shared/either'
 import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { forEachValue } from '../../../../core/shared/object-utils'
 import * as PP from '../../../../core/shared/property-path'
@@ -53,9 +53,11 @@ function useGetEventHandlerInfo(): EventHandlerValues {
   forEachValue((values, eventHandlerName) => {
     if (values.length === 1) {
       const eitherValue = values[0]
-      if (isRight(eitherValue) && isJSXAttributeOtherJavaScript(eitherValue.value)) {
-        result[eventHandlerName] = eitherValue.value.javascript
-      }
+      forEachRight(eitherValue, (value) => {
+        if (isJSXAttributeOtherJavaScript(value)) {
+          result[eventHandlerName] = value.javascript
+        }
+      })
     }
   }, multiselectedProps)
 
@@ -73,9 +75,10 @@ const EventHandlerSectionRow = betterReactMemo(
       [eventHandlerName, onContextUnsetValue],
     )
 
-    const eventHandlersContextMenuItems = utils.stripNulls([
-      addOnUnsetValues([eventHandlerName], onUnsetValue),
-    ])
+    const eventHandlersContextMenuItems = React.useMemo(
+      () => utils.stripNulls([addOnUnsetValues([eventHandlerName], onUnsetValue)]),
+      [eventHandlerName, onUnsetValue],
+    )
 
     return (
       <InspectorContextMenuWrapper
