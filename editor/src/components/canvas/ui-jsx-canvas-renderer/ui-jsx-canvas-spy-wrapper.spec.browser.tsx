@@ -678,6 +678,18 @@ describe('Spy Wrapper Template Path Tests', () => {
           EP.elementPath([
             ['storyboard', 'scene-1', 'app'],
             ['other-app-root', 'other-inner-div', 'other-card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-1', 'app'],
+            ['other-app-root', 'other-inner-div', 'other-card-instance'],
             ['other-button-instance'],
           ]),
         ),
@@ -999,6 +1011,18 @@ describe('Spy Wrapper Template Path Tests', () => {
 
   it('a generated component instance is focused inside a component instance inside the main App component', async () => {
     const { dispatch, getEditorState } = await createExampleProject()
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-1', 'app'],
+            ['other-app-root', 'other-inner-div', 'other-card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
     await dispatch(
       [
         setFocusedElement(
@@ -1698,6 +1722,18 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           EP.elementPath([
             ['storyboard', 'scene-2', 'app2'],
             ['app-outer-div', 'card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
             ['button-instance'],
           ]),
         ),
@@ -2019,6 +2055,18 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
   it('a generated component instance is focused inside a component instance inside the main App component', async () => {
     const { dispatch, getEditorState } = await createExampleProject()
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
     await dispatch(
       [
         setFocusedElement(
@@ -2402,6 +2450,18 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           EP.elementPath([
             ['storyboard', 'scene-2', 'app2'],
             ['app-outer-div', 'card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
             ['button-instance', 'hi-element~~~2'],
           ]),
         ),
@@ -2777,6 +2837,31 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           );
         };`,
     })
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
+            ['button-instance', 'hi-element~~~2'],
+          ]),
+        ),
+      ],
+      true,
+    )
 
     await dispatch(
       [
