@@ -24142,7 +24142,12 @@ export var storyboard = (
         "type": "elementpath",
       },
       "skipDeepFreeze": true,
-      "thing": "REACT_ELEMENT",
+      "thing": <div
+        data-paths="eee/fff/app-entity:aaa/ccc~~~1"
+        data-uid="ccc~~~1"
+      >
+        test
+      </div>,
     },
     "rootElements": Array [],
     "specialSizeMeasurements": Object {
