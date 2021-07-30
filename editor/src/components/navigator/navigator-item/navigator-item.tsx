@@ -314,10 +314,10 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       [dispatch, elementPath, selected, isHighlighted],
     )
     const focusComponent = React.useCallback(() => {
-      if (isFocusedComponent) {
+      if (isFocusableComponent) {
         dispatch([EditorActions.setFocusedElement(elementPath)])
       }
-    }, [dispatch, elementPath, isFocusedComponent])
+    }, [dispatch, elementPath, isFocusableComponent])
 
     const containerStyle: React.CSSProperties = React.useMemo(() => {
       return {
