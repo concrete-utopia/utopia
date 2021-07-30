@@ -4,8 +4,6 @@ import { jsx, css } from '@emotion/react'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   LayoutSystemControl,
-  FlexPaddingControl,
-  paddingPropsToUnset,
   DeleteAllLayoutSystemConfigButton,
   useLayoutSystemData,
 } from './layout-system-controls'
@@ -97,16 +95,6 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
               />
             </UIGridRow>
             {isFlexParent ? <FlexContainerControls seeMoreVisible={true} /> : null}
-            <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
-              <PropertyLabel
-                target={paddingPropsToUnset}
-                propNamesToUnset={['all paddings']}
-                style={{ paddingBottom: 12 }}
-              >
-                Padding
-              </PropertyLabel>
-              <FlexPaddingControl />
-            </UIGridRow>
           </React.Fragment>
         ) : null}
       </React.Fragment>

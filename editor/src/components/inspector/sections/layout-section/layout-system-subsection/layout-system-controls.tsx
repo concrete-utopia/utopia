@@ -151,7 +151,7 @@ export const paddingPropsToUnset = [
   createLayoutPropertyPath('paddingBottom'),
 ]
 
-export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
+export const PaddingControl = betterReactMemo('PaddingControl', () => {
   const {
     paddingTop,
     paddingRight,
@@ -163,85 +163,85 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
     createLayoutPropertyPath,
   )
 
-  const flexPaddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+  const paddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingTop.onSubmitValue,
     paddingTop.onUnsetValues,
   )
-  const flexPaddingTopOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+  const paddingTopOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingTop.onTransientSubmitValue,
     paddingTop.onUnsetValues,
   )
-  const flexPaddingRightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+  const paddingRightOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingRight.onSubmitValue,
     paddingRight.onUnsetValues,
   )
-  const flexPaddingRightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+  const paddingRightOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingRight.onTransientSubmitValue,
     paddingRight.onUnsetValues,
   )
-  const flexPaddingBottomOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+  const paddingBottomOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingBottom.onSubmitValue,
     paddingBottom.onUnsetValues,
   )
-  const flexPaddingBottomOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+  const paddingBottomOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingBottom.onTransientSubmitValue,
     paddingBottom.onUnsetValues,
   )
-  const flexPaddingLeftOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+  const paddingLeftOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingLeft.onSubmitValue,
     paddingLeft.onUnsetValues,
   )
-  const flexPaddingLeftOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+  const paddingLeftOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     paddingLeft.onTransientSubmitValue,
     paddingLeft.onUnsetValues,
   )
 
   return (
     <ChainedNumberInput
-      idPrefix='flexPadding'
+      idPrefix='padding'
       propsArray={[
         {
           value: paddingTop.value,
           DEPRECATED_labelBelow: 'T',
           minimum: 0,
-          onSubmitValue: flexPaddingTopOnSubmitValue,
+          onSubmitValue: paddingTopOnSubmitValue,
           controlStatus: paddingTop.controlStatus,
           numberType: 'LengthPercent',
           defaultUnitToHide: 'px',
-          testId: 'flexPadding-T',
+          testId: 'padding-T',
         },
         {
           value: paddingRight.value,
           DEPRECATED_labelBelow: 'R',
           minimum: 0,
-          onSubmitValue: flexPaddingRightOnSubmitValue,
-          onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
+          onSubmitValue: paddingRightOnSubmitValue,
+          onTransientSubmitValue: paddingRightOnTransientSubmitValue,
           controlStatus: paddingRight.controlStatus,
           numberType: 'LengthPercent',
           defaultUnitToHide: 'px',
-          testId: 'flexPadding-R',
+          testId: 'padding-R',
         },
         {
           value: paddingBottom.value,
           DEPRECATED_labelBelow: 'B',
           minimum: 0,
-          onSubmitValue: flexPaddingBottomOnSubmitValue,
-          onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
+          onSubmitValue: paddingBottomOnSubmitValue,
+          onTransientSubmitValue: paddingBottomOnTransientSubmitValue,
           controlStatus: paddingBottom.controlStatus,
           numberType: 'LengthPercent',
           defaultUnitToHide: 'px',
-          testId: 'flexPadding-B',
+          testId: 'padding-B',
         },
         {
           value: paddingLeft.value,
           DEPRECATED_labelBelow: 'L',
           minimum: 0,
-          onSubmitValue: flexPaddingLeftOnSubmitValue,
-          onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,
+          onSubmitValue: paddingLeftOnSubmitValue,
+          onTransientSubmitValue: paddingLeftOnTransientSubmitValue,
           controlStatus: paddingLeft.controlStatus,
           numberType: 'LengthPercent',
           defaultUnitToHide: 'px',
-          testId: 'flexPadding-L',
+          testId: 'padding-L',
         },
       ]}
     />
