@@ -55,6 +55,45 @@ function isDraggingToMove(
   return dragState != null && dragState?.type === 'MOVE_DRAG_STATE' && targetIsDragged
 }
 
+interface CenteredCrossSVGProps {
+  id: string
+  style?: React.CSSProperties
+}
+
+const CenteredCrossSVG = ({ id, style }: CenteredCrossSVGProps) => {
+  const colorTheme = useColorTheme()
+  return (
+    <svg
+      id={id}
+      style={{
+        position: 'absolute',
+        width: 6,
+        height: 6,
+        transform: 'translateX(-50%) translateY(-50%)',
+        ...style,
+      }}
+      width='4px'
+      height='4px'
+      viewBox='0 0 4 4'
+      version='1.1'
+    >
+      <g
+        stroke='none'
+        strokeWidth='1'
+        fill='none'
+        fillRule='evenodd'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+      >
+        <g id='cross_svg' stroke={colorTheme.primary.value}>
+          <line x1='0.5' y1='0.5' x2='3.5' y2='3.5'></line>
+          <line x1='0.5' y1='3.5' x2='3.5' y2='0.5'></line>
+        </g>
+      </g>
+    </svg>
+  )
+}
+
 export const OutlineControls = (props: OutlineControlsProps) => {
   const colorTheme = useColorTheme()
   const { dragState } = props
@@ -145,47 +184,43 @@ export const OutlineControls = (props: OutlineControlsProps) => {
                 <div
                   style={{
                     position: 'absolute',
-                    left: parentFrame.x + props.canvasOffset.x - 4,
-                    top: parentFrame.y + props.canvasOffset.y - 11,
-                    color: colorTheme.primary.value,
-                    fontSize: '13px',
+                    left: parentFrame.x + props.canvasOffset.x,
+                    top: parentFrame.y + props.canvasOffset.y,
+                    width: parentFrame.width,
+                    height: parentFrame.height,
+                    border: `#007aff`,
                   }}
-                >
-                  ×
-                </div>
-                <div
+                />
+
+                <CenteredCrossSVG
+                  id='parent-cross-top-left'
                   style={{
-                    position: 'absolute',
-                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 5,
-                    top: parentFrame.y + props.canvasOffset.y - 11,
-                    color: colorTheme.primary.value,
-                    fontSize: '13px',
+                    left: parentFrame.x + props.canvasOffset.x,
+                    top: parentFrame.y + props.canvasOffset.y,
                   }}
-                >
-                  ×
-                </div>
-                <div
+                />
+
+                <CenteredCrossSVG
+                  id='parent-cross-top-right'
                   style={{
-                    position: 'absolute',
-                    left: parentFrame.x + props.canvasOffset.x - 4,
-                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
-                    color: colorTheme.primary.value,
-                    fontSize: '13px',
+                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x,
+                    top: parentFrame.y + props.canvasOffset.y,
                   }}
-                >
-                  ×
-                </div>
-                <div
+                />
+                <CenteredCrossSVG
+                  id='parent-cross-bottom-right'
                   style={{
-                    position: 'absolute',
-                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 4,
-                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
-                    color: colorTheme.primary.value,
-                    fontSize: '13px',
+                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x,
+                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y,
                   }}
-                >
-                  ×
-                </div>
+                />
+                <CenteredCrossSVG
+                  id='parent-cross-bottom-left'
+                  style={{
+                    left: parentFrame.x + props.canvasOffset.x,
+                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y,
+                  }}
+                />
               </>
             )
           } else {
@@ -199,7 +234,6 @@ export const OutlineControls = (props: OutlineControlsProps) => {
       return null
     }
   }, [
-    colorTheme.primary.value,
     layoutInspectorSectionHovered,
     props.canvasOffset.x,
     props.canvasOffset.y,
