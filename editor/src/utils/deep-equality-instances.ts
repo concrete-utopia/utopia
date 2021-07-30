@@ -21,6 +21,7 @@ import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
 import { DropTargetHint, NavigatorState } from '../components/editor/store/editor-state'
+import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
 
 export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> = createCallFromEqualsFunction(
   (oldPath: ElementPath, newPath: ElementPath) => {
@@ -150,3 +151,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
     }
   },
 )
+
+export const LayoutTargetablePropArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
+  LayoutTargetableProp
+>> = arrayDeepEquality(createCallWithTripleEquals())
