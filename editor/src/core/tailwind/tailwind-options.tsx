@@ -84,24 +84,24 @@ export function getTailwindOptionForClassName(className: string): TailWindOption
   )
 }
 
-export function searchStringToIndividualTerms(searchString: string): Array<string> {
-  return searchString
-    .trim()
-    .toLowerCase()
-    .split(/\W/)
-    .filter((s) => s != '')
+function searchStringToIndividualTerms(sanitisedFilter: string): Array<string> {
+  return sanitisedFilter.split(/\W/).filter((s) => s != '')
 }
 
 function findMatchingOptions<T>(
+  filter: string,
   searchTerms: Array<string>,
   options: Array<T>,
+  toFullString: (t: T) => string,
   toStringParts: (t: T) => Array<string>,
   maxPerfectMatches: number,
 ): Array<Array<T>> {
-  let orderedMatchedResults: Array<Array<T>> = []
+  let orderedFullTermMatches: Array<Array<T>> = []
+  let orderedIndividualTermMatches: Array<Array<T>> = []
   let perfectMatchCount = 0
   for (var i = 0; i < options.length && perfectMatchCount < maxPerfectMatches; i++) {
     const nextOption = options[i]
+    const fullString = toFullString(nextOption)
     const stringParts = toStringParts(nextOption)
     const combinatorialQualifiers = stringParts.slice(0, -1) // e.g. sm: hover: etc.
     const combinatorialPartsMatch = combinatorialQualifiers.every((combinatorialQualifier) =>
@@ -115,21 +115,32 @@ function findMatchingOptions<T>(
     )
     if (combinatorialPartsMatch) {
       // Only proceed with the match if all combinatorial parts were matched
-      const combinedParts = stringParts.join('')
-      const splitInputIndexResult = searchTerms.map((s) => combinedParts.indexOf(s))
-      const minimumIndexOf = Math.min(...splitInputIndexResult)
-      if (minimumIndexOf > -1) {
-        let existingMatched = orderedMatchedResults[minimumIndexOf] ?? []
+      const fullFilterIndexResult = fullString.indexOf(filter)
+      if (fullFilterIndexResult > -1) {
+        // Attempt a match against the full string first
+        let existingMatched = orderedFullTermMatches[fullFilterIndexResult] ?? []
         existingMatched.push(nextOption)
-        orderedMatchedResults[minimumIndexOf] = existingMatched
-        if (minimumIndexOf === 0) {
+        orderedFullTermMatches[fullFilterIndexResult] = existingMatched // Prioritise full string matches
+        if (fullFilterIndexResult === 0) {
           perfectMatchCount++
+        }
+      } else {
+        const splitInputIndexResult = searchTerms.map((s) => fullString.indexOf(s))
+        const minimumIndexOf = Math.min(...splitInputIndexResult)
+        if (minimumIndexOf > -1) {
+          let existingMatched = orderedIndividualTermMatches[minimumIndexOf] ?? []
+          existingMatched.push(nextOption)
+          orderedIndividualTermMatches[minimumIndexOf] = existingMatched
+          if (minimumIndexOf === 0) {
+            perfectMatchCount++
+          }
         }
       }
     }
   }
 
-  return orderedMatchedResults
+  // Combine the matches, giving priority to the full term matches
+  return [...orderedFullTermMatches, ...orderedIndividualTermMatches]
 }
 
 function takeBestOptions<T>(orderedSparseArray: Array<Array<T>>, maxMatches: number): Set<T> {
@@ -154,7 +165,8 @@ export function useFilteredOptions(
 ): Array<TailWindOption> {
   return React.useMemo(() => {
     if (isTwindEnabled()) {
-      const searchTerms = searchStringToIndividualTerms(filter)
+      const sanitisedFilter = filter.trim().toLowerCase()
+      const searchTerms = searchStringToIndividualTerms(sanitisedFilter)
       let results: Array<TailWindOption>
 
       if (searchTerms.length === 0) {
@@ -162,8 +174,10 @@ export function useFilteredOptions(
       } else {
         // First find all matches, and use a sparse array to keep the best matches at the front
         const orderedMatchedResults = findMatchingOptions(
+          sanitisedFilter,
           searchTerms,
           TailWindOptions,
+          (option) => option.label,
           (option) => option.label.split(':'),
           maxResults,
         )
@@ -175,8 +189,10 @@ export function useFilteredOptions(
         const remainingAllowedMatches = maxResults - matchedResults.size
         if (remainingAllowedMatches > 0) {
           const orderedAttributeMatchedResults = findMatchingOptions(
+            sanitisedFilter,
             searchTerms,
             AllAttributes,
+            (a) => a,
             (a) => [a],
             remainingAllowedMatches,
           )
@@ -334,7 +350,9 @@ const Bold = betterReactMemo('Bold', ({ children }: { children: React.ReactNode 
 export const MatchHighlighter = betterReactMemo(
   'MatchHighlighter',
   ({ text, searchString }: { text: string; searchString: string | null | undefined }) => {
-    const searchTerms = searchStringToIndividualTerms(searchString ?? '')
+    const sanitisedFilter = searchString?.trim().toLowerCase() ?? ''
+    const individualTerms = searchStringToIndividualTerms(sanitisedFilter)
+    const searchTerms = [sanitisedFilter, ...individualTerms]
     return (
       <Highlighter
         highlightTag={Bold}

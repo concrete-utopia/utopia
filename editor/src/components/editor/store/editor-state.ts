@@ -143,6 +143,7 @@ import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import * as OPI from 'object-path-immutable'
 import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
+import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
@@ -313,6 +314,11 @@ export type FloatingInsertMenuState =
   | FloatingInsertMenuStateConvert
   | FloatingInsertMenuStateWrap
 
+export interface ResizeOptions {
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -386,6 +392,7 @@ export interface EditorState {
       elementPath: ElementPath
       attributesToUpdate: MapLike<JSXAttribute>
     }> | null
+    resizeOptions: ResizeOptions
   }
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
@@ -1165,6 +1172,10 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       },
       scrollAnimation: false,
       transientProperties: null,
+      resizeOptions: {
+        propertyTargetOptions: ['Width', 'Height'],
+        propertyTargetSelectedIndex: 0,
+      },
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -1418,6 +1429,10 @@ export function editorModelFromPersistentModel(
       },
       scrollAnimation: false,
       transientProperties: null,
+      resizeOptions: {
+        propertyTargetOptions: ['Width', 'Height'],
+        propertyTargetSelectedIndex: 0,
+      },
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

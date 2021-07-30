@@ -5,6 +5,7 @@ import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-te
 import { betterReactMemo } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { fastForEach } from '../../../../core/shared/utils'
+import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { SpecialSizeMeasurementsKeepDeepEquality } from '../../../editor/store/store-deep-equality-instances'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
