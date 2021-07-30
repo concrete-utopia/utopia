@@ -62,6 +62,7 @@ import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
 import { foldEither, isLeft, isRight, maybeEitherToMaybe } from '../shared/either'
 import { splitAt } from '../shared/string-utils'
+import { memoize } from '../shared/memoize'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -361,7 +362,7 @@ export function getHighlightBoundsFromParseResult(
   )
 }
 
-export function getHighlightBoundsForProject(
+function getHighlightBoundsForProjectImpl(
   allFiles: ProjectContentTreeRoot,
 ): HighlightBoundsWithFileForUids {
   let allHighlightBounds: HighlightBoundsWithFileForUids = {}
@@ -378,6 +379,11 @@ export function getHighlightBoundsForProject(
 
   return allHighlightBounds
 }
+
+export const getHighlightBoundsForProject = memoize(getHighlightBoundsForProjectImpl, {
+  maxSize: 2,
+  equals: (a, b) => a === b,
+})
 
 export function updateParsedTextFileHighlightBounds(
   result: ParsedTextFile,

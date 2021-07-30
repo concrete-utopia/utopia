@@ -6,6 +6,7 @@ import {
   zipContentsTree,
 } from '../../../components/assets'
 import {
+  getHighlightBoundsForProject,
   getSavedCodeFromTextFile,
   getUnsavedCodeFromTextFile,
 } from '../../../core/model/project-file-utils'
@@ -24,7 +25,12 @@ import {
   accumulatedToVSCodeMessage,
   sendMessage,
 } from 'utopia-vscode-common'
-import { EditorState, getHighlightBoundsForUids } from './editor-state'
+import {
+  EditorState,
+  getHighlightBoundsForElementPaths,
+  getHighlightBoundsForUids,
+} from './editor-state'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export interface WriteProjectFileChange {
   type: 'WRITE_PROJECT_FILE'
@@ -168,12 +174,18 @@ export function shouldIncludeVSCodeDecorations(
   oldEditorState: EditorState,
   newEditorState: EditorState,
 ): boolean {
-  const oldHighlightBounds = getHighlightBoundsForUids(oldEditorState)
-  const newHighlightBounds = getHighlightBoundsForUids(newEditorState)
+  const oldHighlightBounds = getHighlightBoundsForElementPaths(
+    [...oldEditorState.highlightedViews, ...oldEditorState.selectedViews],
+    oldEditorState,
+  )
+  const newHighlightBounds = getHighlightBoundsForElementPaths(
+    [...newEditorState.highlightedViews, ...newEditorState.selectedViews],
+    newEditorState,
+  )
   return (
     oldEditorState.selectedViews !== newEditorState.selectedViews ||
     oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
-    oldHighlightBounds !== newHighlightBounds
+    !shallowEqual(oldHighlightBounds, newHighlightBounds)
   )
 }
 
@@ -181,8 +193,17 @@ export function shouldIncludeSelectedElementChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
 ): boolean {
+  const oldHighlightBounds = getHighlightBoundsForElementPaths(
+    oldEditorState.selectedViews,
+    oldEditorState,
+  )
+  const newHighlightBounds = getHighlightBoundsForElementPaths(
+    newEditorState.selectedViews,
+    newEditorState,
+  )
   return (
-    oldEditorState.selectedViews !== newEditorState.selectedViews &&
+    (oldEditorState.selectedViews !== newEditorState.selectedViews ||
+      !shallowEqual(oldHighlightBounds, newHighlightBounds)) &&
     newEditorState.selectedViews.length > 0
   )
 }
