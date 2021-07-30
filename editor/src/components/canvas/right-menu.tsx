@@ -194,7 +194,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
         width: 38,
       }}
     >
-      <FlexColumn style={{ flexGrow: 1 }}>
+      <FlexColumn style={{ flexGrow: 1, width: 38, overflowX: 'scroll' }}>
         <Tooltip title={'Inspector'} placement='left'>
           <span>
             <MenuTile

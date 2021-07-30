@@ -130,72 +130,83 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     [props.canvasOffset.x, props.canvasOffset.y, props.componentMetadata, props.dragState],
   )
 
-  let parentHighlights: React.ReactNode = null
-  if (props.keysPressed['cmd'] || layoutInspectorSectionHovered) {
-    parentHighlights = props.selectedViews.map((view) => {
-      const parentPath = EP.parentPath(view)
-      if (parentPath != null) {
-        const parentFrame = MetadataUtils.getFrameInCanvasCoords(
-          parentPath,
-          props.componentMetadata,
-        )
-        if (parentFrame != null) {
-          return (
-            <>
-              <div
-                style={{
-                  position: 'absolute',
-                  left: parentFrame.x + props.canvasOffset.x - 4,
-                  top: parentFrame.y + props.canvasOffset.y - 11,
-                  color: colorTheme.primary.value,
-                  fontSize: '13px',
-                }}
-              >
-                ×
-              </div>
-              <div
-                style={{
-                  position: 'absolute',
-                  left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 5,
-                  top: parentFrame.y + props.canvasOffset.y - 11,
-                  color: colorTheme.primary.value,
-                  fontSize: '13px',
-                }}
-              >
-                ×
-              </div>
-              <div
-                style={{
-                  position: 'absolute',
-                  left: parentFrame.x + props.canvasOffset.x - 4,
-                  top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
-                  color: colorTheme.primary.value,
-                  fontSize: '13px',
-                }}
-              >
-                ×
-              </div>
-              <div
-                style={{
-                  position: 'absolute',
-                  left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 4,
-                  top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
-                  color: colorTheme.primary.value,
-                  fontSize: '13px',
-                }}
-              >
-                ×
-              </div>
-            </>
+  const parentHighlights: React.ReactNode = React.useMemo(() => {
+    if (props.keysPressed['cmd'] || layoutInspectorSectionHovered) {
+      return props.selectedViews.map((view) => {
+        const parentPath = EP.parentPath(view)
+        if (parentPath != null) {
+          const parentFrame = MetadataUtils.getFrameInCanvasCoords(
+            parentPath,
+            props.componentMetadata,
           )
+          if (parentFrame != null) {
+            return (
+              <>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: parentFrame.x + props.canvasOffset.x - 4,
+                    top: parentFrame.y + props.canvasOffset.y - 11,
+                    color: colorTheme.primary.value,
+                    fontSize: '13px',
+                  }}
+                >
+                  ×
+                </div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 5,
+                    top: parentFrame.y + props.canvasOffset.y - 11,
+                    color: colorTheme.primary.value,
+                    fontSize: '13px',
+                  }}
+                >
+                  ×
+                </div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: parentFrame.x + props.canvasOffset.x - 4,
+                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
+                    color: colorTheme.primary.value,
+                    fontSize: '13px',
+                  }}
+                >
+                  ×
+                </div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 4,
+                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
+                    color: colorTheme.primary.value,
+                    fontSize: '13px',
+                  }}
+                >
+                  ×
+                </div>
+              </>
+            )
+          } else {
+            return null
+          }
         } else {
           return null
         }
-      } else {
-        return null
-      }
-    })
-  }
+      })
+    } else {
+      return null
+    }
+  }, [
+    colorTheme.primary.value,
+    layoutInspectorSectionHovered,
+    props.canvasOffset.x,
+    props.canvasOffset.y,
+    props.componentMetadata,
+    props.keysPressed,
+    props.selectedViews,
+  ])
 
   let selectionOutlines: Array<JSX.Element> = getOverlayControls(props.selectedViews)
   const targetPaths =
