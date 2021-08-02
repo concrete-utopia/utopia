@@ -22,6 +22,7 @@ import {
   useColorTheme,
   Icons,
   LargerIcons,
+  ResizableFlexColumn,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { TopMenu } from '../editor/top-menu'
@@ -288,7 +289,14 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
         </SimpleFlexColumn>
 
         {props.isUiJsFileOpen && isCanvasVisible ? (
-          <SimpleFlexColumn style={{ flexGrow: 1 }}>
+          <SimpleFlexColumn
+            style={{
+              flexGrow: 1,
+              border: '1px solid green',
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
             <SimpleFlexRow
               className='topMenu'
               style={{
@@ -302,22 +310,47 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
             >
               <TopMenu />
             </SimpleFlexRow>
+
+            {isCanvasVisible && props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
+              <ResizableFlexColumn
+                style={{
+                  overscrollBehavior: 'contain',
+                  position: 'absolute',
+                  top: TopMenuHeight,
+                  left: 0,
+                  height: `calc(100% - ${TopMenuHeight}px)`,
+                  zIndex: 20,
+                  overflow: 'hidden',
+                  backgroundColor: UtopiaTheme.color.bg0.o(90).value,
+                  backdropFilter: 'blur(7px)',
+                  border: '1px solid orange',
+                  // overflow: 'hidden',
+                }}
+                defaultSize={{
+                  width: 280,
+                  height: '100%',
+                }}
+              >
+                <NavigatorComponent
+                  style={{
+                    zIndex: 1,
+                    flexGrow: 1,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
+                    justifyContent: 'stretch',
+                    overscrollBehavior: 'contain',
+                  }}
+                />
+              </ResizableFlexColumn>
+            ) : null}
             <CanvasWrapperComponent {...props} />
             <FloatingInsertMenu />
           </SimpleFlexColumn>
         ) : null}
       </SimpleFlexRow>
-      {isCanvasVisible && props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
-        <NavigatorComponent
-          style={{
-            position: 'absolute',
-            top: TopMenuHeight,
-            height: `calc(100% - ${TopMenuHeight}px)`,
-            left: getNavigatorLeft,
-            width: LeftPaneDefaultWidth,
-          }}
-        />
-      ) : null}
+
       {isCanvasVisible && props.isUiJsFileOpen ? (
         <>
           <RightMenu visible={true} />
