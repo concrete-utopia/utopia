@@ -320,8 +320,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     const containerStyle: React.CSSProperties = React.useMemo(() => {
       return {
         opacity: isElementVisible ? undefined : 0.5,
-        overflowY: 'hidden',
-        overflowX: 'scroll',
+        overflow: 'hidden',
         flexGrow: 1,
         flexShrink: 0,
       }
