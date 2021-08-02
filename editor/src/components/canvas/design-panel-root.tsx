@@ -312,38 +312,44 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
             </SimpleFlexRow>
 
             {isCanvasVisible && props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
-              <ResizableFlexColumn
+              <div
                 style={{
-                  overscrollBehavior: 'contain',
+                  height: `calc(100% - ${TopMenuHeight}px)`,
                   position: 'absolute',
                   top: TopMenuHeight,
                   left: 0,
-                  height: `calc(100% - ${TopMenuHeight}px)`,
                   zIndex: 20,
                   overflow: 'hidden',
-                  backgroundColor: UtopiaTheme.color.bg0.o(90).value,
-                  backdropFilter: 'blur(7px)',
-                  border: '1px solid orange',
-                  // overflow: 'hidden',
-                }}
-                defaultSize={{
-                  width: 280,
-                  height: '100%',
                 }}
               >
-                <NavigatorComponent
+                <ResizableFlexColumn
                   style={{
-                    zIndex: 1,
-                    flexGrow: 1,
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'stretch',
-                    justifyContent: 'stretch',
                     overscrollBehavior: 'contain',
+                    height: `calc(100% - ${TopMenuHeight}px)`,
+                    backgroundColor: UtopiaTheme.color.bg0.o(90).value,
+                    backdropFilter: 'blur(7px)',
+                    border: '1px solid orange',
+                    // overflow: 'hidden',
                   }}
-                />
-              </ResizableFlexColumn>
+                  defaultSize={{
+                    width: 280,
+                    height: '100%',
+                  }}
+                >
+                  <NavigatorComponent
+                    style={{
+                      zIndex: 1,
+                      flexGrow: 1,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                      justifyContent: 'stretch',
+                      overscrollBehavior: 'contain',
+                    }}
+                  />
+                </ResizableFlexColumn>
+              </div>
             ) : null}
             <CanvasWrapperComponent {...props} />
             <FloatingInsertMenu />
