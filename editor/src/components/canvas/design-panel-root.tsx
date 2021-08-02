@@ -292,7 +292,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           <SimpleFlexColumn
             style={{
               flexGrow: 1,
-              border: '1px solid green',
               overflow: 'hidden',
               position: 'relative',
             }}
@@ -327,8 +326,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
                     overscrollBehavior: 'contain',
                     backgroundColor: UtopiaTheme.color.bg0.o(90).value,
                     backdropFilter: 'blur(7px)',
-                    border: '1px solid orange',
-                    // overflow: 'hidden',
                   }}
                   defaultSize={{
                     width: 280,
