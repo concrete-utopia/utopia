@@ -325,7 +325,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
                 <ResizableFlexColumn
                   style={{
                     overscrollBehavior: 'contain',
-                    height: `calc(100% - ${TopMenuHeight}px)`,
                     backgroundColor: UtopiaTheme.color.bg0.o(90).value,
                     backdropFilter: 'blur(7px)',
                     border: '1px solid orange',
