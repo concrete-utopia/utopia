@@ -14,7 +14,6 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import {
@@ -260,7 +259,6 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     } = props
 
     const colorTheme = useColorTheme()
-    const domElementRef = useScrollToThisIfSelected(selected)
     const isFocusedComponent = useEditorState(
       (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
       'NavigatorItem isFocusedComponent',
@@ -334,7 +332,6 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 
     return (
       <FlexRow
-        ref={domElementRef}
         style={rowStyle}
         onMouseDown={select}
         onMouseMove={highlight}
