@@ -53,18 +53,18 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const [disabled, setDisabled] = React.useState(false)
 
   React.useEffect(() => {
-    if (saveTimerRef.current != null) {
+    if (document.activeElement === inputRef.current) {
       return
     }
     const foundText = optionalMap(MetadataUtils.getTextContentOfElement, selectedElement)
     const isDisabled = foundText == null
-    setSimpleText(foundText ?? '')
+    setSimpleText(foundText?.trim() ?? '')
     setDisabled(isDisabled)
-  }, [selectedElement])
+  }, [selectedElement, inputRef])
 
   const dispatchUpdate = React.useCallback(
     ({ path, text }) => {
-      dispatch([EditorActions.updateChildText(path, text)], 'canvas')
+      dispatch([EditorActions.updateChildText(path, text.trim())], 'canvas')
       clearTimeout(saveTimerRef.current)
       saveTimerRef.current = null
     },
@@ -89,7 +89,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (selectedElement != null) {
         clearTimeout(saveTimerRef.current)
-        dispatchUpdate({ path: selectedElement.elementPath, text: event.target.value })
+        dispatchUpdate({ path: selectedElement.elementPath, text: event.target.value.trim() })
         setSimpleText(event.target.value)
       }
     },
@@ -166,7 +166,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           }}
           onChange={onInputChange}
           onBlur={onBlur}
-          value={simpleText.trimStart()}
+          value={simpleText}
           disabled={disabled}
         />
       ) : null}
