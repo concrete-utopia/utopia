@@ -97,7 +97,6 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         height: '100%',
         position: 'relative',
         backgroundColor: colorTheme.leftPaneBackground.value,
-        borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
         paddingLeft: 4,
       }}
       onMouseDown={() => closeTextEditorIfPresent()}

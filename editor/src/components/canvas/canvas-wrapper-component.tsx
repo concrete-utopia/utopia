@@ -95,7 +95,6 @@ export const CanvasWrapperComponent = betterReactMemo(
           >
             {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
             <ModeSelectButtons />
-            <FloatingInsertMenu />
           </FlexColumn>
         </FlexRow>
       </FlexColumn>
