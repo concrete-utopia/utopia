@@ -28,16 +28,3 @@ function isElementVisible(element: HTMLElement) {
     )
   }
 }
-
-export function useScrollToThisIfSelected(isSelected: boolean) {
-  const domElementRef = React.useRef<HTMLDivElement | null>(null)
-  React.useEffect(() => {
-    const scrollIdleCallback = requestIdleCallback(() => {
-      if (isSelected && domElementRef.current != null && !isElementVisible(domElementRef.current)) {
-        domElementRef.current.scrollIntoView()
-      }
-    })
-    return () => cancelIdleCallback(scrollIdleCallback)
-  }, [isSelected])
-  return domElementRef
-}
