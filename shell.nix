@@ -46,6 +46,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true test
     '')
+    (pkgs.writeScriptBin "test-editor-move-template-only-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${node}/bin/npm --scripts-prepend-node-path=true run test-move-template-only-ci
+    '')
     (pkgs.writeScriptBin "test-utopia-api" ''
       #!/usr/bin/env bash
       set -e

@@ -67,6 +67,58 @@ jobs:
         with:
           args: 'Editor Tests Failed: https://github.com/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}'
 
+  test-editor-move-template-only:
+    name: Test Editor Move Template Only
+    runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache editor modules
+        uses: actions/cache@v2
+        with:
+          path: editor/node_modules
+          key: ${{ runner.os }}-node-editor-master-2-${{ hashFiles('editor/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-editor-master-2-
+      - name: Cache editor test result
+        id: cache-editor-tests-move-template-only
+        uses: actions/cache@v2
+        with:
+          # For the tests it doesn't really matter what we cache
+          path: editor/lib
+          key: ${{ runner.os }}-editor-tests-master-2-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('utopia-vscode-common/src/**')}}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
+      - name: Cache utopia-api modules
+        uses: actions/cache@v2
+        with:
+          path: utopia-api/node_modules
+          key: ${{ runner.os }}-node-utopia-api-master-2-${{ hashFiles('utopia-api/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-utopia-api-master-2-
+      - name: Cache utopia-vscode-common modules
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/node_modules
+          key: ${{ runner.os }}-utopia-vscode-common-master-node-modules-${{ hashFiles('utopia-vscode-common/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-utopia-vscode-common-master-node-modules-
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=channel:nixos-20.09
+      - name: Run the tests
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-move-template-only-ci
+      - name: Discord Notification
+        uses: Ilshidur/action-discord@0.3.0
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          DISCORD_USERNAME: 'Build Failure'
+        with:
+          args: 'Editor moveTemplate Tests Failed: https://github.com/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}'
+
   test-server:
     name: Test Server
     runs-on: ubuntu-latest
@@ -115,7 +167,7 @@ jobs:
 
   trigger-deploy:
     name: Trigger Deploy
-    needs: [test-editor, test-server]
+    needs: [test-editor, test-editor-move-template-only, test-server]
     runs-on: ubuntu-latest
     steps:
       - name: Use repository dispatch event to trigger deploy
