@@ -26,6 +26,7 @@ import {
 import { betterReactMemo } from '../../uuiui-deps'
 import { TopMenu } from '../editor/top-menu'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
+import { FloatingInsertMenu } from './ui/floating-insert-menu'
 
 interface DesignPanelRootProps {
   isUiJsFileOpen: boolean
@@ -302,6 +303,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
               <TopMenu />
             </SimpleFlexRow>
             <CanvasWrapperComponent {...props} />
+            <FloatingInsertMenu />
           </SimpleFlexColumn>
         ) : null}
       </SimpleFlexRow>

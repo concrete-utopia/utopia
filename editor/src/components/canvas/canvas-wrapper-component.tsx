@@ -65,6 +65,7 @@ export const CanvasWrapperComponent = betterReactMemo(
           // ^ prevents Monaco from pushing the inspector out
         }}
       >
+        {/* <FloatingInsertMenu /> */}
         {fatalErrors.length === 0 && !safeMode ? (
           <EditorCanvas
             editor={editorState}
@@ -95,7 +96,7 @@ export const CanvasWrapperComponent = betterReactMemo(
           >
             {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
             <ModeSelectButtons />
-            <FloatingInsertMenu />
+            {/* <FloatingInsertMenu /> */}
           </FlexColumn>
         </FlexRow>
       </FlexColumn>

@@ -181,8 +181,8 @@ const computeResultingStyle = (
   // additional style
   result.style = {
     ...result.style,
-    fontWeight: isProbablyScene ? 500 : 'inherit',
-    opacity: fullyVisible ? 1 : 0.5,
+    fontWeight: isProbablyScene || fullyVisible ? 500 : 'inherit',
+    color: 'black',
     boxShadow: boxShadow,
   }
 
