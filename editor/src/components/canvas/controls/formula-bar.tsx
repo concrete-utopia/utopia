@@ -166,7 +166,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           }}
           onChange={onInputChange}
           onBlur={onBlur}
-          value={simpleText}
+          value={simpleText.trimStart()}
           disabled={disabled}
         />
       ) : null}
