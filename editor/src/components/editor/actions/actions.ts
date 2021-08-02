@@ -4793,15 +4793,15 @@ export const UPDATE_FNS = {
   },
   INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX: (editor: EditorModel): EditorModel => {
     const resizeOptions = editor.canvas.resizeOptions
+    const newIndex =
+      (resizeOptions.propertyTargetSelectedIndex + 1) % resizeOptions.propertyTargetOptions.length
     return {
       ...editor,
       canvas: {
         ...editor.canvas,
         resizeOptions: {
           ...resizeOptions,
-          propertyTargetSelectedIndex:
-            (resizeOptions.propertyTargetSelectedIndex + 1) %
-            resizeOptions.propertyTargetOptions.length,
+          propertyTargetSelectedIndex: newIndex,
         },
       },
     }
