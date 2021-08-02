@@ -101,7 +101,7 @@ const collapseItem = (
 }
 
 const defaultUnselected = (colorTheme: any): ComputedLook => ({
-  style: { background: 'transparent', color: colorTheme.neutralForeground.value },
+  style: { background: 'transparent', color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
@@ -182,7 +182,7 @@ const computeResultingStyle = (
   result.style = {
     ...result.style,
     fontWeight: isProbablyScene || fullyVisible ? 500 : 'inherit',
-    color: 'black',
+    opacity: fullyVisible ? 1 : 0.5,
     boxShadow: boxShadow,
   }
 
