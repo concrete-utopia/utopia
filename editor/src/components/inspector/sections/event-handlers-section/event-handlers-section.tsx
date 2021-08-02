@@ -1,19 +1,20 @@
 import * as React from 'react'
-import * as PP from '../../../../core/shared/property-path'
-import { identity } from '../../../../core/shared/utils'
-import utils from '../../../../utils/utils'
-import { addOnUnsetValues } from '../../common/context-menu-items'
-import { DOMEventHandler, DOMEventHandlerNames } from '../../common/css-utils'
-import { ParsedValues, useInspectorInfo } from '../../common/property-path-hooks'
-import { UIGridRow } from '../../widgets/ui-grid-row'
+import { forEachRight, isRight } from '../../../../core/shared/either'
 import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
-import { PropertyLabel } from '../../widgets/property-label'
+import { forEachValue } from '../../../../core/shared/object-utils'
+import * as PP from '../../../../core/shared/property-path'
 import {
   betterReactMemo,
   useKeepReferenceEqualityIfPossible,
 } from '../../../../utils/react-performance'
-import { StringInput, InspectorSectionHeader } from '../../../../uuiui'
+import utils from '../../../../utils/utils'
+import { InspectorSectionHeader, StringInput } from '../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../uuiui-deps'
+import { addOnUnsetValues } from '../../common/context-menu-items'
+import { DOMEventHandlerNames } from '../../common/css-utils'
+import { useGetMultiselectedProps, useInspectorContext } from '../../common/property-path-hooks'
+import { PropertyLabel } from '../../widgets/property-label'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 
 const ppCreate = (p: string) => PP.create([p])
 
@@ -42,15 +43,61 @@ export const EventHandlerControl = betterReactMemo(
   },
 )
 
-export const EventHandlersSection = betterReactMemo('EventHandlersSection', () => {
-  const { value, onUnsetValues } = useInspectorInfo<DOMEventHandler, ParsedValues<DOMEventHandler>>(
-    regularArrayDOMEventHandlerNames,
-    identity,
-    identity,
-    ppCreate,
-  )
+type RawJavaScript = string
+type EventHandlerValues = { [eventHandlerName: string]: RawJavaScript }
 
-  const valueKeys = Object.keys(value)
+function useGetEventHandlerInfo(): EventHandlerValues {
+  const multiselectedProps = useGetMultiselectedProps(ppCreate, regularArrayDOMEventHandlerNames)
+  let result: EventHandlerValues = {}
+
+  forEachValue((values, eventHandlerName) => {
+    if (values.length === 1) {
+      const eitherValue = values[0]
+      forEachRight(eitherValue, (value) => {
+        if (isJSXAttributeOtherJavaScript(value)) {
+          result[eventHandlerName] = value.javascript
+        }
+      })
+    }
+  }, multiselectedProps)
+
+  return useKeepReferenceEqualityIfPossible(result)
+}
+
+const EventHandlerSectionRow = betterReactMemo(
+  'EventHandlersSectionRow',
+  (props: { eventHandlerName: string; value: string }) => {
+    const { eventHandlerName, value } = props
+
+    const { onContextUnsetValue } = useInspectorContext()
+    const onUnsetValue = React.useCallback(
+      () => onContextUnsetValue([ppCreate(eventHandlerName)], false),
+      [eventHandlerName, onContextUnsetValue],
+    )
+
+    const eventHandlersContextMenuItems = React.useMemo(
+      () => utils.stripNulls([addOnUnsetValues([eventHandlerName], onUnsetValue)]),
+      [eventHandlerName, onUnsetValue],
+    )
+
+    return (
+      <InspectorContextMenuWrapper
+        id={`event-handlers-section-context-menu-${eventHandlerName}`}
+        items={eventHandlersContextMenuItems}
+        style={{ gridColumn: '1 / span 4' }}
+        data={null}
+      >
+        <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
+          <EventHandlerControl handlerName={eventHandlerName} value={value} />
+        </UIGridRow>
+      </InspectorContextMenuWrapper>
+    )
+  },
+)
+
+export const EventHandlersSection = betterReactMemo('EventHandlersSection', () => {
+  const values = useGetEventHandlerInfo()
+  const valueKeys = Object.keys(values)
 
   if (valueKeys.length === 0) {
     return null
@@ -59,32 +106,16 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
   return (
     <React.Fragment>
       <InspectorSectionHeader>Event Handlers</InspectorSectionHeader>
-      {valueKeys.map((handlerName) => {
-        if (value.hasOwnProperty(handlerName)) {
-          const attributeValue = value[handlerName as DOMEventHandler]
-          if (isJSXAttributeOtherJavaScript(attributeValue)) {
-            const eventHandlersContextMenuItems = utils.stripNulls([
-              value != null ? addOnUnsetValues([handlerName], onUnsetValues) : null,
-            ])
-
-            const eventHandlerValue = attributeValue.javascript
-            return (
-              <InspectorContextMenuWrapper
-                id='event-handlers-section-context-menu'
-                items={eventHandlersContextMenuItems}
-                style={{ gridColumn: '1 / span 4' }}
-                data={null}
-              >
-                <UIGridRow
-                  key={`event-handler-row-${handlerName}`}
-                  padded={true}
-                  variant='<--1fr--><--1fr-->'
-                >
-                  <EventHandlerControl handlerName={handlerName} value={eventHandlerValue} />
-                </UIGridRow>
-              </InspectorContextMenuWrapper>
-            )
-          }
+      {valueKeys.map((eventHandlerName) => {
+        if (values.hasOwnProperty(eventHandlerName)) {
+          const eventHandlerValue = values[eventHandlerName]
+          return (
+            <EventHandlerSectionRow
+              key={`event-handlers-section-row-${eventHandlerName}`}
+              eventHandlerName={eventHandlerName}
+              value={eventHandlerValue}
+            />
+          )
         }
         return null
       })}
