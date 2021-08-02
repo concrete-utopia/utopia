@@ -412,6 +412,7 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
         left: '30%',
         overflow: 'scroll',
         maxHeight: '50%',
+        zIndex: 100,
       }}
     >
       {toasts.map((toast, index) => (
