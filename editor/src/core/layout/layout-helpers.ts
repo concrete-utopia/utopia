@@ -22,6 +22,7 @@ import {
   reduceWithEither,
   right,
   eitherToMaybe,
+  eitherFromMaybe,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -145,7 +146,14 @@ export const FlexLayoutHelpers = {
           return setJSXValuesAtPaths(props, propsToSet)
         },
         withoutLayoutProps,
-        FlexLayoutHelpers.convertWidthHeightToFlex(width, height, elementProps, parentProps, null),
+        FlexLayoutHelpers.convertWidthHeightToFlex(
+          width,
+          height,
+          elementProps,
+          parentProps,
+          eitherToMaybe(FlexLayoutHelpers.getMainAxis(parentProps)),
+          null,
+        ),
       ),
     )
   },
@@ -220,9 +228,9 @@ export const FlexLayoutHelpers = {
     height: number,
     props: JSXAttributes,
     parentProps: PropsOrJSXAttributes,
+    possibleMainAxis: 'horizontal' | 'vertical' | null,
     edgePosition: EdgePosition | null,
   ): Either<string, FixedAndBases> => {
-    const possibleMainAxis = FlexLayoutHelpers.getMainAxis(parentProps)
     const currentFlexBasis = eitherToMaybe(getSimpleAttributeAtPath(right(props), FlexBasisPath))
     const currentWidth = eitherToMaybe(
       getSimpleAttributeAtPath(right(props), createLayoutPropertyPath('Width')),
@@ -250,7 +258,7 @@ export const FlexLayoutHelpers = {
             ? height
             : null,
       }
-    }, possibleMainAxis)
+    }, eitherFromMaybe('no main axis provided', possibleMainAxis))
   },
   getUnstretchedWidthHeight: (
     props: UtopiaComponentProps,

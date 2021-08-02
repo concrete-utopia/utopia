@@ -59,7 +59,10 @@ export const COPY_SELECTION_SHORTCUT = 'copy-selection'
 export const DUPLICATE_SELECTION_SHORTCUT = 'duplicate-selection'
 export const TOGGLE_BACKGROUND_SHORTCUT = 'toggle-background'
 export const UNWRAP_ELEMENT_SHORTCUT = 'unwrap-element'
-export const WRAP_ELEMENT_SHORTCUT = 'wrap-element'
+export const WRAP_ELEMENT_PICKER_SHORTCUT = 'wrap-element-picker'
+export const WRAP_ELEMENT_DEFAULT_SHORTCUT = 'wrap-element-default'
+export const GROUP_ELEMENT_PICKER_SHORTCUT = 'group-element-picker'
+export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
 export const TOGGLE_TEXT_ITALIC_SHORTCUT = 'toggle-text-italic'
 export const INSERT_IMAGE_SHORTCUT = 'insert-image'
@@ -68,6 +71,7 @@ export const TOGGLE_LIVE_CANVAS_SHORTCUT = 'toggle-live-canvas'
 export const START_RENAMING_SHORTCUT = 'start-renaming'
 export const INSERT_RECTANGLE_SHORTCUT = 'insert-rectangle'
 export const INSERT_ELLIPSE_SHORTCUT = 'insert-ellipse'
+export const ADD_ELEMENT_SHORTCUT = 'add-element'
 export const SAVE_CURRENT_FILE_SHORTCUT = 'save-current-file'
 export const TOGGLE_SHADOW_SHORTCUT = 'toggle-shadow'
 export const INSERT_TEXT_SHORTCUT = 'insert-text'
@@ -81,12 +85,15 @@ export const MOVE_ELEMENT_FORWARD_SHORTCUT = 'move-element-forward'
 export const MOVE_ELEMENT_TO_FRONT_SHORTCUT = 'move-element-to-front'
 export const MOVE_ELEMENT_BACKWARD_SHORTCUT = 'move-element-backward'
 export const MOVE_ELEMENT_TO_BACK_SHORTCUT = 'move-element-to-back'
+export const FOCUS_CLASS_NAME_INPUT = 'focus-inspector-class-name-input'
+export const TOGGLE_FOCUSED_OMNIBOX_TAB = 'toggle-focused-omnibox-tab'
 export const TOGGLE_TEXT_UNDERLINE_SHORTCUT = 'toggle-text-underline'
 export const TOGGLE_LEFT_MENU_SHORTCUT = 'toggle-left-menu'
 export const TOGGLE_RIGHT_MENU_SHORTCUT = 'toggle-right-menu'
 export const TOGGLE_DESIGNER_ADDITIONAL_CONTROLS_SHORTCUT = 'toggle-designer-additional-controls'
 export const TOGGLE_CODE_EDITOR_SHORTCUT = 'toggle-code-editor'
 export const TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT = 'toggle-inspector-and-left-menu'
+export const CONVERT_ELEMENT_SHORTCUT = 'convert-element'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -198,7 +205,13 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Unwrap children of an element into their grandparent element.',
     key('g', ['cmd', 'shift']),
   ),
-  [WRAP_ELEMENT_SHORTCUT]: shortcut('Wrap elements with a group.', key('g', 'cmd')),
+  [WRAP_ELEMENT_PICKER_SHORTCUT]: shortcut('Wrap elements with a selected element.', key('w', [])),
+  [WRAP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Wrap elements with a div.', key('w', 'cmd')),
+  [GROUP_ELEMENT_PICKER_SHORTCUT]: shortcut(
+    'Group elements with a selected element.',
+    key('g', []),
+  ),
+  [GROUP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Group elements with a div.', key('g', 'cmd')),
   [TOGGLE_HIDDEN_SHORTCUT]: shortcut('Toggle element as hidden.', key('h', ['cmd', 'shift'])),
   [TOGGLE_TEXT_ITALIC_SHORTCUT]: shortcut(
     'Toggle the italic attribute of the current text element.',
@@ -251,6 +264,14 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Move element to the back in relation to its siblings.',
     key('[', ['alt', 'cmd']),
   ),
+  [FOCUS_CLASS_NAME_INPUT]: shortcut(
+    'Focus the classname input field in the inspector.',
+    key('forwardslash', ['alt', 'cmd']),
+  ),
+  [TOGGLE_FOCUSED_OMNIBOX_TAB]: shortcut(
+    'Focus the omnibox or toggle its current tab.',
+    key('forwardslash', 'cmd'),
+  ),
   [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: shortcut(
     'Toggle the underline attribute of the current text element.',
     key('u', 'cmd'),
@@ -273,6 +294,8 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle the inspector and the left menu.',
     key('backslash', 'cmd'),
   ),
+  [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('c', [])),
+  [ADD_ELEMENT_SHORTCUT]: shortcut('Add element...', key('a', [])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }
@@ -364,6 +387,8 @@ export function handleShortcuts<T>(
     if (callback == null) {
       return defaultValue
     } else {
+      // we found a shortcut for this key combo, let's prevent default on the event
+      event.preventDefault()
       return callback()
     }
   }

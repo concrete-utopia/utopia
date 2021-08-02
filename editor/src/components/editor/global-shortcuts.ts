@@ -105,12 +105,19 @@ import {
   TOGGLE_TEXT_UNDERLINE_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
-  WRAP_ELEMENT_SHORTCUT,
+  WRAP_ELEMENT_DEFAULT_SHORTCUT,
+  WRAP_ELEMENT_PICKER_SHORTCUT,
   ZOOM_CANVAS_IN_SHORTCUT,
   ZOOM_CANVAS_OUT_SHORTCUT,
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
   ShortcutNamesByKey,
+  CONVERT_ELEMENT_SHORTCUT,
+  ADD_ELEMENT_SHORTCUT,
+  GROUP_ELEMENT_PICKER_SHORTCUT,
+  GROUP_ELEMENT_DEFAULT_SHORTCUT,
+  TOGGLE_FOCUSED_OMNIBOX_TAB,
+  FOCUS_CLASS_NAME_INPUT,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
@@ -186,7 +193,11 @@ function getTextEditorTarget(editor: EditorState, derived: DerivedState): Elemen
 }
 
 function shouldTabBeHandledByBrowser(editor: EditorState): boolean {
-  return editor.focusedPanel === 'inspector' || editor.focusedPanel === 'dependencylist'
+  return (
+    editor.focusedPanel === 'inspector' ||
+    editor.focusedPanel === 'dependencylist' ||
+    editor.floatingInsertMenu.insertMenuMode !== 'closed'
+  )
 }
 
 export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEvent): void {
@@ -381,7 +392,9 @@ export function handleKeyDown(
     }
     return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
       [DELETE_SELECTED_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.deleteSelected()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.deleteSelected()]
+          : []
       },
       [RESET_CANVAS_ZOOM_SHORTCUT]: () => {
         return [CanvasActions.zoom(1)]
@@ -524,7 +537,7 @@ export function handleKeyDown(
         return toggleTextFormatting(editor, dispatch, 'bold')
       },
       [TOGGLE_BORDER_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? editor.selectedViews.map((target) =>
               EditorActions.toggleProperty(
                 target,
@@ -534,25 +547,47 @@ export function handleKeyDown(
           : []
       },
       [COPY_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.copySelectionToClipboard()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.copySelectionToClipboard()]
+          : []
       },
       [DUPLICATE_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.duplicateSelected()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.duplicateSelected()]
+          : []
       },
       [TOGGLE_BACKGROUND_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? editor.selectedViews.map((target) =>
               EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
             )
           : []
       },
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? editor.selectedViews.map((target) => EditorActions.unwrapGroupOrView(target))
           : []
       },
-      [WRAP_ELEMENT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.wrapInGroup(editor.selectedViews)] : []
+      [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+          : []
+      },
+      [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
+          : []
+      },
+      // For now, the "Group / G" shortcuts do the same as the Wrap Element shortcuts – until we have Grouping working again
+      [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.wrapInView(editor.selectedViews, 'default-empty-div')]
+          : []
+      },
+      [GROUP_ELEMENT_PICKER_SHORTCUT]: () => {
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
+          : []
       },
       [TOGGLE_HIDDEN_SHORTCUT]: () => {
         return [EditorActions.toggleHidden()]
@@ -660,7 +695,7 @@ export function handleKeyDown(
         }
       },
       [CUT_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
           : []
       },
@@ -674,16 +709,30 @@ export function handleKeyDown(
         return [EditorActions.setHighlightsEnabled(false), EditorActions.clearHighlightedViews()]
       },
       [MOVE_ELEMENT_BACKWARD_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedBackward()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.moveSelectedBackward()]
+          : []
       },
       [MOVE_ELEMENT_TO_BACK_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedToBack()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.moveSelectedToBack()]
+          : []
       },
       [MOVE_ELEMENT_FORWARD_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedForward()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.moveSelectedForward()]
+          : []
       },
       [MOVE_ELEMENT_TO_FRONT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) ? [EditorActions.moveSelectedToFront()] : []
+        return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
+          ? [EditorActions.moveSelectedToFront()]
+          : []
+      },
+      [FOCUS_CLASS_NAME_INPUT]: () => {
+        return [EditorActions.focusClassNameInput()]
+      },
+      [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
+        return [EditorActions.focusFormulaBar()]
       },
       [TOGGLE_TEXT_UNDERLINE_SHORTCUT]: () => {
         return isSelectMode(editor.mode) ? toggleTextFormatting(editor, dispatch, 'underline') : []
@@ -702,6 +751,26 @@ export function handleKeyDown(
       },
       [TOGGLE_INSPECTOR_AND_LEFT_MENU_SHORTCUT]: () => {
         return [EditorActions.togglePanel('inspector'), EditorActions.togglePanel('leftmenu')]
+      },
+      [CONVERT_ELEMENT_SHORTCUT]: () => {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+          return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
+        } else {
+          return []
+        }
+      },
+      [ADD_ELEMENT_SHORTCUT]: () => {
+        if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
+          return [
+            EditorActions.openFloatingInsertMenu({
+              insertMenuMode: 'insert',
+              parentPath: null,
+              indexPosition: null,
+            }),
+          ]
+        } else {
+          return []
+        }
       },
     })
   }
@@ -741,20 +810,13 @@ export function handleKeyUp(
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
   const editorTargeted = editorIsTarget(event, editor)
-  let updatedKeysPressed: KeysPressed
-  if (editorTargeted) {
-    updatedKeysPressed = updateModifiers(
-      editor.keysPressed,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
-  } else {
-    updatedKeysPressed = updateKeysPressed(
-      editor.keysPressed,
-      key,
-      false,
-      Modifier.modifiersForKeyboardEvent(event),
-    )
-  }
+  const updatedKeysPressed = updateKeysPressed(
+    editor.keysPressed,
+    key,
+    false,
+    Modifier.modifiersForKeyboardEvent(event),
+  )
+
   const updateKeysAction = EditorActions.updateKeys(updatedKeysPressed)
 
   function getUIFileActions(): Array<EditorAction> {

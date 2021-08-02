@@ -5,7 +5,11 @@ import { FlexDirection } from 'utopia-api'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
-import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
+import {
+  useInspectorInfoSimpleUntyped,
+  useInspectorLayoutInfo,
+  useInspectorStyleInfo,
+} from '../../../common/property-path-hooks'
 import { SelectOption } from '../../../controls/select-control'
 import { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
@@ -19,6 +23,7 @@ import {
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { OnSubmitValueOrEmpty } from '../../../controls/control'
+import { PropertyPath } from '../../../../../core/shared/project-file-types'
 
 type uglyLabel =
   | 'left'
@@ -111,19 +116,19 @@ export const FlexAlignItemsControl = betterReactMemo(
   'FlexAlignItemsControl',
   (props: FlexAlignItemsControlProps) => {
     return (
-      <>
-        <PropertyLabel target={alignItemsProp}>Align</PropertyLabel>
-        <div
-          style={{
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'row',
-          }}
-        >
-          <InspectorContextMenuWrapper
-            id={`alignItems-context-menu`}
-            items={[unsetPropertyMenuItem('Align Items', props.onUnset)]}
-            data={{}}
+      <InspectorContextMenuWrapper
+        id={`alignItems-context-menu`}
+        items={[unsetPropertyMenuItem('Align Items', props.onUnset)]}
+        data={{}}
+      >
+        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+          <PropertyLabel target={alignItemsProp}>Align</PropertyLabel>
+          <div
+            style={{
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'row',
+            }}
           >
             <OptionChainControl
               id='flex.container.alignItems'
@@ -139,9 +144,9 @@ export const FlexAlignItemsControl = betterReactMemo(
               )}
               onSubmitValue={props.onSubmitValue}
             />
-          </InspectorContextMenuWrapper>
-        </div>
-      </>
+          </div>
+        </UIGridRow>
+      </InspectorContextMenuWrapper>
     )
   },
 )
@@ -188,6 +193,7 @@ export const FlexWrapControl = betterReactMemo('FlexWrapControl', (props: FlexWr
         value={FlexWrapOptions.find((option) => option.value === props.value)}
         options={FlexWrapOptions}
         onSubmitValue={onSubmitValue}
+        controlStyles={props.controlStyles}
         containerMode='showBorderOnHover'
       />
     </InspectorContextMenuWrapper>
@@ -344,6 +350,7 @@ const alignContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignContent-${alignDirection}-${alignContentFlexStart}`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -354,6 +361,7 @@ const alignContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignContent-${alignDirection}-center`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -364,6 +372,7 @@ const alignContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignContent-${alignDirection}-${alignContentFlexEnd}`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -374,6 +383,7 @@ const alignContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignContent-${alignDirection}-stretch`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -392,6 +402,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-${justifyFlexStart}`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -402,6 +413,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-center`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -412,6 +424,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-${justifyFlexEnd}`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -422,6 +435,7 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-spaceBetween`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -432,13 +446,14 @@ const justifyContentOptions = (
       icon: {
         category: `layout/flex`,
         type: `justifyContent-${alignDirection}-spaceAround`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
     },
   ] as Array<OptionChainOption<string | number>>
 
-const alignItemsOptions = (
+export const alignItemsOptions = (
   alignDirection: string,
   alignItemsFlexStart: uglyLabel,
   alignItemsFlexEnd: uglyLabel,
@@ -450,6 +465,7 @@ const alignItemsOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignItems-${alignDirection}-${alignItemsFlexStart}`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -460,6 +476,7 @@ const alignItemsOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignItems-${alignDirection}-center`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -470,6 +487,7 @@ const alignItemsOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignItems-${alignDirection}-${alignItemsFlexEnd}`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -480,13 +498,14 @@ const alignItemsOptions = (
       icon: {
         category: `layout/flex`,
         type: `alignItems-${alignDirection}-stretch`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
     },
   ] as Array<OptionChainOption<string | number>>
 
-const flexDirectionOptions = (flexWrap: FlexWrap) => {
+export const flexDirectionOptions = (flexWrap: FlexWrap) => {
   const flexDirectionWrap = flexWrap === 'wrap' || flexWrap === 'wrap-reverse' ? 'wrap' : 'nowrap'
   const flexWrapReverse = flexWrap === 'wrap-reverse' ? 'reverse' : 'regular'
 
@@ -497,6 +516,7 @@ const flexDirectionOptions = (flexWrap: FlexWrap) => {
       icon: {
         category: 'layout/flex',
         type: `flexDirection-row-${flexWrapReverse}-${flexDirectionWrap}`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },
@@ -507,6 +527,7 @@ const flexDirectionOptions = (flexWrap: FlexWrap) => {
       icon: {
         category: 'layout/flex',
         type: `flexDirection-column-${flexWrapReverse}-${flexDirectionWrap}`,
+        color: 'secondary',
         width: 16,
         height: 16,
       },

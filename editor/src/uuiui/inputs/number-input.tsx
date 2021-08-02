@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { Interpolation, jsx } from '@emotion/react'
 import classNames from 'classnames'
 import * as React from 'react'
@@ -28,9 +29,10 @@ import {
   OnSubmitValueOrEmpty,
   OnSubmitValueOrUnknownOrEmpty,
 } from '../../components/inspector/controls/control'
+import { Either, foldEither, isRight, mapEither, right } from '../../core/shared/either'
 import { clampValue } from '../../core/shared/math-utils'
+import { memoize } from '../../core/shared/memoize'
 import {
-  EitherUtils,
   betterReactMemo,
   getControlStyles,
   usePropControlledState,
@@ -49,12 +51,12 @@ import {
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
-const getDisplayValue = (
+function getDisplayValueNotMemoized(
   value: CSSNumber | null,
   defaultUnitToHide: CSSNumberUnit | null,
   mixed: boolean,
   showContent: boolean,
-): string => {
+): string {
   if (!mixed && value != null && showContent) {
     const unit = getCSSNumberUnit(value)
     const showUnit = unit !== defaultUnitToHide
@@ -64,13 +66,15 @@ const getDisplayValue = (
   }
 }
 
-const parseDisplayValue = (
+const getDisplayValue = memoize(getDisplayValueNotMemoized, { maxSize: 1000 })
+
+function parseDisplayValueNotMemoized(
   input: string,
   numberType: CSSNumberType,
   defaultUnit: CSSNumberUnit | null,
-): EitherUtils.Either<string, CSSNumber> => {
+): Either<string, CSSNumber> {
   const parsedInput = parseCSSNumber(input, numberType)
-  return EitherUtils.mapEither((value: CSSNumber) => {
+  return mapEither((value: CSSNumber) => {
     if (value.unit == null) {
       return cssNumber(value.value, defaultUnit)
     } else {
@@ -78,6 +82,8 @@ const parseDisplayValue = (
     }
   }, parsedInput)
 }
+
+const parseDisplayValue = memoize(parseDisplayValueNotMemoized, { maxSize: 1000 })
 
 const dragDeltaSign = (start: number, end: number, directionAdjustment: 1 | -1): 1 | -1 => {
   const raw = (start - end) * directionAdjustment
@@ -194,9 +200,10 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       [defaultUnitToHide, setStateValueDirectly],
     )
     const parsedStateValue = parseDisplayValue(stateValue, numberType, defaultUnitToHide)
-    const parsedStateValueUnit = EitherUtils.unwrapEither(
-      EitherUtils.mapEither((v) => v.unit, parsedStateValue),
-      null,
+    const parsedStateValueUnit = foldEither(
+      () => null,
+      (v) => v.unit,
+      parsedStateValue,
     )
 
     const [isActuallyFocused, setIsActuallyFocused] = React.useState<boolean>(false)
@@ -455,7 +462,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             if (stateValue === '') {
               onSubmitValue(emptyInputValue())
               forceStateValueToUpdateFromProps()
-            } else if (EitherUtils.isRight(parsedStateValue)) {
+            } else if (isRight(parsedStateValue)) {
               onSubmitValue(parsedStateValue.value)
             } else {
               onSubmitValue(unknownInputValue(stateValue))
@@ -570,8 +577,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       [propsValue, scrubOnMouseMove, scrubOnMouseUp],
     )
 
-    const formClassName = classNames('number-input-wrapper', className)
-
     let placeholder: string = ''
     if (controlStyles.unknown) {
       placeholder = 'unknown'
@@ -597,8 +602,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         : undefined
 
     return (
-      // this form madness is a hack due to chrome ignoring autoComplete='off' on individual `input`s
-      <form className={formClassName} style={style} autoComplete='off'>
+      <div style={style}>
         <div
           className='number-input-container'
           css={{
@@ -634,7 +638,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             mixed={mixed}
             value={stateValue}
             ref={ref}
-            css={{ color: controlStyles.mainColor }}
+            style={{ color: controlStyles.mainColor }}
             className='number-input'
             height={height}
             id={id}
@@ -648,7 +652,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           {labelInner != null ? (
             <div
               className='number-input-innerLabel'
-              css={{
+              style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
@@ -725,7 +729,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 }}
                 onMouseDown={onIncrementMouseDown}
               >
-                <Icn category='controls/input' type='up' width={11} height={11} />
+                <Icn category='controls/input' type='up' color='secondary' width={11} height={11} />
               </div>
               <div
                 css={{
@@ -752,7 +756,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 <Icn
                   category='controls/input'
                   type='down'
-                  color='darkgray'
+                  color='secondary'
                   width={11}
                   height={11}
                 />
@@ -786,14 +790,15 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 paddingTop: 2,
               }}
             >
-              {DEPRECATED_labelBelow != null ? DEPRECATED_labelBelow : null}
+              {DEPRECATED_labelBelow}
             </div>
           </React.Fragment>
         )}
-      </form>
+      </div>
     )
   },
 )
+
 interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 'numberType'> {
   onSubmitValue: OnSubmitValueOrEmpty<number>
   onTransientSubmitValue: OnSubmitValueOrEmpty<number>

@@ -4,7 +4,7 @@ import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
 import {
@@ -16,17 +16,12 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { ModeToggleButton } from './mode-toggle-button'
 import { ClassNameSelect } from './classname-select'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-
-function useFocusOnCountIncrease(triggerCount: number): React.RefObject<HTMLInputElement> {
-  const ref = React.useRef<HTMLInputElement>(null)
-  const previousTriggerCountRef = React.useRef(triggerCount)
-  if (previousTriggerCountRef.current !== triggerCount) {
-    previousTriggerCountRef.current = triggerCount
-    // eslint-disable-next-line no-unused-expressions
-    ref.current?.focus()
-  }
-  return ref
-}
+import {
+  applyShortcutConfigurationToDefaults,
+  handleShortcuts,
+  TOGGLE_FOCUSED_OMNIBOX_TAB,
+} from '../../editor/shortcut-definitions'
+import { useInputFocusOnCountIncrease } from '../../editor/hook-utils'
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const saveTimerRef = React.useRef<any>(null)
@@ -51,7 +46,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     'FormulaBar formulaBarFocusCounter',
   )
 
-  const inputRef = useFocusOnCountIncrease(focusTriggerCount)
+  const inputRef = useInputFocusOnCountIncrease<HTMLInputElement>(focusTriggerCount)
 
   const colorTheme = useColorTheme()
   const [simpleText, setSimpleText] = React.useState('')
@@ -106,28 +101,48 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     isFeatureEnabled('TopMenu ClassNames') && selectedElement != null && selectedMode === 'css'
   const inputFieldVisible = !classNameFieldVisible
 
+  const editorStoreRef = useRefEditorState((store) => store)
+  const onKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLElement>) => {
+      const namesByKey = applyShortcutConfigurationToDefaults(
+        editorStoreRef.current.userState.shortcutConfig,
+      )
+      handleShortcuts(namesByKey, event.nativeEvent, null, {
+        [TOGGLE_FOCUSED_OMNIBOX_TAB]: () => {
+          dispatch([EditorActions.toggleFocusedOmniboxTab()])
+
+          // We need this to happen in the next frame to ensure the field we want to focus exists
+          setTimeout(() => dispatch([EditorActions.focusFormulaBar()]), 0)
+        },
+      })
+    },
+    [editorStoreRef, dispatch],
+  )
+
   return (
     <SimpleFlexRow
-      style={{
+      css={{
+        height: 32,
         flexGrow: 1,
-        height: UtopiaTheme.layout.inputHeight.default,
+        padding: 4,
+        gap: 4,
+        borderRadius: 4,
+        backgroundColor: colorTheme.inverted.bg1.value,
+        color: colorTheme.inverted.fg1.value,
+        cursor: 'pointer',
+        border: '1px solid transparent',
+        '&:hover': {
+          outline: 'none',
+          border: `1px solid ${colorTheme.bg5.value}`,
+        },
+        '&:focus-within': {
+          border: `1px solid ${colorTheme.brandNeonYellow.value}`,
+        },
       }}
+      onKeyDown={onKeyDown}
     >
       {buttonsVisible ? <ModeToggleButton /> : null}
-      {classNameFieldVisible ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            height: UtopiaTheme.layout.rowHeight.normal,
-            gap: 4,
-            flexGrow: 1,
-          }}
-        >
-          <ClassNameSelect />
-        </div>
-      ) : null}
+      {classNameFieldVisible ? <ClassNameSelect ref={inputRef} /> : null}
       {inputFieldVisible ? (
         <HeadlessStringInput
           ref={inputRef}
@@ -135,20 +150,18 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           css={{
             paddingLeft: 4,
             paddingRight: 4,
-            border: '0px',
             width: '100%',
             height: '100%',
-            backgroundColor: colorTheme.canvasBackground.value,
-            borderRadius: 5,
+            border: '1px solid transparent',
+            borderRadius: 3,
+            backgroundColor: 'transparent',
+            color: colorTheme.inverted.fg1.value,
             transition: 'background-color .1s ease-in-out',
             '&:hover': {
-              '&:not(:disabled)': {
-                boxShadow: 'inset 0px 0px 0px 1px lightgrey',
-              },
+              outline: 'none',
             },
             '&:focus': {
-              backgroundColor: colorTheme.bg0.value,
-              boxShadow: 'inset 0px 0px 0px 1px lightgrey',
+              outline: 'none',
             },
           }}
           onChange={onInputChange}

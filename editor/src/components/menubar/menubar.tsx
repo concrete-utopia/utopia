@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
-import { IconMap } from 'antd/lib/result'
 import * as React from 'react'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import {
@@ -53,7 +52,7 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   const colorTheme = useColorTheme()
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
   const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
-  var foregroundColor: IcnProps['color'] = 'darkgray'
+  var foregroundColor: IcnProps['color'] = 'secondary'
 
   return (
     <Tile
@@ -65,6 +64,7 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
           props.menuExpanded && props.selected
             ? `2px solid ${colorTheme.primary}`
             : '2px solid transparent',
+
         cursor: 'pointer',
         '& > *': {
           opacity: props.selected ? 1 : 0.5,
@@ -95,7 +95,7 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
         }}
       >
         {React.cloneElement(props.icon, {
-          color: foregroundColor,
+          color: props.selected ? 'primary' : 'secondary',
         })}
       </div>
     </Tile>
@@ -209,6 +209,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
       style={{
         flexGrow: 1,
         backgroundColor: colorTheme.leftMenuBackground.value,
+        width: 44,
+        overflowX: 'scroll',
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>

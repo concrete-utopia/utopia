@@ -51,6 +51,7 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/layout/flex';
   export * from 'utopia-api/primitives/common';
   export * from 'utopia-api/primitives/view';
+  export * from 'utopia-api/primitives/flex-views';
   export * from 'utopia-api/primitives/text';
   export * from 'utopia-api/primitives/rectangle';
   export * from 'utopia-api/primitives/ellipse';
@@ -305,6 +306,19 @@ declare module 'utopia-api/primitives/ellipse' {
   export interface EllipseProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
   }
   export const Ellipse: React.FunctionComponent<EllipseProps>;
+
+}
+declare module 'utopia-api/primitives/flex-views' {
+  import { Interpolation, Theme } from '@emotion/react';
+  import React from 'react';
+  import { UtopiaComponentProps } from 'utopia-api/primitives/common';
+  export interface FlexRowProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
+      css: Interpolation<Theme>;
+  }
+  export const FlexRow: React.FunctionComponent<FlexRowProps>;
+  type FlexColProps = FlexRowProps;
+  export const FlexCol: React.FunctionComponent<FlexColProps>;
+  export {};
 
 }
 declare module 'utopia-api/primitives/rectangle' {

@@ -323,16 +323,16 @@ const RowForArrayControl = betterReactMemo(
                 {insertingRow ? (
                   <Icons.Minus
                     style={{ paddingTop: 1 }}
-                    color={
-                      propertyStatus.controlled ? colorTheme.icons.primary : colorTheme.icons.main
-                    }
+                    color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                    width={16}
+                    height={16}
                   />
                 ) : (
                   <Icons.Plus
                     style={{ paddingTop: 1 }}
-                    color={
-                      propertyStatus.controlled ? colorTheme.icons.primary : colorTheme.icons.main
-                    }
+                    color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                    width={16}
+                    height={16}
                   />
                 )}
               </SquareButton>

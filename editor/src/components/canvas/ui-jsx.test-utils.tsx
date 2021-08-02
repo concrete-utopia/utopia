@@ -303,15 +303,13 @@ export const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestA
 export const TestScenePath = elementPath(TestSceneElementPaths)
 export const TestStaticScenePath = testStaticElementPath(TestSceneElementPaths)
 
-export function makeTestProjectCodeWithSnippet(snippet: string): string {
+export function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
   import { Scene, Storyboard, View } from 'utopia-api'
 
   export var App = (props) => {
-    return (
-${snippet}
-    )
+${componentInnards}
   }
 
   export var ${BakedInStoryboardVariableName} = (props) => {
@@ -331,6 +329,14 @@ ${snippet}
   }
 `
   return Prettier.format(code, PrettierConfig)
+}
+
+export function makeTestProjectCodeWithSnippet(snippet: string): string {
+  return makeTestProjectCodeWithComponentInnards(`
+  return (
+${snippet}
+  )
+`)
 }
 
 export function makeTestProjectCodeWithSnippetStyledComponents(snippet: string): string {

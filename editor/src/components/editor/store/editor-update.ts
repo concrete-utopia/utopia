@@ -95,6 +95,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
     case 'SET_PANEL_VISIBILITY':
       return UPDATE_FNS.SET_PANEL_VISIBILITY(action, state)
+    case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
+      return UPDATE_FNS.TOGGLE_FOCUSED_OMNIBOX_TAB(state)
     case 'TOGGLE_PANE':
       return UPDATE_FNS.TOGGLE_PANE(action, state)
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
@@ -229,6 +231,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
     case 'WRAP_IN_VIEW':
       return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch)
+    case 'WRAP_IN_ELEMENT':
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
+    case 'OPEN_FLOATING_INSERT_MENU':
+      return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_GROUP_OR_VIEW':
       return UPDATE_FNS.UNWRAP_GROUP_OR_VIEW(action, state, derivedState, dispatch)
     case 'INSERT_IMAGE_INTO_UI':
@@ -297,10 +303,28 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
     case 'SET_CURRENT_THEME':
       return UPDATE_FNS.SET_CURRENT_THEME(action, state)
+    case 'FOCUS_CLASS_NAME_INPUT':
+      return UPDATE_FNS.FOCUS_CLASS_NAME_INPUT(state)
     case 'FOCUS_FORMULA_BAR':
-      return UPDATE_FNS.FOCUS_FORMULA_BAR(action, state)
+      return UPDATE_FNS.FOCUS_FORMULA_BAR(state)
     case 'UPDATE_FORMULA_BAR_MODE':
       return UPDATE_FNS.UPDATE_FORMULA_BAR_MODE(action, state)
+    case 'CLOSE_FLOATING_INSERT_MENU':
+      return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
+    case 'INSERT_WITH_DEFAULTS':
+      return UPDATE_FNS.INSERT_WITH_DEFAULTS(action, state)
+    case 'SET_PROP_TRANSIENT':
+      return UPDATE_FNS.SET_PROP_TRANSIENT(action, state)
+    case 'CLEAR_TRANSIENT_PROPS':
+      return UPDATE_FNS.CLEAR_TRANSIENT_PROPS(action, state)
+    case 'ADD_TAILWIND_CONFIG':
+      return UPDATE_FNS.ADD_TAILWIND_CONFIG(action, state, dispatch)
+    case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
+      return UPDATE_FNS.SET_INSPECTOR_LAYOUT_SECTION_HOVERED(action, state)
+    case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
+      return UPDATE_FNS.INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX(state)
+    case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
+      return UPDATE_FNS.SET_RESIZE_OPTIONS_TARGET_OPTIONS(action, state)
     default:
       return state
   }

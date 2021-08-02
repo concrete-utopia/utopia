@@ -46,6 +46,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true test
     '')
+    (pkgs.writeScriptBin "test-editor-move-template-only-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${node}/bin/npm --scripts-prepend-node-path=true run test-move-template-only-ci
+    '')
     (pkgs.writeScriptBin "test-utopia-api" ''
       #!/usr/bin/env bash
       set -e
@@ -317,8 +324,8 @@ let
       #!/usr/bin/env bash
       stop-dev
       set -e
+      build-vscode-with-extension
       install-editor
-      build-vscode
       start-minimal
     '')
   ] ++ vscodeDevScripts;
@@ -384,7 +391,7 @@ let
 
   pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);

@@ -102,22 +102,22 @@ const collapseItem = (
 
 const defaultUnselected = (colorTheme: any): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.neutralForeground.value },
-  iconColor: 'black',
+  iconColor: 'main',
 })
 
 const defaultSelected = (colorTheme: any): ComputedLook => ({
   style: { background: UtopiaStyles.backgrounds.blue, color: colorTheme.white.value },
-  iconColor: 'white',
+  iconColor: 'on-highlight-main',
 })
 
 const dynamicUnselected = (colorTheme: any): ComputedLook => ({
   style: { background: 'transparent', color: colorTheme.primary.value },
-  iconColor: 'blue',
+  iconColor: 'primary',
 })
 
 const dynamicSelected = (colorTheme: any): ComputedLook => ({
   style: { background: UtopiaStyles.backgrounds.lightblue, color: colorTheme.white.value },
-  iconColor: 'white',
+  iconColor: 'on-highlight-main',
 })
 
 const componentUnselected = (colorTheme: any): ComputedLook => ({
@@ -125,7 +125,7 @@ const componentUnselected = (colorTheme: any): ComputedLook => ({
     background: colorTheme.emphasizedBackground.value,
     color: colorTheme.neutralForeground.value,
   },
-  iconColor: 'orange',
+  iconColor: 'warning',
 })
 
 const componentSelected = (colorTheme: any): ComputedLook => ({
@@ -133,7 +133,7 @@ const componentSelected = (colorTheme: any): ComputedLook => ({
     background: colorTheme.navigatorComponentSelected.value,
     color: colorTheme.neutralForeground.value,
   },
-  iconColor: 'orange',
+  iconColor: 'warning',
 })
 
 const computeResultingStyle = (
@@ -151,7 +151,7 @@ const computeResultingStyle = (
     if (isFocusableComponent && !isFocusedComponent) {
       result = {
         style: { backgroundColor: colorTheme.brandPurple.value, color: colorTheme.white.value },
-        iconColor: 'white',
+        iconColor: 'on-highlight-main',
       }
     } else if (isInsideComponent) {
       result = componentSelected(colorTheme)
@@ -313,12 +313,19 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       () => highlightItem(dispatch, elementPath, selected, isHighlighted),
       [dispatch, elementPath, selected, isHighlighted],
     )
+    const focusComponent = React.useCallback(() => {
+      if (isFocusableComponent) {
+        dispatch([EditorActions.setFocusedElement(elementPath)])
+      }
+    }, [dispatch, elementPath, isFocusableComponent])
+
     const containerStyle: React.CSSProperties = React.useMemo(() => {
       return {
         opacity: isElementVisible ? undefined : 0.5,
         overflowY: 'hidden',
         overflowX: 'scroll',
         flexGrow: 1,
+        flexShrink: 0,
       }
     }, [isElementVisible])
 
@@ -329,7 +336,13 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     })
 
     return (
-      <FlexRow ref={domElementRef} style={rowStyle} onMouseDown={select} onMouseMove={highlight}>
+      <FlexRow
+        ref={domElementRef}
+        style={rowStyle}
+        onMouseDown={select}
+        onMouseMove={highlight}
+        onDoubleClick={focusComponent}
+      >
         <FlexRow style={containerStyle}>
           <ExpandableIndicator
             key='expandable-indicator'
@@ -337,10 +350,15 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             collapsed={collapsed}
             selected={selected && !isInsideComponent}
             onMouseDown={collapse}
+            style={{ transform: 'scale(0.8)', opacity: 0.5 }}
           />
           <NavigatorRowLabel
-            {...props}
-            collapse={collapse}
+            elementPath={elementPath}
+            label={props.label}
+            renamingTarget={props.renamingTarget}
+            selected={props.selected}
+            elementOriginType={props.elementOriginType}
+            dispatch={props.dispatch}
             isDynamic={isDynamic}
             iconColor={resultingStyle.iconColor}
             warningText={warningText}
@@ -360,14 +378,19 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 )
 NavigatorItem.displayName = 'NavigatorItem'
 
-interface NavigatorRowProps extends NavigatorItemInnerProps {
-  collapse: (event: any) => void
-  isDynamic: boolean
+interface NavigatorRowLabelProps {
+  elementPath: ElementPath
   iconColor: IcnProps['color']
   warningText: string | null
+  label: string
+  isDynamic: boolean
+  renamingTarget: ElementPath | null
+  selected: boolean
+  elementOriginType: ElementOriginType
+  dispatch: EditorDispatch
 }
 
-const NavigatorRowLabel = (props: NavigatorRowProps) => {
+const NavigatorRowLabel = betterReactMemo('NavigatorRowLabel', (props: NavigatorRowLabelProps) => {
   return (
     <React.Fragment>
       <LayoutIcon
@@ -394,4 +417,4 @@ const NavigatorRowLabel = (props: NavigatorRowProps) => {
       />
     </React.Fragment>
   )
-}
+})

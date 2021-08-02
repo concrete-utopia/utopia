@@ -13,16 +13,28 @@ export function useValueResetState<T>(
 }
 
 export function usePrevious<T>(currentValue: T): T | undefined {
-  const previousRef = React.useRef<T>()
+  const previousRef = React.useRef<T | undefined>(undefined)
 
-  React.useEffect(() => {
-    previousRef.current = currentValue
-  }, [currentValue])
+  const prev = previousRef.current
 
-  return previousRef.current
+  previousRef.current = currentValue
+
+  return prev
 }
 
 export function useForceUpdate() {
   const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
   return forceUpdate
+}
+
+export function useInputFocusOnCountIncrease<T extends { focus: () => void }>(
+  triggerCount: number,
+): React.RefObject<T> {
+  const ref = React.useRef<T>(null)
+  const previousTriggerCountRef = React.useRef(triggerCount)
+  if (previousTriggerCountRef.current !== triggerCount) {
+    previousTriggerCountRef.current = triggerCount
+    ref.current?.focus()
+  }
+  return ref
 }

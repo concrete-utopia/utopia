@@ -10,9 +10,8 @@ import { includesDependency } from '../../components/editor/npm-dependency/npm-d
 import { propOrNull } from '../shared/object-utils'
 import { memoize } from '../shared/memoize'
 import { importDefault } from '../es-modules/commonjs-interop'
-
-const PostCSSPath = '/postcss.config.js'
-const TailwindConfigPath = '/tailwind.config.js'
+import { PostCSSPath, TailwindConfigPath } from './tailwind-config'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 
 function hasRequiredDependenciesForTailwind(packageJsonFile: ProjectFile): boolean {
   const hasTailwindDependency = includesDependency(packageJsonFile, 'tailwindcss')
@@ -123,7 +122,7 @@ function useGetTailwindConfig(
   requireFn: RequireFn,
 ): Configuration {
   const tailwindConfigFile = useGetTailwindConfigFile(projectContents)
-  return React.useMemo(() => {
+  const tailwindConfig = React.useMemo(() => {
     const maybeConfig = getTailwindConfig(tailwindConfigFile, requireFn)
     if (isRight(maybeConfig)) {
       return maybeConfig.value
@@ -131,6 +130,7 @@ function useGetTailwindConfig(
       return {}
     }
   }, [tailwindConfigFile, requireFn])
+  return useKeepReferenceEqualityIfPossible(tailwindConfig)
 }
 
 interface TwindInstance {
@@ -140,6 +140,10 @@ interface TwindInstance {
 
 let twindInstance: TwindInstance | null = null
 
+export function isTwindEnabled(): boolean {
+  return twindInstance != null
+}
+
 function clearTwind() {
   if (twindInstance != null) {
     twindInstance.observer.disconnect()
@@ -147,36 +151,41 @@ function clearTwind() {
   }
 }
 
-const adjustRuleScope = memoize(
-  (rule: string, prefixSelector: string | null): string => {
-    if (prefixSelector == null) {
-      return rule
-    } else {
-      const splitOnBrace = rule.split('{')
-      const splitSelectors = splitOnBrace[0].split(',')
-      const scopedSelectors = splitSelectors.map((s) => {
-        const lowerCaseSelector = s.toLowerCase().trim()
+export function adjustRuleScopeImpl(rule: string, prefixSelector: string | null): string {
+  // TODO Use css-tree to handle more complex cases. That doesn't seem necessary right now since Tailwind
+  // as at 2.2.4 only uses @media and @keyframes
+  const isMediaQuery = rule.startsWith('@media')
+  const isOtherAtRule = rule.startsWith('@') && !isMediaQuery
+  if (prefixSelector == null || isOtherAtRule) {
+    return rule
+  } else {
+    const splitOnBrace = rule.split('{')
+    const selectorIndex = isMediaQuery ? 1 : 0
+    const splitSelectors = splitOnBrace[selectorIndex].split(',')
+    const scopedSelectors = splitSelectors.map((s) => {
+      const lowerCaseSelector = s.toLowerCase().trim()
 
-        if (
-          lowerCaseSelector === ':root' ||
-          lowerCaseSelector === 'html' ||
-          lowerCaseSelector === 'head'
-        ) {
-          return prefixSelector
-        } else if (lowerCaseSelector === 'body') {
-          return `${prefixSelector} > *`
-        } else {
-          return `${prefixSelector} ${s}`
-        }
-      })
-      const joinedSelectors = scopedSelectors.join(',')
-      const afterBrace = splitOnBrace.slice(1)
-      const finalRule = [joinedSelectors, ...afterBrace].join('{')
-      return finalRule
-    }
-  },
-  { maxSize: 100, equals: (a, b) => a === b },
-)
+      if (
+        lowerCaseSelector === ':root' ||
+        lowerCaseSelector === 'html' ||
+        lowerCaseSelector === 'head'
+      ) {
+        return prefixSelector
+      } else if (lowerCaseSelector === 'body') {
+        return `${prefixSelector} > *`
+      } else {
+        return `${prefixSelector} ${s}`
+      }
+    })
+    const joinedSelectors = scopedSelectors.join(',')
+    const theRest = splitOnBrace.slice(selectorIndex + 1)
+    const front = splitOnBrace.slice(0, selectorIndex)
+    const finalRule = [...front, joinedSelectors, ...theRest].join('{')
+    return finalRule
+  }
+}
+
+const adjustRuleScope = memoize(adjustRuleScopeImpl, { maxSize: 100, equals: (a, b) => a === b })
 
 function updateTwind(config: Configuration, prefixSelector: string | null) {
   const element = document.head.appendChild(document.createElement('style'))
@@ -208,12 +217,12 @@ export function useTwind(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
   prefixSelector: string | null = null,
-) {
+): void {
   const hasDependencies = useHasRequiredDependenciesForTailwind(projectContents)
   const hasPostCSSPlugin = usePostCSSIncludesTailwindPlugin(projectContents, requireFn)
   const shouldUseTwind = hasDependencies && hasPostCSSPlugin
   const tailwindConfig = useGetTailwindConfig(projectContents, requireFn)
-  React.useMemo(() => {
+  React.useEffect(() => {
     if (shouldUseTwind) {
       updateTwind(tailwindConfig, prefixSelector)
     } else {
@@ -226,7 +235,7 @@ export function injectTwind(
   projectContents: ProjectContentTreeRoot,
   requireFn: RequireFn,
   prefixSelector: string | null = null,
-) {
+): void {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const hasDependencies =
     packageJsonFile != null && hasRequiredDependenciesForTailwind(packageJsonFile)

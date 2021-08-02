@@ -3,8 +3,21 @@ import * as React from 'react'
 import { betterReactMemo } from '../utils/react-performance'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
+import { useEditorState } from '../components/editor/store/store-hook'
+import { Theme } from '../components/editor/store/editor-state'
 
 export type IcnColor =
+  | 'main'
+  | 'secondary'
+  | 'subdued'
+  | 'primary'
+  | 'warning'
+  | 'error'
+  | 'component'
+  | 'on-highlight-main'
+  | 'on-highlight-secondary'
+
+export type IcnResultingColor =
   | 'white'
   | 'gray'
   | 'darkgray'
@@ -15,6 +28,58 @@ export type IcnColor =
   | 'red'
   | 'orange'
   | 'colourful'
+
+function useIconColor(intent: IcnColor): IcnResultingColor {
+  const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
+  if (currentTheme === 'light') {
+    switch (intent) {
+      case 'main':
+        return 'black'
+      case 'secondary':
+        return 'gray'
+      case 'subdued':
+        return 'white'
+      case 'primary':
+        return 'blue'
+      case 'warning':
+        return 'orange'
+      case 'error':
+        return 'red'
+      case 'component':
+        return 'purple'
+      case 'on-highlight-main':
+        return 'white'
+      case 'on-highlight-secondary':
+        return 'lightgray'
+      default:
+        return 'white'
+    }
+  } else if (currentTheme === 'dark') {
+    switch (intent) {
+      case 'main':
+        return 'white'
+      case 'secondary':
+        return 'lightgray'
+      case 'subdued':
+        return 'gray'
+      case 'primary':
+        return 'blue'
+      case 'component':
+        return 'purple'
+      case 'error':
+        return 'red'
+      case 'warning':
+        return 'orange'
+      case 'on-highlight-main':
+        return 'white'
+      case 'on-highlight-secondary':
+        return 'lightgray'
+      default:
+        return 'white'
+    }
+  }
+  return 'black'
+}
 
 export interface IcnPropsBase {
   category?: string
@@ -48,7 +113,8 @@ const defaultIcnHeight = 16
  */
 export function UNSAFE_getIconURL(
   type: string,
-  color: IcnProps['color'] = 'darkgray',
+  // TODO colortheme (icons)
+  color: IcnResultingColor = 'black',
   category = 'semantic',
   width: number = 16,
   height: number = 16,
@@ -68,6 +134,8 @@ export const Icn = betterReactMemo(
     ...props
   }: IcnProps) => {
     const disabledStyle = isDisabled ? { opacity: 0.5 } : undefined
+
+    const iconColor = useIconColor(props.color || 'main')
 
     const { onMouseDown: propsOnMouseDown, onClick } = props
     const onMouseDown = React.useCallback(
@@ -93,7 +161,7 @@ export const Icn = betterReactMemo(
         className={props.className}
         width={width}
         height={height}
-        src={UNSAFE_getIconURL(props.type, props.color, props.category, width, height)}
+        src={UNSAFE_getIconURL(props.type, iconColor, props.category, width, height)}
         draggable={false}
         onClick={isDisabled ? undefined : props.onClick}
         onDoubleClick={isDisabled ? undefined : props.onDoubleClick}

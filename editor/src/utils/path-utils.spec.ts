@@ -25,4 +25,9 @@ describe('absolutePathFromRelativePath', () => {
     const actualResult = absolutePathFromRelativePath('/src/', true, './other/../path/.././card.js')
     expect(actualResult).toEqual('/src/card.js')
   })
+
+  it('handles non-relative path', () => {
+    const actualResult = absolutePathFromRelativePath('/src/', true, 'component-library')
+    expect(actualResult).toEqual('component-library')
+  })
 })

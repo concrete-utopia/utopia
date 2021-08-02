@@ -147,13 +147,13 @@ export const stopPropagation = (e: React.MouseEvent) => {
   e.stopPropagation()
 }
 
-export const useHandleCloseOnESCOrEnter = (closePopup: () => void) => {
+export const useHandleCloseOnESCOrEnter = (closePopup: (key: 'Escape' | 'Enter') => void): void => {
   const handleCloseOnESCOrEnter = React.useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape' || e.key === 'Enter') {
         e.stopPropagation()
         if (closePopup != null) {
-          closePopup()
+          closePopup(e.key)
         }
       }
     },
@@ -185,6 +185,7 @@ export function clampString(value: string, maxLength: number) {
   return value.length > maxLength ? `${value.substring(0, maxLength)}…` : value
 }
 
+// TODO this function needs a better name :)
 export function getElementsToTarget(paths: Array<ElementPath>): Array<ElementPath> {
   let result: Array<ElementPath> = []
   fastForEach(paths, (path) => {

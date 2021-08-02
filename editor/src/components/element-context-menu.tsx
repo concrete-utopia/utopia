@@ -12,8 +12,9 @@ import {
   sendBackward,
   sendToBack,
   toggleVisibility,
-  ungroup,
+  unwrap,
   wrapInView,
+  wrapInPicker,
   toggleBackgroundLayersItem,
   toggleBorderItem,
   toggleShadowItem,
@@ -21,6 +22,9 @@ import {
   CanvasData,
   setAsFocusedElement,
   scrollToElement,
+  insert,
+  convert,
+  removeAsFocusedElement,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
@@ -46,15 +50,20 @@ interface ElementContextMenuProps {
 
 const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   setAsFocusedElement,
+  removeAsFocusedElement,
   lineSeparator,
   scrollToElement,
   cutElements,
   copyElements,
   duplicateElement,
   lineSeparator,
-  group,
-  ungroup,
+  insert,
+  lineSeparator,
+  convert,
+  lineSeparator,
+  wrapInPicker,
   wrapInView,
+  unwrap,
   rename,
   lineSeparator,
   bringForward,
@@ -158,10 +167,7 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 
   return (
     <FlexRow ref={rawRef}>
-      <Icn
-        {...iconProps}
-        color={isHighlighted ? colorTheme.icons.highVisContextMain : colorTheme.icons.main}
-      />
+      <Icn {...iconProps} color={isHighlighted ? 'on-highlight-main' : 'secondary'} />
       <span style={{ paddingLeft: 6 }}>{label}</span>
     </FlexRow>
   )
@@ -186,6 +192,7 @@ export const ElementContextMenu = betterReactMemo(
         resolve: store.editor.codeResultCache.resolve,
         hiddenInstances: store.editor.hiddenInstances,
         scale: store.editor.canvas.scale,
+        focusedElementPath: store.editor.focusedElementPath,
       }
     })
 
@@ -201,6 +208,7 @@ export const ElementContextMenu = betterReactMemo(
         resolve: currentEditor.resolve,
         hiddenInstances: currentEditor.hiddenInstances,
         scale: currentEditor.scale,
+        focusedElementPath: currentEditor.focusedElementPath,
       }
     }, [editorSliceRef])
 

@@ -13,6 +13,7 @@ import {
   getOpenUIJSFileKey,
   TransientCanvasState,
   TransientFilesState,
+  ResizeOptions,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -49,6 +50,13 @@ import {
 import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { ProjectContentTreeRoot } from '../../assets'
+import { LayoutParentControl } from './layout-parent-control'
+import { when } from '../../../utils/react-conditionals'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { KeysPressed } from '../../../utils/keyboard'
+import { usePrevious } from '../../editor/hook-utils'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -100,6 +108,7 @@ export interface ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   transientState: TransientCanvasState
   resolve: ResolveFn
+  resizeOptions: ResizeOptions
 }
 
 interface NewCanvasControlsProps {
@@ -233,7 +242,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const dragging = isDragging(props.editor.canvas.dragState)
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
   const draggingEnabled = !isSelectLiteMode(props.editor.mode)
-  const contextMenuEnabled = !isSelectLiteMode(props.editor.mode)
+  const contextMenuEnabled = !isLiveMode(props.editor.mode)
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
@@ -295,6 +304,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       openFile: props.editor.canvas.openFile?.filename ?? null,
       transientState: props.derived.canvas.transientState,
       resolve: props.editor.codeResultCache.resolve,
+      resizeOptions: props.editor.canvas.resizeOptions,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {
@@ -460,6 +470,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}
+      {when(isFeatureEnabled('Layout Section Experimental'), <LayoutParentControl />)}
     </div>
   )
 }

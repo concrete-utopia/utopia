@@ -39,6 +39,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           emptyImports(),
         ),
       },
+      [],
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(state, state)
@@ -68,6 +69,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           emptyImports(),
         ),
       },
+      [],
     )
     const newState: TransientCanvasState = transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -91,6 +93,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           emptyImports(),
         ),
       },
+      [],
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(oldState, newState)
@@ -120,6 +123,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           emptyImports(),
         ),
       },
+      [],
     )
     const newState: TransientCanvasState = transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'ddd']])],
@@ -143,6 +147,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           emptyImports(),
         ),
       },
+      [],
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(oldState, newState)
@@ -184,6 +189,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               emptyImports(),
             ),
           },
+          [],
         ),
       },
       elementWarnings: addToComplexMap(
@@ -226,6 +232,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               emptyImports(),
             ),
           },
+          [],
         ),
       },
       elementWarnings: addToComplexMap(
@@ -263,6 +270,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               emptyImports(),
             ),
           },
+          [],
         ),
       },
       elementWarnings: addToComplexMap(
@@ -305,6 +313,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               emptyImports(),
             ),
           },
+          [],
         ),
       },
       elementWarnings: addToComplexMap(
@@ -342,6 +351,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               emptyImports(),
             ),
           },
+          [],
         ),
       },
       elementWarnings: addToComplexMap(

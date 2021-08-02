@@ -112,7 +112,7 @@ describe('modifyUnderlyingTarget', () => {
     const codeFile = getTextFileByPath(actualResult.projectContents, '/src/card.js')
     const parsed = codeFile.fileContents.parsed
     if (isParseSuccess(parsed)) {
-      expect(parsed.imports).toEqual(addImport('react', null, [], 'React', emptyImports()))
+      expect(parsed.imports).toEqual(addImport('', 'react', null, [], 'React', emptyImports()))
     } else {
       throw new Error('No parsed version of the file.')
     }

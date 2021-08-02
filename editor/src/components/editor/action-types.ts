@@ -38,6 +38,7 @@ import {
   DuplicationState,
   EditorState,
   ErrorMessages,
+  FloatingInsertMenuState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -51,6 +52,8 @@ import { BuildType } from '../../core/workers/ts/ts-worker'
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
+import { InsertableComponent, StylePropOption } from '../shared/project-components'
+import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -252,6 +255,10 @@ export type SetPanelVisibility = {
   visible: boolean
 }
 
+export type ToggleFocusedOmniboxTab = {
+  action: 'TOGGLE_FOCUSED_OMNIBOX_TAB'
+}
+
 export type TogglePane = {
   action: 'TOGGLE_PANE'
   target: EditorPanel | EditorPane
@@ -414,7 +421,24 @@ export type ResetPins = {
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
   targets: ElementPath[]
-  layoutSystem: LayoutSystem
+  layoutSystem: SettableLayoutSystem
+  newParentMainAxis: 'horizontal' | 'vertical' | null
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
+}
+
+export interface WrapInElement {
+  action: 'WRAP_IN_ELEMENT'
+  targets: ElementPath[]
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports }
+}
+
+export interface OpenFloatingInsertMenu {
+  action: 'OPEN_FLOATING_INSERT_MENU'
+  mode: FloatingInsertMenuState
+}
+
+export interface CloseFloatingInsertMenu {
+  action: 'CLOSE_FLOATING_INSERT_MENU'
 }
 
 export interface UnwrapGroupOrView {
@@ -582,6 +606,7 @@ export interface ClearImageFileBlob {
 export interface AddFolder {
   action: 'ADD_FOLDER'
   parentPath: string
+  fileName: string
 }
 
 export interface DeleteFile {
@@ -831,6 +856,10 @@ export interface SetCurrentTheme {
   theme: Theme
 }
 
+export interface FocusClassNameInput {
+  action: 'FOCUS_CLASS_NAME_INPUT'
+}
+
 export interface FocusFormulaBar {
   action: 'FOCUS_FORMULA_BAR'
 }
@@ -838,6 +867,43 @@ export interface FocusFormulaBar {
 export interface UpdateFormulaBarMode {
   action: 'UPDATE_FORMULA_BAR_MODE'
   value: 'css' | 'content'
+}
+
+export interface InsertWithDefaults {
+  action: 'INSERT_WITH_DEFAULTS'
+  targetParent: ElementPath
+  toInsert: InsertableComponent
+  styleProps: StylePropOption
+  indexPosition: IndexPosition | null
+}
+
+export interface SetPropTransient {
+  action: 'SET_PROP_TRANSIENT'
+  target: ElementPath
+  propertyPath: PropertyPath
+  value: JSXAttribute
+}
+
+export interface ClearTransientProps {
+  action: 'CLEAR_TRANSIENT_PROPS'
+}
+
+export interface AddTailwindConfig {
+  action: 'ADD_TAILWIND_CONFIG'
+}
+
+export interface SetInspectorLayoutSectionHovered {
+  action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED'
+  hovered: boolean
+}
+
+export interface IncrementResizeOptionsSelectedIndex {
+  action: 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX'
+}
+
+export interface SetResizeOptionsTargetOptions {
+  action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS'
+  propertyTargetOptions: Array<LayoutTargetableProp>
 }
 
 export type EditorAction =
@@ -870,6 +936,7 @@ export type EditorAction =
   | RenameComponent
   | NavigatorReorder
   | SetPanelVisibility
+  | ToggleFocusedOmniboxTab
   | TogglePane
   | ClosePopup
   | OpenPopup
@@ -898,6 +965,9 @@ export type EditorAction =
   | SaveAsset
   | ResetPins
   | WrapInView
+  | WrapInElement
+  | OpenFloatingInsertMenu
+  | CloseFloatingInsertMenu
   | UnwrapGroupOrView
   | SetCanvasAnimationsEnabled
   | SetNavigatorRenamingTarget
@@ -977,8 +1047,16 @@ export type EditorAction =
   | ResetCanvas
   | SetFilebrowserDropTarget
   | SetCurrentTheme
+  | FocusClassNameInput
   | FocusFormulaBar
   | UpdateFormulaBarMode
+  | InsertWithDefaults
+  | SetPropTransient
+  | ClearTransientProps
+  | AddTailwindConfig
+  | SetInspectorLayoutSectionHovered
+  | IncrementResizeOptionsSelectedIndex
+  | SetResizeOptionsTargetOptions
 
 export type DispatchPriority =
   | 'everyone'

@@ -11,6 +11,7 @@ import {
   UtopiaJSXComponent,
   isJSXElement,
   emptyJsxMetadata,
+  JSXAttribute,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -49,6 +50,8 @@ import {
   isParsedTextFile,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
+  PropertyPath,
+  HighlightBoundsWithFileForUids,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -101,9 +104,8 @@ import {
   PropertyControlsInfo,
   ResolveFn,
 } from '../../custom-code/code-file'
-import { EditorModes, Mode } from '../editor-modes'
+import { convertModeToSavedMode, EditorModes, Mode, PersistedMode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
-import { DropTargetHint } from '../../navigator/navigator'
 import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
@@ -140,6 +142,10 @@ import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
+import { ValueAtPath } from '../../../core/shared/jsx-attributes'
+import { MapLike } from 'typescript'
+import { pick } from '../../../core/shared/object-utils'
+import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
@@ -271,6 +277,50 @@ export interface DesignerFile {
 
 export type Theme = 'light' | 'dark'
 
+export type DropTargetType = 'before' | 'after' | 'reparent' | null
+
+export interface DropTargetHint {
+  target: ElementPath | null
+  type: DropTargetType
+}
+
+export interface NavigatorState {
+  minimised: boolean
+  dropTargetHint: DropTargetHint
+  collapsedViews: ElementPath[]
+  renamingTarget: ElementPath | null
+  position: 'hidden' | 'left' | 'right'
+}
+
+export interface FloatingInsertMenuStateClosed {
+  insertMenuMode: 'closed'
+}
+
+export interface FloatingInsertMenuStateInsert {
+  insertMenuMode: 'insert'
+  parentPath: ElementPath | null
+  indexPosition: IndexPosition | null
+}
+
+export interface FloatingInsertMenuStateConvert {
+  insertMenuMode: 'convert'
+}
+
+export interface FloatingInsertMenuStateWrap {
+  insertMenuMode: 'wrap'
+}
+
+export type FloatingInsertMenuState =
+  | FloatingInsertMenuStateClosed
+  | FloatingInsertMenuStateInsert
+  | FloatingInsertMenuStateConvert
+  | FloatingInsertMenuStateWrap
+
+export interface ResizeOptions {
+  propertyTargetOptions: Array<LayoutTargetableProp>
+  propertyTargetSelectedIndex: number
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -340,9 +390,17 @@ export interface EditorState {
     domWalkerInvalidateCount: number
     openFile: DesignerFile | null
     scrollAnimation: boolean
+    transientProperties: MapLike<{
+      elementPath: ElementPath
+      attributesToUpdate: MapLike<JSXAttribute>
+    }> | null
+    resizeOptions: ResizeOptions
   }
+  floatingInsertMenu: FloatingInsertMenuState
   inspector: {
     visible: boolean
+    classnameFocusCounter: number
+    layoutSectionHovered: boolean
   }
   fileBrowser: {
     minimised: boolean
@@ -361,13 +419,7 @@ export interface EditorState {
   projectSettings: {
     minimised: boolean
   }
-  navigator: {
-    minimised: boolean
-    dropTargetHint: DropTargetHint
-    collapsedViews: ElementPath[]
-    renamingTarget: ElementPath | null
-    position: 'hidden' | 'left' | 'right'
-  }
+  navigator: NavigatorState
   topmenu: {
     formulaBarMode: 'css' | 'content'
     formulaBarFocusCounter: number
@@ -402,11 +454,13 @@ export interface EditorState {
 
 export interface StoredEditorState {
   selectedViews: Array<ElementPath>
+  mode: PersistedMode | null
 }
 
 export function storedEditorStateFromEditorState(editorState: EditorState): StoredEditorState {
   return {
     selectedViews: editorState.selectedViews,
+    mode: convertModeToSavedMode(editorState.mode),
   }
 }
 
@@ -420,6 +474,7 @@ export function mergeStoredEditorStateIntoEditorState(
     return {
       ...editorState,
       selectedViews: storedEditorState.selectedViews,
+      mode: storedEditorState.mode ?? EditorModes.selectLiteMode(),
     }
   }
 }
@@ -546,7 +601,11 @@ export interface ParseSuccessAndEditorChanges<T> {
 }
 
 export function modifyOpenParseSuccess(
-  transform: (success: ParseSuccess) => ParseSuccess,
+  transform: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticElementPath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess,
   model: EditorState,
 ): EditorState {
   return modifyUnderlyingTarget(
@@ -667,13 +726,14 @@ export function modifyOpenJsxElementAtStaticPath(
 
 function getImportedUtopiaJSXComponents(
   filePath: string,
-  model: EditorState,
+  projectContents: ProjectContentTreeRoot,
+  resolve: ResolveFn,
   pathsToFilter: string[],
 ): Array<UtopiaJSXComponent> {
-  const file = getContentsTreeFileFromString(model.projectContents, filePath)
+  const file = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     const resolvedFilePaths = Object.keys(file.fileContents.parsed.imports)
-      .map((toImport) => model.codeResultCache.resolve(filePath, toImport))
+      .map((toImport) => resolve(filePath, toImport))
       .filter(isRight)
       .map((r) => r.value)
       .filter((v) => !pathsToFilter.includes(v))
@@ -681,7 +741,10 @@ function getImportedUtopiaJSXComponents(
     return [
       ...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed),
       ...resolvedFilePaths.flatMap((path) =>
-        getImportedUtopiaJSXComponents(path, model, [...pathsToFilter, ...resolvedFilePaths]),
+        getImportedUtopiaJSXComponents(path, projectContents, resolve, [
+          ...pathsToFilter,
+          ...resolvedFilePaths,
+        ]),
       ),
     ]
   } else {
@@ -690,13 +753,14 @@ function getImportedUtopiaJSXComponents(
 }
 
 export function getOpenUtopiaJSXComponentsFromStateMultifile(
-  model: EditorState,
+  projectContents: ProjectContentTreeRoot,
+  resolve: ResolveFn,
+  openFilePath: string | null,
 ): Array<UtopiaJSXComponent> {
-  const openUIJSFilePath = getOpenUIJSFileKey(model)
-  if (openUIJSFilePath == null) {
+  if (openFilePath == null) {
     return []
   } else {
-    return getImportedUtopiaJSXComponents(openUIJSFilePath, model, [])
+    return getImportedUtopiaJSXComponents(openFilePath, projectContents, resolve, [])
   }
 }
 
@@ -895,17 +959,20 @@ export interface TransientCanvasState {
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
   filesState: TransientFilesState | null
+  toastsToApply: ReadonlyArray<Notice>
 }
 
 export function transientCanvasState(
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
+  toastsToApply: ReadonlyArray<Notice>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     filesState: fileState,
+    toastsToApply: toastsToApply,
   }
 }
 
@@ -1106,9 +1173,19 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         filename: StoryboardFilePath,
       },
       scrollAnimation: false,
+      transientProperties: null,
+      resizeOptions: {
+        propertyTargetOptions: ['Width', 'Height'],
+        propertyTargetSelectedIndex: 0,
+      },
+    },
+    floatingInsertMenu: {
+      insertMenuMode: 'closed',
     },
     inspector: {
       visible: true,
+      classnameFocusCounter: 0,
+      layoutSectionHovered: false,
     },
     dependencyList: {
       minimised: false,
@@ -1353,9 +1430,19 @@ export function editorModelFromPersistentModel(
         filename: StoryboardFilePath,
       },
       scrollAnimation: false,
+      transientProperties: null,
+      resizeOptions: {
+        propertyTargetOptions: ['Width', 'Height'],
+        propertyTargetSelectedIndex: 0,
+      },
+    },
+    floatingInsertMenu: {
+      insertMenuMode: 'closed',
     },
     inspector: {
       visible: true,
+      classnameFocusCounter: 0,
+      layoutSectionHovered: false,
     },
     dependencyList: persistentModel.dependencyList,
     genericExternalResources: {
@@ -1769,6 +1856,15 @@ export function getHighlightBoundsForElementPath(
   }
 
   return null
+}
+
+export function getHighlightBoundsForElementPaths(
+  paths: Array<ElementPath>,
+  editorState: EditorState,
+): HighlightBoundsWithFileForUids {
+  const targetUIDs = paths.map((path) => toUid(EP.dynamicPathToStaticPath(path)))
+  const projectHighlightBounds = getHighlightBoundsForProject(editorState.projectContents)
+  return pick(targetUIDs, projectHighlightBounds)
 }
 
 export function getElementPathsInBounds(

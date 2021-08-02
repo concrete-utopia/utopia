@@ -32,8 +32,9 @@ import {
   transientActions,
   unsetProperty,
 } from '../editor/actions/action-creators'
-import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
+
 import {
+  EditorStore,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
@@ -64,10 +65,20 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, useColorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
+import {
+  Icn,
+  useColorTheme,
+  InspectorSectionHeader,
+  UtopiaTheme,
+  FlexRow,
+  Button,
+} from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import { when } from '../../utils/react-conditionals'
+import { createSelector } from 'reselect'
+import { isTwindEnabled } from '../../core/tailwind/tailwind'
 
 export interface ElementPathElement {
   name?: string
@@ -81,6 +92,7 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps extends TargetSelectorSectionProps {
   selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
+  key: string
 }
 
 interface AlignDistributeButtonProps {
@@ -94,12 +106,7 @@ const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
   'AlignDistributeButton',
   (props: AlignDistributeButtonProps) => {
     return (
-      <MiniMenuItem
-        className='mr2'
-        animationClassName='darken'
-        disabled={props.disabled}
-        onMouseUp={props.onMouseUp}
-      >
+      <Button disabled={props.disabled} onMouseUp={props.onMouseUp}>
         <Icn
           tooltipText={props.toolTip}
           category='layout/commands'
@@ -107,7 +114,7 @@ const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
           width={16}
           height={16}
         />
-      </MiniMenuItem>
+      </Button>
     )
   },
 )
@@ -148,7 +155,9 @@ const AlignmentButtons = betterReactMemo(
     ])
 
     return (
-      <MiniMenu className='justify-around'>
+      <FlexRow
+        style={{ justifyContent: 'space-around', height: UtopiaTheme.layout.rowHeight.smaller }}
+      >
         <AlignDistributeButton
           onMouseUp={alignLeft}
           toolTip={`Align to left of ${multipleTargets ? 'selection' : 'parent'}`}
@@ -197,7 +206,7 @@ const AlignmentButtons = betterReactMemo(
           iconType='distributeVertical'
           disabled={disableDistribute}
         />
-      </MiniMenu>
+      </FlexRow>
     )
   },
 )
@@ -290,6 +299,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       return (
         <React.Fragment>
           <AlignmentButtons numberOfTargets={selectedViews.length} />
+          {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           <LayoutSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
@@ -307,7 +317,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
-          <ClassNameSubsection />
           <EventHandlersSection />
         </React.Fragment>
       )
@@ -322,6 +331,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         position: 'relative',
         color: colorTheme.neutralForeground.value,
       }}
+      key={props.key}
       onFocus={onFocus}
     >
       {renderInspectorContents()}
@@ -339,31 +349,18 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
-    const rootViewsForSelectedElement: Array<ElementPath> = useEditorState(
-      (store) => MetadataUtils.getRootViewPaths(store.editor.jsxMetadata, selectedViews[0]),
-      'InspectorEntryPoint',
-      (oldElementPaths, newElementPaths) => {
-        return arrayEquals(oldElementPaths, newElementPaths, EP.pathsEqual)
-      },
+
+    return (
+      <SingleInspectorEntryPoint
+        key={'inspector-entry-selected-views'}
+        selectedViews={selectedViews}
+      />
     )
-
-    const showSceneInspector = selectedViews.length === 1 && rootViewsForSelectedElement.length > 0
-
-    if (showSceneInspector) {
-      return (
-        <>
-          <SingleInspectorEntryPoint selectedViews={selectedViews} />
-          <InspectorSectionHeader style={{ paddingTop: 32 }}>Root View</InspectorSectionHeader>
-          <SingleInspectorEntryPoint selectedViews={rootViewsForSelectedElement} />
-        </>
-      )
-    } else {
-      return <SingleInspectorEntryPoint selectedViews={selectedViews} />
-    }
   },
 )
 
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
+  key: string
   selectedViews: Array<ElementPath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
@@ -506,6 +503,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
+        key={props.key}
         selectedViews={selectedViews}
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
@@ -521,6 +519,15 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   return inspector
 })
 
+const rootComponentsSelector = createSelector(
+  (store: EditorStore) => store.editor.projectContents,
+  (store: EditorStore) => store.editor.codeResultCache.resolve,
+  (store: EditorStore) => store.editor.canvas.openFile?.filename ?? null,
+  (projectContents, resolve, openFilePath) => {
+    return getOpenUtopiaJSXComponentsFromStateMultifile(projectContents, resolve, openFilePath)
+  },
+)
+
 export const InspectorContextProvider = betterReactMemo<{
   selectedViews: Array<ElementPath>
   targetPath: Array<string>
@@ -535,10 +542,7 @@ export const InspectorContextProvider = betterReactMemo<{
   }, 'InspectorContextProvider')
 
   const rootComponents = useKeepReferenceEqualityIfPossible(
-    useEditorState(
-      (store) => getOpenUtopiaJSXComponentsFromStateMultifile(store.editor),
-      'InspectorContextProvider rootComponents',
-    ),
+    useEditorState(rootComponentsSelector, 'InspectorContextProvider rootComponents'),
   )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []

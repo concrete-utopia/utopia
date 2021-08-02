@@ -1,8 +1,3 @@
-#canvas-root-wrapper {
-  width: 100%;
-  flex: 1;
-}
-
 #canvas-root {
   position: relative;
   overflow: hidden;

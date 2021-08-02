@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import * as React from 'react'
 import { IcnProps, Icn, useColorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { WarningIcon } from '../../../uuiui/warning-icon'
@@ -12,7 +12,7 @@ interface LayoutIconProps {
 }
 
 const borderColorForIconColor = (color: IcnProps['color'], colorTheme: any): string | undefined => {
-  if (color === 'orange') {
+  if (color === 'warning') {
     return colorTheme.navigatorComponentIconBorder.value
   } else {
     return color
@@ -23,24 +23,41 @@ export const LayoutIcon: React.FunctionComponent<LayoutIconProps> = betterReactM
   'LayoutIcon',
   (props) => {
     const colorTheme = useColorTheme()
-    const { iconProps, hasWidthOrHeight } = useLayoutOrElementIcon(props.path)
+    const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(props.path)
 
-    if (props.warningText != null) {
-      return <WarningIcon tooltipText={props.warningText} />
-    } else {
-      return (
-        <div
-          className='w20 h20 flex justify-center items-center relative'
-          style={{
-            border: hasWidthOrHeight
-              ? `1px solid ${borderColorForIconColor(props.color, colorTheme)}`
-              : undefined,
-            borderRadius: hasWidthOrHeight ? 5 : 0,
-          }}
-        >
+    return (
+      <div
+        style={{
+          width: 18,
+          height: 18,
+          display: 'flex',
+          alignItems: 'center',
+          justifyItems: 'center',
+          position: 'relative',
+          marginLeft: 8,
+        }}
+      >
+        {isPositionAbsolute ? (
+          <div
+            style={{
+              position: 'absolute',
+              left: -5,
+              top: 3,
+              color: '#ff00ff',
+              fontSize: 11,
+              fontWeight: 600,
+            }}
+          >
+            *
+          </div>
+        ) : null}
+
+        {props.warningText != null ? (
+          <WarningIcon tooltipText={props.warningText} />
+        ) : (
           <Icn {...iconProps} color={props.color} />
-        </div>
-      )
-    }
+        )}
+      </div>
+    )
   },
 )

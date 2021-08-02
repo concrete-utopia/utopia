@@ -31,11 +31,11 @@ export const RightMenuTile: React.FunctionComponent<RightMenuTileProps> = (props
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
   const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
 
-  var foregroundColor: IcnProps['color'] = 'black'
+  var foregroundColor: IcnProps['color'] = 'main'
   if (props.highlightSelected && props.selected) {
-    foregroundColor = 'white'
+    foregroundColor = 'on-highlight-main'
   } else if (props.selected || hovered) {
-    foregroundColor = 'blue'
+    foregroundColor = 'primary'
   }
 
   return (
@@ -190,11 +190,11 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
       id='canvas-menu'
       style={{
         alignSelf: 'stretch',
-        borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
+        borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
         width: 38,
       }}
     >
-      <FlexColumn style={{ flexGrow: 1 }}>
+      <FlexColumn style={{ flexGrow: 1, width: 38, overflowX: 'scroll' }}>
         <Tooltip title={'Inspector'} placement='left'>
           <span>
             <MenuTile

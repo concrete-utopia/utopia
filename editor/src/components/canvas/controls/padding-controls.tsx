@@ -19,8 +19,12 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
     const leftElement =
       props.padding.left != null && props.padding.left !== 0 ? (
         <div
-          className=' roleYogaPaddingControl f10  fw5 tc overflow-visible'
+          className=' roleFlexPaddingControl'
           style={{
+            fontSize: 10,
+            fontWeight: 5,
+            textAlign: 'center',
+            overflow: 'visible',
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
@@ -37,8 +41,11 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
     const topElement =
       props.padding.top != null && props.padding.top !== 0 ? (
         <div
-          className=' f10  fw4 tc overflow-visible'
           style={{
+            fontSize: 10,
+            fontWeight: 500,
+            textAlign: 'center',
+            overflow: 'visible',
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
@@ -55,8 +62,11 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
     const rightElement =
       props.padding.right != null && props.padding.right !== 0 ? (
         <div
-          className=' f10  fw4 tc overflow-visible'
           style={{
+            fontSize: 10,
+            fontWeight: 500,
+            textAlign: 'center',
+            overflow: 'visible',
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
@@ -73,8 +83,11 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
     const bottomElement =
       props.padding.bottom != null && props.padding.bottom !== 0 ? (
         <div
-          className=' f10  fw4 tc overflow-visible'
           style={{
+            fontSize: 10,
+            fontWeight: 500,
+            textAlign: 'center',
+            overflow: 'visible',
             background: colorTheme.paddingFillTranslucent.value,
             color: colorTheme.paddingForeground.value,
             position: 'absolute',
@@ -94,8 +107,8 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
       rightElement == null &&
       bottomElement == null ? null : (
         <div
-          className='ba bgtransparent'
           style={{
+            background: 'transparent',
             position: 'absolute',
             pointerEvents: 'none',
             left: props.frame.x + props.canvasOffset.x + (props.padding.left ?? 0),

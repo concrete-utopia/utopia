@@ -121,7 +121,6 @@ export interface UiJsxCanvasProps {
   offset: CanvasVector
   scale: number
   uiFilePath: string
-  selectedViews: Array<ElementPath>
   requireFn: UtopiaRequireFn
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
@@ -205,7 +204,6 @@ export function pickUiJsxCanvasProps(
       offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
       uiFilePath: uiFilePath,
-      selectedViews: editor.selectedViews,
       requireFn: requireFn,
       resolve: editor.codeResultCache.resolve,
       hiddenInstances: hiddenInstances,
@@ -463,7 +461,6 @@ export const UiJsxCanvas = betterReactMemo(
                   mountCount={props.mountCount}
                   domWalkerInvalidateCount={props.domWalkerInvalidateCount}
                   walkDOM={walkDOM}
-                  selectedViews={props.selectedViews}
                   scale={scale}
                   offset={offset}
                   onDomReport={onDomReport}
@@ -540,7 +537,6 @@ function useGetStoryboardRoot(
 
 export interface CanvasContainerProps {
   walkDOM: boolean
-  selectedViews: Array<ElementPath>
   scale: number
   offset: CanvasVector
   onDomReport: (

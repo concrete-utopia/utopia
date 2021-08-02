@@ -254,7 +254,12 @@ export function generateCodeResultCache(
   incorporateBuildResult(nodeModules, projectContents, projectModules)
 
   // Trigger async call to build the property controls info.
-  sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
+  sendPropertyControlsInfoRequest(
+    nodeModules,
+    projectContents,
+    onlyProjectFiles,
+    updatedAndReverseDepFilenames,
+  )
 
   const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch, evaluationCache)
   const resolveFn = getEditorResolveFunction(projectContents, nodeModules)
@@ -399,9 +404,7 @@ export function normalisePathToUnderlyingTarget(
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (isTextFile(currentFile)) {
-    if (!isParseSuccess(currentFile.fileContents.parsed)) {
-      return normalisePathUnableToProceed(currentFilePath)
-    } else {
+    if (isParseSuccess(currentFile.fileContents.parsed)) {
       const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
       const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(staticPath)
       if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
@@ -458,6 +461,8 @@ export function normalisePathToUnderlyingTarget(
           }
         }
       }
+    } else {
+      return normalisePathUnableToProceed(currentFilePath)
     }
   } else {
     return normalisePathUnableToProceed(currentFilePath)

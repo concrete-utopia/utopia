@@ -1,6 +1,7 @@
 import { LayoutSystem } from 'utopia-api' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
+import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import type { revertFile, saveFile } from '../../../core/model/project-file-utils'
 import type { foldEither } from '../../../core/shared/either'
 import type {
@@ -33,6 +34,7 @@ import type {
 } from '../../../core/shared/project-file-types'
 import type { BuildType } from '../../../core/workers/ts/ts-worker'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
+import { IndexPosition } from '../../../utils/utils'
 import type { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import type { CSSCursor } from '../../../uuiui-deps'
 import type {
@@ -49,6 +51,7 @@ import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/co
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
+import { InsertableComponent, StylePropOption } from '../../shared/project-components'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -187,11 +190,24 @@ import type {
   SetCurrentTheme,
   FocusFormulaBar,
   UpdateFormulaBarMode,
+  OpenFloatingInsertMenu,
+  CloseFloatingInsertMenu,
+  InsertWithDefaults,
+  ToggleFocusedOmniboxTab,
+  SetPropTransient,
+  ClearTransientProps,
+  AddTailwindConfig,
+  FocusClassNameInput,
+  WrapInElement,
+  SetInspectorLayoutSectionHovered,
+  IncrementResizeOptionsSelectedIndex,
+  SetResizeOptionsTargetOptions,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
+  FloatingInsertMenuState,
   LeftMenuTab,
   ModalDialog,
   OriginalFrame,
@@ -328,6 +344,12 @@ export function setPanelVisibility(
     action: 'SET_PANEL_VISIBILITY',
     target: target,
     visible: visible,
+  }
+}
+
+export function toggleFocusedOmniboxTab(): ToggleFocusedOmniboxTab {
+  return {
+    action: 'TOGGLE_FOCUSED_OMNIBOX_TAB',
   }
 }
 
@@ -593,7 +615,7 @@ export function resetPins(target: ElementPath): ResetPins {
 }
 
 export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
-  return wrapInView(targets)
+  return wrapInView(targets, 'default-empty-div')
   // FIXME: Make Groups Great Again.
   //return {
   //  action: 'WRAP_IN_VIEW',
@@ -611,11 +633,42 @@ export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
   }
 }
 
-export function wrapInView(targets: Array<ElementPath>): WrapInView {
+export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloatingInsertMenu {
+  return {
+    action: 'OPEN_FLOATING_INSERT_MENU',
+    mode: mode,
+  }
+}
+
+export function wrapInView(
+  targets: Array<ElementPath>,
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
+  layoutSystem: SettableLayoutSystem = LayoutSystem.PinSystem,
+  newParentMainAxis: 'horizontal' | 'vertical' | null = null,
+): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
     targets: targets,
-    layoutSystem: LayoutSystem.PinSystem,
+    layoutSystem: layoutSystem,
+    newParentMainAxis: newParentMainAxis,
+    whatToWrapWith: whatToWrapWith,
+  }
+}
+
+export function wrapInElement(
+  targets: Array<ElementPath>,
+  whatToWrapWith: { element: JSXElement; importsToAdd: Imports },
+): WrapInElement {
+  return {
+    action: 'WRAP_IN_ELEMENT',
+    targets: targets,
+    whatToWrapWith: whatToWrapWith,
+  }
+}
+
+export function closeFloatingInsertMenu(): CloseFloatingInsertMenu {
+  return {
+    action: 'CLOSE_FLOATING_INSERT_MENU',
   }
 }
 
@@ -845,10 +898,11 @@ export function deleteFile(filename: string): DeleteFile {
   }
 }
 
-export function addFolder(parentPath: string): AddFolder {
+export function addFolder(parentPath: string, fileName: string): AddFolder {
   return {
     action: 'ADD_FOLDER',
     parentPath: parentPath,
+    fileName: fileName,
   }
 }
 
@@ -998,6 +1052,25 @@ export function setPropWithElementPath_UNSAFE(
     target: target,
     propertyPath: propertyPath,
     value: value,
+  }
+}
+
+export function setPropTransient(
+  target: ElementPath,
+  propertyPath: PropertyPath,
+  value: JSXAttribute,
+): SetPropTransient {
+  return {
+    action: 'SET_PROP_TRANSIENT',
+    target: target,
+    propertyPath: propertyPath,
+    value: value,
+  }
+}
+
+export function clearTransientProps(): ClearTransientProps {
+  return {
+    action: 'CLEAR_TRANSIENT_PROPS',
   }
 }
 
@@ -1320,6 +1393,12 @@ export function setCurrentTheme(theme: Theme): SetCurrentTheme {
   }
 }
 
+export function focusClassNameInput(): FocusClassNameInput {
+  return {
+    action: 'FOCUS_CLASS_NAME_INPUT',
+  }
+}
+
 export function focusFormulaBar(): FocusFormulaBar {
   return {
     action: 'FOCUS_FORMULA_BAR',
@@ -1330,5 +1409,50 @@ export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBar
   return {
     action: 'UPDATE_FORMULA_BAR_MODE',
     value: value,
+  }
+}
+
+export function insertWithDefaults(
+  targetParent: ElementPath,
+  toInsert: InsertableComponent,
+  styleProps: StylePropOption,
+  indexPosition: IndexPosition | null,
+): InsertWithDefaults {
+  return {
+    action: 'INSERT_WITH_DEFAULTS',
+    targetParent: targetParent,
+    toInsert: toInsert,
+    styleProps: styleProps,
+    indexPosition: indexPosition,
+  }
+}
+
+export function addTailwindConfig(): AddTailwindConfig {
+  return {
+    action: 'ADD_TAILWIND_CONFIG',
+  }
+}
+
+export function setInspectorLayoutSectionHovered(
+  hovered: boolean,
+): SetInspectorLayoutSectionHovered {
+  return {
+    action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED',
+    hovered: hovered,
+  }
+}
+
+export function incrementResizeOptionsSelectedIndex(): IncrementResizeOptionsSelectedIndex {
+  return {
+    action: 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX',
+  }
+}
+
+export function setResizeOptionsTargetOptions(
+  propertyTargetOptions: Array<LayoutTargetableProp>,
+): SetResizeOptionsTargetOptions {
+  return {
+    action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS',
+    propertyTargetOptions: propertyTargetOptions,
   }
 }

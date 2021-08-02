@@ -22,6 +22,9 @@ import {
   jsxAttributeOtherJavaScript,
   JSXElementChild,
   partOfJsxAttributeValue,
+  jsxElementWithoutUID,
+  jsxAttributesEntry,
+  elementInstanceMetadata,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -45,13 +48,17 @@ import {
 } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import { right, forceRight, left, isRight } from '../../../core/shared/either'
-import { createFakeMetadataForComponents } from '../../../utils/utils.test-utils'
+import {
+  createFakeMetadataForComponents,
+  createFakeMetadataForEditor,
+} from '../../../utils/utils.test-utils'
 import Utils from '../../../utils/utils'
 import {
   canvasRectangle,
   CanvasRectangle,
   LocalRectangle,
   localRectangle,
+  zeroRectangle,
 } from '../../../core/shared/math-utils'
 import { createTestProjectWithCode, getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
@@ -66,10 +73,13 @@ import {
   StoryboardFilePath,
   defaultUserState,
   editorModelFromPersistentModel,
+  withUnderlyingTargetFromEditorState,
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import {
+  insertWithDefaults,
   setCanvasFrames,
+  setFocusedElement,
   setProp_UNSAFE,
   switchLayoutSystem,
   updateFilePath,
@@ -100,6 +110,16 @@ import {
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import { complexDefaultProject } from '../../../sample-projects/sample-project-utils'
+import {
+  getComponentGroups,
+  insertableComponent,
+  InsertableComponent,
+} from '../../shared/project-components'
+import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
+import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
+import { getThirdPartyPropertyControls } from '../../../core/property-controls/property-controls-utils'
+import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -159,6 +179,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
 const originalModel = deepFreeze(
   parseSuccess(
     addImport(
+      '/code.js',
       'utopia-api',
       null,
       [importAlias('View'), importAlias('Scene'), importAlias('Storyboard')],
@@ -408,6 +429,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -451,6 +473,7 @@ describe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       editor,
+      null,
       null,
     ).editor
 
@@ -500,6 +523,7 @@ describe('moveTemplate', () => {
       } as CanvasRectangle,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -534,6 +558,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -566,6 +591,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      null,
       null,
     ).editor
 
@@ -601,6 +627,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -633,6 +660,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ccc']),
       null,
       editor,
+      null,
       null,
     ).editor
 
@@ -686,6 +714,7 @@ describe('moveTemplate', () => {
       groupFrame,
       editor,
       LayoutSystem.Group,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -746,6 +775,7 @@ describe('moveTemplate', () => {
       null,
       editor,
       null,
+      null,
     ).editor
 
     const newUiJsFile = getContentsTreeFileFromString(
@@ -797,6 +827,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      null,
       null,
     ).editor
 
@@ -1095,5 +1126,443 @@ describe('UPDATE_FILE_PATH', () => {
         ],
       }
     `)
+  })
+})
+
+describe('INSERT_WITH_DEFAULTS', () => {
+  it('inserts an element into the project with the given defaults', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      { antd: { status: 'loaded' } },
+      getThirdPartyPropertyControls('antd', '4.0.0'),
+      editorState.projectContents,
+      [resolvedNpmDependency('antd', '4.0.0')],
+      StoryboardFilePath,
+    )
+    const antdGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return (
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+        )
+      }),
+    )
+    const menuInsertable = forceNotNull(
+      'Component should exist.',
+      antdGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'Menu'
+      }),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, menuInsertable, 'do-not-add', null)
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, true),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          import { Menu } from 'antd'
+          export var Card = (props) => {
+            return (
+              <div style={{ ...props.style }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Rectangle
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
+                />
+                <Menu
+                  forceSubMenuRender={false}
+                  inlineCollapsed={false}
+                  inlineIndent={24}
+                  mode='inline'
+                  multiple={false}
+                  selectable
+                  subMenuCloseDelay={0.1}
+                  subMenuOpenDelay={0}
+                  theme='light'
+                />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
+  })
+
+  it('inserts an element into the project with the given defaults, also adding style props', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      { antd: { status: 'loaded' } },
+      getThirdPartyPropertyControls('antd', '4.0.0'),
+      editorState.projectContents,
+      [resolvedNpmDependency('antd', '4.0.0')],
+      StoryboardFilePath,
+    )
+    const antdGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return (
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+        )
+      }),
+    )
+    const menuInsertable = forceNotNull(
+      'Component should exist.',
+      antdGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'Menu'
+      }),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, menuInsertable, 'add-size', null)
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, true),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          import { Menu } from 'antd'
+          export var Card = (props) => {
+            return (
+              <div style={{ ...props.style }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Rectangle
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
+                />
+                <Menu
+                  forceSubMenuRender={false}
+                  inlineCollapsed={false}
+                  inlineIndent={24}
+                  mode='inline'
+                  multiple={false}
+                  selectable
+                  subMenuCloseDelay={0.1}
+                  subMenuOpenDelay={0}
+                  theme='light'
+                  style={{ width: 100, height: 100 }}
+                />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
+  })
+
+  it('inserts an img element into the project, also adding style props', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      {},
+      {},
+      editorState.projectContents,
+      [],
+      StoryboardFilePath,
+    )
+    const htmlGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return group.source.type === 'HTML_GROUP'
+      }),
+    )
+    const imgInsertable = forceNotNull(
+      'Component should exist.',
+      htmlGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'img'
+      }),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size', null)
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, true),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          export var Card = (props) => {
+            return (
+              <div style={{ ...props.style }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Rectangle
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
+                />
+                <img
+                  style={{ width: 100, height: 100 }}
+                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit\\"'
+                />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
+  })
+
+  it('inserts an img element into the project, also adding style props, added at the back', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      {},
+      {},
+      editorState.projectContents,
+      [],
+      StoryboardFilePath,
+    )
+    const htmlGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return group.source.type === 'HTML_GROUP'
+      }),
+    )
+    const imgInsertable = forceNotNull(
+      'Component should exist.',
+      htmlGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'img'
+      }),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size', { type: 'back' })
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, true),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          export var Card = (props) => {
+            return (
+              <div style={{ ...props.style }}>
+                <img
+                  style={{ width: 100, height: 100 }}
+                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit\\"'
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Rectangle
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
+                />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
+  })
+})
+
+describe('SET_FOCUSED_ELEMENT', () => {
+  it('prevents focusing a non-focusable element', () => {
+    const project = complexDefaultProject()
+    let editorState = editorModelFromPersistentModel(project, NO_OP)
+    const pathToFocus = EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div')
+    const underlyingElement = forceNotNull(
+      'Should be able to find this.',
+      withUnderlyingTargetFromEditorState(pathToFocus, editorState, null, (_, element) => element),
+    )
+    const divElementMetadata = elementInstanceMetadata(
+      pathToFocus,
+      right(underlyingElement),
+      {},
+      zeroRectangle as CanvasRectangle,
+      zeroRectangle as LocalRectangle,
+      [],
+      [],
+      false,
+      false,
+      emptySpecialSizeMeasurements,
+      emptyComputedStyle,
+      emptyAttributeMetadatada,
+      null,
+      null,
+    )
+    const fakeMetadata: ElementInstanceMetadataMap = {
+      [EP.toString(pathToFocus)]: divElementMetadata,
+    }
+    editorState = {
+      ...editorState,
+      jsxMetadata: fakeMetadata,
+    }
+    const action = setFocusedElement(pathToFocus)
+    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
+    expect(updatedEditorState).toBe(editorState)
+  })
+  it('focuses a focusable element without a problem', () => {
+    const project = complexDefaultProject()
+    let editorState = editorModelFromPersistentModel(project, NO_OP)
+    const pathToFocus = EP.fromString(
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance',
+    )
+    const underlyingElement = forceNotNull(
+      'Should be able to find this.',
+      withUnderlyingTargetFromEditorState(pathToFocus, editorState, null, (_, element) => element),
+    )
+    const cardElementMetadata = elementInstanceMetadata(
+      pathToFocus,
+      right(underlyingElement),
+      {},
+      zeroRectangle as CanvasRectangle,
+      zeroRectangle as LocalRectangle,
+      [],
+      [],
+      false,
+      false,
+      emptySpecialSizeMeasurements,
+      emptyComputedStyle,
+      emptyAttributeMetadatada,
+      null,
+      null,
+    )
+    const fakeMetadata: ElementInstanceMetadataMap = {
+      [EP.toString(pathToFocus)]: cardElementMetadata,
+    }
+    editorState = {
+      ...editorState,
+      jsxMetadata: fakeMetadata,
+    }
+    const action = setFocusedElement(pathToFocus)
+    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
+    expect(updatedEditorState.focusedElementPath).toEqual(pathToFocus)
   })
 })

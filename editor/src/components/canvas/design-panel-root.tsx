@@ -71,7 +71,7 @@ const NothingOpenCard = betterReactMemo('NothingOpen', () => {
       }}
     >
       <LargerIcons.PixelatedPalm
-        color='blue'
+        color='primary'
         style={{ width: 42, height: 42, imageRendering: 'pixelated' }}
       />
       <div style={{ textAlign: 'center' }}>
@@ -157,7 +157,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (
       event: MouseEvent | TouchEvent,
       direction: ResizeDirection,
-      elementRef: HTMLDivElement,
+      elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
       if (props.isUiJsFileOpen) {
@@ -172,7 +172,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     (
       event: MouseEvent | TouchEvent,
       direction: ResizeDirection,
-      elementRef: HTMLDivElement,
+      elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
       if (props.isUiJsFileOpen && navigatorPosition !== 'hidden') {
@@ -229,7 +229,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           overflowX: 'hidden',
           flexGrow: 1,
           flexShrink: 0,
-          borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
         }}
       >
         {!isCanvasVisible && !interfaceDesigner.codePaneVisible ? (

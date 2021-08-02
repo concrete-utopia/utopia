@@ -696,7 +696,7 @@ export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXA
         }
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        // Skip these for now.
+        newAttributes.push(attrPart)
         break
       default:
         const _exhaustiveCheck: never = attrPart
@@ -726,7 +726,7 @@ export function setJSXAttributesAttribute(
         }
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        // Ignore these for now.
+        result.push(attrPart)
         break
       default:
         const _exhaustiveCheck: never = attrPart
@@ -1521,6 +1521,7 @@ export interface SpecialSizeMeasurements {
   parentFlexDirection: string | null
   flexDirection: string | null
   htmlElementName: string
+  renderedChildrenCount: number
 }
 
 export function specialSizeMeasurements(
@@ -1543,6 +1544,7 @@ export function specialSizeMeasurements(
   parentFlexDirection: string | null,
   flexDirection: string | null,
   htmlElementName: string,
+  renderedChildrenCount: number,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1564,6 +1566,7 @@ export function specialSizeMeasurements(
     parentFlexDirection,
     flexDirection,
     htmlElementName,
+    renderedChildrenCount,
   }
 }
 
@@ -1590,6 +1593,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   'div',
+  0,
 )
 
 export const emptyComputedStyle: ComputedStyle = {}

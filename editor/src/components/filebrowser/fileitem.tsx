@@ -39,6 +39,7 @@ import {
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
+import { AddingFile, applyAddingFile } from './filepath-utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -48,16 +49,14 @@ export interface FileBrowserItemProps extends FileBrowserItemInfo {
   collapsed: boolean
   dropTarget: string | null
   toggleCollapse: (filePath: string) => void
-  Expand: (filePath: string) => void
+  expand: (filePath: string) => void
   setSelected: (selectedItem: FileBrowserItemInfo | null) => void
 }
 
 interface FileBrowserItemState {
   isRenaming: boolean
   isHovered: boolean
-  isAddingChild: boolean
-  addingChildName: string
-  isAddingChildNameValid: boolean
+  adding: AddingFile | null
   // we need the following to keep track of 'internal' exits,
   // eg when moving from the outer folder div to a span with the folder name inside it
   // see https://medium.com/@650egor/simple-drag-and-drop-file-upload-in-react-2cb409d88929
@@ -203,6 +202,37 @@ const isFile = (fileBrowserItem: FileBrowserItemInfo) => {
   return fileBrowserItem.type === 'file'
 }
 
+export function addingChildElement(
+  indentation: number,
+  addingChildName: string,
+  onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void,
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
+  onBlur: () => void,
+): React.ReactNode {
+  return (
+    <SimpleFlexRow
+      style={{
+        // make it look indented, plus extra to account for missing icon
+        paddingLeft: (indentation + 1) * BaseIndentationPadding + 20,
+        paddingTop: 3,
+        paddingBottom: 3,
+        height: 32,
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <StringInput
+        testId=''
+        value={addingChildName}
+        autoFocus
+        onKeyDown={onKeyDown}
+        onChange={onChange}
+        onBlur={onBlur}
+      />
+    </SimpleFlexRow>
+  )
+}
+
 interface FileBrowserItemDragProps {
   isDragging: boolean
   isOver: boolean
@@ -219,9 +249,7 @@ class FileBrowserItemInner extends React.PureComponent<
     this.state = {
       isRenaming: false,
       isHovered: false,
-      isAddingChild: false,
-      addingChildName: '',
-      isAddingChildNameValid: true,
+      adding: null,
       currentExternalFilesDragEventCounter: 0,
       externalFilesDraggedIn: false,
       filename: '',
@@ -263,7 +291,7 @@ class FileBrowserItemInner extends React.PureComponent<
           this.props.collapsed,
           this.props.exportedFunction,
         )}
-        color={this.props.hasErrorMessages ? 'red' : 'black'}
+        color={this.props.hasErrorMessages ? 'error' : undefined}
         width={18}
         height={18}
         onDoubleClick={this.toggleCollapse}
@@ -272,7 +300,7 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   renderModifiedIcon() {
-    return this.props.modified ? <Icons.CircleSmall color='blue' /> : null
+    return this.props.modified ? <Icons.CircleSmall color='primary' /> : null
   }
 
   onChangeFilename = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -406,19 +434,6 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  addFolder = () => {
-    this.props.Expand(this.props.path)
-    this.props.dispatch([EditorActions.addFolder(this.props.path)], 'everyone')
-  }
-
-  addTextFile = () => {
-    this.props.Expand(this.props.path)
-    this.props.dispatch(
-      [EditorActions.addTextFile(this.props.path, this.state.addingChildName)],
-      'everyone',
-    )
-  }
-
   delete = () => {
     this.props.dispatch(
       [
@@ -529,36 +544,48 @@ class FileBrowserItemInner extends React.PureComponent<
     })
   }
 
-  showAddingFileRow = () =>
+  showAddingFileRow = () => {
     this.setState({
-      isAddingChild: true,
-      isAddingChildNameValid: true,
-      addingChildName: '',
+      adding: {
+        fileOrFolder: 'file',
+        filename: '',
+      },
     })
+  }
+
+  showAddingFolderRow = () => {
+    this.setState({
+      adding: {
+        fileOrFolder: 'folder',
+        filename: '',
+      },
+    })
+  }
 
   confirmAddingFile = () => {
-    this.props.Expand(this.props.path)
-    this.props.dispatch(
-      [EditorActions.addTextFile(this.props.path, this.state.addingChildName)],
-      'everyone',
-    )
+    this.props.expand(this.props.path)
+    applyAddingFile(this.props.dispatch, this.props.path, this.state.adding)
     this.setState({
-      isAddingChild: false,
-      addingChildName: '',
-      isAddingChildNameValid: true,
+      adding: null,
     })
   }
 
   inputLabelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ addingChildName: event.target.value })
+    if (this.state.adding != null) {
+      this.setState({
+        adding: {
+          ...this.state.adding,
+          filename: event.target.value,
+        },
+      })
+    }
   }
 
-  abandonAddingFile = () =>
+  abandonAddingFile = () => {
     this.setState({
-      isAddingChild: false,
-      isAddingChildNameValid: true,
-      addingChildName: '',
+      adding: null,
     })
+  }
 
   inputLabelKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
@@ -675,7 +702,7 @@ class FileBrowserItemInner extends React.PureComponent<
           {this.props.type === 'file' ? (
             <SimpleFlexRow style={{ position: 'absolute', right: '0px' }}>
               {displayAddFolder ? (
-                <Button style={{ marginRight: '2px' }} onClick={this.addFolder}>
+                <Button style={{ marginRight: '2px' }} onClick={this.showAddingFolderRow}>
                   <Icons.NewFolder style={fileIconStyle} tooltipText='Add New Folder' />
                 </Button>
               ) : null}
@@ -692,34 +719,21 @@ class FileBrowserItemInner extends React.PureComponent<
 
               {this.props.hasErrorMessages ? (
                 <span style={{ margin: '0px 4px' }}>
-                  <WarningIcon color='red' />
+                  <WarningIcon color='error' />
                 </span>
               ) : null}
             </SimpleFlexRow>
           ) : null}
         </div>
-        {this.state.isAddingChild ? (
-          <SimpleFlexRow
-            style={{
-              // make it look indented, plus extra to account for missing icon
-              paddingLeft: (indentation + 1) * BaseIndentationPadding + 20,
-              paddingTop: 3,
-              paddingBottom: 3,
-              height: 32,
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <StringInput
-              testId=''
-              value={this.state.addingChildName}
-              autoFocus
-              onKeyDown={this.inputLabelKeyDown}
-              onChange={this.inputLabelChange}
-              onBlur={this.abandonAddingFile}
-            />
-          </SimpleFlexRow>
-        ) : null}
+        {this.state.adding == null
+          ? null
+          : addingChildElement(
+              indentation,
+              this.state.adding.filename,
+              this.inputLabelKeyDown,
+              this.inputLabelChange,
+              this.abandonAddingFile,
+            )}
       </div>
     )
 

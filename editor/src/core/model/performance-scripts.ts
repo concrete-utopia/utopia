@@ -92,6 +92,7 @@ export function useTriggerResizePerformanceTest(): () => void {
         metadata.current,
         [target],
         false,
+        'Width',
       )
       await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
       performance.mark(`resize_dispatch_finished_${framesPassed}`)

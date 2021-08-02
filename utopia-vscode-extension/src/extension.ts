@@ -314,10 +314,10 @@ function getFullConfig(): UtopiaVSCodeConfig {
   }
 }
 
-function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
-  // State that needs to be stored between messages.
-  let currentDecorations: Array<DecorationRange> = []
+let currentDecorations: Array<DecorationRange> = []
+let currentSelection: BoundsInFile | null = null
 
+function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
   function handleMessage(message: ToVSCodeMessage): void {
     switch (message.type) {
       case 'OPEN_FILE':
@@ -330,6 +330,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       case 'SELECTED_ELEMENT_CHANGED':
         const followSelectionEnabled = getFollowSelectionEnabledConfig()
         if (followSelectionEnabled) {
+          currentSelection = message.boundsInFile
           revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
         }
         break
@@ -397,7 +398,13 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
     const workspaceEdit = new vscode.WorkspaceEdit()
     workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
     const editApplied = await vscode.workspace.applyEdit(workspaceEdit)
-    if (!editApplied) {
+    if (editApplied) {
+      // Reset the highlights and selection
+      updateDecorations(currentDecorations)
+      if (currentSelection != null) {
+        revealRangeIfPossibleInVisibleEditor(currentSelection)
+      }
+    } else {
       // Something went wrong applying the edit, so we clear the block on unsaved content fs writes
       incomingFileChanges.delete(filePath)
     }
@@ -413,7 +420,7 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
   } else {
     // Just in case the message is processed before the file has been written to the FS
     if (retries > 0) {
-      await new Promise((resolve) => setTimeout(() => resolve(), 100))
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 100))
       return openFile(fileUri, retries - 1)
     } else {
       return false
@@ -446,27 +453,36 @@ async function revealRangeIfPossible(
     if (visibleEditor == null) {
       const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
       if (opened) {
-        revealRangeIfPossible(workspaceRootUri, boundsInFile, true)
+        revealRangeIfPossibleInVisibleEditor(boundsInFile)
       }
     } else {
-      const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
-      const alreadySelected = rangesIntersectLinesOnly(visibleEditor.selection, rangeToReveal)
-      const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
-        r.contains(visibleEditor.selection),
+      revealRangeIfPossibleInVisibleEditor(boundsInFile)
+    }
+  }
+}
+
+async function revealRangeIfPossibleInVisibleEditor(boundsInFile: BoundsInFile): Promise<void> {
+  const visibleEditor = vscode.window.visibleTextEditors.find(
+    (editor) => editor.document.uri.path === boundsInFile.filePath,
+  )
+  if (visibleEditor != null) {
+    const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
+    const alreadySelected = rangesIntersectLinesOnly(visibleEditor.selection, rangeToReveal)
+    const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
+      r.contains(visibleEditor.selection),
+    )
+
+    if (!alreadySelected) {
+      const selectionRange = getVSCodeRange(boundsInFile)
+      visibleEditor.selection = new vscode.Selection(selectionRange.start, selectionRange.start)
+    }
+
+    const shouldReveal = !(alreadySelected && alreadyVisible)
+    if (shouldReveal) {
+      visibleEditor.revealRange(
+        rangeToReveal,
+        vscode.TextEditorRevealType.InCenterIfOutsideViewport,
       )
-
-      if (!alreadySelected) {
-        const selectionRange = getVSCodeRange(boundsInFile)
-        visibleEditor.selection = new vscode.Selection(selectionRange.start, selectionRange.start)
-      }
-
-      const shouldReveal = !(alreadySelected && alreadyVisible)
-      if (shouldReveal) {
-        visibleEditor.revealRange(
-          rangeToReveal,
-          vscode.TextEditorRevealType.InCenterIfOutsideViewport,
-        )
-      }
     }
   }
 }

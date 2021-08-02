@@ -12,6 +12,19 @@ export type LayoutFlexElementNumericProp = 'Width' | 'Height' | 'flexBasis' | 'F
 
 export type LayoutFlexElementProp = LayoutFlexElementNumericProp
 
+export type LayoutTargetableProp =
+  | LayoutFlexElementProp
+  | 'Width'
+  | 'Height'
+  | 'minWidth'
+  | 'maxWidth'
+  | 'minHeight'
+  | 'maxHeight'
+  | 'marginTop'
+  | 'marginBottom'
+  | 'marginLeft'
+  | 'marginRight'
+
 export type LayoutPinnedProp =
   | LayoutDimension
   | 'PinnedLeft'
@@ -60,6 +73,7 @@ export type StyleLayoutProp =
   | 'marginRight'
   | 'marginBottom'
   | 'marginLeft'
+  | 'margin'
   | 'display'
 
 export type LayoutProp =
@@ -155,6 +169,7 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
   marginRight: ['style', 'marginRight'],
   marginBottom: ['style', 'marginBottom'],
   marginLeft: ['style', 'marginLeft'],
+  margin: ['style', 'margin'],
   padding: ['style', 'padding'],
   paddingTop: ['style', 'paddingTop'],
   paddingRight: ['style', 'paddingRight'],

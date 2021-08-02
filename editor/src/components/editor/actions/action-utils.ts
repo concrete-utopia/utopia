@@ -26,6 +26,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SWITCH_EDITOR_MODE':
     case 'INSERT_IMAGE_INTO_UI':
     case 'SET_PANEL_VISIBILITY':
+    case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
     case 'TOGGLE_PANE':
     case 'COPY_SELECTION_TO_CLIPBOARD':
     case 'OPEN_TEXT_EDITOR':
@@ -91,8 +92,16 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_FILEBROWSER_DROPTARGET':
     case 'SET_FORKED_FROM_PROJECT_ID':
     case 'SET_CURRENT_THEME':
+    case 'FOCUS_CLASS_NAME_INPUT':
     case 'FOCUS_FORMULA_BAR':
     case 'UPDATE_FORMULA_BAR_MODE':
+    case 'OPEN_FLOATING_INSERT_MENU':
+    case 'CLOSE_FLOATING_INSERT_MENU':
+    case 'SET_PROP_TRANSIENT':
+    case 'CLEAR_TRANSIENT_PROPS':
+    case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
+    case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
+    case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
       return true
 
     case 'NEW':
@@ -117,6 +126,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
     case 'WRAP_IN_VIEW':
+    case 'WRAP_IN_ELEMENT':
     case 'UNWRAP_GROUP_OR_VIEW':
     case 'SET_CANVAS_FRAMES':
     case 'SET_PROJECT_NAME':
@@ -148,6 +158,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_MISSING_DIMENSIONS':
     case 'ADD_STORYBOARD_FILE':
     case 'UPDATE_CHILD_TEXT':
+    case 'INSERT_WITH_DEFAULTS':
+    case 'ADD_TAILWIND_CONFIG':
       return false
     case 'SAVE_ASSET':
       return (

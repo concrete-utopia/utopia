@@ -89,7 +89,7 @@ function resolveTestFiles(
   }
 }
 
-export function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
+function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
   if (isRight(metadata.element)) {
     return {
       ...metadata,
@@ -98,6 +98,11 @@ export function stripUidsFromMetadata(metadata: ElementInstanceMetadata): Elemen
   } else {
     return metadata
   }
+}
+
+function stripUnwantedDataFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
+  delete metadata.props['children']
+  return stripUidsFromMetadata(metadata)
 }
 
 interface RuntimeErrorInfo {
@@ -186,7 +191,6 @@ export function renderCanvasReturnResultAndError(
   if (possibleProps == null) {
     canvasProps = {
       uiFilePath: UiFilePath,
-      selectedViews: [],
       requireFn: requireFn,
       resolve: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
@@ -214,7 +218,6 @@ export function renderCanvasReturnResultAndError(
     canvasProps = {
       ...possibleProps,
       uiFilePath: UiFilePath,
-      selectedViews: [],
       requireFn: requireFn,
       resolve: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
@@ -323,7 +326,7 @@ export function testCanvasRenderMultifile(
 
   expect(formattedSpyEnabled).toMatchSnapshot()
 
-  const metadataWithoutUIDs = Utils.objectMap(stripUidsFromMetadata, spyValues.metadata)
+  const metadataWithoutUIDs = Utils.objectMap(stripUnwantedDataFromMetadata, spyValues.metadata)
   expect(metadataWithoutUIDs).toMatchSnapshot()
 }
 

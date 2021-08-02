@@ -1,4 +1,19 @@
-import { jsxElementWithoutUID, JSXElementWithoutUID } from '../../core/shared/element-template'
+import { PropertyControls } from 'utopia-api'
+import { URL_HASH } from '../../common/env-vars'
+import {
+  defaultPropertiesForComponent,
+  defaultPropertiesForComponentInFile,
+  parsedPropertyControlsForComponentInFile,
+} from '../../core/property-controls/property-controls-utils'
+import { flatMapEither, foldEither, right } from '../../core/shared/either'
+import {
+  JSXAttributes,
+  jsxAttributesEntry,
+  jsxAttributeValue,
+  jsxElementWithoutUID,
+  JSXElementWithoutUID,
+} from '../../core/shared/element-template'
+import { dropFileExtension } from '../../core/shared/file-utils'
 import {
   isResolvedNpmDependency,
   PackageStatus,
@@ -13,27 +28,38 @@ import {
   ProjectFile,
 } from '../../core/shared/project-file-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
+import {
+  ComponentDescriptor,
+  componentDescriptor,
+  DependencyDescriptor,
+} from '../../core/third-party/third-party-types'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 import { getExportedComponentImports } from '../editor/export-utils'
 
+export type StylePropOption = 'do-not-add' | 'add-size'
+
 export interface InsertableComponent {
   importsToAdd: Imports
   element: JSXElementWithoutUID
   name: string
+  stylePropOptions: Array<StylePropOption>
 }
 
 export function insertableComponent(
   importsToAdd: Imports,
   element: JSXElementWithoutUID,
   name: string,
+  stylePropOptions: Array<StylePropOption>,
 ): InsertableComponent {
   return {
     importsToAdd: importsToAdd,
     element: element,
     name: name,
+    stylePropOptions: stylePropOptions,
   }
 }
 
@@ -149,8 +175,106 @@ export function getDependencyStatus(
   }
 }
 
-const basicHTMLEntities = ['div', 'span', 'button', 'input']
 const emptyImportsValue = emptyImports()
+
+const doNotAddStyleProp: Array<StylePropOption> = ['do-not-add']
+const addSizeAndNotStyleProp: Array<StylePropOption> = ['do-not-add', 'add-size']
+
+const stockHTMLPropertyControls: PropertyControls = {
+  style: {
+    type: 'styleobject',
+  },
+}
+
+function makeHTMLDescriptor(
+  tag: string,
+  extraPropertyControls: PropertyControls,
+): ComponentDescriptor {
+  const propertyControls: PropertyControls = {
+    ...stockHTMLPropertyControls,
+    ...extraPropertyControls,
+  }
+  let defaultProps: JSXAttributes = []
+  for (const propKey of Object.keys(propertyControls)) {
+    const prop = propertyControls[propKey]
+    if (prop?.defaultValue != null) {
+      defaultProps.push(
+        jsxAttributesEntry(
+          propKey,
+          jsxAttributeValue(prop.defaultValue, emptyComments),
+          emptyComments,
+        ),
+      )
+    }
+  }
+  return componentDescriptor(
+    addImport('', 'react', null, [], 'React', emptyImportsValue),
+    jsxElementWithoutUID(tag, defaultProps, []),
+    tag,
+    propertyControls,
+  )
+}
+
+const basicHTMLElementsDescriptor: DependencyDescriptor = {
+  name: 'HTML Elements',
+  components: [
+    makeHTMLDescriptor('div', {}),
+    makeHTMLDescriptor('span', {}),
+    makeHTMLDescriptor('h1', {}),
+    makeHTMLDescriptor('h2', {}),
+    makeHTMLDescriptor('p', {}),
+    makeHTMLDescriptor('button', {}),
+    makeHTMLDescriptor('input', {}),
+    makeHTMLDescriptor('video', {
+      controls: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      autoPlay: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      loop: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      src: {
+        type: 'string',
+        defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
+      },
+      style: {
+        type: 'styleobject',
+        defaultValue: {
+          width: '250px',
+          height: '120px',
+        },
+      },
+    }),
+    makeHTMLDescriptor('img', {
+      src: {
+        type: 'string',
+        defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
+      },
+      style: {
+        type: 'styleobject',
+        defaultValue: {
+          width: '64px',
+          height: '64px',
+        },
+      },
+    }),
+  ],
+}
+
+export function stylePropOptionsForPropertyControls(
+  propertyControls: PropertyControls,
+): Array<StylePropOption> {
+  if ('style' in propertyControls) {
+    return addSizeAndNotStyleProp
+  } else {
+    return doNotAddStyleProp
+  }
+}
 
 export function getComponentGroups(
   packageStatus: PackageStatusMap,
@@ -169,11 +293,59 @@ export function getComponentGroups(
         file.fileContents.parsed,
       )
       if (possibleExportedComponents != null) {
-        const insertableComponents = possibleExportedComponents.map((exportedComponent) => {
+        const componentsWithoutApp_KILLME = possibleExportedComponents.filter(
+          (c) => c.listingName !== 'App', // TODO make this filtering smarter. Filter out the component(s) that we are currently inserting into instead of this
+        )
+        const insertableComponents = componentsWithoutApp_KILLME.map((exportedComponent) => {
+          const pathWithoutExtension = dropFileExtension(fullPath)
+          const { defaultProps, parsedControls } = defaultPropertiesForComponentInFile(
+            exportedComponent.listingName,
+            pathWithoutExtension,
+            propertyControlsInfo,
+          )
+
+          // Drill down into the parsed controls to see if this has an appropriate style object entry.
+          const stylePropOptions: Array<StylePropOption> = foldEither(
+            () => {
+              return doNotAddStyleProp
+            },
+            (propertyControls) => {
+              if ('style' in propertyControls) {
+                return foldEither(
+                  () => {
+                    return doNotAddStyleProp
+                  },
+                  (controlDescription) => {
+                    switch (controlDescription.type) {
+                      case 'styleobject':
+                        return addSizeAndNotStyleProp
+                      default:
+                        return doNotAddStyleProp
+                    }
+                  },
+                  propertyControls['style'],
+                )
+              } else {
+                return doNotAddStyleProp
+              }
+            },
+            parsedControls,
+          )
+          let attributes: JSXAttributes = []
+          for (const key of Object.keys(defaultProps)) {
+            attributes.push(
+              jsxAttributesEntry(
+                key,
+                jsxAttributeValue(defaultProps[key], emptyComments),
+                emptyComments,
+              ),
+            )
+          }
           return insertableComponent(
             exportedComponent.importsToAdd,
-            jsxElementWithoutUID(exportedComponent.listingName, [], []),
+            jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
             exportedComponent.listingName,
+            stylePropOptions,
           )
         })
         result.push(
@@ -186,40 +358,54 @@ export function getComponentGroups(
     }
   })
 
-  // Add entries for basic HTML entities.
-  result.push(
-    insertableComponentGroup(
-      insertableComponentGroupHTML(),
-      basicHTMLEntities.map((basicHTMLEntity) => {
-        return insertableComponent(
-          addImport('react', null, [], 'React', emptyImportsValue),
-          jsxElementWithoutUID(basicHTMLEntity, [], []),
-          basicHTMLEntity,
-        )
-      }),
-    ),
-  )
+  function addDependencyDescriptor(
+    groupType: InsertableComponentGroupType,
+    components: Array<ComponentDescriptor>,
+  ): void {
+    const insertableComponents = components.map((component) => {
+      let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
+      // Drill down to see if this dependency component has a style object entry
+      // against style.
+      if (component.propertyControls != null) {
+        if ('style' in component.propertyControls) {
+          const styleControls = component.propertyControls['style']
+          if (styleControls?.type === 'styleobject') {
+            stylePropOptions = addSizeAndNotStyleProp
+          }
+        }
+      }
+      return insertableComponent(
+        component.importsToAdd,
+        component.element,
+        component.name,
+        stylePropOptions,
+      )
+    })
+    result.push(insertableComponentGroup(groupType, insertableComponents))
+  }
+
+  // Add HTML entries.
+  addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptor.components)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
     if (isResolvedNpmDependency(dependency)) {
-      const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
-      if (componentDescriptor != null) {
+      const possibleComponentDescriptor = getThirdPartyComponents(
+        dependency.name,
+        dependency.version,
+      )
+      if (possibleComponentDescriptor != null) {
         const dependencyStatus = getDependencyStatus(
           packageStatus,
           propertyControlsInfo,
           dependency.name,
           'loaded',
         )
-        const components = dependencyStatus === 'loaded' ? componentDescriptor.components : []
-        const insertableComponents = components.map((component) =>
-          insertableComponent(component.importsToAdd, component.element, component.name),
-        )
-        result.push(
-          insertableComponentGroup(
-            insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
-            insertableComponents,
-          ),
+        const components =
+          dependencyStatus === 'loaded' ? possibleComponentDescriptor.components : []
+        addDependencyDescriptor(
+          insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
+          components,
         )
       }
     }

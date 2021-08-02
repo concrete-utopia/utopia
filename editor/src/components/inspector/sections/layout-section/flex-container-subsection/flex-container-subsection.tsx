@@ -82,18 +82,16 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
           controlStatus={flexGap.controlStatus}
           controlStyles={flexGap.controlStyles}
         />
-        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-          <FlexAlignItemsControl
-            value={alignItems.value}
-            controlStatus={alignItems.controlStatus}
-            controlStyles={alignItems.controlStyles}
-            onSubmitValue={alignItems.onSubmitValue}
-            onUnset={alignItems.onUnsetValues}
-            alignDirection={alignDirection}
-            alignItemsFlexStart={alignItemsFlexStart}
-            alignItemsFlexEnd={alignItemsFlexEnd}
-          />
-        </UIGridRow>
+        <FlexAlignItemsControl
+          value={alignItems.value}
+          controlStatus={alignItems.controlStatus}
+          controlStyles={alignItems.controlStyles}
+          onSubmitValue={alignItems.onSubmitValue}
+          onUnset={alignItems.onUnsetValues}
+          alignDirection={alignDirection}
+          alignItemsFlexStart={alignItemsFlexStart}
+          alignItemsFlexEnd={alignItemsFlexEnd}
+        />
         <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
           <FlexWrapControl
             value={flexWrap.value}

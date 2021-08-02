@@ -52,7 +52,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 
 export function createLookupRender(
-  elementPath: ElementPath,
+  elementPath: ElementPath | null,
   rootScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
@@ -82,13 +82,14 @@ export function createLookupRender(
     )
 
     // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = EP.parentPath(
+    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
+      EP.parentPath,
       elementPath,
     )
 
-    const innerPath = EP.appendToPath(
+    const innerPath = optionalMap(
+      (path) => EP.appendToPath(path, generatedUID),
       elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
-      generatedUID,
     )
 
     let augmentedInnerElement = element
@@ -143,7 +144,7 @@ function NoOpLookupRender(element: JSXElement, scope: MapLike<any>): React.React
 
 export function renderCoreElement(
   element: JSXElementChild,
-  elementPath: ElementPath,
+  elementPath: ElementPath | null,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
@@ -266,7 +267,10 @@ export function renderCoreElement(
     case 'JSX_FRAGMENT': {
       let renderedChildren: Array<React.ReactChild> = []
       fastForEach(element.children, (child) => {
-        const childPath = EP.appendToPath(EP.parentPath(elementPath), getUtopiaID(child))
+        const childPath = optionalMap(
+          (path) => EP.appendToPath(EP.parentPath(path), getUtopiaID(child)),
+          elementPath,
+        )
         const renderResult = renderCoreElement(
           child,
           childPath,
@@ -305,7 +309,7 @@ export function renderCoreElement(
 function renderJSXElement(
   key: string,
   jsx: JSXElement,
-  elementPath: ElementPath,
+  elementPath: ElementPath | null,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   rootScope: MapLike<any>,
@@ -324,9 +328,6 @@ function renderJSXElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
 ): React.ReactElement {
-  if (elementPath == null) {
-    throw new Error(`Utopia Error: the element renderer did not receive a ElementPath, key: ${key}`)
-  }
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, elementPath)) {
     elementProps = hideElement(elementProps)
@@ -334,7 +335,7 @@ function renderJSXElement(
   elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
 
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
-    const childPath = EP.appendToPath(elementPath, getUtopiaID(child))
+    const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
     return renderCoreElement(
       child,
       childPath,
@@ -374,9 +375,10 @@ function renderJSXElement(
     ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps
 
-  const elementPropsWithSceneID = elementIsScene
-    ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: EP.toString(elementPath) }
-    : elementPropsWithScenePath
+  const elementPropsWithSceneID =
+    elementIsScene && elementPath != null
+      ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: EP.toString(elementPath) }
+      : elementPropsWithScenePath
 
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML

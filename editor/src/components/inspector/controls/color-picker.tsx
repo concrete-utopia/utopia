@@ -612,7 +612,7 @@ export class ColorPickerInner extends React.Component<
               labelInner={{
                 category: 'layout/systems',
                 type: 'transform-rotate',
-                color: 'gray',
+                color: 'secondary',
                 width: 10,
                 height: 10,
               }}

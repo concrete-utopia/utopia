@@ -65,9 +65,9 @@ const lightPrimitives = {
   verySubduedForeground: lightBase.fg8,
   neutralInvertedForeground: lightBase.bg0,
 
-  neutralBorder: lightBase.border1,
+  neutralBorder: lightBase.border3,
   secondaryBorder: lightBase.border2,
-  subduedBorder: lightBase.border3,
+  subduedBorder: lightBase.border1,
 }
 
 const lightErrorStates = {
@@ -82,6 +82,8 @@ const light = {
   ...lightBase,
   ...lightPrimitives,
   ...lightErrorStates,
+
+  textColor: base.almostBlack,
 
   // big sections
   leftMenuBackground: lightPrimitives.neutralBackground,
@@ -177,7 +179,9 @@ const darkBase = {
   bg5: createUtopiColor('#848998'),
   fg0: createUtopiColor('#ffffff'),
   fg1: createUtopiColor('#D9DCE3'),
-  fg3: createUtopiColor('pink'),
+  fg2: createUtopiColor('#c9cCc3'),
+  fg3: createUtopiColor('b9bCb3'),
+  fg4: createUtopiColor('a9aCa3'),
   fg5: createUtopiColor('#8B91A0'),
   fg6: createUtopiColor('#6F778B'),
   fg7: createUtopiColor('#525B72'),
@@ -214,10 +218,12 @@ const darkErrorStates = {
   warningBgTranslucent: base.orange.o(20),
   warningBgSolid: base.orange.shade(70),
 }
-const dark = {
+const dark: typeof light = {
   ...darkBase,
   ...darkPrimitives,
   ...darkErrorStates,
+
+  textColor: base.white,
 
   // big sections
   leftMenuBackground: darkPrimitives.neutralBackground,
@@ -292,13 +298,14 @@ const dark = {
   flasherHookColor: base.neonpink,
 }
 
-export const colorTheme = light
+export const colorTheme = { ...light, inverted: dark }
+export const darkColorTheme = { ...dark, inverted: light }
 
 // TODO: don't export colorTheme anymore and just export useUtopiaTheme() hook
 // prerequisites: no class components and usage of UtopiaTheme.color instead of colorTheme
 export const useColorTheme = () => {
   const currentTheme: Theme = useEditorState((store) => store.editor.theme, 'currentTheme')
-  return currentTheme === 'dark' ? dark : light
+  return currentTheme === 'dark' ? darkColorTheme : colorTheme
 }
 
 const inspectorXPadding = 8
@@ -454,7 +461,9 @@ const shadowStyles = {
 
 const popup: React.CSSProperties = {
   background: lightPrimitives.neutralBackground.value,
-  boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 2px 7px',
+  boxShadow: `inset 0px 0px 0px .5px ${UtopiaTheme.color.border3.value} , 0px 2px 4px 0px ${
+    UtopiaTheme.color.fg6.o(50).value
+  }`,
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,
@@ -473,4 +482,4 @@ export const UtopiaStyles = {
   flexCenter,
   scene,
   canvas,
-}
+} as const

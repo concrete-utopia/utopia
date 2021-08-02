@@ -87,10 +87,10 @@ const ErrorMessageRow = (props: ErrorMessageRowProps) => {
 function errorMessageSeverityToColor(severity: ErrorMessageSeverity) {
   switch (severity) {
     case 'warning':
-      return 'orange'
+      return 'warning'
     case 'error':
     case 'fatal':
-      return 'red'
+      return 'error'
     default:
       const _exhaustiveCheck: never = severity
       throw new Error(`Unknown severity ${severity}}`)
@@ -259,7 +259,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
         case 'console':
           return (
             <div
-              className='label-consolewrapper overflow-y-scroll'
+              className='label-consolewrapper'
               // we need increased specificity because of our global settings for user-selection,
               // and console-feed 2.8x doesn't allow for style injection, despite the docs.
               css={{
@@ -275,6 +275,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
                 height: '100%',
                 // There probably is a better fix but I've run out of goats to sacrifice
                 paddingBottom: ProblemTabBarHeight,
+                overflowY: 'scroll',
                 overscrollBehavior: 'contain',
                 scrollSnapType: 'y proximity',
               }}
