@@ -404,9 +404,7 @@ export function normalisePathToUnderlyingTarget(
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (isTextFile(currentFile)) {
-    if (!isParseSuccess(currentFile.fileContents.parsed)) {
-      return normalisePathUnableToProceed(currentFilePath)
-    } else {
+    if (isParseSuccess(currentFile.fileContents.parsed)) {
       const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
       const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(staticPath)
       if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
@@ -463,6 +461,8 @@ export function normalisePathToUnderlyingTarget(
           }
         }
       }
+    } else {
+      return normalisePathUnableToProceed(currentFilePath)
     }
   } else {
     return normalisePathUnableToProceed(currentFilePath)
