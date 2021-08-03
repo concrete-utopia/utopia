@@ -500,8 +500,8 @@ const SettingsPane = betterReactMemo('SettingsPane', () => {
               }}
             >
               <Subdued>
-                Settings can be changed in the code editor by opening the comand palette and
-                searching for Settings (CMD+P on Mac, CTRL+P on Mac / Linux). We store settings with
+                Settings can be changed in the code editor by opening the command palette and
+                searching for Settings (CMD+P on Mac, CTRL+P on Windows / Linux). We store settings with
                 each project.
               </Subdued>
             </div>
