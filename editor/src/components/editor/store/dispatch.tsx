@@ -10,6 +10,7 @@ import {
   ElementPath,
   isParseSuccess,
   isTextFile,
+  ParseSuccess,
   ProjectFile,
 } from '../../../core/shared/project-file-types'
 import {
@@ -251,13 +252,11 @@ function maybeRequestModelUpdate(
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (codeNeedsParsing(file.fileContents.revisionsState)) {
+        const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
+          ? file.fileContents.parsed
+          : file.lastParseSuccess
         filesToUpdate.push(
-          createParseFile(
-            fullPath,
-            file.fileContents.code,
-            file.fileContents.parsed,
-            file.lastRevisedTime,
-          ),
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
         )
       } else if (
         codeNeedsPrinting(file.fileContents.revisionsState) &&

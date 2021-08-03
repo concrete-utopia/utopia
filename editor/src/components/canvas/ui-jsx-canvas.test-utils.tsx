@@ -26,6 +26,7 @@ import {
   textFileContents,
   RevisionsState,
   ProjectContents,
+  isParseSuccess,
 } from '../../core/shared/project-file-types'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
@@ -142,6 +143,7 @@ export function renderCanvasReturnResultAndError(
     [UiFilePath]: textFile(
       textFileContents(uiFileCode, parsedUIFileCode, RevisionsState.BothMatch),
       null,
+      isParseSuccess(parsedUIFileCode) ? parsedUIFileCode : null,
       1000,
     ),
   }
@@ -150,6 +152,7 @@ export function renderCanvasReturnResultAndError(
     projectContents[filename] = textFile(
       textFileContents(codeFilesString[filename], parsedCode, RevisionsState.BothMatch),
       null,
+      isParseSuccess(parsedCode) ? parsedCode : null,
       1000,
     )
   }

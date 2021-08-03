@@ -6,13 +6,22 @@ import {
   isJSXFragment,
   JSXElementChild,
 } from '../../shared/element-template'
-import { isParseSuccess, ParsedTextFile } from '../../shared/project-file-types'
+import { isParseSuccess, ParsedTextFile, ParseSuccess } from '../../shared/project-file-types'
 import { emptySet } from '../../shared/set-utils'
 import { lintAndParse } from './parser-printer'
 
+function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
+  return isParseSuccess(file) ? file : null
+}
+
 describe('fixParseSuccessUIDs', () => {
   it('does not fix identical file', () => {
-    const newFile = lintAndParse('test.js', baseFileContents, baseFile, emptySet())
+    const newFile = lintAndParse(
+      'test.js',
+      baseFileContents,
+      asParseSuccessOrNull(baseFile),
+      emptySet(),
+    )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
@@ -30,7 +39,7 @@ describe('fixParseSuccessUIDs', () => {
     const newFileFixed = lintAndParse(
       'test.js',
       baseFileWithTwoTopLevelComponentsUpdated,
-      newFile,
+      asParseSuccessOrNull(newFile),
       emptySet(),
     )
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
@@ -57,7 +66,7 @@ describe('fixParseSuccessUIDs', () => {
     const fileWithFragmentUpdated = lintAndParse(
       'test.js',
       fileWithTopLevelFragmentComponentUpdateContents,
-      fileWithFragment,
+      asParseSuccessOrNull(fileWithFragment),
       emptySet(),
     )
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
@@ -74,7 +83,12 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('founds and fixes a single line change', () => {
-    const newFile = lintAndParse('test.js', fileWithSingleUpdateContents, baseFile, emptySet())
+    const newFile = lintAndParse(
+      'test.js',
+      fileWithSingleUpdateContents,
+      asParseSuccessOrNull(baseFile),
+      emptySet(),
+    )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
@@ -88,7 +102,12 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('avoids uid shifting caused by single prepending insertion', () => {
-    const newFile = lintAndParse('test.js', fileWithOneInsertedView, baseFile, emptySet())
+    const newFile = lintAndParse(
+      'test.js',
+      fileWithOneInsertedView,
+      asParseSuccessOrNull(baseFile),
+      emptySet(),
+    )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
         random-uuid
@@ -102,7 +121,12 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('double duplication', () => {
-    const newFile = lintAndParse('test.js', fileWithTwoDuplicatedViews, baseFile, emptySet())
+    const newFile = lintAndParse(
+      'test.js',
+      fileWithTwoDuplicatedViews,
+      asParseSuccessOrNull(baseFile),
+      emptySet(),
+    )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
         random-uuid
@@ -121,7 +145,7 @@ describe('fixParseSuccessUIDs', () => {
     const fourViews = lintAndParse(
       'test.js',
       fileWithTwoDuplicatesAndInsertion,
-      threeViews,
+      asParseSuccessOrNull(threeViews),
       emptySet(),
     )
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
@@ -143,7 +167,7 @@ describe('fixParseSuccessUIDs', () => {
     const secondResult = lintAndParse(
       'test.js',
       baseFileContentsWithDifferentBackground,
-      firstResult,
+      asParseSuccessOrNull(firstResult),
       emptySet(),
     )
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))

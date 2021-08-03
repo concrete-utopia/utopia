@@ -1086,7 +1086,7 @@ export function isReactImported(sourceFile: TS.SourceFile): boolean {
 export function parseCode(
   filename: string,
   sourceText: string,
-  oldParseResultForUIDComparison: ParsedTextFile | null,
+  oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParsedTextFile {
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
@@ -1786,7 +1786,7 @@ export function getHighlightBoundsWithoutUID(
 export function lintAndParse(
   filename: string,
   content: string,
-  oldParseResultForUIDComparison: ParsedTextFile | null,
+  oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParsedTextFile {
   const lintResult = lintCode(filename, content)

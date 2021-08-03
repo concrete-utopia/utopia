@@ -1,10 +1,10 @@
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import {
   ParsedTextFile,
-  isParseFailure,
   textFile,
   textFileContents,
   RevisionsState,
+  isParseSuccess,
 } from '../../../core/shared/project-file-types'
 import { emptySet } from '../../../core/shared/set-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -94,7 +94,7 @@ function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
       null,
       emptySet(),
     ) as ParsedTextFile
-    if (isParseFailure(parsedFile)) {
+    if (!isParseSuccess(parsedFile)) {
       fail('The test file parse failed')
     }
 
@@ -104,6 +104,7 @@ function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
       textFile(
         textFileContents(modifiedFiles[modifiedFilename], parsedFile, RevisionsState.BothMatch),
         null,
+        parsedFile,
         Date.now(),
       ),
     )

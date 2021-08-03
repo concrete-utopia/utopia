@@ -2525,7 +2525,7 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     emptySet(),
   ) as ParsedTextFile
 
-  if (isParseFailure(parsedFile)) {
+  if (!isParseSuccess(parsedFile)) {
     fail('The test file parse failed')
   }
 
@@ -2537,6 +2537,7 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
       textFile(
         textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
         null,
+        parsedFile,
         Date.now(),
       ),
     ),

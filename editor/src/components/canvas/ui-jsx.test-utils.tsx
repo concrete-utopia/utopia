@@ -387,6 +387,7 @@ export function getEditorState(fileContents: string): EditorState {
   const storyboardFile = textFile(
     textFileContents('', success, RevisionsState.ParsedAhead),
     null,
+    success,
     0,
   )
   return {
