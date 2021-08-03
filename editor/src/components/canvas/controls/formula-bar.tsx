@@ -96,9 +96,8 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     [saveTimerRef, selectedElement, dispatchUpdate],
   )
 
-  const buttonsVisible = isFeatureEnabled('TopMenu ClassNames') && selectedElement != null
-  const classNameFieldVisible =
-    isFeatureEnabled('TopMenu ClassNames') && selectedElement != null && selectedMode === 'css'
+  const buttonsVisible = selectedElement != null
+  const classNameFieldVisible = selectedElement != null && selectedMode === 'css'
   const inputFieldVisible = !classNameFieldVisible
 
   const editorStoreRef = useRefEditorState((store) => store)
