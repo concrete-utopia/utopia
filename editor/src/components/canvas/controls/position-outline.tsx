@@ -23,7 +23,7 @@ export const PositionOutline = betterReactMemo('PositionOutline', (props: Positi
     'PositionOutline canvasOffset',
   )
   if (containingFrame != null) {
-    let pins: PinOutlineProps[] = useCollectPinOutlines(
+    let pins: PinOutlineProps[] = collectPinOutlines(
       attributes,
       props.frame,
       containingFrame,
@@ -62,7 +62,7 @@ const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null
   }, 'useContainingFrameForElement')
 }
 
-const useCollectPinOutlines = (
+const collectPinOutlines = (
   attributes: PropsOrJSXAttributes,
   frame: CanvasRectangle,
   containingFrame: CanvasRectangle,
