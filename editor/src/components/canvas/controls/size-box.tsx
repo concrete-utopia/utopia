@@ -258,7 +258,6 @@ interface ResizeLinesProps {
 
 const LineOffset = 6
 const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => {
-  const [showLabel, setShowLabel] = React.useState(false)
   const reference = React.createRef<HTMLDivElement>()
   const LineSVGComponent =
     props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal
@@ -278,20 +277,10 @@ const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => 
 
   const catchmentSize = 12 / props.scale
 
-  const mouseEnter = React.useCallback(() => {
-    setShowLabel(true)
-  }, [])
-
-  const mouseLeave = React.useCallback(() => {
-    setShowLabel(false)
-  }, [])
-
   const mouseCatcher =
     props.resizeStatus !== 'enabled' ? null : (
       <div
         ref={reference}
-        onMouseEnter={mouseEnter}
-        onMouseLeave={mouseLeave}
         style={{
           pointerEvents: 'initial',
           position: 'absolute',
@@ -324,7 +313,7 @@ const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => 
         color={props.color}
       />
       {when(
-        (showLabel || isEdgeDragged) && interactiveResize,
+        isEdgeDragged && interactiveResize,
         <PropertyTargetSelector
           top={top + shiftPropertyTargetSelectorAxis('horizontal', props.direction, edge)}
           left={left + shiftPropertyTargetSelectorAxis('vertical', props.direction, edge)}
