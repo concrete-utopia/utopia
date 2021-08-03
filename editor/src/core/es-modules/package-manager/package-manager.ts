@@ -32,12 +32,6 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
   return error
 }
 
-export const getEditorResolveFunction = (
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-) => (importOrigin: string, toImport: string): Either<string, string> =>
-  resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
-
 export const getCurriedEditorRequireFn = (
   nodeModules: NodeModules,
   dispatch: EditorDispatch,

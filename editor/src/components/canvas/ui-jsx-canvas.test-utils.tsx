@@ -50,6 +50,7 @@ import { contentsToTree, ProjectContentTreeRoot } from '../assets'
 import { MapLike } from 'typescript'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
+import type { CurriedResolveFn } from '../custom-code/code-file'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -59,11 +60,9 @@ export interface PartialCanvasProps {
   mountCount: UiJsxCanvasProps['mountCount']
 }
 
-export const dumbResolveFn = (filenames: Array<string>) => (
-  importOrigin: string,
-  toImport: string,
-): Either<string, string> => {
-  return resolveTestFiles(filenames, importOrigin, toImport)
+export const dumbResolveFn = (filenames: Array<string>): CurriedResolveFn => {
+  return (_: ProjectContentTreeRoot) => (importOrigin: string, toImport: string) =>
+    resolveTestFiles(filenames, importOrigin, toImport)
 }
 
 function resolveTestFiles(
@@ -187,7 +186,7 @@ export function renderCanvasReturnResultAndError(
     canvasProps = {
       uiFilePath: UiFilePath,
       curriedRequireFn: curriedRequireFn,
-      resolve: dumbResolveFn(Object.keys(codeFilesString)),
+      curriedResolveFn: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
@@ -214,7 +213,7 @@ export function renderCanvasReturnResultAndError(
       ...possibleProps,
       uiFilePath: UiFilePath,
       curriedRequireFn: curriedRequireFn,
-      resolve: dumbResolveFn(Object.keys(codeFilesString)),
+      curriedResolveFn: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
