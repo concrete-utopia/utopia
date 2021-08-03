@@ -46,7 +46,7 @@ import { EditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { directory } from '../../core/model/project-file-utils'
-import { contentsToTree } from '../assets'
+import { contentsToTree, ProjectContentTreeRoot } from '../assets'
 import { MapLike } from 'typescript'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
@@ -156,14 +156,9 @@ export function renderCanvasReturnResultAndError(
   }
   const updatedContents = contentsToTree(projectContents)
 
-  const baseRequireFn = getRequireFn(NO_OP, updatedContents, {}, {}, 'canvas')
-  const requireFn: UiJsxCanvasProps['requireFn'] = (importOrigin: string, toImport: string) => {
-    switch (toImport) {
-      // here we can manually insert extra dependencies, such as antd
-      default:
-        return baseRequireFn(importOrigin, toImport)
-    }
-  }
+  const curriedRequireFn = (innerProjectContents: ProjectContentTreeRoot) =>
+    getRequireFn(NO_OP, innerProjectContents, {}, {}, 'canvas')
+
   storeHookForTest.updateStore((store) => {
     const updatedEditor = {
       ...store.editor,
@@ -191,7 +186,7 @@ export function renderCanvasReturnResultAndError(
   if (possibleProps == null) {
     canvasProps = {
       uiFilePath: UiFilePath,
-      requireFn: requireFn,
+      curriedRequireFn: curriedRequireFn,
       resolve: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
@@ -218,7 +213,7 @@ export function renderCanvasReturnResultAndError(
     canvasProps = {
       ...possibleProps,
       uiFilePath: UiFilePath,
-      requireFn: requireFn,
+      curriedRequireFn: curriedRequireFn,
       resolve: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
@@ -254,7 +249,7 @@ export function renderCanvasReturnResultAndError(
             projectContents={canvasProps.projectContents}
             // eslint-disable-next-line react/jsx-no-bind
             reportError={reportError}
-            requireFn={canvasProps.requireFn}
+            requireFn={canvasProps.curriedRequireFn}
           >
             <UiJsxCanvas {...canvasProps} />
           </CanvasErrorBoundary>

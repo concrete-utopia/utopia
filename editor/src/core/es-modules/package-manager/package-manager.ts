@@ -18,6 +18,7 @@ import { ProjectContentTreeRoot } from '../../../components/assets'
 import { applyLoaders } from '../../webpack-loaders/loaders'
 import { string } from 'prop-types'
 import { Either } from '../../shared/either'
+import { CurriedUtopiaRequireFn } from '../../../components/custom-code/code-file'
 
 export type FileEvaluationCache = { exports: any }
 
@@ -37,25 +38,19 @@ export const getEditorResolveFunction = (
 ) => (importOrigin: string, toImport: string): Either<string, string> =>
   resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
 
-export const getEditorRequireFn = (
-  projectContents: ProjectContentTreeRoot,
+export const getCurriedEditorRequireFn = (
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   evaluationCache: EvaluationCache,
-): RequireFn => {
+): CurriedUtopiaRequireFn => {
   const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
     // FIXME Update something in the state to show that we're downloading remote files
     moduleDownload.then((modulesToAdd: NodeModules) =>
       dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
     )
   }
-  return getRequireFn(
-    onRemoteModuleDownload,
-    projectContents,
-    nodeModules,
-    evaluationCache,
-    'canvas',
-  )
+  return (projectContents: ProjectContentTreeRoot) =>
+    getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, evaluationCache, 'canvas')
 }
 
 export function getRequireFn(

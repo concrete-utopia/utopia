@@ -28,7 +28,7 @@ import {
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
-import { UtopiaRequireFn } from '../custom-code/code-file'
+import { CurriedUtopiaRequireFn, UtopiaRequireFn } from '../custom-code/code-file'
 import { importResultFromImports } from '../editor/npm-dependency/npm-dependency'
 import {
   DerivedState,
@@ -121,7 +121,7 @@ export interface UiJsxCanvasProps {
   offset: CanvasVector
   scale: number
   uiFilePath: string
-  requireFn: UtopiaRequireFn
+  curriedRequireFn: CurriedUtopiaRequireFn
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   editedTextElement: ElementPath | null
@@ -180,8 +180,6 @@ export function pickUiJsxCanvasProps(
       derived.canvas.transientState.filesState,
     )
 
-    const requireFn = editor.codeResultCache.requireFn
-
     let linkTags = ''
     const indexHtml = getIndexHtmlFileFromEditorState(editor)
     if (isRight(indexHtml)) {
@@ -204,7 +202,7 @@ export function pickUiJsxCanvasProps(
       offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
       uiFilePath: uiFilePath,
-      requireFn: requireFn,
+      curriedRequireFn: editor.codeResultCache.curriedRequireFn,
       resolve: editor.codeResultCache.resolve,
       hiddenInstances: hiddenInstances,
       editedTextElement: editedTextElement,
@@ -265,7 +263,7 @@ export const UiJsxCanvas = betterReactMemo(
       offset,
       scale,
       uiFilePath,
-      requireFn,
+      curriedRequireFn,
       resolve,
       hiddenInstances,
       walkDOM,
@@ -312,10 +310,14 @@ export const UiJsxCanvas = betterReactMemo(
     >({})
 
     // TODO after merge requireFn can never be null
-    if (requireFn == null) {
+    if (curriedRequireFn == null) {
       throw new Error('Utopia Internal Error: requireFn can never be null')
     } else {
       let resolvedFiles: MapLike<Array<string>> = {} // Mapping from importOrigin to an array of toImport
+      const requireFn = React.useMemo(() => curriedRequireFn(projectContents), [
+        curriedRequireFn,
+        projectContents,
+      ])
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
           if (resolvedFiles[importOrigin] == null) {

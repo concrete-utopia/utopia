@@ -30,7 +30,7 @@ import {
 import { EditorDispatch } from '../editor/action-types'
 import {
   EvaluationCache,
-  getEditorRequireFn,
+  getCurriedEditorRequireFn,
   getEditorResolveFunction,
 } from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/action-creators'
@@ -75,6 +75,8 @@ export type UtopiaRequireFn = (
   skipRegistering: boolean,
 ) => any
 
+export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
+
 export type PropertyControlsInfo = {
   [filenameNoExtension: string]: { [componentName: string]: PropertyControls }
 }
@@ -86,7 +88,7 @@ export type CodeResultCache = {
   cache: { [filename: string]: CodeResult }
   exportsInfo: ReadonlyArray<ExportsInfo>
   error: Error | null
-  requireFn: UtopiaRequireFn
+  curriedRequireFn: CurriedUtopiaRequireFn
   resolve: ResolveFn
   projectModules: MultiFileBuildResult
   evaluationCache: EvaluationCache
@@ -261,7 +263,7 @@ export function generateCodeResultCache(
     updatedAndReverseDepFilenames,
   )
 
-  const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch, evaluationCache)
+  const curriedRequireFn = getCurriedEditorRequireFn(nodeModules, dispatch, evaluationCache)
   const resolveFn = getEditorResolveFunction(projectContents, nodeModules)
 
   let cache: { [code: string]: CodeResult } = {}
@@ -277,7 +279,7 @@ export function generateCodeResultCache(
     exportsInfo: exportsInfo,
     cache: cache,
     error: null,
-    requireFn: requireFn,
+    curriedRequireFn: curriedRequireFn,
     resolve: resolveFn,
     projectModules: projectModules,
     evaluationCache: evaluationCache,

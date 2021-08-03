@@ -3410,7 +3410,7 @@ export const UPDATE_FNS = {
         },
         exportsInfo: action.codeResultCache.exportsInfo,
         error: action.codeResultCache.error,
-        requireFn: action.codeResultCache.requireFn,
+        curriedRequireFn: action.codeResultCache.curriedRequireFn,
         resolve: action.codeResultCache.resolve,
         projectModules: action.codeResultCache.projectModules,
         evaluationCache: action.codeResultCache.evaluationCache,
