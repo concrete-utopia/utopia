@@ -130,19 +130,17 @@ const PinOutline = betterReactMemo(
     const borderTop = props.isHorizontalLine ? `1px dashed ${colorTheme.primary.value}` : 'none'
     const borderLeft = props.isHorizontalLine ? 'none' : `1px dashed ${colorTheme.primary.value}`
     return (
-      <>
-        <div
-          style={{
-            position: 'absolute',
-            left: props.startX,
-            top: props.startY,
-            width: width,
-            height: height,
-            borderTop: borderTop,
-            borderLeft: borderLeft,
-          }}
-        />
-      </>
+      <div
+        style={{
+          position: 'absolute',
+          left: props.startX,
+          top: props.startY,
+          width: width,
+          height: height,
+          borderTop: borderTop,
+          borderLeft: borderLeft,
+        }}
+      />
     )
   },
 )
