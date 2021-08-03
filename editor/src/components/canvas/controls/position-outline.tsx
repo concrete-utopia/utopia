@@ -55,10 +55,11 @@ const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
   return useEditorState((store) => {
     const containingBlockPath = MetadataUtils.findContainingBlock(store.editor.jsxMetadata, path)
-    return (
-      MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, containingBlockPath)
-        ?.globalFrame ?? null
-    )
+    if (containingBlockPath != null) {
+      return MetadataUtils.getFrameInCanvasCoords(containingBlockPath, store.editor.jsxMetadata)
+    } else {
+      return null
+    }
   }, 'useContainingFrameForElement')
 }
 
