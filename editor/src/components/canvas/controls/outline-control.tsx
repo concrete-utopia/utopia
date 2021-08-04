@@ -19,6 +19,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { KeysPressed } from '../../../utils/keyboard'
+import { PositionOutline } from './position-outline'
 import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 
 export function getSelectionColor(
@@ -303,6 +304,12 @@ export const OutlineControls = (props: OutlineControlsProps) => {
           padding={padding}
           frame={rect}
         />,
+      )
+    }
+
+    if (MetadataUtils.isPositionAbsolute(instance)) {
+      selectionOutlines.push(
+        <PositionOutline key={`${keyPrefix}-position-outline`} frame={rect} path={selectedView} />,
       )
     }
 
