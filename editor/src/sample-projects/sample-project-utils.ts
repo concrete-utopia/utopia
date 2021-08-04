@@ -13,6 +13,7 @@ import {
 } from '../core/model/new-project-files'
 import { directory } from '../core/model/project-file-utils'
 import {
+  isParseSuccess,
   ProjectContents,
   RevisionsState,
   TextFile,
@@ -35,6 +36,7 @@ export function simpleDefaultProject(): PersistentModel {
         RevisionsState.BothMatch,
       ),
       null,
+      null,
       0,
     ),
     '/src': directory(),
@@ -54,7 +56,12 @@ export function createComplexDefaultProjectContents(): ProjectContents {
   const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
   function createCodeFile(path: string, contents: string): TextFile {
     const result = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE)
-    return textFile(textFileContents(contents, result, RevisionsState.BothMatch), null, Date.now())
+    return textFile(
+      textFileContents(contents, result, RevisionsState.BothMatch),
+      null,
+      isParseSuccess(result) ? result : null,
+      Date.now(),
+    )
   }
 
   return {
@@ -64,6 +71,7 @@ export function createComplexDefaultProjectContents(): ProjectContents {
         unparsed,
         RevisionsState.BothMatch,
       ),
+      null,
       null,
       0,
     ),
@@ -152,6 +160,7 @@ function uiBuilderProject(): PersistentModel {
         unparsed,
         RevisionsState.BothMatch,
       ),
+      null,
       null,
       0,
     ),

@@ -464,7 +464,7 @@ const AddTailwindButton = (props: AddTailwindButtonProps) => {
   const tailwindAlreadyAdded =
     props.packagesWithStatus.find((p) => p.name === 'tailwindcss') &&
     props.packagesWithStatus.find((p) => p.name === 'postcss')
-  if (tailwindAlreadyAdded || !isFeatureEnabled('TopMenu ClassNames')) {
+  if (tailwindAlreadyAdded) {
     return null
   }
   return (

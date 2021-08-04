@@ -89,6 +89,7 @@ export function createPersistentModel(): PersistentModel {
           RevisionsState.ParsedAhead,
         ),
         null,
+        null,
         0,
       ),
     }),
@@ -114,6 +115,7 @@ export function createEditorStates(
           RevisionsState.CodeAhead,
         ),
         null,
+        null,
         0,
       ),
       [StoryboardFilePath]: textFile(
@@ -129,6 +131,7 @@ export function createEditorStates(
           ),
           RevisionsState.ParsedAhead,
         ),
+        null,
         null,
         0,
       ),

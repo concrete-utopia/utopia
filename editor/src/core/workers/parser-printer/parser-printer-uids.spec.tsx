@@ -14,6 +14,7 @@ import {
 } from '../../shared/element-template'
 import {
   foldParsedTextFile,
+  isParseSuccess,
   ProjectContents,
   RevisionsState,
   TextFile,
@@ -48,6 +49,7 @@ function addCodeFileToProjectContents(
   const file = textFile(
     textFileContents(contents, parseResult, RevisionsState.BothMatch),
     null,
+    isParseSuccess(parseResult) ? parseResult : null,
     Date.now(),
   )
   return addFileToProjectContents(projectContents, path, file)
@@ -65,6 +67,7 @@ describe('parseCode', () => {
           textFile(
             textFileContents(MajesticBrokerTestCaseCode, success, RevisionsState.BothMatch),
             null,
+            success,
             0,
           ),
         )
@@ -152,6 +155,7 @@ describe('parseCode', () => {
           unparsed,
           RevisionsState.BothMatch,
         ),
+        null,
         null,
         0,
       ),

@@ -282,6 +282,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       componentMetadata,
       localSelectedViews,
     )
+    const resolveFn = props.editor.codeResultCache.curriedResolveFn(props.editor.projectContents)
     const controlProps: ControlProps = {
       selectedViews: localSelectedViews,
       highlightedViews: localHighlightedViews,
@@ -303,7 +304,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       nodeModules: props.editor.nodeModules.files,
       openFile: props.editor.canvas.openFile?.filename ?? null,
       transientState: props.derived.canvas.transientState,
-      resolve: props.editor.codeResultCache.resolve,
+      resolve: resolveFn,
       resizeOptions: props.editor.canvas.resizeOptions,
     }
     const dragState = props.editor.canvas.dragState

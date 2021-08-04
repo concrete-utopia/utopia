@@ -264,7 +264,8 @@ export const EditorComponentInner = betterReactMemo(
               className='LeftPaneShell'
               style={{
                 height: '100%',
-                transition: 'all .1s linear',
+                flexShrink: 0,
+                transition: 'all .1s ease-in-out',
                 width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                 overflowX: 'scroll',
                 backgroundColor: colorTheme.leftPaneBackground.value,
@@ -411,6 +412,7 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
         left: '30%',
         overflow: 'scroll',
         maxHeight: '50%',
+        zIndex: 100,
       }}
     >
       {toasts.map((toast, index) => (

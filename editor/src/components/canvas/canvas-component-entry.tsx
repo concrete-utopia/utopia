@@ -13,7 +13,7 @@ import {
 import { saveDOMReport } from '../editor/actions/action-creators'
 import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ConsoleLog } from '../editor/store/editor-state'
-import { UtopiaRequireFn } from '../custom-code/code-file'
+import { CurriedUtopiaRequireFn, UtopiaRequireFn } from '../custom-code/code-file'
 import { betterReactMemo } from '../../uuiui-deps'
 import { ElementPath } from '../../core/shared/project-file-types'
 import {
@@ -72,7 +72,7 @@ export const CanvasComponentEntry = betterReactMemo(
             filePath={canvasProps.uiFilePath}
             projectContents={canvasProps.projectContents}
             reportError={onRuntimeError}
-            requireFn={canvasProps.requireFn}
+            requireFn={canvasProps.curriedRequireFn}
             key={`canvas-error-boundary-${canvasProps.mountCount}`}
           >
             <DomWalkerWrapper {...canvasProps} clearErrors={clearRuntimeErrors} />
@@ -109,7 +109,7 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
 interface CanvasErrorBoundaryProps extends CanvasReactReportErrorCallback {
   filePath: string
   projectContents: ProjectContentTreeRoot
-  requireFn: UtopiaRequireFn | null
+  requireFn: CurriedUtopiaRequireFn | null
 }
 
 function isErrorObject(e: unknown): e is Error {

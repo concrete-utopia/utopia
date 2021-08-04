@@ -9,6 +9,7 @@ import {
 import {
   isParseSuccess,
   ParsedTextFile,
+  ParseSuccess,
   StaticElementPathPart,
 } from '../../shared/project-file-types'
 import * as EP from '../../shared/element-path'
@@ -25,10 +26,10 @@ import {
 import { mapArrayToDictionary } from '../../shared/array-utils'
 
 export function fixParseSuccessUIDs(
-  oldParsed: ParsedTextFile | null,
+  oldParsed: ParseSuccess | null,
   newParsed: ParsedTextFile,
 ): ParsedTextFile {
-  if (oldParsed == null || !isParseSuccess(oldParsed) || !isParseSuccess(newParsed)) {
+  if (oldParsed == null || !isParseSuccess(newParsed)) {
     // we won't try to fix parse failures
     return newParsed
   }
