@@ -233,7 +233,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
                 outlineColor: colorTheme.primary.value,
                 outlineWidth: 1 / props.scale,
               }}
-            ></div>
+            />
           )
         }
       }
