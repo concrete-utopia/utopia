@@ -409,7 +409,7 @@ describe('Creating require function', () => {
       false,
     )
 
-    expect(codeResultCache.requireFn('/', './app', false)).toMatchSnapshot()
+    expect(codeResultCache.curriedRequireFn({})('/', './app', false)).toMatchSnapshot()
   })
   it('Creates require function for multi file build result', () => {
     const codeResultCache = generateCodeResultCache(
@@ -424,8 +424,8 @@ describe('Creating require function', () => {
       false,
     )
 
-    expect(codeResultCache.requireFn('/', './app', false)).toMatchSnapshot()
-    expect(codeResultCache.requireFn('/', './src/components', false)).toMatchSnapshot()
+    expect(codeResultCache.curriedRequireFn({})('/', './app', false)).toMatchSnapshot()
+    expect(codeResultCache.curriedRequireFn({})('/', './src/components', false)).toMatchSnapshot()
   })
   it('Require throws exception for module code', () => {
     const codeResultCache = generateCodeResultCache(
@@ -440,7 +440,9 @@ describe('Creating require function', () => {
       false,
     )
 
-    expect(() => codeResultCache.requireFn('/', './src/code', false)).toThrowErrorMatchingSnapshot()
+    expect(() =>
+      codeResultCache.curriedRequireFn({})('/', './src/code', false),
+    ).toThrowErrorMatchingSnapshot()
   })
   it('Require throws exception for import from non-existing module', () => {
     const codeResultCache = generateCodeResultCache(
@@ -455,7 +457,9 @@ describe('Creating require function', () => {
       false,
     )
 
-    expect(() => codeResultCache.requireFn('/', 'foo', false)).toThrowErrorMatchingSnapshot()
+    expect(() =>
+      codeResultCache.curriedRequireFn({})('/', 'foo', false),
+    ).toThrowErrorMatchingSnapshot()
   })
 })
 

@@ -140,6 +140,8 @@ Object {
       "transpiledCode": null,
     },
   },
+  "curriedRequireFn": [Function],
+  "curriedResolveFn": [Function],
   "error": null,
   "evaluationCache": Object {},
   "exportsInfo": Array [
@@ -262,8 +264,6 @@ ComponentWithProps.propertyControls = {
       "transpiledCode": null,
     },
   },
-  "requireFn": [Function],
-  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;
@@ -655,6 +655,8 @@ exports.ComponentWithProps.propertyControls = {
       "exports": Object {},
     },
   },
+  "curriedRequireFn": [Function],
+  "curriedResolveFn": [Function],
   "error": null,
   "evaluationCache": Object {},
   "exportsInfo": Array [
@@ -1262,8 +1264,6 @@ exports.ComponentWithProps.propertyControls = {
 }; //# sourceMappingURL=components.js.map",
     },
   },
-  "requireFn": [Function],
-  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;
@@ -1466,6 +1466,8 @@ var App = function App(props) {
 exports.App = App; //# sourceMappingURL=app.js.map",
     },
   },
+  "curriedRequireFn": [Function],
+  "curriedResolveFn": [Function],
   "error": null,
   "evaluationCache": Object {},
   "exportsInfo": Array [
@@ -1742,8 +1744,6 @@ var App = function App(props) {
 exports.App = App; //# sourceMappingURL=app.js.map",
     },
   },
-  "requireFn": [Function],
-  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;
