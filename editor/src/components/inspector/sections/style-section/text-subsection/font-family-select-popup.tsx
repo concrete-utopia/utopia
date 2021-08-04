@@ -3,15 +3,7 @@ import { VariableSizeList } from 'react-window'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
-import {
-  FlexColumn,
-  UtopiaTheme,
-  FlexRow,
-  StringInput,
-  UIRow,
-  colorTheme,
-  useColorTheme,
-} from '../../../../../uuiui'
+import { FlexColumn, UtopiaTheme, FlexRow, StringInput, useColorTheme } from '../../../../../uuiui'
 import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
 import {
@@ -328,6 +320,8 @@ export const FontFamilySelectPopup = betterReactMemo(
 
       const [searchTerm, setSearchTerm] = React.useState('')
       const lowerCaseSearchTerm = searchTerm.toLowerCase()
+
+      const colorTheme = useColorTheme()
 
       const {
         values,

@@ -137,7 +137,6 @@ interface SelectableElementItemProps {
 }
 
 const SelectableElementItem = (props: SelectableElementItemProps) => {
-  const colorTheme = useColorTheme()
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
   const isHighlighted = useEditorState(

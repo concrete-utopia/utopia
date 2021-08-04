@@ -284,7 +284,6 @@ const RowForArrayControl = betterReactMemo(
       controlDescription,
     )
 
-    const colorTheme = useColorTheme()
     const rowHeight = UtopiaTheme.layout.rowHeight.max
     const transformedValue = Array.isArray(value) ? value : [value]
     const { springs, bind } = useArraySuperControl(
@@ -403,7 +402,7 @@ const RowForObjectControl = betterReactMemo(
         <InspectorSectionHeader>
           <SimpleFlexRow style={{ flexGrow: 1 }}>
             <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-              {/* {warning} */}
+              {warning}
               {title}
             </PropertyLabel>
           </SimpleFlexRow>
