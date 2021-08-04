@@ -208,6 +208,42 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     props.selectedViews,
   ])
 
+  const parentOutlines = React.useMemo(() => {
+    return props.selectedViews.map((view) => {
+      const parentPath = EP.parentPath(view)
+      const parentElement = MetadataUtils.findElementByElementPath(
+        props.componentMetadata,
+        parentPath,
+      )
+      const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, props.componentMetadata)
+      if (
+        MetadataUtils.isFlexLayoutedContainer(parentElement) ||
+        MetadataUtils.isGridLayoutedContainer(parentElement)
+      ) {
+        if (parentFrame != null) {
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                left: parentFrame.x + props.canvasOffset.x,
+                top: parentFrame.y + props.canvasOffset.y,
+                width: parentFrame.width,
+                height: parentFrame.height,
+                outline: `1px dotted ${colorTheme.primary.value}`,
+              }}
+            ></div>
+          )
+        }
+      }
+    })
+  }, [
+    colorTheme.primary.value,
+    props.canvasOffset.x,
+    props.canvasOffset.y,
+    props.componentMetadata,
+    props.selectedViews,
+  ])
+
   let selectionOutlines: Array<JSX.Element> = getOverlayControls(props.selectedViews)
   const targetPaths =
     props.dragState != null ? props.dragState.draggedElements : props.selectedViews
@@ -289,6 +325,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   }
   return (
     <>
+      {parentOutlines}
       {parentHighlights}
       {selectionOutlines}
       {multiSelectOutline}
