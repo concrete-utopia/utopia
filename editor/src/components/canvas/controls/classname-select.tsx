@@ -331,6 +331,7 @@ export const ClassNameSelect = betterReactMemo(
         menu: (styles) => ({
           ...styles,
           backgroundColor: theme.inverted.bg1.value,
+          zIndex: 100,
         }),
         option: (styles: React.CSSProperties, { data, isDisabled, isFocused, isSelected }) => {
           // a single entry in the options list
