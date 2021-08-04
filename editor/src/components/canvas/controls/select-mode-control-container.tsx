@@ -506,7 +506,6 @@ export class SelectModeControlContainer extends React.Component<
             </React.Fragment>
           )
         })}
-        {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls {...this.props} />)}
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
@@ -530,6 +529,7 @@ export class SelectModeControlContainer extends React.Component<
             ) : null}
           </>
         ) : null}
+        {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls {...this.props} />)}
         {this.getMoveGuidelines()}
         {this.getDistanceGuidelines()}
         {this.getBoundingMarks()}
