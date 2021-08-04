@@ -468,7 +468,7 @@ describe('incorporateBuildResult', () => {
     const projectContents = addFileToProjectContents(
       {},
       '/app.js',
-      textFile(textFileContents(appJSCode, unparsed, RevisionsState.CodeAhead), null, 0),
+      textFile(textFileContents(appJSCode, unparsed, RevisionsState.CodeAhead), null, null, 0),
     )
     let nodeModules: NodeModules = {}
     incorporateBuildResult(nodeModules, projectContents, SampleSingleFileBuildResult)
@@ -481,7 +481,7 @@ describe('incorporateBuildResult', () => {
     const projectContents = addFileToProjectContents(
       {},
       '/app.js',
-      textFile(textFileContents(appJSCode, unparsed, RevisionsState.CodeAhead), null, 0),
+      textFile(textFileContents(appJSCode, unparsed, RevisionsState.CodeAhead), null, null, 0),
     )
     let nodeModules: NodeModules = {}
     incorporateBuildResult(nodeModules, projectContents, SampleSingleFileBuildResult)

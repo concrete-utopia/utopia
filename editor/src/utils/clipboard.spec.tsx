@@ -31,6 +31,7 @@ describe('copy to clipboard', () => {
           RevisionsState.BothMatch,
         ),
         null,
+        null,
         0,
       ),
       '/src': directory(),

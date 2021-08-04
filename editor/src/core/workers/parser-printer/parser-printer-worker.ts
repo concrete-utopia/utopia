@@ -63,14 +63,14 @@ interface ParseFile {
   type: 'parsefile'
   filename: string
   content: string
-  previousParsed: ParsedTextFile | null
+  previousParsed: ParseSuccess | null
   lastRevisedTime: number
 }
 
 export function createParseFile(
   filename: string,
   content: string,
-  previousParsed: ParsedTextFile | null,
+  previousParsed: ParseSuccess | null,
   lastRevisedTime: number,
 ): ParseFile {
   return {
@@ -187,7 +187,7 @@ export function handleMessage(
 function getParseFileResult(
   filename: string,
   content: string,
-  oldParseResultForUIDComparison: ParsedTextFile | null,
+  oldParseResultForUIDComparison: ParseSuccess | null,
   lastRevisedTime: number,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParseFileResult {

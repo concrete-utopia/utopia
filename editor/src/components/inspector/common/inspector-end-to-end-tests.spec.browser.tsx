@@ -1792,6 +1792,7 @@ describe('inspector tests with real metadata', () => {
           RevisionsState.BothMatch,
         ),
         null,
+        null,
         0,
       ),
       '/src': directory(),
