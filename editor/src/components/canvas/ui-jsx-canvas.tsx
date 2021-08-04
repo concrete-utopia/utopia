@@ -28,7 +28,7 @@ import {
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
-import { UtopiaRequireFn } from '../custom-code/code-file'
+import { CurriedResolveFn, CurriedUtopiaRequireFn, UtopiaRequireFn } from '../custom-code/code-file'
 import { importResultFromImports } from '../editor/npm-dependency/npm-dependency'
 import {
   DerivedState,
@@ -121,8 +121,8 @@ export interface UiJsxCanvasProps {
   offset: CanvasVector
   scale: number
   uiFilePath: string
-  requireFn: UtopiaRequireFn
-  resolve: (importOrigin: string, toImport: string) => Either<string, string>
+  curriedRequireFn: CurriedUtopiaRequireFn
+  curriedResolveFn: CurriedResolveFn
   hiddenInstances: ElementPath[]
   editedTextElement: ElementPath | null
   base64FileBlobs: CanvasBase64Blobs
@@ -180,8 +180,6 @@ export function pickUiJsxCanvasProps(
       derived.canvas.transientState.filesState,
     )
 
-    const requireFn = editor.codeResultCache.requireFn
-
     let linkTags = ''
     const indexHtml = getIndexHtmlFileFromEditorState(editor)
     if (isRight(indexHtml)) {
@@ -204,8 +202,8 @@ export function pickUiJsxCanvasProps(
       offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
       uiFilePath: uiFilePath,
-      requireFn: requireFn,
-      resolve: editor.codeResultCache.resolve,
+      curriedRequireFn: editor.codeResultCache.curriedRequireFn,
+      curriedResolveFn: editor.codeResultCache.curriedResolveFn,
       hiddenInstances: hiddenInstances,
       editedTextElement: editedTextElement,
       base64FileBlobs: editor.canvas.base64Blobs,
@@ -265,8 +263,8 @@ export const UiJsxCanvas = betterReactMemo(
       offset,
       scale,
       uiFilePath,
-      requireFn,
-      resolve,
+      curriedRequireFn,
+      curriedResolveFn,
       hiddenInstances,
       walkDOM,
       onDomReport,
@@ -311,184 +309,186 @@ export const UiJsxCanvas = betterReactMemo(
       MapLike<MapLike<ComponentRendererComponent>>
     >({})
 
-    // TODO after merge requireFn can never be null
-    if (requireFn == null) {
-      throw new Error('Utopia Internal Error: requireFn can never be null')
-    } else {
-      let resolvedFiles: MapLike<Array<string>> = {} // Mapping from importOrigin to an array of toImport
-      const customRequire = React.useCallback(
-        (importOrigin: string, toImport: string) => {
-          if (resolvedFiles[importOrigin] == null) {
-            resolvedFiles[importOrigin] = []
-          }
-          let resolvedFromThisOrigin = resolvedFiles[importOrigin]
+    const resolve = React.useMemo(() => curriedResolveFn(projectContents), [
+      curriedResolveFn,
+      projectContents,
+    ])
 
-          const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback
-          const filePathResolveResult = alreadyResolved
-            ? left<string, string>('Already resolved')
-            : resolve(importOrigin, toImport)
+    let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
+    resolvedFiles.current = {}
+    const requireFn = React.useMemo(() => curriedRequireFn(projectContents), [
+      curriedRequireFn,
+      projectContents,
+    ])
+    const customRequire = React.useCallback(
+      (importOrigin: string, toImport: string) => {
+        if (resolvedFiles.current[importOrigin] == null) {
+          resolvedFiles.current[importOrigin] = []
+        }
+        let resolvedFromThisOrigin = resolvedFiles.current[importOrigin]
 
-          const resolvedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
-            (resolvedFilePath) => {
-              resolvedFromThisOrigin.push(toImport)
-              const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-              if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-                const { scope } = createExecutionScope(
-                  resolvedFilePath,
-                  customRequire,
-                  mutableContextRef,
-                  topLevelComponentRendererComponents,
-                  projectContents,
-                  uiFilePath,
-                  transientFilesState,
-                  base64FileBlobs,
-                  hiddenInstances,
-                  metadataContext,
-                  updateInvalidatedPaths,
-                  shouldIncludeCanvasRootInTheSpy,
-                )
-                const exportsDetail = projectFile.fileContents.parsed.exportsDetail
-                let filteredScope: MapLike<any> = {
-                  ...scope.module.exports,
-                }
-                for (const s of Object.keys(scope)) {
-                  if (s in exportsDetail.namedExports) {
-                    filteredScope[s] = scope[s]
-                  } else if (s === exportsDetail.defaultExport?.name) {
-                    filteredScope[s] = scope[s]
-                  }
-                }
-                return right(filteredScope)
-              } else {
-                return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+        const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback
+        const filePathResolveResult = alreadyResolved
+          ? left<string, string>('Already resolved')
+          : resolve(importOrigin, toImport)
+
+        const resolvedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
+          (resolvedFilePath) => {
+            resolvedFromThisOrigin.push(toImport)
+            const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+            if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+              const { scope } = createExecutionScope(
+                resolvedFilePath,
+                customRequire,
+                mutableContextRef,
+                topLevelComponentRendererComponents,
+                projectContents,
+                uiFilePath,
+                transientFilesState,
+                base64FileBlobs,
+                hiddenInstances,
+                metadataContext,
+                updateInvalidatedPaths,
+                shouldIncludeCanvasRootInTheSpy,
+              )
+              const exportsDetail = projectFile.fileContents.parsed.exportsDetail
+              let filteredScope: MapLike<any> = {
+                ...scope.module.exports,
               }
-            },
-            filePathResolveResult,
-          )
-          return foldEither(
-            () => {
-              // We did not find a ParseSuccess, fallback to standard require Fn
-              return requireFn(importOrigin, toImport, false)
-            },
-            (scope) => {
-              // Return an artificial exports object that contains our ComponentRendererComponents
-              return scope
-            },
-            resolvedParseSuccess,
-          )
-        },
-        // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
-        [
-          requireFn,
-          resolve,
-          resolvedFiles,
-          projectContents,
-          transientFilesState,
-          uiFilePath,
-          base64FileBlobs,
-          hiddenInstances,
-          metadataContext,
-          updateInvalidatedPaths,
-          shouldIncludeCanvasRootInTheSpy,
-        ],
-      )
-
-      const { scope, topLevelJsxComponents } = createExecutionScope(
+              for (const s of Object.keys(scope)) {
+                if (s in exportsDetail.namedExports) {
+                  filteredScope[s] = scope[s]
+                } else if (s === exportsDetail.defaultExport?.name) {
+                  filteredScope[s] = scope[s]
+                }
+              }
+              return right(filteredScope)
+            } else {
+              return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+            }
+          },
+          filePathResolveResult,
+        )
+        return foldEither(
+          () => {
+            // We did not find a ParseSuccess, fallback to standard require Fn
+            return requireFn(importOrigin, toImport, false)
+          },
+          (scope) => {
+            // Return an artificial exports object that contains our ComponentRendererComponents
+            return scope
+          },
+          resolvedParseSuccess,
+        )
+      },
+      // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
+      [
+        requireFn,
+        resolve,
+        projectContents,
+        transientFilesState,
         uiFilePath,
-        customRequire,
-        mutableContextRef,
-        topLevelComponentRendererComponents,
-        props.projectContents,
-        uiFilePath, // this is the storyboard filepath
-        props.transientFilesState,
         base64FileBlobs,
         hiddenInstances,
         metadataContext,
         updateInvalidatedPaths,
-        props.shouldIncludeCanvasRootInTheSpy,
-      )
+        shouldIncludeCanvasRootInTheSpy,
+      ],
+    )
 
-      const executionScope = scope
+    const { scope, topLevelJsxComponents } = createExecutionScope(
+      uiFilePath,
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      props.projectContents,
+      uiFilePath, // this is the storyboard filepath
+      props.transientFilesState,
+      base64FileBlobs,
+      hiddenInstances,
+      metadataContext,
+      updateInvalidatedPaths,
+      props.shouldIncludeCanvasRootInTheSpy,
+    )
 
-      useTwind(projectContents, customRequire, '#canvas-container')
+    const executionScope = scope
 
-      const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
+    useTwind(projectContents, customRequire, '#canvas-container')
 
-      const {
-        StoryboardRootComponent,
-        rootValidPaths,
-        storyboardRootElementPath,
-        rootInstancePath,
-      } = useGetStoryboardRoot(
-        props.focusedElementPath,
-        topLevelElementsMap,
-        executionScope,
-        projectContents,
-        uiFilePath,
-        transientFilesState,
-        resolve,
-      )
+    const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
-      const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
-        validPaths: rootValidPaths,
-      })
+    const {
+      StoryboardRootComponent,
+      rootValidPaths,
+      storyboardRootElementPath,
+      rootInstancePath,
+    } = useGetStoryboardRoot(
+      props.focusedElementPath,
+      topLevelElementsMap,
+      executionScope,
+      projectContents,
+      uiFilePath,
+      transientFilesState,
+      resolve,
+    )
 
-      return (
-        <div
-          style={{
-            all: 'initial',
-          }}
-        >
-          <Helmet>{parse(linkTags)}</Helmet>
-          <MutableUtopiaContext.Provider value={mutableContextRef}>
-            <RerenderUtopiaContext.Provider
+    const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
+      validPaths: rootValidPaths,
+    })
+
+    return (
+      <div
+        style={{
+          all: 'initial',
+        }}
+      >
+        <Helmet>{parse(linkTags)}</Helmet>
+        <MutableUtopiaContext.Provider value={mutableContextRef}>
+          <RerenderUtopiaContext.Provider
+            value={{
+              hiddenInstances: hiddenInstances,
+              canvasIsLive: canvasIsLive,
+              shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+            }}
+          >
+            <UtopiaProjectContext.Provider
               value={{
-                hiddenInstances: hiddenInstances,
-                canvasIsLive: canvasIsLive,
-                shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+                projectContents: props.projectContents,
+                transientFilesState: props.transientFilesState,
+                openStoryboardFilePathKILLME: props.uiFilePath,
+                resolve: resolve,
               }}
             >
-              <UtopiaProjectContext.Provider
-                value={{
-                  projectContents: props.projectContents,
-                  transientFilesState: props.transientFilesState,
-                  openStoryboardFilePathKILLME: props.uiFilePath,
-                  resolve: props.resolve,
-                }}
+              <CanvasContainer
+                ref={ref}
+                mountCount={props.mountCount}
+                domWalkerInvalidateCount={props.domWalkerInvalidateCount}
+                walkDOM={walkDOM}
+                scale={scale}
+                offset={offset}
+                onDomReport={onDomReport}
+                validRootPaths={rootValidPaths}
+                canvasRootElementElementPath={storyboardRootElementPath}
+                scrollAnimation={props.scrollAnimation}
+                canvasInteractionHappening={props.transientFilesState != null}
               >
-                <CanvasContainer
-                  ref={ref}
-                  mountCount={props.mountCount}
-                  domWalkerInvalidateCount={props.domWalkerInvalidateCount}
-                  walkDOM={walkDOM}
-                  scale={scale}
-                  offset={offset}
-                  onDomReport={onDomReport}
-                  validRootPaths={rootValidPaths}
-                  canvasRootElementElementPath={storyboardRootElementPath}
-                  scrollAnimation={props.scrollAnimation}
-                  canvasInteractionHappening={props.transientFilesState != null}
-                >
-                  <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
-                    <ParentLevelUtopiaContext.Provider
-                      value={{
-                        elementPath: storyboardRootElementPath,
-                      }}
-                    >
-                      {StoryboardRootComponent == null ? null : (
-                        <StoryboardRootComponent
-                          {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }}
-                        />
-                      )}
-                    </ParentLevelUtopiaContext.Provider>
-                  </SceneLevelUtopiaContext.Provider>
-                </CanvasContainer>
-              </UtopiaProjectContext.Provider>
-            </RerenderUtopiaContext.Provider>
-          </MutableUtopiaContext.Provider>
-        </div>
-      )
-    }
+                <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
+                  <ParentLevelUtopiaContext.Provider
+                    value={{
+                      elementPath: storyboardRootElementPath,
+                    }}
+                  >
+                    {StoryboardRootComponent == null ? null : (
+                      <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+                    )}
+                  </ParentLevelUtopiaContext.Provider>
+                </SceneLevelUtopiaContext.Provider>
+              </CanvasContainer>
+            </UtopiaProjectContext.Provider>
+          </RerenderUtopiaContext.Provider>
+        </MutableUtopiaContext.Provider>
+      </div>
+    )
   }),
 )
 

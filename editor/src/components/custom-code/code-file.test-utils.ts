@@ -60,7 +60,12 @@ export const SampleNodeModules: NodeModules = {
 
 export function createCodeFile(path: string, contents: string): TextFile {
   const result = lintAndParse(path, contents, null, emptySet())
-  return textFile(textFileContents(contents, result, RevisionsState.CodeAhead), null, Date.now())
+  return textFile(
+    textFileContents(contents, result, RevisionsState.CodeAhead),
+    null,
+    null,
+    Date.now(),
+  )
 }
 
 export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {

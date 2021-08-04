@@ -24,6 +24,7 @@ import {
   partOfJsxAttributeValue,
   jsxElementWithoutUID,
   jsxAttributesEntry,
+  elementInstanceMetadata,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -47,13 +48,17 @@ import {
 } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import { right, forceRight, left, isRight } from '../../../core/shared/either'
-import { createFakeMetadataForComponents } from '../../../utils/utils.test-utils'
+import {
+  createFakeMetadataForComponents,
+  createFakeMetadataForEditor,
+} from '../../../utils/utils.test-utils'
 import Utils from '../../../utils/utils'
 import {
   canvasRectangle,
   CanvasRectangle,
   LocalRectangle,
   localRectangle,
+  zeroRectangle,
 } from '../../../core/shared/math-utils'
 import { createTestProjectWithCode, getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
@@ -68,11 +73,13 @@ import {
   StoryboardFilePath,
   defaultUserState,
   editorModelFromPersistentModel,
+  withUnderlyingTargetFromEditorState,
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import {
   insertWithDefaults,
   setCanvasFrames,
+  setFocusedElement,
   setProp_UNSAFE,
   switchLayoutSystem,
   updateFilePath,
@@ -226,6 +233,7 @@ const testEditor: EditorState = deepFreeze({
     [StoryboardFilePath]: textFile(
       textFileContents('', originalModel, RevisionsState.ParsedAhead),
       null,
+      originalModel,
       0,
     ),
   }),
@@ -398,6 +406,7 @@ describe('moveTemplate', () => {
         [StoryboardFilePath]: textFile(
           textFileContents('', uiFile, RevisionsState.ParsedAhead),
           null,
+          uiFile,
           0,
         ),
       }),
@@ -922,20 +931,20 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     false,
     emptyComments,
   )
-  const fileForUI = textFile(
-    textFileContents(
-      '',
-      parseSuccess(
-        sampleImportsForTests,
-        [firstTopLevelElement, storyboard],
-        {},
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
-      RevisionsState.BothMatch,
-    ),
+
+  const parsedUIFile = parseSuccess(
+    sampleImportsForTests,
+    [firstTopLevelElement, storyboard],
+    {},
     null,
+    null,
+    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+  )
+
+  const fileForUI = textFile(
+    textFileContents('', parsedUIFile, RevisionsState.BothMatch),
+    null,
+    parsedUIFile,
     0,
   )
   const rootElementPath = EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])
@@ -1030,8 +1039,8 @@ describe('LOAD', () => {
       projectVersion: CURRENT_PROJECT_VERSION,
       projectDescription: '',
       projectContents: contentsToTree({
-        [firstUIJSFile]: textFile(initialFileContents, null, 0),
-        [secondUIJSFile]: textFile(initialFileContents, null, 0),
+        [firstUIJSFile]: textFile(initialFileContents, null, null, 0),
+        [secondUIJSFile]: textFile(initialFileContents, null, null, 0),
       }),
       exportsInfo: [],
       codeEditorErrors: {
@@ -1482,5 +1491,80 @@ describe('INSERT_WITH_DEFAULTS', () => {
     } else {
       fail('File is not a text file.')
     }
+  })
+})
+
+describe('SET_FOCUSED_ELEMENT', () => {
+  it('prevents focusing a non-focusable element', () => {
+    const project = complexDefaultProject()
+    let editorState = editorModelFromPersistentModel(project, NO_OP)
+    const pathToFocus = EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div')
+    const underlyingElement = forceNotNull(
+      'Should be able to find this.',
+      withUnderlyingTargetFromEditorState(pathToFocus, editorState, null, (_, element) => element),
+    )
+    const divElementMetadata = elementInstanceMetadata(
+      pathToFocus,
+      right(underlyingElement),
+      {},
+      zeroRectangle as CanvasRectangle,
+      zeroRectangle as LocalRectangle,
+      [],
+      [],
+      false,
+      false,
+      emptySpecialSizeMeasurements,
+      emptyComputedStyle,
+      emptyAttributeMetadatada,
+      null,
+      null,
+    )
+    const fakeMetadata: ElementInstanceMetadataMap = {
+      [EP.toString(pathToFocus)]: divElementMetadata,
+    }
+    editorState = {
+      ...editorState,
+      jsxMetadata: fakeMetadata,
+    }
+    const action = setFocusedElement(pathToFocus)
+    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
+    expect(updatedEditorState).toBe(editorState)
+  })
+  it('focuses a focusable element without a problem', () => {
+    const project = complexDefaultProject()
+    let editorState = editorModelFromPersistentModel(project, NO_OP)
+    const pathToFocus = EP.fromString(
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance',
+    )
+    const underlyingElement = forceNotNull(
+      'Should be able to find this.',
+      withUnderlyingTargetFromEditorState(pathToFocus, editorState, null, (_, element) => element),
+    )
+    const cardElementMetadata = elementInstanceMetadata(
+      pathToFocus,
+      right(underlyingElement),
+      {},
+      zeroRectangle as CanvasRectangle,
+      zeroRectangle as LocalRectangle,
+      [],
+      [],
+      false,
+      false,
+      emptySpecialSizeMeasurements,
+      emptyComputedStyle,
+      emptyAttributeMetadatada,
+      null,
+      null,
+    )
+    const fakeMetadata: ElementInstanceMetadataMap = {
+      [EP.toString(pathToFocus)]: cardElementMetadata,
+    }
+    editorState = {
+      ...editorState,
+      jsxMetadata: fakeMetadata,
+    }
+    const action = setFocusedElement(pathToFocus)
+    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
+    expect(updatedEditorState.focusedElementPath).toEqual(pathToFocus)
   })
 })

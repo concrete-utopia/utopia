@@ -1410,7 +1410,7 @@ index 145afdf032c..bedd34dbbd2 100644
 +		"https://utopia.app",
 +		"https://utopia.fm",
 +		"https://utopia.pizza",
-+		"https://utopia.baby"
++		"https://utopia95.com"
 +	]
 +
 +	const baseTrustedDomains: string[] = productService.linkProtectionTrustedDomains

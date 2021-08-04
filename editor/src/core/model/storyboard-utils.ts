@@ -305,6 +305,7 @@ function addStoryboardFileForComponent(
           const updatedTextFile = textFile(
             updatedContents,
             fileToModify.lastSavedContents,
+            updatedParseSuccess,
             fileToModify.lastRevisedTime,
           )
           updatedProjectContents = addFileToProjectContents(
@@ -349,6 +350,7 @@ function addStoryboardFileForComponent(
   const storyboardFileContents = textFile(
     textFileContents('', success, RevisionsState.ParsedAhead),
     null,
+    success,
     0,
   )
 

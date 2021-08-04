@@ -30,17 +30,17 @@ export const STATIC_BASE_URL: string =
 export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
   : STAGING_CONFIG
-  ? 'https://utopia.baby/'
+  ? 'https://utopia95.com/'
   : BASE_URL
 export const PROPERTY_CONTROLS_INFO_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
   : STAGING_CONFIG
-  ? 'https://utopia.baby/'
+  ? 'https://utopia95.com/'
   : BASE_URL
 export const MONACO_EDITOR_IFRAME_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
   : STAGING_CONFIG
-  ? 'https://utopia.baby/'
+  ? 'https://utopia95.com/'
   : BASE_URL
 export const VSCODE_EDITOR_IFRAME_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.app/`

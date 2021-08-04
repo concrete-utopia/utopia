@@ -34,6 +34,7 @@ import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
+  delete element.props['children']
   return {
     ...element,
     element: left('REMOVED_FROM_TEST'),

@@ -371,6 +371,8 @@ import {
   FocusClassNameInput,
   WrapInElement,
   SetInspectorLayoutSectionHovered,
+  IncrementResizeOptionsSelectedIndex,
+  SetResizeOptionsTargetOptions,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1004,6 +1006,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
       transientProperties: null,
+      resizeOptions: currentEditor.canvas.resizeOptions,
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
@@ -1567,6 +1570,7 @@ export const UPDATE_FNS = {
         return textFile(
           textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
           lastSavedFileContents,
+          isParseSuccess(parseResult) ? parseResult : null,
           Date.now(),
         )
       },
@@ -3407,8 +3411,8 @@ export const UPDATE_FNS = {
         },
         exportsInfo: action.codeResultCache.exportsInfo,
         error: action.codeResultCache.error,
-        requireFn: action.codeResultCache.requireFn,
-        resolve: action.codeResultCache.resolve,
+        curriedRequireFn: action.codeResultCache.curriedRequireFn,
+        curriedResolveFn: action.codeResultCache.curriedResolveFn,
         projectModules: action.codeResultCache.projectModules,
         evaluationCache: action.codeResultCache.evaluationCache,
       },
@@ -3710,12 +3714,14 @@ export const UPDATE_FNS = {
             updatedFile = textFile(
               textFileContents(code, updatedContents, existing.fileContents.revisionsState),
               existing.lastSavedContents,
+              isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
               existing.lastRevisedTime,
             )
           } else {
             updatedFile = textFile(
               textFileContents(code, updatedContents, RevisionsState.BothMatch),
               existing.lastSavedContents,
+              isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
               Date.now(),
             )
           }
@@ -3772,7 +3778,7 @@ export const UPDATE_FNS = {
         ? null
         : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
 
-      updatedFile = textFile(contents, lastSavedContents, Date.now())
+      updatedFile = textFile(contents, lastSavedContents, null, Date.now())
     } else {
       updatedFile = updateFileContents(code, existing, manualSave)
     }
@@ -4401,17 +4407,27 @@ export const UPDATE_FNS = {
     return editor
   },
   SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
+    let shouldApplyChange: boolean = false
+    if (action.focusedElementPath == null) {
+      shouldApplyChange = true
+    } else if (MetadataUtils.isFocusableComponent(action.focusedElementPath, editor.jsxMetadata)) {
+      shouldApplyChange = true
+    }
     if (EP.pathsEqual(editor.focusedElementPath, action.focusedElementPath)) {
-      return editor
+      shouldApplyChange = false
     }
 
-    return {
-      ...editor,
-      focusedElementPath: action.focusedElementPath,
-      canvas: {
-        ...editor.canvas,
-        domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
-      },
+    if (shouldApplyChange) {
+      return {
+        ...editor,
+        focusedElementPath: action.focusedElementPath,
+        canvas: {
+          ...editor.canvas,
+          domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+        },
+      }
+    } else {
+      return editor
     }
   },
   SCROLL_TO_ELEMENT: (
@@ -4775,6 +4791,36 @@ export const UPDATE_FNS = {
       inspector: {
         ...editor.inspector,
         layoutSectionHovered: action.hovered,
+      },
+    }
+  },
+  INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX: (editor: EditorModel): EditorModel => {
+    const resizeOptions = editor.canvas.resizeOptions
+    const newIndex =
+      (resizeOptions.propertyTargetSelectedIndex + 1) % resizeOptions.propertyTargetOptions.length
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        resizeOptions: {
+          ...resizeOptions,
+          propertyTargetSelectedIndex: newIndex,
+        },
+      },
+    }
+  },
+  SET_RESIZE_OPTIONS_TARGET_OPTIONS: (
+    action: SetResizeOptionsTargetOptions,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        resizeOptions: {
+          propertyTargetOptions: action.propertyTargetOptions,
+          propertyTargetSelectedIndex: 0,
+        },
       },
     }
   },

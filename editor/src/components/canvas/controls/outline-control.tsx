@@ -19,7 +19,10 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { KeysPressed } from '../../../utils/keyboard'
+
 import { betterReactMemo } from '../../../uuiui-deps'
+import { PositionOutline } from './position-outline'
+import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 
 export function getSelectionColor(
   path: ElementPath,
@@ -254,6 +257,53 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     props.scale,
   ])
 
+  const parentOutlines: (JSX.Element | null)[] = React.useMemo(() => {
+    const targetParents = uniqBy(
+      stripNulls(props.selectedViews.map((view) => EP.parentPath(view))),
+      EP.pathsEqual,
+    )
+    return targetParents.map((parentPath) => {
+      const parentElement = MetadataUtils.findElementByElementPath(
+        props.componentMetadata,
+        parentPath,
+      )
+      const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, props.componentMetadata)
+      if (
+        MetadataUtils.isFlexLayoutedContainer(parentElement) ||
+        MetadataUtils.isGridLayoutedContainer(parentElement)
+      ) {
+        if (parentFrame != null) {
+          return (
+            <div
+              key={EP.toString(parentPath)}
+              style={{
+                position: 'absolute',
+                left: parentFrame.x + props.canvasOffset.x,
+                top: parentFrame.y + props.canvasOffset.y,
+                width: parentFrame.width,
+                height: parentFrame.height,
+                outlineStyle: 'dotted',
+                outlineColor: colorTheme.primary.value,
+                outlineWidth: 1 / props.scale,
+              }}
+            />
+          )
+        } else {
+          return null
+        }
+      } else {
+        return null
+      }
+    })
+  }, [
+    colorTheme.primary.value,
+    props.canvasOffset.x,
+    props.canvasOffset.y,
+    props.componentMetadata,
+    props.scale,
+    props.selectedViews,
+  ])
+
   let selectionOutlines: Array<JSX.Element> = getOverlayControls(props.selectedViews)
   const targetPaths =
     props.dragState != null ? props.dragState.draggedElements : props.selectedViews
@@ -304,6 +354,12 @@ export const OutlineControls = (props: OutlineControlsProps) => {
       )
     }
 
+    if (MetadataUtils.isPositionAbsolute(instance)) {
+      selectionOutlines.push(
+        <PositionOutline key={`${keyPrefix}-position-outline`} frame={rect} path={selectedView} />,
+      )
+    }
+
     // FIXME the striped overlay needs to be separated from this
     selectionOutlines.push(
       <Outline
@@ -335,6 +391,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   }
   return (
     <>
+      {parentOutlines}
       {parentHighlights}
       {selectionOutlines}
       {multiSelectOutline}

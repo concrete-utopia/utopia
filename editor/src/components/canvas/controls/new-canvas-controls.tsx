@@ -13,6 +13,7 @@ import {
   getOpenUIJSFileKey,
   TransientCanvasState,
   TransientFilesState,
+  ResizeOptions,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -52,6 +53,10 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { when } from '../../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { shallowEqual } from '../../../core/shared/equality-utils'
+import { KeysPressed } from '../../../utils/keyboard'
+import { usePrevious } from '../../editor/hook-utils'
+import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -103,6 +108,7 @@ export interface ControlProps {
   maybeClearHighlightsOnHoverEnd: () => void
   transientState: TransientCanvasState
   resolve: ResolveFn
+  resizeOptions: ResizeOptions
 }
 
 interface NewCanvasControlsProps {
@@ -276,6 +282,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       componentMetadata,
       localSelectedViews,
     )
+    const resolveFn = props.editor.codeResultCache.curriedResolveFn(props.editor.projectContents)
     const controlProps: ControlProps = {
       selectedViews: localSelectedViews,
       highlightedViews: localHighlightedViews,
@@ -297,7 +304,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       nodeModules: props.editor.nodeModules.files,
       openFile: props.editor.canvas.openFile?.filename ?? null,
       transientState: props.derived.canvas.transientState,
-      resolve: props.editor.codeResultCache.resolve,
+      resolve: resolveFn,
+      resizeOptions: props.editor.canvas.resizeOptions,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

@@ -522,10 +522,11 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
 const rootComponentsSelector = createSelector(
   (store: EditorStore) => store.editor.projectContents,
-  (store: EditorStore) => store.editor.codeResultCache.resolve,
+  (store: EditorStore) => store.editor.codeResultCache.curriedResolveFn,
   (store: EditorStore) => store.editor.canvas.openFile?.filename ?? null,
-  (projectContents, resolve, openFilePath) => {
-    return getOpenUtopiaJSXComponentsFromStateMultifile(projectContents, resolve, openFilePath)
+  (projectContents, curriedResolveFn, openFilePath) => {
+    const resolveFn = curriedResolveFn(projectContents)
+    return getOpenUtopiaJSXComponentsFromStateMultifile(projectContents, resolveFn, openFilePath)
   },
 )
 

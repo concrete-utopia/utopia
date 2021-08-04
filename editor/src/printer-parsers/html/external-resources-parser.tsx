@@ -433,7 +433,7 @@ export function getExternalResourcesInfo(
             dispatch([
               updateFile(
                 htmlFilePath,
-                textFile(newFileContents, newFileContents, Date.now()),
+                textFile(newFileContents, newFileContents, null, Date.now()),
                 false,
               ),
             ])
