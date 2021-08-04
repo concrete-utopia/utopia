@@ -27,6 +27,7 @@ import {
   unparsed,
   HighlightBoundsWithFileForUids,
   forEachParseSuccess,
+  isParseSuccess,
 } from '../shared/project-file-types'
 import {
   isJSXElement,
@@ -62,6 +63,7 @@ import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
 import { foldEither, isLeft, isRight, maybeEitherToMaybe } from '../shared/either'
 import { splitAt } from '../shared/string-utils'
+import { memoize } from '../shared/memoize'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -361,7 +363,7 @@ export function getHighlightBoundsFromParseResult(
   )
 }
 
-export function getHighlightBoundsForProject(
+function getHighlightBoundsForProjectImpl(
   allFiles: ProjectContentTreeRoot,
 ): HighlightBoundsWithFileForUids {
   let allHighlightBounds: HighlightBoundsWithFileForUids = {}
@@ -378,6 +380,11 @@ export function getHighlightBoundsForProject(
 
   return allHighlightBounds
 }
+
+export const getHighlightBoundsForProject = memoize(getHighlightBoundsForProjectImpl, {
+  maxSize: 2,
+  equals: (a, b) => a === b,
+})
 
 export function updateParsedTextFileHighlightBounds(
   result: ParsedTextFile,
@@ -450,7 +457,7 @@ export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boo
     code: code,
   }
 
-  return textFile(fileContents, file.lastSavedContents, Date.now())
+  return textFile(fileContents, file.lastSavedContents, file.lastParseSuccess, Date.now())
 }
 
 export function imageFile(
@@ -655,7 +662,13 @@ export function saveTextFileContents(
     manualSave,
   )
   const contentsUpdated = contents !== file.fileContents
-  return textFile(contents, savedContent, contentsUpdated ? Date.now() : file.lastRevisedTime)
+  const lastParseSuccess = isParseSuccess(contents.parsed) ? contents.parsed : file.lastParseSuccess
+  return textFile(
+    contents,
+    savedContent,
+    lastParseSuccess,
+    contentsUpdated ? Date.now() : file.lastRevisedTime,
+  )
 }
 
 export function updateLastSavedContents<T>(
@@ -761,7 +774,7 @@ export function updateFileContents(
         getHighlightBoundsFromParseResult(file.fileContents.parsed), // here we just update the code without updating the highlights!
       )
       const newContents = textFileContents(contents, newParsed, RevisionsState.CodeAhead)
-      return textFile(newContents, uiJsLastSavedContents, Date.now())
+      return textFile(newContents, uiJsLastSavedContents, file.lastParseSuccess, Date.now())
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)

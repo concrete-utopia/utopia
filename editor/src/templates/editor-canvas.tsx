@@ -866,22 +866,46 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
           break
         case 'RESIZE_DRAG_STATE':
+          const resizeOptions = this.props.editor.canvas.resizeOptions
+          const targetProperty =
+            resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
           switch (key) {
             case 'shift':
               const elementAspectRatioLocked = this.getElementAspectRatioLocked()
               const keepAspectRatio = pressed || elementAspectRatioLocked
               fireDragStateUpdate(
-                updateResizeDragState(dragState, undefined, undefined, undefined, keepAspectRatio),
+                updateResizeDragState(
+                  dragState,
+                  undefined,
+                  targetProperty,
+                  undefined,
+                  undefined,
+                  keepAspectRatio,
+                ),
               )
               break
             case 'alt':
               fireDragStateUpdate(
-                updateResizeDragState(dragState, undefined, undefined, pressed, undefined),
+                updateResizeDragState(
+                  dragState,
+                  undefined,
+                  targetProperty,
+                  undefined,
+                  pressed,
+                  undefined,
+                ),
               )
               break
             case 'cmd':
               fireDragStateUpdate(
-                updateResizeDragState(dragState, undefined, !pressed, undefined, undefined),
+                updateResizeDragState(
+                  dragState,
+                  undefined,
+                  targetProperty,
+                  !pressed,
+                  undefined,
+                  undefined,
+                ),
               )
               break
             default:
@@ -1006,9 +1030,13 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             const centerBasedResize = event.altKey
             const enableSnapping = !event.metaKey
 
+            const resizeOptions = this.props.editor.canvas.resizeOptions
+            const targetProperty =
+              resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
             newDragState = updateResizeDragState(
               dragState,
               exceededThreshold ? newDrag : undefined,
+              targetProperty,
               enableSnapping,
               centerBasedResize,
               keepAspectRatio,

@@ -26,6 +26,7 @@ import {
   textFileContents,
   RevisionsState,
   ProjectContents,
+  isParseSuccess,
 } from '../../core/shared/project-file-types'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
@@ -46,10 +47,11 @@ import { EditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { directory } from '../../core/model/project-file-utils'
-import { contentsToTree } from '../assets'
+import { contentsToTree, ProjectContentTreeRoot } from '../assets'
 import { MapLike } from 'typescript'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
+import type { CurriedResolveFn } from '../custom-code/code-file'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -59,11 +61,9 @@ export interface PartialCanvasProps {
   mountCount: UiJsxCanvasProps['mountCount']
 }
 
-export const dumbResolveFn = (filenames: Array<string>) => (
-  importOrigin: string,
-  toImport: string,
-): Either<string, string> => {
-  return resolveTestFiles(filenames, importOrigin, toImport)
+export const dumbResolveFn = (filenames: Array<string>): CurriedResolveFn => {
+  return (_: ProjectContentTreeRoot) => (importOrigin: string, toImport: string) =>
+    resolveTestFiles(filenames, importOrigin, toImport)
 }
 
 function resolveTestFiles(
@@ -89,7 +89,7 @@ function resolveTestFiles(
   }
 }
 
-export function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
+function stripUidsFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
   if (isRight(metadata.element)) {
     return {
       ...metadata,
@@ -98,6 +98,11 @@ export function stripUidsFromMetadata(metadata: ElementInstanceMetadata): Elemen
   } else {
     return metadata
   }
+}
+
+function stripUnwantedDataFromMetadata(metadata: ElementInstanceMetadata): ElementInstanceMetadata {
+  delete metadata.props['children']
+  return stripUidsFromMetadata(metadata)
 }
 
 interface RuntimeErrorInfo {
@@ -138,6 +143,7 @@ export function renderCanvasReturnResultAndError(
     [UiFilePath]: textFile(
       textFileContents(uiFileCode, parsedUIFileCode, RevisionsState.BothMatch),
       null,
+      isParseSuccess(parsedUIFileCode) ? parsedUIFileCode : null,
       1000,
     ),
   }
@@ -146,19 +152,15 @@ export function renderCanvasReturnResultAndError(
     projectContents[filename] = textFile(
       textFileContents(codeFilesString[filename], parsedCode, RevisionsState.BothMatch),
       null,
+      isParseSuccess(parsedCode) ? parsedCode : null,
       1000,
     )
   }
   const updatedContents = contentsToTree(projectContents)
 
-  const baseRequireFn = getRequireFn(NO_OP, updatedContents, {}, {}, 'canvas')
-  const requireFn: UiJsxCanvasProps['requireFn'] = (importOrigin: string, toImport: string) => {
-    switch (toImport) {
-      // here we can manually insert extra dependencies, such as antd
-      default:
-        return baseRequireFn(importOrigin, toImport)
-    }
-  }
+  const curriedRequireFn = (innerProjectContents: ProjectContentTreeRoot) =>
+    getRequireFn(NO_OP, innerProjectContents, {}, {}, 'canvas')
+
   storeHookForTest.updateStore((store) => {
     const updatedEditor = {
       ...store.editor,
@@ -186,8 +188,8 @@ export function renderCanvasReturnResultAndError(
   if (possibleProps == null) {
     canvasProps = {
       uiFilePath: UiFilePath,
-      requireFn: requireFn,
-      resolve: dumbResolveFn(Object.keys(codeFilesString)),
+      curriedRequireFn: curriedRequireFn,
+      curriedResolveFn: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
@@ -213,8 +215,8 @@ export function renderCanvasReturnResultAndError(
     canvasProps = {
       ...possibleProps,
       uiFilePath: UiFilePath,
-      requireFn: requireFn,
-      resolve: dumbResolveFn(Object.keys(codeFilesString)),
+      curriedRequireFn: curriedRequireFn,
+      curriedResolveFn: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
@@ -249,7 +251,7 @@ export function renderCanvasReturnResultAndError(
             projectContents={canvasProps.projectContents}
             // eslint-disable-next-line react/jsx-no-bind
             reportError={reportError}
-            requireFn={canvasProps.requireFn}
+            requireFn={canvasProps.curriedRequireFn}
           >
             <UiJsxCanvas {...canvasProps} />
           </CanvasErrorBoundary>
@@ -321,7 +323,7 @@ export function testCanvasRenderMultifile(
 
   expect(formattedSpyEnabled).toMatchSnapshot()
 
-  const metadataWithoutUIDs = Utils.objectMap(stripUidsFromMetadata, spyValues.metadata)
+  const metadataWithoutUIDs = Utils.objectMap(stripUnwantedDataFromMetadata, spyValues.metadata)
   expect(metadataWithoutUIDs).toMatchSnapshot()
 }
 

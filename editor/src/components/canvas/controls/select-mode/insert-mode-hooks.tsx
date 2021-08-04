@@ -13,6 +13,7 @@ import { useHighlightCallbacks } from './select-mode-hooks'
 
 function useGetHighlightableViewsForInsertMode() {
   const storeRef = useRefEditorState((store) => {
+    const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
     return {
       componentMetadata: store.editor.jsxMetadata,
       mode: store.editor.mode,
@@ -20,7 +21,7 @@ function useGetHighlightableViewsForInsertMode() {
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
       transientState: store.derived.canvas.transientState,
-      resolve: store.editor.codeResultCache.resolve,
+      resolve: resolveFn,
     }
   })
   return React.useCallback(() => {

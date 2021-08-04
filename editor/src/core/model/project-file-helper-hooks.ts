@@ -18,6 +18,7 @@ export function useReParseOpenProjectFile(): () => void {
           RevisionsState.CodeAhead,
         ),
         openFile.lastSavedContents,
+        openFile.lastParseSuccess,
         Date.now(),
       )
       dispatch([updateFile(openFilePath, openFileCodeAhead, false)])

@@ -25,38 +25,39 @@ export const LayoutIcon: React.FunctionComponent<LayoutIconProps> = betterReactM
     const colorTheme = useColorTheme()
     const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(props.path)
 
-    if (props.warningText != null) {
-      return <WarningIcon tooltipText={props.warningText} />
-    } else {
-      return (
-        <div
-          style={{
-            width: 18,
-            height: 18,
-            display: 'flex',
-            alignItems: 'center',
-            justifyItems: 'center',
-            position: 'relative',
-            marginLeft: 8,
-          }}
-        >
-          {isPositionAbsolute ? (
-            <div
-              style={{
-                position: 'absolute',
-                left: -5,
-                top: 3,
-                color: '#ff00ff',
-                fontSize: 11,
-                fontWeight: 600,
-              }}
-            >
-              *
-            </div>
-          ) : null}
+    return (
+      <div
+        style={{
+          width: 18,
+          height: 18,
+          display: 'flex',
+          alignItems: 'center',
+          justifyItems: 'center',
+          position: 'relative',
+          marginLeft: 8,
+        }}
+      >
+        {isPositionAbsolute ? (
+          <div
+            style={{
+              position: 'absolute',
+              left: -5,
+              top: 3,
+              color: '#ff00ff',
+              fontSize: 11,
+              fontWeight: 600,
+            }}
+          >
+            *
+          </div>
+        ) : null}
+
+        {props.warningText != null ? (
+          <WarningIcon tooltipText={props.warningText} />
+        ) : (
           <Icn {...iconProps} color={props.color} />
-        </div>
-      )
-    }
+        )}
+      </div>
+    )
   },
 )

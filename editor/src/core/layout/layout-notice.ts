@@ -27,7 +27,7 @@ export function createStylePostActionToast(
         React.createElement(
           'div',
           { style: { whiteSpace: 'pre' } },
-          `${name} has changed props:\n${addedRemovedProps}`,
+          `${name.trim()} has changed props:\n${addedRemovedProps}`,
         ),
         'PRIMARY',
         false,

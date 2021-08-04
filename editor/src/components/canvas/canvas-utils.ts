@@ -31,6 +31,7 @@ import {
 import {
   findElementAtPath,
   findJSXElementAtPath,
+  getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
@@ -446,36 +447,39 @@ export function updateFramesOfScenesAndComponents(
             if (parentElement == null) {
               throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
             }
-            // Flex based layout.
-            const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
-              frameAndTarget.newSize.width,
-              frameAndTarget.newSize.height,
-              element.props,
-              right(parentElement.props),
-              eitherToMaybe(FlexLayoutHelpers.getMainAxis(right(parentElement.props))),
-              frameAndTarget.edgePosition,
+
+            const currentAttributeToChange =
+              eitherToMaybe(
+                getSimpleAttributeAtPath(
+                  right(element.props),
+                  createLayoutPropertyPath(frameAndTarget.targetProperty),
+                ),
+              ) ?? 0
+
+            const newAttributeValue = jsxAttributeValue(
+              currentAttributeToChange + frameAndTarget.delta,
+              emptyComments,
             )
-            forEachRight(possibleFlexProps, (flexProps) => {
-              const { flexBasis, width, height } = flexProps
-              if (flexBasis != null) {
-                propsToSet.push({
-                  path: createLayoutPropertyPath('flexBasis'),
-                  value: jsxAttributeValue(flexBasis, emptyComments),
-                })
-              }
-              if (width != null) {
-                propsToSet.push({
-                  path: createLayoutPropertyPath('Width'),
-                  value: jsxAttributeValue(width, emptyComments),
-                })
-              }
-              if (height != null) {
-                propsToSet.push({
-                  path: createLayoutPropertyPath('Height'),
-                  value: jsxAttributeValue(height, emptyComments),
-                })
-              }
+
+            propsToSet.push({
+              path: createLayoutPropertyPath(frameAndTarget.targetProperty),
+              value: newAttributeValue,
             })
+
+            propsToSkip.push(
+              createLayoutPropertyPath('left'),
+              createLayoutPropertyPath('top'),
+              createLayoutPropertyPath('right'),
+              createLayoutPropertyPath('bottom'),
+              createLayoutPropertyPath('Width'),
+              createLayoutPropertyPath('Height'),
+              createLayoutPropertyPath('minWidth'),
+              createLayoutPropertyPath('minHeight'),
+              createLayoutPropertyPath('maxWidth'),
+              createLayoutPropertyPath('maxHeight'),
+              createLayoutPropertyPath('FlexCrossBasis'),
+              createLayoutPropertyPath('flexBasis'),
+            )
           }
           break
         default:
@@ -1447,11 +1451,11 @@ export function produceResizeCanvasTransientState(
               editorState.jsxMetadata,
             )
 
-            let change: PinOrFlexFrameChange
             if (isFlexContainer) {
-              framesAndTargets.push(
-                flexResizeChange(underlyingTarget, roundedFrame, dragState.edgePosition),
-              )
+              const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+                ? dragState.drag?.x ?? 0
+                : dragState.drag?.y ?? 0
+              framesAndTargets.push(flexResizeChange(target, dragState.targetProperty, newDelta))
             } else {
               framesAndTargets.push(
                 pinFrameChange(underlyingTarget, roundedFrame, dragState.edgePosition),
@@ -1469,6 +1473,10 @@ export function produceResizeCanvasTransientState(
       elementsToTarget,
     )
   }
+}
+
+export function isTargetPropertyHorizontal(edgePosition: EdgePosition): boolean {
+  return edgePosition.x !== 0.5
 }
 
 export function produceResizeSingleSelectCanvasTransientState(
@@ -1512,9 +1520,16 @@ export function produceResizeSingleSelectCanvasTransientState(
           elementToTarget,
           editorState.jsxMetadata,
         )
-        if (isFlexContainer) {
+        if (
+          isFlexContainer ||
+          dragState.edgePosition.x === 0.5 ||
+          dragState.edgePosition.y === 0.5
+        ) {
+          const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+            ? dragState.drag?.x ?? 0
+            : dragState.drag?.y ?? 0
           framesAndTargets.push(
-            flexResizeChange(elementToTarget, roundedFrame, dragState.edgePosition),
+            flexResizeChange(elementToTarget, dragState.targetProperty, newDelta),
           )
         } else {
           const edgePosition = dragState.centerBasedResize
@@ -1773,7 +1788,7 @@ export function getFrameChange(
   isParentFlex: boolean,
 ): PinOrFlexFrameChange {
   if (isParentFlex) {
-    return flexResizeChange(target, newFrame, null)
+    return flexResizeChange(target, 'flexBasis', 0) // KILLME
   } else {
     return pinFrameChange(target, newFrame, null)
   }
@@ -2510,7 +2525,7 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     emptySet(),
   ) as ParsedTextFile
 
-  if (isParseFailure(parsedFile)) {
+  if (!isParseSuccess(parsedFile)) {
     fail('The test file parse failed')
   }
 
@@ -2522,6 +2537,7 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
       textFile(
         textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
         null,
+        parsedFile,
         Date.now(),
       ),
     ),

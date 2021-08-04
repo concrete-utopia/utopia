@@ -220,8 +220,36 @@ const basicHTMLElementsDescriptor: DependencyDescriptor = {
   components: [
     makeHTMLDescriptor('div', {}),
     makeHTMLDescriptor('span', {}),
+    makeHTMLDescriptor('h1', {}),
+    makeHTMLDescriptor('h2', {}),
+    makeHTMLDescriptor('p', {}),
     makeHTMLDescriptor('button', {}),
     makeHTMLDescriptor('input', {}),
+    makeHTMLDescriptor('video', {
+      controls: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      autoPlay: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      loop: {
+        type: 'boolean',
+        defaultValue: true,
+      },
+      src: {
+        type: 'string',
+        defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
+      },
+      style: {
+        type: 'styleobject',
+        defaultValue: {
+          width: '250px',
+          height: '120px',
+        },
+      },
+    }),
     makeHTMLDescriptor('img', {
       src: {
         type: 'string',

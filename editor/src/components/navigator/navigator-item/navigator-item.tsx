@@ -14,7 +14,6 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import {
@@ -101,7 +100,7 @@ const collapseItem = (
 }
 
 const defaultUnselected = (colorTheme: any): ComputedLook => ({
-  style: { background: 'transparent', color: colorTheme.neutralForeground.value },
+  style: { background: 'transparent', color: colorTheme.fg0.value },
   iconColor: 'main',
 })
 
@@ -181,7 +180,7 @@ const computeResultingStyle = (
   // additional style
   result.style = {
     ...result.style,
-    fontWeight: isProbablyScene ? 500 : 'inherit',
+    fontWeight: isProbablyScene || fullyVisible ? 500 : 'inherit',
     opacity: fullyVisible ? 1 : 0.5,
     boxShadow: boxShadow,
   }
@@ -260,7 +259,6 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     } = props
 
     const colorTheme = useColorTheme()
-    const domElementRef = useScrollToThisIfSelected(selected)
     const isFocusedComponent = useEditorState(
       (store) => EP.isFocused(store.editor.focusedElementPath, elementPath),
       'NavigatorItem isFocusedComponent',
@@ -314,14 +312,15 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       [dispatch, elementPath, selected, isHighlighted],
     )
     const focusComponent = React.useCallback(() => {
-      dispatch([EditorActions.setFocusedElement(elementPath)])
-    }, [dispatch, elementPath])
+      if (isFocusableComponent) {
+        dispatch([EditorActions.setFocusedElement(elementPath)])
+      }
+    }, [dispatch, elementPath, isFocusableComponent])
 
     const containerStyle: React.CSSProperties = React.useMemo(() => {
       return {
         opacity: isElementVisible ? undefined : 0.5,
-        overflowY: 'hidden',
-        overflowX: 'scroll',
+        overflow: 'hidden',
         flexGrow: 1,
         flexShrink: 0,
       }
@@ -335,7 +334,6 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 
     return (
       <FlexRow
-        ref={domElementRef}
         style={rowStyle}
         onMouseDown={select}
         onMouseMove={highlight}

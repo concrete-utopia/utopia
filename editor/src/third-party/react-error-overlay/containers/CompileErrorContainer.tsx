@@ -37,6 +37,7 @@ class CompileErrorContainer extends PureComponent<Props, {}> {
         {currentBuildErrorRecords != null ? (
           currentBuildErrorRecords.map((record) => (
             <div
+              key={`compile-error-${record.source}-${record.startLine}-${record.startColumn}-${record.endLine}-${record.endColumn}`}
               css={{
                 marginBottom: 24,
                 padding: 8,

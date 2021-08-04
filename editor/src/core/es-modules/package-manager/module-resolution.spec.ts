@@ -13,6 +13,7 @@ const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
   '/src/thing.js': textFile(
     textFileContents('export const Thing = 1', unparsed, RevisionsState.CodeAhead),
     null,
+    null,
     0,
   ),
   '/src/icon.png': {
@@ -20,6 +21,7 @@ const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
   },
   '/src/simple.css': textFile(
     textFileContents('.utopiaClass { background-color: red; }', unparsed, RevisionsState.CodeAhead),
+    null,
     null,
     0,
   ),

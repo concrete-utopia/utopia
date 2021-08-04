@@ -28,7 +28,7 @@ import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 
 export function getUiBuilderUIJSFile(): TextFile {
   const result = lintAndParse('code.tsx', sampleCode, null, emptySet())
-  return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, 0)
+  return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, null, 0)
 }
 
 export const sampleCode = `
@@ -91,6 +91,7 @@ export var App = (props) => {
 export function getSampleComponentsFile(): TextFile {
   return textFile(
     textFileContents(sampleComponentsFile, unparsed, RevisionsState.BothMatch),
+    null,
     null,
     0,
   )

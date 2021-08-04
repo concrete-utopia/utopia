@@ -1,5 +1,6 @@
 import {
   codeFile,
+  isParseSuccess,
   RevisionsState,
   textFile,
   TextFile,
@@ -23,13 +24,19 @@ export function appJSFile(): TextFile {
   return textFile(
     textFileContents(sampleAppJSCode, result, RevisionsState.BothMatch),
     null,
+    isParseSuccess(result) ? result : null,
     Date.now(),
   )
 }
 
 export function getDefaultUIJsFile(): TextFile {
   const result = lintAndParse('code.tsx', sampleCode, null, emptySet())
-  return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, Date.now())
+  return textFile(
+    textFileContents(sampleCode, result, RevisionsState.BothMatch),
+    null,
+    isParseSuccess(result) ? result : null,
+    Date.now(),
+  )
 }
 
 export const sampleCode = `

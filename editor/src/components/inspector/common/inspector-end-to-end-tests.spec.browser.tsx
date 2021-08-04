@@ -68,25 +68,25 @@ describe('inspector tests with real metadata', () => {
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
-    const flexPaddingTopControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-T',
+    const paddingTopControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-T',
     )) as HTMLInputElement
-    const flexPaddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-L',
     )) as HTMLInputElement
 
     // Padding top is coming from the shorthand `padding` value.
     expect(metadata.computedStyle?.['paddingTop']).toMatchInlineSnapshot(`"20px"`)
-    expect(flexPaddingTopControl.value).toMatchInlineSnapshot(`"20"`)
+    expect(paddingTopControl.value).toMatchInlineSnapshot(`"20"`)
     expect(
-      flexPaddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
     // Padding left is coming from the `paddingLeft` value.
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"15px"`)
-    expect(flexPaddingLeftControl.value).toMatchInlineSnapshot(`"15"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"15"`)
     expect(
-      flexPaddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
   })
   it('TLWH layout controls', async () => {
@@ -458,10 +458,10 @@ describe('inspector tests with real metadata', () => {
       'position-Height-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-control',
@@ -546,10 +546,10 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedLeft-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -665,10 +665,10 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedLeft-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -758,10 +758,10 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedLeft-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -851,10 +851,10 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedLeft-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -944,10 +944,10 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedLeft-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1069,10 +1069,10 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedLeft-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1173,10 +1173,10 @@ describe('inspector tests with real metadata', () => {
       'position-Height-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-control',
@@ -1261,10 +1261,10 @@ describe('inspector tests with real metadata', () => {
       'position-Height-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-R',
+      'padding-R',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1372,7 +1372,7 @@ describe('inspector tests with real metadata', () => {
       'position-Height-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1476,9 +1476,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
-      await screen.findByTestId('layout-system-expand')
-      fireEvent.click(screen.getByTestId('layout-system-expand'))
-      await screen.findByTestId('flexPadding-L')
+      await screen.findByTestId('padding-L')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
@@ -1490,7 +1488,7 @@ describe('inspector tests with real metadata', () => {
       'position-maxWidth-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1583,9 +1581,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
-      await screen.findByTestId('layout-system-expand')
-      fireEvent.click(screen.getByTestId('layout-system-expand'))
-      await screen.findByTestId('flexPadding-L')
+      await screen.findByTestId('padding-L')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
@@ -1597,7 +1593,7 @@ describe('inspector tests with real metadata', () => {
       'position-maxHeight-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+      'padding-L',
     )) as HTMLInputElement
     const radiusControl = (await renderResult.renderedDOM.findByTestId(
       'radius-all-number-input',
@@ -1796,6 +1792,7 @@ describe('inspector tests with real metadata', () => {
           RevisionsState.BothMatch,
         ),
         null,
+        null,
         0,
       ),
       '/src': directory(),
@@ -1844,25 +1841,25 @@ describe('inspector tests with real metadata', () => {
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
-    const flexPaddingTopControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-T',
+    const paddingTopControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-T',
     )) as HTMLInputElement
-    const flexPaddingLeftControl = (await renderResult.renderedDOM.findByTestId(
-      'flexPadding-L',
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-L',
     )) as HTMLInputElement
 
     // Padding top is coming from the shorthand `padding` value.
     expect(metadata.computedStyle?.['paddingTop']).toMatchInlineSnapshot(`"8px"`)
-    expect(flexPaddingTopControl.value).toMatchInlineSnapshot(`"8"`)
+    expect(paddingTopControl.value).toMatchInlineSnapshot(`"8"`)
     expect(
-      flexPaddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
     // Padding left is coming from the `paddingLeft` value.
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"10px"`)
-    expect(flexPaddingLeftControl.value).toMatchInlineSnapshot(`"10"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"10"`)
     expect(
-      flexPaddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
   })
 })

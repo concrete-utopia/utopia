@@ -3,7 +3,7 @@
   "displayName": "utopia vscode extension",
   "publisher": "concrete-utopia",
   "description": "For providing communication between Utopia and VS Code",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "enableProposedApi": true,
   "private": true,

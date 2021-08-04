@@ -53,7 +53,7 @@ export const VerySubdued = styled(Subdued)({
 
 export const InspectorSectionHeader = styled(H1)({
   label: 'section-header',
-  height: 34,
+  height: UtopiaTheme.layout.rowHeight.large,
   padding: `6px ${UtopiaTheme.layout.inspectorXPadding}px 6px ${UtopiaTheme.layout.inspectorXPadding}px`,
 })
 InspectorSectionHeader.displayName = 'InspectorSectionHeader'
