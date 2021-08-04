@@ -229,7 +229,9 @@ export const OutlineControls = (props: OutlineControlsProps) => {
                 top: parentFrame.y + props.canvasOffset.y,
                 width: parentFrame.width,
                 height: parentFrame.height,
-                outline: `1px dotted ${colorTheme.primary.value}`,
+                outlineStyle: 'dotted',
+                outlineColor: colorTheme.primary.value,
+                outlineWidth: 1 / props.scale,
               }}
             ></div>
           )
@@ -241,6 +243,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     props.canvasOffset.x,
     props.canvasOffset.y,
     props.componentMetadata,
+    props.scale,
     props.selectedViews,
   ])
 
