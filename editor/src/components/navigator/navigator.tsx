@@ -178,7 +178,6 @@ export const NavigatorComponent = betterReactMemo(
         id={NavigatorContainerId}
         tabIndex={-1}
         style={navigatorStyle}
-
       >
         <SectionTitleRow minimised={minimised} toggleMinimised={toggleTwirler}>
           <FlexRow flexGrow={1}>
