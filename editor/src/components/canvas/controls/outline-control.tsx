@@ -19,6 +19,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { KeysPressed } from '../../../utils/keyboard'
+import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 
 export function getSelectionColor(
   path: ElementPath,
@@ -208,9 +209,12 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     props.selectedViews,
   ])
 
-  const parentOutlines = React.useMemo(() => {
-    return props.selectedViews.map((view) => {
-      const parentPath = EP.parentPath(view)
+  const parentOutlines: (JSX.Element | null)[] = React.useMemo(() => {
+    const targetParents = uniqBy(
+      stripNulls(props.selectedViews.map((view) => EP.parentPath(view))),
+      EP.pathsEqual,
+    )
+    return targetParents.map((parentPath) => {
       const parentElement = MetadataUtils.findElementByElementPath(
         props.componentMetadata,
         parentPath,
@@ -223,6 +227,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
         if (parentFrame != null) {
           return (
             <div
+              key={EP.toString(parentPath)}
               style={{
                 position: 'absolute',
                 left: parentFrame.x + props.canvasOffset.x,
