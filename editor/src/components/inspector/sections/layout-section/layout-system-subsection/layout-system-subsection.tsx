@@ -34,13 +34,8 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
   'LayoutSystemSubsection',
   (props) => {
     const isFlexParent = props.specialSizeMeasurements.layoutSystemForChildren === 'flex'
-    const paddings = useInspectorInfoLonghandShorthand(
-      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
-      'padding',
-      createLayoutPropertyPath,
-    )
-    const hasAnyLayoutProps =
-      isFlexParent || Object.values(paddings).some((i) => isNotUnsetOrDefault(i.controlStatus))
+
+    const hasAnyLayoutProps = isFlexParent
     const [layoutSectionOpen, setLayoutSectionOpen] = usePropControlledStateV2(hasAnyLayoutProps)
 
     const openSection = React.useCallback(() => setLayoutSectionOpen(true), [setLayoutSectionOpen])
