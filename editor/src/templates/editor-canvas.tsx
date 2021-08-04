@@ -866,6 +866,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
           break
         case 'RESIZE_DRAG_STATE':
+          const resizeOptions = this.props.editor.canvas.resizeOptions
+          const targetProperty =
+            resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
           switch (key) {
             case 'shift':
               const elementAspectRatioLocked = this.getElementAspectRatioLocked()
@@ -874,7 +877,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 updateResizeDragState(
                   dragState,
                   undefined,
-                  dragState.targetProperty,
+                  targetProperty,
                   undefined,
                   undefined,
                   keepAspectRatio,
@@ -886,7 +889,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 updateResizeDragState(
                   dragState,
                   undefined,
-                  dragState.targetProperty,
+                  targetProperty,
                   undefined,
                   pressed,
                   undefined,
@@ -898,7 +901,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
                 updateResizeDragState(
                   dragState,
                   undefined,
-                  dragState.targetProperty,
+                  targetProperty,
                   !pressed,
                   undefined,
                   undefined,
@@ -1027,10 +1030,13 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             const centerBasedResize = event.altKey
             const enableSnapping = !event.metaKey
 
+            const resizeOptions = this.props.editor.canvas.resizeOptions
+            const targetProperty =
+              resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
             newDragState = updateResizeDragState(
               dragState,
               exceededThreshold ? newDrag : undefined,
-              dragState.targetProperty,
+              targetProperty,
               enableSnapping,
               centerBasedResize,
               keepAspectRatio,

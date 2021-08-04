@@ -533,6 +533,7 @@ describe('action DELETE_SELECTED', () => {
           RevisionsState.BothMatch,
         ),
         null,
+        null,
         0,
       ),
       '/src': directory(),

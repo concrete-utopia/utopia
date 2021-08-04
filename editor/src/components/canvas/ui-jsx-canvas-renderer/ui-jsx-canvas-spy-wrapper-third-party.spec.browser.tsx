@@ -20,10 +20,10 @@ jest.mock('../../../core/es-modules/package-manager/built-in-dependencies-list',
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   ParsedTextFile,
-  isParseFailure,
   textFile,
   textFileContents,
   RevisionsState,
+  isParseSuccess,
 } from '../../../core/shared/project-file-types'
 import { emptySet } from '../../../core/shared/set-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -117,7 +117,7 @@ function createTestProject() {
       null,
       emptySet(),
     ) as ParsedTextFile
-    if (isParseFailure(parsedFile)) {
+    if (!isParseSuccess(parsedFile)) {
       fail('The test file parse failed')
     }
 
@@ -127,6 +127,7 @@ function createTestProject() {
       textFile(
         textFileContents(exampleFiles[modifiedFilename], parsedFile, RevisionsState.BothMatch),
         null,
+        parsedFile,
         Date.now(),
       ),
     )

@@ -130,7 +130,7 @@ const light = {
 
   paddingForeground: base.neongreen,
   paddingFillSolid: base.neongreen,
-  paddingFillTranslucent: base.neongreen.shade(10).o(90),
+  paddingFillTranslucent: base.neongreen.shade(10).o(70),
   paddingStroke: base.neongreen,
 
   // interface elements: buttons, segment controls, checkboxes etc

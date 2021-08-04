@@ -625,7 +625,6 @@ export function emitFile(services: TS.LanguageService, filename: string): EmitFi
 
     if (output.emitSkipped) {
       errorMessages = logErrors(services, filename)
-      console.warn(`Emitting ${filename} failed`, errorMessages)
     }
     // TODO: jetpack jetpack we just expect that single file to be built what is changed
     // Although potentially other files (e.g. which import from this) can be affected

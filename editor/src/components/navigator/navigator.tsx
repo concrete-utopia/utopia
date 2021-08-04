@@ -22,9 +22,12 @@ import {
   Title,
   SectionBodyArea,
   useColorTheme,
+  FlexColumn,
+  InspectorSectionHeader,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { last } from '../../core/shared/array-utils'
+import { FlexCol } from 'utopia-api'
 // There's some weirdness between the types and the results in the two module systems.
 // This is to effectively massage the result so that if it is loaded in the browser or in
 // node it should end up with the right thing.
@@ -158,6 +161,7 @@ export const NavigatorComponent = betterReactMemo(
             itemSize={UtopiaTheme.layout.rowHeight.smaller}
             itemCount={visibleNavigatorTargets.length}
             layout={'vertical'}
+            style={{ overflowX: 'hidden' }}
           >
             {Item}
           </FixedSizeList>
@@ -173,23 +177,45 @@ export const NavigatorComponent = betterReactMemo(
         onContextMenu={onContextMenu}
         id={NavigatorContainerId}
         tabIndex={-1}
-        style={{
-          ...navigatorStyle,
-          backgroundColor: colorTheme.leftPaneBackground.o(80).value,
-          backdropFilter: 'blur(7px)',
-          overflowX: 'scroll',
-        }}
+        style={navigatorStyle}
+
       >
         <SectionTitleRow minimised={minimised} toggleMinimised={toggleTwirler}>
           <FlexRow flexGrow={1}>
-            <Title>Elements</Title>
+            <Title>Structure</Title>
           </FlexRow>
         </SectionTitleRow>
-        <SectionBodyArea minimised={minimised} flexGrow={1}>
+        <SectionBodyArea
+          minimised={minimised}
+          flexGrow={1}
+          style={{
+            flexGrow: 1,
+            overscrollBehavior: 'contain',
+            display: 'flex',
+            alignItems: 'stretch',
+            justifyContent: 'stretch',
+          }}
+        >
           <ElementContextMenu contextMenuInstance={'context-menu-navigator'} />
-          <div style={{ flex: '1 1 auto' }}>
-            <AutoSizerComponent disableWidth={true}>{ItemList}</AutoSizerComponent>
-          </div>
+          <FlexColumn
+            style={{
+              flexGrow: 1,
+              flexShrink: 1,
+              flexBasis: '100%',
+              overflowX: 'hidden',
+            }}
+          >
+            <AutoSizerComponent
+              disableWidth={true}
+              style={{
+                overscrollBehavior: 'contain',
+                overflowX: 'hidden',
+                height: '100%',
+              }}
+            >
+              {ItemList}
+            </AutoSizerComponent>
+          </FlexColumn>
         </SectionBodyArea>
       </Section>
     )
