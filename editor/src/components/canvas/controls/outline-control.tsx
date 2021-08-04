@@ -235,7 +235,11 @@ export const OutlineControls = (props: OutlineControlsProps) => {
               }}
             />
           )
+        } else {
+          return null
         }
+      } else {
+        return null
       }
     })
   }, [
