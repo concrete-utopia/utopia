@@ -180,6 +180,7 @@ export const ElementContextMenu = betterReactMemo(
     }, 'ElementContextMenu dispatch')
 
     const editorSliceRef = useRefEditorState((store) => {
+      const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
       return {
         canvasOffset: store.editor.canvas.roundedCanvasOffset,
         selectedViews: store.editor.selectedViews,
@@ -188,7 +189,7 @@ export const ElementContextMenu = betterReactMemo(
         projectContents: store.editor.projectContents,
         nodeModules: store.editor.nodeModules.files,
         transientFilesState: store.derived.canvas.transientState.filesState,
-        resolve: store.editor.codeResultCache.resolve,
+        resolve: resolveFn,
         hiddenInstances: store.editor.hiddenInstances,
         scale: store.editor.canvas.scale,
         focusedElementPath: store.editor.focusedElementPath,

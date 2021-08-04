@@ -233,6 +233,7 @@ const testEditor: EditorState = deepFreeze({
     [StoryboardFilePath]: textFile(
       textFileContents('', originalModel, RevisionsState.ParsedAhead),
       null,
+      originalModel,
       0,
     ),
   }),
@@ -405,6 +406,7 @@ describe('moveTemplate', () => {
         [StoryboardFilePath]: textFile(
           textFileContents('', uiFile, RevisionsState.ParsedAhead),
           null,
+          uiFile,
           0,
         ),
       }),
@@ -929,20 +931,20 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     false,
     emptyComments,
   )
-  const fileForUI = textFile(
-    textFileContents(
-      '',
-      parseSuccess(
-        sampleImportsForTests,
-        [firstTopLevelElement, storyboard],
-        {},
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
-      RevisionsState.BothMatch,
-    ),
+
+  const parsedUIFile = parseSuccess(
+    sampleImportsForTests,
+    [firstTopLevelElement, storyboard],
+    {},
     null,
+    null,
+    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+  )
+
+  const fileForUI = textFile(
+    textFileContents('', parsedUIFile, RevisionsState.BothMatch),
+    null,
+    parsedUIFile,
     0,
   )
   const rootElementPath = EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])
@@ -1037,8 +1039,8 @@ describe('LOAD', () => {
       projectVersion: CURRENT_PROJECT_VERSION,
       projectDescription: '',
       projectContents: contentsToTree({
-        [firstUIJSFile]: textFile(initialFileContents, null, 0),
-        [secondUIJSFile]: textFile(initialFileContents, null, 0),
+        [firstUIJSFile]: textFile(initialFileContents, null, null, 0),
+        [secondUIJSFile]: textFile(initialFileContents, null, null, 0),
       }),
       exportsInfo: [],
       codeEditorErrors: {

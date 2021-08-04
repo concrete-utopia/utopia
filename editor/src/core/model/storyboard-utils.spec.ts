@@ -14,7 +14,7 @@ import { foldEither } from '../shared/either'
 import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
 import {
   foldParsedTextFile,
-  isParseFailure,
+  isParseSuccess,
   isTextFile,
   ParsedTextFile,
   RevisionsState,
@@ -36,7 +36,7 @@ export var App = (props) => {
   const baseModel = defaultProject()
   const parsedFile = lintAndParse(StoryboardFilePath, appFile, null, emptySet()) as ParsedTextFile
 
-  if (isParseFailure(parsedFile)) {
+  if (!isParseSuccess(parsedFile)) {
     fail('The test file parse failed')
   }
 
@@ -50,7 +50,12 @@ export var App = (props) => {
     projectContents: addFileToProjectContents(
       projectContentsWithoutStoryboard,
       '/src/app.js',
-      textFile(textFileContents(appFile, parsedFile, RevisionsState.BothMatch), null, Date.now()),
+      textFile(
+        textFileContents(appFile, parsedFile, RevisionsState.BothMatch),
+        null,
+        parsedFile,
+        Date.now(),
+      ),
     ),
   }
 
@@ -93,6 +98,7 @@ describe('addStoryboardFileToProject', () => {
         unparsed,
         RevisionsState.CodeAhead,
       ),
+      null,
       null,
       0,
     )

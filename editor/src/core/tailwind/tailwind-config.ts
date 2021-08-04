@@ -30,6 +30,7 @@ export const DefaultTailwindConfig = (): TextFile =>
       RevisionsState.BothMatch,
     ),
     null,
+    null,
     Date.now(),
   )
 
@@ -40,6 +41,7 @@ export const DefaultPostCSSConfig = (): TextFile =>
       lintAndParse(PostCSSPath, PostCSSConfigJs, null, new Set()),
       RevisionsState.BothMatch,
     ),
+    null,
     null,
     Date.now(),
   )

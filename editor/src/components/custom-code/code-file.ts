@@ -30,8 +30,7 @@ import {
 import { EditorDispatch } from '../editor/action-types'
 import {
   EvaluationCache,
-  getEditorRequireFn,
-  getEditorResolveFunction,
+  getCurriedEditorRequireFn,
 } from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/action-creators'
 import { fastForEach } from '../../core/shared/utils'
@@ -50,7 +49,10 @@ import {
 } from '../../core/shared/element-template'
 import { findElementWithUID } from '../../core/shared/uid-utils'
 import { importedFromWhere } from '../editor/import-utils'
-import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
+import {
+  resolveModule,
+  resolveModulePath,
+} from '../../core/es-modules/package-manager/module-resolution'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
@@ -75,19 +77,22 @@ export type UtopiaRequireFn = (
   skipRegistering: boolean,
 ) => any
 
+export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
+
 export type PropertyControlsInfo = {
   [filenameNoExtension: string]: { [componentName: string]: PropertyControls }
 }
 
 export type ResolveFn = (importOrigin: string, toImport: string) => Either<string, string>
+export type CurriedResolveFn = (projectContents: ProjectContentTreeRoot) => ResolveFn
 
 export type CodeResultCache = {
   skipDeepFreeze: true
   cache: { [filename: string]: CodeResult }
   exportsInfo: ReadonlyArray<ExportsInfo>
   error: Error | null
-  requireFn: UtopiaRequireFn
-  resolve: ResolveFn
+  curriedRequireFn: CurriedUtopiaRequireFn
+  curriedResolveFn: CurriedResolveFn
   projectModules: MultiFileBuildResult
   evaluationCache: EvaluationCache
 }
@@ -209,6 +214,11 @@ export function incorporateBuildResult(
   })
 }
 
+const getCurriedEditorResolveFunction = (nodeModules: NodeModules): CurriedResolveFn => (
+  projectContents: ProjectContentTreeRoot,
+) => (importOrigin: string, toImport: string) =>
+  resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
+
 export function generateCodeResultCache(
   projectContents: ProjectContentTreeRoot,
   existingModules: MultiFileBuildResult,
@@ -261,8 +271,8 @@ export function generateCodeResultCache(
     updatedAndReverseDepFilenames,
   )
 
-  const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch, evaluationCache)
-  const resolveFn = getEditorResolveFunction(projectContents, nodeModules)
+  const curriedRequireFn = getCurriedEditorRequireFn(nodeModules, dispatch, evaluationCache)
+  const curriedResolveFn = getCurriedEditorResolveFunction(nodeModules)
 
   let cache: { [code: string]: CodeResult } = {}
   Utils.fastForEach(exportsInfo, (result) => {
@@ -277,8 +287,8 @@ export function generateCodeResultCache(
     exportsInfo: exportsInfo,
     cache: cache,
     error: null,
-    requireFn: requireFn,
-    resolve: resolveFn,
+    curriedRequireFn: curriedRequireFn,
+    curriedResolveFn: curriedResolveFn,
     projectModules: projectModules,
     evaluationCache: evaluationCache,
   }

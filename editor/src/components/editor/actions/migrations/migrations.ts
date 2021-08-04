@@ -254,6 +254,7 @@ function migrateFromVersion5(
               const newFile = textFile(
                 textFileContents((file as any).fileContents, unparsed, RevisionsState.CodeAhead),
                 null,
+                null,
                 0,
               )
               return projectContentFile(tree.fullPath, newFile)
@@ -262,6 +263,7 @@ function migrateFromVersion5(
               const lastRevisedTime = (file as any).lastRevisedTime
               const newFile = textFile(
                 textFileContents(code, unparsed, RevisionsState.CodeAhead),
+                null,
                 null,
                 lastRevisedTime,
               )

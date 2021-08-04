@@ -1570,6 +1570,7 @@ export const UPDATE_FNS = {
         return textFile(
           textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
           lastSavedFileContents,
+          isParseSuccess(parseResult) ? parseResult : null,
           Date.now(),
         )
       },
@@ -3410,8 +3411,8 @@ export const UPDATE_FNS = {
         },
         exportsInfo: action.codeResultCache.exportsInfo,
         error: action.codeResultCache.error,
-        requireFn: action.codeResultCache.requireFn,
-        resolve: action.codeResultCache.resolve,
+        curriedRequireFn: action.codeResultCache.curriedRequireFn,
+        curriedResolveFn: action.codeResultCache.curriedResolveFn,
         projectModules: action.codeResultCache.projectModules,
         evaluationCache: action.codeResultCache.evaluationCache,
       },
@@ -3713,12 +3714,14 @@ export const UPDATE_FNS = {
             updatedFile = textFile(
               textFileContents(code, updatedContents, existing.fileContents.revisionsState),
               existing.lastSavedContents,
+              isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
               existing.lastRevisedTime,
             )
           } else {
             updatedFile = textFile(
               textFileContents(code, updatedContents, RevisionsState.BothMatch),
               existing.lastSavedContents,
+              isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
               Date.now(),
             )
           }
@@ -3775,7 +3778,7 @@ export const UPDATE_FNS = {
         ? null
         : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
 
-      updatedFile = textFile(contents, lastSavedContents, Date.now())
+      updatedFile = textFile(contents, lastSavedContents, null, Date.now())
     } else {
       updatedFile = updateFileContents(code, existing, manualSave)
     }
@@ -4793,15 +4796,15 @@ export const UPDATE_FNS = {
   },
   INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX: (editor: EditorModel): EditorModel => {
     const resizeOptions = editor.canvas.resizeOptions
+    const newIndex =
+      (resizeOptions.propertyTargetSelectedIndex + 1) % resizeOptions.propertyTargetOptions.length
     return {
       ...editor,
       canvas: {
         ...editor.canvas,
         resizeOptions: {
           ...resizeOptions,
-          propertyTargetSelectedIndex:
-            (resizeOptions.propertyTargetSelectedIndex + 1) %
-            resizeOptions.propertyTargetOptions.length,
+          propertyTargetSelectedIndex: newIndex,
         },
       },
     }
