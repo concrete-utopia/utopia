@@ -59,12 +59,14 @@ function isDraggingToMove(
 interface CenteredCrossSVGProps {
   id: string
   style?: React.CSSProperties
+  scale: number
 }
 
 const CenteredCrossSVG = betterReactMemo(
   'centeredCross',
-  ({ id, style }: CenteredCrossSVGProps) => {
+  ({ id, style, scale }: CenteredCrossSVGProps) => {
     const colorTheme = useColorTheme()
+
     return (
       <svg
         id={id}
@@ -72,7 +74,8 @@ const CenteredCrossSVG = betterReactMemo(
           position: 'absolute',
           width: 6,
           height: 6,
-          transform: 'translateX(-50%) translateY(-50%)',
+          transformOrigin: 'center center',
+          transform: `translateX(-50%) translateY(-50%) scale(${1 / scale})`,
           ...style,
         }}
         width='4px'
@@ -198,6 +201,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
 
                 <CenteredCrossSVG
                   id='parent-cross-top-left'
+                  scale={props.scale}
                   style={{
                     left: parentFrame.x + props.canvasOffset.x,
                     top: parentFrame.y + props.canvasOffset.y,
@@ -206,6 +210,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
 
                 <CenteredCrossSVG
                   id='parent-cross-top-right'
+                  scale={props.scale}
                   style={{
                     left: parentFrame.x + parentFrame.width + props.canvasOffset.x,
                     top: parentFrame.y + props.canvasOffset.y,
@@ -213,6 +218,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
                 />
                 <CenteredCrossSVG
                   id='parent-cross-bottom-right'
+                  scale={props.scale}
                   style={{
                     left: parentFrame.x + parentFrame.width + props.canvasOffset.x,
                     top: parentFrame.y + parentFrame.height + props.canvasOffset.y,
@@ -220,6 +226,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
                 />
                 <CenteredCrossSVG
                   id='parent-cross-bottom-left'
+                  scale={props.scale}
                   style={{
                     left: parentFrame.x + props.canvasOffset.x,
                     top: parentFrame.y + parentFrame.height + props.canvasOffset.y,
@@ -244,6 +251,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     props.componentMetadata,
     props.keysPressed,
     props.selectedViews,
+    props.scale,
   ])
 
   let selectionOutlines: Array<JSX.Element> = getOverlayControls(props.selectedViews)
