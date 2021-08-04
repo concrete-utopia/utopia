@@ -13,21 +13,20 @@ import { useEditorState } from '../../editor/store/store-hook'
 interface PositionOutlineProps {
   path: ElementPath
   frame: CanvasRectangle
+  canvasOffset: CanvasPoint
+  scale: number
 }
 
 export const PositionOutline = betterReactMemo('PositionOutline', (props: PositionOutlineProps) => {
   const containingFrame = useContainingFrameForElement(props.path)
   const attributes = usePropsOrJSXAttributes(props.path)
-  const canvasOffset = useEditorState(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'PositionOutline canvasOffset',
-  )
   if (containingFrame != null) {
     let pins: PinOutlineProps[] = collectPinOutlines(
       attributes,
       props.frame,
       containingFrame,
-      canvasOffset,
+      props.canvasOffset,
+      props.scale,
     )
     return (
       <div key={EP.toString(props.path)}>
@@ -55,7 +54,7 @@ const usePropsOrJSXAttributes = (path: ElementPath): PropsOrJSXAttributes => {
 const useContainingFrameForElement = (path: ElementPath): CanvasRectangle | null => {
   return useEditorState((store) => {
     const containingBlockPath = MetadataUtils.findContainingBlock(store.editor.jsxMetadata, path)
-    if (containingBlockPath != null) {
+    if (containingBlockPath != null && !EP.isStoryboardPath(containingBlockPath)) {
       return MetadataUtils.getFrameInCanvasCoords(containingBlockPath, store.editor.jsxMetadata)
     } else {
       return null
@@ -68,6 +67,7 @@ const collectPinOutlines = (
   frame: CanvasRectangle,
   containingFrame: CanvasRectangle,
   canvasOffset: CanvasPoint,
+  scale: number,
 ): PinOutlineProps[] => {
   const pinLeft = eitherToMaybe(getLayoutProperty('PinnedLeft', attributes))
   const pinTop = eitherToMaybe(getLayoutProperty('PinnedTop', attributes))
@@ -81,6 +81,7 @@ const collectPinOutlines = (
       size: frame.x - containingFrame.x,
       startX: containingFrame.x + canvasOffset.x,
       startY: frame.y + frame.height / 2 + canvasOffset.y,
+      scale: scale,
     })
   }
   if (pinTop != null) {
@@ -90,6 +91,7 @@ const collectPinOutlines = (
       size: frame.y - containingFrame.y,
       startX: frame.x + frame.width / 2 + canvasOffset.x,
       startY: containingFrame.y + canvasOffset.y,
+      scale: scale,
     })
   }
   if (pinRight != null) {
@@ -99,6 +101,7 @@ const collectPinOutlines = (
       size: containingFrame.x + containingFrame.width - (frame.x + frame.width),
       startX: frame.width + frame.x + canvasOffset.x,
       startY: frame.y + frame.height / 2 + canvasOffset.y,
+      scale: scale,
     })
   }
   if (pinBottom != null) {
@@ -108,6 +111,7 @@ const collectPinOutlines = (
       size: containingFrame.y + containingFrame.height - (frame.y + frame.height),
       startX: frame.x + frame.width / 2 + canvasOffset.x,
       startY: frame.height + frame.y + canvasOffset.y,
+      scale: scale,
     })
   }
   return pins
@@ -119,6 +123,7 @@ interface PinOutlineProps {
   startX: number
   startY: number
   size: number
+  scale: number
 }
 
 const PinOutline = betterReactMemo(
@@ -127,8 +132,12 @@ const PinOutline = betterReactMemo(
     const colorTheme = useColorTheme()
     const width = props.isHorizontalLine ? props.size : 0
     const height = props.isHorizontalLine ? 0 : props.size
-    const borderTop = props.isHorizontalLine ? `1px dashed ${colorTheme.primary.value}` : 'none'
-    const borderLeft = props.isHorizontalLine ? 'none' : `1px dashed ${colorTheme.primary.value}`
+    const borderTop = props.isHorizontalLine
+      ? `${1 / props.scale}px dashed ${colorTheme.primary.value}`
+      : 'none'
+    const borderLeft = props.isHorizontalLine
+      ? 'none'
+      : `${1 / props.scale}px dashed ${colorTheme.primary.value}`
     return (
       <div
         style={{

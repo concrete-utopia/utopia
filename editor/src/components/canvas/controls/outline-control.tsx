@@ -309,7 +309,13 @@ export const OutlineControls = (props: OutlineControlsProps) => {
 
     if (MetadataUtils.isPositionAbsolute(instance)) {
       selectionOutlines.push(
-        <PositionOutline key={`${keyPrefix}-position-outline`} frame={rect} path={selectedView} />,
+        <PositionOutline
+          key={`${keyPrefix}-position-outline`}
+          frame={rect}
+          path={selectedView}
+          scale={props.scale}
+          canvasOffset={props.canvasOffset}
+        />,
       )
     }
 
