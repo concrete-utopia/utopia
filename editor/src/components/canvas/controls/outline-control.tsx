@@ -58,25 +58,26 @@ function isDraggingToMove(
 
 interface CenteredCrossSVGProps {
   id: string
-  style?: React.CSSProperties
   scale: number
+  centerX: number
+  centerY: number
 }
 
 const CenteredCrossSVG = betterReactMemo(
   'centeredCross',
-  ({ id, style, scale }: CenteredCrossSVGProps) => {
+  ({ id, centerX, centerY, scale }: CenteredCrossSVGProps) => {
     const colorTheme = useColorTheme()
-
     return (
       <svg
         id={id}
         style={{
+          left: centerX,
+          top: centerY,
           position: 'absolute',
           width: 6,
           height: 6,
           transformOrigin: 'center center',
           transform: `translateX(-50%) translateY(-50%) scale(${1 / scale})`,
-          ...style,
         }}
         width='4px'
         height='4px'
@@ -201,36 +202,28 @@ export const OutlineControls = (props: OutlineControlsProps) => {
 
                 <CenteredCrossSVG
                   id='parent-cross-top-left'
+                  centerX={parentFrame.x + props.canvasOffset.x}
+                  centerY={parentFrame.y + props.canvasOffset.y}
                   scale={props.scale}
-                  style={{
-                    left: parentFrame.x + props.canvasOffset.x,
-                    top: parentFrame.y + props.canvasOffset.y,
-                  }}
                 />
 
                 <CenteredCrossSVG
                   id='parent-cross-top-right'
                   scale={props.scale}
-                  style={{
-                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x,
-                    top: parentFrame.y + props.canvasOffset.y,
-                  }}
+                  centerX={parentFrame.x + parentFrame.width + props.canvasOffset.x}
+                  centerY={parentFrame.y + props.canvasOffset.y}
                 />
                 <CenteredCrossSVG
                   id='parent-cross-bottom-right'
                   scale={props.scale}
-                  style={{
-                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x,
-                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y,
-                  }}
+                  centerX={parentFrame.x + parentFrame.width + props.canvasOffset.x}
+                  centerY={parentFrame.y + parentFrame.height + props.canvasOffset.y}
                 />
                 <CenteredCrossSVG
                   id='parent-cross-bottom-left'
                   scale={props.scale}
-                  style={{
-                    left: parentFrame.x + props.canvasOffset.x,
-                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y,
-                  }}
+                  centerX={parentFrame.x + props.canvasOffset.x}
+                  centerY={parentFrame.y + parentFrame.height + props.canvasOffset.y}
                 />
               </>
             )
