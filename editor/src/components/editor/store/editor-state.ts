@@ -29,6 +29,7 @@ import {
   updateFileContents,
   getHighlightBoundsForProject,
   applyUtopiaJSXComponentsChanges,
+  applyToAllUIJSFiles,
 } from '../../../core/model/project-file-utils'
 import type { ErrorMessage, ErrorMessageSeverity } from '../../../core/shared/error-messages'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
@@ -82,6 +83,8 @@ import {
   getContentsTreeFileFromElements,
   getContentsTreeFileFromString,
   ProjectContentTreeRoot,
+  transformContentsTree,
+  walkContentsTree,
 } from '../../assets'
 import {
   CanvasModel,
@@ -1498,13 +1501,21 @@ export function editorModelFromPersistentModel(
   return editor
 }
 
+function removeParsedModelsFromProjectContents(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot {
+  return applyToAllUIJSFiles(projectContents, (_: string, file: TextFile) => {
+    return codeFile(file.fileContents.code, file.lastSavedContents?.code ?? null)
+  })
+}
+
 export function persistentModelFromEditorModel(editor: EditorState): PersistentModel {
   return {
     appID: editor.appID,
     forkedFromProjectId: editor.forkedFromProjectId,
     projectVersion: editor.projectVersion,
     projectDescription: editor.projectDescription,
-    projectContents: editor.projectContents,
+    projectContents: removeParsedModelsFromProjectContents(editor.projectContents),
     exportsInfo: editor.codeResultCache.exportsInfo,
     lastUsedFont: editor.lastUsedFont,
     hiddenInstances: editor.hiddenInstances,
