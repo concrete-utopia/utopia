@@ -321,7 +321,7 @@ const ChildrenOrContentIndicator = () => {
 
   return (
     <InlineIndicator
-      value={hasChildren || hasContent}
+      shouldIndicate={hasChildren || hasContent}
       style={{
         fontSize: 10,
         paddingLeft: 0,

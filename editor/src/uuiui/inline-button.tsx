@@ -47,7 +47,7 @@ export const InlineButton = styled.button({
 })
 
 export const InlineIndicator = styled.div<{
-  value: boolean
+  shouldIndicate: boolean
 }>((props) => ({
   fontSize: 11,
   fontFamily: 'utopian-inter',
@@ -56,7 +56,7 @@ export const InlineIndicator = styled.div<{
   outline: 'none',
   paddingLeft: 2,
   paddingRight: 2,
-  color: props.value ? colorTheme.primary.value : colorTheme.primary.shade(30).value,
+  color: props.shouldIndicate ? colorTheme.primary.value : colorTheme.primary.shade(30).value,
 }))
 
 export const InlineToggleButton = styled(InlineButton)<{
