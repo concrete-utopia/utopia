@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
-import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
+import { isZeroSizedElement } from './outline-utils'
+import { ZeroSizeOutlineControl } from './zero-sized-element-controls'
 
 interface OutlineProps {
   offset: CanvasPoint
@@ -21,29 +22,35 @@ export class Outline extends React.Component<OutlineProps> {
     const stripedColor =
       this.props.stripedColor === undefined ? this.props.color : this.props.stripedColor
 
-    const { borderRadius, extraWidth, extraHeight } = calculateExtraSizeForZeroSizedElement(
-      this.props.rect,
-    )
-
-    return (
-      <div
-        className='role-outline'
-        style={{
-          position: 'absolute',
-          boxSizing: 'border-box',
-          left: this.props.offset.x + this.props.rect.x + outlineOffset - extraWidth / 2,
-          top: this.props.offset.y + this.props.rect.y + outlineOffset - extraHeight / 2,
-          width: this.props.rect.width + outlineWidthHeightOffset + extraWidth,
-          height: this.props.rect.height + outlineWidthHeightOffset + extraHeight,
-          boxShadow: `0px 0px 0px ${outlineWidth}px ${this.props.color}`,
-          backgroundImage: this.props.striped
-            ? `linear-gradient(135deg, ${stripedColor} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${stripedColor} 50%, ${this.props.color} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`
-            : '',
-          backgroundSize: `${20 / this.props.scale}px ${20 / this.props.scale}px`,
-          borderRadius: borderRadius,
-          pointerEvents: 'none',
-        }}
-      />
-    )
+    if (isZeroSizedElement(this.props.rect)) {
+      return (
+        <ZeroSizeOutlineControl
+          frame={this.props.rect}
+          canvasOffset={this.props.offset}
+          scale={this.props.scale}
+          color={this.props.color}
+        />
+      )
+    } else {
+      return (
+        <div
+          className='role-outline'
+          style={{
+            position: 'absolute',
+            boxSizing: 'border-box',
+            left: this.props.offset.x + this.props.rect.x + outlineOffset,
+            top: this.props.offset.y + this.props.rect.y + outlineOffset,
+            width: this.props.rect.width + outlineWidthHeightOffset,
+            height: this.props.rect.height + outlineWidthHeightOffset,
+            boxShadow: `0px 0px 0px ${outlineWidth}px ${this.props.color}`,
+            backgroundImage: this.props.striped
+              ? `linear-gradient(135deg, ${stripedColor} 2.5%, rgba(255,255,255,0) 2.5%, rgba(255,255,255,0) 50%, ${stripedColor} 50%, ${this.props.color} 52%, rgba(255,255,255,0) 52%, rgba(255,255,255,0) 100%)`
+              : '',
+            backgroundSize: `${20 / this.props.scale}px ${20 / this.props.scale}px`,
+            pointerEvents: 'none',
+          }}
+        />
+      )
+    }
   }
 }

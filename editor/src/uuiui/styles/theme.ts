@@ -337,7 +337,6 @@ export const UtopiaTheme = {
     canvasMenuWidth,
     inspectorModalBaseOffset: inspectorXPadding + canvasMenuWidth,
   },
-  invisibleIndicatorSize: 6,
   inputBorderRadius: 2,
   color: colorTheme,
   styles: {
