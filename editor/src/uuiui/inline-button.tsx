@@ -37,8 +37,6 @@ export const InlineButton = styled.button({
     background: colorTheme.primary.shade(10).value,
   },
   '&:focus': {
-    background: colorTheme.primary.value,
-    color: colorTheme.neutralInvertedForeground.value,
     outline: 'none',
   },
   '&:active': {
@@ -47,3 +45,21 @@ export const InlineButton = styled.button({
     outline: 'none',
   },
 })
+
+export const InlineToggleButton = styled(InlineButton)<{
+  value: boolean
+}>((props) => ({
+  background: props.value ? colorTheme.primary.value : 'transparent',
+  color: props.value ? colorTheme.neutralInvertedForeground.value : colorTheme.primary.value,
+  '&:hover': {
+    background: props.value
+      ? colorTheme.primary.shade(90).value
+      : colorTheme.primary.shade(10).value,
+    // color: props.value ? colorTheme.primary.shade(90).value : colorTheme.primary.shade(50).value,
+  },
+  '&:active': {
+    background: props.value
+      ? colorTheme.primary.shade(80).value
+      : colorTheme.primary.shade(15).value,
+  },
+}))
