@@ -60,9 +60,9 @@ export const InlineIndicator = styled.div<{
 }))
 
 export const InlineToggleButton = styled(InlineButton)<{
-  value: boolean
+  toggleValue: boolean
 }>((props) => ({
-  color: props.value ? colorTheme.primary.value : colorTheme.primary.shade(30).value,
+  color: props.toggleValue ? colorTheme.primary.value : colorTheme.primary.shade(30).value,
   '&:hover': {
     background: colorTheme.primary.shade(5).value,
     color: colorTheme.primary.shade(90).value,
