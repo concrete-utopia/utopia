@@ -516,7 +516,7 @@ export const flexDirectionOptions = (flexWrap: FlexWrap) => {
       icon: {
         category: 'layout/flex',
         type: `flexDirection-row-${flexWrapReverse}-${flexDirectionWrap}`,
-        color: 'secondary',
+        color: 'main',
         width: 16,
         height: 16,
       },
@@ -527,7 +527,7 @@ export const flexDirectionOptions = (flexWrap: FlexWrap) => {
       icon: {
         category: 'layout/flex',
         type: `flexDirection-column-${flexWrapReverse}-${flexDirectionWrap}`,
-        color: 'secondary',
+        color: 'main',
         width: 16,
         height: 16,
       },
