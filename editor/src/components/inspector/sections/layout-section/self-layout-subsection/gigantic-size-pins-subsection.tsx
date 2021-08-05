@@ -390,20 +390,12 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
           justifyContent: 'space-between',
         }}
       >
-        {layoutType === 'absolute' ? (
-          <>
-            <PinWidthControl
-              framePins={framePins}
-              toggleWidth={toggleWidth}
-              controlStatus='simple'
-            />
-            <PinHeightControl
-              framePins={framePins}
-              toggleHeight={toggleHeight}
-              controlStatus='simple'
-            />
-          </>
-        ) : null}
+        <PinWidthControl framePins={framePins} toggleWidth={toggleWidth} controlStatus='simple' />
+        <PinHeightControl
+          framePins={framePins}
+          toggleHeight={toggleHeight}
+          controlStatus='simple'
+        />
       </div>
       <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
         {widthControl}
