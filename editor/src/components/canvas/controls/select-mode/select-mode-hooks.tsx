@@ -27,7 +27,11 @@ import { EditorState } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
-import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-utils'
+import {
+  createDuplicationNewUIDs,
+  getDragStateDrag,
+  getOriginalCanvasFrames,
+} from '../../canvas-utils'
 import {
   findFirstParentWithValidElementPath,
   getAllTargetsAtPoint,
@@ -40,16 +44,28 @@ import { isFeatureEnabled } from '../../../../utils/feature-switches'
 
 const DRAG_START_TRESHOLD = 2
 
-export function isResizing(dragState: DragState | null): boolean {
-  return dragState != null && dragState.type === 'RESIZE_DRAG_STATE' && dragState.drag != null
+export function isResizing(editorState: EditorState): boolean {
+  const dragState = editorState.canvas.dragState
+  return (
+    dragState?.type === 'RESIZE_DRAG_STATE' &&
+    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+  )
 }
 
-export function isDragging(dragState: DragState | null): boolean {
-  return dragState != null && dragState.type === 'MOVE_DRAG_STATE' && dragState.drag != null
+export function isDragging(editorState: EditorState): boolean {
+  const dragState = editorState.canvas.dragState
+  return (
+    dragState?.type === 'MOVE_DRAG_STATE' &&
+    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+  )
 }
 
-export function isInserting(dragState: DragState | null): boolean {
-  return dragState != null && dragState.type === 'INSERT_DRAG_STATE' && dragState.drag != null
+export function isInserting(editorState: EditorState): boolean {
+  const dragState = editorState.canvas.dragState
+  return (
+    dragState?.type === 'INSERT_DRAG_STATE' &&
+    getDragStateDrag(dragState, editorState.canvas.resizeOptions) != null
+  )
 }
 
 export function pickSelectionEnabled(
@@ -69,10 +85,10 @@ export function useMaybeHighlightElement(): {
   const stateRef = useRefEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      resizing: isResizing(store.editor.canvas.dragState),
-      dragging: isDragging(store.editor.canvas.dragState),
+      resizing: isResizing(store.editor),
+      dragging: isDragging(store.editor),
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
-      inserting: isInserting(store.editor.canvas.dragState),
+      inserting: isInserting(store.editor),
     }
   })
 

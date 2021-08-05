@@ -75,13 +75,6 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
       // TODO check me
       return null
     }
-    let labels: {
-      vertical: 'flexBasis' | 'Width' | 'Height'
-      horizontal: 'flexBasis' | 'Width' | 'Height'
-    } = {
-      vertical: 'flexBasis',
-      horizontal: 'Height',
-    }
     const parentPath = EP.parentPath(this.props.target)
     const parentElement = withUnderlyingTarget(
       parentPath,
@@ -93,20 +86,10 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         return element
       },
     )
+    let flexDirection: 'horizontal' | 'vertical' | null = null
     if (parentElement != null) {
-      forEachRight(FlexLayoutHelpers.getMainAxis(right(parentElement.props)), (flexDirection) => {
-        if (flexDirection === 'vertical') {
-          // column, column-reverse
-          labels = {
-            vertical: 'Width',
-            horizontal: 'flexBasis',
-          }
-        } else {
-          labels = {
-            vertical: 'flexBasis',
-            horizontal: 'Height',
-          }
-        }
+      forEachRight(FlexLayoutHelpers.getMainAxis(right(parentElement.props)), (direction) => {
+        flexDirection = direction
       })
     }
     const yogaSize = this.getYogaSize(visualSize)
@@ -132,8 +115,8 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         onResizeStart={Utils.NO_OP}
         testID={`component-resize-control-${EP.toComponentId(this.props.target)}-0`}
         maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
-        labels={labels}
-        resizeOptions={this.props.resizeOptions}
+        flexDirection={flexDirection}
+        propertyTargetSelectedIndex={this.props.resizeOptions.propertyTargetSelectedIndex}
       />
     )
   }

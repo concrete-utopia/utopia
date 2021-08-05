@@ -164,6 +164,7 @@ export const zeroRectangle = {
 }
 export const zeroCanvasRect = zeroRectangle as CanvasRectangle
 export const zeroLocalRect = zeroRectangle as LocalRectangle
+export const zeroCanvasPoint = zeroPoint as CanvasPoint
 
 export function zeroRectangleAtPoint<C extends CoordinateMarker>(p: Point<C>): Rectangle<C> {
   return {

@@ -326,10 +326,13 @@ export interface DuplicateNewUID {
   newUID: string
 }
 
-export interface MoveDragState {
-  type: 'MOVE_DRAG_STATE'
+export interface DragStatePositions {
   start: CanvasPoint
   drag: CanvasVector | null
+}
+
+export interface MoveDragState extends DragStatePositions {
+  type: 'MOVE_DRAG_STATE'
   prevDrag: CanvasVector | null
   originalFrames: Array<CanvasFrameAndTarget>
   dragSelectionBoundingBox: CanvasRectangle | null
@@ -419,64 +422,39 @@ export function updateMoveDragState(
   return updatedState
 }
 
-export interface ResizeDragState {
-  type: 'RESIZE_DRAG_STATE'
-  start: CanvasPoint
-  drag: CanvasVector | null
+export interface ResizeDragStatePropertyChange extends DragStatePositions {
   enableSnapping: boolean
   centerBasedResize: boolean
   keepAspectRatio: boolean
-  originalSize: CanvasRectangle
-  originalFrames: Array<OriginalCanvasAndLocalFrame>
-  edgePosition: EdgePosition
-  enabledDirection: EnabledDirection
-  metadata: ElementInstanceMetadataMap
-  draggedElements: ElementPath[]
-  isMultiSelect: boolean
-  targetProperty: LayoutTargetableProp
+  targetProperty: LayoutTargetableProp | undefined
 }
 
-export function resizeDragState(
+export function resizeDragStatePropertyChange(
   start: CanvasPoint,
   drag: CanvasVector | null,
   enableSnapping: boolean,
   centerBasedResize: boolean,
   keepAspectRatio: boolean,
-  originalSize: CanvasRectangle,
-  originalFrames: Array<OriginalCanvasAndLocalFrame>,
-  edgePosition: EdgePosition,
-  enabledDirection: EnabledDirection,
-  metadata: ElementInstanceMetadataMap,
-  draggedElements: ElementPath[],
-  isMultiSelect: boolean,
-  targetProperty: LayoutTargetableProp,
-): ResizeDragState {
+  targetProperty: LayoutTargetableProp | undefined,
+): ResizeDragStatePropertyChange {
   return {
-    type: 'RESIZE_DRAG_STATE',
     start: start,
     drag: drag,
     enableSnapping: enableSnapping,
     centerBasedResize: centerBasedResize,
     keepAspectRatio: keepAspectRatio,
-    originalSize: originalSize,
-    originalFrames: originalFrames,
-    edgePosition: edgePosition,
-    enabledDirection: enabledDirection,
-    metadata: metadata,
-    draggedElements: draggedElements,
-    isMultiSelect: isMultiSelect,
     targetProperty: targetProperty,
   }
 }
 
-export function updateResizeDragState(
-  current: ResizeDragState,
+export function updateResizeDragStatePropertyChange(
+  current: ResizeDragStatePropertyChange,
   drag: CanvasVector | null | undefined,
-  targetProperty: LayoutTargetableProp,
+  targetProperty: LayoutTargetableProp | undefined,
   enableSnapping: boolean | undefined,
   centerBasedResize: boolean | undefined,
   keepAspectRatio: boolean | undefined,
-): ResizeDragState {
+): ResizeDragStatePropertyChange {
   return keepDeepReferenceEqualityIfPossible(current, {
     ...current,
     drag: drag === undefined ? current.drag : drag,
@@ -485,6 +463,85 @@ export function updateResizeDragState(
       centerBasedResize === undefined ? current.centerBasedResize : centerBasedResize,
     keepAspectRatio: keepAspectRatio === undefined ? current.keepAspectRatio : keepAspectRatio,
     targetProperty: targetProperty,
+  })
+}
+
+export interface ResizeDragState {
+  type: 'RESIZE_DRAG_STATE'
+  originalSize: CanvasRectangle
+  originalFrames: Array<OriginalCanvasAndLocalFrame>
+  edgePosition: EdgePosition
+  enabledDirection: EnabledDirection
+  metadata: ElementInstanceMetadataMap
+  draggedElements: ElementPath[]
+  isMultiSelect: boolean
+  properties: Array<ResizeDragStatePropertyChange>
+}
+
+export function resizeDragState(
+  originalSize: CanvasRectangle,
+  originalFrames: Array<OriginalCanvasAndLocalFrame>,
+  edgePosition: EdgePosition,
+  enabledDirection: EnabledDirection,
+  metadata: ElementInstanceMetadataMap,
+  draggedElements: ElementPath[],
+  isMultiSelect: boolean,
+  properties: Array<ResizeDragStatePropertyChange>,
+): ResizeDragState {
+  return {
+    type: 'RESIZE_DRAG_STATE',
+    originalSize: originalSize,
+    originalFrames: originalFrames,
+    edgePosition: edgePosition,
+    enabledDirection: enabledDirection,
+    metadata: metadata,
+    draggedElements: draggedElements,
+    isMultiSelect: isMultiSelect,
+    properties: properties,
+  }
+}
+
+export function updateResizeDragState(
+  current: ResizeDragState,
+  startForNewProperties: CanvasPoint,
+  drag: CanvasVector | null,
+  targetProperty: LayoutTargetableProp | undefined,
+  enableSnapping: boolean,
+  centerBasedResize: boolean,
+  keepAspectRatio: boolean,
+): ResizeDragState {
+  let propertyAlreadyExists: boolean = false
+  let updatedProperties = current.properties.map((prop) => {
+    if (prop.targetProperty === targetProperty) {
+      propertyAlreadyExists = true
+      return updateResizeDragStatePropertyChange(
+        prop,
+        drag,
+        targetProperty,
+        enableSnapping,
+        centerBasedResize,
+        keepAspectRatio,
+      )
+    } else {
+      return prop
+    }
+  })
+  if (!propertyAlreadyExists) {
+    updatedProperties = [
+      ...current.properties,
+      resizeDragStatePropertyChange(
+        startForNewProperties,
+        drag,
+        enableSnapping,
+        centerBasedResize,
+        keepAspectRatio,
+        targetProperty,
+      ),
+    ]
+  }
+  return keepDeepReferenceEqualityIfPossible(current, {
+    ...current,
+    properties: updatedProperties,
   })
 }
 

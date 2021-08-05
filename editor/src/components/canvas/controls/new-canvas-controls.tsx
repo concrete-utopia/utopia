@@ -57,6 +57,7 @@ import { shallowEqual } from '../../../core/shared/equality-utils'
 import { KeysPressed } from '../../../utils/keyboard'
 import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import { getDragStateStart } from '../canvas-utils'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -126,7 +127,9 @@ export const NewCanvasControls = betterReactMemo(
         derived: store.derived,
         canvasOffset: store.editor.canvas.roundedCanvasOffset,
         animationEnabled:
-          (store.editor.canvas.dragState == null || store.editor.canvas.dragState.start == null) &&
+          (store.editor.canvas.dragState == null ||
+            getDragStateStart(store.editor.canvas.dragState, store.editor.canvas.resizeOptions) ==
+              null) &&
           store.editor.canvas.animationsEnabled,
 
         controls: store.derived.canvas.controls,
@@ -238,8 +241,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const componentMetadata = getMetadata(props.editor)
 
-  const resizing = isResizing(props.editor.canvas.dragState)
-  const dragging = isDragging(props.editor.canvas.dragState)
+  const resizing = isResizing(props.editor)
+  const dragging = isDragging(props.editor)
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
   const draggingEnabled = !isSelectLiteMode(props.editor.mode)
   const contextMenuEnabled = !isLiveMode(props.editor.mode)
