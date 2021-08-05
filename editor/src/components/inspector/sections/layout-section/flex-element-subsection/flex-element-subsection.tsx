@@ -8,6 +8,7 @@ import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
   Button,
   FunctionIcons,
+  Icons,
   InspectorSubsectionHeader,
   SquareButton,
   ToggleButton,
@@ -20,7 +21,7 @@ import {
   FlexStyleNumberControl,
   PinsLayoutNumberControl,
 } from '../self-layout-subsection/gigantic-size-pins-subsection'
-import { InlineLink } from '../../../../../uuiui/inline-button'
+import { InlineButton, InlineLink, InlineToggleButton } from '../../../../../uuiui/inline-button'
 import { when } from '../../../../../utils/react-conditionals'
 import {
   InspectorCallbackContext,
@@ -110,8 +111,6 @@ export function useInitialSizeSectionState(): boolean {
 const MainAxisControls = betterReactMemo(
   'MainAxisControls',
   (props: FlexElementSubsectionProps) => {
-    const colorTheme = useColorTheme()
-
     const initialIsFixedSectionVisible = useInitialFixedSectionState(props.parentFlexDirection)
     const initialIsAdvancedSectionVisible = useInitialAdvancedSectionState()
 
@@ -133,33 +132,36 @@ const MainAxisControls = betterReactMemo(
       <>
         <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>Main Axis</span>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button highlight onClick={toggleFixedSection} primary={fixedControlsOpen}>
-              <InlineLink
-                style={{
-                  color: fixedControlsOpen ? colorTheme.white.value : colorTheme.primary.value,
-                  opacity: !initialIsFixedSectionVisible && !fixedControlsOpen ? 0.3 : 1,
-                }}
-              >
-                Fixed
-              </InlineLink>
-            </Button>
-            <Button highlight onClick={toggleAdvancedSection} primary={advancedControlsOpen}>
-              <InlineLink
-                style={{
-                  color: advancedControlsOpen ? colorTheme.white.value : colorTheme.primary.value,
-                  opacity: !initialIsAdvancedSectionVisible && !advancedControlsOpen ? 0.3 : 1,
-                }}
-              >
-                Advanced
-              </InlineLink>
-            </Button>
+          <div
+            style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 4 }}
+          >
+            <InlineToggleButton
+              toggleValue={fixedControlsOpen}
+              onClick={toggleFixedSection}
+              style={{
+                fontSize: 10,
+              }}
+            >
+              Fixed
+            </InlineToggleButton>
+            <InlineToggleButton
+              toggleValue={advancedControlsOpen}
+              onClick={toggleAdvancedSection}
+              style={{
+                fontSize: 10,
+              }}
+            >
+              Advanced
+            </InlineToggleButton>
+            <SquareButton highlight>
+              <Icons.Cross />
+            </SquareButton>
           </div>
         </InspectorSubsectionHeader>
+        <FlexGrowShrinkRow />
         <UIGridRow padded={true} variant='<-------------1fr------------->'>
           <FlexBasisShorthandCSSNumberControl label='B' />
         </UIGridRow>
-        <FlexGrowShrinkRow />
         {when(fixedControlsOpen, <FixedSubsectionControls {...props} />)}
         {when(advancedControlsOpen, <AdvancedSubsectionControls {...props} />)}
       </>
@@ -194,6 +196,7 @@ const FixedSubsectionControls = betterReactMemo(
         <FlexHeightControls />
       )
 
+    const colorTheme = useColorTheme()
     const { onUnsetValue } = React.useContext(InspectorCallbackContext)
     const deleteFixedProps = React.useCallback(() => {
       onUnsetValue(mainAxisFixedProps(props.parentFlexDirection), false)
@@ -202,7 +205,7 @@ const FixedSubsectionControls = betterReactMemo(
     return (
       <>
         <InspectorSubsectionHeader>
-          <InlineLink>Fixed</InlineLink>
+          <span style={{ color: colorTheme.primary.value, fontSize: 10, flexGrow: 1 }}>Fixed</span>
           <SquareButton highlight onClick={deleteFixedProps}>
             <FunctionIcons.Delete />
           </SquareButton>
@@ -220,10 +223,13 @@ const AdvancedSubsectionControls = betterReactMemo(
     const deleteAdvancedProps = React.useCallback(() => {
       onUnsetValue(mainAxisAdvancedProps, false)
     }, [onUnsetValue])
+    const colorTheme = useColorTheme()
     return (
       <>
         <InspectorSubsectionHeader>
-          <InlineLink>Advanced</InlineLink>
+          <span style={{ color: colorTheme.primary.value, fontSize: 10, flexGrow: 1 }}>
+            Advanced
+          </span>
           <SquareButton highlight onClick={deleteAdvancedProps}>
             <FunctionIcons.Delete />
           </SquareButton>
