@@ -6,12 +6,10 @@ import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
-  Button,
   FunctionIcons,
   Icons,
   InspectorSubsectionHeader,
   SquareButton,
-  ToggleButton,
   useColorTheme,
 } from '../../../../../uuiui'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
@@ -21,7 +19,7 @@ import {
   FlexStyleNumberControl,
   PinsLayoutNumberControl,
 } from '../self-layout-subsection/gigantic-size-pins-subsection'
-import { InlineButton, InlineLink, InlineToggleButton } from '../../../../../uuiui/inline-button'
+import { InlineLink, InlineToggleButton } from '../../../../../uuiui/inline-button'
 import { when } from '../../../../../utils/react-conditionals'
 import {
   InspectorCallbackContext,
