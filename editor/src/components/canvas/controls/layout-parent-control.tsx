@@ -141,52 +141,59 @@ export const LayoutParentControl = betterReactMemo(
     return (
       <div
         style={{
-          borderRadius: 5,
-          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(50).value} 0px 0px ${
+          position: 'absolute',
+          borderRadius: 2,
+          left: parentFrame.x + canvasOffset.x,
+          top: parentFrame.y + canvasOffset.y - 16,
+          transform: 'translateX(calc(-100% - 42px)) ',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'stretch',
+          justifyContent: 'flex-start',
+          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor.o(20).value} 0px 0px ${
             1 / scale
           }px, ${colorTheme.canvasControlsSizeBoxShadowColor.o(21).value} 0px ${1 / scale}px ${
             2 / scale
           }px ${1 / scale}px`,
-          height: 25,
-          backgroundColor: '#f5f5f5',
-          position: 'absolute',
-          left: parentFrame.x + canvasOffset.x,
-          top: parentFrame.y + canvasOffset.y - 25 - 8,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
+          backgroundColor: colorTheme.inspectorBackground.value,
           textTransform: 'capitalize',
         }}
         onMouseDown={onControlMouseDown}
       >
-        <InlineLink style={{ padding: '0 10px' }}>{parentLayout}</InlineLink>
-        {when(
-          flexDirectionIcon != null && parentLayout === 'flex',
-          <div
-            style={{
-              padding: '0 5px',
-            }}
-            onClick={flexDirectionClicked}
-          >
-            <Icn {...(flexDirectionIcon as IcnProps)} />
-          </div>,
-        )}
-        {when(
-          flexDirectionIcon != null && parentLayout === 'flex',
-          <div
-            style={{
-              padding: '0 5px',
-            }}
-          >
-            {selectedAlignment ? (
-              <PopupList
-                options={allAlignmentOptions}
-                value={selectedAlignment}
-                onSubmitValue={onSubmitValueAlignment}
-              />
-            ) : null}
-          </div>,
-        )}
+        <svg
+          style={{ position: 'absolute', left: 'calc(100% + 8px)', top: 2 }}
+          width='30px'
+          height='11px'
+          viewBox='0 0 30 11'
+        >
+          <g stroke='none' strokeWidth='1' fill='none' fillRule='evenodd' strokeLinecap='round'>
+            <polyline stroke='#979797' points='0.5 0.5 15.5 0.5 30 10'></polyline>
+          </g>
+        </svg>
+        <div style={{ display: 'flex' }}>
+          <span style={{ padding: '0px 4px', fontSize: 8, color: '#007aff' }}>Parent</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '0px 4px' }}>
+          <span style={{ fontSize: 10, fontWeight: 500, color: colorTheme.fg4.value }}>
+            {parentLayout}
+          </span>
+          {when(
+            flexDirectionIcon != null && parentLayout === 'flex',
+            <Icn onClick={flexDirectionClicked} {...(flexDirectionIcon as IcnProps)} />,
+          )}
+          {when(
+            flexDirectionIcon != null && parentLayout === 'flex',
+            <div>
+              {selectedAlignment ? (
+                <PopupList
+                  options={allAlignmentOptions}
+                  value={selectedAlignment}
+                  onSubmitValue={onSubmitValueAlignment}
+                />
+              ) : null}
+            </div>,
+          )}
+        </div>
       </div>
     )
   },
