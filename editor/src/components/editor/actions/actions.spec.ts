@@ -1163,7 +1163,13 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, menuInsertable, 'do-not-add', null)
+    const action = insertWithDefaults(
+      targetPath,
+      menuInsertable,
+      'do-not-add',
+      'do-now-wrap-content',
+      null,
+    )
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1258,7 +1264,13 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, menuInsertable, 'add-size', null)
+    const action = insertWithDefaults(
+      targetPath,
+      menuInsertable,
+      'add-size',
+      'do-now-wrap-content',
+      null,
+    )
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1352,7 +1364,13 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size', null)
+    const action = insertWithDefaults(
+      targetPath,
+      imgInsertable,
+      'add-size',
+      'do-now-wrap-content',
+      null,
+    )
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1437,7 +1455,13 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size', { type: 'back' })
+    const action = insertWithDefaults(
+      targetPath,
+      imgInsertable,
+      'add-size',
+      'do-now-wrap-content',
+      { type: 'back' },
+    )
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
