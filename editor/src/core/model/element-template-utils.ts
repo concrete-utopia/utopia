@@ -471,3 +471,7 @@ export function getZIndexOfElement(
     return -1
   }
 }
+
+export function elementOnlyHasSingleTextChild(jsxElement: JSXElement): boolean {
+  return jsxElement.children.length === 1 && isJSXTextBlock(jsxElement.children[0])
+}

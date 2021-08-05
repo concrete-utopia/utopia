@@ -52,7 +52,11 @@ import { BuildType } from '../../core/workers/ts/ts-worker'
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../common/user'
-import { InsertableComponent, StylePropOption } from '../shared/project-components'
+import {
+  InsertableComponent,
+  StylePropOption,
+  WrapContentOption,
+} from '../shared/project-components'
 import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
@@ -874,6 +878,7 @@ export interface InsertWithDefaults {
   targetParent: ElementPath
   toInsert: InsertableComponent
   styleProps: StylePropOption
+  wrapContent: WrapContentOption
   indexPosition: IndexPosition | null
 }
 

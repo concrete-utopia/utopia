@@ -57,7 +57,7 @@ function getNameAndIconResult(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): NameAndIconResult {
-  const elementName = MetadataUtils.getJSXElementFromMetadata(metadata, path)
+  const elementName = MetadataUtils.getJSXElementNameFromMetadata(metadata, path)
   return {
     path: path,
     name: elementName,
