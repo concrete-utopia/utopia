@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { CanvasPoint, CanvasRectangle, Vector } from '../../../core/shared/math-utils'
 import { Utils } from '../../../uuiui-deps'
-import { UtopiaTheme } from '../../../uuiui'
+import { useColorTheme, UtopiaTheme } from '../../../uuiui'
 
 const BoundsHighlightOutlineID = 'parent-highlight-outline'
 
@@ -51,6 +51,7 @@ interface BoundingMarksProps {
 }
 
 export const BoundingMarks: React.FunctionComponent<BoundingMarksProps> = (props) => {
+  const colorTheme = useColorTheme()
   const frame = {
     x: Utils.roundToNearestHalf(props.rect.x + props.canvasOffset.x),
     y: Utils.roundToNearestHalf(props.rect.y + props.canvasOffset.y),
@@ -60,8 +61,8 @@ export const BoundingMarks: React.FunctionComponent<BoundingMarksProps> = (props
 
   const strokeColor =
     props.boundsType === 'immediateParent'
-      ? UtopiaTheme.color.canvasControlsImmediateParentMarks.value
-      : UtopiaTheme.color.canvasControlsCoordinateSystemMarks.value
+      ? colorTheme.canvasControlsImmediateParentMarks.value
+      : colorTheme.canvasControlsCoordinateSystemMarks.value
 
   return (
     <svg

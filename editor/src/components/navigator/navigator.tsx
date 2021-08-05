@@ -21,6 +21,7 @@ import {
   FlexRow,
   Title,
   SectionBodyArea,
+  useColorTheme,
   FlexColumn,
   InspectorSectionHeader,
 } from '../../uuiui'
@@ -50,7 +51,7 @@ export const NavigatorComponent = betterReactMemo(
         dragSelections: dragSelections,
       }
     })
-
+    const colorTheme = useColorTheme()
     const { dispatch, minimised, visibleNavigatorTargets } = useEditorState((store) => {
       return {
         dispatch: store.dispatch,

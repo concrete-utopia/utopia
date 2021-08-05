@@ -39,7 +39,7 @@ import {
   CSSCursor,
 } from '../../uuiui-deps'
 import { Icn, IcnProps } from '../icn'
-import { UtopiaTheme } from '../styles/theme'
+import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
 import {
   BaseInputProps,
@@ -178,6 +178,11 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
+    const colorTheme = useColorTheme()
+    const backgroundImage = React.useMemo(
+      () => `linear-gradient(to right, transparent 0, ${controlStyles.backgroundColor} 6px)`,
+      [controlStyles],
+    )
 
     const { showContent } = controlStyles
 
@@ -608,10 +613,10 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             borderRadius: 2,
             ...chainedStyles,
             '&:hover': {
-              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
             },
             '&:focus-within': {
-              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
             },
             '&:hover input': {
               color: controlStyles.mainColor,

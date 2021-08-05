@@ -9,6 +9,7 @@ import {
   Icons,
   OnClickOutsideHOC,
   SmallerIcons,
+  useColorTheme,
   UtopiaStyles,
   UtopiaTheme,
 } from '../../uuiui'
@@ -29,7 +30,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
   }, 'Component-button')
 
   const dispatch = useEditorState((state) => state.dispatch, 'ComponentOrInstanceIndicator')
-
+  const colorTheme = useColorTheme()
   const popupEnabled = selectedViews.length > 0
 
   const [isOpen, setIsOpen] = React.useState(false)
@@ -60,29 +61,26 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
     if (target != null) {
       if (MetadataUtils.isFocusableComponent(target, metadata) && isFocused == false) {
         return {
-          color: UtopiaTheme.color.component.value,
-          backgroundColor: UtopiaTheme.color.component.shade(10).value,
-          stroke: UtopiaTheme.color.component.fileNameFragment,
+          color: colorTheme.component.value,
+          backgroundColor: colorTheme.component.shade(10).value,
         }
       } else if (isFocused && MetadataUtils.isFocusableComponent(target, metadata)) {
         return {
-          color: UtopiaTheme.color.componentChild.value,
-          backgroundColor: UtopiaTheme.color.componentChild.shade(10).value,
-          stroke: UtopiaTheme.color.componentChild.fileNameFragment,
+          color: colorTheme.componentChild.value,
+          backgroundColor: colorTheme.componentChild.shade(10).value,
         }
       } else {
         return {
-          background: UtopiaTheme.color.secondaryBackground.value,
-          color: UtopiaTheme.color.neutralForeground.value,
-          stroke: 'black',
+          background: colorTheme.secondaryBackground.value,
+          color: colorTheme.neutralForeground.value,
           opacity: 0.5,
           pointerEvents: 'none',
         }
       }
     } else {
       return {
-        background: UtopiaTheme.color.secondaryBackground.value,
-        color: UtopiaTheme.color.neutralForeground.value,
+        background: colorTheme.secondaryBackground.value,
+        color: colorTheme.neutralForeground.value,
         stroke: 'black',
         opacity: 0.5,
         pointerEvents: 'none',
@@ -151,7 +149,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
           ...getEditContextStyle(),
           // slightly darker than the button next to it
           filter: 'brightness(.99)',
-          borderLeft: `1px dashed ${UtopiaTheme.color.secondaryBorder.value}`,
+          borderLeft: `1px dashed ${colorTheme.secondaryBorder.value}`,
           cursor: 'pointer',
           borderTopRightRadius: UtopiaTheme.inputBorderRadius,
           borderBottomRightRadius: UtopiaTheme.inputBorderRadius,

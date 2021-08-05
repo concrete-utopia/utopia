@@ -1,4 +1,3 @@
-import { transparent } from './utopi-colors'
 import { css } from '@emotion/react'
 import { CSSPropertiesWithMultiValues, FunctionInterpolation } from '@emotion/serialize'
 import { UtopiColor } from './utopi-color-helpers'
@@ -259,14 +258,6 @@ export function textDecorationLine(
 export const flexColumn: CSSObject = {
   flexDirection: 'column',
 }
-
-export const hoverOutline = (utopiColor: UtopiColor) =>
-  css({
-    ...border(transparent),
-    '&:hover': {
-      ...border(utopiColor),
-    },
-  })
 
 export const focusOutline = (utopiColor: UtopiColor) =>
   css({

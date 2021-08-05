@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useColorTheme } from '../../../../../uuiui'
 
 interface SystedDefaultFontItemProps {
   selected: boolean
@@ -7,6 +8,7 @@ interface SystedDefaultFontItemProps {
 export const SystedDefaultFontItem: React.FunctionComponent<SystedDefaultFontItemProps> = ({
   selected,
 }) => {
+  const colorTheme = useColorTheme()
   return (
     <div>
       <div>System Default</div>
@@ -14,7 +16,9 @@ export const SystedDefaultFontItem: React.FunctionComponent<SystedDefaultFontIte
         style={{
           fontSize: 11,
           whiteSpace: 'normal',
-          color: selected ? 'white' : '#888',
+          color: selected
+            ? colorTheme.neutralInvertedForeground.value
+            : colorTheme.subduedForeground.value,
         }}
       >
         Use the operating system font: SF Pro on Apple devices, Roboto on Android, and Segoe UI on

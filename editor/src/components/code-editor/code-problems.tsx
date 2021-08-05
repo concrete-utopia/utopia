@@ -316,14 +316,14 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
           top: true,
         }}
         style={{
-          backgroundColor: UtopiaTheme.color.neutralBackground.value,
+          backgroundColor: colorTheme.neutralBackground.value,
           flexGrow: 0,
-          boxShadow: `0px 1px 0px 0px ${UtopiaTheme.color.subduedBorder.value}`,
+          boxShadow: `0px 1px 0px 0px ${colorTheme.subduedBorder.value}`,
         }}
       >
         <UIRow
           style={{
-            borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
+            borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
             alignItems: 'stretch',
             height: 32,
           }}
