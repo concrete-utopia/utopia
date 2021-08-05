@@ -15,7 +15,7 @@ import {
   useColorTheme,
 } from '../../../../../uuiui'
 import { usePropControlledState, betterReactMemo } from '../../../../../uuiui-deps'
-import { InlineLink } from '../../../../../uuiui/inline-button'
+import { InlineIndicator, InlineLink } from '../../../../../uuiui/inline-button'
 import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
 import { CSSPosition } from '../../../common/css-utils'
@@ -175,8 +175,6 @@ const selfLayoutProperties: Array<LayoutProp | StyleLayoutProp> = [
   'position',
   'right',
   'top',
-  'Width',
-  'Height',
   'PinnedLeft',
   'PinnedTop',
   'PinnedRight',
@@ -215,18 +213,18 @@ const LayoutSectionHeader = betterReactMemo(
     return (
       <InspectorSubsectionHeader>
         <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
-          <InlineLink
+          <span
             style={{
               textTransform: 'uppercase',
               fontWeight: 600,
               paddingRight: 8,
+              color: colorTheme.primary.value,
             }}
           >
             {layoutType}
-          </InlineLink>
-          <ParentLink />
-          <SelfLink />
-          <ChildrenOrContentLink />
+          </span>
+          <ParentIndicatorAndLink />
+          <ChildrenOrContentIndicator />
         </div>
         {when(
           selfLayoutSectionOpen && layoutType !== 'absolute',
@@ -255,10 +253,10 @@ const LayoutSectionHeader = betterReactMemo(
   },
 )
 
-interface ParentLinkProps {
+interface ParentIndicatorAndLinkProps {
   style?: React.CSSProperties
 }
-const ParentLink = (props: ParentLinkProps) => {
+const ParentIndicatorAndLink = (props: ParentIndicatorAndLinkProps) => {
   const parentPath = useEditorState((store) => {
     if (store.editor.selectedViews.length !== 1) {
       return null
@@ -266,9 +264,9 @@ const ParentLink = (props: ParentLinkProps) => {
     const target = store.editor.selectedViews[0]
     const parent = EP.parentPath(target)
     return EP.isStoryboardPath(parent) ? null : parent
-  }, 'ParentLink parentPath')
+  }, 'ParentIndicatorAndLink parentPath')
 
-  const dispatch = useEditorState((store) => store.dispatch, 'ParentLink dispatch')
+  const dispatch = useEditorState((store) => store.dispatch, 'ParentIndicatorAndLink dispatch')
 
   const handleClick = React.useCallback(() => {
     if (parentPath != null) {
@@ -283,6 +281,7 @@ const ParentLink = (props: ParentLinkProps) => {
   return (
     <InlineLink
       style={{
+        fontSize: 10,
         fontWeight: 400,
         paddingLeft: 0,
         paddingRight: 0,
@@ -292,20 +291,6 @@ const ParentLink = (props: ParentLinkProps) => {
       onClick={handleClick}
     >
       parent
-    </InlineLink>
-  )
-}
-
-const SelfLink = () => {
-  return (
-    <InlineLink
-      style={{
-        fontWeight: 400,
-        paddingLeft: 0,
-        paddingRight: 0,
-      }}
-    >
-      Self
     </InlineLink>
   )
 }
@@ -330,26 +315,29 @@ function useElementHasChildrenOrContent() {
   }, 'ChildrenLink children')
 }
 
-const ChildrenOrContentLink = () => {
+const ChildrenOrContentIndicator = () => {
   const theme = useColorTheme()
   const { hasChildren, hasContent } = useElementHasChildrenOrContent()
 
   return (
-    <InlineLink
+    <InlineIndicator
+      value={hasChildren || hasContent}
       style={{
+        fontSize: 10,
         paddingLeft: 0,
         paddingRight: 0,
         fontWeight: 400,
-        color: hasChildren || hasContent ? theme.primary.value : theme.brandNeonPink.value,
         textDecoration: hasChildren || hasContent ? undefined : 'line-through',
       }}
     >
       {hasChildren ? 'Children' : 'Content'}
-    </InlineLink>
+    </InlineIndicator>
   )
 }
 
 const FlexInfoBox = betterReactMemo('FlexInfoBox', () => {
+  const { hasChildren, hasContent } = useElementHasChildrenOrContent()
+
   return (
     <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
       <span
@@ -359,18 +347,17 @@ const FlexInfoBox = betterReactMemo('FlexInfoBox', () => {
           justifyContent: 'center',
         }}
       >
-        <Icn
-          style={{}}
-          category='layout/systems'
-          type='flexbox'
-          color={'secondary'}
-          width={16}
-          height={16}
-        />
+        <Icn category='layout/systems' type='flexbox' color={'main'} width={16} height={16} />
       </span>
       <p>
-        This element is positioned and sized based on its{' '}
-        <ParentLink style={{ textTransform: 'lowercase' }} /> settings and <ChildrenLinkInInfobox />
+        This element is positioned and sized by its{' '}
+        <ParentIndicatorAndLink style={{ textTransform: 'lowercase', fontSize: 11 }} />
+        {hasChildren || hasContent ? (
+          <span>
+            {' '}
+            and <ChildrenLinkInInfobox />
+          </span>
+        ) : null}
         .
       </p>
     </UIGridRow>
@@ -378,7 +365,7 @@ const FlexInfoBox = betterReactMemo('FlexInfoBox', () => {
 })
 
 const ChildrenLinkInInfobox = () => {
-  const { hasChildren } = useElementHasChildrenOrContent()
+  const { hasChildren, hasContent } = useElementHasChildrenOrContent()
 
   if (hasChildren) {
     return (
@@ -392,7 +379,7 @@ const ChildrenLinkInInfobox = () => {
         children
       </InlineLink>
     )
-  } else {
+  } else if (hasContent) {
     return <span>content</span>
-  }
+  } else return null
 }
