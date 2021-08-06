@@ -5,7 +5,6 @@ import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 export type FeatureName =
   | 'Dragging Reparents By Default'
   | 'Dragging Shows Overlay'
-  | 'Invisible Element Controls'
   | 'Advanced Resize Box'
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
@@ -16,7 +15,6 @@ export type FeatureName =
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
-  'Invisible Element Controls',
   'Advanced Resize Box',
   'Re-parse Project Button',
   'Performance Test Triggers',
@@ -28,7 +26,6 @@ export const AllFeatureNames: FeatureName[] = [
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Dragging Reparents By Default': false,
   'Dragging Shows Overlay': false,
-  'Invisible Element Controls': false,
   'Advanced Resize Box': false,
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
