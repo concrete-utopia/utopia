@@ -473,9 +473,15 @@ export function updateFramesOfScenesAndComponents(
             )
             // Defer through these in order: observable value >>> value from attribute >>> 0.
             const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
+            const shouldScaleDelta =
+              frameAndTarget.targetProperty === 'flexGrow' ||
+              frameAndTarget.targetProperty === 'flexShrink'
+            const scaledDelta = shouldScaleDelta
+              ? Math.floor(frameAndTarget.delta / 50)
+              : frameAndTarget.delta
 
             const newAttributeValue = jsxAttributeValue(
-              currentAttributeToChange + frameAndTarget.delta,
+              currentAttributeToChange + scaledDelta,
               emptyComments,
             )
 
