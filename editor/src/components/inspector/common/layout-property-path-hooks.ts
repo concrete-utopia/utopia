@@ -153,6 +153,7 @@ export function changePin(
   const toggleToRelative =
     pinInfoForProp.propertyStatus.identical &&
     pinInfoForProp.value != null &&
+    pinInfoForProp.value.unit != 'px' &&
     !isPercentPin(cssNumberToString(pinInfoForProp.value, true))
 
   let pinsToSet: Array<PinToSet> = []

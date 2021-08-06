@@ -13,14 +13,21 @@ import {
   CSSCursor,
   DragState,
   DuplicateNewUID,
+  ResizeDragStatePropertyChange,
   SvgFragmentControl,
   updateMoveDragState,
   updateResizeDragState,
 } from '../components/canvas/canvas-types'
 import {
+  anyDragStarted,
   clearDragState,
   createDuplicationNewUIDsFromEditorState,
+  dragExceededThreshold,
   getCanvasOffset,
+  getDragStateDrag,
+  getDragStatePositions,
+  getDragStateStart,
+  getResizeOptions,
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { CanvasReactErrorCallback } from '../components/canvas/ui-jsx-canvas'
@@ -70,17 +77,21 @@ import {
   RawPoint,
   WindowPoint,
   WindowRectangle,
+  zeroCanvasPoint,
+  zeroPoint,
 } from '../core/shared/math-utils'
 import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
-import { CanvasMousePositionRaw, updateGlobalPositions } from '../utils/global-positions'
+import {
+  CanvasMousePositionRaw,
+  CanvasMousePositionRounded,
+  updateGlobalPositions,
+} from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
-
-export const MoveIntoDragThreshold = 3
 
 export const NodeConnectorsDivId = 'node-connectors'
 
@@ -122,8 +133,11 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
   }
 }
 
-function isDragging(canvas: CanvasModel): boolean {
-  return canvas.dragState != null && canvas.dragState.start != null
+function isDragging(editorState: EditorState): boolean {
+  return (
+    editorState.canvas.dragState != null &&
+    getDragStateStart(editorState.canvas.dragState, editorState.canvas.resizeOptions) != null
+  )
 }
 
 function roundPointForScale<C extends CoordinateMarker>(point: Point<C>, scale: number): Point<C> {
@@ -147,7 +161,14 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
 
       case 'MOUSE_UP':
         if (model.dragState != null) {
-          optionalDragStateAction = [CanvasActions.clearDragState(model.dragState.drag != null)]
+          optionalDragStateAction = [
+            CanvasActions.clearDragState(
+              getDragStateDrag(
+                model.editorState.canvas.dragState,
+                model.editorState.canvas.resizeOptions,
+              ) != null,
+            ),
+          ]
         }
         break
 
@@ -195,7 +216,7 @@ function on(
 ): Array<EditorAction> {
   let additionalEvents: Array<EditorAction> = []
   if (canvas.keysPressed['z']) {
-    if (event.event === 'MOUSE_UP' && !isDragging(canvas)) {
+    if (event.event === 'MOUSE_UP' && !isDragging(canvas.editorState)) {
       let scale: number
       if (canvas.keysPressed['alt']) {
         scale = Utils.decreaseScale(canvas.scale)
@@ -225,7 +246,7 @@ function on(
       return [CanvasActions.scrollCanvas((event.delta as any) as CanvasVector)]
     }
   } else if (
-    isDragging(canvas) &&
+    isDragging(canvas.editorState) &&
     event.event === 'DRAG' &&
     canvasBounds != null &&
     canvas.mode.type === 'select'
@@ -648,7 +669,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     const canvasControls = React.createElement(NewCanvasControls, {
       windowToCanvasPosition: this.getPosition,
       cursor,
-      getPositionFromCoordinates: this.getPositionFromCoordinates,
     })
 
     const canvasLiveEditingStyle = canvasIsLive
@@ -762,10 +782,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         },
       },
       nodeConnectorsDiv,
-      React.createElement(CanvasComponentEntry, {
-        getPositionFromCoordinates: this.getPositionFromCoordinates,
-        dispatch: this.props.dispatch,
-      }),
+      React.createElement(CanvasComponentEntry, {}),
       canvasControls,
     )
   }
@@ -802,7 +819,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     })
   }
 
-  applyDragStateKeyboardEvent(key: KeyCharacter, pressed: boolean): void {
+  applyDragStateKeyboardEvent(event: KeyboardEvent, key: KeyCharacter, pressed: boolean): void {
     const dragState = this.props.editor.canvas.dragState
     const dispatch = this.props.dispatch
     function fireDragStateUpdate(updateFn: DragState): void {
@@ -865,65 +882,66 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               break
           }
           break
-        case 'RESIZE_DRAG_STATE':
+        case 'RESIZE_DRAG_STATE': {
           const resizeOptions = this.props.editor.canvas.resizeOptions
+          const dragPositions = getDragStatePositions(dragState, resizeOptions)
           const targetProperty =
             resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-          switch (key) {
-            case 'shift':
-              const elementAspectRatioLocked = this.getElementAspectRatioLocked()
-              const keepAspectRatio = pressed || elementAspectRatioLocked
-              fireDragStateUpdate(
-                updateResizeDragState(
-                  dragState,
-                  undefined,
-                  targetProperty,
-                  undefined,
-                  undefined,
-                  keepAspectRatio,
-                ),
-              )
-              break
-            case 'alt':
-              fireDragStateUpdate(
-                updateResizeDragState(
-                  dragState,
-                  undefined,
-                  targetProperty,
-                  undefined,
-                  pressed,
-                  undefined,
-                ),
-              )
-              break
-            case 'cmd':
-              fireDragStateUpdate(
-                updateResizeDragState(
-                  dragState,
-                  undefined,
-                  targetProperty,
-                  !pressed,
-                  undefined,
-                  undefined,
-                ),
-              )
-              break
-            default:
-              break
+          const propertyChange:
+            | ResizeDragStatePropertyChange
+            | undefined = dragState.properties.find((prop) => {
+            return prop.targetProperty === targetProperty
+          })
+          const keepAspectRatio =
+            (key === 'shift' ? pressed : propertyChange?.keepAspectRatio) ||
+            this.getElementAspectRatioLocked()
+          const centerBasedResize =
+            key === 'alt' ? pressed : propertyChange?.centerBasedResize ?? false
+          const enableSnapping = key === 'cmd' ? !pressed : propertyChange?.enableSnapping ?? false
+          const dragStart = dragPositions?.start ?? CanvasMousePositionRaw
+          let exceededThreshold: boolean = dragPositions?.drag != null
+          if (!exceededThreshold) {
+            exceededThreshold =
+              CanvasMousePositionRounded != null &&
+              dragStart != null &&
+              dragExceededThreshold(CanvasMousePositionRounded, dragStart)
           }
-          break
+
+          if (dragStart != null && exceededThreshold) {
+            switch (key) {
+              case 'shift':
+              case 'alt':
+              case 'cmd':
+                fireDragStateUpdate(
+                  updateResizeDragState(
+                    dragState,
+                    dragStart,
+                    dragPositions?.drag ?? null,
+                    targetProperty,
+                    enableSnapping,
+                    centerBasedResize,
+                    keepAspectRatio,
+                  ),
+                )
+                break
+              default:
+                break
+            }
+            break
+          }
+        }
       }
     }
   }
 
   handleKeyDown = (event: KeyboardEvent) => {
     if (!event.repeat) {
-      this.applyDragStateKeyboardEvent(Keyboard.keyCharacterForCode(event.keyCode), true)
+      this.applyDragStateKeyboardEvent(event, Keyboard.keyCharacterForCode(event.keyCode), true)
     }
   }
   handleKeyUp = (event: KeyboardEvent) => {
     if (!event.repeat) {
-      this.applyDragStateKeyboardEvent(Keyboard.keyCharacterForCode(event.keyCode), false)
+      this.applyDragStateKeyboardEvent(event, Keyboard.keyCharacterForCode(event.keyCode), false)
     }
   }
 
@@ -953,7 +971,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   handleMouseUp = (event: MouseEvent) => {
     if (this.canvasSelected()) {
       const canvasPositions = this.getPosition(event)
-      if (isDragging(this.props.model)) {
+      if (isDragging(this.props.editor)) {
         this.handleEvent({
           ...canvasPositions,
           event: 'DRAG_END',
@@ -980,11 +998,15 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       const canvasPositions = this.getPosition(event)
 
       const dragState = this.props.model.dragState
+      const resizeOptions = this.props.editor.canvas.resizeOptions
+      const dragPositions = getDragStatePositions(dragState, resizeOptions)
+      // Check and mark mouse move handling.
       if (didWeHandleMouseMoveForThisFrame) {
         return
       }
       mouseMoveHandled()
-      if (dragState == null || dragState.start == null) {
+      const dragStarted = anyDragStarted(dragState)
+      if (dragState == null || !dragStarted) {
         this.handleEvent({
           ...canvasPositions,
           event: 'MOVE',
@@ -994,14 +1016,18 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         })
       } else {
         const newDrag = roundPointForScale(
-          Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragState.start)),
+          Utils.offsetPoint(
+            canvasPositions.canvasPositionRounded,
+            dragPositions == null ? zeroCanvasPoint : Utils.negate(dragPositions.start),
+          ),
           this.props.model.scale,
         )
-        let exceededThreshold: boolean = dragState.drag != null
-        if (!exceededThreshold) {
-          const xDiff = Math.abs(canvasPositions.canvasPositionRounded.x - dragState.start.x)
-          const yDiff = Math.abs(canvasPositions.canvasPositionRounded.y - dragState.start.y)
-          exceededThreshold = xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
+        let exceededThreshold: boolean = dragPositions?.drag != null
+        if (!exceededThreshold && dragPositions != null) {
+          exceededThreshold = dragExceededThreshold(
+            canvasPositions.canvasPositionRounded,
+            dragPositions.start,
+          )
         }
 
         let newDragState: DragState | null = null
@@ -1025,17 +1051,24 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             break
           }
           case 'RESIZE_DRAG_STATE': {
+            const start: CanvasPoint = dragPositions?.start ?? canvasPositions.canvasPositionRaw
             const elementAspectRatioLocked = this.getElementAspectRatioLocked()
             const keepAspectRatio = event.shiftKey || elementAspectRatioLocked
             const centerBasedResize = event.altKey
             const enableSnapping = !event.metaKey
 
-            const resizeOptions = this.props.editor.canvas.resizeOptions
+            if (!exceededThreshold) {
+              exceededThreshold = dragExceededThreshold(
+                canvasPositions.canvasPositionRounded,
+                start,
+              )
+            }
             const targetProperty =
               resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
             newDragState = updateResizeDragState(
               dragState,
-              exceededThreshold ? newDrag : undefined,
+              start,
+              exceededThreshold ? newDrag : null,
               targetProperty,
               enableSnapping,
               centerBasedResize,

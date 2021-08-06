@@ -1163,7 +1163,13 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, menuInsertable, 'do-not-add', null)
+    const action = insertWithDefaults(
+      targetPath,
+      menuInsertable,
+      'do-not-add',
+      'do-now-wrap-content',
+      null,
+    )
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1258,7 +1264,13 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, menuInsertable, 'add-size', null)
+    const action = insertWithDefaults(
+      targetPath,
+      menuInsertable,
+      'add-size',
+      'do-now-wrap-content',
+      null,
+    )
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1352,7 +1364,13 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size', null)
+    const action = insertWithDefaults(
+      targetPath,
+      imgInsertable,
+      'add-size',
+      'do-now-wrap-content',
+      null,
+    )
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1437,7 +1455,13 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, imgInsertable, 'add-size', { type: 'back' })
+    const action = insertWithDefaults(
+      targetPath,
+      imgInsertable,
+      'add-size',
+      'do-now-wrap-content',
+      { type: 'back' },
+    )
     const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
@@ -1480,6 +1504,89 @@ describe('INSERT_WITH_DEFAULTS', () => {
                     backgroundColor: 'blue',
                   }}
                 />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        fail('File does not contain parse success.')
+      }
+    } else {
+      fail('File is not a text file.')
+    }
+  })
+
+  it('inserts a div into the project, wrapping the parents existing children if selected', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      {},
+      {},
+      editorState.projectContents,
+      [],
+      StoryboardFilePath,
+    )
+    const htmlGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return group.source.type === 'HTML_GROUP'
+      }),
+    )
+    const divInsertable = forceNotNull(
+      'Component should exist.',
+      htmlGroup.insertableComponents.find((insertable) => {
+        return insertable.name === 'div'
+      }),
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+    const action = insertWithDefaults(targetPath, divInsertable, 'do-not-add', 'wrap-content', null)
+    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    if (isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          printCodeOptions(false, true, true, true),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Rectangle } from 'utopia-api'
+          export var Card = (props) => {
+            return (
+              <div style={{ ...props.style }}>
+                <div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      width: 50,
+                      height: 50,
+                      backgroundColor: 'red',
+                    }}
+                  />
+                  <Rectangle
+                    style={{
+                      position: 'absolute',
+                      left: 100,
+                      top: 200,
+                      width: 50,
+                      height: 50,
+                      backgroundColor: 'blue',
+                    }}
+                  />
+                </div>
               </div>
             )
           }

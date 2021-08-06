@@ -205,6 +205,7 @@ export const PaddingControl = betterReactMemo('PaddingControl', () => {
           DEPRECATED_labelBelow: 'T',
           minimum: 0,
           onSubmitValue: paddingTopOnSubmitValue,
+          onTransientSubmitValue: paddingTopOnTransientSubmitValue,
           controlStatus: paddingTop.controlStatus,
           numberType: 'LengthPercent',
           defaultUnitToHide: 'px',

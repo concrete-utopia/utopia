@@ -111,7 +111,6 @@ const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
           tooltipText={props.toolTip}
           category='layout/commands'
           type={props.iconType}
-          color='secondary'
           width={16}
           height={16}
         />

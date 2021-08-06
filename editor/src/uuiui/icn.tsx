@@ -38,7 +38,7 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
       case 'secondary':
         return 'gray'
       case 'subdued':
-        return 'white'
+        return 'lightgray'
       case 'primary':
         return 'blue'
       case 'warning':

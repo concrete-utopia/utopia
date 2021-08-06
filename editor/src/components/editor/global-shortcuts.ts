@@ -121,6 +121,7 @@ import {
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
+import { getDragStateStart } from '../canvas/canvas-utils'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -439,7 +440,10 @@ export function handleKeyDown(
             CanvasActions.clearDragState(false),
             EditorActions.clearHighlightedViews(),
           ]
-        } else if (editor.canvas.dragState != null && editor.canvas.dragState.start != null) {
+        } else if (
+          editor.canvas.dragState != null &&
+          getDragStateStart(editor.canvas.dragState, editor.canvas.resizeOptions) != null
+        ) {
           return [CanvasActions.clearDragState(false)]
         } else if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           return jumpToParentActions(editor.selectedViews)

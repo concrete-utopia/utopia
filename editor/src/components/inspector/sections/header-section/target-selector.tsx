@@ -350,7 +350,7 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
           fontStyle: target.selectorLength > 0 ? undefined : 'italic',
           backgroundImage: isSelected ? UtopiaStyles.backgrounds.blue : undefined,
           color: isSelected
-            ? UtopiaTheme.color.white.value
+            ? colorTheme.white.value
             : colorTheme.neutralForeground.o(target.selectorLength > 0 ? 100 : 40).value,
         }}
         onDoubleClick={startRename}

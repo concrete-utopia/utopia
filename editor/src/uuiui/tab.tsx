@@ -49,7 +49,7 @@ export const TabComponent: React.FunctionComponent<TabComponentProps> = betterRe
       paddingRight: 4,
       transition: 'all .05s ease-in-out',
       '&:hover': {
-        backgroundColor: UtopiaTheme.color.tabHoveredBackground.value,
+        backgroundColor: colorTheme.tabHoveredBackground.value,
       },
       cursor: 'pointer',
     }
@@ -57,8 +57,8 @@ export const TabComponent: React.FunctionComponent<TabComponentProps> = betterRe
     const selectionHandlingStyle = {
       boxShadow: selected ? `inset 0px 2px 0px 0px ${colorTheme.primary.value}` : undefined,
       color: hasErrorMessages
-        ? UtopiaTheme.color.errorForeground.value
-        : UtopiaTheme.color.tabSelectedForeground.value,
+        ? colorTheme.errorForeground.value
+        : colorTheme.tabSelectedForeground.value,
 
       fontWeight: selected ? 500 : undefined,
     }

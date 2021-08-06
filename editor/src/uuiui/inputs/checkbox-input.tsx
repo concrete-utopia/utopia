@@ -7,7 +7,7 @@ import {
   getControlStyles,
   ControlStyles,
 } from '../../components/inspector/common/control-status'
-import { UtopiaTheme } from '../styles/theme'
+import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { betterReactMemo } from '../../uuiui-deps'
 
 export interface CheckboxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -30,6 +30,7 @@ export const CheckboxInput = betterReactMemo(
         }
       })
 
+      const colorTheme = useColorTheme()
       const checked =
         props.checked != null && (controlStyles.interactive || controlStyles.showContent)
           ? props.checked
@@ -59,7 +60,7 @@ export const CheckboxInput = betterReactMemo(
                 'url("/editor/icons/light/controls/checkbox/checked-dark-12x12@2x.png")',
             },
             '&:focus': {
-              boxShadow: `0 0 0 1px ${UtopiaTheme.color.inspectorFocusedColor.value}`,
+              boxShadow: `0 0 0 1px ${colorTheme.inspectorFocusedColor.value}`,
             },
             '&.widget-status-controlled': {
               backgroundImage:

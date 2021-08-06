@@ -1,5 +1,6 @@
 import ChromaWrongTypes from 'chroma-js'
 import { clamp } from '../../core/shared/math-utils'
+import { IcnColor } from '../icn'
 const Chroma = ChromaWrongTypes as any
 
 export interface UtopiColor {
@@ -18,15 +19,6 @@ export interface UtopiColor {
    * Opacity or Alpha. Value goes from 0 to 100
    */
   o: (value: number) => UtopiColor
-
-  /**
-   * Label. A friendly name for the color + shade combo.
-   */
-  label: string
-  /**
-   * Use this when generating file names, eg for icons in a specific colorway. Ensure you also create those!
-   */
-  fileNameFragment: string
 }
 
 type ColorHex = string
@@ -46,7 +38,7 @@ function shade(this: UtopiColor, value: number): UtopiColor {
     ]).colors(201)
   }
   const index = clamp(0, 200, Math.floor(value))
-  return createUtopiColor(colorShadeCache[this.value][index], this.label, this.fileNameFragment)
+  return createUtopiColor(colorShadeCache[this.value][index])
 }
 
 const opacitycache: { [colorHex: string]: { [opacity: string]: ColorHex } } = {}
@@ -58,17 +50,13 @@ function opacity(this: UtopiColor, value: number): UtopiColor {
     const alpha = value / 100
     opacitycache[this.value][value] = Chroma(this.value).alpha(alpha).css('rgba')
   }
-  return createUtopiColor(opacitycache[this.value][value], this.label, this.fileNameFragment)
+  return createUtopiColor(opacitycache[this.value][value])
 }
 
 const utopiColorCache: { [key: string]: UtopiColor } = {}
 
-export function createUtopiColor(
-  baseColor: string,
-  label: string,
-  fileNameFragment: string,
-): UtopiColor {
-  const key = `${baseColor}-#-${label}-#-${fileNameFragment}`
+export function createUtopiColor(baseColor: string): UtopiColor {
+  const key = `${baseColor}`
   const fromCache = utopiColorCache[key]
   if (fromCache == null) {
     const hexWithAlpha = Chroma(baseColor).css('rgba')
@@ -76,8 +64,6 @@ export function createUtopiColor(
       value: hexWithAlpha,
       shade: shade,
       o: opacity,
-      label: label,
-      fileNameFragment: fileNameFragment,
     }
     utopiColorCache[key] = value
     return value

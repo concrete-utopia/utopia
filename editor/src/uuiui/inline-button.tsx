@@ -37,8 +37,6 @@ export const InlineButton = styled.button({
     background: colorTheme.primary.shade(10).value,
   },
   '&:focus': {
-    background: colorTheme.primary.value,
-    color: colorTheme.neutralInvertedForeground.value,
     outline: 'none',
   },
   '&:active': {
@@ -47,3 +45,29 @@ export const InlineButton = styled.button({
     outline: 'none',
   },
 })
+
+export const InlineIndicator = styled.div<{
+  shouldIndicate: boolean
+}>((props) => ({
+  fontSize: 11,
+  fontFamily: 'utopian-inter',
+  background: 'transparent',
+  border: 'none',
+  outline: 'none',
+  paddingLeft: 2,
+  paddingRight: 2,
+  color: props.shouldIndicate ? colorTheme.primary.value : colorTheme.primary.shade(30).value,
+}))
+
+export const InlineToggleButton = styled(InlineButton)<{
+  toggleValue: boolean
+}>((props) => ({
+  color: props.toggleValue ? colorTheme.primary.value : colorTheme.primary.shade(30).value,
+  '&:hover': {
+    background: colorTheme.primary.shade(5).value,
+    color: colorTheme.primary.shade(90).value,
+  },
+  '&:active': {
+    background: colorTheme.primary.shade(10).value,
+  },
+}))

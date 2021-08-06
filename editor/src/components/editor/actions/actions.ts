@@ -65,6 +65,8 @@ import {
   setJSXAttributesAttribute,
   emptyJsxMetadata,
   isImportStatement,
+  isIntrinsicHTMLElement,
+  JSXElementChildren,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -74,6 +76,7 @@ import {
   insertJSXElementChild,
   findJSXElementChildAtPath,
   getZIndexOfElement,
+  elementOnlyHasSingleTextChild,
 } from '../../../core/model/element-template-utils'
 import {
   getJSXAttributeAtPath,
@@ -107,6 +110,7 @@ import {
   updateFileContents,
   applyUtopiaJSXComponentsChanges,
   saveTextFileContents,
+  isImg,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -455,6 +459,7 @@ import {
   RightMenuTab,
   persistentModelFromEditorModel,
   getPackageJsonFromEditorState,
+  transformElementAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4635,19 +4640,31 @@ export const UPDATE_FNS = {
               return success
             }
           }
-          const element = jsxElement(
-            action.toInsert.element.name,
-            newUID,
-            props,
-            action.toInsert.element.children,
-          )
+
+          const insertedElementName = action.toInsert.element.name
+          let withMaybeUpdatedParent = utopiaComponents
+          let insertedElementChildren: JSXElementChildren = []
+
+          if (action.wrapContent === 'wrap-content' && !isImg(insertedElementName)) {
+            withMaybeUpdatedParent = transformElementAtPath(
+              utopiaComponents,
+              action.targetParent,
+              (parentElement) => {
+                insertedElementChildren.push(...parentElement.children)
+                return jsxElement(parentElement.name, parentElement.uid, parentElement.props, [])
+              },
+            )
+          }
+
+          insertedElementChildren.push(...action.toInsert.element.children)
+          const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
 
           const withInsertedElement = insertElementAtPath(
             editor.projectContents,
             openFilename,
             action.targetParent,
             element,
-            utopiaComponents,
+            withMaybeUpdatedParent,
             action.indexPosition,
           )
 

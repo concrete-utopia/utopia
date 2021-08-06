@@ -35,7 +35,6 @@ import {
   InspectorSectionHeader,
   SimpleFlexRow,
   SquareButton,
-  Icn,
   PopupList,
   FunctionIcons,
   Icons,
@@ -321,19 +320,15 @@ const RowForArrayControl = betterReactMemo(
             {propertyStatus.overwritable ? (
               <SquareButton highlight onMouseDown={toggleInsertRow}>
                 {insertingRow ? (
-                  <Icn
+                  <Icons.Minus
                     style={{ paddingTop: 1 }}
-                    category='semantic'
-                    type='minus'
                     color={propertyStatus.controlled ? 'primary' : 'secondary'}
                     width={16}
                     height={16}
                   />
                 ) : (
-                  <Icn
+                  <Icons.Plus
                     style={{ paddingTop: 1 }}
-                    category='semantic'
-                    type='plus'
                     color={propertyStatus.controlled ? 'primary' : 'secondary'}
                     width={16}
                     height={16}

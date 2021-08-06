@@ -19,6 +19,8 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { KeysPressed } from '../../../utils/keyboard'
+
+import { betterReactMemo } from '../../../uuiui-deps'
 import { PositionOutline } from './position-outline'
 import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 
@@ -56,6 +58,52 @@ function isDraggingToMove(
   const targetIsDragged = EP.containsPath(target, dragState?.draggedElements ?? [])
   return dragState != null && dragState?.type === 'MOVE_DRAG_STATE' && targetIsDragged
 }
+
+interface CenteredCrossSVGProps {
+  id: string
+  scale: number
+  centerX: number
+  centerY: number
+}
+
+const CenteredCrossSVG = betterReactMemo(
+  'centeredCross',
+  ({ id, centerX, centerY, scale }: CenteredCrossSVGProps) => {
+    const colorTheme = useColorTheme()
+    return (
+      <svg
+        id={id}
+        style={{
+          left: centerX,
+          top: centerY,
+          position: 'absolute',
+          width: 6,
+          height: 6,
+          transformOrigin: 'center center',
+          transform: `translateX(-50%) translateY(-50%) scale(${1 / scale})`,
+        }}
+        width='4px'
+        height='4px'
+        viewBox='0 0 4 4'
+        version='1.1'
+      >
+        <g
+          stroke='none'
+          strokeWidth='1'
+          fill='none'
+          fillRule='evenodd'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+        >
+          <g id='cross_svg' stroke={colorTheme.primary.value}>
+            <line x1='0.5' y1='0.5' x2='3.5' y2='3.5'></line>
+            <line x1='0.5' y1='3.5' x2='3.5' y2='0.5'></line>
+          </g>
+        </g>
+      </svg>
+    )
+  },
+)
 
 export const OutlineControls = (props: OutlineControlsProps) => {
   const colorTheme = useColorTheme()
@@ -147,47 +195,39 @@ export const OutlineControls = (props: OutlineControlsProps) => {
                 <div
                   style={{
                     position: 'absolute',
-                    left: parentFrame.x + props.canvasOffset.x - 4,
-                    top: parentFrame.y + props.canvasOffset.y - 11,
-                    color: colorTheme.primary.value,
-                    fontSize: '13px',
+                    left: parentFrame.x + props.canvasOffset.x,
+                    top: parentFrame.y + props.canvasOffset.y,
+                    width: parentFrame.width,
+                    height: parentFrame.height,
+                    border: `#007aff`,
                   }}
-                >
-                  ×
-                </div>
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 5,
-                    top: parentFrame.y + props.canvasOffset.y - 11,
-                    color: colorTheme.primary.value,
-                    fontSize: '13px',
-                  }}
-                >
-                  ×
-                </div>
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: parentFrame.x + props.canvasOffset.x - 4,
-                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
-                    color: colorTheme.primary.value,
-                    fontSize: '13px',
-                  }}
-                >
-                  ×
-                </div>
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: parentFrame.x + parentFrame.width + props.canvasOffset.x - 4,
-                    top: parentFrame.y + parentFrame.height + props.canvasOffset.y - 12,
-                    color: colorTheme.primary.value,
-                    fontSize: '13px',
-                  }}
-                >
-                  ×
-                </div>
+                />
+
+                <CenteredCrossSVG
+                  id='parent-cross-top-left'
+                  centerX={parentFrame.x + props.canvasOffset.x}
+                  centerY={parentFrame.y + props.canvasOffset.y}
+                  scale={props.scale}
+                />
+
+                <CenteredCrossSVG
+                  id='parent-cross-top-right'
+                  scale={props.scale}
+                  centerX={parentFrame.x + parentFrame.width + props.canvasOffset.x}
+                  centerY={parentFrame.y + props.canvasOffset.y}
+                />
+                <CenteredCrossSVG
+                  id='parent-cross-bottom-right'
+                  scale={props.scale}
+                  centerX={parentFrame.x + parentFrame.width + props.canvasOffset.x}
+                  centerY={parentFrame.y + parentFrame.height + props.canvasOffset.y}
+                />
+                <CenteredCrossSVG
+                  id='parent-cross-bottom-left'
+                  scale={props.scale}
+                  centerX={parentFrame.x + props.canvasOffset.x}
+                  centerY={parentFrame.y + parentFrame.height + props.canvasOffset.y}
+                />
               </>
             )
           } else {
@@ -201,13 +241,13 @@ export const OutlineControls = (props: OutlineControlsProps) => {
       return null
     }
   }, [
-    colorTheme.primary.value,
     layoutInspectorSectionHovered,
     props.canvasOffset.x,
     props.canvasOffset.y,
     props.componentMetadata,
     props.keysPressed,
     props.selectedViews,
+    props.scale,
   ])
 
   const parentOutlines: (JSX.Element | null)[] = React.useMemo(() => {

@@ -950,6 +950,21 @@ export const MetadataUtils = {
     // Default catch all name, will probably avoid some odd cases in the future.
     return 'Element'
   },
+  getJSXElementFromMetadata(
+    metadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): JSXElement | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    if (element == null) {
+      return null
+    } else {
+      return foldEither(
+        (_) => null,
+        (e) => (isJSXElement(e) ? e : null),
+        element.element,
+      )
+    }
+  },
   getJSXElementName(jsxElement: JSXElementChild | null): JSXElementName | null {
     if (jsxElement != null) {
       if (isJSXElement(jsxElement)) {
@@ -961,26 +976,13 @@ export const MetadataUtils = {
       return null
     }
   },
-  getJSXElementFromMetadata(
-    metadata: ElementInstanceMetadataMap,
-    path: ElementPath,
-  ): JSXElementName | null {
-    const elementName = MetadataUtils.getJSXElementName(
-      maybeEitherToMaybe(MetadataUtils.findElementByElementPath(metadata, path)?.element),
-    )
-    return elementName
-  },
   getJSXElementNameFromMetadata(
-    path: ElementPath,
     metadata: ElementInstanceMetadataMap,
+    path: ElementPath,
   ): JSXElementName | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     if (element != null) {
-      if (isRight(element.element) && isJSXElement(element.element.value)) {
-        return element.element.value.name
-      } else {
-        return null
-      }
+      return MetadataUtils.getJSXElementName(eitherToMaybe(element.element))
     } else {
       return null
     }

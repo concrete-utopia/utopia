@@ -35,7 +35,7 @@ import { selectComponents, setHighlightedView } from './editor/actions/action-cr
 import * as EP from '../core/shared/element-path'
 import { ElementPath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
-import { FlexRow, Icn, IcnProps } from '../uuiui'
+import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 

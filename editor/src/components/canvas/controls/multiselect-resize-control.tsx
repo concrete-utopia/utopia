@@ -18,11 +18,11 @@ import { ControlProps } from './new-canvas-controls'
 import { ResizeRectangle } from './size-box'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
-interface MultiselectResizeProps extends ControlProps {
+interface MultiSelectResizeProps extends ControlProps {
   dragState: ResizeDragState | null
 }
 
-interface SingleselectResizeProps extends MultiselectResizeProps {
+interface SingleSelectResizeProps extends MultiSelectResizeProps {
   obtainOriginalFrames: () => OriginalCanvasAndLocalFrame[]
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
 }
@@ -33,10 +33,10 @@ interface ConstraintsControlState {
 }
 
 export class MultiselectResizeControl extends React.Component<
-  MultiselectResizeProps,
+  MultiSelectResizeProps,
   ConstraintsControlState
 > {
-  constructor(props: MultiselectResizeProps) {
+  constructor(props: MultiSelectResizeProps) {
     super(props)
     this.state = {
       originalBoundingBox: Utils.zeroRectangle as CanvasRectangle,
@@ -174,13 +174,8 @@ export class MultiselectResizeControl extends React.Component<
               onResizeStart={this.onResizeStart}
               testID={'component-resize-control-0'}
               maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
-              labels={
-                {
-                  vertical: 'Width',
-                  horizontal: 'Height',
-                } as const
-              }
-              resizeOptions={this.props.resizeOptions}
+              flexDirection={null}
+              propertyTargetSelectedIndex={this.props.resizeOptions.propertyTargetSelectedIndex}
             />
             {guidelineElements}
           </>
@@ -202,17 +197,13 @@ export class MultiselectResizeControl extends React.Component<
   }
 }
 
-export class SingleSelectResizeControls extends React.Component<SingleselectResizeProps> {
-  constructor(props: SingleselectResizeProps) {
+export class SingleSelectResizeControls extends React.Component<SingleSelectResizeProps> {
+  constructor(props: SingleSelectResizeProps) {
     super(props)
   }
 
   render() {
     return this.props.selectedViews.map((view, index) => {
-      const labels = {
-        vertical: 'Width',
-        horizontal: 'Height',
-      } as const
       const target = MetadataUtils.findElementByElementPath(this.props.componentMetadata, view)
       const frame = optionalMap((metadata) => metadata.globalFrame, target)
       if (frame == null) {
@@ -243,8 +234,8 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
             onResizeStart={this.props.onResizeStart}
             testID={`component-resize-control-${EP.toComponentId(view)}-${index}`}
             maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
-            labels={labels}
-            resizeOptions={this.props.resizeOptions}
+            flexDirection={null}
+            propertyTargetSelectedIndex={this.props.resizeOptions.propertyTargetSelectedIndex}
           />
         )
       }

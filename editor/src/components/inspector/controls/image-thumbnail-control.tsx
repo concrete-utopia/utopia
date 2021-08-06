@@ -6,7 +6,7 @@ import {
   BackgroundThumbnailControlProps,
 } from './background-solid-or-gradient-thumbnail-control'
 import { clampString } from '../common/inspector-utils'
-import { Tooltip, FlexRow, UtopiaTheme, useColorTheme, Icn } from '../../../uuiui'
+import { Tooltip, FlexRow, UtopiaTheme, useColorTheme, Icn, Icons } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 
 interface ImageThumbnailControlProps extends BackgroundThumbnailControlProps {

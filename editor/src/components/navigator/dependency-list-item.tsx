@@ -139,11 +139,11 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
           paddingRight: 8,
           borderRadius: 2,
           '&:focus': {
-            background: UtopiaTheme.color.subtleBackground.value,
+            background: colorTheme.subtleBackground.value,
             color: colorTheme.emphasizedForeground.value,
           },
           '&:hover': {
-            background: UtopiaTheme.color.subtleBackground.value,
+            background: colorTheme.subtleBackground.value,
             color: colorTheme.emphasizedForeground.value,
           },
           ...(isNewlyLoaded

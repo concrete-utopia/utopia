@@ -10,6 +10,7 @@ import {
   UtopiaTheme,
   UtopiaStyles,
   UIRow,
+  Icons,
 } from '../../../../../uuiui'
 import { ControlStatus } from '../../../common/control-status'
 import {
@@ -552,9 +553,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
               containerMode='noBorder'
             />
           </div>
-          {isCSSBackgroundImageLayer(props.value) ? (
-            <Icn type='gear' color='secondary' width={16} height={16} onClick={toggleSettings} />
-          ) : null}
+          {isCSSBackgroundImageLayer(props.value) ? <Icons.Gear onClick={toggleSettings} /> : null}
           <Icn
             type='cross-large'
             color='secondary'

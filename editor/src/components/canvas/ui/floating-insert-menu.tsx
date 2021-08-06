@@ -34,7 +34,10 @@ import {
   wrapInView,
   wrapInElement,
 } from '../../editor/actions/action-creators'
-import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
+import {
+  elementOnlyHasSingleTextChild,
+  generateUidWithExistingComponents,
+} from '../../../core/model/element-template-utils'
 import {
   jsxAttributeValue,
   jsxElement,
@@ -53,6 +56,7 @@ import { when } from '../../../utils/react-conditionals'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { LayoutSystem } from 'utopia-api'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
@@ -400,8 +404,24 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsref = useRefEditorState((store) => store.editor.selectedViews)
   const insertableComponents = useGetInsertableComponents()
+  const shouldWrapContentsByDefault = useRefEditorState((store) => {
+    // We only care about this when the menu is first opened
+    const firstSelectedView = store.editor.selectedViews[0]
+    if (firstSelectedView != null) {
+      const selectedJSXElement = MetadataUtils.getJSXElementFromMetadata(
+        store.editor.jsxMetadata,
+        firstSelectedView,
+      )
+      return selectedJSXElement != null && elementOnlyHasSingleTextChild(selectedJSXElement)
+    }
+
+    return false
+  })
 
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
+  const [wrapContentForInsertion, setWrapContentForInsertion] = React.useState(
+    shouldWrapContentsByDefault.current,
+  )
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
   const [preserveVisualPositionForWrap, setPreserveVisualPositionForWrap] = React.useState(false)
 
@@ -472,6 +492,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
                   targetParent,
                   elementToInsert,
                   fixedSizeForInsertion ? 'add-size' : 'do-not-add',
+                  wrapContentForInsertion ? 'wrap-content' : 'do-now-wrap-content',
                   floatingMenuState.indexPosition,
                 ),
               ]
@@ -506,6 +527,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
       selectedViewsref,
       fixedSizeForInsertion,
       addContentForInsertion,
+      wrapContentForInsertion,
       preserveVisualPositionForWrap,
     ],
   )
@@ -534,7 +556,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
         style={{
           ...UtopiaStyles.popup,
           width: 280,
-          height: 250,
+          height: 280,
           overflow: 'hidden',
         }}
       >
@@ -567,29 +589,46 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
           tabSelectsValue={false}
         />
         {showInsertionControls ? (
-          <FlexRow
-            css={{
-              height: UtopiaTheme.layout.rowHeight.normal,
-              paddingLeft: 8,
-              paddingRight: 8,
-              borderTop: `1px solid ${colorTheme.border1.value}`,
-            }}
-          >
-            <CheckboxRow
-              id='add-content-label'
-              checked={addContentForInsertion}
-              onChange={setAddContentForInsertion}
+          <FlexColumn>
+            <FlexRow
+              css={{
+                height: UtopiaTheme.layout.rowHeight.smaller,
+                paddingLeft: 8,
+                paddingRight: 8,
+                borderTop: `1px solid ${colorTheme.border1.value}`,
+              }}
             >
-              Add content
-            </CheckboxRow>
-            <CheckboxRow
-              id='fixed-dimensions-label'
-              checked={fixedSizeForInsertion}
-              onChange={setFixedSizeForInsertion}
+              <CheckboxRow
+                id='wrap-parents-content-label'
+                checked={wrapContentForInsertion}
+                onChange={setWrapContentForInsertion}
+              >
+                Wrap content
+              </CheckboxRow>
+            </FlexRow>
+            <FlexRow
+              css={{
+                height: UtopiaTheme.layout.rowHeight.smaller,
+                paddingLeft: 8,
+                paddingRight: 8,
+              }}
             >
-              Fixed dimensions
-            </CheckboxRow>
-          </FlexRow>
+              <CheckboxRow
+                id='add-content-label'
+                checked={addContentForInsertion}
+                onChange={setAddContentForInsertion}
+              >
+                Add content
+              </CheckboxRow>
+              <CheckboxRow
+                id='fixed-dimensions-label'
+                checked={fixedSizeForInsertion}
+                onChange={setFixedSizeForInsertion}
+              >
+                Fixed dimensions
+              </CheckboxRow>
+            </FlexRow>
+          </FlexColumn>
         ) : null}
         {when(
           showWrapControls,
