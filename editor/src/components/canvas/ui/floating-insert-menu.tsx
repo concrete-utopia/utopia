@@ -603,7 +603,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
                 checked={wrapContentForInsertion}
                 onChange={setWrapContentForInsertion}
               >
-                Wrap siblings
+                Wrap content
               </CheckboxRow>
             </FlexRow>
             <FlexRow
