@@ -31,7 +31,6 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { SizeBoxLabel } from './size-box-label'
 //TODO: switch to functional component and make use of 'useColorTheme':
@@ -40,6 +39,8 @@ import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { PropertyTargetSelector } from './property-target-selector'
 import { unless, when } from '../../../utils/react-conditionals'
 import { betterReactMemo } from '../../../uuiui-deps'
+import { isZeroSizedElement } from './outline-utils'
+import { ZeroSizeResizeControl } from './zero-sized-element-controls'
 import {
   anyDragStarted,
   getDragStateStart,
@@ -514,90 +515,18 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
   render() {
     const controlProps = this.props
 
-    const { showingInvisibleElement, dimension } = calculateExtraSizeForZeroSizedElement(
-      this.props.measureSize,
-    )
-
-    if (showingInvisibleElement && isFeatureEnabled('Invisible Element Controls')) {
-      // is it a one dimensional element?
-      const verticalResizeControls =
-        dimension === 'vertical' ? (
-          <React.Fragment>
-            <ResizeControl
-              {...controlProps}
-              key={'resize-control-v-0.5-0.0'}
-              cursor={CSSCursor.ResizeNS}
-              position={{ x: 0.5, y: 0 }}
-              enabledDirection={DirectionVertical}
-            >
-              <ResizePoint
-                {...controlProps}
-                cursor={CSSCursor.ResizeNS}
-                position={{ x: 0.5, y: 0 }}
-                extraStyle={{
-                  opacity: 0,
-                }}
-              />
-            </ResizeControl>
-            <ResizeControl
-              {...controlProps}
-              key={'resize-control-v-0.5-1.0'}
-              cursor={CSSCursor.ResizeNS}
-              position={{ x: 0.5, y: 1 }}
-              enabledDirection={DirectionVertical}
-            >
-              <ResizePoint
-                {...controlProps}
-                cursor={CSSCursor.ResizeNS}
-                position={{ x: 0.5, y: 1 }}
-                extraStyle={{
-                  opacity: 0,
-                }}
-              />
-            </ResizeControl>
-          </React.Fragment>
-        ) : null
-
-      const horizontalResizeControls =
-        dimension === 'horizontal' ? (
-          <React.Fragment>
-            <ResizeControl
-              {...controlProps}
-              key={'resize-control-h-0.0-0.5'}
-              cursor={CSSCursor.ResizeEW}
-              position={{ x: 0, y: 0.5 }}
-              enabledDirection={DirectionHorizontal}
-            >
-              <ResizePoint
-                {...controlProps}
-                cursor={CSSCursor.ResizeEW}
-                position={{ x: 0, y: 0.5 }}
-                extraStyle={{
-                  opacity: 0,
-                }}
-              />
-            </ResizeControl>
-            <ResizeControl
-              {...controlProps}
-              key={'resize-control-h-1.0-0.5'}
-              cursor={CSSCursor.ResizeEW}
-              position={{ x: 1, y: 0.5 }}
-              enabledDirection={DirectionHorizontal}
-            >
-              <ResizePoint
-                {...controlProps}
-                cursor={CSSCursor.ResizeEW}
-                position={{ x: 1, y: 0.5 }}
-                extraStyle={{
-                  opacity: 0,
-                }}
-              />
-            </ResizeControl>
-          </React.Fragment>
-        ) : null
-
-      // TODO  double click sets an arbitrary size in the missing dimensions
-      return [verticalResizeControls, horizontalResizeControls]
+    if (isZeroSizedElement(this.props.measureSize)) {
+      return (
+        <ZeroSizeResizeControl
+          frame={this.props.measureSize}
+          canvasOffset={this.props.canvasOffset}
+          scale={this.props.scale}
+          color={null}
+          dispatch={this.props.dispatch}
+          element={this.props.targetComponentMetadata}
+          maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
+        />
+      )
     } else if (
       this.props.resizeStatus === 'enabled' ||
       this.props.resizeStatus === 'noninteractive'

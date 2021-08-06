@@ -2,7 +2,8 @@ import * as React from 'react'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
+import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
+import { ZeroSizeHighlightControl } from './zero-sized-element-controls'
 
 interface HighlightControlProps {
   frame: CanvasRectangle
@@ -19,26 +20,30 @@ export const HighlightControl = betterReactMemo(
     const outlineColor =
       props.color === null ? colorTheme.canvasSelectionPrimaryOutline.value : props.color
 
-    const { borderRadius, extraWidth, extraHeight } = calculateExtraSizeForZeroSizedElement(
-      props.frame,
-    )
-
-    return (
-      <>
+    if (isZeroSizedElement(props.frame)) {
+      return (
+        <ZeroSizeHighlightControl
+          frame={props.frame}
+          canvasOffset={props.canvasOffset}
+          scale={props.scale}
+          color={outlineColor}
+        />
+      )
+    } else {
+      return (
         <div
           className='role-component-highlight-outline'
           style={{
             position: 'absolute',
-            left: props.canvasOffset.x + props.frame.x - extraWidth / 2,
-            top: props.canvasOffset.y + props.frame.y - extraHeight / 2,
-            width: props.frame.width + extraWidth,
-            height: props.frame.height + extraHeight,
+            left: props.canvasOffset.x + props.frame.x,
+            top: props.canvasOffset.y + props.frame.y,
+            width: props.frame.width,
+            height: props.frame.height,
             boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
             pointerEvents: 'none',
-            borderRadius: borderRadius,
           }}
         />
-      </>
-    )
+      )
+    }
   },
 )

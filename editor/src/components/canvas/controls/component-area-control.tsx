@@ -10,7 +10,6 @@ import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
-import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
 

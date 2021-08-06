@@ -30,6 +30,7 @@ import { foldEither, isRight } from '../../../core/shared/either'
 import { when } from '../../../utils/react-conditionals'
 import { InsertionControls } from './insertion-plus-button'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { ZeroSizedElementControls } from './zero-sized-element-controls'
 
 function getDistanceGuidelines(
   highlightedView: ElementPath,
@@ -527,6 +528,7 @@ export class SelectModeControlContainer extends React.Component<
                 </>
               )
             ) : null}
+            <ZeroSizedElementControls {...this.props} />
           </>
         ) : null}
         {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls {...this.props} />)}
