@@ -14,11 +14,11 @@ import {
   setProp_UNSAFE,
 } from '../../editor/actions/action-creators'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
-import { EditorAction, EditorDispatch } from '../../editor/action-types'
+import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 
 const EmptyChildren: ElementInstanceMetadata[] = []
 export const ZeroSizedElementControls = betterReactMemo(
@@ -178,47 +178,88 @@ export const ZeroSizeOutlineControl = betterReactMemo(
 interface ZeroSizeResizeControlProps extends ZeroSizeControlProps {
   element: ElementInstanceMetadata | null
   dispatch: EditorDispatch
+  maybeClearHighlightsOnHoverEnd: () => void
 }
 
 export const ZeroSizeResizeControl = betterReactMemo(
   'ZeroSizeResizeControl',
   (props: ZeroSizeResizeControlProps) => {
-    const { dispatch, element } = props
+    const { dispatch, element, maybeClearHighlightsOnHoverEnd } = props
+
     const onControlStopPropagation = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
         event.stopPropagation()
       },
       [],
     )
+
+    const onControlMouseMove = React.useCallback(
+      (event: React.MouseEvent<HTMLDivElement>) => {
+        event.stopPropagation()
+        maybeClearHighlightsOnHoverEnd()
+      },
+      [maybeClearHighlightsOnHoverEnd],
+    )
+
     const onControlDoubleClick = React.useCallback(() => {
-      let setPropActions: EditorAction[] = []
+      let propsToSet: Array<{ path: PropertyPath; value: any }> = []
       if (element != null) {
+        const isFlexParent = element.specialSizeMeasurements.parentLayoutSystem === 'flex'
         if (props.frame.width === 0) {
-          setPropActions.push(
-            setProp_UNSAFE(
-              element.elementPath,
-              createLayoutPropertyPath('Width'),
-              jsxAttributeValue(100, emptyComments),
-            ),
-          )
+          if (
+            isFlexParent &&
+            (element.specialSizeMeasurements.parentFlexDirection === 'row' ||
+              element.specialSizeMeasurements.parentFlexDirection === 'row-reverse')
+          ) {
+            propsToSet.push({
+              path: createLayoutPropertyPath('flexBasis'),
+              value: 100,
+            })
+          } else {
+            propsToSet.push({
+              path: createLayoutPropertyPath('Width'),
+              value: 100,
+            })
+          }
         }
         if (props.frame.height === 0) {
-          setPropActions.push(
-            setProp_UNSAFE(
-              element.elementPath,
-              createLayoutPropertyPath('Height'),
-              jsxAttributeValue(100, emptyComments),
-            ),
-          )
+          if (
+            isFlexParent &&
+            (element.specialSizeMeasurements.parentFlexDirection === 'column' ||
+              element.specialSizeMeasurements.parentFlexDirection === 'column-reverse')
+          ) {
+            propsToSet.push({
+              path: createLayoutPropertyPath('flexBasis'),
+              value: 100,
+            })
+          } else {
+            propsToSet.push({
+              path: createLayoutPropertyPath('Height'),
+              value: 100,
+            })
+          }
         }
+        if (props.frame.width === 0 && props.frame.height === 0) {
+          propsToSet.push({
+            path: createLayoutPropertyPath('position'),
+            value: 'absolute',
+          })
+        }
+        const setPropActions = propsToSet.map((prop) => {
+          return setProp_UNSAFE(
+            element.elementPath,
+            prop.path,
+            jsxAttributeValue(prop.value, emptyComments),
+          )
+        })
         dispatch(setPropActions, 'everyone')
       }
     }, [dispatch, element, props.frame])
 
     return (
       <div
+        onMouseMove={onControlMouseMove}
         onMouseDown={onControlStopPropagation}
-        onMouseOver={onControlStopPropagation}
         onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
         style={{

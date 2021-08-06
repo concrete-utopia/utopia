@@ -510,6 +510,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           color={null}
           dispatch={this.props.dispatch}
           element={this.props.targetComponentMetadata}
+          maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
         />
       )
     } else if (
