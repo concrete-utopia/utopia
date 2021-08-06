@@ -20,6 +20,7 @@ import {
   LayoutProp,
   pinnedPropForFramePoint,
   LayoutPinnedProp,
+  LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
 import {
   maybeSwitchLayoutProps,
@@ -143,6 +144,7 @@ import {
   TransientFileState,
   withUnderlyingTarget,
   transformElementAtPath,
+  ResizeOptions,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -152,15 +154,19 @@ import Canvas, { TargetSearchType } from './canvas'
 import {
   CanvasFrameAndTarget,
   CSSCursor,
+  DragState,
   DuplicateNewUID,
   EdgePosition,
   flexResizeChange,
   MoveDragState,
   oppositeEdgePositionPart,
+  DragStatePositions,
   pinFrameChange,
   PinOrFlexFrameChange,
   ResizeDragState,
   singleResizeChange,
+  ResizeDragStatePropertyChange,
+  CanvasPositions,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
@@ -204,6 +210,7 @@ import { importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
+import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -328,7 +335,11 @@ export function clearDragState(
   applyChanges: boolean,
 ): EditorState {
   let result: EditorState = model
-  if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
+  if (
+    applyChanges &&
+    result.canvas.dragState != null &&
+    getDragStateDrag(result.canvas.dragState, result.canvas.resizeOptions) != null
+  ) {
     const producedTransientCanvasState = produceCanvasTransientState(
       derived.canvas.transientState.selectedViews,
       result,
@@ -393,6 +404,8 @@ export function updateFramesOfScenesAndComponents(
       (success, underlyingElement) => underlyingElement,
     )
 
+    const elementMetadata = MetadataUtils.findElementByElementPath(editorState.jsxMetadata, target)
+
     const isFlexContainer =
       frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
       frameAndTarget.type !== 'PIN_MOVE_CHANGE' &&
@@ -448,13 +461,18 @@ export function updateFramesOfScenesAndComponents(
               throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
             }
 
-            const currentAttributeToChange =
-              eitherToMaybe(
-                getSimpleAttributeAtPath(
-                  right(element.props),
-                  createLayoutPropertyPath(frameAndTarget.targetProperty),
-                ),
-              ) ?? 0
+            const valueFromDOM = getObservableValueForLayoutProp(
+              elementMetadata,
+              frameAndTarget.targetProperty,
+            )
+            const valueFromAttributes = eitherToMaybe(
+              getSimpleAttributeAtPath(
+                right(element.props),
+                createLayoutPropertyPath(frameAndTarget.targetProperty),
+              ),
+            )
+            // Defer through these in order: observable value >>> value from attribute >>> 0.
+            const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
 
             const newAttributeValue = jsxAttributeValue(
               currentAttributeToChange + frameAndTarget.delta,
@@ -479,6 +497,8 @@ export function updateFramesOfScenesAndComponents(
               createLayoutPropertyPath('maxHeight'),
               createLayoutPropertyPath('FlexCrossBasis'),
               createLayoutPropertyPath('flexBasis'),
+              createLayoutPropertyPath('flexGrow'),
+              createLayoutPropertyPath('flexShrink'),
             )
           }
           break
@@ -1223,47 +1243,68 @@ export function snapPoint(
   }
 }
 
+function getTargetableProp(resizeOptions: ResizeOptions): LayoutTargetableProp | undefined {
+  return resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
+}
+
+function findResizePropertyChange(
+  dragState: ResizeDragState,
+  resizeOptions: ResizeOptions,
+): ResizeDragStatePropertyChange | undefined {
+  const resizeProp: LayoutTargetableProp | undefined = getTargetableProp(resizeOptions)
+  return dragState.properties.find((prop) => prop.targetProperty === resizeProp)
+}
+
 function calculateDraggedRectangle(
   editor: EditorState,
   dragState: ResizeDragState,
 ): CanvasRectangle {
   const originalSize = dragState.originalSize
-  const deltaScale = dragState.centerBasedResize ? 2 : 1 // for center based resize, we need to calculate with double deltas
-  // for now, because scale is not a first-class citizen, we know that CanvasVector and LocalVector have the same dimensions
-  // this will break with the introduction of scale into the coordinate systems
-  let delta: CanvasVector = canvasPoint({ x: 0, y: 0 })
-  if (dragState.drag != null) {
-    delta = Utils.scaleVector(
-      Utils.scalePoint(dragState.drag, dragState.enabledDirection as CanvasVector),
-      deltaScale,
-    )
-  }
-  const startingCorner: EdgePosition = {
-    x: 1 - dragState.edgePosition.x,
-    y: 1 - dragState.edgePosition.y,
-  } as EdgePosition
-  const startingPoint = pickPointOnRect(originalSize, startingCorner)
-  const originalCenter = Utils.getRectCenter(originalSize)
-  const draggedCorner = pickPointOnRect(originalSize, dragState.edgePosition)
+  const resizeOptions = editor.canvas.resizeOptions
 
-  const newCorner = Utils.offsetPoint(draggedCorner, delta)
-  const snappedNewCorner = Utils.roundPointTo(
-    snapPoint(
-      editor,
-      newCorner,
-      dragState.enableSnapping,
-      dragState.keepAspectRatio,
-      startingPoint,
-      draggedCorner,
-      startingCorner,
-    ),
-    0,
-  )
-  const newSizeVector = Utils.pointDifference(startingPoint, snappedNewCorner)
-  const newRectangle = dragState.centerBasedResize
-    ? Utils.rectFromPointVector(originalCenter, Utils.scaleVector(newSizeVector, 0.5), true)
-    : Utils.rectFromPointVector(startingPoint, newSizeVector, false)
-  return newRectangle
+  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
+  if (propertyChange == null) {
+    return originalSize
+  } else {
+    // for center based resize, we need to calculate with double deltas
+    // for now, because scale is not a first-class citizen, we know that CanvasVector and LocalVector have the same dimensions
+    // this will break with the introduction of scale into the coordinate systems
+    const deltaScale = propertyChange.centerBasedResize ? 2 : 1
+    let delta: CanvasVector = canvasPoint({ x: 0, y: 0 })
+    const drag = getDragStateDrag(dragState, editor.canvas.resizeOptions)
+    if (drag != null) {
+      delta = Utils.scaleVector(
+        Utils.scalePoint(drag, dragState.enabledDirection as CanvasVector),
+        deltaScale,
+      )
+    }
+    const startingCorner: EdgePosition = {
+      x: 1 - dragState.edgePosition.x,
+      y: 1 - dragState.edgePosition.y,
+    } as EdgePosition
+    const startingPoint = pickPointOnRect(originalSize, startingCorner)
+    const originalCenter = Utils.getRectCenter(originalSize)
+    const draggedCorner = pickPointOnRect(originalSize, dragState.edgePosition)
+
+    const newCorner = Utils.offsetPoint(draggedCorner, delta)
+    const snappedNewCorner = Utils.roundPointTo(
+      snapPoint(
+        editor,
+        newCorner,
+        propertyChange.enableSnapping,
+        propertyChange.keepAspectRatio,
+        startingPoint,
+        draggedCorner,
+        startingCorner,
+      ),
+      0,
+    )
+    const newSizeVector = Utils.pointDifference(startingPoint, snappedNewCorner)
+    const newRectangle = propertyChange.centerBasedResize
+      ? Utils.rectFromPointVector(originalCenter, Utils.scaleVector(newSizeVector, 0.5), true)
+      : Utils.rectFromPointVector(startingPoint, newSizeVector, false)
+    return newRectangle
+  }
 }
 
 export function calculateNewBounds(
@@ -1273,10 +1314,15 @@ export function calculateNewBounds(
   const originalSize = dragState.originalSize
   const aspectRatio = originalSize.width / originalSize.height
   const newRectangle = calculateDraggedRectangle(editor, dragState)
+  const resizeOptions = editor.canvas.resizeOptions
 
-  // In an aspect ratio locked resize if one dimension doesn't change then neither can the other.
-  // FIXME: Replace with handling for this during drag.
-  /*
+  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
+  if (propertyChange == null) {
+    return originalSize
+  } else {
+    // In an aspect ratio locked resize if one dimension doesn't change then neither can the other.
+    // FIXME: Replace with handling for this during drag.
+    /*
   if (dragState.keepAspectRatio && oldRectangle != null) {
     if (newRectangle.width === oldRectangle.width || newRectangle.height === oldRectangle.height) {
       newRectangle.width = oldRectangle.width
@@ -1285,23 +1331,24 @@ export function calculateNewBounds(
   }
   */
 
-  // At this point I do ugly things to keep side drags in line
-  if (dragState.edgePosition.x === 0.5) {
-    const newWidth = dragState.keepAspectRatio
-      ? Utils.roundTo(newRectangle.height * aspectRatio)
-      : originalSize.width
-    newRectangle.x -= newWidth / 2
-    newRectangle.width = newWidth
-  }
-  if (dragState.edgePosition.y === 0.5) {
-    const newHeight = dragState.keepAspectRatio
-      ? Utils.roundTo(newRectangle.width / aspectRatio)
-      : originalSize.height
-    newRectangle.y -= newHeight / 2
-    newRectangle.height = newHeight
-  }
+    // At this point I do ugly things to keep side drags in line
+    if (dragState.edgePosition.x === 0.5) {
+      const newWidth = propertyChange.keepAspectRatio
+        ? Utils.roundTo(newRectangle.height * aspectRatio)
+        : originalSize.width
+      newRectangle.x -= newWidth / 2
+      newRectangle.width = newWidth
+    }
+    if (dragState.edgePosition.y === 0.5) {
+      const newHeight = propertyChange.keepAspectRatio
+        ? Utils.roundTo(newRectangle.width / aspectRatio)
+        : originalSize.height
+      newRectangle.y -= newHeight / 2
+      newRectangle.height = newHeight
+    }
 
-  return newRectangle
+    return newRectangle
+  }
 }
 
 export function getCursorFromDragState(editorState: EditorState): CSSCursor | null {
@@ -1452,10 +1499,18 @@ export function produceResizeCanvasTransientState(
             )
 
             if (isFlexContainer) {
-              const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
-                ? dragState.drag?.x ?? 0
-                : dragState.drag?.y ?? 0
-              framesAndTargets.push(flexResizeChange(target, dragState.targetProperty, newDelta))
+              for (const resizePropertyChange of dragState.properties) {
+                if (resizePropertyChange.targetProperty != null) {
+                  if (resizePropertyChange.drag != null) {
+                    const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+                      ? resizePropertyChange.drag.x ?? 0
+                      : resizePropertyChange.drag.y ?? 0
+                    framesAndTargets.push(
+                      flexResizeChange(target, resizePropertyChange.targetProperty, newDelta),
+                    )
+                  }
+                }
+              }
             } else {
               framesAndTargets.push(
                 pinFrameChange(underlyingTarget, roundedFrame, dragState.edgePosition),
@@ -1520,26 +1575,33 @@ export function produceResizeSingleSelectCanvasTransientState(
           elementToTarget,
           editorState.jsxMetadata,
         )
-        if (
-          isFlexContainer ||
-          dragState.edgePosition.x === 0.5 ||
-          dragState.edgePosition.y === 0.5
-        ) {
-          const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
-            ? dragState.drag?.x ?? 0
-            : dragState.drag?.y ?? 0
-          framesAndTargets.push(
-            flexResizeChange(elementToTarget, dragState.targetProperty, newDelta),
-          )
-        } else {
-          const edgePosition = dragState.centerBasedResize
-            ? ({ x: 0.5, y: 0.5 } as EdgePosition)
-            : dragState.edgePosition
-          const sizeChange = {
-            x: roundedFrame.width - originalFrame.width,
-            y: roundedFrame.height - originalFrame.height,
-          } as CanvasVector
-          framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+        for (const propertyChange of dragState.properties) {
+          if (
+            isFlexContainer ||
+            dragState.edgePosition.x === 0.5 ||
+            dragState.edgePosition.y === 0.5
+          ) {
+            if (propertyChange.targetProperty != null) {
+              if (propertyChange.drag != null) {
+                const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
+                  ? propertyChange.drag.x ?? 0
+                  : propertyChange.drag.y ?? 0
+
+                framesAndTargets.push(
+                  flexResizeChange(elementToTarget, propertyChange.targetProperty, newDelta),
+                )
+              }
+            }
+          } else {
+            const edgePosition = propertyChange.centerBasedResize
+              ? ({ x: 0.5, y: 0.5 } as EdgePosition)
+              : dragState.edgePosition
+            const sizeChange = {
+              x: roundedFrame.width - originalFrame.width,
+              y: roundedFrame.height - originalFrame.height,
+            } as CanvasVector
+            framesAndTargets.push(singleResizeChange(elementToTarget, edgePosition, sizeChange))
+          }
         }
       },
     )
@@ -1616,8 +1678,8 @@ export function produceCanvasTransientState(
       case 'select':
         if (
           editorState.canvas.dragState != null &&
-          editorState.canvas.dragState.start != null &&
-          editorState.canvas.dragState.drag != null
+          anyDragStarted(editorState.canvas.dragState) &&
+          anyDragMovement(editorState.canvas.dragState)
         ) {
           const dragState = editorState.canvas.dragState
           switch (dragState.type) {
@@ -2811,5 +2873,165 @@ function createCanvasTransientStateFromProperties(
       transientFilesState,
       [],
     )
+  }
+}
+
+export function getDragStatePositions(
+  dragState: DragState | null,
+  resizeOptions: ResizeOptions,
+): DragStatePositions | null {
+  if (dragState == null) {
+    return null
+  } else {
+    switch (dragState.type) {
+      case 'MOVE_DRAG_STATE':
+      case 'INSERT_DRAG_STATE':
+        return dragState
+      case 'RESIZE_DRAG_STATE':
+        return findResizePropertyChange(dragState, resizeOptions) ?? null
+      default:
+        const _exhaustiveCheck: never = dragState
+        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
+    }
+  }
+}
+
+export function getDragStateDrag(
+  dragState: DragState | null,
+  resizeOptions: ResizeOptions,
+): CanvasPoint | null {
+  return optionalMap((positions) => positions.drag, getDragStatePositions(dragState, resizeOptions))
+}
+
+export function getDragStateStart(
+  dragState: DragState | null,
+  resizeOptions: ResizeOptions,
+): CanvasPoint | null {
+  return optionalMap(
+    (positions) => positions.start,
+    getDragStatePositions(dragState, resizeOptions),
+  )
+}
+
+export function anyDragStarted(dragState: DragState | null): boolean {
+  if (dragState == null) {
+    return false
+  } else {
+    switch (dragState.type) {
+      case 'MOVE_DRAG_STATE':
+      case 'INSERT_DRAG_STATE':
+        return dragState.start != null
+      case 'RESIZE_DRAG_STATE':
+        return dragState.properties.some((prop) => prop.start != null)
+      default:
+        const _exhaustiveCheck: never = dragState
+        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
+    }
+  }
+}
+
+export function anyDragMovement(dragState: DragState | null): boolean {
+  if (dragState == null) {
+    return false
+  } else {
+    switch (dragState.type) {
+      case 'MOVE_DRAG_STATE':
+      case 'INSERT_DRAG_STATE':
+        return dragState.drag != null
+      case 'RESIZE_DRAG_STATE':
+        return dragState.properties.some((prop) => prop.drag != null)
+      default:
+        const _exhaustiveCheck: never = dragState
+        throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
+    }
+  }
+}
+
+export function getResizeOptions(
+  flexDirection: 'horizontal' | 'vertical' | null,
+  controlDirection: 'horizontal' | 'vertical',
+): Array<LayoutTargetableProp> {
+  switch (flexDirection) {
+    case 'horizontal':
+      switch (controlDirection) {
+        case 'horizontal':
+          return ['Height', 'minHeight', 'maxHeight']
+        case 'vertical':
+          return ['flexBasis', 'flexGrow', 'flexShrink', 'minWidth', 'maxWidth']
+        default:
+          const _exhaustiveCheck: never = controlDirection
+          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
+      }
+    case 'vertical':
+      switch (controlDirection) {
+        case 'horizontal':
+          return ['flexBasis', 'flexGrow', 'flexShrink', 'minHeight', 'maxHeight']
+        case 'vertical':
+          return ['Width', 'minWidth', 'maxWidth']
+        default:
+          const _exhaustiveCheck: never = controlDirection
+          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
+      }
+    case null:
+      switch (controlDirection) {
+        case 'horizontal':
+          return ['Height', 'marginTop', 'marginBottom', 'minHeight', 'maxHeight']
+        case 'vertical':
+          return ['Width', 'marginLeft', 'marginRight', 'minWidth', 'maxWidth']
+        default:
+          const _exhaustiveCheck: never = controlDirection
+          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
+      }
+    default:
+      const _exhaustiveCheck: never = flexDirection
+      throw new Error(`Unhandled flex direction ${JSON.stringify(flexDirection)}`)
+  }
+}
+
+export const MoveIntoDragThreshold = 3
+
+export function dragExceededThreshold(
+  canvasPosition: CanvasPoint,
+  dragStart: CanvasPoint,
+): boolean {
+  const xDiff = Math.abs(canvasPosition.x - dragStart.x)
+  const yDiff = Math.abs(canvasPosition.y - dragStart.y)
+  return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
+}
+
+export function getObservableValueForLayoutProp(
+  elementMetadata: ElementInstanceMetadata | null,
+  layoutProp: LayoutTargetableProp,
+): unknown {
+  if (elementMetadata == null) {
+    return null
+  } else {
+    switch (layoutProp) {
+      case 'Width':
+      case 'minWidth':
+      case 'maxWidth':
+        return elementMetadata.localFrame?.width
+      case 'Height':
+      case 'minHeight':
+      case 'maxHeight':
+        return elementMetadata.localFrame?.width
+      case 'flexBasis':
+      case 'FlexCrossBasis':
+      case 'flexGrow':
+      case 'flexShrink':
+        const path = createLayoutPropertyPath(layoutProp)
+        return Utils.pathOr(null, PP.getElements(path), elementMetadata.props)
+      case 'marginTop':
+        return elementMetadata.specialSizeMeasurements.margin.top
+      case 'marginBottom':
+        return elementMetadata.specialSizeMeasurements.margin.bottom
+      case 'marginLeft':
+        return elementMetadata.specialSizeMeasurements.margin.left
+      case 'marginRight':
+        return elementMetadata.specialSizeMeasurements.margin.right
+      default:
+        const _exhaustiveCheck: never = layoutProp
+        throw new Error(`Unhandled prop ${JSON.stringify(layoutProp)}`)
+    }
   }
 }

@@ -24,6 +24,8 @@ export type LayoutTargetableProp =
   | 'marginBottom'
   | 'marginLeft'
   | 'marginRight'
+  | 'flexGrow'
+  | 'flexShrink'
 
 export type LayoutPinnedProp =
   | LayoutDimension
