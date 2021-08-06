@@ -11,6 +11,10 @@ import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
+jest.mock('../../components/canvas/controls/outline-utils', () => ({
+  isZeroSizedElement: () => false,
+}))
+
 describe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider with a simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -59,8 +63,8 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(550) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(560)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(555) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(565)
   })
 
   it('Clicking on opacity slider with a less simple project', async () => {
@@ -118,8 +122,8 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(550) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(560)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(555) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(565)
   })
 
   it('Changing the selected view with a simple project', async () => {
