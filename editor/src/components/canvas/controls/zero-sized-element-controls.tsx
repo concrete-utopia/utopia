@@ -29,7 +29,11 @@ export const ZeroSizedElementControls = betterReactMemo(
       zeroSizeChildren = props.selectedViews.flatMap((view) => {
         const children = MetadataUtils.getChildren(props.componentMetadata, view)
         return children.filter((child) => {
-          return isZeroSizedElement(child?.globalFrame)
+          if (child.globalFrame == null) {
+            return false
+          } else {
+            return isZeroSizedElement(child.globalFrame)
+          }
         })
       })
     }
