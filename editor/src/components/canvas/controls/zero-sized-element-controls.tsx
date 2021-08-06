@@ -239,7 +239,7 @@ export const ZeroSizeResizeControl = betterReactMemo(
             })
           }
         }
-        if (props.frame.width === 0 && props.frame.height === 0) {
+        if (props.frame.width === 0 && props.frame.height === 0 && !isFlexParent) {
           propsToSet.push({
             path: createLayoutPropertyPath('position'),
             value: 'absolute',
