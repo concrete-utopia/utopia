@@ -24,8 +24,8 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
 
   const selectedElementName = useEditorState((store) => {
     return MetadataUtils.getJSXElementNameFromMetadata(
-      store.editor.selectedViews[0],
       store.editor.jsxMetadata,
+      store.editor.selectedViews[0],
     )
   }, 'RenderAsRow selectedElementName')
 

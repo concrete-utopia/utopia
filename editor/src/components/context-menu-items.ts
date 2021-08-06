@@ -147,7 +147,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   isHidden: (data) => {
     return data.selectedViews.every((view) => {
       const isFocused = EP.pathsEqual(data.focusedElementPath, view)
-      const elementName = MetadataUtils.getJSXElementFromMetadata(data.jsxMetadata, view)
+      const elementName = MetadataUtils.getJSXElementNameFromMetadata(data.jsxMetadata, view)
       return isFocused || (elementName != null ? isIntrinsicElement(elementName) : true)
     })
   },
