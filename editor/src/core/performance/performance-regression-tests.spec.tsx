@@ -12,7 +12,7 @@ import { jsxAttributeValue } from '../shared/element-template'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 jest.mock('../../components/canvas/controls/outline-utils', () => ({
-  isZeroSizedElement: () => false,
+  isZeroSizedElement: () => false, // in test environment elements have no size
 }))
 
 describe('React Render Count Tests - ', () => {
