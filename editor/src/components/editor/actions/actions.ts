@@ -77,6 +77,7 @@ import {
   findJSXElementChildAtPath,
   getZIndexOfElement,
   elementOnlyHasSingleTextChild,
+  transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
   getJSXAttributeAtPath,
@@ -2291,13 +2292,28 @@ export const UPDATE_FNS = {
         if (parentPath === null) {
           return editor
         } else {
+          // If any of the targets are a root element, we check that the parentPath is its parent
+          // If not, we bail and do nothing
+          // If it is, we add the new element as the root element of the parent instance
+          const anyTargetIsARootElement = orderedActionTargets.some(EP.isRootElementOfInstance)
+          const targetThatIsRootElementOfCommonParent = orderedActionTargets.find(
+            (elementPath) =>
+              EP.isRootElementOfInstance(elementPath) && EP.isParentOf(parentPath, elementPath),
+          )
+
+          if (anyTargetIsARootElement && targetThatIsRootElementOfCommonParent == null) {
+            return editor
+          }
+
           let viewPath: ElementPath | null = null
 
           const underlyingTarget = normalisePathToUnderlyingTarget(
             editor.projectContents,
             editor.nodeModules.files,
             uiFileKey,
-            parentPath,
+            targetThatIsRootElementOfCommonParent != null
+              ? targetThatIsRootElementOfCommonParent
+              : parentPath,
           )
 
           const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
@@ -2309,22 +2325,41 @@ export const UPDATE_FNS = {
               const elementToInsert: JSXElement = action.whatToWrapWith.element
 
               const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-              const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
-                editor.projectContents,
-                editor.canvas.openFile?.filename ?? null,
-                parentPath,
-                elementToInsert,
-                utopiaJSXComponents,
-                optionalMap(
-                  (index) => ({
-                    type: 'before',
-                    index: index,
-                  }),
-                  indexInParent,
-                ),
-              )
+              let withTargetAdded: Array<UtopiaJSXComponent>
 
-              viewPath = EP.appendToPath(parentPath, newUID)
+              if (targetThatIsRootElementOfCommonParent == null) {
+                withTargetAdded = insertElementAtPath(
+                  editor.projectContents,
+                  editor.canvas.openFile?.filename ?? null,
+                  parentPath,
+                  elementToInsert,
+                  utopiaJSXComponents,
+                  optionalMap(
+                    (index) => ({
+                      type: 'before',
+                      index: index,
+                    }),
+                    indexInParent,
+                  ),
+                )
+              } else {
+                const staticTarget = EP.dynamicPathToStaticPath(
+                  targetThatIsRootElementOfCommonParent,
+                )
+                withTargetAdded = transformJSXComponentAtPath(
+                  utopiaJSXComponents,
+                  staticTarget,
+                  (oldRoot) =>
+                    jsxElement(elementToInsert.name, elementToInsert.uid, elementToInsert.props, [
+                      ...elementToInsert.children,
+                      oldRoot,
+                    ]),
+                )
+              }
+
+              viewPath = anyTargetIsARootElement
+                ? EP.appendNewElementPath(parentPath, newUID)
+                : EP.appendToPath(parentPath, newUID)
 
               const importsToAdd: Imports = action.whatToWrapWith.importsToAdd
 
