@@ -209,7 +209,7 @@ export const ZeroSizeResizeControl = betterReactMemo(
       let propsToSet: Array<{ path: PropertyPath; value: any }> = []
       if (element != null) {
         const isFlexParent = element.specialSizeMeasurements.parentLayoutSystem === 'flex'
-        if (props.frame.width === 0) {
+        if (props.frame.width === 0 || element.specialSizeMeasurements.display === 'inline') {
           if (
             isFlexParent &&
             (element.specialSizeMeasurements.parentFlexDirection === 'row' ||
@@ -226,7 +226,7 @@ export const ZeroSizeResizeControl = betterReactMemo(
             })
           }
         }
-        if (props.frame.height === 0) {
+        if (props.frame.height === 0 || element.specialSizeMeasurements.display === 'inline') {
           if (
             isFlexParent &&
             (element.specialSizeMeasurements.parentFlexDirection === 'column' ||
@@ -243,7 +243,7 @@ export const ZeroSizeResizeControl = betterReactMemo(
             })
           }
         }
-        if (props.frame.width === 0 && props.frame.height === 0 && !isFlexParent) {
+        if (!isFlexParent && element.specialSizeMeasurements.display === 'inline') {
           propsToSet.push({
             path: createLayoutPropertyPath('position'),
             value: 'absolute',
