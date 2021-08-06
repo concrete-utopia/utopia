@@ -477,7 +477,7 @@ export function updateFramesOfScenesAndComponents(
               frameAndTarget.targetProperty === 'flexGrow' ||
               frameAndTarget.targetProperty === 'flexShrink'
             const scaledDelta = shouldScaleDelta
-              ? Math.floor(frameAndTarget.delta / 50)
+              ? Math.floor(frameAndTarget.delta / 100)
               : frameAndTarget.delta
 
             const newAttributeValue = jsxAttributeValue(
