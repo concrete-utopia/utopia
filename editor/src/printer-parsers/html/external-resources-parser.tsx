@@ -1,10 +1,15 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
+import { createSelector } from 'reselect'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { notice } from '../../components/common/notice'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
-import { defaultIndexHtmlFilePath, EditorState } from '../../components/editor/store/editor-state'
+import {
+  defaultIndexHtmlFilePath,
+  EditorState,
+  EditorStore,
+} from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import {
   useCallbackFactory,
@@ -398,21 +403,18 @@ export function updateHTMLExternalResourcesLinks(
 }
 
 export function getExternalResourcesInfo(
-  editor: EditorState,
+  projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
 ): Either<
   DescriptionParseError,
   { externalResources: ExternalResources; onSubmitValue: OnSubmitValue<ExternalResources> }
 > {
-  const packageJsonHtmlFilePath = getPreviewHTMLFilePath(editor.projectContents)
+  const packageJsonHtmlFilePath = getPreviewHTMLFilePath(projectContents)
   const htmlFilePath: string = `/${
     isRight(packageJsonHtmlFilePath) ? packageJsonHtmlFilePath.value : defaultIndexHtmlFilePath
   }`
 
-  const previewHTMLFilePathContents = getTextFileContentsFromPath(
-    htmlFilePath,
-    editor.projectContents,
-  )
+  const previewHTMLFilePathContents = getTextFileContentsFromPath(htmlFilePath, projectContents)
   if (isRight(previewHTMLFilePathContents)) {
     const fileContents = previewHTMLFilePathContents.value.fileContents
     const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents.code)
@@ -453,19 +455,21 @@ export function getExternalResourcesInfo(
   }
 }
 
+const getExternalResourcesInfoSelector = createSelector(
+  (store: EditorStore) => store.editor.projectContents,
+  (store: EditorStore) => store.dispatch,
+  getExternalResourcesInfo,
+)
+
 export function useExternalResources(): {
   values: Either<DescriptionParseError, ExternalResources>
   onSubmitValue: OnSubmitValue<ExternalResources>
   useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
 } {
-  const { dispatch, editorState } = useEditorState(
-    (store) => ({
-      editorState: store.editor,
-      dispatch: store.dispatch,
-    }),
-    'useExternalResources',
+  const externalResourcesInfo = useEditorState(
+    getExternalResourcesInfoSelector,
+    'useExternalResources externalResourcesInfo',
   )
-  const externalResourcesInfo = getExternalResourcesInfo(editorState, dispatch)
   const values: Either<DescriptionParseError, ExternalResources> = isRight(externalResourcesInfo)
     ? right(externalResourcesInfo.value.externalResources)
     : left(externalResourcesInfo.value)
