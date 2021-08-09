@@ -1,5 +1,6 @@
 import type { EditorAction } from '../../components/editor/action-types'
 import type { EditorStore } from '../../components/editor/store/editor-state'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 import { pluck } from './array-utils'
 
 interface Connection {
@@ -14,7 +15,8 @@ function connectDevToolsExtension(): Connection | null {
   if (
     window != null &&
     (window as any).__REDUX_DEVTOOLS_EXTENSION__ != null &&
-    (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect != null
+    (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect != null &&
+    isFeatureEnabled('Debug mode – Redux Devtools')
   ) {
     return (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect({
       maxAge: 50, // maximum allowed actions to be stored in the history tree. It's critical for performance

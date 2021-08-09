@@ -60,6 +60,7 @@ import { mapDropNulls, pluck, uniqBy } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { MapLike } from 'typescript'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -125,7 +126,9 @@ function findParentScene(target: HTMLElement): string | null {
   }
 }
 
-const LogDomWalkerPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
+const LogDomWalkerPerformance =
+  isFeatureEnabled('Debug mode – Performance Marks') &&
+  typeof window.performance.mark === 'function'
 
 function lazyValue<T>(getter: () => T) {
   let alreadyResolved = false

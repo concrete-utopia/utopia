@@ -4,6 +4,9 @@
 //   trackAllPureComponents: true,
 // })
 
+// import feature switches so they are loaded before anything else can read them
+import '../utils/feature-switches'
+
 // Fire off server requests that later block, to improve initial load on slower connections. These will still block,
 // but this gives us a chance to cache the result first
 import { getLoginState } from '../common/server'

@@ -12,8 +12,8 @@ import {
   UTOPIA_UID_PARENTS_KEY,
 } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
-import { PRODUCTION_ENV } from '../common/env-vars'
 import { appendToUidString } from '../core/shared/uid-utils'
+import { isFeatureEnabled } from './feature-switches'
 
 const realCreateElement = React.createElement
 
@@ -121,7 +121,9 @@ function attachDataUidToRoot(
   }
 }
 
-const MeasureRenderTimes = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
+const MeasureRenderTimes =
+  isFeatureEnabled('Debug mode – Performance Marks') &&
+  typeof window.performance.mark === 'function'
 
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
