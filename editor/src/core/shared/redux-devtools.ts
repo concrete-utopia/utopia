@@ -15,8 +15,7 @@ function connectDevToolsExtension(): Connection | null {
   if (
     window != null &&
     (window as any).__REDUX_DEVTOOLS_EXTENSION__ != null &&
-    (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect != null &&
-    isFeatureEnabled('Debug mode – Redux Devtools')
+    (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect != null
   ) {
     return (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect({
       maxAge: 50, // maximum allowed actions to be stored in the history tree. It's critical for performance
@@ -94,7 +93,11 @@ export function reduxDevtoolsSendActions(
   actions: Array<Array<EditorAction>>,
   newStore: EditorStore,
 ): void {
-  if (maybeDevTools != null && sendActionUpdates) {
+  if (
+    maybeDevTools != null &&
+    sendActionUpdates &&
+    isFeatureEnabled('Debug mode – Redux Devtools')
+  ) {
     // filter out the actions we are not interested in
     const filteredActions = actions
       .flat()
@@ -109,25 +112,37 @@ export function reduxDevtoolsSendActions(
 }
 
 export function reduxDevtoolsSendInitialState(newStore: EditorStore): void {
-  if (maybeDevTools != null && sendActionUpdates) {
+  if (maybeDevTools != null) {
     maybeDevTools.init(newStore)
   }
 }
 
 export function reduxDevtoolsLogMessage(message: string, optionalPayload?: any): void {
-  if (maybeDevTools != null && sendActionUpdates) {
+  if (
+    maybeDevTools != null &&
+    sendActionUpdates &&
+    isFeatureEnabled('Debug mode – Redux Devtools')
+  ) {
     maybeDevTools.send({ type: `🟢 ${message}`, payload: optionalPayload }, lastDispatchedStore)
   }
 }
 
 export function reduxDevtoolsLogError(message: string, optionalPayload?: any): void {
-  if (maybeDevTools != null && sendActionUpdates) {
+  if (
+    maybeDevTools != null &&
+    sendActionUpdates &&
+    isFeatureEnabled('Debug mode – Redux Devtools')
+  ) {
     maybeDevTools.send({ type: `🔴 ${message}`, payload: optionalPayload }, lastDispatchedStore)
   }
 }
 
 export function reduxDevtoolsUpdateState(message: string, newStore: EditorStore): void {
-  if (maybeDevTools != null && sendActionUpdates) {
+  if (
+    maybeDevTools != null &&
+    sendActionUpdates &&
+    isFeatureEnabled('Debug mode – Redux Devtools')
+  ) {
     const sanitizedStore = sanitizeLoggedState(newStore)
     maybeDevTools.send(`🟣 ${message}`, sanitizedStore)
     lastDispatchedStore = sanitizedStore
