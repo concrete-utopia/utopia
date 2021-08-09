@@ -57,7 +57,7 @@ export const GenericExternalResourcesListItem = betterReactMemo<
   ]
 
   return (
-    <MenuProvider id={menuId}>
+    <MenuProvider id={menuId} itemsLength={menuItems.length}>
       <UIGridRow
         {...ResourcesListGridRowConfig}
         style={{ paddingLeft: 12, paddingRight: 8 }}
