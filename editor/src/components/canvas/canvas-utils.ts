@@ -374,8 +374,6 @@ function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
     case 'PinnedRight':
     case 'PinnedBottom':
-    case 'marginBottom':
-    case 'marginRight':
       return -1
     case 'flexGrow':
     case 'flexShrink':
@@ -2980,12 +2978,12 @@ export function anyDragMovement(dragState: DragState | null): boolean {
 }
 
 export function getResizeOptions(
-  flexDirection: 'horizontal' | 'vertical' | null,
+  layoutSystem: 'flex-horizontal' | 'flex-vertical' | 'absolute' | null,
   controlDirection: 'horizontal' | 'vertical',
   edge: 'before' | 'after',
 ): Array<LayoutTargetableProp> {
-  switch (flexDirection) {
-    case 'horizontal':
+  switch (layoutSystem) {
+    case 'flex-horizontal':
       switch (controlDirection) {
         case 'horizontal':
           return ['Height', 'minHeight', 'maxHeight']
@@ -2995,7 +2993,7 @@ export function getResizeOptions(
           const _exhaustiveCheck: never = controlDirection
           throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
       }
-    case 'vertical':
+    case 'flex-vertical':
       switch (controlDirection) {
         case 'horizontal':
           return ['flexBasis', 'flexGrow', 'flexShrink', 'minHeight', 'maxHeight']
@@ -3005,7 +3003,7 @@ export function getResizeOptions(
           const _exhaustiveCheck: never = controlDirection
           throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
       }
-    case null:
+    case 'absolute':
       switch (controlDirection) {
         case 'horizontal':
           switch (edge) {
@@ -3031,9 +3029,35 @@ export function getResizeOptions(
           const _exhaustiveCheck: never = controlDirection
           throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
       }
+    case null:
+      switch (controlDirection) {
+        case 'horizontal':
+          switch (edge) {
+            case 'before':
+              return ['Height', 'marginTop', 'minHeight', 'maxHeight']
+            case 'after':
+              return ['Height', 'marginBottom', 'minHeight', 'maxHeight']
+            default:
+              const _exhaustiveCheck: never = edge
+              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
+          }
+        case 'vertical':
+          switch (edge) {
+            case 'before':
+              return ['Width', 'marginLeft', 'minWidth', 'maxWidth']
+            case 'after':
+              return ['Width', 'marginRight', 'minWidth', 'maxWidth']
+            default:
+              const _exhaustiveCheck: never = edge
+              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
+          }
+        default:
+          const _exhaustiveCheck: never = controlDirection
+          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
+      }
     default:
-      const _exhaustiveCheck: never = flexDirection
-      throw new Error(`Unhandled flex direction ${JSON.stringify(flexDirection)}`)
+      const _exhaustiveCheck: never = layoutSystem
+      throw new Error(`Unhandled flex direction ${JSON.stringify(layoutSystem)}`)
   }
 }
 

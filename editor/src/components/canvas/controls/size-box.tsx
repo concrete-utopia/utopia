@@ -48,6 +48,7 @@ import {
   isTargetPropertyHorizontal,
 } from '../canvas-utils'
 import { safeIndex } from '../../../core/shared/array-utils'
+import { CSSPosition } from '../../inspector/common/css-utils'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -56,6 +57,21 @@ interface ResizeControlProps extends ResizeRectangleProps {
   selectedViews: Array<ElementPath>
   dragState: ResizeDragState | null
   propertyTargetSelectedIndex: number
+}
+
+function layoutSystemForPositionOrFlex(
+  position: CSSPosition | null | undefined,
+  flexDirection: 'horizontal' | 'vertical' | null,
+): 'flex-horizontal' | 'flex-vertical' | 'absolute' | null {
+  if (position === 'absolute') {
+    return 'absolute'
+  } else if (flexDirection === 'horizontal') {
+    return 'flex-horizontal'
+  } else if (flexDirection === 'vertical') {
+    return 'flex-vertical'
+  } else {
+    return null
+  }
 }
 
 class ResizeControl extends React.Component<ResizeControlProps> {
@@ -83,12 +99,16 @@ class ResizeControl extends React.Component<ResizeControlProps> {
       const isMultiSelect = this.props.selectedViews.length !== 1
       const enabledDirection = this.props.enabledDirection
       let propertyTargetOptions: Array<LayoutTargetableProp> = []
+      const layoutSystem = layoutSystemForPositionOrFlex(
+        this.props.targetComponentMetadata?.specialSizeMeasurements.position,
+        this.props.flexDirection,
+      )
       if (enabledDirection.x === 1 && enabledDirection.y === 0) {
         // Left to right resize.
-        propertyTargetOptions = getResizeOptions(this.props.flexDirection, 'vertical', edge)
+        propertyTargetOptions = getResizeOptions(layoutSystem, 'vertical', edge)
       } else if (enabledDirection.x === 0 && enabledDirection.y === 1) {
         // Up to down resize.
-        propertyTargetOptions = getResizeOptions(this.props.flexDirection, 'horizontal', edge)
+        propertyTargetOptions = getResizeOptions(layoutSystem, 'horizontal', edge)
       } else {
         // Diagonal resize of some kind.
       }
@@ -237,6 +257,11 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
         this.props.targetComponentMetadata.specialSizeMeasurements.parentLayoutSystem,
       )
 
+    const layoutSystem = layoutSystemForPositionOrFlex(
+      this.props.targetComponentMetadata?.specialSizeMeasurements.position,
+      null,
+    )
+
     return (
       <React.Fragment>
         <div
@@ -258,7 +283,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
           <PropertyTargetSelector
             top={top + shiftPropertyTargetSelectorAxis('horizontal', this.props.direction, edge)}
             left={left + shiftPropertyTargetSelectorAxis('vertical', this.props.direction, edge)}
-            options={getResizeOptions(null, this.props.direction, edge)}
+            options={getResizeOptions(layoutSystem, this.props.direction, edge)}
             targetComponentMetadata={this.props.targetComponentMetadata}
           />,
         )}
@@ -328,6 +353,11 @@ const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => 
     )
   }, [props.targetComponentMetadata])
 
+  const layoutSystem = layoutSystemForPositionOrFlex(
+    props.targetComponentMetadata?.specialSizeMeasurements.position,
+    props.flexDirection,
+  )
+
   return (
     <React.Fragment>
       <LineSVGComponent
@@ -342,7 +372,7 @@ const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => 
         <PropertyTargetSelector
           top={top + shiftPropertyTargetSelectorAxis('horizontal', props.direction, edge)}
           left={left + shiftPropertyTargetSelectorAxis('vertical', props.direction, edge)}
-          options={getResizeOptions(props.flexDirection, props.direction, edge)}
+          options={getResizeOptions(layoutSystem, props.direction, edge)}
           targetComponentMetadata={props.targetComponentMetadata}
         />,
       )}
