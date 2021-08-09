@@ -52,7 +52,7 @@ import {
 } from '../../core/model/utopia-constants'
 
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { PRODUCTION_ENV } from '../../common/env-vars'
+import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import { getPathWithStringsOnDomElement, PathWithString } from '../../core/shared/uid-utils'
@@ -125,10 +125,6 @@ function findParentScene(target: HTMLElement): string | null {
     }
   }
 }
-
-const LogDomWalkerPerformance =
-  isFeatureEnabled('Debug mode – Performance Marks') &&
-  typeof window.performance.mark === 'function'
 
 function lazyValue<T>(getter: () => T) {
   let alreadyResolved = false
@@ -438,6 +434,9 @@ export function useDomWalker(
   const containerRef = React.useRef<HTMLDivElement>(null)
 
   const fireThrottledCallback = useThrottledCallback(() => {
+    const LogDomWalkerPerformance =
+      isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+
     if (containerRef.current != null) {
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_START')

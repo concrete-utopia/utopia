@@ -2,7 +2,7 @@ import * as deepEquals from 'fast-deep-equal'
 import { produce } from 'immer'
 import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
-import { PRODUCTION_ENV } from '../../../common/env-vars'
+import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
@@ -511,10 +511,6 @@ export function editorDispatch(
   return finalStore
 }
 
-const MeasureDispatchTime =
-  isFeatureEnabled('Debug mode – Performance Marks') &&
-  typeof window.performance.mark === 'function'
-
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -523,6 +519,9 @@ function editorDispatchInner(
   spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
+
+  const MeasureDispatchTime =
+    isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
 
   if (MeasureDispatchTime) {
     window.performance.mark('dispatch_begin')

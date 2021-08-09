@@ -129,3 +129,5 @@ export function isEmbedded(): boolean {
     return false
   }
 }
+
+export const PERFORMANCE_MARKS_ALLOWED = typeof window.performance.mark === 'function'
