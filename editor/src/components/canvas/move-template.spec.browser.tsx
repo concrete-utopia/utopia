@@ -9,7 +9,12 @@ import {
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent, act } from '@testing-library/react'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { selectComponents, unwrapGroupOrView, wrapInView } from '../editor/actions/action-creators'
+import {
+  selectComponents,
+  unwrapGroupOrView,
+  wrapInElement,
+  wrapInView,
+} from '../editor/actions/action-creators'
 import { reparentComponents } from '../navigator/actions'
 import * as EP from '../../core/shared/element-path'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
@@ -28,6 +33,13 @@ import {
   textFileContents,
   unparsed,
 } from '../../core/shared/project-file-types'
+import {
+  jsxAttributesEntry,
+  jsxAttributeValue,
+  jsxElement,
+  jsxElementName,
+} from '../../core/shared/element-template'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 const NewUID = 'catdog'
 
@@ -63,6 +75,78 @@ describe('moveTemplate', () => {
           />
         </div>
       </View>
+      `),
+    )
+  })
+  it('wraps a root element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...props.style }} data-uid='aaa'>
+        <View
+          style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
+          data-uid='bbb'
+        />
+      </View>
+      `),
+    )
+
+    const targets = [EP.appendNewElementPath(TestScenePath, ['aaa'])]
+    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+
+    await renderResult.dispatch([wrapInView(targets, 'default-empty-div')], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+        data-uid='${NewUID}'
+      >
+        <View style={{ ...props.style }} data-uid='aaa'>
+          <View
+            style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
+            data-uid='bbb'
+          />
+        </View>
+      </div>
+      `),
+    )
+  })
+  it('wraps a root element without retaining styling when using wrapInElement', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <View style={{ ...props.style }} data-uid='aaa'>
+        <View
+          style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
+          data-uid='bbb'
+        />
+      </View>
+      `),
+    )
+
+    const targets = [EP.appendNewElementPath(TestScenePath, ['aaa'])]
+
+    const newElement = jsxElement(
+      jsxElementName('div', []),
+      NewUID,
+      [jsxAttributesEntry('data-uid', jsxAttributeValue(NewUID, emptyComments), emptyComments)],
+      [],
+    )
+
+    await renderResult.dispatch(
+      [wrapInElement(targets, { element: newElement, importsToAdd: {} })],
+      true,
+    )
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div data-uid='${NewUID}' >
+        <View style={{ ...props.style }} data-uid='aaa'>
+          <View
+            style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
+            data-uid='bbb'
+          />
+        </View>
+      </div>
       `),
     )
   })
