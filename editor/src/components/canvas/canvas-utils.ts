@@ -385,6 +385,18 @@ function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   }
 }
 
+function unsetValueWhenNegative(prop: LayoutTargetableProp): boolean {
+  switch (prop) {
+    case 'PinnedLeft':
+    case 'PinnedTop':
+    case 'PinnedRight':
+    case 'PinnedBottom':
+      return false
+    default:
+      return true
+  }
+}
+
 export function updateFramesOfScenesAndComponents(
   editorState: EditorState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
@@ -429,6 +441,7 @@ export function updateFramesOfScenesAndComponents(
 
     let propsToSet: Array<ValueAtPath> = []
     let propsToSkip: Array<PropertyPath> = []
+    let propsToUnset: Array<PropertyPath> = []
     if (isFlexContainer) {
       switch (frameAndTarget.type) {
         case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
@@ -476,30 +489,32 @@ export function updateFramesOfScenesAndComponents(
               throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
             }
 
+            const targetPropertyPath = createLayoutPropertyPath(frameAndTarget.targetProperty)
             const valueFromDOM = getObservableValueForLayoutProp(
               elementMetadata,
               frameAndTarget.targetProperty,
             )
             const valueFromAttributes = eitherToMaybe(
-              getSimpleAttributeAtPath(
-                right(element.props),
-                createLayoutPropertyPath(frameAndTarget.targetProperty),
-              ),
+              getSimpleAttributeAtPath(right(element.props), targetPropertyPath),
             )
             // Defer through these in order: observable value >>> value from attribute >>> 0.
             const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
             const scalingFactor = dragDeltaScaleForProp(frameAndTarget.targetProperty)
             const scaledDelta = Math.floor(frameAndTarget.delta * scalingFactor)
+            const newAttributeNumericValue = currentAttributeToChange + scaledDelta
+            const shouldUnsetDraggedProp =
+              newAttributeNumericValue < 0 && unsetValueWhenNegative(frameAndTarget.targetProperty)
 
-            const newAttributeValue = jsxAttributeValue(
-              currentAttributeToChange + scaledDelta,
-              emptyComments,
-            )
+            if (shouldUnsetDraggedProp) {
+              propsToUnset.push(targetPropertyPath)
+            } else {
+              const newAttributeValue = jsxAttributeValue(newAttributeNumericValue, emptyComments)
 
-            propsToSet.push({
-              path: createLayoutPropertyPath(frameAndTarget.targetProperty),
-              value: newAttributeValue,
-            })
+              propsToSet.push({
+                path: targetPropertyPath,
+                value: newAttributeValue,
+              })
+            }
 
             propsToSkip.push(
               createLayoutPropertyPath('left'),
@@ -722,7 +737,7 @@ export function updateFramesOfScenesAndComponents(
       }
     }
 
-    if (propsToSet.length > 0) {
+    if (propsToSet.length > 0 || propsToUnset.length > 0) {
       const propsToNotDelete = [...propsToSet.map((p) => p.path), ...propsToSkip]
 
       workingEditorState = modifyUnderlyingForOpenFile(
@@ -734,7 +749,7 @@ export function updateFramesOfScenesAndComponents(
             frameAndTarget.type === 'PIN_MOVE_CHANGE'
               ? PinningAndFlexPointsExceptSize // for PIN_MOVE_CHANGE, we don't want to remove the size props, we just keep them intact
               : PinningAndFlexPoints
-          let propsToRemove: Array<PropertyPath> = []
+          let propsToRemove: Array<PropertyPath> = [...propsToUnset]
           function createPropPathForProp(prop: string): PropertyPath {
             if (isFramePoint(prop)) {
               return createLayoutPropertyPath(pinnedPropForFramePoint(prop))
