@@ -27,7 +27,6 @@ import {
   getDragStateDrag,
   getDragStatePositions,
   getDragStateStart,
-  getResizeOptions,
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { CanvasReactErrorCallback } from '../components/canvas/ui-jsx-canvas'

@@ -71,6 +71,9 @@ class ResizeControl extends React.Component<ResizeControlProps> {
   onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
     if (event.buttons === 1) {
+      const beforeOrAfter =
+        this.props.position.y === 0.5 ? this.props.position.x : this.props.position.y
+      const edge = beforeOrAfter === 0 ? 'before' : 'after'
       const centerBasedResize = event.altKey
       const keepAspectRatio = event.shiftKey || this.props.elementAspectRatioLocked
       const enableSnapping = !event.metaKey
@@ -82,10 +85,10 @@ class ResizeControl extends React.Component<ResizeControlProps> {
       let propertyTargetOptions: Array<LayoutTargetableProp> = []
       if (enabledDirection.x === 1 && enabledDirection.y === 0) {
         // Left to right resize.
-        propertyTargetOptions = getResizeOptions(this.props.flexDirection, 'vertical')
+        propertyTargetOptions = getResizeOptions(this.props.flexDirection, 'vertical', edge)
       } else if (enabledDirection.x === 0 && enabledDirection.y === 1) {
         // Up to down resize.
-        propertyTargetOptions = getResizeOptions(this.props.flexDirection, 'horizontal')
+        propertyTargetOptions = getResizeOptions(this.props.flexDirection, 'horizontal', edge)
       } else {
         // Diagonal resize of some kind.
       }
@@ -255,7 +258,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
           <PropertyTargetSelector
             top={top + shiftPropertyTargetSelectorAxis('horizontal', this.props.direction, edge)}
             left={left + shiftPropertyTargetSelectorAxis('vertical', this.props.direction, edge)}
-            options={getResizeOptions(null, this.props.direction)}
+            options={getResizeOptions(null, this.props.direction, edge)}
             targetComponentMetadata={this.props.targetComponentMetadata}
           />,
         )}
@@ -339,7 +342,7 @@ const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => 
         <PropertyTargetSelector
           top={top + shiftPropertyTargetSelectorAxis('horizontal', props.direction, edge)}
           left={left + shiftPropertyTargetSelectorAxis('vertical', props.direction, edge)}
-          options={getResizeOptions(props.flexDirection, props.direction)}
+          options={getResizeOptions(props.flexDirection, props.direction, edge)}
           targetComponentMetadata={props.targetComponentMetadata}
         />,
       )}

@@ -24,6 +24,25 @@ interface PropertyTargetSelectorProps {
   options: Array<LayoutTargetableProp>
 }
 
+function labelForOption(option: LayoutTargetableProp): string {
+  switch (option) {
+    case 'Width':
+      return 'width'
+    case 'Height':
+      return 'height'
+    case 'PinnedLeft':
+      return 'left'
+    case 'PinnedTop':
+      return 'top'
+    case 'PinnedRight':
+      return 'right'
+    case 'PinnedBottom':
+      return 'bottom'
+    default:
+      return option
+  }
+}
+
 export const PropertyTargetSelector = betterReactMemo(
   'PropertyTargetSelector',
   (props: PropertyTargetSelectorProps): JSX.Element => {
@@ -94,7 +113,7 @@ export const PropertyTargetSelector = betterReactMemo(
                 borderRadius: 5,
               }}
             >
-              {option}: <span style={{ float: 'right' }}>{valueForProp}</span>
+              {labelForOption(option)}: <span style={{ float: 'right' }}>{valueForProp}</span>
             </div>
           )
         })}

@@ -370,6 +370,21 @@ export function canvasFrameToNormalisedFrame(frame: CanvasRectangle): Normalised
   return { left: x, top: y, width, height }
 }
 
+function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
+  switch (prop) {
+    case 'PinnedRight':
+    case 'PinnedBottom':
+    case 'marginBottom':
+    case 'marginRight':
+      return -1
+    case 'flexGrow':
+    case 'flexShrink':
+      return 0.01
+    default:
+      return 1
+  }
+}
+
 export function updateFramesOfScenesAndComponents(
   editorState: EditorState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
@@ -473,12 +488,8 @@ export function updateFramesOfScenesAndComponents(
             )
             // Defer through these in order: observable value >>> value from attribute >>> 0.
             const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
-            const shouldScaleDelta =
-              frameAndTarget.targetProperty === 'flexGrow' ||
-              frameAndTarget.targetProperty === 'flexShrink'
-            const scaledDelta = shouldScaleDelta
-              ? Math.floor(frameAndTarget.delta / 100)
-              : frameAndTarget.delta
+            const scalingFactor = dragDeltaScaleForProp(frameAndTarget.targetProperty)
+            const scaledDelta = Math.floor(frameAndTarget.delta * scalingFactor)
 
             const newAttributeValue = jsxAttributeValue(
               currentAttributeToChange + scaledDelta,
@@ -2956,6 +2967,7 @@ export function anyDragMovement(dragState: DragState | null): boolean {
 export function getResizeOptions(
   flexDirection: 'horizontal' | 'vertical' | null,
   controlDirection: 'horizontal' | 'vertical',
+  edge: 'before' | 'after',
 ): Array<LayoutTargetableProp> {
   switch (flexDirection) {
     case 'horizontal':
@@ -2981,9 +2993,25 @@ export function getResizeOptions(
     case null:
       switch (controlDirection) {
         case 'horizontal':
-          return ['Height', 'marginTop', 'marginBottom', 'minHeight', 'maxHeight']
+          switch (edge) {
+            case 'before':
+              return ['PinnedTop', 'Height', 'marginTop', 'minHeight', 'maxHeight']
+            case 'after':
+              return ['PinnedBottom', 'Height', 'marginBottom', 'minHeight', 'maxHeight']
+            default:
+              const _exhaustiveCheck: never = edge
+              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
+          }
         case 'vertical':
-          return ['Width', 'marginLeft', 'marginRight', 'minWidth', 'maxWidth']
+          switch (edge) {
+            case 'before':
+              return ['PinnedLeft', 'Width', 'marginLeft', 'minWidth', 'maxWidth']
+            case 'after':
+              return ['PinnedRight', 'Width', 'marginRight', 'minWidth', 'maxWidth']
+            default:
+              const _exhaustiveCheck: never = edge
+              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
+          }
         default:
           const _exhaustiveCheck: never = controlDirection
           throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
@@ -3035,6 +3063,22 @@ export function getObservableValueForLayoutProp(
         return elementMetadata.specialSizeMeasurements.margin.left
       case 'marginRight':
         return elementMetadata.specialSizeMeasurements.margin.right
+      case 'PinnedLeft':
+        return elementMetadata.localFrame?.x
+      case 'PinnedTop':
+        return elementMetadata.localFrame?.y
+      case 'PinnedRight':
+        return elementMetadata.localFrame == null ||
+          elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
+          ? null
+          : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.width -
+              (elementMetadata.localFrame.width + elementMetadata.localFrame.x)
+      case 'PinnedBottom':
+        return elementMetadata.localFrame == null ||
+          elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
+          ? null
+          : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.height -
+              (elementMetadata.localFrame.height + elementMetadata.localFrame.y)
       default:
         const _exhaustiveCheck: never = layoutProp
         throw new Error(`Unhandled prop ${JSON.stringify(layoutProp)}`)
