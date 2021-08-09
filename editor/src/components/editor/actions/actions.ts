@@ -2156,9 +2156,7 @@ export const UPDATE_FNS = {
             editor.projectContents,
             editor.nodeModules.files,
             uiFileKey,
-            targetThatIsRootElementOfCommonParent != null
-              ? targetThatIsRootElementOfCommonParent
-              : parentPath,
+            targetThatIsRootElementOfCommonParent ?? parentPath,
           )
 
           const parent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
