@@ -3020,7 +3020,7 @@ export function getObservableValueForLayoutProp(
       case 'Height':
       case 'minHeight':
       case 'maxHeight':
-        return elementMetadata.localFrame?.width
+        return elementMetadata.localFrame?.height
       case 'flexBasis':
       case 'FlexCrossBasis':
       case 'flexGrow':
