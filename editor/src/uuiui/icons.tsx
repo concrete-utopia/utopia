@@ -101,7 +101,7 @@ export const InspectorSectionIcons = {
   }),
   Border: makeIcon({
     category: 'inspector',
-    type: 'layout',
+    type: 'border',
     color: 'main',
     width: 16,
     height: 16,
