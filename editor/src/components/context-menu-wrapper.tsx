@@ -171,6 +171,7 @@ export class ContextMenuWrapper<T> extends ReactComponent<
           key={`${this.props.id}-provider`}
           id={this.props.id}
           style={this.props.providerStyle}
+          itemsLength={this.props.items.length}
         >
           {this.props.children}
         </MenuProvider>
@@ -217,28 +218,25 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
           },
         }}
       >
-        {this.props.items.length > 0 ? (
-          <React.Fragment>
-            <MenuProvider
-              key={`${this.props.id}-provider`}
-              id={this.props.id}
-              style={{
-                width: '100%',
-                height: '100%',
-              }}
-            >
-              {this.props.children}
-            </MenuProvider>
-            <MomentumContextMenu
-              key={`${this.props.id}`}
-              id={this.props.id}
-              items={this.props.items}
-              getData={this.getData}
-            />
-          </React.Fragment>
-        ) : (
-          this.props.children
-        )}
+        <React.Fragment>
+          <MenuProvider
+            key={`${this.props.id}-provider`}
+            id={this.props.id}
+            itemsLength={this.props.items.length}
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            {this.props.children}
+          </MenuProvider>
+          <MomentumContextMenu
+            key={`${this.props.id}`}
+            id={this.props.id}
+            items={this.props.items}
+            getData={this.getData}
+          />
+        </React.Fragment>
       </div>
     )
   }
@@ -246,6 +244,7 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
 
 interface MenuProviderProps {
   id: string
+  itemsLength: number
   style?: React.CSSProperties
 }
 
@@ -253,9 +252,11 @@ export const MenuProvider: React.FunctionComponent<MenuProviderProps> = (props) 
   const { show } = useContextMenu({ id: props.id })
   const onContextMenu = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      show(event)
+      if (props.itemsLength > 0) {
+        show(event)
+      }
     },
-    [show],
+    [props.itemsLength, show],
   )
 
   return (

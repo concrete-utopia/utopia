@@ -14,6 +14,7 @@ const InsertionButtonOffset = 10
 
 interface ButtonControlProps {
   key: string
+  scale: number
   positionX: number
   positionY: number
   lineEndX: number
@@ -85,6 +86,7 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
       if (direction != null) {
         controlProps.push({
           key: 'parent-0',
+          scale: props.scale,
           positionX: beforeX,
           positionY: beforeY,
           lineEndX: beforeLineEndX,
@@ -136,6 +138,7 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
               : parentFrame.y + parentFrame.height + props.canvasOffset.y
           controlProps.push({
             key: EP.toString(child.elementPath),
+            scale: props.scale,
             positionX: positionX,
             positionY: positionY,
             lineEndX: lineEndX,
@@ -167,6 +170,7 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
                 : parentFrame.y + parentFrame.height + props.canvasOffset.y
             controlProps.push({
               key: EP.toString(child.elementPath) + '0',
+              scale: props.scale,
               positionX: beforeX,
               positionY: beforeY,
               lineEndX: beforeLineEndX,
@@ -224,9 +228,9 @@ const InsertionButtonContainer = betterReactMemo(
   },
 )
 
-const BlueDotSize = 7
 const BlueDot = betterReactMemo('BlueDot', (props: ButtonControlProps) => {
   const colorTheme = useColorTheme()
+  const BlueDotSize = 7 / props.scale
   return (
     <div
       style={{
@@ -243,8 +247,8 @@ const BlueDot = betterReactMemo('BlueDot', (props: ButtonControlProps) => {
     >
       <div
         style={{
-          width: BlueDotSize - 2,
-          height: BlueDotSize - 2,
+          width: BlueDotSize - 2 / props.scale,
+          height: BlueDotSize - 2 / props.scale,
           backgroundColor: colorTheme.canvasSelectionPrimaryOutline.value,
           borderRadius: '50%',
         }}
@@ -253,7 +257,6 @@ const BlueDot = betterReactMemo('BlueDot', (props: ButtonControlProps) => {
   )
 })
 
-const ButtonSize = 12
 const PlusButton = betterReactMemo('PlusButton', (props: ButtonControlProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'PlusButton dispatch')
   const colorTheme = useColorTheme()
@@ -275,6 +278,9 @@ const PlusButton = betterReactMemo('PlusButton', (props: ButtonControlProps) => 
     },
     [dispatch, parentPath, indexPosition],
   )
+
+  const ButtonSize = 12
+
   return (
     <div
       style={{
@@ -288,6 +294,7 @@ const PlusButton = betterReactMemo('PlusButton', (props: ButtonControlProps) => 
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        transform: `scale(${1 / props.scale})`,
       }}
       onMouseDown={insertElement}
     >
@@ -302,7 +309,15 @@ const PlusButton = betterReactMemo('PlusButton', (props: ButtonControlProps) => 
           justifyContent: 'center',
         }}
       >
-        <div style={{ color: 'white', fontSize: 10, marginBottom: 2 }}>+</div>
+        <div
+          style={{
+            color: 'white',
+            fontSize: 10,
+            marginBottom: 2,
+          }}
+        >
+          +
+        </div>
       </div>
     </div>
   )
@@ -310,14 +325,17 @@ const PlusButton = betterReactMemo('PlusButton', (props: ButtonControlProps) => 
 
 const Line = betterReactMemo('Line', (props: ButtonControlProps) => {
   const colorTheme = useColorTheme()
+
+  const LineWidth = 1 / props.scale
+
   return (
     <div
       style={{
         position: 'absolute',
-        top: -1,
-        left: -1,
-        width: props.isHorizontalLine ? props.lineEndX - props.positionX : 1,
-        height: props.isHorizontalLine ? 1 : props.lineEndY - props.positionY,
+        top: -LineWidth,
+        left: -LineWidth,
+        width: props.isHorizontalLine ? props.lineEndX - props.positionX : LineWidth,
+        height: props.isHorizontalLine ? LineWidth : props.lineEndY - props.positionY,
         backgroundColor: colorTheme.canvasSelectionPrimaryOutline.value,
       }}
     />

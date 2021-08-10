@@ -229,6 +229,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           <NumberInput
             id='fontSize'
             testId='fontSize'
+            key='font-size-number-input'
             value={fontSizeMetadata.value}
             controlStatus={fontSizeMetadata.controlStatus}
             onSubmitValue={wrappedFontSizeOnSubmitValue}

@@ -123,7 +123,7 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
       ]
 
   return (
-    <MenuProvider id={menuId}>
+    <MenuProvider id={menuId} itemsLength={menuItems.length}>
       <FlexRow
         onKeyUp={onKeyUp}
         role='listItem'
