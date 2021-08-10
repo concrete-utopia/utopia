@@ -361,14 +361,13 @@ function renderJSXElement(
   }
 
   const childrenElements = jsx.children.map(createChildrenElement)
-  const elementInScope = getElementFromScope(jsx, inScope)
-  const elementFromImport = getElementFromScope(jsx, requireResult)
-  const elementFromScopeOrImport = Utils.defaultIfNull(elementFromImport, elementInScope)
-  const elementIsScene = isSceneElementIgnoringImports(jsx)
-  const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
-  const elementIsIntrinsic =
-    !elementIsScene && elementFromScopeOrImport == null && isIntrinsicElement(jsx.name)
+  const elementIsIntrinsic = isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
+  const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
+  const elementFromImport = elementIsIntrinsic ? null : getElementFromScope(jsx, requireResult)
+  const elementFromScopeOrImport = Utils.defaultIfNull(elementFromImport, elementInScope)
+  const elementIsScene = !elementIsIntrinsic && isSceneElementIgnoringImports(jsx)
+  const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
 
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
