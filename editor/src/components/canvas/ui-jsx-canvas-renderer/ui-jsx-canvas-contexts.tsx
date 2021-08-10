@@ -62,6 +62,19 @@ export interface UtopiaProjectContextData {
   transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
 }
+const EmptyResolve = (importOrigin: string, toImport: string): Either<string, string> => {
+  return left(`Error while resolving ${toImport}, the resolver is missing`)
+}
+
+export const UtopiaProjectContextAtom = atomWithPubSub<UtopiaProjectContextData>({
+  key: 'UtopiaProjectContext',
+  defaultValue: {
+    projectContents: {},
+    openStoryboardFilePathKILLME: null,
+    transientFilesState: null,
+    resolve: EmptyResolve,
+  },
+})
 
 interface ParentLevelUtopiaContextProps {
   elementPath: ElementPath | null

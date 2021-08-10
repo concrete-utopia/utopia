@@ -49,7 +49,6 @@ export function createExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,
   mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>,
-  utopiaProjectContext_FIXME_RERENDER: React.MutableRefObject<UtopiaProjectContextData>,
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
@@ -118,7 +117,6 @@ export function createExecutionScope(
           topLevelElementName: topLevelElement.name,
           mutableContextRef: mutableContextRef,
           filePath: filePath,
-          utopiaProjectContext_FIXME_RERENDER: utopiaProjectContext_FIXME_RERENDER,
         })
       }
     }

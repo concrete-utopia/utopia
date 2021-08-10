@@ -18,6 +18,7 @@ import {
 import {
   MutableUtopiaContextProps,
   RerenderUtopiaContextAtom,
+  UtopiaProjectContextAtom,
   UtopiaProjectContextData,
 } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
@@ -73,7 +74,6 @@ export function createComponentRendererComponent(params: {
   topLevelElementName: string
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>
-  utopiaProjectContext_FIXME_RERENDER: React.MutableRefObject<UtopiaProjectContextData>
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
@@ -84,13 +84,14 @@ export function createComponentRendererComponent(params: {
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
+    const utopiaProjectContext = usePubSubAtomReadOnly(UtopiaProjectContextAtom)
     const { topLevelElements, imports } = getTopLevelElementsAndImports(
       params.filePath,
-      params.utopiaProjectContext_FIXME_RERENDER.current,
+      utopiaProjectContext,
     )
     const { code, highlightBounds } = useGetCodeAndHighlightBounds(
       params.filePath,
-      params.utopiaProjectContext_FIXME_RERENDER.current.projectContents,
+      utopiaProjectContext.projectContents,
     )
 
     const utopiaJsxComponent: UtopiaJSXComponent | null =
