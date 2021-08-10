@@ -10,7 +10,6 @@ import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 
-import { RightMenu } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import { NavigatorComponent } from '../navigator/navigator'
 import {
@@ -38,7 +37,7 @@ interface NumberSize {
   height: number
 }
 
-const TopMenuHeight = 40
+const TopMenuHeight = 34
 
 const NothingOpenCard = betterReactMemo('NothingOpen', () => {
   const colorTheme = useColorTheme()
@@ -303,7 +302,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
               style={{
                 minHeight: TopMenuHeight,
                 height: TopMenuHeight,
-                borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+                borderBottom: `1px solid ${colorTheme.border0.value}`,
                 alignItems: 'stretch',
                 justifyContent: 'stretch',
                 backgroundColor: 'transparent',
@@ -357,7 +356,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
 
       {isCanvasVisible && props.isUiJsFileOpen ? (
         <>
-          <RightMenu visible={true} />
           {isRightMenuExpanded ? (
             <SimpleFlexRow
               className='Inspector-entrypoint'
