@@ -82,7 +82,11 @@ import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
-import { usePubSubAtomWriteOnly } from '../../core/shared/atom-with-pub-sub'
+import {
+  atomWithPubSub,
+  usePubSubAtomReadOnly,
+  usePubSubAtomWriteOnly,
+} from '../../core/shared/atom-with-pub-sub'
 
 applyUIDMonkeyPatch()
 
@@ -108,10 +112,10 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
   }
 }
 
-export const UiJsxCanvasContext = React.createContext<UiJsxCanvasContextData>(
-  emptyUiJsxCanvasContextData(),
-)
-UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
+export const UiJsxCanvasContextAtom = atomWithPubSub({
+  key: 'UiJsxCanvasContext',
+  defaultValue: emptyUiJsxCanvasContextData(),
+})
 
 export const DomWalkerInvalidateScenesContext = React.createContext<SetValueCallback<Set<string>>>(
   NO_OP,
@@ -293,7 +297,7 @@ export const UiJsxCanvas = betterReactMemo(
       clearErrors()
     }
 
-    let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasContextAtom)
     const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
       DomWalkerInvalidatePathsContext,
     )

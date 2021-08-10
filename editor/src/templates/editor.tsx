@@ -81,7 +81,7 @@ import { triggerHashedAssetsUpdate } from '../utils/hashed-assets'
 import {
   UiJsxCanvasContextData,
   emptyUiJsxCanvasContextData,
-  UiJsxCanvasContext,
+  UiJsxCanvasContextAtom,
 } from '../components/canvas/ui-jsx-canvas'
 import { isLeft } from '../core/shared/either'
 import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
@@ -414,9 +414,9 @@ export const HotRoot: React.FunctionComponent<{
 }> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
-      <UiJsxCanvasContext.Provider value={spyCollector}>
+      <UiJsxCanvasContextAtom.Provider value={spyCollector}>
         <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
-      </UiJsxCanvasContext.Provider>
+      </UiJsxCanvasContextAtom.Provider>
     </EditorStateContext.Provider>
   )
 })

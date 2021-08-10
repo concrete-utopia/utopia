@@ -5,6 +5,7 @@ import { useForceUpdate } from '../../components/editor/hook-utils'
 export interface AtomWithPubSub<T> {
   key: string
   currentValue: T
+  Provider: React.FunctionComponent<React.PropsWithChildren<{ value: T }>>
 }
 
 const GlobalAtomMap: { [key: string]: AtomWithPubSub<any> } = {}
@@ -17,6 +18,10 @@ export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): At
   const newAtom: AtomWithPubSub<T> = {
     key: key,
     currentValue: defaultValue,
+    Provider: ({ children, value }) => {
+      usePubSubAtomWriteOnly(newAtom)(value)
+      return <>{children}</>
+    },
   }
   GlobalAtomMap[key] = newAtom
   return newAtom

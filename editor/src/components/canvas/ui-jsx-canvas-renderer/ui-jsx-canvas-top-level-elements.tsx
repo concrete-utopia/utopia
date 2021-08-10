@@ -5,7 +5,7 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
 import { UtopiaProjectContextData } from './ui-jsx-canvas-contexts'
 
-export function useGetTopLevelElementsAndImports(
+export function getTopLevelElementsAndImports(
   filePath: string | null,
   utopiaProjectContext_FIXME_RERENDER: UtopiaProjectContextData,
 ): { topLevelElements: TopLevelElement[]; imports: Imports } {

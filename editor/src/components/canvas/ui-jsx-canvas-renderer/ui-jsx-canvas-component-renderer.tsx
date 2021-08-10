@@ -12,7 +12,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import {
   DomWalkerInvalidatePathsContext,
   DomWalkerInvalidatePathsContextData,
-  UiJsxCanvasContext,
+  UiJsxCanvasContextAtom,
   UiJsxCanvasContextData,
 } from '../ui-jsx-canvas'
 import {
@@ -33,7 +33,7 @@ import { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { getPathsFromString } from '../../../core/shared/uid-utils'
-import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
+import { getTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
@@ -85,7 +85,7 @@ export function createComponentRendererComponent(params: {
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
-    const { topLevelElements, imports } = useGetTopLevelElementsAndImports(
+    const { topLevelElements, imports } = getTopLevelElementsAndImports(
       params.filePath,
       params.utopiaProjectContext_FIXME_RERENDER.current,
     )
@@ -104,7 +104,7 @@ export function createComponentRendererComponent(params: {
     const hiddenInstances = rerenderUtopiaContext.hiddenInstances
     const validPaths = rerenderUtopiaContext.validPaths
 
-    let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasContextAtom)
     const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
       DomWalkerInvalidatePathsContext,
     )
