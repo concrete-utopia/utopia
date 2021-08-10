@@ -22,53 +22,28 @@ import { ComponentOrInstanceIndicator } from '../editor/component-button'
 import { IconToggleButton } from '../../uuiui/icon-toggle-button'
 import { LeftPaneDefaultWidth, RightMenuTab } from './store/editor-state'
 
-export const TopMenu = betterReactMemo('TopMenu', () => {
-  const dispatch = useEditorState((store) => store.dispatch, 'TopMenu dispatch')
+function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolean) => void] {
+  const [shouldResetCanvas, setShouldResetCanvas] = React.useState(false)
+  const previousCanvasContentInvalidateCount = React.useRef(invalidateCount)
+
+  if (previousCanvasContentInvalidateCount.current !== invalidateCount) {
+    setShouldResetCanvas(true)
+    previousCanvasContentInvalidateCount.current = invalidateCount
+  }
+
+  return [shouldResetCanvas, setShouldResetCanvas]
+}
+
+const TopMenuLeftControls = betterReactMemo('TopMenuLeftControls', () => {
+  const dispatch = useEditorState((store) => store.dispatch, 'TopMenuLeftControls dispatch')
   const navigatorPosition = useEditorState(
     (store) => store.editor.navigator.position,
-    'TopMenu navigatorPosition',
+    'TopMenuLeftControls navigatorPosition',
   )
   const nextNavigatorPosition = useEditorState(
     (store) => getNavigatorPositionNextState(store.editor),
-    'TopMenu nextNavigatorState',
+    'TopMenuLeftControls nextNavigatorState',
   )
-
-  const canvasContentInvalidateCount = useEditorState(
-    (store) => store.editor.canvas.canvasContentInvalidateCount,
-    'RightMenu canvasContentInvalidateCount',
-  )
-
-  const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'RightMenu zoomLevel')
-  const zoomIn = React.useCallback(
-    () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
-    [dispatch, zoomLevel],
-  )
-  const zoomOut = React.useCallback(
-    () => dispatch([CanvasActions.zoom(Utils.decreaseScale(zoomLevel))]),
-    [dispatch, zoomLevel],
-  )
-
-  function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolean) => void] {
-    const [shouldResetCanvas, setShouldResetCanvas] = React.useState(false)
-    const previousCanvasContentInvalidateCount = React.useRef(invalidateCount)
-
-    if (previousCanvasContentInvalidateCount.current !== invalidateCount) {
-      setShouldResetCanvas(true)
-      previousCanvasContentInvalidateCount.current = invalidateCount
-    }
-
-    return [shouldResetCanvas, setShouldResetCanvas]
-  }
-
-  const [shouldResetCanvas, setShouldResetCanvas] = useShouldResetCanvas(
-    canvasContentInvalidateCount,
-  )
-  const resetCanvas = React.useCallback(() => {
-    dispatch([EditorActions.resetCanvas()])
-    setShouldResetCanvas(false)
-  }, [dispatch, setShouldResetCanvas])
-
-  const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   const onClickNavigateTab = React.useCallback(() => {
     let actions: EditorAction[] = [EditorActions.togglePanel('navigatorPane')]
@@ -86,10 +61,59 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
     dispatch(actions)
   }, [dispatch, nextNavigatorPosition, navigatorPosition])
 
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'TopMenu selectedViews',
+  const followSelection = useEditorState(
+    (store) => store.editor.config.followSelection,
+    'TopMenu followSelection',
   )
+  const onToggleFollow = React.useCallback(() => {
+    dispatch([EditorActions.setFollowSelectionEnabled(!followSelection.enabled)])
+  }, [dispatch, followSelection])
+
+  return (
+    <React.Fragment>
+      <Tooltip title={'Toggle outline'} placement={'bottom'}>
+        <SquareButton spotlight={false} highlight={true} onClick={onClickNavigateTab}>
+          <MenuIcons.Navigator />
+        </SquareButton>
+      </Tooltip>
+      <Tooltip title='Mirror selection between canvas and code editor' placement='bottom'>
+        <IconToggleButton
+          onToggle={onToggleFollow}
+          value={followSelection.enabled}
+          srcOn={UNSAFE_getIconURL('bracketed-pointer', 'blue', 'semantic', 18, 18)}
+          srcOff={UNSAFE_getIconURL('bracketed-pointer', 'darkgray', 'semantic', 18, 18)}
+        />
+      </Tooltip>
+      <ComponentOrInstanceIndicator />
+    </React.Fragment>
+  )
+})
+
+const TopMenuRightControls = betterReactMemo('TopMenuRightControls', () => {
+  const dispatch = useEditorState((store) => store.dispatch, 'TopMenuRightControls dispatch')
+  const canvasContentInvalidateCount = useEditorState(
+    (store) => store.editor.canvas.canvasContentInvalidateCount,
+    'RightMenu canvasContentInvalidateCount',
+  )
+
+  const zoomLevel = useEditorState((store) => store.editor.canvas.scale, 'RightMenu zoomLevel')
+  const zoomIn = React.useCallback(
+    () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
+    [dispatch, zoomLevel],
+  )
+  const zoomOut = React.useCallback(
+    () => dispatch([CanvasActions.zoom(Utils.decreaseScale(zoomLevel))]),
+    [dispatch, zoomLevel],
+  )
+  const [shouldResetCanvas, setShouldResetCanvas] = useShouldResetCanvas(
+    canvasContentInvalidateCount,
+  )
+  const resetCanvas = React.useCallback(() => {
+    dispatch([EditorActions.resetCanvas()])
+    setShouldResetCanvas(false)
+  }, [dispatch, setShouldResetCanvas])
+
+  const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   const rightMenuSelectedTab = useEditorState(
     (store) => store.editor.rightMenu.selectedTab,
@@ -121,44 +145,8 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
     onShow(RightMenuTab.Inspector)
   }, [onShow, dispatch])
 
-  const formulaBarKey = selectedViews.map(EP.toString).join(',')
-
-  const followSelection = useEditorState(
-    (store) => store.editor.config.followSelection,
-    'TopMenu followSelection',
-  )
-  const onToggleFollow = React.useCallback(() => {
-    dispatch([EditorActions.setFollowSelectionEnabled(!followSelection.enabled)])
-  }, [dispatch, followSelection])
-
   return (
-    <SimpleFlexRow
-      style={{
-        flexGrow: 1,
-        gap: 12,
-        paddingLeft: 8,
-        paddingRight: 4,
-        height: UtopiaTheme.layout.rowHeight.normal,
-      }}
-    >
-      <Tooltip title={'Toggle outline'} placement={'bottom'}>
-        <SquareButton spotlight={false} highlight={true} onClick={onClickNavigateTab}>
-          <MenuIcons.Navigator />
-        </SquareButton>
-      </Tooltip>
-      <Tooltip title='Mirror selection between canvas and code editor' placement='bottom'>
-        <IconToggleButton
-          onToggle={onToggleFollow}
-          value={followSelection.enabled}
-          srcOn={UNSAFE_getIconURL('bracketed-pointer', 'blue', 'semantic', 18, 18)}
-          srcOff={UNSAFE_getIconURL('bracketed-pointer', 'darkgray', 'semantic', 18, 18)}
-        />
-      </Tooltip>
-
-      <ComponentOrInstanceIndicator />
-      <FlexRow style={{ border: 1, flexGrow: 1 }}>
-        <FormulaBar key={formulaBarKey} style={{ flexGrow: 1 }} />
-      </FlexRow>
+    <React.Fragment>
       <FlexRow>
         <Tooltip title='Zoom out' placement='left'>
           <span>
@@ -205,6 +193,26 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
           </SquareButton>
         </span>
       </Tooltip>
+    </React.Fragment>
+  )
+})
+
+export const TopMenu = betterReactMemo('TopMenu', () => {
+  return (
+    <SimpleFlexRow
+      style={{
+        flexGrow: 1,
+        gap: 12,
+        paddingLeft: 8,
+        paddingRight: 4,
+        height: UtopiaTheme.layout.rowHeight.normal,
+      }}
+    >
+      <TopMenuLeftControls />
+      <FlexRow style={{ border: 1, flexGrow: 1 }}>
+        <FormulaBar style={{ flexGrow: 1 }} />
+      </FlexRow>
+      <TopMenuRightControls />
     </SimpleFlexRow>
   )
 })
