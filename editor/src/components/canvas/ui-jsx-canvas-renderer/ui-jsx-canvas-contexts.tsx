@@ -1,6 +1,7 @@
 import * as React from 'react'
 import type { MapLike } from 'typescript'
 import { createContext } from 'use-context-selector'
+import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 import { Either, left } from '../../../core/shared/either'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
@@ -36,13 +37,24 @@ interface RerenderUtopiaContextProps {
   shouldIncludeCanvasRootInTheSpy: boolean
 }
 
-export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
-  validPaths: [],
-  hiddenInstances: [],
-  canvasIsLive: false,
-  shouldIncludeCanvasRootInTheSpy: false,
+export const RerenderUtopiaContextAtom = atomWithPubSub<RerenderUtopiaContextProps>({
+  key: 'RerenderUtopiaContextAtom',
+  defaultValue: {
+    validPaths: [],
+    hiddenInstances: [],
+    canvasIsLive: false,
+    shouldIncludeCanvasRootInTheSpy: false,
+  },
 })
-RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
+
+interface ContextForScenesData {
+  canvasIsLive: boolean
+}
+
+export const ContextForScenes = createContext<ContextForScenesData>({
+  canvasIsLive: false,
+})
+ContextForScenes.displayName = 'ContextForScenes'
 
 export interface UtopiaProjectContextData {
   projectContents: ProjectContentTreeRoot

@@ -54,15 +54,20 @@ import {
   createComponentRendererComponent,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import {
+  ContextForScenes,
   MutableUtopiaContext,
   MutableUtopiaContextProps,
   ParentLevelUtopiaContext,
-  RerenderUtopiaContext,
+  RerenderUtopiaContextAtom,
   updateMutableUtopiaContextWithNewProps,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
-import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../core/model/utopia-constants'
@@ -77,6 +82,7 @@ import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
+import { usePubSubAtomWriteOnly } from '../../core/shared/atom-with-pub-sub'
 
 applyUIDMonkeyPatch()
 
@@ -441,9 +447,14 @@ export const UiJsxCanvas = betterReactMemo(
       resolve,
     )
 
-    const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
+    const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
+      hiddenInstances: hiddenInstances,
+      canvasIsLive: canvasIsLive,
+      shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
       validPaths: rootValidPaths,
     })
+
+    usePubSubAtomWriteOnly(RerenderUtopiaContextAtom)(rerenderUtopiaContextValue)
 
     return (
       <div
@@ -453,14 +464,7 @@ export const UiJsxCanvas = betterReactMemo(
       >
         <Helmet>{parse(linkTags)}</Helmet>
         <MutableUtopiaContext.Provider value={mutableContextRef}>
-          <RerenderUtopiaContext.Provider
-            value={{
-              hiddenInstances: hiddenInstances,
-              canvasIsLive: canvasIsLive,
-              shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-              validPaths: rootValidPaths,
-            }}
-          >
+          <ContextForScenes.Provider value={{ canvasIsLive: canvasIsLive }}>
             <CanvasContainer
               ref={ref}
               mountCount={props.mountCount}
@@ -484,7 +488,7 @@ export const UiJsxCanvas = betterReactMemo(
                 )}
               </ParentLevelUtopiaContext.Provider>
             </CanvasContainer>
-          </RerenderUtopiaContext.Provider>
+          </ContextForScenes.Provider>
         </MutableUtopiaContext.Provider>
       </div>
     )

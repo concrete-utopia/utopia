@@ -17,7 +17,7 @@ import {
 } from '../ui-jsx-canvas'
 import {
   MutableUtopiaContextProps,
-  RerenderUtopiaContext,
+  RerenderUtopiaContextAtom,
   UtopiaProjectContextData,
 } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
@@ -35,6 +35,7 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-pr
 import { getPathsFromString } from '../../../core/shared/uid-utils'
 import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
+import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 export type ComponentRendererComponent = React.ComponentType<{
   [UTOPIA_INSTANCE_PATH]: ElementPath
@@ -98,12 +99,10 @@ export function createComponentRendererComponent(params: {
         return isUtopiaJSXComponent(elem) && elem.name === params.topLevelElementName
       }) ?? null
 
-    const shouldIncludeCanvasRootInTheSpy = useContextSelector(
-      RerenderUtopiaContext,
-      (c) => c.shouldIncludeCanvasRootInTheSpy,
-    )
-    const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
-    const validPaths = useContextSelector(RerenderUtopiaContext, (c) => c.validPaths)
+    const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaContextAtom)
+    const shouldIncludeCanvasRootInTheSpy = rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy
+    const hiddenInstances = rerenderUtopiaContext.hiddenInstances
+    const validPaths = rerenderUtopiaContext.validPaths
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
     const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(

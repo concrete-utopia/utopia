@@ -4,7 +4,7 @@ import { useContextSelector } from 'use-context-selector'
 import { Scene, SceneProps } from 'utopia-api'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { RerenderUtopiaContext } from './ui-jsx-canvas-contexts'
+import { ContextForScenes } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidateScenesContext, UiJsxCanvasContext } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 
@@ -14,7 +14,7 @@ export const SceneComponent = betterReactMemo(
   'Scene',
   (props: React.PropsWithChildren<ExtendedSceneProps>) => {
     const colorTheme = useColorTheme()
-    const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
+    const canvasIsLive = useContextSelector(ContextForScenes, (c) => c.canvasIsLive)
     const updateInvalidatedScenes = React.useContext(DomWalkerInvalidateScenesContext)
 
     const { style, ...remainingProps } = props
