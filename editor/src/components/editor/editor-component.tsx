@@ -158,7 +158,7 @@ export const EditorComponentInner = betterReactMemo(
       window.addEventListener('keyup', onWindowKeyUp)
       window.addEventListener('contextmenu', preventDefault)
       return function cleanup() {
-        window.removeEventListener('mousedown', onWindowMouseDown)
+        window.removeEventListener('mousedown', onWindowMouseDown, true)
         window.removeEventListener('keydown', onWindowKeyDown)
         window.removeEventListener('keyup', onWindowKeyUp)
         window.removeEventListener('contextmenu', preventDefault)
