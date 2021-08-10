@@ -6,7 +6,7 @@ import {
   CanvasReactErrorCallback,
   CanvasReactReportErrorCallback,
   DomWalkerInvalidateScenesContext,
-  DomWalkerInvalidatePathsContext,
+  DomWalkerInvalidatePathsContextAtom,
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
@@ -98,11 +98,11 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
   })
 
   return (
-    <DomWalkerInvalidatePathsContext.Provider value={updateInvalidatedPaths}>
+    <DomWalkerInvalidatePathsContextAtom.Provider value={updateInvalidatedPaths}>
       <DomWalkerInvalidateScenesContext.Provider value={updateInvalidatedScenes}>
         <UiJsxCanvas {...props} ref={containerRef} />
       </DomWalkerInvalidateScenesContext.Provider>
-    </DomWalkerInvalidatePathsContext.Provider>
+    </DomWalkerInvalidatePathsContextAtom.Provider>
   )
 }
 

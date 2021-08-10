@@ -10,7 +10,7 @@ import {
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import {
-  DomWalkerInvalidatePathsContext,
+  DomWalkerInvalidatePathsContextAtom,
   DomWalkerInvalidatePathsContextData,
   UiJsxCanvasContextAtom,
   UiJsxCanvasContextData,
@@ -28,7 +28,6 @@ import {
   renderCoreElement,
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
-import { useContextSelector } from 'use-context-selector'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
@@ -105,8 +104,8 @@ export function createComponentRendererComponent(params: {
     const validPaths = rerenderUtopiaContext.validPaths
 
     let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasContextAtom)
-    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
-      DomWalkerInvalidatePathsContext,
+    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = usePubSubAtomReadOnly(
+      DomWalkerInvalidatePathsContextAtom,
     )
 
     if (utopiaJsxComponent == null) {

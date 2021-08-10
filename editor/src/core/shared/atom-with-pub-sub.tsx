@@ -19,7 +19,7 @@ export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): At
     key: key,
     currentValue: defaultValue,
     Provider: ({ children, value }) => {
-      usePubSubAtomWriteOnly(newAtom)(value)
+      usePubSubAtomWriteOnly(newAtom)(() => value)
       return <>{children}</>
     },
   }

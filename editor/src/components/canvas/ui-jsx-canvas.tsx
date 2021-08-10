@@ -121,9 +121,12 @@ export const DomWalkerInvalidateScenesContext = React.createContext<SetValueCall
   NO_OP,
 )
 export type DomWalkerInvalidatePathsContextData = SetValueCallback<Set<string>>
-export const DomWalkerInvalidatePathsContext = React.createContext<
+export const DomWalkerInvalidatePathsContextAtom = atomWithPubSub<
   DomWalkerInvalidatePathsContextData
->(NO_OP)
+>({
+  key: 'DomWalkerInvalidatePathsContext',
+  defaultValue: NO_OP,
+})
 
 export interface UiJsxCanvasProps {
   offset: CanvasVector
@@ -298,8 +301,8 @@ export const UiJsxCanvas = betterReactMemo(
     }
 
     let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasContextAtom)
-    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
-      DomWalkerInvalidatePathsContext,
+    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = usePubSubAtomReadOnly(
+      DomWalkerInvalidatePathsContextAtom,
     )
     useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
