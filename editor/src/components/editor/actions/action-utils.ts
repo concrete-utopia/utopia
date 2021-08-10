@@ -100,6 +100,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_PROP_TRANSIENT':
     case 'CLEAR_TRANSIENT_PROPS':
     case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
+    case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
       return true
