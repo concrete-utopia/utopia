@@ -21,7 +21,7 @@ export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): At
     currentValue: defaultValue,
     Provider: ({ children, value }) => {
       const updateAtom = usePubSubAtomWriteOnly(newAtom, true)
-      // TODO ALSO immediately update the atom value
+      newAtom.currentValue = value // TODO this is sneaky and we should use API instead
       setTimeout(() => {
         unstable_batchedUpdates(() => {
           updateAtom(() => value)
@@ -58,13 +58,17 @@ export function useSubscribeToPubSubAtom<T>(
 
 export function usePubSubAtomReadOnly<T>(atom: AtomWithPubSub<T>): T {
   const forceUpdate = useForceUpdate()
+  const previousValueRef = React.useRef(atom.currentValue)
   useSubscribeToPubSubAtom(
     atom,
     React.useCallback(() => {
       // TODO only forceUpdate if the last returned atomValue does not equal the current one
-      forceUpdate()
-    }, [forceUpdate]),
+      if (previousValueRef.current !== atom.currentValue) {
+        forceUpdate()
+      }
+    }, [forceUpdate, atom]),
   )
+  previousValueRef.current = atom.currentValue
   return atom.currentValue
 }
 
@@ -81,14 +85,11 @@ export function usePubSubAtomWriteOnly<T>(
       } else {
         newValue = newValueOrUpdater
       }
-      // TODO add way to force update here, or maybe this check is not needed if the reader side runs an equality check
-      if (atom.currentValue !== newValue) {
-        atom.currentValue = newValue
-        if (sync) {
-          PubSub.publishSync(atom.key, newValue)
-        } else {
-          PubSub.publish(atom.key, newValue)
-        }
+      atom.currentValue = newValue
+      if (sync) {
+        PubSub.publishSync(atom.key, newValue)
+      } else {
+        PubSub.publish(atom.key, newValue)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
