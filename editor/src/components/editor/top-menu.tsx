@@ -12,15 +12,13 @@ import {
 import { useEditorState } from './store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
-import * as EP from '../../core/shared/element-path'
 import { FormulaBar } from '../canvas/controls/formula-bar'
-import { getNavigatorPositionNextState } from './actions/actions'
 import CanvasActions from '../canvas/canvas-actions'
-import { CanvasVector } from '../../core/shared/math-utils'
 import { EditorAction } from './action-types'
 import { ComponentOrInstanceIndicator } from '../editor/component-button'
 import { IconToggleButton } from '../../uuiui/icon-toggle-button'
 import { LeftPaneDefaultWidth, RightMenuTab } from './store/editor-state'
+import { CanvasVector } from '../../core/shared/math-utils'
 
 function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolean) => void] {
   const [shouldResetCanvas, setShouldResetCanvas] = React.useState(false)
@@ -36,30 +34,20 @@ function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolea
 
 const TopMenuLeftControls = betterReactMemo('TopMenuLeftControls', () => {
   const dispatch = useEditorState((store) => store.dispatch, 'TopMenuLeftControls dispatch')
-  const navigatorPosition = useEditorState(
-    (store) => store.editor.navigator.position,
-    'TopMenuLeftControls navigatorPosition',
-  )
-  const nextNavigatorPosition = useEditorState(
-    (store) => getNavigatorPositionNextState(store.editor),
-    'TopMenuLeftControls nextNavigatorState',
+  const navigatorVisible = useEditorState(
+    (store) => !store.editor.navigator.minimised,
+    'TopMenuLeftControls navigatorVisible',
   )
 
   const onClickNavigateTab = React.useCallback(() => {
-    let actions: EditorAction[] = [EditorActions.togglePanel('navigatorPane')]
-    if (
-      nextNavigatorPosition === 'right' &&
-      (navigatorPosition === 'hidden' || navigatorPosition === 'left')
-    ) {
-      actions.push(CanvasActions.scrollCanvas({ x: -LeftPaneDefaultWidth, y: 0 } as CanvasVector))
-    } else if (
-      (nextNavigatorPosition === 'hidden' || nextNavigatorPosition === 'left') &&
-      navigatorPosition === 'right'
-    ) {
+    let actions: EditorAction[] = [EditorActions.togglePanel('navigator')]
+    if (navigatorVisible) {
       actions.push(CanvasActions.scrollCanvas({ x: LeftPaneDefaultWidth, y: 0 } as CanvasVector))
+    } else {
+      actions.push(CanvasActions.scrollCanvas({ x: -LeftPaneDefaultWidth, y: 0 } as CanvasVector))
     }
     dispatch(actions)
-  }, [dispatch, nextNavigatorPosition, navigatorPosition])
+  }, [dispatch, navigatorVisible])
 
   const followSelection = useEditorState(
     (store) => store.editor.config.followSelection,
