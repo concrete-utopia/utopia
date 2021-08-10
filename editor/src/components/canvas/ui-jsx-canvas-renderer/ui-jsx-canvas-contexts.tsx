@@ -42,22 +42,12 @@ export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
 })
 RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 
-interface UtopiaProjectContextProps {
+export interface UtopiaProjectContextData {
   projectContents: ProjectContentTreeRoot
   openStoryboardFilePathKILLME: string | null
   transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
 }
-const EmptyResolve = (importOrigin: string, toImport: string): Either<string, string> => {
-  return left(`Error while resolving ${toImport}, the resolver is missing`)
-}
-
-export const UtopiaProjectContext = createContext<UtopiaProjectContextProps>({
-  projectContents: {},
-  openStoryboardFilePathKILLME: null,
-  transientFilesState: null,
-  resolve: EmptyResolve,
-})
 
 interface SceneLevelContextProps {
   validPaths: Array<ElementPath>

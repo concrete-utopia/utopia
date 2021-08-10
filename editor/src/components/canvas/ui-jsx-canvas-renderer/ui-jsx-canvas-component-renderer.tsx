@@ -19,6 +19,7 @@ import {
   MutableUtopiaContextProps,
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
+  UtopiaProjectContextData,
 } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
@@ -73,6 +74,7 @@ export function createComponentRendererComponent(params: {
   topLevelElementName: string
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>
+  utopiaProjectContext_FIXME_RERENDER: React.MutableRefObject<UtopiaProjectContextData>
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
@@ -83,8 +85,14 @@ export function createComponentRendererComponent(params: {
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
-    const { topLevelElements, imports } = useGetTopLevelElementsAndImports(params.filePath)
-    const { code, highlightBounds } = useGetCodeAndHighlightBounds(params.filePath)
+    const { topLevelElements, imports } = useGetTopLevelElementsAndImports(
+      params.filePath,
+      params.utopiaProjectContext_FIXME_RERENDER.current,
+    )
+    const { code, highlightBounds } = useGetCodeAndHighlightBounds(
+      params.filePath,
+      params.utopiaProjectContext_FIXME_RERENDER.current.projectContents,
+    )
 
     const utopiaJsxComponent: UtopiaJSXComponent | null =
       topLevelElements.find((elem): elem is UtopiaJSXComponent => {

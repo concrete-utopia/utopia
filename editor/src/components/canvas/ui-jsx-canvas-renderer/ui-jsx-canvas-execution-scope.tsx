@@ -25,7 +25,7 @@ import {
 import {
   MutableUtopiaContextProps,
   updateMutableUtopiaContextWithNewProps,
-  UtopiaProjectContext,
+  UtopiaProjectContextData,
 } from './ui-jsx-canvas-contexts'
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
@@ -49,6 +49,7 @@ export function createExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,
   mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>,
+  utopiaProjectContext_FIXME_RERENDER: React.MutableRefObject<UtopiaProjectContextData>,
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
@@ -117,6 +118,7 @@ export function createExecutionScope(
           topLevelElementName: topLevelElement.name,
           mutableContextRef: mutableContextRef,
           filePath: filePath,
+          utopiaProjectContext_FIXME_RERENDER: utopiaProjectContext_FIXME_RERENDER,
         })
       }
     }
@@ -180,18 +182,13 @@ export function createExecutionScope(
 
 export function useGetCodeAndHighlightBounds(
   filePath: string | null,
+  projectContents: ProjectContentTreeRoot,
 ): { code: string; highlightBounds: HighlightBoundsForUids | null } {
-  return useContextSelector(
-    UtopiaProjectContext,
-    (c) => {
-      if (filePath == null) {
-        return { code: '', highlightBounds: null }
-      } else {
-        return getCodeAndHighlightBoundsForFile(filePath, c.projectContents)
-      }
-    },
-    shallowEqual,
-  )
+  if (filePath == null) {
+    return { code: '', highlightBounds: null }
+  } else {
+    return getCodeAndHighlightBoundsForFile(filePath, projectContents)
+  }
 }
 
 export function getCodeAndHighlightBoundsForFile(

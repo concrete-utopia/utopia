@@ -60,7 +60,6 @@ import {
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
   updateMutableUtopiaContextWithNewProps,
-  UtopiaProjectContext,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
@@ -314,6 +313,15 @@ export const UiJsxCanvas = betterReactMemo(
       projectContents,
     ])
 
+    const utopiaProjectContextValue = {
+      projectContents: props.projectContents,
+      transientFilesState: props.transientFilesState,
+      openStoryboardFilePathKILLME: props.uiFilePath,
+      resolve: resolve,
+    } // TODO keep equality, TODO trigger reload on change
+    const mutableUtopiaProjectContextRef_FIXME_RELOAD = React.useRef(utopiaProjectContextValue)
+    mutableUtopiaProjectContextRef_FIXME_RELOAD.current = utopiaProjectContextValue
+
     let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
     resolvedFiles.current = {}
     const requireFn = React.useMemo(() => curriedRequireFn(projectContents), [
@@ -341,6 +349,7 @@ export const UiJsxCanvas = betterReactMemo(
                 resolvedFilePath,
                 customRequire,
                 mutableContextRef,
+                mutableUtopiaProjectContextRef_FIXME_RELOAD,
                 topLevelComponentRendererComponents,
                 projectContents,
                 uiFilePath,
@@ -400,6 +409,7 @@ export const UiJsxCanvas = betterReactMemo(
       uiFilePath,
       customRequire,
       mutableContextRef,
+      mutableUtopiaProjectContextRef_FIXME_RELOAD,
       topLevelComponentRendererComponents,
       props.projectContents,
       uiFilePath, // this is the storyboard filepath
@@ -451,40 +461,31 @@ export const UiJsxCanvas = betterReactMemo(
               shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
             }}
           >
-            <UtopiaProjectContext.Provider
-              value={{
-                projectContents: props.projectContents,
-                transientFilesState: props.transientFilesState,
-                openStoryboardFilePathKILLME: props.uiFilePath,
-                resolve: resolve,
-              }}
+            <CanvasContainer
+              ref={ref}
+              mountCount={props.mountCount}
+              domWalkerInvalidateCount={props.domWalkerInvalidateCount}
+              walkDOM={walkDOM}
+              scale={scale}
+              offset={offset}
+              onDomReport={onDomReport}
+              validRootPaths={rootValidPaths}
+              canvasRootElementElementPath={storyboardRootElementPath}
+              scrollAnimation={props.scrollAnimation}
+              canvasInteractionHappening={props.transientFilesState != null}
             >
-              <CanvasContainer
-                ref={ref}
-                mountCount={props.mountCount}
-                domWalkerInvalidateCount={props.domWalkerInvalidateCount}
-                walkDOM={walkDOM}
-                scale={scale}
-                offset={offset}
-                onDomReport={onDomReport}
-                validRootPaths={rootValidPaths}
-                canvasRootElementElementPath={storyboardRootElementPath}
-                scrollAnimation={props.scrollAnimation}
-                canvasInteractionHappening={props.transientFilesState != null}
-              >
-                <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
-                  <ParentLevelUtopiaContext.Provider
-                    value={{
-                      elementPath: storyboardRootElementPath,
-                    }}
-                  >
-                    {StoryboardRootComponent == null ? null : (
-                      <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-                    )}
-                  </ParentLevelUtopiaContext.Provider>
-                </SceneLevelUtopiaContext.Provider>
-              </CanvasContainer>
-            </UtopiaProjectContext.Provider>
+              <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
+                <ParentLevelUtopiaContext.Provider
+                  value={{
+                    elementPath: storyboardRootElementPath,
+                  }}
+                >
+                  {StoryboardRootComponent == null ? null : (
+                    <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+                  )}
+                </ParentLevelUtopiaContext.Provider>
+              </SceneLevelUtopiaContext.Provider>
+            </CanvasContainer>
           </RerenderUtopiaContext.Provider>
         </MutableUtopiaContext.Provider>
       </div>
