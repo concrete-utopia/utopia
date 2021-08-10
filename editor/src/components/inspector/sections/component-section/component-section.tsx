@@ -45,6 +45,7 @@ import {
   paddingTop,
   Subdued,
   VerySubdued,
+  FlexRow,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -624,13 +625,10 @@ export const ComponentSectionInner = betterReactMemo(
     return (
       <>
         <InspectorSectionHeader>
-          <UIGridRow
-            padded={false}
-            variant='|--32px--|<--------auto-------->'
-            style={{ flexGrow: 1, color: colorTheme.primary.value }}
-          >
-            Component
-          </UIGridRow>
+          <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
+            <Icons.Component color='primary' />
+            <span>Component </span>
+          </FlexRow>
         </InspectorSectionHeader>
 
         {/* Information about the component as a whole */}

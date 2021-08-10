@@ -15,7 +15,13 @@ import {
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
-import { useColorTheme, InspectorSectionHeader } from '../../../../uuiui'
+import {
+  useColorTheme,
+  InspectorSectionHeader,
+  Icons,
+  FunctionIcons,
+  InspectorSectionIcons,
+} from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
 
 const imgSrcProp = [PP.create(['src'])]
@@ -76,7 +82,10 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
 
   return (
     <>
-      <InspectorSectionHeader>Image {naturalDimensionsNode}</InspectorSectionHeader>
+      <InspectorSectionHeader style={{ gap: 8, display: 'flex', alignItems: 'center' }}>
+        <InspectorSectionIcons.Image />
+        <span>Image {naturalDimensionsNode}</span>
+      </InspectorSectionHeader>
       <InspectorContextMenuWrapper
         id='image-section-src-context-menu'
         items={srcContextMenuItems}

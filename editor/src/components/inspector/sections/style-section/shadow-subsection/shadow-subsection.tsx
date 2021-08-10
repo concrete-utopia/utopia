@@ -10,6 +10,7 @@ import {
   FlexRow,
   SquareButton,
   Icn,
+  InspectorSectionIcons,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { ContextMenuItem } from '../../../../context-menu-items'
@@ -309,9 +310,11 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
         <FlexRow
           style={{
             flexGrow: 1,
+            gap: 8,
           }}
         >
-          Shadow
+          <InspectorSectionIcons.Shadow />
+          <span>Shadow</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
           <SquareButton highlight onMouseDown={insertShadowValue}>
