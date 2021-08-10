@@ -523,8 +523,10 @@ export const MetadataUtils = {
     return MetadataUtils.findElementsByElementPath(elements, rootPaths ?? [])
   },
   getChildrenPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
-    const element = MetadataUtils.findElementByElementPath(elements, target)
-    return element?.children ?? []
+    const allPaths = Object.keys(elements).map(EP.fromString)
+    return allPaths.filter(
+      (path) => EP.isChildOf(path, target) && !EP.isRootElementOfInstance(path),
+    )
   },
   getChildren(
     elements: ElementInstanceMetadataMap,
