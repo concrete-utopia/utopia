@@ -14,7 +14,7 @@ export type InspectorPanel = 'inspector'
 
 export type CodeEditorPanel = 'codeEditor'
 
-export type NavigatorPanel = 'navigatorPane' | 'navigator'
+export type NavigatorPanel = 'navigator'
 
 export type EditorPanel =
   | LeftMenuPanel
@@ -43,8 +43,6 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
     case 'projectsettings':
       return 'leftmenu'
     case 'navigator':
-      return 'center'
-    case 'navigatorPane':
       return 'center'
     case 'canvas':
       return 'center'

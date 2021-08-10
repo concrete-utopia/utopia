@@ -70,6 +70,79 @@ export const LargerIcons = {
   }),
 }
 
+export const InspectorSectionIcons = {
+  Layout: makeIcon({
+    category: 'inspector',
+    type: 'layout',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  LayoutSystem: makeIcon({
+    category: 'inspector',
+    type: 'layout-system',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Layer: makeIcon({
+    category: 'inspector',
+    type: 'layer',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Background: makeIcon({
+    category: 'inspector',
+    type: 'background',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Border: makeIcon({
+    category: 'inspector',
+    type: 'border',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Shadow: makeIcon({
+    category: 'inspector',
+    type: 'shadow',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Typography: makeIcon({
+    category: 'inspector',
+    type: 'typography',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Transforms: makeIcon({
+    category: 'inspector',
+    type: 'transforms',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  TextShadow: makeIcon({
+    category: 'inspector',
+    type: 'text-shadow',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+  Image: makeIcon({
+    category: 'inspector',
+    type: 'image',
+    color: 'main',
+    width: 16,
+    height: 16,
+  }),
+}
+
 export const SmallerIcons = {
   ExpansionArrowDown: makeIcon({
     category: 'controls/input',

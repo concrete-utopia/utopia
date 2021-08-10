@@ -45,6 +45,7 @@ import {
   FlexRow,
   SquareButton,
   Icn,
+  InspectorSectionIcons,
 } from '../../../../../uuiui'
 
 function insertBackgroundLayer(
@@ -345,7 +346,10 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
       data={null}
     >
       <InspectorSubsectionHeader style={headerStyle}>
-        <FlexRow style={{ flexGrow: 1 }}>Background</FlexRow>
+        <FlexRow style={{ flexGrow: 1, gap: 8 }}>
+          <InspectorSectionIcons.Background />
+          <span>Background</span>
+        </FlexRow>
         {propertyStatus.overwritable ? (
           <SquareButton highlight onMouseDown={insertBackgroundLayerMouseDown}>
             <Icn

@@ -8,6 +8,7 @@ import {
   SquareButton,
   Icn,
   CheckboxInput,
+  InspectorSectionIcons,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
@@ -172,9 +173,11 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         <FlexRow
           style={{
             flexGrow: 1,
+            gap: 8,
           }}
         >
-          Border
+          <InspectorSectionIcons.Border />
+          <span>Border</span>
         </FlexRow>
         {propertyStatus.overwritable ? (
           <SquareButton highlight onMouseDown={onInsertMouseDown} disabled={borderSet}>

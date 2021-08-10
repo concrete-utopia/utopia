@@ -10,7 +10,6 @@ import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
 
-import { RightMenu } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import { NavigatorComponent } from '../navigator/navigator'
 import {
@@ -38,7 +37,7 @@ interface NumberSize {
   height: number
 }
 
-const TopMenuHeight = 40
+const TopMenuHeight = 34
 
 const NothingOpenCard = betterReactMemo('NothingOpen', () => {
   const colorTheme = useColorTheme()
@@ -121,9 +120,9 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
   const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
     interfaceDesigner.codePaneWidth,
   )
-  const navigatorPosition = useEditorState(
-    (store) => store.editor.navigator.position,
-    'DesignPanelRoot navigatorPosition',
+  const navigatorVisible = useEditorState(
+    (store) => !store.editor.navigator.minimised,
+    'DesignPanelRoot navigatorVisible',
   )
 
   const isRightMenuExpanded = useEditorState(
@@ -177,25 +176,18 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
       elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
-      if (props.isUiJsFileOpen && navigatorPosition !== 'hidden') {
+      if (props.isUiJsFileOpen && navigatorVisible) {
         setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
       }
     },
-    [interfaceDesigner, navigatorPosition, props.isUiJsFileOpen],
+    [interfaceDesigner, navigatorVisible, props.isUiJsFileOpen],
   )
 
   const getNavigatorLeft = React.useMemo((): number | undefined => {
-    let position = undefined
     const codeEditorCurrentWidth =
       codeEditorResizingWidth != null ? codeEditorResizingWidth : interfaceDesigner.codePaneWidth
-    switch (navigatorPosition) {
-      case 'left':
-        position = codeEditorCurrentWidth - LeftPaneDefaultWidth
-        break
-      case 'right':
-        position = codeEditorCurrentWidth
-        break
-    }
+    let position = navigatorVisible ? codeEditorCurrentWidth : undefined
+
     if (!interfaceDesigner.codePaneVisible) {
       if (leftMenuExpanded) {
         position = LeftPaneDefaultWidth
@@ -209,7 +201,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     interfaceDesigner.codePaneVisible,
     interfaceDesigner.codePaneWidth,
     leftMenuExpanded,
-    navigatorPosition,
+    navigatorVisible,
   ])
 
   return (
@@ -303,7 +295,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
               style={{
                 minHeight: TopMenuHeight,
                 height: TopMenuHeight,
-                borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+                borderBottom: `1px solid ${colorTheme.border0.value}`,
                 alignItems: 'stretch',
                 justifyContent: 'stretch',
                 backgroundColor: 'transparent',
@@ -312,7 +304,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
               <TopMenu />
             </SimpleFlexRow>
 
-            {isCanvasVisible && props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
+            {isCanvasVisible && props.isUiJsFileOpen && navigatorVisible ? (
               <div
                 style={{
                   height: `calc(100% - ${TopMenuHeight}px)`,
@@ -357,7 +349,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
 
       {isCanvasVisible && props.isUiJsFileOpen ? (
         <>
-          <RightMenu visible={true} />
           {isRightMenuExpanded ? (
             <SimpleFlexRow
               className='Inspector-entrypoint'
