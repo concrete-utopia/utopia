@@ -1,5 +1,6 @@
 import * as PubSub from 'pubsub-js'
 import * as React from 'react'
+import { unstable_batchedUpdates } from 'react-dom'
 import { useForceUpdate } from '../../components/editor/hook-utils'
 
 export interface AtomWithPubSub<T> {
@@ -19,7 +20,13 @@ export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): At
     key: key,
     currentValue: defaultValue,
     Provider: ({ children, value }) => {
-      usePubSubAtomWriteOnly(newAtom)(() => value)
+      const updateAtom = usePubSubAtomWriteOnly(newAtom, true)
+      // TODO ALSO immediately update the atom value
+      setTimeout(() => {
+        unstable_batchedUpdates(() => {
+          updateAtom(() => value)
+        })
+      }, 0)
       return <>{children}</>
     },
   }
@@ -51,12 +58,19 @@ export function useSubscribeToPubSubAtom<T>(
 
 export function usePubSubAtomReadOnly<T>(atom: AtomWithPubSub<T>): T {
   const forceUpdate = useForceUpdate()
-  useSubscribeToPubSubAtom(atom, React.useCallback(forceUpdate, [forceUpdate]))
+  useSubscribeToPubSubAtom(
+    atom,
+    React.useCallback(() => {
+      // TODO only forceUpdate if the last returned atomValue does not equal the current one
+      forceUpdate()
+    }, [forceUpdate]),
+  )
   return atom.currentValue
 }
 
 export function usePubSubAtomWriteOnly<T>(
   atom: AtomWithPubSub<T>,
+  sync: boolean,
 ): (newValueOrUpdater: T | ((oldValue: T) => T)) => void {
   return React.useCallback(
     (newValueOrUpdater: T | ((oldValue: T) => T)) => {
@@ -67,9 +81,14 @@ export function usePubSubAtomWriteOnly<T>(
       } else {
         newValue = newValueOrUpdater
       }
+      // TODO add way to force update here, or maybe this check is not needed if the reader side runs an equality check
       if (atom.currentValue !== newValue) {
         atom.currentValue = newValue
-        PubSub.publish(atom.key, newValue)
+        if (sync) {
+          PubSub.publishSync(atom.key, newValue)
+        } else {
+          PubSub.publish(atom.key, newValue)
+        }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,6 +98,7 @@ export function usePubSubAtomWriteOnly<T>(
 
 export function usePubSubAtom<T>(
   atom: AtomWithPubSub<T>,
+  pushSync: boolean,
 ): [T, (newValueOrUpdater: T | ((oldValue: T) => T)) => void] {
-  return [usePubSubAtomReadOnly(atom), usePubSubAtomWriteOnly(atom)]
+  return [usePubSubAtomReadOnly(atom), usePubSubAtomWriteOnly(atom, pushSync)]
 }

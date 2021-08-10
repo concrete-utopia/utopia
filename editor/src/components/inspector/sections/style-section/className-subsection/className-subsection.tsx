@@ -185,7 +185,7 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   const [filter, setFilter] = React.useState('')
   const isFocusedRef = React.useRef(false)
   const shouldPreviewOnFocusRef = React.useRef(false)
-  const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
+  const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom, false)
   const focusedValueRef = React.useRef<string | null>(null)
 
   const focusTriggerCount = useEditorState(

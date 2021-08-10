@@ -164,7 +164,7 @@ export const ClassNameSelect = betterReactMemo(
     const dispatch = useEditorState((store) => store.dispatch, 'ClassNameSelect dispatch')
     const [input, setInput] = React.useState('')
     const focusedValueRef = React.useRef<string | null>(null)
-    const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom)
+    const updateFocusedOption = usePubSubAtomWriteOnly(focusedOptionAtom, false)
     const clearFocusedOption = React.useCallback(() => {
       updateFocusedOption(null)
       dispatch([EditorActions.clearTransientProps()], 'canvas')

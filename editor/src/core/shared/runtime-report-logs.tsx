@@ -34,7 +34,7 @@ export function useWriteOnlyRuntimeErrors(): {
   onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
   clearRuntimeErrors: () => void
 } {
-  const updateRuntimeErrors = usePubSubAtomWriteOnly(runtimeErrorsAtom)
+  const updateRuntimeErrors = usePubSubAtomWriteOnly(runtimeErrorsAtom, false)
 
   const onRuntimeError = React.useCallback(
     (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
@@ -91,7 +91,7 @@ export function useWriteOnlyConsoleLogs(): {
   addToConsoleLogs: (log: ConsoleLog) => void
   clearConsoleLogs: () => void
 } {
-  const modifyLogs = usePubSubAtomWriteOnly(consoleLogsAtom)
+  const modifyLogs = usePubSubAtomWriteOnly(consoleLogsAtom, false)
 
   const clearConsoleLogs = React.useCallback(() => {
     modifyLogs(EmptyConsoleLogs)
