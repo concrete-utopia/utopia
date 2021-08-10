@@ -4846,6 +4846,22 @@ export const UPDATE_FNS = {
       },
     }
   },
+  DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX: (editor: EditorModel): EditorModel => {
+    const resizeOptions = editor.canvas.resizeOptions
+    const decrementedIndex = resizeOptions.propertyTargetSelectedIndex - 1
+    const newIndex =
+      decrementedIndex < 0 ? resizeOptions.propertyTargetOptions.length - 1 : decrementedIndex
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        resizeOptions: {
+          ...resizeOptions,
+          propertyTargetSelectedIndex: newIndex,
+        },
+      },
+    }
+  },
   INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX: (editor: EditorModel): EditorModel => {
     const resizeOptions = editor.canvas.resizeOptions
     const newIndex =

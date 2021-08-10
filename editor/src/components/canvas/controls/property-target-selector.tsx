@@ -11,6 +11,7 @@ import { LayoutTargetablePropArrayKeepDeepEquality } from '../../../utils/deep-e
 import { betterReactMemo } from '../../../utils/react-performance'
 import { useColorTheme } from '../../../uuiui'
 import {
+  decrementResizeOptionsSelectedIndex,
   incrementResizeOptionsSelectedIndex,
   setResizeOptionsTargetOptions,
 } from '../../editor/actions/action-creators'
@@ -24,26 +25,56 @@ interface PropertyTargetSelectorProps {
   options: Array<LayoutTargetableProp>
 }
 
+function labelForOption(option: LayoutTargetableProp): string {
+  switch (option) {
+    case 'Width':
+      return 'width'
+    case 'Height':
+      return 'height'
+    case 'PinnedLeft':
+      return 'left'
+    case 'PinnedTop':
+      return 'top'
+    case 'PinnedRight':
+      return 'right'
+    case 'PinnedBottom':
+      return 'bottom'
+    default:
+      return option
+  }
+}
+
 export const PropertyTargetSelector = betterReactMemo(
   'PropertyTargetSelector',
   (props: PropertyTargetSelectorProps): JSX.Element => {
     const colorTheme = useColorTheme()
-    const { resizeOptions, dispatch, shiftPressed } = useEditorState((editorState) => {
+    const { resizeOptions, dispatch } = useEditorState((editorState) => {
       return {
         resizeOptions: editorState.editor.canvas.resizeOptions,
         dispatch: editorState.dispatch,
-        shiftPressed: editorState.editor.keysPressed.shift,
       }
     }, 'PropertyTargetSelector resizeOptions')
 
-    const previousShiftPressed = usePrevious(shiftPressed)
+    const onKeyDown = React.useCallback(
+      (event: KeyboardEvent) => {
+        if (event.key === 'Tab') {
+          event.preventDefault()
+          event.stopPropagation()
+          const action = event.shiftKey
+            ? decrementResizeOptionsSelectedIndex()
+            : incrementResizeOptionsSelectedIndex()
+          dispatch([action], 'canvas')
+        }
+      },
+      [dispatch],
+    )
 
-    // Increment the position of the selector if shift has been depressed.
     React.useEffect(() => {
-      if (shiftPressed && !previousShiftPressed) {
-        dispatch([incrementResizeOptionsSelectedIndex()], 'canvas')
+      window.addEventListener('keydown', onKeyDown, true)
+      return function cleanup() {
+        window.removeEventListener('keydown', onKeyDown, true)
       }
-    }, [dispatch, previousShiftPressed, shiftPressed])
+    }, [dispatch, onKeyDown])
 
     // Update the current options to be the ones listed against this control,
     // but only if they're different to the current options.
@@ -94,7 +125,7 @@ export const PropertyTargetSelector = betterReactMemo(
                 borderRadius: 5,
               }}
             >
-              {option}: <span style={{ float: 'right' }}>{valueForProp}</span>
+              {labelForOption(option)}: <span style={{ float: 'right' }}>{valueForProp}</span>
             </div>
           )
         })}

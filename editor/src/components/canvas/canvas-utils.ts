@@ -370,6 +370,31 @@ export function canvasFrameToNormalisedFrame(frame: CanvasRectangle): Normalised
   return { left: x, top: y, width, height }
 }
 
+function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
+  switch (prop) {
+    case 'PinnedRight':
+    case 'PinnedBottom':
+      return -1
+    case 'flexGrow':
+    case 'flexShrink':
+      return 0.01
+    default:
+      return 1
+  }
+}
+
+function unsetValueWhenNegative(prop: LayoutTargetableProp): boolean {
+  switch (prop) {
+    case 'PinnedLeft':
+    case 'PinnedTop':
+    case 'PinnedRight':
+    case 'PinnedBottom':
+      return false
+    default:
+      return true
+  }
+}
+
 export function updateFramesOfScenesAndComponents(
   editorState: EditorState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
@@ -414,6 +439,7 @@ export function updateFramesOfScenesAndComponents(
 
     let propsToSet: Array<ValueAtPath> = []
     let propsToSkip: Array<PropertyPath> = []
+    let propsToUnset: Array<PropertyPath> = []
     if (isFlexContainer) {
       switch (frameAndTarget.type) {
         case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
@@ -461,34 +487,32 @@ export function updateFramesOfScenesAndComponents(
               throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
             }
 
+            const targetPropertyPath = createLayoutPropertyPath(frameAndTarget.targetProperty)
             const valueFromDOM = getObservableValueForLayoutProp(
               elementMetadata,
               frameAndTarget.targetProperty,
             )
             const valueFromAttributes = eitherToMaybe(
-              getSimpleAttributeAtPath(
-                right(element.props),
-                createLayoutPropertyPath(frameAndTarget.targetProperty),
-              ),
+              getSimpleAttributeAtPath(right(element.props), targetPropertyPath),
             )
             // Defer through these in order: observable value >>> value from attribute >>> 0.
             const currentAttributeToChange = valueFromDOM ?? valueFromAttributes ?? 0
-            const shouldScaleDelta =
-              frameAndTarget.targetProperty === 'flexGrow' ||
-              frameAndTarget.targetProperty === 'flexShrink'
-            const scaledDelta = shouldScaleDelta
-              ? Math.floor(frameAndTarget.delta / 100)
-              : frameAndTarget.delta
+            const scalingFactor = dragDeltaScaleForProp(frameAndTarget.targetProperty)
+            const scaledDelta = Math.floor(frameAndTarget.delta * scalingFactor)
+            const newAttributeNumericValue = currentAttributeToChange + scaledDelta
+            const shouldUnsetDraggedProp =
+              newAttributeNumericValue < 0 && unsetValueWhenNegative(frameAndTarget.targetProperty)
 
-            const newAttributeValue = jsxAttributeValue(
-              currentAttributeToChange + scaledDelta,
-              emptyComments,
-            )
+            if (shouldUnsetDraggedProp) {
+              propsToUnset.push(targetPropertyPath)
+            } else {
+              const newAttributeValue = jsxAttributeValue(newAttributeNumericValue, emptyComments)
 
-            propsToSet.push({
-              path: createLayoutPropertyPath(frameAndTarget.targetProperty),
-              value: newAttributeValue,
-            })
+              propsToSet.push({
+                path: targetPropertyPath,
+                value: newAttributeValue,
+              })
+            }
 
             propsToSkip.push(
               createLayoutPropertyPath('left'),
@@ -711,7 +735,7 @@ export function updateFramesOfScenesAndComponents(
       }
     }
 
-    if (propsToSet.length > 0) {
+    if (propsToSet.length > 0 || propsToUnset.length > 0) {
       const propsToNotDelete = [...propsToSet.map((p) => p.path), ...propsToSkip]
 
       workingEditorState = modifyUnderlyingForOpenFile(
@@ -723,7 +747,7 @@ export function updateFramesOfScenesAndComponents(
             frameAndTarget.type === 'PIN_MOVE_CHANGE'
               ? PinningAndFlexPointsExceptSize // for PIN_MOVE_CHANGE, we don't want to remove the size props, we just keep them intact
               : PinningAndFlexPoints
-          let propsToRemove: Array<PropertyPath> = []
+          let propsToRemove: Array<PropertyPath> = [...propsToUnset]
           function createPropPathForProp(prop: string): PropertyPath {
             if (isFramePoint(prop)) {
               return createLayoutPropertyPath(pinnedPropForFramePoint(prop))
@@ -2954,11 +2978,12 @@ export function anyDragMovement(dragState: DragState | null): boolean {
 }
 
 export function getResizeOptions(
-  flexDirection: 'horizontal' | 'vertical' | null,
+  layoutSystem: 'flex-horizontal' | 'flex-vertical' | 'absolute' | null,
   controlDirection: 'horizontal' | 'vertical',
+  edge: 'before' | 'after',
 ): Array<LayoutTargetableProp> {
-  switch (flexDirection) {
-    case 'horizontal':
+  switch (layoutSystem) {
+    case 'flex-horizontal':
       switch (controlDirection) {
         case 'horizontal':
           return ['Height', 'minHeight', 'maxHeight']
@@ -2968,7 +2993,7 @@ export function getResizeOptions(
           const _exhaustiveCheck: never = controlDirection
           throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
       }
-    case 'vertical':
+    case 'flex-vertical':
       switch (controlDirection) {
         case 'horizontal':
           return ['flexBasis', 'flexGrow', 'flexShrink', 'minHeight', 'maxHeight']
@@ -2978,19 +3003,61 @@ export function getResizeOptions(
           const _exhaustiveCheck: never = controlDirection
           throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
       }
+    case 'absolute':
+      switch (controlDirection) {
+        case 'horizontal':
+          switch (edge) {
+            case 'before':
+              return ['PinnedTop', 'Height', 'marginTop', 'minHeight', 'maxHeight']
+            case 'after':
+              return ['PinnedBottom', 'Height', 'marginBottom', 'minHeight', 'maxHeight']
+            default:
+              const _exhaustiveCheck: never = edge
+              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
+          }
+        case 'vertical':
+          switch (edge) {
+            case 'before':
+              return ['PinnedLeft', 'Width', 'marginLeft', 'minWidth', 'maxWidth']
+            case 'after':
+              return ['PinnedRight', 'Width', 'marginRight', 'minWidth', 'maxWidth']
+            default:
+              const _exhaustiveCheck: never = edge
+              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
+          }
+        default:
+          const _exhaustiveCheck: never = controlDirection
+          throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
+      }
     case null:
       switch (controlDirection) {
         case 'horizontal':
-          return ['Height', 'marginTop', 'marginBottom', 'minHeight', 'maxHeight']
+          switch (edge) {
+            case 'before':
+              return ['Height', 'marginTop', 'minHeight', 'maxHeight']
+            case 'after':
+              return ['Height', 'marginBottom', 'minHeight', 'maxHeight']
+            default:
+              const _exhaustiveCheck: never = edge
+              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
+          }
         case 'vertical':
-          return ['Width', 'marginLeft', 'marginRight', 'minWidth', 'maxWidth']
+          switch (edge) {
+            case 'before':
+              return ['Width', 'marginLeft', 'minWidth', 'maxWidth']
+            case 'after':
+              return ['Width', 'marginRight', 'minWidth', 'maxWidth']
+            default:
+              const _exhaustiveCheck: never = edge
+              throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
+          }
         default:
           const _exhaustiveCheck: never = controlDirection
           throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
       }
     default:
-      const _exhaustiveCheck: never = flexDirection
-      throw new Error(`Unhandled flex direction ${JSON.stringify(flexDirection)}`)
+      const _exhaustiveCheck: never = layoutSystem
+      throw new Error(`Unhandled flex direction ${JSON.stringify(layoutSystem)}`)
   }
 }
 
@@ -3035,6 +3102,22 @@ export function getObservableValueForLayoutProp(
         return elementMetadata.specialSizeMeasurements.margin.left
       case 'marginRight':
         return elementMetadata.specialSizeMeasurements.margin.right
+      case 'PinnedLeft':
+        return elementMetadata.localFrame?.x
+      case 'PinnedTop':
+        return elementMetadata.localFrame?.y
+      case 'PinnedRight':
+        return elementMetadata.localFrame == null ||
+          elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
+          ? null
+          : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.width -
+              (elementMetadata.localFrame.width + elementMetadata.localFrame.x)
+      case 'PinnedBottom':
+        return elementMetadata.localFrame == null ||
+          elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
+          ? null
+          : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.height -
+              (elementMetadata.localFrame.height + elementMetadata.localFrame.y)
       default:
         const _exhaustiveCheck: never = layoutProp
         throw new Error(`Unhandled prop ${JSON.stringify(layoutProp)}`)

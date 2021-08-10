@@ -16,6 +16,10 @@ export type LayoutTargetableProp =
   | LayoutFlexElementProp
   | 'Width'
   | 'Height'
+  | 'PinnedLeft'
+  | 'PinnedTop'
+  | 'PinnedRight'
+  | 'PinnedBottom'
   | 'minWidth'
   | 'maxWidth'
   | 'minHeight'
