@@ -30,12 +30,14 @@ export function updateMutableUtopiaContextWithNewProps(
 }
 
 interface RerenderUtopiaContextProps {
+  validPaths: Array<ElementPath>
   hiddenInstances: Array<ElementPath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
 }
 
 export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
+  validPaths: [],
   hiddenInstances: [],
   canvasIsLive: false,
   shouldIncludeCanvasRootInTheSpy: false,
@@ -48,15 +50,6 @@ export interface UtopiaProjectContextData {
   transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
 }
-
-interface SceneLevelContextProps {
-  validPaths: Array<ElementPath>
-}
-
-export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProps>({
-  validPaths: [],
-})
-SceneLevelUtopiaContext.displayName = 'SceneLevelUtopiaContext'
 
 interface ParentLevelUtopiaContextProps {
   elementPath: ElementPath | null

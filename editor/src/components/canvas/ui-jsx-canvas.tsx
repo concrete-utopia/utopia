@@ -58,7 +58,6 @@ import {
   MutableUtopiaContextProps,
   ParentLevelUtopiaContext,
   RerenderUtopiaContext,
-  SceneLevelUtopiaContext,
   updateMutableUtopiaContextWithNewProps,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
@@ -459,6 +458,7 @@ export const UiJsxCanvas = betterReactMemo(
               hiddenInstances: hiddenInstances,
               canvasIsLive: canvasIsLive,
               shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+              validPaths: rootValidPaths,
             }}
           >
             <CanvasContainer
@@ -474,17 +474,15 @@ export const UiJsxCanvas = betterReactMemo(
               scrollAnimation={props.scrollAnimation}
               canvasInteractionHappening={props.transientFilesState != null}
             >
-              <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
-                <ParentLevelUtopiaContext.Provider
-                  value={{
-                    elementPath: storyboardRootElementPath,
-                  }}
-                >
-                  {StoryboardRootComponent == null ? null : (
-                    <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-                  )}
-                </ParentLevelUtopiaContext.Provider>
-              </SceneLevelUtopiaContext.Provider>
+              <ParentLevelUtopiaContext.Provider
+                value={{
+                  elementPath: storyboardRootElementPath,
+                }}
+              >
+                {StoryboardRootComponent == null ? null : (
+                  <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+                )}
+              </ParentLevelUtopiaContext.Provider>
             </CanvasContainer>
           </RerenderUtopiaContext.Provider>
         </MutableUtopiaContext.Provider>

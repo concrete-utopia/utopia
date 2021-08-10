@@ -18,7 +18,6 @@ import {
 import {
   MutableUtopiaContextProps,
   RerenderUtopiaContext,
-  SceneLevelUtopiaContext,
   UtopiaProjectContextData,
 } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
@@ -104,7 +103,7 @@ export function createComponentRendererComponent(params: {
       (c) => c.shouldIncludeCanvasRootInTheSpy,
     )
     const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
-    const sceneContext = React.useContext(SceneLevelUtopiaContext)
+    const validPaths = useContextSelector(RerenderUtopiaContext, (c) => c.validPaths)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
     const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
@@ -153,7 +152,7 @@ export function createComponentRendererComponent(params: {
         mutableContext.requireResult,
         hiddenInstances,
         mutableContext.fileBlobs,
-        sceneContext.validPaths,
+        validPaths,
         undefined,
         metadataContext,
         updateInvalidatedPaths,
@@ -196,7 +195,7 @@ export function createComponentRendererComponent(params: {
           mutableContext.requireResult,
           hiddenInstances,
           mutableContext.fileBlobs,
-          sceneContext.validPaths,
+          validPaths,
           realPassedProps['data-uid'],
           undefined,
           metadataContext,
