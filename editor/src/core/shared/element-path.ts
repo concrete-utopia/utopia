@@ -382,6 +382,10 @@ export function isChildOf(path: ElementPath | null, parent: ElementPath | null):
   }
 }
 
+export function isRootElementOf(path: ElementPath | null, parent: ElementPath | null): boolean {
+  return path != null && isChildOf(path, parent) && isRootElementOfInstance(path)
+}
+
 export function isSiblingOf(l: ElementPath | null, r: ElementPath | null): boolean {
   return l != null && r != null && pathsEqual(parentPath(l), parentPath(r))
 }
