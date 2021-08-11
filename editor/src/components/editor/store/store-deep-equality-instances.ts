@@ -703,7 +703,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
-  return combine14EqualityCalls(
+  return combine13EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -715,8 +715,6 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.localFrame,
     nullableDeepEquality(LocalRectangleKeepDeepEquality),
     (metadata) => metadata.children,
-    ElementPathArrayKeepDeepEquality,
-    (metadata) => metadata.rootElements,
     ElementPathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),

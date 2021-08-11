@@ -1454,7 +1454,6 @@ export interface ElementInstanceMetadata {
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
   children: Array<ElementPath>
-  rootElements: Array<ElementPath>
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -1471,7 +1470,6 @@ export function elementInstanceMetadata(
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
   children: Array<ElementPath>,
-  rootElements: Array<ElementPath>,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
@@ -1487,7 +1485,6 @@ export function elementInstanceMetadata(
     globalFrame: globalFrame,
     localFrame: localFrame,
     children: children,
-    rootElements: rootElements,
     componentInstance: componentInstance,
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,

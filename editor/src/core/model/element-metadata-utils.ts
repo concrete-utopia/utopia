@@ -232,7 +232,7 @@ export const MetadataUtils = {
     const parentMetadata = MetadataUtils.findElementByElementPath(metadata, parentPath)
 
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? parentMetadata?.rootElements
+      ? MetadataUtils.getRootViewPaths(metadata, parentPath)
       : parentMetadata?.children
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
@@ -532,7 +532,8 @@ export const MetadataUtils = {
     target: ElementPath,
   ): Array<ElementPath> {
     const element = MetadataUtils.findElementByElementPath(elements, target)
-    return element == null ? [] : [...element.rootElements, ...element.children]
+    const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
+    return element == null ? [] : [...rootPaths, ...element.children]
   },
   getImmediateChildren(
     metadata: ElementInstanceMetadataMap,
@@ -588,8 +589,9 @@ export const MetadataUtils = {
   getAllCanvasRootPaths(metadata: ElementInstanceMetadataMap): ElementPath[] {
     const rootScenesAndElements = MetadataUtils.getAllStoryboardChildren(metadata)
     return flatMapArray<ElementInstanceMetadata, ElementPath>((root) => {
-      if (root.rootElements.length > 0) {
-        return root.rootElements
+      const rootElements = MetadataUtils.getRootViewPaths(metadata, root.elementPath)
+      if (rootElements.length > 0) {
+        return rootElements
       } else {
         return [root.elementPath]
       }
@@ -630,7 +632,8 @@ export const MetadataUtils = {
       const element = MetadataUtils.findElementByElementPath(metadata, rootInstance)
       if (element != null) {
         result.push(rootInstance)
-        element.rootElements.forEach(recurseElement)
+        const rootElements = MetadataUtils.getRootViewPaths(metadata, element.elementPath)
+        rootElements.forEach(recurseElement)
         element.children.forEach(recurseElement)
       }
     })
@@ -1040,23 +1043,19 @@ export const MetadataUtils = {
         fromDOM,
       )
       let children: Array<ElementPath>
-      let rootElements: Array<ElementPath>
       if (shouldNotTraverse) {
         children = []
-        rootElements = []
       } else {
         children = EP.addPathsIfMissing(spyElem?.children ?? [], domElem.children)
-        rootElements = EP.addPathsIfMissing(spyElem?.rootElements ?? [], domElem.rootElements)
       }
 
       if (spyElem == null) {
         const elem =
-          children === domElem.children && rootElements === domElem.rootElements
+          children === domElem.children
             ? domElem
             : {
                 ...domElem,
                 children: children,
-                rootElements: rootElements,
               }
         workingElements[EP.toString(domElem.elementPath)] = elem
         newlyFoundElements.push(domElem.elementPath)
@@ -1078,7 +1077,6 @@ export const MetadataUtils = {
           props: spyElem.props,
           element: jsxElement,
           children: children,
-          rootElements: rootElements,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
           label: spyElem.label,
@@ -1201,7 +1199,6 @@ export const MetadataUtils = {
         elementPath: newElementPath,
         element: newElementInner,
         children: [], // all descendants have new UID-s
-        rootElements: [], // all descendants have new UID-s
       }
 
       workingElements[EP.toString(newElementPath)] = newElementMetadata
@@ -1274,7 +1271,6 @@ export const MetadataUtils = {
             ...existing,
             elementPath: replacement,
             children: updateChildren(existing.children),
-            rootElements: updateChildren(existing.rootElements),
           }
         }
       },
