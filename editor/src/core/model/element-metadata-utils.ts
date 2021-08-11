@@ -503,8 +503,11 @@ export const MetadataUtils = {
     })
   },
   getRootViewPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
-    const element = MetadataUtils.findElementByElementPath(elements, target)
-    return element?.rootElements ?? []
+    const allPahtsUnordered = Object.keys(elements).map(EP.fromString)
+    const possibleRootElementsOfTarget = allPahtsUnordered.filter((path) =>
+      EP.isRootElementOf(path, target),
+    )
+    return possibleRootElementsOfTarget
   },
   getRootViews(
     elements: ElementInstanceMetadataMap,
