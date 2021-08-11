@@ -216,15 +216,20 @@ function processPackageJson(
   return foldEither(
     (_) => resolveNotPresent,
     (packageJson) => {
-      const moduleName: string = packageJson.name ?? makePathFromParts(containerFolder)
+      const moduleName: string | null = packageJson.name ?? null
       const mainEntry: string | null = packageJson.main ?? null
       const moduleEntry: string | null = packageJson.module ?? null
-      if (moduleEntry != null && mainEntry == null) {
-        return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleName)]))
-      }
+
       if (mainEntry != null) {
         return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(mainEntry)]))
+      } else if (moduleEntry != null) {
+        return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleEntry)]))
+      } else if (moduleName != null) {
+        return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleName)]))
+      } else if (containerFolder.length > 0) {
+        return resolveSuccess(normalizePath(containerFolder))
       }
+
       return resolveNotPresent
     },
     possiblePackageJson,
