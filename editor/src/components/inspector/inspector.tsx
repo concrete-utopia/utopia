@@ -153,10 +153,17 @@ const AlignmentButtons = betterReactMemo(
     const distributeVertical = React.useCallback(() => distributeSelected('vertical'), [
       distributeSelected,
     ])
-
+    const colorTheme = useColorTheme()
     return (
       <FlexRow
-        style={{ justifyContent: 'space-around', height: UtopiaTheme.layout.rowHeight.smaller }}
+        style={{
+          justifyContent: 'space-around',
+          height: UtopiaTheme.layout.rowHeight.normal,
+          position: 'sticky',
+          top: 0,
+          zIndex: 1,
+          background: colorTheme.inspectorBackground.value,
+        }}
       >
         <AlignDistributeButton
           onMouseUp={alignLeft}

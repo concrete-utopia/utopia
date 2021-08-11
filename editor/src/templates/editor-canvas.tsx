@@ -27,7 +27,6 @@ import {
   getDragStateDrag,
   getDragStatePositions,
   getDragStateStart,
-  getResizeOptions,
 } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { CanvasReactErrorCallback } from '../components/canvas/ui-jsx-canvas'
@@ -1187,7 +1186,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     window.removeEventListener('keyup', this.handleKeyUp)
     window.removeEventListener('mousedown', this.handleMouseDown)
     window.removeEventListener('mouseup', this.handleMouseUp)
-    window.removeEventListener('mousemove', this.handleMouseMove)
+    window.removeEventListener('mousemove', this.handleMouseMove, { capture: true })
     window.removeEventListener('mouseleave', this.handleMouseLeave)
     window.removeEventListener('click', this.handleClick)
     window.removeEventListener('dblclick', this.handleDoubleClick)

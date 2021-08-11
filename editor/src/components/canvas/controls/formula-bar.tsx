@@ -121,36 +121,37 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
   return (
     <SimpleFlexRow
       css={{
-        height: 32,
+        height: 24,
         flexGrow: 1,
-        padding: 4,
+        paddingLeft: 4,
+        paddingRight: 4,
         gap: 4,
         borderRadius: 4,
-        backgroundColor: colorTheme.inverted.bg1.value,
+        backgroundColor: colorTheme.inverted.bg2.value,
         color: colorTheme.inverted.fg1.value,
         cursor: 'pointer',
         border: '1px solid transparent',
         '&:hover': {
           outline: 'none',
-          border: `1px solid ${colorTheme.bg5.value}`,
         },
         '&:focus-within': {
-          border: `1px solid ${colorTheme.brandNeonYellow.value}`,
+          background: colorTheme.inverted.bg1.value,
         },
       }}
       onKeyDown={onKeyDown}
     >
-      {buttonsVisible ? <ModeToggleButton /> : null}
-      {classNameFieldVisible ? <ClassNameSelect ref={inputRef} /> : null}
       {inputFieldVisible ? (
         <HeadlessStringInput
           ref={inputRef}
           type='text'
+          placeholder={disabled ? '(Unavailable)' : '(empty)'}
           css={{
             paddingLeft: 4,
             paddingRight: 4,
             width: '100%',
             height: '100%',
+            fontSize: 12,
+            letterSpacing: 0.2,
             border: '1px solid transparent',
             borderRadius: 3,
             backgroundColor: 'transparent',
@@ -168,7 +169,9 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           value={simpleText}
           disabled={disabled}
         />
-      ) : null}
+      ) : (
+        <span style={{ fontSize: 13, letterSpacing: 0.2, opacity: 0.4 }}>(Unavailable)</span>
+      )}
     </SimpleFlexRow>
   )
 })

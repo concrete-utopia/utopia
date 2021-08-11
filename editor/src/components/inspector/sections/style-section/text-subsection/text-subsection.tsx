@@ -18,6 +18,7 @@ import {
   InspectorSubsectionHeader,
   Icons,
   NumberInput,
+  InspectorSectionIcons,
 } from '../../../../../uuiui'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
@@ -41,6 +42,7 @@ import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
 import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
+import { FlexRow } from 'utopia-api'
 
 const ObjectPathImmutable: any = OPI
 
@@ -203,13 +205,15 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
         data={null}
       >
         <InspectorSubsectionHeader>
-          <div
-            style={{
+          <FlexRow
+            css={{
               flexGrow: 1,
+              gap: 8,
             }}
           >
-            Type
-          </div>
+            <InspectorSectionIcons.Typography />
+            <span>Type</span>
+          </FlexRow>
           <Icons.Gear color={expanded ? 'secondary' : 'subdued'} onClick={toggleExpanded} />
         </InspectorSubsectionHeader>
       </InspectorContextMenuWrapper>

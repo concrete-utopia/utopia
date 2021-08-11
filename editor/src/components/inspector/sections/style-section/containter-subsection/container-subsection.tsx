@@ -1,5 +1,12 @@
 import * as React from 'react'
-import { H2 } from '../../../../../uuiui'
+import {
+  FlexRow,
+  H1,
+  H2,
+  Icons,
+  InspectorSectionIcons,
+  InspectorSubsectionHeader,
+} from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { SeeMoreButton, SeeMoreHOC, useToggle } from '../../../widgets/see-more'
@@ -17,13 +24,22 @@ export const ContainerSubsection = betterReactMemo('ContainerSubsection', () => 
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
   return (
     <>
-      <UIGridRow padded={true} variant='<--------auto-------->||22px|'>
-        <H2>Container</H2>
-        <SeeMoreButton
-          seeMoreVisible={seeMoreVisible}
-          toggleSeeMoreVisible={toggleSeeMoreVisible}
+      <InspectorSubsectionHeader>
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            gap: 8,
+          }}
+        >
+          <InspectorSectionIcons.Layer />
+          <span>Container</span>
+        </FlexRow>
+        <Icons.Gear
+          color={seeMoreVisible ? 'secondary' : 'subdued'}
+          onClick={toggleSeeMoreVisible}
         />
-      </UIGridRow>
+      </InspectorSubsectionHeader>
+
       <OpacityRow />
       <OverflowRow />
       <RadiusRow />

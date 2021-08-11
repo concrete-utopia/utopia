@@ -29,6 +29,7 @@ import {
   InspectorSubsectionHeader,
   FlexRow,
   Icons,
+  InspectorSectionIcons,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 
@@ -299,9 +300,11 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
           <FlexRow
             style={{
               flexGrow: 1,
+              gap: 8,
             }}
           >
-            Text Shadow
+            <InspectorSectionIcons.TextShadow />
+            <span>Text Shadow</span>
           </FlexRow>
           <SquareButton highlight onMouseDown={insertShadow}>
             <Icons.Plus style={{ paddingTop: 1 }} />

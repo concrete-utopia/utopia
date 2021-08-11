@@ -902,6 +902,10 @@ export interface SetInspectorLayoutSectionHovered {
   hovered: boolean
 }
 
+export interface DecrementResizeOptionsSelectedIndex {
+  action: 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX'
+}
+
 export interface IncrementResizeOptionsSelectedIndex {
   action: 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX'
 }
@@ -1060,6 +1064,7 @@ export type EditorAction =
   | ClearTransientProps
   | AddTailwindConfig
   | SetInspectorLayoutSectionHovered
+  | DecrementResizeOptionsSelectedIndex
   | IncrementResizeOptionsSelectedIndex
   | SetResizeOptionsTargetOptions
 

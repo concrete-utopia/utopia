@@ -8,6 +8,7 @@ import {
   Icn,
   UtopiaTheme,
   InspectorSubsectionHeader,
+  InspectorSectionIcons,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
@@ -571,7 +572,10 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
         data={null}
       >
         <InspectorSubsectionHeader style={headerStyle}>
-          <FlexRow style={{ flexGrow: 1 }}>Transforms</FlexRow>
+          <FlexRow style={{ flexGrow: 1, gap: 8 }}>
+            <InspectorSectionIcons.Transforms />
+            <span>Transforms</span>
+          </FlexRow>
           {propertyStatus.overwritable ? (
             <SquareButton highlight onMouseDown={insertCSSTransformMouseDown}>
               <Icn

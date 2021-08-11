@@ -204,6 +204,7 @@ import type {
   FocusClassNameInput,
   WrapInElement,
   SetInspectorLayoutSectionHovered,
+  DecrementResizeOptionsSelectedIndex,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
 } from '../action-types'
@@ -1445,6 +1446,12 @@ export function setInspectorLayoutSectionHovered(
   return {
     action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED',
     hovered: hovered,
+  }
+}
+
+export function decrementResizeOptionsSelectedIndex(): DecrementResizeOptionsSelectedIndex {
+  return {
+    action: 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX',
   }
 }
 

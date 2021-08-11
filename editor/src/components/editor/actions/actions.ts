@@ -1039,7 +1039,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     navigator: {
       minimised: currentEditor.navigator.minimised,
-      position: currentEditor.navigator.position,
       dropTargetHint: {
         target: null,
         type: null,
@@ -1256,20 +1255,6 @@ function updateNavigatorCollapsedState(
       $set: collapsedWithChildrenSelected,
     },
   })
-}
-
-export function getNavigatorPositionNextState(editor: EditorState): 'hidden' | 'left' | 'right' {
-  switch (editor.navigator.position) {
-    case 'hidden':
-      return 'right'
-    case 'left':
-      return 'hidden'
-    case 'right':
-      return editor.interfaceDesigner.codePaneVisible ? 'left' : 'hidden'
-    default:
-      const _exhaustiveCheck: never = editor.navigator.position
-      throw new Error(`Cannot update navigator position to ${editor.navigator.position}`)
-  }
 }
 
 interface ReplaceFilePathSuccess {
@@ -2538,14 +2523,6 @@ export const UPDATE_FNS = {
             minimised: !action.visible,
           },
         }
-      case 'navigatorPane':
-        return {
-          ...editor,
-          navigator: {
-            ...editor.navigator,
-            position: action.visible ? 'right' : 'hidden',
-          },
-        }
       case 'filebrowser':
         return {
           ...editor,
@@ -2693,14 +2670,6 @@ export const UPDATE_FNS = {
           navigator: {
             ...editor.navigator,
             minimised: !editor.navigator.minimised,
-          },
-        }
-      case 'navigatorPane':
-        return {
-          ...editor,
-          navigator: {
-            ...editor.navigator,
-            position: getNavigatorPositionNextState(editor),
           },
         }
       case 'inspector':
@@ -4511,7 +4480,7 @@ export const UPDATE_FNS = {
       editor.jsxMetadata,
     )
     if (targetElementCoords != null) {
-      const isNavigatorOnTop = editor.navigator.position === 'right'
+      const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
       if (action.keepScrollPositionIfVisible && containerRootDiv != null) {
         const containerDivBoundingRect = containerRootDiv.getBoundingClientRect()
@@ -4874,6 +4843,22 @@ export const UPDATE_FNS = {
       inspector: {
         ...editor.inspector,
         layoutSectionHovered: action.hovered,
+      },
+    }
+  },
+  DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX: (editor: EditorModel): EditorModel => {
+    const resizeOptions = editor.canvas.resizeOptions
+    const decrementedIndex = resizeOptions.propertyTargetSelectedIndex - 1
+    const newIndex =
+      decrementedIndex < 0 ? resizeOptions.propertyTargetOptions.length - 1 : decrementedIndex
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        resizeOptions: {
+          ...resizeOptions,
+          propertyTargetSelectedIndex: newIndex,
+        },
       },
     }
   },

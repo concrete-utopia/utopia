@@ -17,6 +17,7 @@ import {
   FlexRow,
   Icons,
   InspectorSectionHeader,
+  InspectorSectionIcons,
   SquareButton,
   useColorTheme,
 } from '../../../../../uuiui'
@@ -68,9 +69,11 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
             style={{
               flexGrow: 1,
               alignSelf: 'stretch',
+              gap: 8,
             }}
           >
-            Layout System
+            <InspectorSectionIcons.LayoutSystem />
+            <span>Layout System</span>
           </FlexRow>
           {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}
           {!layoutSectionOpen && (

@@ -48,7 +48,7 @@ export const CanvasWrapperComponent = betterReactMemo(
     }, 'CanvasWrapperComponent safeMode')
 
     const isNavigatorOverCanvas = useEditorState(
-      (store) => store.editor.navigator.position === 'right',
+      (store) => !store.editor.navigator.minimised,
       'ErrorOverlayComponent isOverlappingWithNavigator',
     )
 
@@ -148,11 +148,6 @@ const ErrorOverlayComponent = betterReactMemo(
         dispatch([openCodeEditorFile(path, true), setFocus('codeEditor')])
       },
       [dispatch],
-    )
-
-    const isHiddenUnderNavigator = useEditorState(
-      (store) => store.editor.navigator.position === 'right',
-      'ErrorOverlayComponent isOverlappingWithNavigator',
     )
 
     return (

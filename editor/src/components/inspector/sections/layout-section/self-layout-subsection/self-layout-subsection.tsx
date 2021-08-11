@@ -9,6 +9,8 @@ import { fastForEach } from '../../../../../core/shared/utils'
 import {
   FunctionIcons,
   Icn,
+  Icons,
+  InspectorSectionIcons,
   InspectorSubsectionHeader,
   SquareButton,
   Tooltip,
@@ -213,12 +215,14 @@ const LayoutSectionHeader = betterReactMemo(
     return (
       <InspectorSubsectionHeader>
         <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
+          <InspectorSectionIcons.Layout />
           <span
             style={{
               textTransform: 'uppercase',
               fontWeight: 600,
               paddingRight: 8,
               color: colorTheme.primary.value,
+              fontSize: 10,
             }}
           >
             {layoutType}
