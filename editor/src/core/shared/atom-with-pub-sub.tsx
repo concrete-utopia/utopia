@@ -23,11 +23,11 @@ export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): At
     Provider: ({ children, value }) => {
       const updateAtom = usePubSubAtomWriteOnly(newAtom, true)
       newAtom.currentValue = value // TODO this is sneaky and we should use API instead
-      useIsomorphicLayoutEffect(() => {
-        unstable_batchedUpdates(() => {
-          updateAtom(() => value)
-        })
-      })
+      // useIsomorphicLayoutEffect(() => {
+      //   unstable_batchedUpdates(() => {
+      //     updateAtom(() => value)
+      //   })
+      // })
       return <>{children}</>
     },
   }
@@ -88,7 +88,7 @@ export function usePubSubAtomWriteOnly<T>(
       }
       atom.currentValue = newValue
       if (sync) {
-        // PubSub.publishSync(atom.key, newValue)
+        PubSub.publishSync(atom.key, newValue)
       } else {
         PubSub.publish(atom.key, newValue)
       }
