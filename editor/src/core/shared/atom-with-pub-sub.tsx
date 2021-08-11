@@ -2,6 +2,7 @@ import * as PubSub from 'pubsub-js'
 import * as React from 'react'
 import { unstable_batchedUpdates } from 'react-dom'
 import { useForceUpdate } from '../../components/editor/hook-utils'
+import { useIsomorphicLayoutEffect } from '../../utils/react-performance'
 
 export interface AtomWithPubSub<T> {
   key: string
@@ -22,11 +23,11 @@ export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): At
     Provider: ({ children, value }) => {
       const updateAtom = usePubSubAtomWriteOnly(newAtom, true)
       newAtom.currentValue = value // TODO this is sneaky and we should use API instead
-      setTimeout(() => {
+      useIsomorphicLayoutEffect(() => {
         unstable_batchedUpdates(() => {
           updateAtom(() => value)
         })
-      }, 0)
+      })
       return <>{children}</>
     },
   }

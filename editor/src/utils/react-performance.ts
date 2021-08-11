@@ -483,3 +483,10 @@ export function useKeepDeepEqualityCall<T>(newValue: T, keepDeepCall: KeepDeepEq
   oldValue.current = keepDeepCall(oldValue.current, newValue).value
   return oldValue.current
 }
+
+// From https://github.com/dai-shi/use-context-selector/blob/2dd334d727fc3b4cbadf7876b6ce64e0c633fd25/src/index.ts#L25
+const isSSR =
+  typeof window === 'undefined' ||
+  /ServerSideRendering/.test(window.navigator && window.navigator.userAgent)
+
+export const useIsomorphicLayoutEffect = isSSR ? React.useEffect : React.useLayoutEffect
