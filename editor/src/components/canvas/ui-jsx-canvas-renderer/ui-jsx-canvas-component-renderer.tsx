@@ -54,6 +54,8 @@ export function isComponentRendererComponent(
   )
 }
 
+// hi!
+
 function tryToGetInstancePath(
   topLevelElementName: string,
   maybePath: ElementPath | null,
