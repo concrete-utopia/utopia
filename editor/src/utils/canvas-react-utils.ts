@@ -12,8 +12,9 @@ import {
   UTOPIA_UID_PARENTS_KEY,
 } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
-import { PRODUCTION_ENV } from '../common/env-vars'
 import { appendToUidString } from '../core/shared/uid-utils'
+import { isFeatureEnabled } from './feature-switches'
+import { PERFORMANCE_MARKS_ALLOWED } from '../common/env-vars'
 
 const realCreateElement = React.createElement
 
@@ -121,15 +122,15 @@ function attachDataUidToRoot(
   }
 }
 
-const MeasureRenderTimes = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
-
 const mangleFunctionType = Utils.memoize(
   (type: unknown): React.FunctionComponent => {
-    const uuid = MeasureRenderTimes ? v4() : ''
     const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
 
     const mangledFunction = {
       [mangledFunctionName]: (p: any, context?: any) => {
+        const MeasureRenderTimes =
+          isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+        const uuid = MeasureRenderTimes ? v4() : ''
         if (MeasureRenderTimes) {
           performance.mark(`render_start_${uuid}`)
         }
@@ -163,10 +164,12 @@ const mangleFunctionType = Utils.memoize(
 
 const mangleClassType = Utils.memoize(
   (type: any) => {
-    const uuid = MeasureRenderTimes ? v4() : ''
     const originalRender = type.prototype.render
     // mutation
     type.prototype.render = function monkeyRender() {
+      const MeasureRenderTimes =
+        isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+      const uuid = MeasureRenderTimes ? v4() : ''
       if (MeasureRenderTimes) {
         performance.mark(`render_start_${uuid}`)
       }

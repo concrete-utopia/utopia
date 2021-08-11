@@ -1,8 +1,9 @@
 import * as React from 'react'
 import type { EditorStore } from './editor-state'
 import { UseStore, StoreApi, EqualityChecker } from 'zustand'
-import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -31,8 +32,6 @@ export const useEditorState = <U>(
   return context.useStore(wrappedSelector, equalityFn as EqualityChecker<U>)
 }
 
-const LogSelectorPerformance = !PRODUCTION_ENV && typeof window.performance.mark === 'function'
-
 function useWrapSelectorInPerformanceMeasureBlock<U>(
   selector: StateSelector<EditorStore, U>,
   selectorName: string,
@@ -46,6 +45,9 @@ function useWrapSelectorInPerformanceMeasureBlock<U>(
   } else {
     // let's create a new wrapped selector
     const wrappedSelector = (state: EditorStore) => {
+      const LogSelectorPerformance =
+        isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+
       if (LogSelectorPerformance) {
         window.performance.mark('selector_begin')
       }

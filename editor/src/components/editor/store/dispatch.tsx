@@ -2,7 +2,7 @@ import * as deepEquals from 'fast-deep-equal'
 import { produce } from 'immer'
 import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
-import { PRODUCTION_ENV } from '../../../common/env-vars'
+import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
@@ -107,6 +107,7 @@ import {
   getVSCodeChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -519,7 +520,10 @@ function editorDispatchInner(
 ): DispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
-  if (!PRODUCTION_ENV && typeof window.performance.mark === 'function') {
+  const MeasureDispatchTime =
+    isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
+
+  if (MeasureDispatchTime) {
     window.performance.mark('dispatch_begin')
   }
   if (dispatchedActions.length > 0) {
@@ -528,7 +532,7 @@ function editorDispatchInner(
 
     const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
 
-    if (!PRODUCTION_ENV && typeof window.performance.mark === 'function') {
+    if (MeasureDispatchTime) {
       window.performance.mark('derived_state_begin')
     }
 
@@ -588,25 +592,23 @@ function editorDispatchInner(
     const actionNames = dispatchedActions.map((action) => action.action).join(',')
     getAllUniqueUids(frozenEditorState.projectContents, actionNames)
 
-    if (!PRODUCTION_ENV) {
-      if (typeof window.performance.mark === 'function') {
-        window.performance.mark('dispatch_end')
-        window.performance.measure(
-          `Momentum Dispatch: [${actionNames}]`,
-          'dispatch_begin',
-          'dispatch_end',
-        )
-        window.performance.measure(
-          'Momentum Editor State Update',
-          'dispatch_begin',
-          'derived_state_begin',
-        )
-        window.performance.measure(
-          'Momentum Editor Derived State',
-          'derived_state_begin',
-          'dispatch_end',
-        )
-      }
+    if (MeasureDispatchTime) {
+      window.performance.mark('dispatch_end')
+      window.performance.measure(
+        `Momentum Dispatch: [${actionNames}]`,
+        'dispatch_begin',
+        'dispatch_end',
+      )
+      window.performance.measure(
+        'Momentum Editor State Update',
+        'dispatch_begin',
+        'derived_state_begin',
+      )
+      window.performance.measure(
+        'Momentum Editor Derived State',
+        'derived_state_begin',
+        'dispatch_end',
+      )
     }
 
     return {
