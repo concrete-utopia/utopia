@@ -1099,16 +1099,6 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1:hi-element-fragment-child-1": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1:hi-element-fragment-child-2": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
@@ -1127,16 +1117,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3:hi-element-fragment-child-1": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3:hi-element-fragment-child-2": Object {
-          "children": Array [],
-          "name": "div",
           "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
@@ -1333,16 +1313,6 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1:hi-element-fragment-child-1": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1:hi-element-fragment-child-2": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
@@ -1364,16 +1334,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3:hi-element-fragment-child-1": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3:hi-element-fragment-child-2": Object {
-          "children": Array [],
-          "name": "div",
           "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
@@ -2167,11 +2127,6 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
@@ -2185,11 +2140,6 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
           "rootElements": Array [],
         },
       }
@@ -2382,11 +2332,6 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
@@ -2402,11 +2347,6 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
           "rootElements": Array [],
         },
       }
@@ -2556,11 +2496,6 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
@@ -2574,11 +2509,6 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
           "rootElements": Array [],
         },
       }
@@ -2771,11 +2701,6 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
@@ -2791,11 +2716,6 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
           "rootElements": Array [],
         },
       }
@@ -2964,21 +2884,6 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root/hi-element-inner": Object {
-          "children": Array [],
-          "name": "HiElementInner",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
@@ -3004,21 +2909,6 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root/hi-element-inner": Object {
-          "children": Array [],
-          "name": "HiElementInner",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
-          "children": Array [],
-          "name": "div",
           "rootElements": Array [],
         },
       }
@@ -3225,21 +3115,6 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "HiElement",
           "rootElements": Array [],
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root/hi-element-inner": Object {
-          "children": Array [],
-          "name": "HiElementInner",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
@@ -3269,21 +3144,6 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root/hi-element-inner": Object {
-          "children": Array [],
-          "name": "HiElementInner",
-          "rootElements": Array [],
-        },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
-          "children": Array [],
-          "name": "div",
           "rootElements": Array [],
         },
       }

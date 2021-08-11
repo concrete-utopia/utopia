@@ -389,9 +389,9 @@ function renderJSXElement(
     [UTOPIA_PATHS_KEY]: optionalMap(EP.toString, elementPath),
   }
 
-  const staticElementPathForGeneratedElement = optionalMap(EP.dynamicPathToStaticPath, elementPath)
+  const staticElementPathForGeneratedElement = optionalMap(EP.makeLastPartOfPathStatic, elementPath)
 
-  const staticValidPaths = validPaths.map(EP.dynamicPathToStaticPath)
+  const staticValidPaths = validPaths.map(EP.makeLastPartOfPathStatic)
 
   if (FinalElement == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
