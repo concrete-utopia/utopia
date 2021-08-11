@@ -58,11 +58,7 @@ describe('ES Dependency Package Manager', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
-      extractNodeModulesFromPackageResponse(
-        'mypackage',
-        npmVersion('0.0.1'),
-        fileNoImports as PackagerServerResponse,
-      ),
+      extractNodeModulesFromPackageResponse(fileNoImports as PackagerServerResponse),
       {},
       'canvas',
     )
@@ -75,7 +71,7 @@ describe('ES Dependency Package Manager', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
-      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      extractNodeModulesFromPackageResponse(fileWithImports),
       {},
       'canvas',
     )
@@ -88,7 +84,7 @@ describe('ES Dependency Package Manager', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
-      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithLocalImport),
+      extractNodeModulesFromPackageResponse(fileWithLocalImport),
       {},
       'canvas',
     )
@@ -101,7 +97,7 @@ describe('ES Dependency Package Manager', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
-      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      extractNodeModulesFromPackageResponse(fileWithImports),
       {},
       'canvas',
     )
@@ -115,7 +111,7 @@ describe('ES Dependency Package Manager', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
-      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      extractNodeModulesFromPackageResponse(fileWithImports),
       {},
       'canvas',
     )
@@ -131,7 +127,7 @@ describe('ES Dependency Package Manager', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
-      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      extractNodeModulesFromPackageResponse(fileWithImports),
       {},
       'canvas',
     )
@@ -148,7 +144,7 @@ describe('ES Dependency Package Manager', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
-      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      extractNodeModulesFromPackageResponse(fileWithImports),
       {},
       'canvas',
     )
@@ -163,7 +159,7 @@ describe('ES Dependency Manager — Cycles', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
-      extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      extractNodeModulesFromPackageResponse(fileWithImports),
       {},
       'canvas',
       spyEvaluator,

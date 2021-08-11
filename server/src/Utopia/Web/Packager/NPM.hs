@@ -65,7 +65,7 @@ withInstalledProject semaphore versionedPackageName withInstalledPath = do
     withInstalledPath tempDir
 
 isRelevantFilename :: FilePath -> Bool
-isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".d.ts" path || isSuffixOf ".js" path
+isRelevantFilename path = isSuffixOf "package.json" path || isSuffixOf ".js" path || isSuffixOf ".cjs" path || isSuffixOf ".mjs" path
 
 data FileContentOrPlaceholder = FileContent BL.ByteString | Placeholder
                               deriving (Eq)
