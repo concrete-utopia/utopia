@@ -88,7 +88,7 @@ export function usePubSubAtomWriteOnly<T>(
       }
       atom.currentValue = newValue
       if (sync) {
-        PubSub.publishSync(atom.key, newValue)
+        // PubSub.publishSync(atom.key, newValue)
       } else {
         PubSub.publish(atom.key, newValue)
       }
