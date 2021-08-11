@@ -3,6 +3,8 @@ import { PRODUCTION_CONFIG } from '../common/env-vars'
 import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
 
 export type FeatureName =
+  | 'Debug mode – Redux Devtools'
+  | 'Debug mode – Performance Marks'
   | 'Dragging Reparents By Default'
   | 'Dragging Shows Overlay'
   | 'Advanced Resize Box'
@@ -15,6 +17,8 @@ export type FeatureName =
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
+  'Debug mode – Redux Devtools',
+  'Debug mode – Performance Marks',
   'Advanced Resize Box',
   'Re-parse Project Button',
   'Performance Test Triggers',
@@ -24,6 +28,8 @@ export const AllFeatureNames: FeatureName[] = [
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
+  'Debug mode – Redux Devtools': false,
+  'Debug mode – Performance Marks': false,
   'Dragging Reparents By Default': false,
   'Dragging Shows Overlay': false,
   'Advanced Resize Box': false,
