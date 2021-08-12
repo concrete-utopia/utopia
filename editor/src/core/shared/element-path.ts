@@ -10,8 +10,6 @@ import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 import { forceNotNull } from './optional-utils'
-import { memoize } from './memoize'
-import { is } from './equality-utils'
 
 // KILLME, except in 28 places
 export const toComponentId = toString
@@ -263,11 +261,6 @@ export function parentPath(path: ElementPath): ElementPath {
     return existing
   }
 }
-
-// export const parentPath = memoize(parentPathInner, {
-//   maxSize: Infinity,
-//   equals: is,
-// })
 
 export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
   return pathsEqual(parentPath(maybeChild), maybeParent)
