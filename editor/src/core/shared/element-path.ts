@@ -248,17 +248,26 @@ export function elementPathPartParent(path: ElementPathPart): ElementPathPart {
   return path.slice(0, path.length - 1)
 }
 
-function parentPathInner(path: StaticElementPath): StaticElementPath
-function parentPathInner(path: ElementPath): ElementPath
-function parentPathInner(path: ElementPath): ElementPath {
-  const parentFullElementPath = fullElementPathParent(path.parts)
-  return elementPath(parentFullElementPath)
+let parentPathCache: Map<ElementPath, ElementPath> = new Map()
+
+export function parentPath(path: StaticElementPath): StaticElementPath
+export function parentPath(path: ElementPath): ElementPath
+export function parentPath(path: ElementPath): ElementPath {
+  const existing = parentPathCache.get(path)
+  if (existing == null) {
+    const parentFullElementPath = fullElementPathParent(path.parts)
+    const result = elementPath(parentFullElementPath)
+    parentPathCache.set(path, result)
+    return result
+  } else {
+    return existing
+  }
 }
 
-export const parentPath = memoize(parentPathInner, {
-  maxSize: Infinity,
-  equals: is,
-})
+// export const parentPath = memoize(parentPathInner, {
+//   maxSize: Infinity,
+//   equals: is,
+// })
 
 export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
   return pathsEqual(parentPath(maybeChild), maybeParent)
