@@ -31,7 +31,6 @@ function transformToCommonJS(
     sourceType: 'module',
     sourceFileName: filePath,
     sourceMaps: true,
-    compact: true,
   })
   const sourceMap: RawSourceMap = {
     ...result.map,
