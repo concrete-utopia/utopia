@@ -21,6 +21,8 @@ import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
 import { EditorModes } from '../../components/editor/editor-modes'
 
+const NumberOfIterations = 100
+
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
@@ -38,7 +40,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
         `scroll_step_${framesPassed}`,
         `scroll_dispatch_finished_${framesPassed}`,
       )
-      if (framesPassed < 100) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
@@ -104,7 +106,7 @@ export function useTriggerResizePerformanceTest(): () => void {
         `resize_step_${framesPassed}`,
         `resize_dispatch_finished_${framesPassed}`,
       )
-      if (framesPassed < 100) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
@@ -152,7 +154,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
         `select_deselect_dispatch_finished_${framesPassed}`,
       )
 
-      if (framesPassed < 100) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
@@ -184,7 +186,7 @@ export function useTriggerBaselinePerformanceTest(): () => void {
         `baseline_dispatch_finished_${framesPassed}`,
       )
 
-      if (framesPassed < 100) {
+      if (framesPassed < NumberOfIterations) {
         framesPassed++
         requestAnimationFrame(step)
       } else {
