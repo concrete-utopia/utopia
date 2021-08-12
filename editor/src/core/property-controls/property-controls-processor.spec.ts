@@ -36,8 +36,6 @@ describe('Property Controls Processor', () => {
     const packageVersion = '4.2.5'
 
     const fakedPackagerResponse = extractNodeModulesFromPackageResponse(
-      packageName,
-      npmVersion(packageVersion),
       antdPackagerResponse as PackagerServerResponse,
     )
     const nodeModules = mangleNodeModulePaths('antd', fakedPackagerResponse)
@@ -75,8 +73,6 @@ describe('Property Controls Processor', () => {
     const packageVersion = '4.2.5'
 
     const fakedPackagerResponse = extractNodeModulesFromPackageResponse(
-      packageName,
-      npmVersion(packageVersion),
       antdPackagerResponse as PackagerServerResponse,
     )
     const nodeModules = mangleNodeModulePaths('antd', fakedPackagerResponse)

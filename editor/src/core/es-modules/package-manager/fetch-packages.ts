@@ -1,31 +1,53 @@
-import {
-  NodeModules,
-  esCodeFile,
-  esRemoteDependencyPlaceholder,
-  ESRemoteDependencyPlaceholder,
-  ESCodeFile,
-  NodeModuleFile,
-} from '../../shared/project-file-types'
-import {
-  PackagerServerResponse,
-  JsdelivrResponse,
-  RequestedNpmDependency,
-  ResolvedNpmDependency,
-  resolvedNpmDependency,
-  PackagerServerFile,
-} from '../../shared/npm-dependency-types'
-import { mapArrayToDictionary, pluck } from '../../shared/array-utils'
-import { objectMap } from '../../shared/object-utils'
-import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
-import { getPackagerUrl, getJsDelivrFileUrl } from './packager-url'
-import { Either, right, left, isLeft, isRight } from '../../shared/either'
-import { isBuiltInDependency } from './built-in-dependencies'
+import * as GitHost from 'hosted-git-info'
 import {
   findMatchingVersion,
-  isNpmVersion,
   isPackageNotFound,
   ResolvedDependencyVersion,
 } from '../../../components/editor/npm-dependency/npm-dependency'
+import { AnyJson } from '../../../missing-types/json'
+import { parseStringToJSON } from '../../../utils/package-parser-utils'
+import {
+  appendToPath,
+  getParentDirectory,
+  getPartsFromPath,
+  makePathFromParts,
+} from '../../../utils/path-utils'
+import {
+  objectKeyParser,
+  optionalObjectKeyParser,
+  ParseError,
+  ParseResult,
+  parseString,
+} from '../../../utils/value-parser-utils'
+import { pluck } from '../../shared/array-utils'
+import {
+  applicative3Either,
+  Either,
+  flatMapEither,
+  foldEither,
+  isLeft,
+  isRight,
+  left,
+  mapEither,
+  right,
+} from '../../shared/either'
+import {
+  PackagerServerFile,
+  PackagerServerResponse,
+  RequestedNpmDependency,
+} from '../../shared/npm-dependency-types'
+import { objectMap } from '../../shared/object-utils'
+import {
+  esCodeFile,
+  ESCodeFile,
+  esRemoteDependencyPlaceholder,
+  ESRemoteDependencyPlaceholder,
+  NodeModuleFile,
+  NodeModules,
+} from '../../shared/project-file-types'
+import { isBuiltInDependency } from './built-in-dependencies'
+import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
+import { getJsDelivrFileUrl, getPackagerUrl } from './packager-url'
 
 let depPackagerCache: { [key: string]: PackagerServerResponse } = {}
 
@@ -33,52 +55,117 @@ const PACKAGES_TO_SKIP = ['utopia-api', 'react', 'react-dom', 'uuiui', 'uuiui-de
 const NR_RETRIES = 3
 const RETRY_FREQ_MS = process.env.JEST_WORKER_ID == undefined ? 10000 : 0
 
-function extractFilePath(packagename: string, filepath: string): string {
-  const packagenameIndex = filepath.indexOf(packagename)
-  const restOfFileUrl = filepath.slice(packagenameIndex + packagename.length)
-  return restOfFileUrl
-}
-
 function getFileURLForPackageVersion(
-  packageName: string,
-  packageVersion: ResolvedDependencyVersion,
+  name: string,
+  version: string,
+  resolvedUrl: string | undefined,
   filePath: string,
 ): string {
-  const version = packageVersion.version
-  const localFilePath = extractFilePath(packageName, filePath)
-  if (isNpmVersion(packageVersion)) {
-    return getJsDelivrFileUrl(`${packageName}@${version}`, localFilePath)
+  const gitHost = resolvedUrl == null ? null : GitHost.fromUrl(resolvedUrl)
+  if (gitHost == null) {
+    return getJsDelivrFileUrl(`${name}@${version}`, filePath)
   } else {
-    return packageVersion.gitHost.file(localFilePath)
+    return gitHost.file(filePath)
   }
 }
 
+function findPackageJsonForFile(filePath: string, response: PackagerServerResponse): string | null {
+  const parentDir = getParentDirectory(filePath)
+  const maybePackageJsonPath = appendToPath(parentDir, 'package.json')
+
+  if (response.contents[maybePackageJsonPath] != null) {
+    return maybePackageJsonPath
+  } else if (parentDir === '/') {
+    return null
+  } else {
+    return findPackageJsonForFile(parentDir, response)
+  }
+}
+
+interface PackageJsonResolvedPackageFields {
+  name: string
+  version: string
+  resolvedUrl: string | undefined
+}
+
+function parseNameVersionFromParsedPackageJson(
+  parsedJSON: AnyJson,
+): ParseResult<PackageJsonResolvedPackageFields> {
+  return applicative3Either(
+    (name, version, resolvedUrl) => {
+      return {
+        name: name,
+        version: version,
+        resolvedUrl: resolvedUrl,
+      }
+    },
+    objectKeyParser(parseString, 'name')(parsedJSON),
+    objectKeyParser(parseString, 'version')(parsedJSON),
+    optionalObjectKeyParser(parseString, '_resolved')(parsedJSON),
+  )
+}
+
+function parseNameVersionFromPackageJson(
+  packageJsonContents: string,
+): ParseResult<PackageJsonResolvedPackageFields> {
+  const parsedJSON = parseStringToJSON(packageJsonContents)
+
+  return flatMapEither(parseNameVersionFromParsedPackageJson, parsedJSON)
+}
+
 function packagerResponseFileToNodeModule(
-  packageName: string,
-  packageVersion: ResolvedDependencyVersion,
+  response: PackagerServerResponse,
   filePath: string,
   fileContentsOrPlaceholder: PackagerServerFile,
 ): NodeModuleFile {
   if (fileContentsOrPlaceholder === 'PLACEHOLDER_FILE') {
-    const fileUrl = getFileURLForPackageVersion(packageName, packageVersion, filePath)
-    return esRemoteDependencyPlaceholder(fileUrl, false)
+    const packageJsonFilePath = findPackageJsonForFile(filePath, response)
+    const packageJsonPackagerServerFile =
+      packageJsonFilePath == null ? null : response.contents[packageJsonFilePath]
+    const packageJsonFileContent =
+      packageJsonPackagerServerFile == null || packageJsonPackagerServerFile === 'PLACEHOLDER_FILE'
+        ? null
+        : packageJsonPackagerServerFile.content
+    if (packageJsonFileContent == null || packageJsonFilePath == null) {
+      return esCodeFile(
+        `throw new Error('Failed to find package.json for file ${filePath}')`,
+        'NODE_MODULES',
+        filePath,
+      )
+    } else {
+      const moduleDirPathLength = getPartsFromPath(packageJsonFilePath).length - 1
+      const filePathParts = getPartsFromPath(filePath)
+      const relativeFilePathParts = filePathParts.slice(moduleDirPathLength)
+      const relativeFilePath = makePathFromParts(relativeFilePathParts)
+
+      const parsedPackageJsonContent = parseNameVersionFromPackageJson(packageJsonFileContent)
+      const fileUrlEither = mapEither(
+        ({ name, version, resolvedUrl }) =>
+          getFileURLForPackageVersion(name, version, resolvedUrl, relativeFilePath),
+        parsedPackageJsonContent,
+      )
+
+      return foldEither<ParseError, string, NodeModuleFile>(
+        (_) =>
+          esCodeFile(
+            `throw new Error('Failed to resolve file ${filePath}')`,
+            'NODE_MODULES',
+            filePath,
+          ),
+        (fileUrl) => esRemoteDependencyPlaceholder(fileUrl, false),
+        fileUrlEither,
+      )
+    }
   } else {
     return esCodeFile(fileContentsOrPlaceholder.content, 'NODE_MODULES', filePath)
   }
 }
 
 export function extractNodeModulesFromPackageResponse(
-  packageName: string,
-  packageVersion: ResolvedDependencyVersion,
   response: PackagerServerResponse,
 ): NodeModules {
   const extractFile = (fileContentsOrPlaceholder: PackagerServerFile, filePath: string) =>
-    packagerResponseFileToNodeModule(
-      packageName,
-      packageVersion,
-      filePath,
-      fileContentsOrPlaceholder,
-    )
+    packagerResponseFileToNodeModule(response, filePath, fileContentsOrPlaceholder)
   return objectMap(extractFile, response.contents)
 }
 
@@ -144,11 +231,7 @@ async function fetchPackagerResponse(
     if (packagerResponse.ok) {
       const resp = (await packagerResponse.json()) as PackagerServerResponse
       depPackagerCache[packagesUrl] = resp
-      const convertedResult = extractNodeModulesFromPackageResponse(
-        dependency.name,
-        resolvedVersion,
-        resp,
-      )
+      const convertedResult = extractNodeModulesFromPackageResponse(resp)
       result = convertedResult
       // This result includes transitive dependencies too, but for all modules it only includes package.json, .js and .d.ts files.
       // All other file types are replaced with placeholders to save on downloading unnecessary files. Placeholders are then
@@ -157,11 +240,7 @@ async function fetchPackagerResponse(
       throw new Error('Packager response error')
     }
   } else {
-    result = extractNodeModulesFromPackageResponse(
-      dependency.name,
-      resolvedVersion,
-      depPackagerCache[packagesUrl],
-    )
+    result = extractNodeModulesFromPackageResponse(depPackagerCache[packagesUrl])
   }
 
   // Note: no error management, imports will show an error

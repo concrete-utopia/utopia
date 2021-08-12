@@ -37,6 +37,7 @@ function emptyElementPathCache(): ElementPathCache {
 }
 
 let dynamicToStaticPathCache: Map<ElementPath, StaticElementPath> = new Map()
+let dynamicToStaticLastElementPathPartCache: Map<ElementPath, ElementPath> = new Map()
 let dynamicElementPathToStaticElementPathCache: Map<
   ElementPathPart,
   StaticElementPathPart
@@ -729,12 +730,20 @@ export function dynamicPathToStaticPath(path: ElementPath): StaticElementPath {
 }
 
 export function makeLastPartOfPathStatic(path: ElementPath): ElementPath {
-  const dynamicLastPart = last(path.parts)
-  if (dynamicLastPart == null) {
-    return path
+  const existing = dynamicToStaticLastElementPathPartCache.get(path)
+  if (existing == null) {
+    const dynamicLastPart = last(path.parts)
+    let result: ElementPath
+    if (dynamicLastPart == null) {
+      result = path
+    } else {
+      const staticLastPart = dynamicElementPathToStaticElementPath(dynamicLastPart)
+      result = elementPath([...dropLast(path.parts), staticLastPart])
+    }
+    dynamicToStaticLastElementPathPartCache.set(path, result)
+    return result
   } else {
-    const staticLastPart = dynamicElementPathToStaticElementPath(dynamicLastPart)
-    return elementPath([...dropLast(path.parts), staticLastPart])
+    return existing
   }
 }
 

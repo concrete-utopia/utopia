@@ -15,38 +15,15 @@ import           Utopia.Web.Packager.NPM
 
 expectedFilenames :: [Text]
 expectedFilenames = [
-  "/node_modules/js-tokens/index.js",
-  "/node_modules/js-tokens/package.json",
-  "/node_modules/loose-envify/cli.js",
-  "/node_modules/loose-envify/custom.js",
-  "/node_modules/loose-envify/index.js",
-  "/node_modules/loose-envify/loose-envify.js",
-  "/node_modules/loose-envify/package.json",
-  "/node_modules/loose-envify/replace.js",
-  "/node_modules/object-assign/index.js",
-  "/node_modules/object-assign/package.json",
-  "/node_modules/prop-types/checkPropTypes.js",
-  "/node_modules/prop-types/factory.js",
-  "/node_modules/prop-types/factoryWithThrowingShims.js",
-  "/node_modules/prop-types/factoryWithTypeCheckers.js",
-  "/node_modules/prop-types/index.js",
-  "/node_modules/prop-types/lib/ReactPropTypesSecret.js",
-  "/node_modules/prop-types/package.json",
-  "/node_modules/prop-types/prop-types.js",
-  "/node_modules/prop-types/prop-types.min.js",
-  "/node_modules/react-is/cjs/react-is.development.js",
-  "/node_modules/react-is/cjs/react-is.production.min.js",
-  "/node_modules/react-is/index.js",
-  "/node_modules/react-is/package.json",
-  "/node_modules/react-is/umd/react-is.development.js",
-  "/node_modules/react-is/umd/react-is.production.min.js",
-  "/node_modules/react/cjs/react.development.js",
-  "/node_modules/react/cjs/react.production.min.js",
-  "/node_modules/react/index.js",
-  "/node_modules/react/package.json",
-  "/node_modules/react/umd/react.development.js",
-  "/node_modules/react/umd/react.production.min.js",
-  "/node_modules/react/umd/react.profiling.min.js"]
+  "/node_modules/fflate/esm/browser.js",
+  "/node_modules/fflate/esm/index.mjs",
+  "/node_modules/fflate/lib/browser.cjs",
+  "/node_modules/fflate/lib/index.cjs",
+  "/node_modules/fflate/lib/node-worker.cjs",
+  "/node_modules/fflate/lib/node.cjs",
+  "/node_modules/fflate/lib/worker.cjs",
+  "/node_modules/fflate/package.json",
+  "/node_modules/fflate/umd/index.js"]
 
 getNodeModulesSubDirectories :: FilePath -> ConduitT () FilePath (ResourceT IO) ()
 getNodeModulesSubDirectories projectFolder =
@@ -64,9 +41,9 @@ npmSpec = do
       semaphore <- newQSem 1
       (runResourceT $ sourceToList $ withInstalledProject semaphore "non-existent-project-that-will-never-exist@9.9.9.9.9.9" getNodeModulesSubDirectories) `shouldThrow` anyIOException
   describe "getModuleAndDependenciesFiles" $ do
-    it "should get a bunch of .js, .d.ts and package.json files" $ do
+    it "should get a bunch of .cjs, .js, .mjs and package.json files" $ do
       semaphore <- newQSem 1
-      result <- runResourceT $ sourceToList $ withInstalledProject semaphore "react@16.13.1" getModuleAndDependenciesFiles
+      result <- runResourceT $ sourceToList $ withInstalledProject semaphore "fflate@0.7.1" getModuleAndDependenciesFiles
       let filteredResult = filter (\(k, v) -> v /= encodedPlaceholder) result
       let sortedFilenames = sort $ fmap pack $ toListOf (traverse . _1) filteredResult
       sortedFilenames `shouldBe` expectedFilenames
