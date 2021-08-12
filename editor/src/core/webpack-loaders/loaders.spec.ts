@@ -4,6 +4,7 @@ import { FileLoader } from './file-loader'
 import { SVGLoader } from './svg-loader'
 import { ModuleLoader } from './loader-types'
 import { applyLoaders } from './loaders'
+import { JSONLoader } from './json-loader'
 
 function nameForModuleLoader(moduleLoader: ModuleLoader): string {
   if (moduleLoader === CSSLoader) {
@@ -12,6 +13,8 @@ function nameForModuleLoader(moduleLoader: ModuleLoader): string {
     return 'Default Loader'
   } else if (moduleLoader === FileLoader) {
     return 'File Loader'
+  } else if (moduleLoader === JSONLoader) {
+    return 'JSON Loader'
   } else if (moduleLoader === SVGLoader) {
     return 'SVG Loader'
   } else {
@@ -37,7 +40,12 @@ describe('Applying loaders', () => {
   }
 
   verifyCorrectLoaderUsed(CSSLoader, ['.css'], '.utopiaClass { background-color: red; }')
-  verifyCorrectLoaderUsed(DefaultLoader, ['.js', '.jsx', '.ts', '.tsx', '.d.ts', '.json'], '{}')
+  verifyCorrectLoaderUsed(
+    DefaultLoader,
+    ['.cjs', '.mjs', '.js', '.jsx', '.ts', '.tsx', '.d.ts'],
+    '{}',
+  )
+  verifyCorrectLoaderUsed(JSONLoader, ['.json'], '{}')
   verifyCorrectLoaderUsed(FileLoader, ['.avif', '.bmp', '.gif', '.jpg', '.jpeg', '.png'], '')
   verifyCorrectLoaderUsed(SVGLoader, ['.svg'], '<svg/>')
 })

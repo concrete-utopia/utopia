@@ -21,6 +21,7 @@ import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   SimpleNumberInput,
   PopupList,
+  NumberInput,
 } from '../../../../uuiui'
 import { parseColor, CSSColor, printColor } from '../../common/css-utils'
 import { foldEither } from '../../../../core/shared/either'
@@ -31,6 +32,7 @@ import { SelectControl, SelectOption } from '../../controls/select-control'
 import { EventHandlerControl } from '../event-handlers-section/event-handlers-section'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propName: string
@@ -324,18 +326,34 @@ export const ControlForSliderProp = betterReactMemo(
     })
 
     return (
-      <SliderControl
-        key={controlId}
-        id={controlId}
-        testId={controlId}
-        value={value}
-        onTransientSubmitValue={propMetadata.onTransientSubmitValue}
-        onForcedSubmitValue={propMetadata.onSubmitValue}
-        onSubmitValue={propMetadata.onSubmitValue}
-        controlStatus={propMetadata.controlStatus}
-        controlStyles={propMetadata.controlStyles}
-        DEPRECATED_controlOptions={controlOptions}
-      />
+      <UIGridRow padded={false} variant={'<--------auto-------->|--45px--|'}>
+        <SliderControl
+          key={`${controlId}-slider`}
+          id={`${controlId}-slider`}
+          testId={`${controlId}-slider`}
+          value={value}
+          onTransientSubmitValue={propMetadata.onTransientSubmitValue}
+          onForcedSubmitValue={propMetadata.onSubmitValue}
+          onSubmitValue={propMetadata.onSubmitValue}
+          controlStatus={propMetadata.controlStatus}
+          controlStyles={propMetadata.controlStyles}
+          DEPRECATED_controlOptions={controlOptions}
+        />
+        <SimpleNumberInput
+          id={`${controlId}-number`}
+          testId={`${controlId}-number`}
+          key={`${controlId}-number`}
+          value={value}
+          onTransientSubmitValue={propMetadata.onTransientSubmitValue}
+          onForcedSubmitValue={propMetadata.onSubmitValue}
+          onSubmitValue={propMetadata.onSubmitValue}
+          controlStatus={propMetadata.controlStatus}
+          stepSize={controlDescription.step}
+          minimum={controlDescription.min}
+          maximum={controlDescription.max}
+          defaultUnitToHide={'px'}
+        />
+      </UIGridRow>
     )
   },
 )
