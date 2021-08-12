@@ -216,7 +216,7 @@ export const testPerformance = async function () {
   const masterResult = await testPerformanceInner(MASTER_EDITOR_URL)
 
   console.info(
-    `::set-output name=perf-result:: Staging editor:<br /> ${stagingResult} <br /> Current deployed master for baseline:<br /> ${masterResult}`,
+    `::set-output name=perf-result:: This PR: <br /> ${stagingResult} <br /> Compare with last deployed Master: <br /> ${masterResult}`,
   )
 }
 
