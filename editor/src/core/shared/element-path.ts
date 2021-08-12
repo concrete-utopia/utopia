@@ -256,7 +256,7 @@ function parentPathInner(path: ElementPath): ElementPath {
 }
 
 export const parentPath = memoize(parentPathInner, {
-  maxSize: 100000, // TODO do we want infinitely large cache here?
+  maxSize: Infinity,
   equals: is,
 })
 
