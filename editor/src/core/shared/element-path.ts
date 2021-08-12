@@ -246,11 +246,20 @@ export function elementPathPartParent(path: ElementPathPart): ElementPathPart {
   return path.slice(0, path.length - 1)
 }
 
+let parentPathCache: Map<ElementPath, ElementPath> = new Map()
+
 export function parentPath(path: StaticElementPath): StaticElementPath
 export function parentPath(path: ElementPath): ElementPath
 export function parentPath(path: ElementPath): ElementPath {
-  const parentFullElementPath = fullElementPathParent(path.parts)
-  return elementPath(parentFullElementPath)
+  const existing = parentPathCache.get(path)
+  if (existing == null) {
+    const parentFullElementPath = fullElementPathParent(path.parts)
+    const result = elementPath(parentFullElementPath)
+    parentPathCache.set(path, result)
+    return result
+  } else {
+    return existing
+  }
 }
 
 export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
@@ -381,6 +390,10 @@ export function isChildOf(path: ElementPath | null, parent: ElementPath | null):
   } else {
     return isParentOf(parent, path)
   }
+}
+
+export function isRootElementOf(path: ElementPath | null, parent: ElementPath | null): boolean {
+  return path != null && isChildOf(path, parent) && isRootElementOfInstance(path)
 }
 
 export function isSiblingOf(l: ElementPath | null, r: ElementPath | null): boolean {

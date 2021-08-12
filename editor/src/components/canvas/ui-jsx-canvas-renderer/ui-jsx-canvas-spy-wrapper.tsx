@@ -48,7 +48,6 @@ export function buildSpyWrappedElement(
       globalFrame: null,
       localFrame: null,
       children: childrenElementPaths,
-      rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways

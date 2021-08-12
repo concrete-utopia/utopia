@@ -139,7 +139,7 @@ export function getSelectableViews(
     let dynamicScenesWithFragmentRootViews: ElementPath[] = []
     Utils.fastForEach(scenes, (path) => {
       const scene = MetadataUtils.findElementByElementPath(componentMetadata, path)
-      const rootElements = scene?.rootElements
+      const rootElements = MetadataUtils.getRootViewPaths(componentMetadata, path)
       if (
         MetadataUtils.isSceneTreatedAsGroup(scene) &&
         rootElements != null &&

@@ -162,62 +162,52 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
       }
     `)
@@ -227,66 +217,52 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -299,66 +275,52 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
       }
     `)
@@ -397,82 +359,68 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
       }
     `)
@@ -482,42 +430,32 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [
@@ -526,48 +464,38 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -580,42 +508,32 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [
@@ -624,48 +542,38 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3",
           ],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
       }
     `)
@@ -717,87 +625,72 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
       }
     `)
@@ -807,42 +700,32 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [
@@ -851,55 +734,42 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3",
           ],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -912,42 +782,32 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [
@@ -956,55 +816,42 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3",
           ],
           "name": "Button",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1056,92 +903,76 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1151,42 +982,32 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [
@@ -1195,61 +1016,46 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1",
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "fragment",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1262,42 +1068,32 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "children": Array [
@@ -1306,61 +1102,46 @@ describe('Spy Wrapper Template Path Tests', () => {
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3",
           ],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1",
-            "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2",
-          ],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-1": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:hi-element-fragment-child-2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1401,82 +1182,68 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1486,68 +1253,52 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -1556,22 +1307,18 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1584,68 +1331,52 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -1654,22 +1385,18 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1721,87 +1448,72 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1811,68 +1523,52 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -1881,29 +1577,22 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -1916,68 +1605,52 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -1986,29 +1659,22 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "Button",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -2060,87 +1726,72 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
       }
     `)
@@ -2150,68 +1801,52 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -2220,29 +1855,22 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -2255,68 +1883,52 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -2325,29 +1937,22 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
       }
     `)
@@ -2429,87 +2034,72 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
       }
     `)
@@ -2519,68 +2109,52 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -2589,29 +2163,22 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -2624,68 +2191,52 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -2694,29 +2245,22 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
       }
     `)
@@ -2817,99 +2361,82 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner": Object {
           "children": Array [],
           "name": "HiElementInner",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
       }
     `)
@@ -2919,68 +2446,52 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -2989,43 +2500,32 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `)
@@ -3038,68 +2538,52 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
             "storyboard/scene-2",
           ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
           "children": Array [
             "storyboard/scene-1/app",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app": Object {
           "children": Array [],
           "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard/scene-1/app:other-app-root",
-          ],
         },
         "storyboard/scene-1/app:other-app-root": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
           "children": Array [
             "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
           "children": Array [
             "storyboard/scene-2/app2",
           ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "children": Array [
@@ -3108,43 +2592,32 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3",
           ],
           "name": "Button",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
           "children": Array [
             "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner",
           ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner": Object {
           "children": Array [],
           "name": "HiElementInner",
-          "rootElements": Array [
-            "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root",
-          ],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
           "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
-          "rootElements": Array [],
         },
       }
     `)

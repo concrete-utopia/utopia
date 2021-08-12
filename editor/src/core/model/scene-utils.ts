@@ -279,32 +279,6 @@ export function isSceneElementIgnoringImports(element: JSXElement): boolean {
   return element.name.baseVariable === 'Scene'
 }
 
-export function isSceneChildWidthHeightPercentage(
-  scene: ElementInstanceMetadata,
-  metadata: ElementInstanceMetadataMap,
-): boolean {
-  // FIXME ASAP This is reproducing logic that should stay in MetadataUtils, but importing that
-  // imports the entire editor into the worker threads, including modules that require window and document
-  const rootElements = scene.rootElements.map((path) => metadata[EP.toString(path)])
-  const rootElementSizes = rootElements.map((element) => {
-    return {
-      width: element.props?.style?.width,
-      height: element.props?.style?.height,
-    }
-  })
-
-  return rootElementSizes.some((size) => isPercentPin(size.width) || isPercentPin(size.height))
-}
-
-export function isDynamicSceneChildWidthHeightPercentage(
-  scene: ElementInstanceMetadata,
-  metadata: ElementInstanceMetadataMap,
-): boolean {
-  const isDynamicScene: boolean = scene.props[ResizesContentProp] ?? false
-
-  return isDynamicScene && isSceneChildWidthHeightPercentage(scene, metadata)
-}
-
 export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string | null {
   const possiblyStoryboard = openComponents.find(
     (component) => component.name === BakedInStoryboardVariableName,
