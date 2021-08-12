@@ -205,7 +205,7 @@ const mangleExoticType = Utils.memoize(
       dataUids: string | null,
       paths: string | null,
     ) {
-      if (child == null) {
+      if (child == null || !shouldIncludeDataUID(child.type)) {
         return child
       }
       const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
