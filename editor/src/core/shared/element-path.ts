@@ -11,6 +11,7 @@ import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 import { forceNotNull } from './optional-utils'
 import { memoize } from './memoize'
+import { is } from './equality-utils'
 
 // KILLME, except in 28 places
 export const toComponentId = toString
@@ -256,6 +257,7 @@ function parentPathInner(path: ElementPath): ElementPath {
 
 export const parentPath = memoize(parentPathInner, {
   maxSize: 100000, // TODO do we want infinitely large cache here?
+  equals: is,
 })
 
 export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
