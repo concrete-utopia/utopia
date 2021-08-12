@@ -638,4 +638,30 @@ describe('Monkey Function', () => {
       "
     `)
   })
+
+  it('Does not add a uid to a non-html intrinsic element', () => {
+    const Component = () => {
+      return <mesh />
+    }
+
+    expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<mesh></mesh>
+      "
+    `)
+  })
+
+  it('Does not add a uid to a non-html intrinsic element wrapped in a fragment', () => {
+    const Component = () => {
+      return (
+        <>
+          <mesh />
+        </>
+      )
+    }
+
+    expect(renderToFormattedString(<Component data-uid={'test1'} />)).toMatchInlineSnapshot(`
+      "<mesh></mesh>
+      "
+    `)
+  })
 })
