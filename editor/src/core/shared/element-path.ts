@@ -10,6 +10,7 @@ import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 import { forceNotNull } from './optional-utils'
+import { memoize } from './memoize'
 
 // KILLME, except in 28 places
 export const toComponentId = toString
@@ -246,12 +247,16 @@ export function elementPathPartParent(path: ElementPathPart): ElementPathPart {
   return path.slice(0, path.length - 1)
 }
 
-export function parentPath(path: StaticElementPath): StaticElementPath
-export function parentPath(path: ElementPath): ElementPath
-export function parentPath(path: ElementPath): ElementPath {
+function parentPathInner(path: StaticElementPath): StaticElementPath
+function parentPathInner(path: ElementPath): ElementPath
+function parentPathInner(path: ElementPath): ElementPath {
   const parentFullElementPath = fullElementPathParent(path.parts)
   return elementPath(parentFullElementPath)
 }
+
+export const parentPath = memoize(parentPathInner, {
+  maxSize: 100000, // TODO do we want infinitely large cache here?
+})
 
 export function isParentOf(maybeParent: ElementPath, maybeChild: ElementPath): boolean {
   return pathsEqual(parentPath(maybeChild), maybeParent)
