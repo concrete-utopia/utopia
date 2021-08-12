@@ -10,8 +10,10 @@ const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
 const PROJECT_ID = '5596ecdd'
-const EDITOR_URL =
+const STAGING_EDITOR_URL =
   process.env.EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/${BRANCH_NAME}`
+const MASTER_EDITOR_URL =
+  process.env.MASTER_EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/`
 
 type FrameResult = {
   title: string
@@ -76,7 +78,9 @@ function consoleDoneMessage(
   )
 }
 
-export const setupBrowser = async (): Promise<{
+export const setupBrowser = async (
+  url: string,
+): Promise<{
   page: puppeteer.Page
   browser: puppeteer.Browser
 }> => {
@@ -92,8 +96,8 @@ export const setupBrowser = async (): Promise<{
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
   // )
-  console.info('loading editor at URL:', EDITOR_URL)
-  await page.goto(EDITOR_URL)
+  console.info('loading editor at URL:', url)
+  await page.goto(url)
   return {
     browser: browser,
     page: page,
@@ -208,12 +212,21 @@ function consoleMessageForResult(result: FrameResult): string {
 }
 
 export const testPerformance = async function () {
+  const stagingResult = await testPerformanceInner(STAGING_EDITOR_URL)
+  const masterResult = await testPerformanceInner(MASTER_EDITOR_URL)
+
+  console.info(
+    `::set-output name=perf-result:: This PR: <br /> ${stagingResult} <br /> Compare with last deployed Master: <br /> ${masterResult}`,
+  )
+}
+
+export const testPerformanceInner = async function (url: string): Promise<string> {
   let scrollResult = EmptyResult
   let resizeResult = EmptyResult
   let selectionResult = EmptyResult
   let basicCalc = EmptyResult
   let simpleDispatch = EmptyResult
-  const { page, browser } = await setupBrowser()
+  const { page, browser } = await setupBrowser(url)
   try {
     const baselines = await initialiseTestsReturnScale(page)
     basicCalc = baselines.basicCalc
@@ -234,15 +247,11 @@ export const testPerformance = async function () {
     simpleDispatch,
   ])
 
-  console.info(
-    `::set-output name=perf-result:: ${consoleMessageForResult(
-      scrollResult,
-    )} | ${consoleMessageForResult(resizeResult)} | ${consoleMessageForResult(
-      selectionResult,
-    )} | ${consoleMessageForResult(basicCalc)} | ${consoleMessageForResult(
-      simpleDispatch,
-    )} | ![(Chart)](${summaryImage})`,
-  )
+  return `${consoleMessageForResult(scrollResult)} | ${consoleMessageForResult(
+    resizeResult,
+  )} | ${consoleMessageForResult(selectionResult)} | ${consoleMessageForResult(
+    basicCalc,
+  )} | ${consoleMessageForResult(simpleDispatch)} | ![(Chart)](${summaryImage})`
 }
 
 async function clickOnce(

@@ -105,6 +105,8 @@ export function evaluator(
   const fileExtension = getFileExtension(filepath)
   switch (fileExtension) {
     case 'js':
+    case 'cjs':
+    case 'mjs':
       return evaluateJs(filepath, moduleCode, fileEvaluationCache, requireFn)
     default:
       throw new Error(`error evaluating file ${filepath} – unsupported file type ${fileExtension}`)
