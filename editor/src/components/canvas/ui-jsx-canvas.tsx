@@ -56,7 +56,6 @@ import {
 import {
   MutableUtopiaContext,
   MutableUtopiaContextProps,
-  ParentLevelUtopiaContext,
   RerenderUtopiaContext,
   SceneLevelUtopiaCtxAtom,
   updateMutableUtopiaContextWithNewProps,
@@ -476,15 +475,9 @@ export const UiJsxCanvas = betterReactMemo(
                 canvasInteractionHappening={props.transientFilesState != null}
               >
                 <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-                  <ParentLevelUtopiaContext.Provider
-                    value={{
-                      elementPath: storyboardRootElementPath,
-                    }}
-                  >
-                    {StoryboardRootComponent == null ? null : (
-                      <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-                    )}
-                  </ParentLevelUtopiaContext.Provider>
+                  {StoryboardRootComponent == null ? null : (
+                    <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+                  )}
                 </SceneLevelUtopiaCtxAtom.Provider>
               </CanvasContainer>
             </UtopiaProjectContext.Provider>

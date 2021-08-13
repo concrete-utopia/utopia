@@ -70,11 +70,3 @@ export const SceneLevelUtopiaCtxAtom = atomWithPubSub<SceneLevelContextProps>({
     validPaths: [],
   },
 })
-
-interface ParentLevelUtopiaContextProps {
-  elementPath: ElementPath | null
-}
-
-export const ParentLevelUtopiaContext = createContext<ParentLevelUtopiaContextProps>({
-  elementPath: null,
-})
