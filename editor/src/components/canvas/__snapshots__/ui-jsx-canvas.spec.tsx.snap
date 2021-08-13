@@ -22617,6 +22617,7 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "aaa app-entity",
+      "ref": [Function],
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -23210,6 +23211,7 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "aaa app-entity",
+      "ref": [Function],
       "skipDeepFreeze": true,
       "style": Object {
         "bottom": 0,
