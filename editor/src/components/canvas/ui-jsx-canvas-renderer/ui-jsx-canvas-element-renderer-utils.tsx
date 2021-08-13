@@ -35,7 +35,7 @@ import { fastForEach, NO_OP } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import { DomWalkerInvalidatePathsContextData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
@@ -61,7 +61,7 @@ export function createLookupRender(
   validPaths: Array<ElementPath>,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
@@ -155,7 +155,7 @@ export function renderCoreElement(
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -319,7 +319,7 @@ function renderJSXElement(
   validPaths: Array<ElementPath>,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,

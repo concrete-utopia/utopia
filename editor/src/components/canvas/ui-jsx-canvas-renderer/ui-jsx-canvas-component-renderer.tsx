@@ -10,15 +10,15 @@ import {
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import {
-  DomWalkerInvalidatePathsContext,
-  DomWalkerInvalidatePathsContextData,
-  UiJsxCanvasContext,
+  DomWalkerInvalidatePathsCtxAtom,
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasCtxAtom,
   UiJsxCanvasContextData,
 } from '../ui-jsx-canvas'
 import {
   MutableUtopiaContextProps,
   RerenderUtopiaContext,
-  SceneLevelUtopiaContext,
+  SceneLevelUtopiaCtxAtom,
 } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
@@ -35,6 +35,7 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-pr
 import { getPathsFromString } from '../../../core/shared/uid-utils'
 import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
+import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 export type ComponentRendererComponent = React.ComponentType<{
   [UTOPIA_INSTANCE_PATH]: ElementPath
@@ -96,11 +97,11 @@ export function createComponentRendererComponent(params: {
       (c) => c.shouldIncludeCanvasRootInTheSpy,
     )
     const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
-    const sceneContext = React.useContext(SceneLevelUtopiaContext)
+    const sceneContext = usePubSubAtomReadOnly(SceneLevelUtopiaCtxAtom)
 
-    let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
-    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
-      DomWalkerInvalidatePathsContext,
+    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
+    const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
+      DomWalkerInvalidatePathsCtxAtom,
     )
 
     if (utopiaJsxComponent == null) {

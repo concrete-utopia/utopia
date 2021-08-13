@@ -5,7 +5,7 @@ import { Scene, SceneProps } from 'utopia-api'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { RerenderUtopiaContext } from './ui-jsx-canvas-contexts'
-import { DomWalkerInvalidateScenesContext, UiJsxCanvasContext } from '../ui-jsx-canvas'
+import { DomWalkerInvalidateScenesContext, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }

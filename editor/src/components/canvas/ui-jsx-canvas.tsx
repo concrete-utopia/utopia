@@ -58,7 +58,7 @@ import {
   MutableUtopiaContextProps,
   ParentLevelUtopiaContext,
   RerenderUtopiaContext,
-  SceneLevelUtopiaContext,
+  SceneLevelUtopiaCtxAtom,
   updateMutableUtopiaContextWithNewProps,
   UtopiaProjectContext,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
@@ -79,6 +79,7 @@ import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
+import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 applyUIDMonkeyPatch()
 
@@ -104,18 +105,19 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
   }
 }
 
-export const UiJsxCanvasContext = React.createContext<UiJsxCanvasContextData>(
-  emptyUiJsxCanvasContextData(),
-)
-UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
+export const UiJsxCanvasCtxAtom = atomWithPubSub<UiJsxCanvasContextData>({
+  key: 'UiJsxCanvasContextlikeAtom',
+  defaultValue: emptyUiJsxCanvasContextData(),
+})
 
 export const DomWalkerInvalidateScenesContext = React.createContext<SetValueCallback<Set<string>>>(
   NO_OP,
 )
-export type DomWalkerInvalidatePathsContextData = SetValueCallback<Set<string>>
-export const DomWalkerInvalidatePathsContext = React.createContext<
-  DomWalkerInvalidatePathsContextData
->(NO_OP)
+export type DomWalkerInvalidatePathsCtxData = SetValueCallback<Set<string>>
+export const DomWalkerInvalidatePathsCtxAtom = atomWithPubSub<DomWalkerInvalidatePathsCtxData>({
+  key: 'DomWalkerInvalidatePathsCtxlikeAtom',
+  defaultValue: NO_OP,
+})
 
 export interface UiJsxCanvasProps {
   offset: CanvasVector
@@ -289,9 +291,9 @@ export const UiJsxCanvas = betterReactMemo(
       clearErrors()
     }
 
-    let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
-    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
-      DomWalkerInvalidatePathsContext,
+    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
+    const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
+      DomWalkerInvalidatePathsCtxAtom,
     )
     useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
@@ -472,7 +474,7 @@ export const UiJsxCanvas = betterReactMemo(
                 scrollAnimation={props.scrollAnimation}
                 canvasInteractionHappening={props.transientFilesState != null}
               >
-                <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
+                <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
                   <ParentLevelUtopiaContext.Provider
                     value={{
                       elementPath: storyboardRootElementPath,
@@ -482,7 +484,7 @@ export const UiJsxCanvas = betterReactMemo(
                       <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
                     )}
                   </ParentLevelUtopiaContext.Provider>
-                </SceneLevelUtopiaContext.Provider>
+                </SceneLevelUtopiaCtxAtom.Provider>
               </CanvasContainer>
             </UtopiaProjectContext.Provider>
           </RerenderUtopiaContext.Provider>
