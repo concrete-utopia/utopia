@@ -88,15 +88,19 @@ interface SpyWrapperProps {
   jsxFactoryFunctionName: string | null
   $$utopiaElementPath: ElementPath
 }
-const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
+const SpyWrapper = React.forwardRef<any, SpyWrapperProps>((props, ref) => {
   const {
     spyCallback,
     elementToRender: ElementToRender,
     inScope,
     jsxFactoryFunctionName,
     $$utopiaElementPath,
-    ...passThroughProps
+    ...passThroughPropsFromProps
   } = props
+  const passThroughProps = {
+    ...passThroughPropsFromProps,
+    ...(ref == undefined ? {} : { ref: ref }),
+  }
   spyCallback(passThroughProps)
   return renderComponentUsingJsxFactoryFunction(
     inScope,
@@ -104,5 +108,5 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     ElementToRender,
     passThroughProps,
   )
-}
+})
 SpyWrapper.displayName = 'SpyWrapper'
