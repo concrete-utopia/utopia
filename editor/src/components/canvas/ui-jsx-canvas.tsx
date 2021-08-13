@@ -106,16 +106,17 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
 }
 
 export const UiJsxCanvasCtxAtom = atomWithPubSub<UiJsxCanvasContextData>({
-  key: 'UiJsxCanvasContextlikeAtom',
+  key: 'UiJsxCanvasCtxAtom',
   defaultValue: emptyUiJsxCanvasContextData(),
 })
 
-export const DomWalkerInvalidateScenesContext = React.createContext<SetValueCallback<Set<string>>>(
-  NO_OP,
-)
+export const DomWalkerInvalidateScenesCtxAtom = atomWithPubSub<SetValueCallback<Set<string>>>({
+  key: 'DomWalkerInvalidateScenesCtxAtom',
+  defaultValue: NO_OP,
+})
 export type DomWalkerInvalidatePathsCtxData = SetValueCallback<Set<string>>
 export const DomWalkerInvalidatePathsCtxAtom = atomWithPubSub<DomWalkerInvalidatePathsCtxData>({
-  key: 'DomWalkerInvalidatePathsCtxlikeAtom',
+  key: 'DomWalkerInvalidatePathsCtxAtom',
   defaultValue: NO_OP,
 })
 
