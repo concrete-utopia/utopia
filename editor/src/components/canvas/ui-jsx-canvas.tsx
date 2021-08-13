@@ -59,11 +59,15 @@ import {
   RerenderUtopiaContext,
   SceneLevelUtopiaCtxAtom,
   updateMutableUtopiaContextWithNewProps,
-  UtopiaProjectContext,
+  UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
-import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../core/model/utopia-constants'
@@ -438,6 +442,13 @@ export const UiJsxCanvas = betterReactMemo(
       validPaths: rootValidPaths,
     })
 
+    const utopiaProjectContextValue = useKeepShallowReferenceEquality({
+      projectContents: props.projectContents,
+      transientFilesState: props.transientFilesState,
+      openStoryboardFilePathKILLME: props.uiFilePath,
+      resolve: resolve,
+    })
+
     return (
       <div
         style={{
@@ -453,14 +464,7 @@ export const UiJsxCanvas = betterReactMemo(
               shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
             }}
           >
-            <UtopiaProjectContext.Provider
-              value={{
-                projectContents: props.projectContents,
-                transientFilesState: props.transientFilesState,
-                openStoryboardFilePathKILLME: props.uiFilePath,
-                resolve: resolve,
-              }}
-            >
+            <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
               <CanvasContainer
                 ref={ref}
                 mountCount={props.mountCount}
@@ -480,7 +484,7 @@ export const UiJsxCanvas = betterReactMemo(
                   )}
                 </SceneLevelUtopiaCtxAtom.Provider>
               </CanvasContainer>
-            </UtopiaProjectContext.Provider>
+            </UtopiaProjectCtxAtom.Provider>
           </RerenderUtopiaContext.Provider>
         </MutableUtopiaContext.Provider>
       </div>

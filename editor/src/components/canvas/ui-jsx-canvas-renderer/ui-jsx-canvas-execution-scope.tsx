@@ -25,7 +25,7 @@ import {
 import {
   MutableUtopiaContextProps,
   updateMutableUtopiaContextWithNewProps,
-  UtopiaProjectContext,
+  UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-contexts'
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
@@ -42,6 +42,7 @@ import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-ut
 import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
 import { useContextSelector } from 'use-context-selector'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -178,20 +179,17 @@ export function createExecutionScope(
   }
 }
 
+const emptyHighlightBoundsResult = { code: '', highlightBounds: null }
+
 export function useGetCodeAndHighlightBounds(
   filePath: string | null,
 ): { code: string; highlightBounds: HighlightBoundsForUids | null } {
-  return useContextSelector(
-    UtopiaProjectContext,
-    (c) => {
-      if (filePath == null) {
-        return { code: '', highlightBounds: null }
-      } else {
-        return getCodeAndHighlightBoundsForFile(filePath, c.projectContents)
-      }
-    },
-    shallowEqual,
-  )
+  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom)
+  if (filePath == null) {
+    return emptyHighlightBoundsResult
+  } else {
+    return getCodeAndHighlightBoundsForFile(filePath, projectContext.projectContents)
+  }
 }
 
 export function getCodeAndHighlightBoundsForFile(

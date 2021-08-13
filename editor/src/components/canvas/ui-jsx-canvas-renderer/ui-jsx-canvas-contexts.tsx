@@ -43,7 +43,7 @@ export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
 })
 RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 
-interface UtopiaProjectContextProps {
+interface UtopiaProjectCtxProps {
   projectContents: ProjectContentTreeRoot
   openStoryboardFilePathKILLME: string | null
   transientFilesState: TransientFilesState | null
@@ -53,11 +53,14 @@ const EmptyResolve = (importOrigin: string, toImport: string): Either<string, st
   return left(`Error while resolving ${toImport}, the resolver is missing`)
 }
 
-export const UtopiaProjectContext = createContext<UtopiaProjectContextProps>({
-  projectContents: {},
-  openStoryboardFilePathKILLME: null,
-  transientFilesState: null,
-  resolve: EmptyResolve,
+export const UtopiaProjectCtxAtom = atomWithPubSub<UtopiaProjectCtxProps>({
+  key: 'UtopiaProjectCtxAtom',
+  defaultValue: {
+    projectContents: {},
+    openStoryboardFilePathKILLME: null,
+    transientFilesState: null,
+    resolve: EmptyResolve,
+  },
 })
 
 interface SceneLevelContextProps {
