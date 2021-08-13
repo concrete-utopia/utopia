@@ -54,10 +54,10 @@ import {
   createComponentRendererComponent,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import {
-  MutableUtopiaContextRefData,
+  MutableUtopiaCtxRefData,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
-  updateMutableUtopiaContextWithNewProps,
+  updateMutableUtopiaCtxRefWithNewProps,
   UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
@@ -308,7 +308,7 @@ export const UiJsxCanvas = betterReactMemo(
     )
     unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
 
-    let mutableContextRef = React.useRef<MutableUtopiaContextRefData>({})
+    let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 
     let topLevelComponentRendererComponents = React.useRef<
       MapLike<MapLike<ComponentRendererComponent>>

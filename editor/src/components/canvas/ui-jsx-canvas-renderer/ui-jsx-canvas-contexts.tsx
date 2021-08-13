@@ -7,7 +7,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
 import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
 
-export interface MutableUtopiaContextRefData {
+export interface MutableUtopiaCtxRefData {
   [filePath: string]: {
     mutableContext: {
       requireResult: MapLike<any>
@@ -18,9 +18,9 @@ export interface MutableUtopiaContextRefData {
   }
 }
 
-export function updateMutableUtopiaContextWithNewProps(
-  ref: React.MutableRefObject<MutableUtopiaContextRefData>,
-  newProps: MutableUtopiaContextRefData,
+export function updateMutableUtopiaCtxRefWithNewProps(
+  ref: React.MutableRefObject<MutableUtopiaCtxRefData>,
+  newProps: MutableUtopiaCtxRefData,
 ): void {
   ref.current = newProps
 }

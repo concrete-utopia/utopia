@@ -16,7 +16,7 @@ import {
   UiJsxCanvasContextData,
 } from '../ui-jsx-canvas'
 import {
-  MutableUtopiaContextRefData,
+  MutableUtopiaCtxRefData,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
 } from './ui-jsx-canvas-contexts'
@@ -73,7 +73,7 @@ function tryToGetInstancePath(
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
   filePath: string
-  mutableContextRef: React.MutableRefObject<MutableUtopiaContextRefData>
+  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
