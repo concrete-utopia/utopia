@@ -1,6 +1,5 @@
 import * as React from 'react'
 import type { MapLike } from 'typescript'
-import { createContext } from 'use-context-selector'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 import { Either, left } from '../../../core/shared/either'
 import type { ElementPath } from '../../../core/shared/project-file-types'
