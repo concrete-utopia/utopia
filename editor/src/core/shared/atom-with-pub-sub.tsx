@@ -1,10 +1,19 @@
 import * as PubSub from 'pubsub-js'
 import * as React from 'react'
+import { unstable_batchedUpdates } from 'react-dom'
 import { useForceUpdate } from '../../components/editor/hook-utils'
+
+// From https://github.com/dai-shi/use-context-selector/blob/2dd334d727fc3b4cbadf7876b6ce64e0c633fd25/src/index.ts#L25
+const isSSR =
+  typeof window === 'undefined' ||
+  /ServerSideRendering/.test(window.navigator && window.navigator.userAgent)
+
+export const useIsomorphicLayoutEffect = isSSR ? React.useEffect : React.useLayoutEffect
 
 export interface AtomWithPubSub<T> {
   key: string
   currentValue: T
+  Provider: React.FunctionComponent<React.PropsWithChildren<{ value: T }>>
 }
 
 const GlobalAtomMap: { [key: string]: AtomWithPubSub<any> } = {}
@@ -17,6 +26,16 @@ export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): At
   const newAtom: AtomWithPubSub<T> = {
     key: key,
     currentValue: defaultValue,
+    Provider: ({ children, value }) => {
+      const updateAtomSynchronously = usePubSubAtomWriteOnlyInner(newAtom, 'sync')
+      newAtom.currentValue = value // TODO this is sneaky and we should use API instead
+      useIsomorphicLayoutEffect(() => {
+        unstable_batchedUpdates(() => {
+          updateAtomSynchronously(() => value)
+        })
+      })
+      return <>{children}</>
+    },
   }
   GlobalAtomMap[key] = newAtom
   return newAtom
@@ -46,12 +65,22 @@ export function useSubscribeToPubSubAtom<T>(
 
 export function usePubSubAtomReadOnly<T>(atom: AtomWithPubSub<T>): T {
   const forceUpdate = useForceUpdate()
-  useSubscribeToPubSubAtom(atom, React.useCallback(forceUpdate, [forceUpdate]))
+  const previousValueRef = React.useRef(atom.currentValue)
+  useSubscribeToPubSubAtom(
+    atom,
+    React.useCallback(() => {
+      if (previousValueRef.current !== atom.currentValue) {
+        forceUpdate()
+      }
+    }, [forceUpdate, atom]),
+  )
+  previousValueRef.current = atom.currentValue
   return atom.currentValue
 }
 
-export function usePubSubAtomWriteOnly<T>(
+function usePubSubAtomWriteOnlyInner<T>(
   atom: AtomWithPubSub<T>,
+  publishMode: 'sync' | 'async',
 ): (newValueOrUpdater: T | ((oldValue: T) => T)) => void {
   return React.useCallback(
     (newValueOrUpdater: T | ((oldValue: T) => T)) => {
@@ -62,14 +91,22 @@ export function usePubSubAtomWriteOnly<T>(
       } else {
         newValue = newValueOrUpdater
       }
-      if (atom.currentValue !== newValue) {
-        atom.currentValue = newValue
+      atom.currentValue = newValue
+      if (publishMode === 'sync') {
+        PubSub.publishSync(atom.key, newValue)
+      } else {
         PubSub.publish(atom.key, newValue)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [atom.key],
   )
+}
+
+export function usePubSubAtomWriteOnly<T>(
+  atom: AtomWithPubSub<T>,
+): (newValueOrUpdater: T | ((oldValue: T) => T)) => void {
+  return usePubSubAtomWriteOnlyInner(atom, 'async')
 }
 
 export function usePubSubAtom<T>(
