@@ -36,12 +36,14 @@ interface RerenderUtopiaContextProps {
   shouldIncludeCanvasRootInTheSpy: boolean
 }
 
-export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
-  hiddenInstances: [],
-  canvasIsLive: false,
-  shouldIncludeCanvasRootInTheSpy: false,
+export const RerenderUtopiaCtxAtom = atomWithPubSub<RerenderUtopiaContextProps>({
+  key: 'RerenderUtopiaCtxAtom',
+  defaultValue: {
+    hiddenInstances: [],
+    canvasIsLive: false,
+    shouldIncludeCanvasRootInTheSpy: false,
+  },
 })
-RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 
 interface UtopiaProjectCtxProps {
   projectContents: ProjectContentTreeRoot

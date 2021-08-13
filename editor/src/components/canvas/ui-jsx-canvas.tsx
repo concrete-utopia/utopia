@@ -56,7 +56,7 @@ import {
 import {
   MutableUtopiaContext,
   MutableUtopiaContextProps,
-  RerenderUtopiaContext,
+  RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
   updateMutableUtopiaContextWithNewProps,
   UtopiaProjectCtxAtom,
@@ -442,6 +442,12 @@ export const UiJsxCanvas = betterReactMemo(
       validPaths: rootValidPaths,
     })
 
+    const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
+      hiddenInstances: hiddenInstances,
+      canvasIsLive: canvasIsLive,
+      shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+    })
+
     const utopiaProjectContextValue = useKeepShallowReferenceEquality({
       projectContents: props.projectContents,
       transientFilesState: props.transientFilesState,
@@ -457,13 +463,7 @@ export const UiJsxCanvas = betterReactMemo(
       >
         <Helmet>{parse(linkTags)}</Helmet>
         <MutableUtopiaContext.Provider value={mutableContextRef}>
-          <RerenderUtopiaContext.Provider
-            value={{
-              hiddenInstances: hiddenInstances,
-              canvasIsLive: canvasIsLive,
-              shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-            }}
-          >
+          <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
             <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
               <CanvasContainer
                 ref={ref}
@@ -485,7 +485,7 @@ export const UiJsxCanvas = betterReactMemo(
                 </SceneLevelUtopiaCtxAtom.Provider>
               </CanvasContainer>
             </UtopiaProjectCtxAtom.Provider>
-          </RerenderUtopiaContext.Provider>
+          </RerenderUtopiaCtxAtom.Provider>
         </MutableUtopiaContext.Provider>
       </div>
     )

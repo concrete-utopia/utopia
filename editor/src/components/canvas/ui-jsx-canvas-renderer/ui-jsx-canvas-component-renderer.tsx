@@ -17,7 +17,7 @@ import {
 } from '../ui-jsx-canvas'
 import {
   MutableUtopiaContextProps,
-  RerenderUtopiaContext,
+  RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
 } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
@@ -92,11 +92,10 @@ export function createComponentRendererComponent(params: {
         return isUtopiaJSXComponent(elem) && elem.name === params.topLevelElementName
       }) ?? null
 
-    const shouldIncludeCanvasRootInTheSpy = useContextSelector(
-      RerenderUtopiaContext,
-      (c) => c.shouldIncludeCanvasRootInTheSpy,
-    )
-    const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
+    const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom)
+    const shouldIncludeCanvasRootInTheSpy = rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy
+
+    const hiddenInstances = rerenderUtopiaContext.hiddenInstances
     const sceneContext = usePubSubAtomReadOnly(SceneLevelUtopiaCtxAtom)
 
     let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
