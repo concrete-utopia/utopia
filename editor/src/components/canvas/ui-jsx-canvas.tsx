@@ -359,12 +359,13 @@ export const UiJsxCanvas = betterReactMemo(
               const exportsDetail = projectFile.fileContents.parsed.exportsDetail
               let filteredScope: MapLike<any> = {
                 ...scope.module.exports,
+                __esModule: true,
               }
               for (const s of Object.keys(scope)) {
                 if (s in exportsDetail.namedExports) {
                   filteredScope[s] = scope[s]
                 } else if (s === exportsDetail.defaultExport?.name) {
-                  filteredScope[s] = scope[s]
+                  filteredScope['default'] = scope[s]
                 }
               }
               return right(filteredScope)
