@@ -207,7 +207,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -343,7 +342,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -628,7 +626,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -746,7 +743,6 @@ Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -864,7 +860,6 @@ Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -982,7 +977,6 @@ Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1214,7 +1208,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1350,7 +1343,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1544,7 +1536,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1775,7 +1766,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1911,7 +1901,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2024,7 +2013,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2273,7 +2261,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2409,7 +2396,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2649,7 +2635,6 @@ Object {
       "data-uid": "zzz app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2801,7 +2786,6 @@ Object {
       "data-uid": "aaa~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2953,7 +2937,6 @@ Object {
       "data-uid": "aaa~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3105,7 +3088,6 @@ Object {
       "data-uid": "aaa~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3405,7 +3387,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3541,7 +3522,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3898,7 +3878,6 @@ Object {
       "data-uid": "zzz app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4152,7 +4131,6 @@ Object {
       "data-uid": "aaa~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4311,7 +4289,6 @@ Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4470,7 +4447,6 @@ Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4629,7 +4605,6 @@ Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4883,7 +4858,6 @@ Object {
       "data-uid": "aaa~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5042,7 +5016,6 @@ Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5201,7 +5174,6 @@ Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5360,7 +5332,6 @@ Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5614,7 +5585,6 @@ Object {
       "data-uid": "aaa~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5773,7 +5743,6 @@ Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5932,7 +5901,6 @@ Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6091,7 +6059,6 @@ Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6334,7 +6301,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6470,7 +6436,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6658,7 +6623,6 @@ Object {
       "data-uid": "zzz app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6759,7 +6723,6 @@ Object {
       "data-uid": "aaa",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6860,7 +6823,6 @@ Object {
       "data-uid": "bbb",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7091,7 +7053,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7227,7 +7188,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7406,7 +7366,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7655,7 +7614,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7791,7 +7749,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8046,7 +8003,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8222,7 +8178,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n1",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8398,7 +8353,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n2",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8574,7 +8528,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n3",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8823,7 +8776,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8959,7 +8911,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9214,7 +9165,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9390,7 +9340,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n1",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9566,7 +9515,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n2",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9742,7 +9690,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n3",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9985,7 +9932,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10121,7 +10067,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10309,7 +10254,6 @@ Object {
       "data-uid": "zzz app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10424,7 +10368,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10539,7 +10482,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10782,7 +10724,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10918,7 +10859,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11108,7 +11048,6 @@ Object {
       "data-uid": "zzz app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11223,7 +11162,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11338,7 +11276,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11596,7 +11533,6 @@ Object {
         "width": 200,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11745,7 +11681,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12083,7 +12018,6 @@ Object {
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12286,7 +12220,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12543,7 +12476,6 @@ Object {
         "width": 200,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12692,7 +12624,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13030,7 +12961,6 @@ Object {
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13233,7 +13163,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13491,7 +13420,6 @@ Object {
         "width": 200,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13640,7 +13568,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14026,7 +13953,6 @@ Object {
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14283,7 +14209,6 @@ Object {
         },
       ],
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14541,7 +14466,6 @@ Object {
         "width": 200,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14690,7 +14614,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15076,7 +14999,6 @@ Object {
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15333,7 +15255,6 @@ Object {
         },
       ],
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15563,7 +15484,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15699,7 +15619,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15812,7 +15731,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -16165,7 +16083,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -16301,7 +16218,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -17507,7 +17423,6 @@ export var storyboard = (props) => {
         "width": 376,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18363,7 +18278,6 @@ export var storyboard = (props) => {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18714,7 +18628,6 @@ export var storyboard = (props) => {
       "data-uid": "834~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19065,7 +18978,6 @@ export var storyboard = (props) => {
       "data-uid": "834~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19416,7 +19328,6 @@ export var storyboard = (props) => {
       "data-uid": "834~~~5",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19807,7 +19718,6 @@ export var storyboard = (props) => {
       "data-uid": "999~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20058,7 +19968,6 @@ export var storyboard = (props) => {
       ],
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20445,7 +20354,6 @@ export var storyboard = (props) => {
       "data-uid": "999~~~4",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20692,7 +20600,6 @@ export var storyboard = (props) => {
       "shortcut": "⌘⎇V",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21079,7 +20986,6 @@ export var storyboard = (props) => {
       "data-uid": "999~~~6",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21326,7 +21232,6 @@ export var storyboard = (props) => {
       "shortcut": "⌘⎇C",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21569,7 +21474,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21705,7 +21609,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21925,7 +21828,6 @@ Object {
       "data-uid": "zzz app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22057,7 +21959,6 @@ Object {
       "name": "World!",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22189,7 +22090,6 @@ Object {
       "name": "Dolly!",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22421,7 +22321,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22557,7 +22456,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22721,7 +22619,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22952,7 +22849,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23088,7 +22984,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23324,7 +23219,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23544,7 +23438,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23651,7 +23544,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23928,7 +23820,6 @@ export var storyboard = (
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24149,7 +24040,6 @@ export var storyboard = (
         test
       </div>,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24426,7 +24316,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24562,7 +24451,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24807,7 +24695,6 @@ Object {
         "position": "absolute",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25017,7 +24904,6 @@ Object {
         "width": 221,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25152,7 +25038,6 @@ Object {
         "width": 193,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25410,7 +25295,6 @@ Object {
         "width": 200,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25559,7 +25443,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25837,7 +25720,6 @@ Object {
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -25969,7 +25851,6 @@ Object {
         "position": "absolute",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -26371,7 +26252,6 @@ Object {
         "width": 200,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -26520,7 +26400,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -26799,7 +26678,6 @@ Object {
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -26931,7 +26809,6 @@ Object {
         "position": "absolute",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27180,7 +27057,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27316,7 +27192,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27571,7 +27446,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27747,7 +27621,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n1",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -27923,7 +27796,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n2",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28099,7 +27971,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n3",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28348,7 +28219,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28484,7 +28354,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28740,7 +28609,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -28917,7 +28785,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n1",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29094,7 +28961,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n2",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29271,7 +29137,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n3",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29520,7 +29385,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29656,7 +29520,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -29918,7 +29781,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30094,7 +29956,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n1",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30270,7 +30131,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n2",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30446,7 +30306,6 @@ Object {
       "skipDeepFreeze": true,
       "title": "n3",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30700,7 +30559,6 @@ Object {
         "width": 200,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -30849,7 +30707,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31089,7 +30946,6 @@ Object {
       },
       "title": "Hi there!",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31221,7 +31077,6 @@ Object {
         "position": "absolute",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31455,7 +31310,6 @@ Object {
         "width": 212,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31562,7 +31416,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31668,7 +31521,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31774,7 +31626,6 @@ Object {
       "data-uid": "bbb app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -31983,7 +31834,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32090,7 +31940,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32320,7 +32169,6 @@ export var storyboard = (
         "current": Object {},
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32446,7 +32294,6 @@ export var storyboard = (
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32655,7 +32502,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32762,7 +32608,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -32875,7 +32720,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33086,7 +32930,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33193,7 +33036,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33450,7 +33292,6 @@ export var storyboard = (
         "width": "100%",
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33660,7 +33501,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33767,7 +33607,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -33884,7 +33723,6 @@ Object {
       "skipDeepFreeze": true,
       "x": 5,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34138,7 +33976,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34274,7 +34111,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34714,7 +34550,6 @@ export var storyboard = (
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -34932,7 +34767,6 @@ export var storyboard = (
         "width": 100,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35074,7 +34908,6 @@ export var storyboard = (
         "width": 100,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35181,7 +35014,6 @@ export var storyboard = (
       "data-uid": "ddd",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35417,7 +35249,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35553,7 +35384,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35718,7 +35548,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -35836,7 +35665,6 @@ Object {
       "skipDeepFreeze": true,
       "src": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36071,7 +35899,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36208,7 +36035,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36322,7 +36148,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36586,7 +36411,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -36722,7 +36546,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37006,7 +36829,6 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37191,7 +37013,6 @@ Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37347,7 +37168,6 @@ Object {
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37532,7 +37352,6 @@ Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37688,7 +37507,6 @@ Object {
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -37873,7 +37691,6 @@ Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38029,7 +37846,6 @@ Object {
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38262,7 +38078,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38398,7 +38213,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38511,7 +38325,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38754,7 +38567,6 @@ Object {
         "width": 400,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -38890,7 +38702,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39071,7 +38882,6 @@ Object {
       "data-uid": "zzz app-entity",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39238,7 +39048,6 @@ Object {
       },
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -39350,7 +39159,6 @@ Object {
         "fontWeight": 800,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,

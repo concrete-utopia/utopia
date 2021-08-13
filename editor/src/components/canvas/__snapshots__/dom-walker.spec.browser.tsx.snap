@@ -56,7 +56,6 @@ Object {
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -157,7 +156,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -263,21 +261,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -419,7 +402,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -513,7 +495,6 @@ Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 375,
@@ -607,7 +588,6 @@ Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 375,
@@ -701,7 +681,6 @@ Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 375,
@@ -807,7 +786,6 @@ Object {
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -908,7 +886,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -1014,21 +991,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -1128,7 +1090,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -1234,7 +1195,6 @@ Object {
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1335,7 +1295,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -1441,21 +1400,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -1570,7 +1514,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -1688,7 +1631,6 @@ Object {
         "width": 266,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 164,
       "clientWidth": 306,
@@ -1785,7 +1727,6 @@ Object {
         "width": 125,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 70,
       "clientWidth": 125,
@@ -1891,7 +1832,6 @@ Object {
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1992,7 +1932,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2098,21 +2037,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2228,7 +2152,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2346,7 +2269,6 @@ Object {
         "width": 266,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 164,
       "clientWidth": 306,
@@ -2443,7 +2365,6 @@ Object {
         "width": 125,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 70,
       "clientWidth": 125,
@@ -2549,7 +2470,6 @@ Object {
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2650,7 +2570,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2756,21 +2675,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2889,7 +2793,6 @@ Object {
         "top": 0,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -3010,7 +2913,6 @@ Object {
         "width": 266,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 124,
       "clientWidth": 266,
@@ -3116,7 +3018,6 @@ Object {
         "width": 125,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 70,
       "clientWidth": 125,

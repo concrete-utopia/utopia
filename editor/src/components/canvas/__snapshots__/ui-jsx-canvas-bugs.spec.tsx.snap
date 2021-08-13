@@ -170,7 +170,6 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -267,7 +266,6 @@ Object {
       "data-uid": "app",
       "skipDeepFreeze": true,
     },
-    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,

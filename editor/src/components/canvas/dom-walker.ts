@@ -411,7 +411,6 @@ function mergeFragmentMetadata(
           elementMetadata.localFrame ?? zeroLocalRect,
         ),
         existingMetadata.children.concat(elementMetadata.children),
-        existingMetadata.rootElements.concat(elementMetadata.rootElements),
         false,
         false,
         emptySpecialSizeMeasurements,
@@ -610,11 +609,10 @@ function collectMetadata(
       const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
 
       let filteredChildPaths: ElementPath[] = []
-      let filteredRootElements: ElementPath[] = []
       fastForEach(unfilteredChildrenPaths, (childPath) => {
         if (EP.isParentOf(path, childPath)) {
           if (EP.isRootElementOfInstance(childPath)) {
-            filteredRootElements.push(childPath)
+            // Delete this when killing child paths
           } else {
             filteredChildPaths.push(childPath)
           }
@@ -628,7 +626,6 @@ function collectMetadata(
         globalFrame,
         localFrame,
         filteredChildPaths,
-        filteredRootElements,
         false,
         false,
         specialSizeMeasurementsObject,
@@ -881,7 +878,6 @@ function walkCanvasRootFragment(
       {},
       { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
       { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
-      rootElements,
       [],
       false,
       false,

@@ -298,7 +298,6 @@ function createFakeMetadataForJSXElement(
     )
     const childPaths = children.map((child) => child.elementPath)
 
-    let rootElements: Array<ElementPath> = []
     if (focused) {
       const targetComponent = topLevelElements.find(
         (c) => isUtopiaJSXComponent(c) && c.name === element.name.baseVariable,
@@ -320,12 +319,6 @@ function createFakeMetadataForJSXElement(
         )
 
         elements.push(...rootElementsMetadata)
-        rootElements = mapDropNulls((individualElementMetadata) => {
-          const path = individualElementMetadata.elementPath
-          return EP.isRootElementOfInstance(path) && EP.isParentOf(elementScenePath, path)
-            ? path
-            : null
-        }, rootElementsMetadata)
       }
     }
 
@@ -336,7 +329,6 @@ function createFakeMetadataForJSXElement(
       globalFrame: canvasRectangle(frame),
       localFrame: localRectangle(frame),
       children: childPaths,
-      rootElements: rootElements,
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -376,7 +368,6 @@ function createFakeMetadataForStoryboard(
     props: {},
     element: right(jsxTestElement('Storyboard', [], [])),
     children: children,
-    rootElements: [],
     componentInstance: true,
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -396,7 +387,6 @@ export function wait(timeout: number): Promise<void> {
 interface SimplifiedMetadata {
   children: string[]
   name: string
-  rootElements: string[]
 }
 
 type SimplifiedMetadataMap = { [key: string]: SimplifiedMetadata }
@@ -410,7 +400,6 @@ export function simplifiedMetadata(elementMetadata: ElementInstanceMetadata): Si
       elementMetadata.element,
     ),
     children: elementMetadata.children.map(EP.toString),
-    rootElements: elementMetadata.rootElements.map(EP.toString),
   }
 }
 

@@ -115,7 +115,6 @@ import { StateHistory } from '../history'
 import {
   isSceneElementIgnoringImports,
   BakedInStoryboardVariableName,
-  isDynamicSceneChildWidthHeightPercentage,
   getStoryboardElementPath,
 } from '../../../core/model/scene-utils'
 

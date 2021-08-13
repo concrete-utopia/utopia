@@ -84,7 +84,6 @@ describe('maybeSwitchLayoutProps', () => {
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
         localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
         children: [],
-        rootElements: [elementPath],
         componentInstance: false,
         isEmotionOrStyledComponent: false,
         specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -102,7 +101,6 @@ describe('maybeSwitchLayoutProps', () => {
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
         localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
         children: [],
-        rootElements: [],
         componentInstance: true,
         isEmotionOrStyledComponent: false,
         specialSizeMeasurements: specialSizeMeasurements(
