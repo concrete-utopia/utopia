@@ -23,7 +23,7 @@ import {
   createComponentRendererComponent,
 } from './ui-jsx-canvas-component-renderer'
 import {
-  MutableUtopiaContextProps,
+  MutableUtopiaContextRefData,
   updateMutableUtopiaContextWithNewProps,
   UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-contexts'
@@ -49,7 +49,7 @@ const emptyFileBlobs: UIFileBase64Blobs = {}
 export function createExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>,
+  mutableContextRef: React.MutableRefObject<MutableUtopiaContextRefData>,
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
