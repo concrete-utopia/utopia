@@ -69,7 +69,6 @@ export function usePubSubAtomReadOnly<T>(atom: AtomWithPubSub<T>): T {
   useSubscribeToPubSubAtom(
     atom,
     React.useCallback(() => {
-      // TODO only forceUpdate if the last returned atomValue does not equal the current one
       if (previousValueRef.current !== atom.currentValue) {
         forceUpdate()
       }
