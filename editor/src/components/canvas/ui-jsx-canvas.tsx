@@ -54,17 +54,19 @@ import {
   createComponentRendererComponent,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import {
-  MutableUtopiaContext,
-  MutableUtopiaContextProps,
-  ParentLevelUtopiaContext,
-  RerenderUtopiaContext,
-  SceneLevelUtopiaContext,
-  updateMutableUtopiaContextWithNewProps,
-  UtopiaProjectContext,
+  MutableUtopiaCtxRefData,
+  RerenderUtopiaCtxAtom,
+  SceneLevelUtopiaCtxAtom,
+  updateMutableUtopiaCtxRefWithNewProps,
+  UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
-import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import {
+  betterReactMemo,
+  useKeepReferenceEqualityIfPossible,
+  useKeepShallowReferenceEquality,
+} from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../core/model/utopia-constants'
@@ -79,6 +81,7 @@ import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
+import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 applyUIDMonkeyPatch()
 
@@ -104,18 +107,20 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
   }
 }
 
-export const UiJsxCanvasContext = React.createContext<UiJsxCanvasContextData>(
-  emptyUiJsxCanvasContextData(),
-)
-UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
+export const UiJsxCanvasCtxAtom = atomWithPubSub<UiJsxCanvasContextData>({
+  key: 'UiJsxCanvasCtxAtom',
+  defaultValue: emptyUiJsxCanvasContextData(),
+})
 
-export const DomWalkerInvalidateScenesContext = React.createContext<SetValueCallback<Set<string>>>(
-  NO_OP,
-)
-export type DomWalkerInvalidatePathsContextData = SetValueCallback<Set<string>>
-export const DomWalkerInvalidatePathsContext = React.createContext<
-  DomWalkerInvalidatePathsContextData
->(NO_OP)
+export const DomWalkerInvalidateScenesCtxAtom = atomWithPubSub<SetValueCallback<Set<string>>>({
+  key: 'DomWalkerInvalidateScenesCtxAtom',
+  defaultValue: NO_OP,
+})
+export type DomWalkerInvalidatePathsCtxData = SetValueCallback<Set<string>>
+export const DomWalkerInvalidatePathsCtxAtom = atomWithPubSub<DomWalkerInvalidatePathsCtxData>({
+  key: 'DomWalkerInvalidatePathsCtxAtom',
+  defaultValue: NO_OP,
+})
 
 export interface UiJsxCanvasProps {
   offset: CanvasVector
@@ -289,9 +294,9 @@ export const UiJsxCanvas = betterReactMemo(
       clearErrors()
     }
 
-    let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
-    const updateInvalidatedPaths: DomWalkerInvalidatePathsContextData = React.useContext(
-      DomWalkerInvalidatePathsContext,
+    let metadataContext: UiJsxCanvasContextData = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom)
+    const updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData = usePubSubAtomReadOnly(
+      DomWalkerInvalidatePathsCtxAtom,
     )
     useClearSpyMetadataOnRemount(props.mountCount, props.domWalkerInvalidateCount, metadataContext)
 
@@ -303,7 +308,7 @@ export const UiJsxCanvas = betterReactMemo(
     )
     unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
 
-    let mutableContextRef = React.useRef<MutableUtopiaContextProps>({})
+    let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 
     let topLevelComponentRendererComponents = React.useRef<
       MapLike<MapLike<ComponentRendererComponent>>
@@ -354,12 +359,13 @@ export const UiJsxCanvas = betterReactMemo(
               const exportsDetail = projectFile.fileContents.parsed.exportsDetail
               let filteredScope: MapLike<any> = {
                 ...scope.module.exports,
+                __esModule: true,
               }
               for (const s of Object.keys(scope)) {
                 if (s in exportsDetail.namedExports) {
                   filteredScope[s] = scope[s]
                 } else if (s === exportsDetail.defaultExport?.name) {
-                  filteredScope[s] = scope[s]
+                  filteredScope['default'] = scope[s]
                 }
               }
               return right(filteredScope)
@@ -436,6 +442,19 @@ export const UiJsxCanvas = betterReactMemo(
       validPaths: rootValidPaths,
     })
 
+    const rerenderUtopiaContextValue = useKeepShallowReferenceEquality({
+      hiddenInstances: hiddenInstances,
+      canvasIsLive: canvasIsLive,
+      shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+    })
+
+    const utopiaProjectContextValue = useKeepShallowReferenceEquality({
+      projectContents: props.projectContents,
+      transientFilesState: props.transientFilesState,
+      openStoryboardFilePathKILLME: props.uiFilePath,
+      resolve: resolve,
+    })
+
     return (
       <div
         style={{
@@ -443,50 +462,29 @@ export const UiJsxCanvas = betterReactMemo(
         }}
       >
         <Helmet>{parse(linkTags)}</Helmet>
-        <MutableUtopiaContext.Provider value={mutableContextRef}>
-          <RerenderUtopiaContext.Provider
-            value={{
-              hiddenInstances: hiddenInstances,
-              canvasIsLive: canvasIsLive,
-              shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-            }}
-          >
-            <UtopiaProjectContext.Provider
-              value={{
-                projectContents: props.projectContents,
-                transientFilesState: props.transientFilesState,
-                openStoryboardFilePathKILLME: props.uiFilePath,
-                resolve: resolve,
-              }}
+        <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+          <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+            <CanvasContainer
+              ref={ref}
+              mountCount={props.mountCount}
+              domWalkerInvalidateCount={props.domWalkerInvalidateCount}
+              walkDOM={walkDOM}
+              scale={scale}
+              offset={offset}
+              onDomReport={onDomReport}
+              validRootPaths={rootValidPaths}
+              canvasRootElementElementPath={storyboardRootElementPath}
+              scrollAnimation={props.scrollAnimation}
+              canvasInteractionHappening={props.transientFilesState != null}
             >
-              <CanvasContainer
-                ref={ref}
-                mountCount={props.mountCount}
-                domWalkerInvalidateCount={props.domWalkerInvalidateCount}
-                walkDOM={walkDOM}
-                scale={scale}
-                offset={offset}
-                onDomReport={onDomReport}
-                validRootPaths={rootValidPaths}
-                canvasRootElementElementPath={storyboardRootElementPath}
-                scrollAnimation={props.scrollAnimation}
-                canvasInteractionHappening={props.transientFilesState != null}
-              >
-                <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
-                  <ParentLevelUtopiaContext.Provider
-                    value={{
-                      elementPath: storyboardRootElementPath,
-                    }}
-                  >
-                    {StoryboardRootComponent == null ? null : (
-                      <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-                    )}
-                  </ParentLevelUtopiaContext.Provider>
-                </SceneLevelUtopiaContext.Provider>
-              </CanvasContainer>
-            </UtopiaProjectContext.Provider>
-          </RerenderUtopiaContext.Provider>
-        </MutableUtopiaContext.Provider>
+              <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+                {StoryboardRootComponent == null ? null : (
+                  <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+                )}
+              </SceneLevelUtopiaCtxAtom.Provider>
+            </CanvasContainer>
+          </UtopiaProjectCtxAtom.Provider>
+        </RerenderUtopiaCtxAtom.Provider>
       </div>
     )
   }),

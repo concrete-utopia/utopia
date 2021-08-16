@@ -1,26 +1,27 @@
-import { useContextSelector } from 'use-context-selector'
+import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { TopLevelElement } from '../../../core/shared/element-template'
 import { Imports } from '../../../core/shared/project-file-types'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
-import { UtopiaProjectContext } from './ui-jsx-canvas-contexts'
+import { UtopiaProjectCtxAtom } from './ui-jsx-canvas-contexts'
+
+const emptyResult = { topLevelElements: [], imports: emptyImports() }
 
 export function useGetTopLevelElementsAndImports(
   filePath: string | null,
 ): { topLevelElements: TopLevelElement[]; imports: Imports } {
-  return useContextSelector(UtopiaProjectContext, (c) => {
-    if (filePath == null) {
-      return { topLevelElements: [], imports: emptyImports() }
-    } else {
-      const success = getParseSuccessOrTransientForFilePath(
-        filePath,
-        c.projectContents,
-        c.transientFilesState,
-      )
-      return {
-        topLevelElements: success.topLevelElements,
-        imports: success.imports,
-      }
+  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom) // TODO MAYBE create a usePubSubAtomSelector
+  if (filePath == null) {
+    return emptyResult
+  } else {
+    const success = getParseSuccessOrTransientForFilePath(
+      filePath,
+      projectContext.projectContents,
+      projectContext.transientFilesState,
+    )
+    return {
+      topLevelElements: success.topLevelElements,
+      imports: success.imports,
     }
-  })
+  }
 }

@@ -23,14 +23,14 @@ import {
   createComponentRendererComponent,
 } from './ui-jsx-canvas-component-renderer'
 import {
-  MutableUtopiaContextProps,
-  updateMutableUtopiaContextWithNewProps,
-  UtopiaProjectContext,
+  MutableUtopiaCtxRefData,
+  updateMutableUtopiaCtxRefWithNewProps,
+  UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-contexts'
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
-import { DomWalkerInvalidatePathsContextData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
   ElementPath,
   HighlightBoundsForUids,
@@ -42,13 +42,14 @@ import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-ut
 import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
 import { useContextSelector } from 'use-context-selector'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export function createExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>,
+  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
@@ -58,7 +59,7 @@ export function createExecutionScope(
   fileBlobs: CanvasBase64Blobs,
   hiddenInstances: ElementPath[],
   metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): {
   scope: MapLike<any>
@@ -159,7 +160,7 @@ export function createExecutionScope(
   }
 
   // WARNING: mutating the mutableContextRef
-  updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+  updateMutableUtopiaCtxRefWithNewProps(mutableContextRef, {
     ...mutableContextRef.current,
     [filePath]: {
       mutableContext: {
@@ -178,20 +179,17 @@ export function createExecutionScope(
   }
 }
 
+const emptyHighlightBoundsResult = { code: '', highlightBounds: null }
+
 export function useGetCodeAndHighlightBounds(
   filePath: string | null,
 ): { code: string; highlightBounds: HighlightBoundsForUids | null } {
-  return useContextSelector(
-    UtopiaProjectContext,
-    (c) => {
-      if (filePath == null) {
-        return { code: '', highlightBounds: null }
-      } else {
-        return getCodeAndHighlightBoundsForFile(filePath, c.projectContents)
-      }
-    },
-    shallowEqual,
-  )
+  const projectContext = usePubSubAtomReadOnly(UtopiaProjectCtxAtom)
+  if (filePath == null) {
+    return emptyHighlightBoundsResult
+  } else {
+    return getCodeAndHighlightBoundsForFile(filePath, projectContext.projectContents)
+  }
 }
 
 export function getCodeAndHighlightBoundsForFile(

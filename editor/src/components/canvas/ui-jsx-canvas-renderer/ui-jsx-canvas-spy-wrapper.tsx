@@ -10,7 +10,7 @@ import {
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
-import { DomWalkerInvalidatePathsContextData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
@@ -20,7 +20,7 @@ export function buildSpyWrappedElement(
   finalProps: any,
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   childrenElementPaths: Array<ElementPath>,
   childrenElements: Array<React.ReactChild>,
   Element: any,
@@ -88,15 +88,19 @@ interface SpyWrapperProps {
   jsxFactoryFunctionName: string | null
   $$utopiaElementPath: ElementPath
 }
-const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
+const SpyWrapper = React.forwardRef<any, SpyWrapperProps>((props, ref) => {
   const {
     spyCallback,
     elementToRender: ElementToRender,
     inScope,
     jsxFactoryFunctionName,
     $$utopiaElementPath,
-    ...passThroughProps
+    ...passThroughPropsFromProps
   } = props
+  const passThroughProps = {
+    ...passThroughPropsFromProps,
+    ...(ref == undefined ? {} : { ref: ref }),
+  }
   spyCallback(passThroughProps)
   return renderComponentUsingJsxFactoryFunction(
     inScope,
@@ -104,5 +108,5 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     ElementToRender,
     passThroughProps,
   )
-}
+})
 SpyWrapper.displayName = 'SpyWrapper'

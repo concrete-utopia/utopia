@@ -1,4 +1,8 @@
-import { testCanvasRender, testCanvasRenderInline } from './ui-jsx-canvas.test-utils'
+import {
+  testCanvasRender,
+  testCanvasRenderInline,
+  testCanvasRenderInlineMultifile,
+} from './ui-jsx-canvas.test-utils'
 
 describe('UiJsxCanvas', () => {
   it('#747 - DOM object constructor cannot be called as a function', () => {
@@ -33,6 +37,7 @@ export var storyboard = (
     `,
     )
   })
+
   it('Supports in-scope variables with the same names as intrinsic components', () => {
     const result = testCanvasRenderInline(
       null,
@@ -84,6 +89,68 @@ export var storyboard = (
               data-uid=\\"app-root app\\"
               data-paths=\\"sb/scene/app:app-root sb/scene/app\\"
             ></div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('Handles importing default exports', () => {
+    const result = testCanvasRenderInlineMultifile(
+      null,
+      `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import Appy from './app'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <Appy data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`,
+      {
+        'app.js': `
+import * as React from 'react'
+export default function App(props) {
+  return <div data-uid='app-outer-div'>
+    <div data-uid='inner-div'>hello</div>
+  </div>
+}`,
+      },
+    )
+
+    expect(result).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial;\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
+          data-utopia-root-element-path=\\"sb\\"
+        >
+          <div
+            data-utopia-scene-id=\\"sb/scene\\"
+            data-paths=\\"sb/scene sb\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 0;
+              top: 0;
+              width: 375px;
+              height: 812px;
+            \\"
+            data-uid=\\"scene sb\\"
+          >
+            <div data-uid=\\"app-outer-div app\\" data-paths=\\"sb/scene/app\\">
+              <div data-uid=\\"inner-div\\">hello</div>
+            </div>
           </div>
         </div>
       </div>
