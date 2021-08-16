@@ -7,7 +7,7 @@ Object {
       "errors": Array [],
       "sourceMap": Object {
         "file": "app.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAUA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAsCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CADkB;AAS1B,EAAA,eAAe,EAAE;AATS,CAAjB;;AAYJ,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD,EAAU;AACzB,SACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EAAO,KAAK,CAAC,KAAb,CAAA,EAAkB;AAAE,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApC,KAAlB,CADF;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAUA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAsCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CADkB;AAS1B,EAAA,eAAe,EAAE;AATS,CAAjB;;AAYJ,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD,EAAU;AACzB,SACE,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,EAGiB,KAAA,CAHjB,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -131,6 +131,8 @@ Object.defineProperty(exports, \\"__esModule\\", {
 });
 exports.App = exports.canvasMetadata = void 0;
 
+var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+
 var React = __importStar(require(\\"react\\"));
 
 var utopia_api_1 = require(\\"utopia-api\\");
@@ -162,15 +164,15 @@ exports.canvasMetadata = {
 };
 
 var App = function App(props) {
-  return React.createElement(utopia_api_1.View, {
-    style: Object.assign(Object.assign({}, props.style), {
+  return jsx_runtime_1.jsx(utopia_api_1.View, {
+    style: { ...props.style,
       backgroundColor: uuiui_1.colorTheme.white.value
-    }),
+    },
     layout: {
       layoutSystem: 'pinSystem'
     },
     \\"data-uid\\": 'aaa'
-  });
+  }, void 0);
 };
 
 exports.App = App; //# sourceMappingURL=app.js.map",
@@ -179,7 +181,7 @@ exports.App = App; //# sourceMappingURL=app.js.map",
       "errors": Array [],
       "sourceMap": Object {
         "file": "components.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;qDAAA;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,GAAL,EACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,EAAZ;AAAgB,MAAA,SAAS,EAAE;AAA3B,KADJ;AAEH,IAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,IAAA,MAAM,EAAE;AACN,MAAA,IAAI,EAAE,CADA;AAEN,MAAA,GAAG,EAAE,EAFC;AAGN,MAAA,KAAK,EAAE,MAHD;AAIN,MAAA,MAAM,EAAE;AAJF,KAHL;AASH,IAAA,UAAU,EAAE;AATT,GAAL,CADF,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEN,IAAM,kBAAkB,GAAG,SAArB,kBAAqB,CAAC,KAAD,EAAU;AAC1C,SACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EACA,KAAK,CAAC,KADN,CAAA,EACW;AACd,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAD5B;AAEd,MAAA,UAAU,EAAE;AAFE,KADX;AADP,GAAA,EAOG,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC,CAPH,CADF;AAWD,CAZM;;AAAM,OAAA,CAAA,kBAAA,GAAkB,kBAAlB;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;kDAAA;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK,MAAA,CAAA,MAAA,CAAA;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,GAAA,EAAyE;AAAA,IAAA,QAAA,EAC5E,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,MAAA,KAAK,EAAE;AAAE,QAAA,QAAQ,EAAE,EAAZ;AAAgB,QAAA,SAAS,EAAE;AAA3B,OADJ;AAEH,MAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,MAAA,MAAM,EAAE;AACN,QAAA,IAAI,EAAE,CADA;AAEN,QAAA,GAAG,EAAE,EAFC;AAGN,QAAA,KAAK,EAAE,MAHD;AAIN,QAAA,MAAM,EAAE;AAJF,OAHL;AASH,MAAA,UAAU,EAAE;AATT,KAAL,EASqB,KAAA,CATrB;AAD4E,GAAzE,CAAL,EAWI,KAAA,CAXJ,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEN,IAAM,kBAAkB,GAAG,SAArB,kBAAqB,CAAC,KAAD,EAAU;AAC1C,SACE,aAAA,CAAA,GAAA,CAAA,KAAA,EAAA,MAAA,CAAA,MAAA,CAAA;AACE,IAAA,KAAK,EAAE,EACL,GAAG,KAAK,CAAC,KADJ;AAEL,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAFrC;AAGL,MAAA,UAAU,EAAE;AAHP;AADT,GAAA,EAKG;AAAA,IAAA,QAAA,EAEA,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC;AAFA,GALH,CAAA,EAOuC,KAAA,CAPvC,CADF;AAWD,CAZM;;AAAM,OAAA,CAAA,kBAAA,GAAkB,kBAAlB;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -283,42 +285,49 @@ var __importStar = this && this.__importStar || function (mod) {
 Object.defineProperty(exports, \\"__esModule\\", {
   value: true
 });
-exports.ComponentWithProps = exports.LABEL = void 0; // component library
+exports.ComponentWithProps = exports.LABEL = void 0;
+
+var jsx_runtime_1 = require(\\"react/jsx-runtime\\"); // component library
+
 
 var React = __importStar(require(\\"react\\"));
 
 var utopia_api_1 = require(\\"utopia-api\\");
 
 exports.default = function (props) {
-  return React.createElement(utopia_api_1.View, {
+  return jsx_runtime_1.jsx(utopia_api_1.View, Object.assign({
     layout: props.layout,
     style: props.style,
     onMouseDown: props.onMouseDown
-  }, React.createElement(utopia_api_1.Text, {
-    style: {
-      fontSize: 16,
-      textAlign: 'center'
-    },
-    text: props.text,
-    layout: {
-      left: 0,
-      top: 10,
-      width: '100%',
-      height: '100%'
-    },
-    textSizing: 'fixed'
-  }));
+  }, {
+    children: jsx_runtime_1.jsx(utopia_api_1.Text, {
+      style: {
+        fontSize: 16,
+        textAlign: 'center'
+      },
+      text: props.text,
+      layout: {
+        left: 0,
+        top: 10,
+        width: '100%',
+        height: '100%'
+      },
+      textSizing: 'fixed'
+    }, void 0)
+  }), void 0);
 };
 
 exports.LABEL = 'press me! 😉';
 
 var ComponentWithProps = function ComponentWithProps(props) {
-  return React.createElement(\\"div\\", {
-    style: Object.assign(Object.assign({}, props.style), {
+  return jsx_runtime_1.jsx(\\"div\\", Object.assign({
+    style: { ...props.style,
       backgroundColor: props.pink ? 'hotpink' : 'transparent',
       whiteSpace: 'normal'
-    })
-  }, (props.text + ' ').repeat(props.num));
+    }
+  }, {
+    children: (props.text + ' ').repeat(props.num)
+  }), void 0);
 };
 
 exports.ComponentWithProps = ComponentWithProps;
@@ -344,7 +353,7 @@ exports.ComponentWithProps.propertyControls = {
       "errors": Array [],
       "sourceMap": Object {
         "file": "index.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,QAAA,GAAA,YAAA,CAAA,OAAA,CAAA,WAAA,CAAA,CAAA;;AACA,IAAA,KAAA,GAAA,OAAA,CAAA,QAAA,CAAA;;AAEA,IAAM,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAb;;AACA,IAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,EAAA,QAAQ,CAAC,MAAT,CAAgB,KAAA,CAAA,aAAA,CAAC,KAAA,CAAA,GAAD,EAAI,IAAJ,CAAhB,EAAyB,IAAzB;AACC,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,QAAA,GAAA,YAAA,CAAA,OAAA,CAAA,WAAA,CAAA,CAAA;;AACA,IAAA,KAAA,GAAA,OAAA,CAAA,QAAA,CAAA;;AAEA,IAAM,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAb;;AACA,IAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,EAAA,QAAQ,CAAC,MAAT,CAAgB,aAAA,CAAA,GAAA,CAAC,KAAA,CAAA,GAAD,EAAI,EAAJ,EAAI,KAAA,CAAJ,CAAhB,EAAyB,IAAzB;AACC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -402,6 +411,8 @@ Object.defineProperty(exports, \\"__esModule\\", {
   value: true
 });
 
+var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+
 var React = __importStar(require(\\"react\\"));
 
 var ReactDOM = __importStar(require(\\"react-dom\\"));
@@ -411,7 +422,7 @@ var app_1 = require(\\"../app\\");
 var root = document.getElementById(\\"root\\");
 
 if (root != null) {
-  ReactDOM.render(React.createElement(app_1.App, null), root);
+  ReactDOM.render(jsx_runtime_1.jsx(app_1.App, {}, void 0), root);
 } //# sourceMappingURL=index.js.map",
     },
   },
@@ -616,7 +627,7 @@ Object {
       "errors": Array [],
       "sourceMap": Object {
         "file": "components.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;qDAAA;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAGA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,GAAL,EACE,KAAA,CAAA,aAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,EAAZ;AAAgB,MAAA,SAAS,EAAE;AAA3B,KADJ;AAEH,IAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,IAAA,MAAM,EAAE;AACN,MAAA,IAAI,EAAE,CADA;AAEN,MAAA,GAAG,EAAE,EAFC;AAGN,MAAA,KAAK,EAAE,MAHD;AAIN,MAAA,MAAM,EAAE;AAJF,KAHL;AASH,IAAA,UAAU,EAAE;AATT,GAAL,CADF,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEN,IAAM,kBAAkB,GAAG,SAArB,kBAAqB,CAAC,KAAD,EAAU;AAC1C,SACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,MAAA,CAAA,EAAA,EACA,KAAK,CAAC,KADN,CAAA,EACW;AACd,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAD5B;AAEd,MAAA,UAAU,EAAE;AAFE,KADX;AADP,GAAA,EAOG,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC,CAPH,CADF;AAWD,CAZM;;AAAM,OAAA,CAAA,kBAAA,GAAkB,kBAAlB;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;kDAAA;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAGA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK,MAAA,CAAA,MAAA,CAAA;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC;AAA9D,GAAA,EAAyE;AAAA,IAAA,QAAA,EAC5E,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,IAAD,EAAK;AACH,MAAA,KAAK,EAAE;AAAE,QAAA,QAAQ,EAAE,EAAZ;AAAgB,QAAA,SAAS,EAAE;AAA3B,OADJ;AAEH,MAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,MAAA,MAAM,EAAE;AACN,QAAA,IAAI,EAAE,CADA;AAEN,QAAA,GAAG,EAAE,EAFC;AAGN,QAAA,KAAK,EAAE,MAHD;AAIN,QAAA,MAAM,EAAE;AAJF,OAHL;AASH,MAAA,UAAU,EAAE;AATT,KAAL,EASqB,KAAA,CATrB;AAD4E,GAAzE,CAAL,EAWI,KAAA,CAXJ,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEN,IAAM,kBAAkB,GAAG,SAArB,kBAAqB,CAAC,KAAD,EAAU;AAC1C,SACE,aAAA,CAAA,GAAA,CAAA,KAAA,EAAA,MAAA,CAAA,MAAA,CAAA;AACE,IAAA,KAAK,EAAE,EACL,GAAG,KAAK,CAAC,KADJ;AAEL,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAFrC;AAGL,MAAA,UAAU,EAAE;AAHP;AADT,GAAA,EAKG;AAAA,IAAA,QAAA,EAEA,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC;AAFA,GALH,CAAA,EAOuC,KAAA,CAPvC,CADF;AAWD,CAZM;;AAAM,OAAA,CAAA,kBAAA,GAAkB,kBAAlB;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -720,42 +731,49 @@ var __importStar = this && this.__importStar || function (mod) {
 Object.defineProperty(exports, \\"__esModule\\", {
   value: true
 });
-exports.ComponentWithProps = exports.LABEL = void 0; // component library
+exports.ComponentWithProps = exports.LABEL = void 0;
+
+var jsx_runtime_1 = require(\\"react/jsx-runtime\\"); // component library
+
 
 var React = __importStar(require(\\"react\\"));
 
 var utopia_api_1 = require(\\"utopia-api\\");
 
 exports.default = function (props) {
-  return React.createElement(utopia_api_1.View, {
+  return jsx_runtime_1.jsx(utopia_api_1.View, Object.assign({
     layout: props.layout,
     style: props.style,
     onMouseDown: props.onMouseDown
-  }, React.createElement(utopia_api_1.Text, {
-    style: {
-      fontSize: 16,
-      textAlign: 'center'
-    },
-    text: props.text,
-    layout: {
-      left: 0,
-      top: 10,
-      width: '100%',
-      height: '100%'
-    },
-    textSizing: 'fixed'
-  }));
+  }, {
+    children: jsx_runtime_1.jsx(utopia_api_1.Text, {
+      style: {
+        fontSize: 16,
+        textAlign: 'center'
+      },
+      text: props.text,
+      layout: {
+        left: 0,
+        top: 10,
+        width: '100%',
+        height: '100%'
+      },
+      textSizing: 'fixed'
+    }, void 0)
+  }), void 0);
 };
 
 exports.LABEL = 'press me! 😉';
 
 var ComponentWithProps = function ComponentWithProps(props) {
-  return React.createElement(\\"div\\", {
-    style: Object.assign(Object.assign({}, props.style), {
+  return jsx_runtime_1.jsx(\\"div\\", Object.assign({
+    style: { ...props.style,
       backgroundColor: props.pink ? 'hotpink' : 'transparent',
       whiteSpace: 'normal'
-    })
-  }, (props.text + ' ').repeat(props.num));
+    }
+  }, {
+    children: (props.text + ' ').repeat(props.num)
+  }), void 0);
 };
 
 exports.ComponentWithProps = ComponentWithProps;

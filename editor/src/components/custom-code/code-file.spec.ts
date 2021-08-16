@@ -267,7 +267,7 @@ describe('transpileCode', () => {
           "errors": Array [],
           "sourceMap": Object {
             "file": "app.js",
-            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD;AAAA,SAAW,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AAAA,gBAAe;AAAf,GAAA,EAAuB,UAAA,CAAA,OAAvB,CAAX;AAAA,CAAV;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD;AAAA,SAAW,aAAA,CAAA,GAAA,CAAA,KAAA,EAAA,MAAA,CAAA,MAAA,CAAA;AAAA,gBAAe;AAAf,GAAA,EAAoB;AAAA,IAAA,QAAA,EAAG,UAAA,CAAA;AAAH,GAApB,CAAA,EAA2B,KAAA,CAA3B,CAAX;AAAA,CAAV;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
             "names": Array [],
             "sourceRoot": "",
             "sources": Array [
@@ -329,14 +329,18 @@ describe('transpileCode', () => {
       });
       exports.App = void 0;
 
+      var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+
       var React = __importStar(require(\\"react\\"));
 
       var icon_css_1 = __importDefault(require(\\"./icon.css\\"));
 
       var App = function App(props) {
-        return React.createElement(\\"div\\", {
+        return jsx_runtime_1.jsx(\\"div\\", Object.assign({
           \\"data-uid\\": 'aaa'
-        }, icon_css_1.default);
+        }, {
+          children: icon_css_1.default
+        }), void 0);
       };
 
       exports.App = App; //# sourceMappingURL=app.js.map",
