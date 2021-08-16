@@ -411,7 +411,7 @@ declare module 'utopia-api/property-controls/property-controls' {
       defaultValue?: string;
   }
   export interface NumberControlDescription extends AbstractBaseControlDescription<'number'> {
-      defaultValue?: number;
+      defaultValue?: number | null;
       max?: number;
       min?: number;
       unit?: string;
