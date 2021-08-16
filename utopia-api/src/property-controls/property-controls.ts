@@ -65,7 +65,7 @@ export interface ImageControlDescription extends AbstractBaseControlDescription<
 }
 
 export interface NumberControlDescription extends AbstractBaseControlDescription<'number'> {
-  defaultValue?: number
+  defaultValue?: number | null
   max?: number
   min?: number
   unit?: string
