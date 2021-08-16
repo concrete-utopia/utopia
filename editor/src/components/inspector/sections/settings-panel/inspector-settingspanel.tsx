@@ -17,8 +17,13 @@ import {
   FlexColumn,
   useColorTheme,
   Button,
+  StringInput,
+  HeadlessStringInput,
 } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
+import { load } from '../../../editor/actions/actions'
+import json5 from 'json5'
+import { NO_OP } from '../../../../core/shared/utils'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.normal,
@@ -103,6 +108,22 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
     console.info('Latest metadata:', jsxMetadata.current)
   }, [jsxMetadata])
 
+  const loadProjectContentJson = React.useCallback(
+    (value: string) => {
+      const persistentModel = json5.parse(value)
+      console.info('attempting to load new Project Contents JSON', persistentModel)
+      load(
+        dispatch,
+        persistentModel,
+        entireStateRef.current.editor.projectName,
+        entireStateRef.current.editor.id!,
+        entireStateRef.current.workers,
+        NO_OP,
+      )
+    },
+    [dispatch, entireStateRef],
+  )
+
   return (
     <FlexColumn
       style={{
@@ -132,6 +153,10 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
         <label htmlFor='toggleInterfaceDesignerAdditionalCanvasControls'>Additional controls</label>
       </StyledFlexRow>
       <br />
+      <HeadlessStringInput
+        placeholder='Project Contents JSON'
+        onSubmitValue={loadProjectContentJson}
+      />
       <FeatureSwitchesSection />
     </FlexColumn>
   )
