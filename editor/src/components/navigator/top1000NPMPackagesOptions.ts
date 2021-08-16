@@ -22,6 +22,8 @@ const designRelevantPackages = [
   { value: '@emotion/css', label: '@emotion/css', contents: ['css'] },
   { value: 'styled-components', label: 'styled-components', contents: ['styled', 'css'] },
   { value: 'leva', label: 'leva', contents: ['useControls'] },
+  { value: '@react-three/fiber', label: '@react-three/fiber' },
+  { value: '@react-three/drei', label: '@react-three/drei' },
   {
     value: '@react-three/cannon',
     label: '@react-three/cannon',
@@ -1395,6 +1397,5 @@ export const top1000NPMPackagesOptions = [
 
   // these are added in for fun:
   { value: '@types/chroma-js', label: '@types/chroma-js' },
-  { value: 'react-three-fiber', label: 'react-three-fiber' },
   { value: 'react-spring', label: 'react-spring' },
 ]
