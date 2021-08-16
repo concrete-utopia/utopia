@@ -113,16 +113,21 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
 
   const loadProjectContentJson = React.useCallback(
     (value: string) => {
-      const persistentModel = json5.parse(value)
-      console.info('attempting to load new Project Contents JSON', persistentModel)
-      load(
-        dispatch,
-        persistentModel,
-        entireStateRef.current.editor.projectName,
-        entireStateRef.current.editor.id!,
-        entireStateRef.current.workers,
-        NO_OP,
+      const confirmed = window.confirm(
+        'If you press OK, the inserted code will override the current project. Are you sure?',
       )
+      if (confirmed) {
+        const persistentModel = json5.parse(value)
+        console.info('attempting to load new Project Contents JSON', persistentModel)
+        load(
+          dispatch,
+          persistentModel,
+          entireStateRef.current.editor.projectName,
+          entireStateRef.current.editor.id!,
+          entireStateRef.current.workers,
+          NO_OP,
+        )
+      }
     },
     [dispatch, entireStateRef],
   )
