@@ -1,4 +1,6 @@
-import * as React from 'react'
+/** @jsx jsx */
+import React from 'react'
+import { jsx } from '@emotion/react'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import styled from '@emotion/styled'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -17,8 +19,14 @@ import {
   FlexColumn,
   useColorTheme,
   Button,
+  StringInput,
+  HeadlessStringInput,
 } from '../../../../uuiui'
-import { betterReactMemo } from '../../../../uuiui-deps'
+import { betterReactMemo, getControlStyles } from '../../../../uuiui-deps'
+import { load } from '../../../editor/actions/actions'
+import json5 from 'json5'
+import { NO_OP } from '../../../../core/shared/utils'
+import { InspectorInputEmotionStyle } from '../../../../uuiui/inputs/base-input'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.normal,
@@ -29,14 +37,14 @@ const StyledFlexRow = styled(FlexRow)({
 const FeatureSwitchesSection = betterReactMemo('Feature Switches', () => {
   if (AllFeatureNames.length > 0) {
     return (
-      <>
+      <React.Fragment>
         <StyledFlexRow style={{ marginTop: 8, marginBottom: 12, paddingLeft: 8 }}>
           <H2>Experimental Feature Toggles</H2>
         </StyledFlexRow>
         {AllFeatureNames.map((name) => (
           <FeatureSwitchRow key={`feature-switch-${name}`} name={name} />
         ))}
-      </>
+      </React.Fragment>
     )
   } else {
     return null
@@ -103,6 +111,27 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
     console.info('Latest metadata:', jsxMetadata.current)
   }, [jsxMetadata])
 
+  const loadProjectContentJson = React.useCallback(
+    (value: string) => {
+      const confirmed = window.confirm(
+        'If you press OK, the inserted code will override the current project. Are you sure?',
+      )
+      if (confirmed) {
+        const persistentModel = json5.parse(value)
+        console.info('attempting to load new Project Contents JSON', persistentModel)
+        load(
+          dispatch,
+          persistentModel,
+          entireStateRef.current.editor.projectName,
+          entireStateRef.current.editor.id!,
+          entireStateRef.current.workers,
+          NO_OP,
+        )
+      }
+    },
+    [dispatch, entireStateRef],
+  )
+
   return (
     <FlexColumn
       style={{
@@ -132,6 +161,14 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
         <label htmlFor='toggleInterfaceDesignerAdditionalCanvasControls'>Additional controls</label>
       </StyledFlexRow>
       <br />
+      <HeadlessStringInput
+        placeholder='Project Contents JSON'
+        onSubmitValue={loadProjectContentJson}
+        css={InspectorInputEmotionStyle({
+          hasLabel: false,
+          controlStyles: getControlStyles('simple'),
+        })}
+      />
       <FeatureSwitchesSection />
     </FlexColumn>
   )
