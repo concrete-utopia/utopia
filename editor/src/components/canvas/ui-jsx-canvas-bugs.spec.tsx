@@ -157,4 +157,132 @@ export default function App(props) {
       "
     `)
   })
+
+  it('#1717 - Works with user components called Scene', () => {
+    const result = testCanvasRenderInlineMultifile(
+      null,
+      `
+import * as React from 'react'
+import { Scene as SC, Storyboard } from 'utopia-api'
+import App from './app'
+
+export var Scene = (props) => {
+  return (
+    <div
+      data-uid='same-file-app-div'
+      data-label='Scene Thing'
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'blue',
+      }}
+    />
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard-entity'>
+    <SC
+      data-label='Imported App'
+      data-uid='scene-1-entity'
+      style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 375,
+        height: 812,
+      }}
+    >
+      <App data-uid='app-entity' />
+    </SC>
+    <SC
+      data-label='Same File App'
+      data-uid='scene-2-entity'
+      style={{
+        position: 'absolute',
+        left: 400,
+        top: 0,
+        width: 375,
+        height: 812,
+      }}
+    >
+      <Scene data-uid='same-file-app-entity' />
+    </SC>
+  </Storyboard>
+)
+`,
+      {
+        'app.js': `
+import * as React from 'react'
+export default function App(props) {
+  return <div data-uid='app-outer-div'>
+    <div data-uid='inner-div'>hello</div>
+  </div>
+}`,
+      },
+    )
+
+    expect(result).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial;\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-2-entity storyboard-entity/scene-2-entity/same-file-app-entity\\"
+          data-utopia-root-element-path=\\"storyboard-entity\\"
+        >
+          <div
+            data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
+            data-paths=\\"storyboard-entity/scene-1-entity storyboard-entity\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 0;
+              top: 0;
+              width: 375px;
+              height: 812px;
+            \\"
+            data-uid=\\"scene-1-entity storyboard-entity\\"
+            data-label=\\"Imported App\\"
+          >
+            <div
+              data-uid=\\"app-outer-div app-entity\\"
+              data-paths=\\"storyboard-entity/scene-1-entity/app-entity\\"
+            >
+              <div data-uid=\\"inner-div\\">hello</div>
+            </div>
+          </div>
+          <div
+            data-utopia-scene-id=\\"storyboard-entity/scene-2-entity\\"
+            data-paths=\\"storyboard-entity/scene-2-entity storyboard-entity\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 400px;
+              top: 0;
+              width: 375px;
+              height: 812px;
+            \\"
+            data-uid=\\"scene-2-entity storyboard-entity\\"
+            data-label=\\"Same File App\\"
+          >
+            <div
+              data-uid=\\"same-file-app-div same-file-app-entity\\"
+              data-label=\\"Scene Thing\\"
+              style=\\"
+                position: relative;
+                width: 100%;
+                height: 100%;
+                background-color: blue;
+              \\"
+              data-paths=\\"storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div storyboard-entity/scene-2-entity/same-file-app-entity\\"
+            ></div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
 })

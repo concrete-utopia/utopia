@@ -5,7 +5,6 @@ import {
   deriveState,
   EditorState,
   getOpenUIJSFile,
-  getSceneElementsFromParseSuccess,
   PersistentModel,
   persistentModelFromEditorModel,
   DefaultPackageJson,
@@ -30,6 +29,8 @@ import {
   jsxAttributesFromMap,
   jsxAttributeValue,
   getJSXElementNameAsString,
+  JSXElement,
+  walkElements,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
@@ -56,7 +57,6 @@ import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
   PathForSceneDataLabel,
-  isSceneElementIgnoringImports,
 } from '../core/model/scene-utils'
 import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
@@ -169,7 +169,12 @@ export function createFakeMetadataForParseSuccess(
   success: ParseSuccess,
 ): ElementInstanceMetadataMap {
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-  const sceneElements = getSceneElementsFromParseSuccess(success)
+  let sceneElements: Array<JSXElement> = []
+  walkElements(success.topLevelElements, (elementChild) => {
+    if (isJSXElement(elementChild) && elementChild.name.baseVariable === 'Scene') {
+      sceneElements.push(elementChild)
+    }
+  })
   let elements: ElementInstanceMetadataMap = {}
   const storyboardElementPath = EP.elementPath([[BakedInStoryboardUID]])
 
@@ -282,7 +287,7 @@ function createFakeMetadataForJSXElement(
           ...props,
         },
         topLevelElements,
-        isSceneElementIgnoringImports(element),
+        element.name.baseVariable === 'Scene',
         false,
       ),
     )

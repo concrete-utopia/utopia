@@ -437,7 +437,6 @@ import {
   UIFileBase64Blobs,
   updateMainUIInEditorState,
   addNewScene,
-  getNumberOfScenes,
   addSceneToJSXComponents,
   UserState,
   UserConfiguration,
@@ -461,6 +460,7 @@ import {
   persistentModelFromEditorModel,
   getPackageJsonFromEditorState,
   transformElementAtPath,
+  getNewSceneName,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -1996,9 +1996,8 @@ export const UPDATE_FNS = {
     )
   },
   INSERT_SCENE: (action: InsertScene, editor: EditorModel): EditorModel => {
-    const numberOfScenes = getNumberOfScenes(editor)
     const sceneUID = generateUidWithExistingComponents(editor.projectContents)
-    const newSceneLabel = `Scene ${numberOfScenes}`
+    const newSceneLabel = getNewSceneName(editor)
     const newScene: JSXElement = defaultSceneElement(
       sceneUID,
       canvasFrameToNormalisedFrame(action.frame),

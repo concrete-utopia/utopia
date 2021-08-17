@@ -192,7 +192,6 @@ export function createComponentRendererComponent(params: {
           realPassedProps['data-uid'],
           undefined,
           metadataContext,
-
           updateInvalidatedPaths,
           mutableContext.jsxFactoryFunctionName,
           codeError,
