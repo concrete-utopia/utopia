@@ -1053,14 +1053,6 @@ export const MetadataUtils = {
     fastForEach(fromDOM, (domElem) => {
       const spyElem = MetadataUtils.findElementByElementPath(fromSpy, domElem.elementPath)
 
-      // Checking if our elements support children should prevent us from ending up with the
-      // internals of draft-js showing up underneath Text elements.
-      // TODO is data-utopia-do-not-traverse still relevant?
-      const shouldNotTraverse: boolean | undefined = Utils.path(
-        ['props', 'data-utopia-do-not-traverse'],
-        fromDOM,
-      )
-
       if (spyElem == null) {
         workingElements[EP.toString(domElem.elementPath)] = domElem
         newlyFoundElements.push(domElem.elementPath)
