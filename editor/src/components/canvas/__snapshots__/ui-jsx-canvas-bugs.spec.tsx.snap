@@ -38,18 +38,6 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
 Object {
   "sb/scene": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "sb",
-            "scene",
-            "app",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -208,7 +196,6 @@ Object {
   },
   "sb/scene/app": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {

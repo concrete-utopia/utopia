@@ -4,17 +4,6 @@ exports[`DOM Walker tests Label carried through for generated elements 1`] = `
 Object {
   "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": Object {},
     "element": Object {
@@ -94,18 +83,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -204,7 +181,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -309,50 +285,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -450,7 +382,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -543,7 +474,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -636,7 +566,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -734,17 +663,6 @@ exports[`DOM Walker tests Label carried through for normal elements 1`] = `
 Object {
   "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": Object {},
     "element": Object {
@@ -824,18 +742,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -934,7 +840,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -1039,7 +944,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -1143,17 +1047,6 @@ exports[`DOM Walker tests Simple Project with divs 1`] = `
 Object {
   "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": Object {},
     "element": Object {
@@ -1233,18 +1126,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -1343,7 +1224,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -1448,22 +1328,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-            "ef0",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -1562,23 +1426,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-            "ef0",
-            "488",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -1674,7 +1521,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -1780,17 +1626,6 @@ exports[`DOM Walker tests Simple Project with flex parent 1`] = `
 Object {
   "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": Object {},
     "element": Object {
@@ -1870,18 +1705,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -1980,7 +1803,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -2085,22 +1907,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-            "ef0",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -2200,23 +2006,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-            "ef0",
-            "488",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -2312,7 +2101,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": null,
     "element": Object {
@@ -2418,17 +2206,6 @@ exports[`DOM Walker tests Simple Project with one child View 1`] = `
 Object {
   "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": Object {},
     "element": Object {
@@ -2508,18 +2285,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -2618,7 +2383,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -2723,22 +2487,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-            "ef0",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -2841,23 +2589,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-            "ef0",
-            "488",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -2961,7 +2692,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488": Object {
     "attributeMetadatada": null,
-    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {

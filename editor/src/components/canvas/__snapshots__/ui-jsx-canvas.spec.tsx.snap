@@ -53,18 +53,6 @@ exports[`UiJsxCanvas render Label carried through for generated elements 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -245,7 +233,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -380,7 +367,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -664,7 +650,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -781,7 +766,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -898,7 +882,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -1054,18 +1037,6 @@ exports[`UiJsxCanvas render Label carried through for normal elements 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -1246,7 +1217,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -1381,7 +1351,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -1612,18 +1581,6 @@ exports[`UiJsxCanvas render Renders input tag without errors 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -1804,7 +1761,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -1939,7 +1895,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:567": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -2107,18 +2062,6 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -2299,7 +2242,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -2434,7 +2376,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -2673,7 +2614,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -2824,7 +2764,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -2975,7 +2914,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -3233,18 +3171,6 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -3425,7 +3351,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -3560,7 +3485,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -3916,7 +3840,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -4169,7 +4092,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -4327,7 +4249,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -4485,7 +4406,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -4643,7 +4563,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -4896,7 +4815,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -5054,7 +4972,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -5212,7 +5129,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -5370,7 +5286,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -5623,7 +5538,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -5781,7 +5695,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -5939,7 +5852,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~3/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -6147,18 +6059,6 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -6339,7 +6239,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -6474,36 +6373,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -6661,7 +6530,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -6761,7 +6629,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -6899,18 +6766,6 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -7091,7 +6946,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -7226,7 +7080,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -7460,18 +7313,6 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -7652,7 +7493,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -7787,7 +7627,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8041,7 +7880,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8216,7 +8054,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8391,7 +8228,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8622,18 +8458,6 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8814,7 +8638,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -8949,7 +8772,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -9203,7 +9025,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -9378,7 +9199,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -9553,7 +9373,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -9778,18 +9597,6 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -9970,7 +9777,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -10105,36 +9911,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -10292,7 +10068,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -10406,7 +10181,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -10570,18 +10344,6 @@ exports[`UiJsxCanvas render function component works inside a map 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -10762,7 +10524,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -10897,7 +10658,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -11086,7 +10846,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -11200,7 +10959,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -11365,18 +11123,6 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -11571,7 +11317,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -11719,22 +11464,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -12056,7 +11785,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -12308,18 +12036,6 @@ exports[`UiJsxCanvas render handles a component that renames its props object 2`
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -12514,7 +12230,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -12662,22 +12377,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -12999,7 +12698,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -13252,18 +12950,6 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -13458,7 +13144,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -13606,22 +13291,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -13991,7 +13660,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -14298,18 +13966,6 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -14504,7 +14160,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -14652,22 +14307,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -15037,7 +14676,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -15330,18 +14968,6 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -15522,7 +15148,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -15657,7 +15282,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -15929,18 +15553,6 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -16121,7 +15733,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -16256,22 +15867,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -17461,7 +17056,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -18316,7 +17910,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -18666,7 +18259,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -19016,7 +18608,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834~~~5": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -19366,7 +18957,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -19756,7 +19346,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -20006,7 +19595,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -20392,7 +19980,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -20638,7 +20225,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -21024,7 +20610,6 @@ export var storyboard = (props) => {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -21320,18 +20905,6 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -21512,7 +21085,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -21647,36 +21219,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa",
-          ],
-        ],
-        "type": "elementpath",
-      },
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -21866,7 +21408,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -21997,7 +21538,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -22167,18 +21707,6 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -22359,7 +21887,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -22494,7 +22021,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -22696,18 +22222,6 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -22888,7 +22402,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -23023,7 +22536,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -23308,18 +22820,6 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
 Object {
   "eee/fff": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "eee",
-            "fff",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -23478,7 +22978,6 @@ Object {
   },
   "eee/fff/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -23584,22 +23083,6 @@ Object {
   },
   "eee/fff/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "eee",
-            "fff",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -23860,7 +23343,6 @@ export var storyboard = (
   },
   "eee/fff/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -24164,18 +23646,6 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -24356,7 +23826,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -24491,22 +23960,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "d59",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -24735,23 +24188,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "d59",
-            "dd5",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -24944,7 +24380,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -25129,18 +24564,6 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -25335,7 +24758,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -25483,22 +24905,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -25760,7 +25166,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -25942,18 +25347,6 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -26292,7 +25685,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -26440,22 +25832,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -26718,7 +26094,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -26905,18 +26280,6 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -27097,7 +26460,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -27232,7 +26594,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -27486,7 +26847,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -27661,7 +27021,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -27836,7 +27195,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -28067,18 +27425,6 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -28259,7 +27605,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -28394,7 +27739,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -28649,7 +27993,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -28825,7 +28168,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -29001,7 +28343,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -29233,18 +28574,6 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -29425,7 +28754,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -29560,7 +28888,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -29821,7 +29148,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -29996,7 +29322,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -30171,7 +29496,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -30393,18 +29717,6 @@ exports[`UiJsxCanvas render renders a component using the spread operator 2`] = 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -30599,7 +29911,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -30747,22 +30058,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -30986,7 +30281,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -31163,18 +30457,6 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 2`] 
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -31350,7 +30632,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -31456,7 +30737,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -31561,7 +30841,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -31704,18 +30983,6 @@ exports[`UiJsxCanvas render renders correctly with a context 2`] = `
 Object {
   "ccc/ddd": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "ccc",
-            "ddd",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -31874,7 +31141,6 @@ Object {
   },
   "ccc/ddd/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -31980,22 +31246,6 @@ Object {
   },
   "ccc/ddd/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "ccc",
-            "ddd",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -32209,7 +31459,6 @@ export var storyboard = (
   },
   "ccc/ddd/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -32372,18 +31621,6 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
 Object {
   "ccc/ddd": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "ccc",
-            "ddd",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -32542,7 +31779,6 @@ Object {
   },
   "ccc/ddd/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -32648,7 +31884,6 @@ Object {
   },
   "ccc/ddd/app-entity:card": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -32800,18 +32035,6 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
 Object {
   "utopia-storyboard-uid/scene": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -32970,7 +32193,6 @@ Object {
   },
   "utopia-storyboard-uid/scene/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -33076,7 +32298,6 @@ Object {
   },
   "utopia-storyboard-uid/scene/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -33371,18 +32592,6 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
 Object {
   "utopia-storyboard-uid/scene": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -33541,7 +32750,6 @@ Object {
   },
   "utopia-storyboard-uid/scene/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -33647,7 +32855,6 @@ Object {
   },
   "utopia-storyboard-uid/scene/app-entity:BBB": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -33824,18 +33031,6 @@ exports[`UiJsxCanvas render renders fragments correctly 2`] = `
 Object {
   "eee/fff": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "eee",
-            "fff",
-            "app",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -34016,7 +33211,6 @@ Object {
   },
   "eee/fff/app": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -34151,22 +33345,6 @@ Object {
   },
   "eee/fff/app:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "eee",
-            "fff",
-            "app",
-          ],
-          Array [
-            "aaa",
-            "ddd",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -34590,7 +33768,6 @@ export var storyboard = (
   },
   "eee/fff/app:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -34807,7 +33984,6 @@ export var storyboard = (
   },
   "eee/fff/app:aaa/bbb/ccc": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -34948,7 +34124,6 @@ export var storyboard = (
   },
   "eee/fff/app:aaa/ddd": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -35097,18 +34272,6 @@ exports[`UiJsxCanvas render renders img tag 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -35289,7 +34452,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -35424,22 +34586,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -35588,7 +34734,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -35746,18 +34891,6 @@ exports[`UiJsxCanvas render respects a jsx pragma 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -35939,7 +35072,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -36075,7 +35207,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -36259,18 +35390,6 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -36451,7 +35570,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -36586,7 +35704,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -36869,7 +35986,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -37053,7 +36169,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1/ccc": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -37208,7 +36323,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -37392,7 +36506,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2/ccc": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -37547,7 +36660,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -37731,7 +36843,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3/ccc": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -37926,18 +37037,6 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -38118,7 +37217,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -38253,7 +37351,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -38415,18 +37512,6 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
 Object {
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -38607,7 +37692,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -38742,22 +37826,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "cloner",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -38922,23 +37990,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner": Object {
     "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "cloner",
-            "cloned",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
@@ -39088,7 +38139,6 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned": Object {
     "attributeMetadatada": Object {},
-    "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
     "element": Object {
