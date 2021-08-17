@@ -35,8 +35,7 @@ function postCSSIncludesTailwindPlugin(postCSSFile: ProjectFile, requireFn: Requ
   if (isTextFile(postCSSFile)) {
     try {
       const requireResult = requireFn('/', PostCSSPath)
-      const defaultImport = importDefault(requireResult)
-      const plugins = (defaultImport as any)?.plugins
+      const plugins = (requireResult as any)?.plugins
       return plugins?.tailwindcss != null
     } catch (e) {
       /* Do nothing */
