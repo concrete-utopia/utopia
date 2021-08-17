@@ -233,7 +233,7 @@ export const MetadataUtils = {
 
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
       ? MetadataUtils.getRootViewPaths(metadata, parentPath)
-      : parentMetadata?.children
+      : MetadataUtils.getChildrenPaths(metadata, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
   },
@@ -388,13 +388,17 @@ export const MetadataUtils = {
       return 'nowrap' // TODO read this value from spy
     }
   },
-  isAutoSizingView(element: ElementInstanceMetadata | null): boolean {
+  isAutoSizingView(
+    metadata: ElementInstanceMetadataMap,
+    element: ElementInstanceMetadata | null,
+  ): boolean {
     if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
       // TODO NEW Property Path
       const isAutoSizing =
         LayoutHelpers.getLayoutSystemFromProps(right(element.element.value.props)) === 'group'
       const isYogaLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
-      const hasChildren = element.children.length > 0
+      const childrenPaths = MetadataUtils.getChildrenPaths(metadata, element.elementPath)
+      const hasChildren = childrenPaths.length > 0
       const parentIsYoga = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
         element,
       )
@@ -411,7 +415,7 @@ export const MetadataUtils = {
       return false
     }
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return MetadataUtils.isAutoSizingView(instance)
+    return MetadataUtils.isAutoSizingView(metadata, instance)
   },
   isAutoSizingText(instance: ElementInstanceMetadata): boolean {
     return MetadataUtils.isTextAgainstImports(instance) && instance.props.textSizing === 'auto'
@@ -429,7 +433,7 @@ export const MetadataUtils = {
       return parentPath
     } else {
       const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
-      if (MetadataUtils.isAutoSizingView(parent)) {
+      if (MetadataUtils.isAutoSizingView(metadata, parent)) {
         return MetadataUtils.findNonGroupParent(metadata, parentPath)
       } else {
         return parentPath
@@ -462,7 +466,10 @@ export const MetadataUtils = {
       if (ancestorElement == null) {
         break
       } else {
-        if (MetadataUtils.isAutoSizingView(ancestorElement) && ancestorElement.localFrame != null) {
+        if (
+          MetadataUtils.isAutoSizingView(metadata, ancestorElement) &&
+          ancestorElement.localFrame != null
+        ) {
           // if the ancestorElement is a group, it better have a measurable frame, too,
           // TODO check with Sean if there are implications of this nullcheck
           workingFrame = Utils.offsetRect(workingFrame, {
@@ -521,8 +528,15 @@ export const MetadataUtils = {
     return MetadataUtils.findElementsByElementPath(elements, rootPaths ?? [])
   },
   getChildrenPaths(elements: ElementInstanceMetadataMap, target: ElementPath): Array<ElementPath> {
-    const element = MetadataUtils.findElementByElementPath(elements, target)
-    return element?.children ?? []
+    const possibleChildren = mapDropNulls((elementPathString) => {
+      const elementPath = EP.fromString(elementPathString)
+      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
+        return elementPath
+      } else {
+        return null
+      }
+    }, Object.keys(elements))
+    return possibleChildren
   },
   getChildren(
     elements: ElementInstanceMetadataMap,
@@ -537,7 +551,8 @@ export const MetadataUtils = {
   ): Array<ElementPath> {
     const element = MetadataUtils.findElementByElementPath(elements, target)
     const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
-    return element == null ? [] : [...rootPaths, ...element.children]
+    const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
+    return element == null ? [] : [...rootPaths, ...childrenPaths]
   },
   getImmediateChildren(
     metadata: ElementInstanceMetadataMap,
@@ -558,10 +573,7 @@ export const MetadataUtils = {
     ): Array<ElementInstanceMetadata> => {
       // autoSizing views are the new groups
       if (this.isAutoSizingViewFromComponents(metadata, childInstance.elementPath)) {
-        const rawChildren = MetadataUtils.findElementsByElementPath(
-          metadata,
-          childInstance.children,
-        )
+        const rawChildren = MetadataUtils.getChildren(metadata, childInstance.elementPath)
         const children = Utils.flatMapArray(getChildrenInner, rawChildren)
         if (includeGroups) {
           return [childInstance, ...children]
@@ -638,7 +650,8 @@ export const MetadataUtils = {
         result.push(rootInstance)
         const rootElements = MetadataUtils.getRootViewPaths(metadata, element.elementPath)
         rootElements.forEach(recurseElement)
-        element.children.forEach(recurseElement)
+        const children = MetadataUtils.getChildrenPaths(metadata, element.elementPath)
+        children.forEach(recurseElement)
       }
     })
 
@@ -1042,26 +1055,14 @@ export const MetadataUtils = {
 
       // Checking if our elements support children should prevent us from ending up with the
       // internals of draft-js showing up underneath Text elements.
+      // TODO is data-utopia-do-not-traverse still relevant?
       const shouldNotTraverse: boolean | undefined = Utils.path(
         ['props', 'data-utopia-do-not-traverse'],
         fromDOM,
       )
-      let children: Array<ElementPath>
-      if (shouldNotTraverse) {
-        children = []
-      } else {
-        children = EP.addPathsIfMissing(spyElem?.children ?? [], domElem.children)
-      }
 
       if (spyElem == null) {
-        const elem =
-          children === domElem.children
-            ? domElem
-            : {
-                ...domElem,
-                children: children,
-              }
-        workingElements[EP.toString(domElem.elementPath)] = elem
+        workingElements[EP.toString(domElem.elementPath)] = domElem
         newlyFoundElements.push(domElem.elementPath)
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
@@ -1080,7 +1081,6 @@ export const MetadataUtils = {
           ...domElem,
           props: spyElem.props,
           element: jsxElement,
-          children: children,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
           label: spyElem.label,
@@ -1100,83 +1100,32 @@ export const MetadataUtils = {
     target: ElementPath,
     metadata: ElementInstanceMetadataMap,
   ): ElementInstanceMetadataMap {
-    const parentPath = EP.parentPath(target)
+    // Note this only removes the child element from the metadata, but keeps grandchildren in there (inaccessible). Is this a memory leak?
     let remainingElements: ElementInstanceMetadataMap = omit([EP.toString(target)], metadata)
     if (Object.keys(remainingElements).length === Object.keys(metadata).length) {
       // Nothing was removed
       return metadata
-    }
-
-    const updatedElements = MetadataUtils.transformAtPathOptionally(
-      remainingElements,
-      parentPath,
-      (elem) => {
-        const updatedChildren = elem.children.filter((child) => !EP.pathsEqual(child, target))
-        if (updatedChildren.length === elem.children.length) {
-          return elem
-        } else {
-          return {
-            ...elem,
-            children: updatedChildren,
-          }
-        }
-      },
-    )
-    return updatedElements
-  },
-  updateParentWithNewChildPath(
-    targetParent: ElementPath | null,
-    childPath: ElementPath,
-    elements: ElementInstanceMetadataMap,
-    indexPosition: IndexPosition | null,
-  ): ElementInstanceMetadataMap {
-    const makeE = () => {
-      // TODO delete me
-      throw new Error('Should not attempt to create empty elements.')
-    }
-    if (targetParent == null) {
-      // TODO Scene Implementation
-      return elements
     } else {
-      return this.transformAtPathOptionally(elements, targetParent, (parentElement) => {
-        let updatedChildren: Array<ElementPath>
-        if (indexPosition == null) {
-          updatedChildren = parentElement.children.concat(childPath)
-        } else {
-          updatedChildren = Utils.addToArrayWithFill(
-            childPath,
-            parentElement.children,
-            indexPosition,
-            makeE,
-          )
-        }
-        return {
-          ...parentElement,
-          children: updatedChildren,
-        }
-      })
+      return remainingElements
     }
   },
   insertElementMetadataChild(
     targetParent: ElementPath | null,
     elementToInsert: ElementInstanceMetadata,
     metadata: ElementInstanceMetadataMap,
-    indexPosition: IndexPosition | null,
   ): ElementInstanceMetadataMap {
     // Insert into the map
+    if (!EP.pathsEqual(EP.parentPath(elementToInsert.elementPath), targetParent)) {
+      throw new Error(
+        'insertElementMetadataChild: trying to insert child metadata with incorrect parent path prefix',
+      )
+    }
+
     const withNewElement: ElementInstanceMetadataMap = {
       ...metadata,
       [EP.toString(elementToInsert.elementPath)]: elementToInsert,
     }
-
-    // Update the parent
-    const updatedElements = this.updateParentWithNewChildPath(
-      targetParent,
-      elementToInsert.elementPath,
-      withNewElement,
-      indexPosition,
-    )
-    return updatedElements
+    return withNewElement
   },
   duplicateElementMetadataAtPath(
     oldPath: ElementPath,
@@ -1202,7 +1151,6 @@ export const MetadataUtils = {
         ...element,
         elementPath: newElementPath,
         element: newElementInner,
-        children: [], // all descendants have new UID-s
       }
 
       workingElements[EP.toString(newElementPath)] = newElementMetadata
@@ -1214,22 +1162,9 @@ export const MetadataUtils = {
     if (originalMetadata == null) {
       return metadata
     } else {
-      const duplicatedElementPath = duplicateElementMetadata(
-        originalMetadata,
-        oldPath,
-        newPath,
-        newElement,
-      )
-      const updatedElements = this.updateParentWithNewChildPath(
-        EP.parentPath(duplicatedElementPath),
-        duplicatedElementPath,
-        workingElements,
-        {
-          type: 'back',
-        },
-      )
+      duplicateElementMetadata(originalMetadata, oldPath, newPath, newElement)
 
-      return updatedElements
+      return workingElements
     }
   },
   transformAllPathsInMetadata(
@@ -1252,6 +1187,7 @@ export const MetadataUtils = {
         }
       })
 
+    // TODO updateChildren should actually change the keys of the children in the metadata...
     function updateChildren(children: ElementPath[]): ElementPath[] {
       let childWasUpdated = false
       const updatedChildren = children.map((child) => {
@@ -1274,7 +1210,6 @@ export const MetadataUtils = {
           updatedElements[replacementString] = {
             ...existing,
             elementPath: replacement,
-            children: updateChildren(existing.children),
           }
         }
       },

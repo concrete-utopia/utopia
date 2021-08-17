@@ -1453,7 +1453,6 @@ export interface ElementInstanceMetadata {
   props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
-  children: Array<ElementPath>
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -1469,7 +1468,6 @@ export function elementInstanceMetadata(
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
-  children: Array<ElementPath>,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
@@ -1484,7 +1482,6 @@ export function elementInstanceMetadata(
     props: props,
     globalFrame: globalFrame,
     localFrame: localFrame,
-    children: children,
     componentInstance: componentInstance,
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,

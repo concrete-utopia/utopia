@@ -2106,7 +2106,6 @@ export function moveTemplate(
                   newParentPath,
                   elementMetadata,
                   updatedComponentMetadata,
-                  indexPosition,
                 )
 
                 updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
