@@ -1100,7 +1100,6 @@ export function parseCode(
   if (sourceFile == null) {
     return parseFailure([], null, `File ${filename} not found.`, [])
   } else {
-    const reactJSXPermitted = jsxFactoryFunction != null || isReactImported(sourceFile)
     let topLevelElements: Array<Either<string, TopLevelElement>> = []
     let imports: Imports = emptyImports()
     // Find the already existing UIDs so that when we generate one it doesn't duplicate one
@@ -1267,74 +1266,68 @@ export function parseCode(
           let isFunction: boolean = false
           let parsedFunctionParam: Either<string, WithParserMetadata<Param> | null> = right(null)
           let propsUsed: Array<string> = []
-          // If react isn't imported don't parse this and
-          // let the arbitrary node handling handle it instead.
-          // This should result in a runtime error which matches
-          // regular code not running in the editor.
-          if (reactJSXPermitted) {
-            if (isPossibleCanvasContentsFunction(canvasContents)) {
-              const { parameters, body } = canvasContents
-              isFunction = true
-              const parsedFunctionParams = parseParams(
-                parameters,
+          if (isPossibleCanvasContentsFunction(canvasContents)) {
+            const { parameters, body } = canvasContents
+            isFunction = true
+            const parsedFunctionParams = parseParams(
+              parameters,
+              sourceFile,
+              sourceText,
+              filename,
+              imports,
+              topLevelNames,
+              highlightBounds,
+              alreadyExistingUIDs_MUTABLE,
+            )
+            parsedFunctionParam = flatMapEither((parsedParams) => {
+              const paramsValue = parsedParams.value
+              if (paramsValue.length === 0) {
+                return right(null)
+              } else if (paramsValue.length === 1) {
+                // Note: We're explicitly ignoring the `propsUsed` value as
+                // that should be handled by the call to `propNamesForParam` below.
+                return right(
+                  withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
+                )
+              } else {
+                return left('Invalid number of params')
+              }
+            }, parsedFunctionParams)
+            forEachRight(parsedFunctionParam, (param) => {
+              const boundParam = param?.value.boundParam
+              const propsObjectName =
+                boundParam != null && isRegularParam(boundParam) ? boundParam.paramName : null
+
+              propsUsed = param == null ? [] : propNamesForParam(param.value)
+
+              parsedContents = parseOutFunctionContents(
                 sourceFile,
                 sourceText,
                 filename,
                 imports,
                 topLevelNames,
-                highlightBounds,
+                propsObjectName,
+                body,
+                param?.highlightBounds ?? {},
                 alreadyExistingUIDs_MUTABLE,
               )
-              parsedFunctionParam = flatMapEither((parsedParams) => {
-                const paramsValue = parsedParams.value
-                if (paramsValue.length === 0) {
-                  return right(null)
-                } else if (paramsValue.length === 1) {
-                  // Note: We're explicitly ignoring the `propsUsed` value as
-                  // that should be handled by the call to `propNamesForParam` below.
-                  return right(
-                    withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
-                  )
-                } else {
-                  return left('Invalid number of params')
-                }
-              }, parsedFunctionParams)
-              forEachRight(parsedFunctionParam, (param) => {
-                const boundParam = param?.value.boundParam
-                const propsObjectName =
-                  boundParam != null && isRegularParam(boundParam) ? boundParam.paramName : null
-
-                propsUsed = param == null ? [] : propNamesForParam(param.value)
-
-                parsedContents = parseOutFunctionContents(
-                  sourceFile,
-                  sourceText,
-                  filename,
-                  imports,
-                  topLevelNames,
-                  propsObjectName,
-                  body,
-                  param?.highlightBounds ?? {},
-                  alreadyExistingUIDs_MUTABLE,
-                )
-              })
-            } else {
-              // In this case it's likely/hopefully a straight JSX expression attached to the var.
-              parsedContents = liftParsedElementsIntoFunctionContents(
-                expressionTypeForExpression(canvasContents.initializer),
-                parseOutJSXElements(
-                  sourceFile,
-                  sourceText,
-                  filename,
-                  [canvasContents.initializer],
-                  imports,
-                  topLevelNames,
-                  null,
-                  highlightBounds,
-                  alreadyExistingUIDs_MUTABLE,
-                ),
-              )
-            }
+            })
+          } else {
+            // In this case it's likely/hopefully a straight JSX expression attached to the var.
+            parsedContents = liftParsedElementsIntoFunctionContents(
+              expressionTypeForExpression(canvasContents.initializer),
+              parseOutJSXElements(
+                sourceFile,
+                sourceText,
+                filename,
+                [canvasContents.initializer],
+                imports,
+                topLevelNames,
+                null,
+                highlightBounds,
+                alreadyExistingUIDs_MUTABLE,
+              ),
+            )
           }
           if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
             pushArbitraryNode(topLevelElement)

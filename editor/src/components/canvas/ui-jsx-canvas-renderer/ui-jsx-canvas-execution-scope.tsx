@@ -97,6 +97,7 @@ export function createExecutionScope(
   }
 
   let executionScope: MapLike<any> = {
+    React: React,
     require: userRequireFn,
     module: module,
     exports: module.exports,

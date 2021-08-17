@@ -281,10 +281,10 @@ export function handleMessage(
 export const DefaultLanguageServiceCompilerOptions: TS.CompilerOptions = {
   noEmitOnError: true,
   noImplicitAny: false,
-  target: TS.ScriptTarget.ES2015,
+  target: TS.ScriptTarget.ESNext,
   module: TS.ModuleKind.CommonJS,
   moduleResolution: TS.ModuleResolutionKind.NodeJs,
-  jsx: TS.JsxEmit.React,
+  jsx: TS.JsxEmit.ReactJSX,
   allowJs: true,
   allowSyntheticDefaultImports: true,
   esModuleInterop: true,
