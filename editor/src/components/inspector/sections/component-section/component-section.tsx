@@ -6,6 +6,7 @@ import {
   BaseControlDescription,
   ControlDescription,
   isBaseControlDescription,
+  NumberControlDescription,
   ObjectControlDescription,
   UnionControlDescription,
 } from 'utopia-api'
@@ -496,6 +497,81 @@ const RowForUnionControl = betterReactMemo(
   },
 )
 
+interface RowForVectorControlProps extends AbstractRowForControlProps {
+  controlDescription: ObjectControlDescription
+}
+
+const RowForVectorControl = betterReactMemo(
+  'RowForVectorControl',
+  (props: RowForVectorControlProps) => {
+    const { propPath, controlDescription, isScene } = props
+    const title = titleForControl(propPath, controlDescription)
+    const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+    const contextMenuItems = Utils.stripNulls([
+      addOnUnsetValues([PP.toString(propPath)], propMetadata.onUnsetValues),
+    ])
+    return (
+      <>
+        <InspectorContextMenuWrapper
+          id={`context-menu-for-${PP.toString(propPath)}`}
+          items={contextMenuItems}
+          data={null}
+        >
+          <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+            {title}
+            <UIGridRow padded={false} variant='<--1fr--><--1fr--><--1fr-->'>
+              {mapToArray((innerControl: ControlDescription, prop: string) => {
+                const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+                const propName = `${PP.lastPart(propPath)}`
+                const innerMetadata = useComponentPropsInspectorInfo(
+                  innerPropPath,
+                  isScene,
+                  innerControl,
+                )
+                return (
+                  <ControlForNumberProp
+                    key={`object-control-row-${PP.toString(innerPropPath)}`}
+                    controlDescription={innerControl as NumberControlDescription}
+                    propName={propName}
+                    propMetadata={innerMetadata}
+                  />
+                )
+              }, controlDescription.object)}
+            </UIGridRow>
+          </UIGridRow>
+        </InspectorContextMenuWrapper>
+      </>
+    )
+  },
+)
+
+function isVectorControlDescription(controlDescription: ObjectControlDescription): boolean {
+  if (Object.keys(controlDescription.object).length === 3) {
+    return (
+      controlDescription.object[0] != null &&
+      controlDescription.object[1] != null &&
+      controlDescription.object[2] != null &&
+      controlDescription.object[0].type === 'number' &&
+      controlDescription.object[1].type === 'number' &&
+      controlDescription.object[2].type === 'number' &&
+      controlDescription.object[0].title === 'x' &&
+      controlDescription.object[1].title === 'y' &&
+      controlDescription.object[2].title === 'z'
+    )
+  } else if (Object.keys(controlDescription.object).length === 2) {
+    return (
+      controlDescription.object[0] != null &&
+      controlDescription.object[1] != null &&
+      controlDescription.object[0].type === 'number' &&
+      controlDescription.object[1].type === 'number' &&
+      controlDescription.object[0].title === 'x' &&
+      controlDescription.object[1].title === 'y'
+    )
+  } else {
+    return false
+  }
+}
+
 interface RowForControlProps extends AbstractRowForControlProps {
   controlDescription: ControlDescription
 }
@@ -510,7 +586,11 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
       case 'array':
         return <RowForArrayControl {...props} controlDescription={controlDescription} />
       case 'object':
-        return <RowForObjectControl {...props} controlDescription={controlDescription} />
+        if (isVectorControlDescription(controlDescription)) {
+          return <RowForVectorControl {...props} controlDescription={controlDescription} />
+        } else {
+          return <RowForObjectControl {...props} controlDescription={controlDescription} />
+        }
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
       default:
