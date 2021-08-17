@@ -7,10 +7,10 @@ import { loadModuleResult, LoadModuleResult, ModuleLoader } from './loader-types
 
 const moduleLoaders: Array<ModuleLoader> = [
   SVGLoader,
-  FileLoader,
   CSSLoader,
   JSONLoader,
   DefaultLoader,
+  FileLoader,
 ]
 
 export function filenameWithoutJSSuffix(filename: string): string | undefined {
@@ -19,27 +19,19 @@ export function filenameWithoutJSSuffix(filename: string): string | undefined {
   return filename.endsWith('.js') ? filename.slice(0, -3) : undefined
 }
 
-function loadersForFile(filename: string): Array<ModuleLoader> {
-  return moduleLoaders.filter((loader) => loader.match(filename))
-}
-
-function applyMatchedLoaders(
-  filename: string,
-  contents: string,
-  matchedLoaders: Array<ModuleLoader>,
-): LoadModuleResult {
-  return matchedLoaders.reduce(
-    (loadedModuleResult, nextLoader) =>
-      nextLoader.load(loadedModuleResult.filename, loadedModuleResult.loadedContents),
-    loadModuleResult(filename, contents),
-  )
+function loaderForFile(filename: string): ModuleLoader | undefined {
+  return moduleLoaders.find((loader) => loader.match(filename))
 }
 
 export function loaderExistsForFile(filename: string): boolean {
-  return loadersForFile(filename).length > 0
+  return loaderForFile(filename) != null
 }
 
 export function applyLoaders(filename: string, contents: string): LoadModuleResult {
-  const matchingLoaders = loadersForFile(filename)
-  return applyMatchedLoaders(filename, contents, matchingLoaders)
+  const matchedLoader = loaderForFile(filename)
+  if (matchedLoader != null) {
+    return matchedLoader.load(filename, contents)
+  } else {
+    return loadModuleResult(filename, contents)
+  }
 }

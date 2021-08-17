@@ -1,9 +1,7 @@
 import { LoadModule, loadModuleResult, MatchFile, ModuleLoader } from './loader-types'
 
 const matchFile: MatchFile = (filename: string) => {
-  return ['.avif', '.bmp', '.gif', '.jpg', '.jpeg', '.png'].some((extension) =>
-    filename.endsWith(extension),
-  )
+  return true
 }
 
 const loadModule: LoadModule = (filename: string, contents: string) => {
