@@ -171,7 +171,6 @@ export function createFakeMetadataForParseSuccess(
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: ElementPath[] = []
   const storyboardElementPath = EP.elementPath([[BakedInStoryboardUID]])
 
   sceneElements.forEach((scene, index) => {
@@ -188,15 +187,11 @@ export function createFakeMetadataForParseSuccess(
     descendantsMetadata.forEach((individualMetadata) => {
       const descendantPath = individualMetadata.elementPath
       elements[EP.toString(descendantPath)] = individualMetadata
-      if (EP.isParentOf(storyboardElementPath, descendantPath)) {
-        storyboardChildren.push(descendantPath)
-      }
     })
   })
 
   elements[EP.toString(storyboardElementPath)] = createFakeMetadataForStoryboard(
     storyboardElementPath,
-    storyboardChildren,
   )
 
   return elements
@@ -206,7 +201,6 @@ export function createFakeMetadataForComponents(
   topLevelElements: Array<TopLevelElement>,
 ): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: ElementPath[] = []
   const storyboardElementPath = EP.elementPath([[BakedInStoryboardUID]])
 
   Utils.fastForEach(topLevelElements, (component, index) => {
@@ -243,16 +237,12 @@ export function createFakeMetadataForComponents(
       descendantsMetadata.forEach((individualMetadata) => {
         const descendantPath = individualMetadata.elementPath
         elements[EP.toString(descendantPath)] = individualMetadata
-        if (EP.isParentOf(storyboardElementPath, descendantPath)) {
-          storyboardChildren.push(descendantPath)
-        }
       })
     }
   })
 
   elements[EP.toString(storyboardElementPath)] = createFakeMetadataForStoryboard(
     storyboardElementPath,
-    storyboardChildren,
   )
 
   return elements
@@ -296,7 +286,6 @@ function createFakeMetadataForJSXElement(
         false,
       ),
     )
-    const childPaths = children.map((child) => child.elementPath)
 
     if (focused) {
       const targetComponent = topLevelElements.find(
@@ -328,7 +317,6 @@ function createFakeMetadataForJSXElement(
       props: props,
       globalFrame: canvasRectangle(frame),
       localFrame: localRectangle(frame),
-      children: childPaths,
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -357,17 +345,13 @@ function createFakeMetadataForJSXElement(
   return elements
 }
 
-function createFakeMetadataForStoryboard(
-  elementPath: ElementPath,
-  children: Array<ElementPath>,
-): ElementInstanceMetadata {
+function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     elementPath: elementPath,
     props: {},
     element: right(jsxTestElement('Storyboard', [], [])),
-    children: children,
     componentInstance: true,
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -385,7 +369,6 @@ export function wait(timeout: number): Promise<void> {
 }
 
 interface SimplifiedMetadata {
-  children: string[]
   name: string
 }
 
@@ -399,7 +382,6 @@ export function simplifiedMetadata(elementMetadata: ElementInstanceMetadata): Si
         isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'not-jsx-element',
       elementMetadata.element,
     ),
-    children: elementMetadata.children.map(EP.toString),
   }
 }
 

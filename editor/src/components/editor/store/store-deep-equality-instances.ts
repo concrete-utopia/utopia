@@ -85,7 +85,7 @@ import {
   combine8EqualityCalls,
   undefinableDeepEquality,
   combine4EqualityCalls,
-  combine13EqualityCalls,
+  combine12EqualityCalls,
   combine11EqualityCalls,
   combine1EqualityCall,
   combine14EqualityCalls,
@@ -703,7 +703,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
-  return combine13EqualityCalls(
+  return combine12EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -714,8 +714,6 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     nullableDeepEquality(CanvasRectangleKeepDeepEquality),
     (metadata) => metadata.localFrame,
     nullableDeepEquality(LocalRectangleKeepDeepEquality),
-    (metadata) => metadata.children,
-    ElementPathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
     (metadata) => metadata.isEmotionOrStyledComponent,

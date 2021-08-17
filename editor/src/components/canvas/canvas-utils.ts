@@ -2097,6 +2097,11 @@ export function moveTemplate(
               )
 
               if (elementMetadata != null) {
+                const elementMetadataWithNewPath: ElementInstanceMetadata = {
+                  ...elementMetadata,
+                  elementPath: newPath,
+                }
+
                 updatedComponentMetadata = MetadataUtils.removeElementMetadataChild(
                   target,
                   updatedComponentMetadata,
@@ -2104,15 +2109,8 @@ export function moveTemplate(
 
                 updatedComponentMetadata = MetadataUtils.insertElementMetadataChild(
                   newParentPath,
-                  elementMetadata,
+                  elementMetadataWithNewPath,
                   updatedComponentMetadata,
-                  indexPosition,
-                )
-
-                updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
-                  updatedComponentMetadata,
-                  target,
-                  newPath,
                 )
               }
               workingEditorState.jsxMetadata = updatedComponentMetadata

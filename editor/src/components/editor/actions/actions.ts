@@ -849,7 +849,8 @@ function switchAndUpdateFrames(
     framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
   }
 
-  Utils.fastForEach(targetMetadata.children, (childPath) => {
+  const children = MetadataUtils.getChildrenPaths(editor.jsxMetadata, target)
+  Utils.fastForEach(children, (childPath) => {
     const child = MetadataUtils.findElementByElementPath(editor.jsxMetadata, childPath)
     if (child?.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it

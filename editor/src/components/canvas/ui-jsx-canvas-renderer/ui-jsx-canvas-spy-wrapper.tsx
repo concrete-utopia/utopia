@@ -21,7 +21,6 @@ export function buildSpyWrappedElement(
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  childrenElementPaths: Array<ElementPath>,
   childrenElements: Array<React.ReactChild>,
   Element: any,
   inScope: MapLike<any>,
@@ -47,7 +46,6 @@ export function buildSpyWrappedElement(
       props: makeCanvasElementPropsSafe(reportedProps),
       globalFrame: null,
       localFrame: null,
-      children: childrenElementPaths,
       componentInstance: false,
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways

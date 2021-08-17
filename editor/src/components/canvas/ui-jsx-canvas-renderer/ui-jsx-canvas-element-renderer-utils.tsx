@@ -401,24 +401,12 @@ function renderJSXElement(
     elementPath != null &&
     EP.containsPath(staticElementPathForGeneratedElement, staticValidPaths)
   ) {
-    let childrenElementPaths: ElementPath[] = []
-
-    Utils.fastForEach(jsx.children, (child) => {
-      if (isJSXElement(child)) {
-        const childPath = optionalMap((p) => EP.appendToPath(p, getUtopiaID(child)), elementPath)
-        if (childPath != null && EP.containsPath(childPath, validPaths)) {
-          childrenElementPaths.push(childPath)
-        }
-      }
-    })
-
     return buildSpyWrappedElement(
       jsx,
       finalPropsIcludingElementPath,
       elementPath,
       metadataContext,
       updateInvalidatedPaths,
-      childrenElementPaths,
       childrenElements,
       FinalElement,
       inScope,
