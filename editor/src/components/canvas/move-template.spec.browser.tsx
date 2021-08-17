@@ -525,11 +525,11 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: 61, width: 256, height: 202 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           >
             <View data-uid='ccc'>
-              <View data-uid='ddd' />
+              <View data-uid='ddd'  style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 10, top: 10, width: 100, height: 100 }} />
             </View>
           </View>
           <View data-uid='eee'/>
@@ -552,12 +552,12 @@ describe('moveTemplate', () => {
         `<View style={{ ...props.style }} data-uid='aaa'>
           <View data-uid='eee'>
             <View
-              style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: -141, width: 256, height: 202 }}
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
               data-uid='bbb'
             >
               <View data-uid='ccc' />
             </View>
-            <View data-uid='ddd' style={{ left: 52, top: -141 }} />
+            <View data-uid='ddd'  style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 62, top: 71, width: 100, height: 100 }} />
           </View>
         </View>
       `,
