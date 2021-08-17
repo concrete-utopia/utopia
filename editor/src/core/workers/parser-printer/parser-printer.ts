@@ -129,6 +129,7 @@ import { replaceAll } from '../../shared/string-utils'
 import { WorkerCodeUpdate, WorkerParsedUpdate } from '../../../components/editor/action-types'
 import { fixParseSuccessUIDs } from './uid-fix'
 import { applyPrettier } from 'utopia-vscode-common'
+import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -939,7 +940,10 @@ export function looksLikeCanvasElements(
               varLetOrConst,
             ),
           )
-        } else {
+        } else if (name === BakedInStoryboardVariableName) {
+          // FIXME The below case should result in a parsed top level *element*, but instead it is treated
+          // as a *component*. Unfortunately our use of the storyboard incorrectly relies on it being treated
+          // as a component. See https://github.com/concrete-utopia/utopia/issues/1718 for more info
           return right(
             possibleCanvasContentsExpression(name, variableDeclaration.initializer, varLetOrConst),
           )
