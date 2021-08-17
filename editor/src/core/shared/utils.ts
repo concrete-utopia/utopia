@@ -4,7 +4,7 @@ const urljoin = require('url-join')
 import { appendHash } from './dom-utils'
 
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects
-export const EditorID = 'editor'
+export const EditorID = 'utopia-editor-root'
 export const PortalTargetID = 'portal-target'
 export const CanvasContextMenuPortalTargetID = 'canvas-contextmenu-portal-target'
 

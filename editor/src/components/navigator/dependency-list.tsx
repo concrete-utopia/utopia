@@ -170,7 +170,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
 
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
-      fetchNodeModules(npmDependencies, 'canvas').then((fetchNodeModulesResult) => {
+      fetchNodeModules(npmDependencies).then((fetchNodeModulesResult) => {
         if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
           this.packagesUpdateFailed(
             `Failed to download the following dependencies: ${JSON.stringify(
@@ -331,10 +331,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
                 EditorActions.setPackageStatus(editedPackageName, loadingOrUpdating),
                 EditorActions.updatePackageJson(updatedNpmDeps),
               ])
-              fetchNodeModules(
-                [requestedNpmDependency(editedPackageName, editedPackageVersion!)],
-                'canvas',
-              )
+              fetchNodeModules([requestedNpmDependency(editedPackageName, editedPackageVersion!)])
                 .then((fetchNodeModulesResult) => {
                   if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
                     this.packagesUpdateFailed(

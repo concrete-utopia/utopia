@@ -44,7 +44,7 @@ export const getCurriedEditorRequireFn = (
     )
   }
   return (projectContents: ProjectContentTreeRoot) =>
-    getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, evaluationCache, 'canvas')
+    getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, evaluationCache)
 }
 
 export function getRequireFn(
@@ -52,11 +52,10 @@ export function getRequireFn(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   evaluationCache: EvaluationCache,
-  mode: 'canvas' | 'preview',
   injectedEvaluator = evaluator,
 ): RequireFn {
   return function require(importOrigin, toImport): unknown {
-    const builtInDependency = resolveBuiltInDependency(toImport, mode)
+    const builtInDependency = resolveBuiltInDependency(toImport)
     if (builtInDependency != null) {
       return builtInDependency
     }
