@@ -3660,7 +3660,7 @@ export const UPDATE_FNS = {
           return packageStatus
         }, {})
 
-        fetchNodeModules(deps, 'canvas').then((fetchNodeModulesResult) => {
+        fetchNodeModules(deps).then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
@@ -4779,7 +4779,7 @@ export const UPDATE_FNS = {
               requestedNpmDependency('tailwindcss', tailwindVersion.version),
               requestedNpmDependency('postcss', postcssVersion.version),
             ]
-            fetchNodeModules(updatedNpmDeps, 'canvas').then((fetchNodeModulesResult) => {
+            fetchNodeModules(updatedNpmDeps).then((fetchNodeModulesResult) => {
               const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
                 updatedNpmDeps,
                 fetchNodeModulesResult.dependenciesWithError,
@@ -5076,7 +5076,7 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesWithEditorRequirements(defaultPersistentModel.projectContents)
-  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, 'canvas')
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
   const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
@@ -5139,11 +5139,7 @@ export async function load(
   // this action is now async!
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
-  const fetchNodeModulesResult = await fetchNodeModules(
-    npmDependencies,
-    'canvas',
-    retryFetchNodeModules,
-  )
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
   const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(

@@ -60,7 +60,6 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileNoImports as PackagerServerResponse),
       {},
-      'canvas',
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -73,7 +72,6 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      'canvas',
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -86,7 +84,6 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithLocalImport),
       {},
-      'canvas',
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -99,7 +96,6 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      'canvas',
     )
     reqFn('/src/index.js', 'mypackage/simple.css')
 
@@ -113,7 +109,6 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      'canvas',
     )
     reqFn('/src/index.js', 'mypackage/simple.css')
 
@@ -129,7 +124,6 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      'canvas',
     )
 
     const requireResult = reqFn('/src/index.js', 'mypackage/simple.svg')
@@ -146,7 +140,6 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      'canvas',
     )
     const test = () => reqFn('/src/index.js', 'mypackage2')
     expect(test).toThrowError(`Could not find dependency: 'mypackage2' relative to '/src/index.js`)
@@ -161,7 +154,6 @@ describe('ES Dependency Manager — Cycles', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      'canvas',
       spyEvaluator,
     )
     const requireResult = reqFn('/src/index.js', 'mypackage/moduleA')
@@ -183,16 +175,15 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules(
-      [requestedNpmDependency('react-spring', '8.0.27')],
-      'canvas',
-    )
+    const fetchNodeModulesResult = await fetchNodeModules([
+      requestedNpmDependency('react-spring', '8.0.27'),
+    ])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
     const nodeModules = fetchNodeModulesResult.nodeModules
     const onRemoteModuleDownload = jest.fn()
-    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, 'canvas')
+    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {})
     const reactSpring = req('/src/index.js', 'react-spring')
     expect(Object.keys(reactSpring)).not.toHaveLength(0)
     expect(onRemoteModuleDownload).toBeCalledTimes(0)
@@ -212,52 +203,42 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    fetchNodeModules([requestedNpmDependency('antd', '4.2.5')], 'canvas').then(
-      (fetchNodeModulesResult) => {
-        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-          fail(`Expected successful nodeModules fetch`)
-        }
-        const nodeModules = fetchNodeModulesResult.nodeModules
+    fetchNodeModules([requestedNpmDependency('antd', '4.2.5')]).then((fetchNodeModulesResult) => {
+      if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+        fail(`Expected successful nodeModules fetch`)
+      }
+      const nodeModules = fetchNodeModulesResult.nodeModules
 
-        const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
-          const downloadedModules = await moduleDownload
-          const updatedNodeModules = { ...nodeModules, ...downloadedModules }
-          const innerOnRemoteModuleDownload = jest.fn()
-          const updatedReq = getRequireFn(
-            innerOnRemoteModuleDownload,
-            {},
-            updatedNodeModules,
-            {},
-            'canvas',
-            spyEvaluator,
-          )
-
-          // this is like calling `import 'antd/dist/antd.css';`, we only care about the side effect
-          updatedReq('/src/index.js', 'antd/dist/antd.css')
-
-          // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
-          const styleTag = document.getElementById('/node_modules/antd/dist/antd.css')
-          expect(styleTag).toBeDefined()
-          expect(spyEvaluator).toHaveBeenCalledTimes(940)
-          expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
-
-          done()
-        }
-
-        const req = getRequireFn(
-          onRemoteModuleDownload,
+      const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
+        const downloadedModules = await moduleDownload
+        const updatedNodeModules = { ...nodeModules, ...downloadedModules }
+        const innerOnRemoteModuleDownload = jest.fn()
+        const updatedReq = getRequireFn(
+          innerOnRemoteModuleDownload,
           {},
-          nodeModules,
+          updatedNodeModules,
           {},
-          'canvas',
           spyEvaluator,
         )
-        const antd = req('/src/index.js', 'antd')
-        expect(Object.keys(antd)).not.toHaveLength(0)
-        expect(antd).toHaveProperty('Button')
-        req('/src/index.js', 'antd/dist/antd.css')
-      },
-    )
+
+        // this is like calling `import 'antd/dist/antd.css';`, we only care about the side effect
+        updatedReq('/src/index.js', 'antd/dist/antd.css')
+
+        // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
+        const styleTag = document.getElementById('/node_modules/antd/dist/antd.css')
+        expect(styleTag).toBeDefined()
+        expect(spyEvaluator).toHaveBeenCalledTimes(940)
+        expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
+
+        done()
+      }
+
+      const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, spyEvaluator)
+      const antd = req('/src/index.js', 'antd')
+      expect(Object.keys(antd)).not.toHaveLength(0)
+      expect(antd).toHaveProperty('Button')
+      req('/src/index.js', 'antd/dist/antd.css')
+    })
   })
 })
 
@@ -274,10 +255,9 @@ describe('ES Dependency Manager — d.ts', () => {
       },
     )
 
-    const fetchNodeModulesResult = await fetchNodeModules(
-      [requestedNpmDependency('react-spring', '8.0.27')],
-      'canvas',
-    )
+    const fetchNodeModulesResult = await fetchNodeModules([
+      requestedNpmDependency('react-spring', '8.0.27'),
+    ])
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -309,7 +289,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
       },
     )
-    fetchNodeModules([requestedNpmDependency('mypackage', '0.0.1')], 'canvas').then(
+    fetchNodeModules([requestedNpmDependency('mypackage', '0.0.1')]).then(
       (fetchNodeModulesResult) => {
         if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
           fail(`Expected successful nodeModules fetch`)
@@ -320,13 +300,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
           const downloadedModules = await moduleDownload
           const updatedNodeModules = { ...nodeModules, ...downloadedModules }
           const innerOnRemoteModuleDownload = jest.fn()
-          const updatedReq = getRequireFn(
-            innerOnRemoteModuleDownload,
-            {},
-            updatedNodeModules,
-            {},
-            'canvas',
-          )
+          const updatedReq = getRequireFn(innerOnRemoteModuleDownload, {}, updatedNodeModules, {})
 
           // this is like calling `import 'mypackage/dist/style.css';`, we only care about the side effect
           updatedReq('/src/index.js', 'mypackage/dist/style.css')
@@ -341,7 +315,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
           done()
         }
 
-        const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, 'canvas')
+        const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {})
         const styleCss = req('/src/index.js', 'mypackage/dist/style.css')
         expect(Object.keys(styleCss)).toHaveLength(0)
       },
@@ -367,7 +341,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], 'canvas').then(
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then(
       (fetchNodeModulesResult) => {
         if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
           fail(`Expected successful nodeModule fetch`)
@@ -388,7 +362,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], 'canvas').then(
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then(
       (fetchNodeModulesResult) => {
         expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
         expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
@@ -415,7 +389,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], 'canvas', false).then(
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], false).then(
       (fetchNodeModulesResult) => {
         expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
         expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')

@@ -202,7 +202,7 @@ const initPreview = () => {
       if (fastDeepEquals(lastDependencies, npmDependencies)) {
         nodeModules = { ...cachedDependencies }
       } else {
-        const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, 'preview', true)
+        const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, true)
 
         if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
           const errorToThrow = Error(
@@ -239,13 +239,7 @@ const initPreview = () => {
 
     incorporateBuildResult(nodeModules, projectContents, bundledProjectFiles)
 
-    const requireFn = getRequireFn(
-      onRemoteModuleDownload,
-      projectContents,
-      nodeModules,
-      {},
-      'preview',
-    )
+    const requireFn = getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, {})
 
     // replacing the document body first
     const previewHTMLFileName = getMainHTMLFilename(projectContents)

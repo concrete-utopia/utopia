@@ -41,26 +41,13 @@ function builtInDependency(
   }
 }
 
-// Prevent ReactDOM.render from running in the canvas/editor because it's
-// entirely likely to cause either havoc or just break.
-export const SafeReactDOM = (mode: 'preview' | 'canvas') => {
-  if (mode === 'canvas') {
-    return {
-      ...ReactDOM,
-      render: NO_OP,
-    }
-  } else {
-    return ReactDOM
-  }
-}
-
-export const BuiltInDependencies = (mode: 'preview' | 'canvas'): Array<BuiltInDependency> => [
+export const BuiltInDependencies: Array<BuiltInDependency> = [
   builtInDependency('utopia-api', UtopiaAPI, utopiaAPIPackageJSON.version),
   builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
   builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
   builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
   builtInDependency('react', React, editorPackageJSON.dependencies.react),
-  builtInDependency('react-dom', SafeReactDOM(mode), editorPackageJSON.dependencies['react-dom']),
+  builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
   builtInDependency(
     '@emotion/react',
     EmotionReact,
