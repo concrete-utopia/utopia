@@ -1117,7 +1117,9 @@ export const MetadataUtils = {
     // Insert into the map
     if (!EP.pathsEqual(EP.parentPath(elementToInsert.elementPath), targetParent)) {
       throw new Error(
-        'insertElementMetadataChild: trying to insert child metadata with incorrect parent path prefix',
+        `insertElementMetadataChild: trying to insert child metadata with incorrect parent path prefix.
+        Target parent: ${EP.toString(targetParent!)},
+        child path: ${EP.toString(elementToInsert.elementPath)}`,
       )
     }
 
