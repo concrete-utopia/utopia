@@ -2632,7 +2632,7 @@ import {
   Scene
 } from "utopia-api";
 import { cake } from 'cake'
-export var whatever = <View data-uid='aaa'>
+export var whatever = () => <View data-uid='aaa'>
 <cake data-uid='aab' style={{backgroundColor: 'red'}} />
 </View>
 `
@@ -2654,7 +2654,7 @@ export var whatever = <View data-uid='aaa'>
     )
     const exported = utopiaJSXComponent(
       'whatever',
-      false,
+      true,
       'var',
       'expression',
       null,
@@ -2772,7 +2772,7 @@ export var App = (props) => <View data-uid='bbb'>
     )
     const exported = utopiaJSXComponent(
       'whatever',
-      false,
+      true,
       'var',
       'parenthesized-expression',
       null,
@@ -2951,7 +2951,7 @@ return { getSizing: getSizing, spacing: spacing };`
     )
     const exported = utopiaJSXComponent(
       'whatever',
-      false,
+      true,
       'var',
       'parenthesized-expression',
       null,
