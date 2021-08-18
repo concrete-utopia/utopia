@@ -230,7 +230,7 @@ export function parseVector<V>(
         Object.keys(valueAsObject),
       )
     } else {
-      return left(descriptionParseError('Value is not an object.'))
+      return left(descriptionParseError('Value is not a vector.'))
     }
   }
 }
