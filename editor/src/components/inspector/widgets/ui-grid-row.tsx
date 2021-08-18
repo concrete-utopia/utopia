@@ -50,10 +50,6 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr 1fr',
   },
-  '<--1fr--><--1fr--><--1fr-->': {
-    gridColumnGap: 4,
-    gridTemplateColumns: 'repeat(3, 1fr)',
-  },
   '<-------------1fr------------->': {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr',

@@ -49,6 +49,9 @@ import {
   Subdued,
   VerySubdued,
   FlexRow,
+  useWrappedEmptyOrUnknownOnSubmitValue,
+  ChainedNumberInput,
+  NumberInputProps,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -101,6 +104,7 @@ import {
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
+import { CSSNumber, cssNumber, printCSSNumber } from '../../common/css-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -512,6 +516,37 @@ const RowForVectorControl = betterReactMemo(
     const contextMenuItems = Utils.stripNulls([
       addOnUnsetValues([PP.toString(propPath)], propMetadata.onUnsetValues),
     ])
+
+    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = mapToArray(
+      (innerControl: ControlDescription, prop: string) => {
+        const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+        const innerMetadata = useComponentPropsInspectorInfo(innerPropPath, isScene, innerControl)
+        const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+          (rawValue: CSSNumber) => innerMetadata.onSubmitValue(printCSSNumber(rawValue, null)),
+          innerMetadata.onUnsetValues,
+        )
+        const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+          (rawValue: CSSNumber) =>
+            innerMetadata.onTransientSubmitValue(printCSSNumber(rawValue, null)),
+          innerMetadata.onUnsetValues,
+        )
+        const value = innerMetadata.propertyStatus.set
+          ? innerMetadata.value
+          : controlDescription.defaultValue
+        return {
+          value: value == null || typeof value !== 'number' ? null : cssNumber(value),
+          DEPRECATED_labelBelow: innerControl.title,
+          testId: `component-section-${PP.toString(innerPropPath)}`,
+          controlStatus: innerMetadata.controlStatus,
+          onSubmitValue: wrappedOnSubmit,
+          onTransientSubmitValue: wrappedOnTransientSubmit,
+          numberType: 'Unitless' as const,
+          defaultUnitToHide: null,
+        }
+      },
+      controlDescription.controls,
+    )
+
     return (
       <>
         <InspectorContextMenuWrapper
@@ -521,24 +556,8 @@ const RowForVectorControl = betterReactMemo(
         >
           <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
             {title}
-            <UIGridRow padded={false} variant='<--1fr--><--1fr--><--1fr-->'>
-              {mapToArray((innerControl: ControlDescription, prop: string) => {
-                const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
-                const propName = `${PP.lastPart(propPath)}`
-                const innerMetadata = useComponentPropsInspectorInfo(
-                  innerPropPath,
-                  isScene,
-                  innerControl,
-                )
-                return (
-                  <ControlForNumberProp
-                    key={`object-control-row-${PP.toString(innerPropPath)}`}
-                    controlDescription={innerControl as NumberControlDescription}
-                    propName={propName}
-                    propMetadata={innerMetadata}
-                  />
-                )
-              }, controlDescription.controls)}
+            <UIGridRow padded={false} variant='<-------------1fr------------->'>
+              <ChainedNumberInput idPrefix={'vector'} propsArray={propsArray} />
             </UIGridRow>
           </UIGridRow>
         </InspectorContextMenuWrapper>
