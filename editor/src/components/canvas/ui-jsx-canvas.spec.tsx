@@ -1820,4 +1820,146 @@ describe('UiJsxCanvas render multifile projects', () => {
       "
     `)
   })
+
+  it('renders a canvas with App a class imported as the default import', () => {
+    const printedDom = testCanvasRenderInlineMultifile(
+      null,
+      `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      import App from 'app.js'
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+      {
+        'app.js': `
+      import * as React from 'react'
+      export default class App extends React.Component {
+        render() {
+          return <div data-uid='app-outer-div'>
+            <div data-uid='inner-div'>{this.props.title}</div>
+          </div>
+        }
+      }`,
+      },
+    )
+    expect(printedDom).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial;\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+        >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+          >
+            <div
+              data-uid=\\"app-outer-div app-entity\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+            >
+              <div data-uid=\\"inner-div\\">Hi there!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+
+  it('renders a canvas with App a class imported by name', () => {
+    const printedDom = testCanvasRenderInlineMultifile(
+      null,
+      `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      import { App } from 'app.js'
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+      {
+        'app.js': `
+      import * as React from 'react'
+      export class App extends React.Component {
+        render() {
+          return <div data-uid='app-outer-div'>
+            <div data-uid='inner-div'>{this.props.title}</div>
+          </div>
+        }
+      }`,
+      },
+    )
+    expect(printedDom).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial;\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+        >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+          >
+            <div
+              data-uid=\\"app-outer-div app-entity\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+            >
+              <div data-uid=\\"inner-div\\">Hi there!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
 })

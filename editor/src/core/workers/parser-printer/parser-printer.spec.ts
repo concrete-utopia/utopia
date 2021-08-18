@@ -72,6 +72,47 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
 import { emptySet } from '../../shared/set-utils'
 
 describe('JSX parser', () => {
+  it(`parses 'export class' marked components`, () => {
+    const code = `import * as React from "react";
+export class App {}
+`
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+    if (isParseSuccess(actualResult)) {
+      expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
+        Object {
+          "defaultExport": null,
+          "namedExports": Object {
+            "App": Object {
+              "moduleName": undefined,
+              "name": "App",
+              "type": "EXPORT_DETAIL_NAMED",
+            },
+          },
+        }
+      `)
+    } else {
+      fail('Did not parse successfully.')
+    }
+  })
+  it(`parses 'export default class' marked components`, () => {
+    const code = `import * as React from "react";
+export default class App {}
+`
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+    if (isParseSuccess(actualResult)) {
+      expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
+        Object {
+          "defaultExport": Object {
+            "name": "App",
+            "type": "EXPORT_DEFAULT_MODIFIER",
+          },
+          "namedExports": Object {},
+        }
+      `)
+    } else {
+      fail('Did not parse successfully.')
+    }
+  })
   it('parses the code when it is a var', () => {
     const code = `import * as React from "react";
 import {
