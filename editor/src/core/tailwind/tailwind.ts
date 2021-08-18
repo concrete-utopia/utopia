@@ -94,8 +94,7 @@ function getTailwindConfig(
 ): Either<any, Configuration> {
   if (tailwindFile != null && isTextFile(tailwindFile)) {
     try {
-      const requireResult = requireFn('/', TailwindConfigPath)
-      const rawConfig = importDefault(requireResult)
+      const rawConfig = requireFn('/', TailwindConfigPath)
       if (rawConfig != null) {
         const twindConfig = convertTailwindToTwindConfig(rawConfig)
         return right(twindConfig)
