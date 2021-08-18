@@ -219,7 +219,7 @@ export function parseVector(
       const valueAsObject: any = value
       const withErrorParser = objectValueParserWithError(objectValueParser)
       return reduceWithEither<string, ParseError, MapLike<NumberControlDescription>>(
-        (working: MapLike<V>, objectKey: string) => {
+        (working: MapLike<NumberControlDescription>, objectKey: string) => {
           return mapEither((parsedVectorValue) => {
             return {
               ...working,
