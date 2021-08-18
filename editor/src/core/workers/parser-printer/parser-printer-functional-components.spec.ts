@@ -144,6 +144,27 @@ export var whatever = ({arrayPart: [prop1 = 5, ,{ prop2: renamedProp2 = {thing: 
 }
 `
 
+const codeWithPropsDestructuredInTheFunction = `import React from "react";
+import { View } from "utopia-api";
+export var whatever = (props) => {
+  const { a } = props;
+  return (
+    <View data-uid={'aaa'} />
+  )
+}
+`
+
+const codeWithARenamedFunction = `import React from "react";
+import { View } from "utopia-api";
+function originalFn() {}
+export var whatever = (props) => {
+  const renamedFn = originalFn;
+  return (
+    <View data-uid={'aaa'} />
+  )
+}
+`
+
 describe('Parsing a function component with props', () => {
   it('Correctly parses a basic props object', () => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
@@ -742,6 +763,89 @@ describe('Parsing a function component with props', () => {
     )
     expect(actualResult).toEqual(expectedResult)
   })
+
+  it('Correctly parses a basic props object destructured inside the function', () => {
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithPropsDestructuredInTheFunction),
+    )
+    const view = jsxElement(
+      'View',
+      'aaa',
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
+      [],
+    )
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      'var',
+      'block',
+      defaultPropsParam,
+      [],
+      view,
+      expect.objectContaining({
+        javascript: `const { a } = props;`,
+        definedElsewhere: expect.arrayContaining(['props']),
+        definedWithin: ['a'],
+      }),
+      false,
+      emptyComments,
+    )
+    const topLevelElements = [exported]
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      expect.arrayContaining(topLevelElements),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+
+  it('Correctly parses a component with a renamed function', () => {
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithARenamedFunction),
+    )
+    const view = jsxElement(
+      'View',
+      'aaa',
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
+      [],
+    )
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      'var',
+      'block',
+      defaultPropsParam,
+      [],
+      view,
+      expect.objectContaining({
+        javascript: `const renamedFn = originalFn;`,
+        definedElsewhere: expect.arrayContaining(['originalFn']),
+        definedWithin: ['renamedFn'],
+      }),
+      false,
+      emptyComments,
+    )
+    const topLevelElements = [exported]
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      expect.arrayContaining(topLevelElements),
+      expect.objectContaining({}),
+      null,
+      expect.objectContaining({
+        javascript: `function originalFn() {}`,
+        definedWithin: ['originalFn'],
+      }),
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
 })
 
 describe('Parsing, printing, reparsing a function component with props', () => {
@@ -825,5 +929,13 @@ describe('Parsing, printing, reparsing a function component with props', () => {
 
   it('Correctly parses back and forth a nested destructured props mess with defaults', () => {
     testParsePrintParse(codeWithNestedDestructuredPropsMessWithDefaults)
+  })
+
+  it('Correctly parses back and forth a basic props object destructured inside the function', () => {
+    testParsePrintParse(codeWithPropsDestructuredInTheFunction)
+  })
+
+  it('Correctly parses back and forth a component with a renamed function', () => {
+    testParsePrintParse(codeWithARenamedFunction)
   })
 })
