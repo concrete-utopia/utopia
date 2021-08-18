@@ -132,7 +132,6 @@ import {
   transientFileState,
   getStoryboardElementPathFromEditorState,
   addSceneToJSXComponents,
-  getNumberOfScenes,
   StoryboardFilePath,
   modifyUnderlyingTarget,
   modifyParseSuccessAtPath,
@@ -2700,6 +2699,7 @@ export function getValidElementPaths(
     transientFilesState,
   )
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
+    ?.filePath
   if (importSource != null) {
     const resolvedImportSource = resolve(filePath, importSource)
     if (isRight(resolvedImportSource)) {

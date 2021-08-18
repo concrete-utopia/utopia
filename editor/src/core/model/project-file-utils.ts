@@ -111,10 +111,12 @@ function isGivenUtopiaAPIElementFromName(
     return false
   } else {
     if (PP.depth(jsxElementName.propertyPath) === 0) {
-      return (
-        pluck(utopiaAPI.importedFromWithin, 'name').includes(jsxElementName.baseVariable) &&
-        jsxElementName.baseVariable === componentName
-      )
+      for (const fromWithin of utopiaAPI.importedFromWithin) {
+        if (fromWithin.alias === jsxElementName.baseVariable && fromWithin.name === componentName) {
+          return true
+        }
+      }
+      return false
     } else {
       return (
         utopiaAPI.importedAs === jsxElementName.baseVariable &&

@@ -22,6 +22,7 @@ import {
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
   ElementInstanceMetadata,
+  walkElements,
 } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -272,11 +273,6 @@ export function sceneMetadata(
   }
 
   return scene
-}
-
-export function isSceneElementIgnoringImports(element: JSXElement): boolean {
-  // TODO SCENES, how to decide if something is a scene?
-  return element.name.baseVariable === 'Scene'
 }
 
 export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string | null {

@@ -86,7 +86,7 @@ import {
 } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
-import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
+import { findJSXElementChildAtPath, getUtopiaID, isSceneElement } from './element-template-utils'
 import {
   isImportedComponent,
   isAnimatedElement,
@@ -99,7 +99,7 @@ import {
   isGivenUtopiaElementFromMetadata,
   isImportedComponentNPM,
 } from './project-file-utils'
-import { isSceneElementIgnoringImports, ResizesContentProp } from './scene-utils'
+import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
@@ -193,9 +193,12 @@ export const MetadataUtils = {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return (
       elementMetadata != null &&
-      isRight(elementMetadata.element) &&
-      isJSXElement(elementMetadata.element.value) &&
-      isSceneElementIgnoringImports(elementMetadata.element.value)
+      elementMetadata.importInfo != null &&
+      foldEither(
+        (_) => false,
+        (info) => info.path === 'utopia-api' && info.originalName === 'Scene',
+        elementMetadata.importInfo,
+      )
     )
   },
   findElements(

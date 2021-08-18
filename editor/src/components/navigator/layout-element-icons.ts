@@ -75,7 +75,6 @@ export function createLayoutOrElementIconResult(
   } else if (layoutIcon != null) {
     return {
       iconProps: layoutIcon,
-
       isPositionAbsolute: isPositionAbsolute,
     }
   } else {

@@ -448,7 +448,7 @@ export function getPropertyControlsForTarget(
           filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
         }
       } else {
-        filenameForLookup = importedFrom
+        filenameForLookup = importedFrom.filePath
       }
 
       if (filenameForLookup == null) {

@@ -498,7 +498,11 @@ function lookupElementImport(
   if (importedFrom == null) {
     return normalisePathImportNotFound(elementBaseVariable)
   } else {
-    if (importedFrom === 'utopia-api' && elementBaseVariable === 'Scene') {
+    if (
+      importedFrom.type === 'IMPORTED_ORIGIN' &&
+      importedFrom.filePath === 'utopia-api' &&
+      importedFrom.exportedName === 'Scene'
+    ) {
       // Navigate around the scene with the special case handling.
       const componentAttr = getJSXAttribute(nonNullTargetElement.props, 'component')
       if (componentAttr != null && isJSXAttributeOtherJavaScript(componentAttr)) {
@@ -525,7 +529,7 @@ function lookupElementImport(
         projectContents,
         nodeModules,
         currentFilePath,
-        importedFrom,
+        importedFrom.filePath,
       )
       switch (resolutionResult.type) {
         case 'RESOLVE_SUCCESS':

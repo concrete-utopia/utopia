@@ -1,7 +1,6 @@
 import React from 'react'
 import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
-import { isSceneElementIgnoringImports } from '../../../core/model/scene-utils'
 import {
   UTOPIA_PATHS_KEY,
   UTOPIA_SCENE_ID_KEY,
@@ -50,6 +49,7 @@ import { emptyComments } from '../../../core/workers/parser-printer/parser-print
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
+import { importedFromWhere } from '../../editor/import-utils'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -366,10 +366,20 @@ function renderJSXElement(
   const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
   const elementFromImport = elementIsIntrinsic ? null : getElementFromScope(jsx, requireResult)
   const elementFromScopeOrImport = Utils.defaultIfNull(elementFromImport, elementInScope)
-  const elementIsScene = !elementIsIntrinsic && isSceneElementIgnoringImports(jsx)
-  const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
-  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
 
+  // Not necessary to check the top level elements, as we'll use a comparison of the
+  // elements from scope and import to confirm it's not a top level element.
+  const importedFrom = importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
+  const elementIsScene =
+    !elementIsIntrinsic &&
+    importedFrom != null &&
+    importedFrom.type === 'IMPORTED_ORIGIN' && // Imported and not from the same file.
+    importedFrom.filePath === 'utopia-api' && // Originating from `utopia-api`
+    importedFrom.exportedName === 'Scene' && // `Scene` component.
+    elementFromImport === elementInScope // Ensures this is not a user defined component with the same name.
+  const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
+
+  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
     ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps

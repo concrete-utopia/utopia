@@ -12,6 +12,7 @@ import {
   isJSXElement,
   emptyJsxMetadata,
   JSXAttribute,
+  walkElements,
 } from '../../../core/shared/element-template'
 import {
   insertJSXElementChild,
@@ -113,7 +114,6 @@ import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../ac
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
-  isSceneElementIgnoringImports,
   BakedInStoryboardVariableName,
   getStoryboardElementPath,
 } from '../../../core/model/scene-utils'
@@ -827,29 +827,6 @@ function modifyOpenScenes_INTERNAL(
   return modifyOpenScenesAndJSXElements((componentsIncludingScenes) => {
     return transform(componentsIncludingScenes)
   }, model)
-}
-
-export function getNumberOfScenes(model: EditorState): number {
-  return getSceneElements(model).length
-}
-
-export function getSceneElements(model: EditorState): JSXElement[] {
-  const openUIJSFile = getOpenUIJSFile(model)
-  if (openUIJSFile == null || !isParseSuccess(openUIJSFile.fileContents.parsed)) {
-    return []
-  } else {
-    return getSceneElementsFromParseSuccess(openUIJSFile.fileContents.parsed)
-  }
-}
-
-export function getSceneElementsFromParseSuccess(success: ParseSuccess): JSXElement[] {
-  const rootElement = getOrDefaultScenes(success).rootElement
-  if (!isJSXElement(rootElement) || rootElement.name.baseVariable !== 'Storyboard') {
-    throw new Error('the root element must be a Storyboard component')
-  }
-  return rootElement.children.filter(
-    (child): child is JSXElement => isJSXElement(child) && isSceneElementIgnoringImports(child),
-  )
 }
 
 export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
@@ -2129,4 +2106,31 @@ export function forUnderlyingTarget(
 
 export function getCurrentTheme(editor: EditorState): Theme {
   return editor.theme
+}
+
+export function getNewSceneName(editorState: EditorState): string {
+  const openFile = getOpenUIJSFile(editorState)
+  if (openFile != null) {
+    if (isParseSuccess(openFile.fileContents.parsed)) {
+      const success = openFile.fileContents.parsed
+      function checkSceneNameExists(sceneN: number): string {
+        let exists: boolean = false
+        const sceneName = `Scene ${sceneN}`
+        walkElements(success.topLevelElements, (elementChild) => {
+          if (isJSXElement(elementChild) && elementChild.name.baseVariable === sceneName) {
+            exists = true
+          }
+        })
+        if (exists) {
+          return checkSceneNameExists(sceneN + 1)
+        } else {
+          return sceneName
+        }
+      }
+      return checkSceneNameExists(1)
+    }
+  }
+
+  // Fallback.
+  return 'New Scene'
 }
