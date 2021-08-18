@@ -448,7 +448,7 @@ declare module 'utopia-api/property-controls/property-controls' {
       placeholder?: CSSProperties;
   }
   export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription;
-  export type HigherLevelControlType = 'array' | 'object' | 'union';
+  export type HigherLevelControlType = 'array' | 'object' | 'union' | 'vector2' | 'vector3';
   export type ControlType = BaseControlType | HigherLevelControlType;
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {
   }
@@ -467,7 +467,22 @@ declare module 'utopia-api/property-controls/property-controls' {
       defaultValue?: unknown;
       controls: Array<ControlDescription>;
   }
-  export type HigherLevelControlDescription = ArrayControlDescription | ObjectControlDescription | UnionControlDescription;
+  export interface Vector2ControlDescription extends AbstractHigherLevelControlDescription<'vector2'> {
+      defaultValue?: unknown;
+      controls: {
+          0: NumberControlDescription;
+          1: NumberControlDescription;
+      };
+  }
+  export interface Vector3ControlDescription extends AbstractHigherLevelControlDescription<'vector3'> {
+      defaultValue?: unknown;
+      controls: {
+          0: NumberControlDescription;
+          1: NumberControlDescription;
+          2: NumberControlDescription;
+      };
+  }
+  export type HigherLevelControlDescription = ArrayControlDescription | ObjectControlDescription | UnionControlDescription | Vector2ControlDescription | Vector3ControlDescription;
   export type ControlDescription = BaseControlDescription | HigherLevelControlDescription;
   export function isBaseControlDescription(control: ControlDescription): control is BaseControlDescription;
   export function isHigherLevelControlDescription(control: ControlDescription): control is HigherLevelControlDescription;

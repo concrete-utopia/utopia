@@ -1,3 +1,4 @@
+import { MapLike } from 'typescript'
 import {
   BooleanControlDescription,
   ColorControlDescription,
@@ -16,6 +17,8 @@ import {
   ArrayControlDescription,
   ObjectControlDescription,
   StyleObjectControlDescription,
+  Vector2ControlDescription,
+  Vector3ControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -37,6 +40,7 @@ import {
   ParseResult,
   parseString,
   parseUndefined,
+  parseVector,
 } from '../../utils/value-parser-utils'
 import {
   applicative2Either,
@@ -431,6 +435,47 @@ export function parseUnionControlDescription(value: unknown): ParseResult<UnionC
   )
 }
 
+export function parseVector2ControlDescription(
+  value: unknown,
+): ParseResult<Vector2ControlDescription> {
+  return applicative4Either(
+    (title, type, defaultValue, controls) => {
+      let controlDescription: Vector2ControlDescription = {
+        type: type,
+        controls: controls as MapLike<NumberControlDescription>,
+      }
+      setOptionalProp(controlDescription, 'title', title)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['vector2']), 'type')(value),
+    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    objectKeyParser(parseVector(parseControlDescription), 'controls')(value),
+  )
+}
+export function parseVector3ControlDescription(
+  value: unknown,
+): ParseResult<Vector3ControlDescription> {
+  return applicative4Either(
+    (title, type, defaultValue, controls) => {
+      let controlDescription: Vector3ControlDescription = {
+        type: type,
+        controls: controls as MapLike<NumberControlDescription>,
+      }
+      setOptionalProp(controlDescription, 'title', title)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['vector3']), 'type')(value),
+    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    objectKeyParser(parseVector(parseControlDescription), 'controls')(value),
+  )
+}
+
 export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     switch ((value as any)['type']) {
@@ -464,6 +509,10 @@ export function parseControlDescription(value: unknown): ParseResult<ControlDesc
         return parseArrayControlDescription(value)
       case 'object':
         return parseObjectControlDescription(value)
+      case 'vector2':
+        return parseVector2ControlDescription(value)
+      case 'vector3':
+        return parseVector3ControlDescription(value)
       case 'union':
         return parseUnionControlDescription(value)
       case undefined:

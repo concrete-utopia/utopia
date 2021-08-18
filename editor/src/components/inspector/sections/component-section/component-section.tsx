@@ -9,6 +9,8 @@ import {
   NumberControlDescription,
   ObjectControlDescription,
   UnionControlDescription,
+  Vector2ControlDescription,
+  Vector3ControlDescription,
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import {
@@ -498,7 +500,7 @@ const RowForUnionControl = betterReactMemo(
 )
 
 interface RowForVectorControlProps extends AbstractRowForControlProps {
-  controlDescription: ObjectControlDescription
+  controlDescription: Vector2ControlDescription | Vector3ControlDescription
 }
 
 const RowForVectorControl = betterReactMemo(
@@ -536,7 +538,7 @@ const RowForVectorControl = betterReactMemo(
                     propMetadata={innerMetadata}
                   />
                 )
-              }, controlDescription.object)}
+              }, controlDescription.controls)}
             </UIGridRow>
           </UIGridRow>
         </InspectorContextMenuWrapper>
@@ -544,33 +546,6 @@ const RowForVectorControl = betterReactMemo(
     )
   },
 )
-
-function isVectorControlDescription(controlDescription: ObjectControlDescription): boolean {
-  if (Object.keys(controlDescription.object).length === 3) {
-    return (
-      controlDescription.object[0] != null &&
-      controlDescription.object[1] != null &&
-      controlDescription.object[2] != null &&
-      controlDescription.object[0].type === 'number' &&
-      controlDescription.object[1].type === 'number' &&
-      controlDescription.object[2].type === 'number' &&
-      controlDescription.object[0].title === 'x' &&
-      controlDescription.object[1].title === 'y' &&
-      controlDescription.object[2].title === 'z'
-    )
-  } else if (Object.keys(controlDescription.object).length === 2) {
-    return (
-      controlDescription.object[0] != null &&
-      controlDescription.object[1] != null &&
-      controlDescription.object[0].type === 'number' &&
-      controlDescription.object[1].type === 'number' &&
-      controlDescription.object[0].title === 'x' &&
-      controlDescription.object[1].title === 'y'
-    )
-  } else {
-    return false
-  }
-}
 
 interface RowForControlProps extends AbstractRowForControlProps {
   controlDescription: ControlDescription
@@ -586,13 +561,12 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
       case 'array':
         return <RowForArrayControl {...props} controlDescription={controlDescription} />
       case 'object':
-        if (isVectorControlDescription(controlDescription)) {
-          return <RowForVectorControl {...props} controlDescription={controlDescription} />
-        } else {
-          return <RowForObjectControl {...props} controlDescription={controlDescription} />
-        }
+        return <RowForObjectControl {...props} controlDescription={controlDescription} />
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
+      case 'vector2':
+      case 'vector3':
+        return <RowForVectorControl {...props} controlDescription={controlDescription} />
       default:
         const _exhaustiveCheck: never = controlDescription
         throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)

@@ -125,7 +125,7 @@ export type BaseControlDescription =
 
 // Higher Level Controls
 
-export type HigherLevelControlType = 'array' | 'object' | 'union'
+export type HigherLevelControlType = 'array' | 'object' | 'union' | 'vector2' | 'vector3'
 
 export type ControlType = BaseControlType | HigherLevelControlType
 
@@ -148,10 +148,23 @@ export interface UnionControlDescription extends AbstractHigherLevelControlDescr
   controls: Array<ControlDescription>
 }
 
+export interface Vector2ControlDescription
+  extends AbstractHigherLevelControlDescription<'vector2'> {
+  defaultValue?: unknown
+  controls: { [prop: string]: NumberControlDescription }
+}
+
+export interface Vector3ControlDescription
+  extends AbstractHigherLevelControlDescription<'vector3'> {
+  defaultValue?: unknown
+  controls: { [prop: string]: NumberControlDescription }
+}
 export type HigherLevelControlDescription =
   | ArrayControlDescription
   | ObjectControlDescription
   | UnionControlDescription
+  | Vector2ControlDescription
+  | Vector3ControlDescription
 
 // Please ensure that `property-controls-utils.ts` is kept up to date
 // with any changes to this or the component types.
@@ -178,6 +191,8 @@ export function isBaseControlDescription(
     case 'array':
     case 'object':
     case 'union':
+    case 'vector2':
+    case 'vector3':
       return false
     default:
       const _exhaustiveCheck: never = control
@@ -206,6 +221,8 @@ export function isHigherLevelControlDescription(
     case 'array':
     case 'object':
     case 'union':
+    case 'vector2':
+    case 'vector3':
       return true
     default:
       const _exhaustiveCheck: never = control

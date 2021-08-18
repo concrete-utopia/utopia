@@ -289,6 +289,9 @@ export function unwrapperAndParserForPropertyControl(
       return unwrapAndParseObjectValues(control.object)
     case 'union':
       return unwrapAndParseUnionValue(control.controls)
+    case 'vector2':
+    case 'vector3':
+      return unwrapAndParseObjectValues(control.controls)
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled control ${JSON.stringify(control)}`)
@@ -421,6 +424,9 @@ export function printerForPropertyControl(control: ControlDescription): Printer<
       return printerForArray(control.propertyControl) as Printer<unknown> // Why???!!
     case 'object':
       return printerForObject(control.object) as Printer<unknown> // Why???!!
+    case 'vector2':
+    case 'vector3':
+      return printerForObject(control.controls) as Printer<unknown> // Why???!!
     case 'union':
       return printerForUnion(control.controls)
     default:

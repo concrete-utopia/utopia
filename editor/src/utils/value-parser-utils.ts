@@ -210,6 +210,31 @@ export function parseObject<V>(
   }
 }
 
+export function parseVector<V>(
+  objectValueParser: (v: unknown, key: string) => ParseResult<V>,
+): Parser<MapLike<V>> {
+  return (value: unknown) => {
+    if (typeof value === 'object' && !Array.isArray(value) && value != null) {
+      const valueAsObject: any = value
+      const withErrorParser = objectValueParserWithError(objectValueParser)
+      return reduceWithEither<string, ParseError, MapLike<V>>(
+        (working: MapLike<V>, objectKey: string) => {
+          return mapEither((parsedObjectValue) => {
+            return {
+              ...working,
+              [objectKey]: parsedObjectValue,
+            }
+          }, withErrorParser(valueAsObject[objectKey], objectKey))
+        },
+        {},
+        Object.keys(valueAsObject),
+      )
+    } else {
+      return left(descriptionParseError('Value is not an object.'))
+    }
+  }
+}
+
 // Wraps around an existing parser to add to the "error stack" an ArrayIndexParseError.
 export function arrayValueParserWithError<V>(
   parser: (v: unknown, index: number) => ParseResult<V>,
