@@ -1,4 +1,5 @@
 import { MapLike } from 'typescript'
+import { NumberControlDescription } from 'utopia-api'
 import {
   Either,
   isRight,
@@ -210,19 +211,19 @@ export function parseObject<V>(
   }
 }
 
-export function parseVector<V>(
-  objectValueParser: (v: unknown, key: string) => ParseResult<V>,
-): Parser<MapLike<V>> {
+export function parseVector(
+  objectValueParser: (v: unknown, key: string) => ParseResult<NumberControlDescription>,
+): Parser<MapLike<NumberControlDescription>> {
   return (value: unknown) => {
     if (typeof value === 'object' && !Array.isArray(value) && value != null) {
       const valueAsObject: any = value
       const withErrorParser = objectValueParserWithError(objectValueParser)
-      return reduceWithEither<string, ParseError, MapLike<V>>(
+      return reduceWithEither<string, ParseError, MapLike<NumberControlDescription>>(
         (working: MapLike<V>, objectKey: string) => {
-          return mapEither((parsedObjectValue) => {
+          return mapEither((parsedVectorValue) => {
             return {
               ...working,
-              [objectKey]: parsedObjectValue,
+              [objectKey]: parsedVectorValue,
             }
           }, withErrorParser(valueAsObject[objectKey], objectKey))
         },

@@ -442,7 +442,7 @@ export function parseVector2ControlDescription(
     (title, type, defaultValue, controls) => {
       let controlDescription: Vector2ControlDescription = {
         type: type,
-        controls: controls as MapLike<NumberControlDescription>,
+        controls: controls,
       }
       setOptionalProp(controlDescription, 'title', title)
       setOptionalProp(controlDescription, 'defaultValue', defaultValue)
@@ -452,7 +452,7 @@ export function parseVector2ControlDescription(
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['vector2']), 'type')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseVector(parseControlDescription), 'controls')(value),
+    objectKeyParser(parseVector(parseNumberControlDescription), 'controls')(value),
   )
 }
 export function parseVector3ControlDescription(
@@ -462,7 +462,7 @@ export function parseVector3ControlDescription(
     (title, type, defaultValue, controls) => {
       let controlDescription: Vector3ControlDescription = {
         type: type,
-        controls: controls as MapLike<NumberControlDescription>,
+        controls: controls,
       }
       setOptionalProp(controlDescription, 'title', title)
       setOptionalProp(controlDescription, 'defaultValue', defaultValue)
@@ -472,7 +472,7 @@ export function parseVector3ControlDescription(
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['vector3']), 'type')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseVector(parseControlDescription), 'controls')(value),
+    objectKeyParser(parseVector(parseNumberControlDescription), 'controls')(value),
   )
 }
 
