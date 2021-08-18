@@ -1177,8 +1177,8 @@ export function parseCode(
         pushUnparsedCode(prefixedCode)
       }
 
-      // Handle export assignments: `export default App`
       if (TS.isExportAssignment(topLevelElement)) {
+        // Handle export assignments: `export default App`
         const fromAssignment = detailsFromExportAssignment(sourceFile, topLevelElement)
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromAssignment, (toMerge) => {
@@ -1189,8 +1189,8 @@ export function parseCode(
         forEachLeft(fromAssignment, (exportDeclaration) => {
           pushArbitraryNode(exportDeclaration)
         })
-        // Handle export declarations.
       } else if (TS.isExportDeclaration(topLevelElement)) {
+        // Handle export declarations.
         const fromDeclaration = detailsFromExportDeclaration(sourceFile, topLevelElement)
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromDeclaration, (toMerge) => {
@@ -1201,8 +1201,34 @@ export function parseCode(
         forEachLeft(fromDeclaration, (exportDeclaration) => {
           pushArbitraryNode(exportDeclaration)
         })
-        // Handle imports.
+      } else if (
+        TS.isClassDeclaration(topLevelElement) &&
+        topLevelElement.modifiers != null &&
+        topLevelElement.modifiers.some((modifier) => modifier.kind === TS.SyntaxKind.ExportKeyword)
+      ) {
+        // Handle classes.
+        // Check if this is the 'default' export, which is to say the entire export for the file.
+        if (
+          topLevelElement.modifiers.some(
+            (modifier) => modifier.kind === TS.SyntaxKind.DefaultKeyword,
+          )
+        ) {
+          if (topLevelElement.name != null) {
+            detailOfExports = setModifierDefaultExportInDetail(
+              detailOfExports,
+              topLevelElement.name.getText(sourceFile),
+            )
+          }
+        } else {
+          if (topLevelElement.name != null) {
+            const name = topLevelElement.name.getText(sourceFile)
+            detailOfExports = addNamedExportToDetail(detailOfExports, name, name, undefined)
+          }
+        }
+        // Unable to parse it so treat it as an arbitrary node.
+        pushArbitraryNode(topLevelElement)
       } else if (TS.isImportDeclaration(topLevelElement)) {
+        // Handle imports.
         if (TS.isStringLiteral(topLevelElement.moduleSpecifier)) {
           const importClause: TS.ImportClause | undefined = topLevelElement.importClause
           const importFrom: string = topLevelElement.moduleSpecifier.text
