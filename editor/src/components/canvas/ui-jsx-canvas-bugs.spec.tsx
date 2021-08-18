@@ -228,7 +228,7 @@ export default function App(props) {
         <div
           id=\\"canvas-container\\"
           style=\\"position: absolute;\\"
-          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-2-entity storyboard-entity/scene-2-entity/same-file-app-entity\\"
+          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-2-entity storyboard-entity/scene-2-entity/same-file-app-entity storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div\\"
           data-utopia-root-element-path=\\"storyboard-entity\\"
         >
           <div
