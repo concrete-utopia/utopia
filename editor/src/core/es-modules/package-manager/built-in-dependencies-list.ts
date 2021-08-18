@@ -9,7 +9,9 @@ import * as EmotionStyled from '@emotion/styled'
 
 import * as editorPackageJSON from '../../../../package.json'
 import * as utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
-import { NO_OP } from '../../shared/utils'
+import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
+
+applyUIDMonkeyPatch()
 
 export interface BuiltInDependency {
   moduleName: string
@@ -30,6 +32,8 @@ function builtInDependency(
     }
   } else {
     // if the module does not have a default, spread one in there to simulate Synthetic Defaults
+    // IMPORTANT this object spread means that the default points to the real base module, which previously
+    // caused issues with the monkey patching of react, hence the explicit patching above
     return {
       moduleName: moduleName,
       nodeModule: {

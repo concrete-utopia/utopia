@@ -28,6 +28,7 @@ export function applyUIDMonkeyPatch(): void {
   if (!uidMonkeyPatchApplied) {
     uidMonkeyPatchApplied = true
     ;(React as any).createElement = patchedCreateReactElement
+    ;(React as any).monkeyPatched = true
   }
 }
 
