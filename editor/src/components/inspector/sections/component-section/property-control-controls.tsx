@@ -14,6 +14,8 @@ import {
   PopUpListControlDescription,
   SliderControlDescription,
   StringControlDescription,
+  Vector2ControlDescription,
+  Vector3ControlDescription,
 } from 'utopia-api'
 import { InspectorInfo } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
@@ -21,9 +23,18 @@ import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   SimpleNumberInput,
   PopupList,
-  NumberInput,
+  NumberInputProps,
+  ChainedNumberInput,
 } from '../../../../uuiui'
-import { parseColor, CSSColor, printColor } from '../../common/css-utils'
+import {
+  parseColor,
+  CSSColor,
+  printColor,
+  printCSSNumber,
+  CSSNumber,
+  cssNumber,
+} from '../../common/css-utils'
+import * as PP from '../../../../core/shared/property-path'
 import { foldEither } from '../../../../core/shared/either'
 import { ColorControl } from '../../controls/color-control'
 import { StringControl } from '../../controls/string-control'
@@ -33,8 +44,10 @@ import { EventHandlerControl } from '../event-handlers-section/event-handlers-se
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
+import { PropertyPath } from '../../../../core/shared/project-file-types'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
+  propPath: PropertyPath
   propName: string
   controlDescription: T
   propMetadata: InspectorInfo<any>
@@ -379,5 +392,52 @@ export const ControlForStringProp = betterReactMemo(
         controlStyles={propMetadata.controlStyles}
       />
     )
+  },
+)
+
+export const ControlForVectorProp = betterReactMemo(
+  'ControlForVectorProp',
+  (props: ControlForPropProps<Vector2ControlDescription | Vector3ControlDescription>) => {
+    const { propPath, propMetadata, controlDescription } = props
+
+    const vectorValue =
+      (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ?? []
+
+    const keys = controlDescription.type === 'vector3' ? ['x', 'y', 'z'] : ['x', 'y']
+    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = keys.map(
+      (propName: string, index: number) => {
+        const innerValue = vectorValue[index]
+
+        const innerPropPath = PP.appendPropertyPathElems(propPath, [propName])
+        const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue((rawValue: CSSNumber) => {
+          const newValue = printCSSNumber(rawValue, null)
+          let updatedValues = vectorValue.length === 0 ? keys.map((k) => 0) : [...vectorValue]
+          updatedValues[index] = newValue
+          propMetadata.onSubmitValue(updatedValues)
+        }, propMetadata.onUnsetValues)
+        const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+          (rawValue: CSSNumber) => {
+            const newValue = printCSSNumber(rawValue, null)
+            let updatedValues = vectorValue.length === 0 ? keys.map((k) => 0) : [...vectorValue]
+            updatedValues[index] = newValue
+            propMetadata.onTransientSubmitValue(updatedValues)
+          },
+          propMetadata.onUnsetValues,
+        )
+        return {
+          value:
+            innerValue == null || typeof innerValue !== 'number' ? null : cssNumber(innerValue),
+          DEPRECATED_labelBelow: propName,
+          testId: `component-section-${PP.toString(innerPropPath)}`,
+          controlStatus: propMetadata.controlStatus,
+          onSubmitValue: wrappedOnSubmit,
+          onTransientSubmitValue: wrappedOnTransientSubmit,
+          numberType: 'Unitless' as const,
+          defaultUnitToHide: null,
+        }
+      },
+    )
+
+    return <ChainedNumberInput idPrefix={'vector'} propsArray={propsArray} />
   },
 )
