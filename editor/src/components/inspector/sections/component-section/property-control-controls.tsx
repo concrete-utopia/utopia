@@ -151,11 +151,10 @@ export const ControlForEnumProp = betterReactMemo(
   'ControlForEnumProp',
   (props: ControlForPropProps<EnumControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
-
-    const controlId = `${propName}-enum-property-control`
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
+
     const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
       controlDescription.options.map((option, index) => {
         return {
@@ -168,20 +167,21 @@ export const ControlForEnumProp = betterReactMemo(
         }
       }),
     )
+    const currentValue = options.find((option) => {
+      return fastDeepEquals(option.value, value)
+    })
+
+    function submitValue(option: SelectOption): void {
+      propMetadata.onSubmitValue(option.value)
+    }
+
     return (
-      <SelectControl
-        style={{
-          fontWeight: 'normal',
-          marginLeft: 4,
-        }}
-        key={controlId}
-        id={controlId}
-        testId={controlId}
-        value={value}
-        onSubmitValue={propMetadata.onSubmitValue}
-        controlStatus={propMetadata.controlStatus}
-        controlStyles={propMetadata.controlStyles}
+      <PopupList
+        disabled={!propMetadata.controlStyles.interactive}
+        value={currentValue}
+        onSubmitValue={submitValue}
         options={options}
+        containerMode={'default'}
       />
     )
   },
