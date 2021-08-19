@@ -110,11 +110,11 @@ export interface StyleObjectControlDescription
   placeholder?: CSSProperties
 }
 export interface Vector2ControlDescription extends AbstractBaseControlDescription<'vector2'> {
-  defaultValue?: unknown
+  defaultValue?: [number, number]
 }
 
 export interface Vector3ControlDescription extends AbstractBaseControlDescription<'vector3'> {
-  defaultValue?: unknown
+  defaultValue?: [number, number, number]
 }
 
 export type BaseControlDescription =

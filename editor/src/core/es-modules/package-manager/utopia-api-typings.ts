@@ -448,10 +448,10 @@ declare module 'utopia-api/property-controls/property-controls' {
       placeholder?: CSSProperties;
   }
   export interface Vector2ControlDescription extends AbstractBaseControlDescription<'vector2'> {
-      defaultValue?: unknown;
+      defaultValue?: [number, number];
   }
   export interface Vector3ControlDescription extends AbstractBaseControlDescription<'vector3'> {
-      defaultValue?: unknown;
+      defaultValue?: [number, number, number];
   }
   export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
