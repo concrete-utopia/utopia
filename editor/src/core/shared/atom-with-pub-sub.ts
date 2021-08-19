@@ -34,7 +34,7 @@ export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): At
           updateAtomSynchronously(() => value)
         })
       })
-      return <>{children}</>
+      return React.createElement(React.Fragment, {}, children)
     },
   }
   GlobalAtomMap[key] = newAtom
