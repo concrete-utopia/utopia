@@ -1270,7 +1270,7 @@ describe('moveTemplate', () => {
               style={{
                 backgroundColor: '#0091FFAA',
                 position: 'absolute',
-                left: -160,
+                left: -260,
                 top: -60,
                 width: 60,
                 height: 50,
