@@ -435,7 +435,13 @@ export function getPropertyControlsForTarget(
             // you can add more intrinsic (ie not imported) element types here
             const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
             const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
-            if (dependencies.some((dependency) => dependency.name === '@react-three/fiber')) {
+            if (
+              dependencies.some(
+                (dependency) =>
+                  dependency.name === '@react-three/fiber' ||
+                  dependency.name === 'react-three-fiber',
+              )
+            ) {
               if (ReactThreeFiberControls[element.name.baseVariable] != null) {
                 return ReactThreeFiberControls[element.name.baseVariable]
               }
