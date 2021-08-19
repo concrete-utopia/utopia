@@ -17,6 +17,8 @@ export type BaseControlType =
   | 'slider'
   | 'string'
   | 'styleobject'
+  | 'vector2'
+  | 'vector3'
 
 interface AbstractControlDescription<T extends ControlType> {
   title?: string
@@ -107,6 +109,13 @@ export interface StyleObjectControlDescription
   defaultValue?: CSSProperties
   placeholder?: CSSProperties
 }
+export interface Vector2ControlDescription extends AbstractBaseControlDescription<'vector2'> {
+  defaultValue?: unknown
+}
+
+export interface Vector3ControlDescription extends AbstractBaseControlDescription<'vector3'> {
+  defaultValue?: unknown
+}
 
 export type BaseControlDescription =
   | BooleanControlDescription
@@ -122,10 +131,12 @@ export type BaseControlDescription =
   | SliderControlDescription
   | StringControlDescription
   | StyleObjectControlDescription
+  | Vector2ControlDescription
+  | Vector3ControlDescription
 
 // Higher Level Controls
 
-export type HigherLevelControlType = 'array' | 'object' | 'union' | 'vector2' | 'vector3'
+export type HigherLevelControlType = 'array' | 'object' | 'union'
 
 export type ControlType = BaseControlType | HigherLevelControlType
 
@@ -148,23 +159,10 @@ export interface UnionControlDescription extends AbstractHigherLevelControlDescr
   controls: Array<ControlDescription>
 }
 
-export interface Vector2ControlDescription
-  extends AbstractHigherLevelControlDescription<'vector2'> {
-  defaultValue?: unknown
-  controls: { [prop: string]: NumberControlDescription }
-}
-
-export interface Vector3ControlDescription
-  extends AbstractHigherLevelControlDescription<'vector3'> {
-  defaultValue?: unknown
-  controls: { [prop: string]: NumberControlDescription }
-}
 export type HigherLevelControlDescription =
   | ArrayControlDescription
   | ObjectControlDescription
   | UnionControlDescription
-  | Vector2ControlDescription
-  | Vector3ControlDescription
 
 // Please ensure that `property-controls-utils.ts` is kept up to date
 // with any changes to this or the component types.
@@ -187,12 +185,12 @@ export function isBaseControlDescription(
     case 'slider':
     case 'string':
     case 'styleobject':
+    case 'vector2':
+    case 'vector3':
       return true
     case 'array':
     case 'object':
     case 'union':
-    case 'vector2':
-    case 'vector3':
       return false
     default:
       const _exhaustiveCheck: never = control
@@ -217,12 +215,12 @@ export function isHigherLevelControlDescription(
     case 'slider':
     case 'string':
     case 'styleobject':
+    case 'vector2':
+    case 'vector3':
       return false
     case 'array':
     case 'object':
     case 'union':
-    case 'vector2':
-    case 'vector3':
       return true
     default:
       const _exhaustiveCheck: never = control

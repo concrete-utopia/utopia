@@ -258,6 +258,9 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseString)
     case 'styleobject':
       return defaultUnwrapFirst(parseAny)
+    case 'vector2':
+    case 'vector3':
+      return defaultUnwrapFirst(parseAny)
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled control ${JSON.stringify(control)}`)
@@ -281,6 +284,8 @@ export function unwrapperAndParserForPropertyControl(
     case 'slider':
     case 'string':
     case 'styleobject':
+    case 'vector2':
+    case 'vector3':
       return unwrapperAndParserForBaseControl(control)
 
     case 'array':
@@ -289,9 +294,6 @@ export function unwrapperAndParserForPropertyControl(
       return unwrapAndParseObjectValues(control.object)
     case 'union':
       return unwrapAndParseUnionValue(control.controls)
-    case 'vector2':
-    case 'vector3':
-      return unwrapAndParseObjectValues(control.controls)
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled control ${JSON.stringify(control)}`)
@@ -364,6 +366,10 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'styleobject':
       return printSimple
+    case 'vector2':
+      return printSimple
+    case 'vector3':
+      return printSimple
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled controls ${JSON.stringify(control)}`)
@@ -418,15 +424,14 @@ export function printerForPropertyControl(control: ControlDescription): Printer<
     case 'slider':
     case 'string':
     case 'styleobject':
+    case 'vector2':
+    case 'vector3':
       return printerForBasePropertyControl(control)
 
     case 'array':
       return printerForArray(control.propertyControl) as Printer<unknown> // Why???!!
     case 'object':
       return printerForObject(control.object) as Printer<unknown> // Why???!!
-    case 'vector2':
-    case 'vector3':
-      return printerForObject(control.controls) as Printer<unknown> // Why???!!
     case 'union':
       return printerForUnion(control.controls)
     default:

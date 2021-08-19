@@ -211,31 +211,6 @@ export function parseObject<V>(
   }
 }
 
-export function parseVector(
-  objectValueParser: (v: unknown, key: string) => ParseResult<NumberControlDescription>,
-): Parser<MapLike<NumberControlDescription>> {
-  return (value: unknown) => {
-    if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-      const valueAsObject: any = value
-      const withErrorParser = objectValueParserWithError(objectValueParser)
-      return reduceWithEither<string, ParseError, MapLike<NumberControlDescription>>(
-        (working: MapLike<NumberControlDescription>, objectKey: string) => {
-          return mapEither((parsedVectorValue) => {
-            return {
-              ...working,
-              [objectKey]: parsedVectorValue,
-            }
-          }, withErrorParser(valueAsObject[objectKey], objectKey))
-        },
-        {},
-        Object.keys(valueAsObject),
-      )
-    } else {
-      return left(descriptionParseError('Value is not a vector.'))
-    }
-  }
-}
-
 // Wraps around an existing parser to add to the "error stack" an ArrayIndexParseError.
 export function arrayValueParserWithError<V>(
   parser: (v: unknown, index: number) => ParseResult<V>,

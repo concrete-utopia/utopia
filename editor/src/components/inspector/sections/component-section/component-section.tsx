@@ -511,57 +511,65 @@ const RowForVectorControl = betterReactMemo(
   'RowForVectorControl',
   (props: RowForVectorControlProps) => {
     const { propPath, controlDescription, isScene } = props
-    const title = titleForControl(propPath, controlDescription)
     const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+
     const contextMenuItems = Utils.stripNulls([
       addOnUnsetValues([PP.toString(propPath)], propMetadata.onUnsetValues),
     ])
 
-    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = mapToArray(
-      (innerControl: ControlDescription, prop: string) => {
-        const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
-        const innerMetadata = useComponentPropsInspectorInfo(innerPropPath, isScene, innerControl)
-        const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-          (rawValue: CSSNumber) => innerMetadata.onSubmitValue(printCSSNumber(rawValue, null)),
-          innerMetadata.onUnsetValues,
-        )
+    const keys = controlDescription.type === 'vector3' ? ['x', 'y', 'z'] : ['x', 'y']
+    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = keys.map(
+      (propName: string, index: number) => {
+        const defaultValues = Array.isArray(controlDescription.defaultValue)
+          ? controlDescription.defaultValue
+          : []
+        const setValues = Array.isArray(propMetadata.value) ? propMetadata.value : []
+        const value = propMetadata.propertyStatus.set ? setValues[index] : defaultValues[index]
+
+        const innerPropPath = PP.appendPropertyPathElems(propPath, [propName])
+        const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue((rawValue: CSSNumber) => {
+          const newValue = printCSSNumber(rawValue, null)
+          let updatedValues = propMetadata.propertyStatus.set ? [...setValues] : [...defaultValues]
+          updatedValues[index] = newValue
+          propMetadata.onSubmitValue(updatedValues)
+        }, propMetadata.onUnsetValues)
         const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-          (rawValue: CSSNumber) =>
-            innerMetadata.onTransientSubmitValue(printCSSNumber(rawValue, null)),
-          innerMetadata.onUnsetValues,
+          (rawValue: CSSNumber) => {
+            const newValue = printCSSNumber(rawValue, null)
+            let updatedValues = propMetadata.propertyStatus.set
+              ? [...setValues]
+              : [...defaultValues]
+            updatedValues[index] = newValue
+            propMetadata.onSubmitValue(updatedValues)
+          },
+          propMetadata.onUnsetValues,
         )
-        const value = innerMetadata.propertyStatus.set
-          ? innerMetadata.value
-          : controlDescription.defaultValue
         return {
           value: value == null || typeof value !== 'number' ? null : cssNumber(value),
-          DEPRECATED_labelBelow: innerControl.title,
+          DEPRECATED_labelBelow: propName,
           testId: `component-section-${PP.toString(innerPropPath)}`,
-          controlStatus: innerMetadata.controlStatus,
+          controlStatus: propMetadata.controlStatus,
           onSubmitValue: wrappedOnSubmit,
           onTransientSubmitValue: wrappedOnTransientSubmit,
           numberType: 'Unitless' as const,
           defaultUnitToHide: null,
         }
       },
-      controlDescription.controls,
     )
 
     return (
-      <>
-        <InspectorContextMenuWrapper
-          id={`context-menu-for-${PP.toString(propPath)}`}
-          items={contextMenuItems}
-          data={null}
-        >
-          <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-            {title}
-            <UIGridRow padded={false} variant='<-------------1fr------------->'>
-              <ChainedNumberInput idPrefix={'vector'} propsArray={propsArray} />
-            </UIGridRow>
+      <InspectorContextMenuWrapper
+        id={`context-menu-for-${PP.toString(propPath)}`}
+        items={contextMenuItems}
+        data={null}
+      >
+        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+          {PP.toString(propPath)}
+          <UIGridRow padded={false} variant='<-------------1fr------------->'>
+            <ChainedNumberInput idPrefix={'vector'} propsArray={propsArray} />
           </UIGridRow>
-        </InspectorContextMenuWrapper>
-      </>
+        </UIGridRow>
+      </InspectorContextMenuWrapper>
     )
   },
 )
@@ -572,9 +580,12 @@ interface RowForControlProps extends AbstractRowForControlProps {
 
 const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
   const { controlDescription } = props
-
   if (isBaseControlDescription(controlDescription)) {
-    return <RowForBaseControl {...props} controlDescription={controlDescription} />
+    if (controlDescription.type === 'vector2' || controlDescription.type === 'vector3') {
+      return <RowForVectorControl {...props} controlDescription={controlDescription} />
+    } else {
+      return <RowForBaseControl {...props} controlDescription={controlDescription} />
+    }
   } else {
     switch (controlDescription.type) {
       case 'array':
@@ -583,9 +594,6 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
         return <RowForObjectControl {...props} controlDescription={controlDescription} />
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
-      case 'vector2':
-      case 'vector3':
-        return <RowForVectorControl {...props} controlDescription={controlDescription} />
       default:
         const _exhaustiveCheck: never = controlDescription
         throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)

@@ -40,7 +40,6 @@ import {
   ParseResult,
   parseString,
   parseUndefined,
-  parseVector,
 } from '../../utils/value-parser-utils'
 import {
   applicative2Either,
@@ -438,11 +437,10 @@ export function parseUnionControlDescription(value: unknown): ParseResult<UnionC
 export function parseVector2ControlDescription(
   value: unknown,
 ): ParseResult<Vector2ControlDescription> {
-  return applicative4Either(
-    (title, type, defaultValue, controls) => {
+  return applicative3Either(
+    (title, type, defaultValue) => {
       let controlDescription: Vector2ControlDescription = {
         type: type,
-        controls: controls,
       }
       setOptionalProp(controlDescription, 'title', title)
       setOptionalProp(controlDescription, 'defaultValue', defaultValue)
@@ -452,17 +450,15 @@ export function parseVector2ControlDescription(
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['vector2']), 'type')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseVector(parseNumberControlDescription), 'controls')(value),
   )
 }
 export function parseVector3ControlDescription(
   value: unknown,
 ): ParseResult<Vector3ControlDescription> {
-  return applicative4Either(
-    (title, type, defaultValue, controls) => {
+  return applicative3Either(
+    (title, type, defaultValue) => {
       let controlDescription: Vector3ControlDescription = {
         type: type,
-        controls: controls,
       }
       setOptionalProp(controlDescription, 'title', title)
       setOptionalProp(controlDescription, 'defaultValue', defaultValue)
@@ -472,7 +468,6 @@ export function parseVector3ControlDescription(
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['vector3']), 'type')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseVector(parseNumberControlDescription), 'controls')(value),
   )
 }
 
