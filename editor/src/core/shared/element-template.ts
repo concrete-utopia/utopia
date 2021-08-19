@@ -847,10 +847,14 @@ export function jsxElementNameEquals(first: JSXElementName, second: JSXElementNa
   )
 }
 
-export function isIntrinsicElement(name: JSXElementName): boolean {
+export function isIntrinsicElementFromString(name: string): boolean {
   // Elements with a lowercase first character are assumed to be intrinsic, since React treats them differently
   // https://reactjs.org/docs/jsx-in-depth.html#user-defined-components-must-be-capitalized
-  return PP.depth(name.propertyPath) === 0 && firstLetterIsLowerCase(name.baseVariable)
+  return firstLetterIsLowerCase(name) && !name.includes('.')
+}
+
+export function isIntrinsicElement(name: JSXElementName): boolean {
+  return PP.depth(name.propertyPath) === 0 && isIntrinsicElementFromString(name.baseVariable)
 }
 
 export function isIntrinsicHTMLElementString(name: string): boolean {

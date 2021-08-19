@@ -15,6 +15,7 @@ import {
   jsxAttributesFromMap,
   isArbitraryJSBlock,
   ArbitraryJSBlock,
+  jsxElementName,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
@@ -1210,5 +1211,53 @@ export var storyboard = (
     } else {
       fail(`Failed to parse code`)
     }
+  })
+
+  it('should not add intrinsic elements to the defined elsewhere of an arbitrary block', () => {
+    const code = `import React from "react";
+      export var App = (props) => {
+        return (
+          <div>
+            {[1].map(i => <someIntrinsicElement/>)}
+          </div>
+        )
+      }
+    `
+
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+
+    const rootElement = expect.objectContaining({
+      name: jsxElementName('div', []),
+      children: [
+        expect.objectContaining({
+          originalJavascript: '[1].map(i => <someIntrinsicElement/>)',
+          definedElsewhere: ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+        }),
+      ],
+    })
+
+    const exported = utopiaJSXComponent(
+      'App',
+      true,
+      'var',
+      'block',
+      defaultPropsParam,
+      [],
+      rootElement,
+      null,
+      false,
+      emptyComments,
+    )
+
+    const expectedResult = parseSuccess(
+      expect.objectContaining({}),
+      expect.arrayContaining([exported]),
+      expect.objectContaining({}),
+      null,
+      null,
+      expect.objectContaining({}),
+    )
+
+    expect(actualResult).toEqual(expectedResult)
   })
 })
