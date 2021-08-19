@@ -342,33 +342,37 @@ export const UiJsxCanvas = betterReactMemo(
             resolvedFromThisOrigin.push(toImport)
             const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
             if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-              const { scope } = createExecutionScope(
-                resolvedFilePath,
-                customRequire,
-                mutableContextRef,
-                topLevelComponentRendererComponents,
-                projectContents,
-                uiFilePath,
-                transientFilesState,
-                base64FileBlobs,
-                hiddenInstances,
-                metadataContext,
-                updateInvalidatedPaths,
-                shouldIncludeCanvasRootInTheSpy,
-              )
-              const exportsDetail = projectFile.fileContents.parsed.exportsDetail
-              let filteredScope: MapLike<any> = {
-                ...scope.module.exports,
-                __esModule: true,
-              }
-              for (const s of Object.keys(scope)) {
-                if (s in exportsDetail.namedExports) {
-                  filteredScope[s] = scope[s]
-                } else if (s === exportsDetail.defaultExport?.name) {
-                  filteredScope['default'] = scope[s]
+              if (projectFile.fileContents.parsed.topLevelElements.some(isUtopiaJSXComponent)) {
+                const { scope } = createExecutionScope(
+                  resolvedFilePath,
+                  customRequire,
+                  mutableContextRef,
+                  topLevelComponentRendererComponents,
+                  projectContents,
+                  uiFilePath,
+                  transientFilesState,
+                  base64FileBlobs,
+                  hiddenInstances,
+                  metadataContext,
+                  updateInvalidatedPaths,
+                  shouldIncludeCanvasRootInTheSpy,
+                )
+                const exportsDetail = projectFile.fileContents.parsed.exportsDetail
+                let filteredScope: MapLike<any> = {
+                  ...scope.module.exports,
+                  __esModule: true,
                 }
+                for (const s of Object.keys(scope)) {
+                  if (s in exportsDetail.namedExports) {
+                    filteredScope[s] = scope[s]
+                  } else if (s === exportsDetail.defaultExport?.name) {
+                    filteredScope['default'] = scope[s]
+                  }
+                }
+                return right(filteredScope)
+              } else {
+                return left(`File ${resolvedFilePath} contains no components`)
               }
-              return right(filteredScope)
             } else {
               return left(`File ${resolvedFilePath} is not a ParseSuccess`)
             }

@@ -1826,7 +1826,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       null,
       `import * as React from 'react'
       import { Storyboard, Scene } from 'utopia-api'
-      import App from 'app.js'
+      import App from './app'
 
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -1897,7 +1897,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       null,
       `import * as React from 'react'
       import { Storyboard, Scene } from 'utopia-api'
-      import { App } from 'app.js'
+      import { App } from './app'
 
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
