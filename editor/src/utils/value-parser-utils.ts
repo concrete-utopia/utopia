@@ -1,5 +1,4 @@
 import { MapLike } from 'typescript'
-import { NumberControlDescription } from 'utopia-api'
 import {
   Either,
   isRight,

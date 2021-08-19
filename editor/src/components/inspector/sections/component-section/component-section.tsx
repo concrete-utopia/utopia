@@ -6,11 +6,8 @@ import {
   BaseControlDescription,
   ControlDescription,
   isBaseControlDescription,
-  NumberControlDescription,
   ObjectControlDescription,
   UnionControlDescription,
-  Vector2ControlDescription,
-  Vector3ControlDescription,
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import {
@@ -49,9 +46,6 @@ import {
   Subdued,
   VerySubdued,
   FlexRow,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  ChainedNumberInput,
-  NumberInputProps,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -105,7 +99,6 @@ import {
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
-import { CSSNumber, cssNumber, printCSSNumber } from '../../common/css-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,

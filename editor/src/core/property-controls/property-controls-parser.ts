@@ -1,4 +1,3 @@
-import { MapLike } from 'typescript'
 import {
   BooleanControlDescription,
   ColorControlDescription,
