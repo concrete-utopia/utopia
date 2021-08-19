@@ -9,8 +9,8 @@ import {
   getAllCodeEditorErrors,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
-  LeftPaneDefaultWidth,
   parseFailureAsErrorMessages,
+  NavigatorWidthAtom,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
@@ -24,6 +24,7 @@ import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { ModeSelectButtons } from './mode-select-buttons'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
+import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 interface CanvasWrapperComponentProps {}
 
@@ -51,6 +52,8 @@ export const CanvasWrapperComponent = betterReactMemo(
       (store) => !store.editor.navigator.minimised,
       'ErrorOverlayComponent isOverlappingWithNavigator',
     )
+
+    const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
 
     return (
       <FlexColumn
@@ -83,7 +86,7 @@ export const CanvasWrapperComponent = betterReactMemo(
         >
           <div
             style={{
-              width: isNavigatorOverCanvas ? LeftPaneDefaultWidth : 0,
+              width: isNavigatorOverCanvas ? navigatorWidth : 0,
             }}
           />
           <FlexColumn

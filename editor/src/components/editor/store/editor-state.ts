@@ -148,6 +148,7 @@ import { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
 import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
@@ -163,6 +164,12 @@ export enum LeftMenuTab {
 export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = 260
+
+const DefaultNavigatorWidth = 280
+export const NavigatorWidthAtom = atomWithPubSub({
+  key: 'NavigatorWidthAtom',
+  defaultValue: DefaultNavigatorWidth,
+})
 
 export enum RightMenuTab {
   Insert = 'insert',
@@ -1074,9 +1081,9 @@ export function createNewProjectName(): string {
 }
 
 export const BaseSnappingThreshold = 5
-export const BaseCanvasOffset = { x: 20, y: 60 } as CanvasPoint
+export const BaseCanvasOffset = { x: 60, y: 60 } as CanvasPoint
 export const BaseCanvasOffsetLeftPane = {
-  x: BaseCanvasOffset.x + LeftPaneDefaultWidth,
+  x: BaseCanvasOffset.x + DefaultNavigatorWidth,
   y: BaseCanvasOffset.y,
 } as CanvasPoint
 

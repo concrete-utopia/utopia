@@ -1,9 +1,14 @@
-import { Resizable, ResizeDirection } from 're-resizable'
+import { Resizable, ResizeCallback, ResizeDirection } from 're-resizable'
 import * as React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
-import { ConsoleLog, LeftPaneDefaultWidth, RightMenuTab } from '../editor/store/editor-state'
+import {
+  ConsoleLog,
+  LeftPaneDefaultWidth,
+  RightMenuTab,
+  NavigatorWidthAtom,
+} from '../editor/store/editor-state'
 
 import { useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
@@ -27,6 +32,9 @@ import { betterReactMemo } from '../../uuiui-deps'
 import { TopMenu } from '../editor/top-menu'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
+import { usePubSubAtom } from '../../core/shared/atom-with-pub-sub'
+import CanvasActions from './canvas-actions'
+import { canvasPoint } from '../../core/shared/math-utils'
 
 interface DesignPanelRootProps {
   isUiJsFileOpen: boolean
@@ -183,26 +191,15 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
     [interfaceDesigner, navigatorVisible, props.isUiJsFileOpen],
   )
 
-  const getNavigatorLeft = React.useMemo((): number | undefined => {
-    const codeEditorCurrentWidth =
-      codeEditorResizingWidth != null ? codeEditorResizingWidth : interfaceDesigner.codePaneWidth
-    let position = navigatorVisible ? codeEditorCurrentWidth : undefined
+  const [navigatorWidth, setNavigatorWidth] = usePubSubAtom(NavigatorWidthAtom)
 
-    if (!interfaceDesigner.codePaneVisible) {
-      if (leftMenuExpanded) {
-        position = LeftPaneDefaultWidth
-      } else {
-        position = undefined
-      }
-    }
-    return position
-  }, [
-    codeEditorResizingWidth,
-    interfaceDesigner.codePaneVisible,
-    interfaceDesigner.codePaneWidth,
-    leftMenuExpanded,
-    navigatorVisible,
-  ])
+  const onNavigatorResizeStop = React.useCallback<ResizeCallback>(
+    (_event, _direction, _ref, delta) => {
+      setNavigatorWidth((currentWidth) => currentWidth + delta.width)
+      dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -delta.width, y: 0 }))])
+    },
+    [setNavigatorWidth, dispatch],
+  )
 
   return (
     <SimpleFlexRow
@@ -321,8 +318,9 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
                     backgroundColor: UtopiaTheme.color.bg0.o(90).value,
                     backdropFilter: 'blur(7px)',
                   }}
+                  onResizeStop={onNavigatorResizeStop}
                   defaultSize={{
-                    width: 280,
+                    width: navigatorWidth,
                     height: '100%',
                   }}
                 >
