@@ -7,7 +7,6 @@ import {
   stripNulls,
   traverseArray,
 } from '../../shared/array-utils'
-import { intrinsicHTMLElementNamesAsStrings } from '../../shared/dom-utils'
 import {
   applicative2Either,
   bimapEither,
@@ -63,6 +62,7 @@ import {
   jsxAttributesEntry,
   setJSXAttributesAttribute,
   jsxAttributesSpread,
+  isIntrinsicElementFromString,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -545,7 +545,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
       if (TS.isIdentifier(nodeToCheck)) {
         const nameToAdd = nodeToCheck.getText(sourceFile)
         if (nodeIsJSXElement) {
-          if (!intrinsicHTMLElementNamesAsStrings.includes(nameToAdd)) {
+          if (!isIntrinsicElementFromString(nameToAdd)) {
             pushToDefinedElsewhereIfNotThere(inScope, nameToAdd)
             return true
           }
