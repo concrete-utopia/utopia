@@ -1,22 +1,18 @@
 import type { MapLike } from 'typescript'
-import { ControlDescription, ObjectControlDescription, PropertyControls } from 'utopia-api'
+import {
+  ControlDescription,
+  ObjectControlDescription,
+  Vector2ControlDescription,
+  Vector3ControlDescription,
+  PropertyControls,
+} from 'utopia-api'
 
-const Vector3: ObjectControlDescription = {
-  type: 'object',
-  object: {
-    0: {
-      type: 'number',
-      title: 'x',
-    },
-    1: {
-      type: 'number',
-      title: 'y',
-    },
-    2: {
-      type: 'number',
-      title: 'z',
-    },
-  },
+const Vector3: Vector3ControlDescription = {
+  type: 'vector3',
+}
+
+const Vector2: Vector2ControlDescription = {
+  type: 'vector2',
 }
 
 const Euler: ObjectControlDescription = {

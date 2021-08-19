@@ -86,6 +86,7 @@ import {
   ControlForPropProps,
   ControlForSliderProp,
   ControlForStringProp,
+  ControlForVectorProp,
 } from './property-control-controls'
 import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
 import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
@@ -142,6 +143,9 @@ const ControlForProp = betterReactMemo(
           return <ControlForSliderProp {...props} controlDescription={controlDescription} />
         case 'string':
           return <ControlForStringProp {...props} controlDescription={controlDescription} />
+        case 'vector2':
+        case 'vector3':
+          return <ControlForVectorProp {...props} controlDescription={controlDescription} />
         // case 'styleobject':
         default:
           return null
@@ -261,6 +265,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
         {propertyLabel}
         <ControlForProp
+          propPath={propPath}
           propName={propName}
           controlDescription={controlDescription}
           propMetadata={propMetadata}
@@ -502,7 +507,6 @@ interface RowForControlProps extends AbstractRowForControlProps {
 
 const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
   const { controlDescription } = props
-
   if (isBaseControlDescription(controlDescription)) {
     return <RowForBaseControl {...props} controlDescription={controlDescription} />
   } else {

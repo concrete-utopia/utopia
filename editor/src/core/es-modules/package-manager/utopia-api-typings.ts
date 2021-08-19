@@ -375,7 +375,7 @@ declare module 'utopia-api/primitives/view' {
 }
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
-  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string' | 'styleobject';
+  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string' | 'styleobject' | 'vector2' | 'vector3';
   interface AbstractControlDescription<T extends ControlType> {
       title?: string;
       type: T;
@@ -447,7 +447,13 @@ declare module 'utopia-api/property-controls/property-controls' {
       defaultValue?: CSSProperties;
       placeholder?: CSSProperties;
   }
-  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription;
+  export interface Vector2ControlDescription extends AbstractBaseControlDescription<'vector2'> {
+      defaultValue?: [number, number];
+  }
+  export interface Vector3ControlDescription extends AbstractBaseControlDescription<'vector3'> {
+      defaultValue?: [number, number, number];
+  }
+  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
   export type ControlType = BaseControlType | HigherLevelControlType;
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {

@@ -17,6 +17,8 @@ export type BaseControlType =
   | 'slider'
   | 'string'
   | 'styleobject'
+  | 'vector2'
+  | 'vector3'
 
 interface AbstractControlDescription<T extends ControlType> {
   title?: string
@@ -107,6 +109,13 @@ export interface StyleObjectControlDescription
   defaultValue?: CSSProperties
   placeholder?: CSSProperties
 }
+export interface Vector2ControlDescription extends AbstractBaseControlDescription<'vector2'> {
+  defaultValue?: [number, number]
+}
+
+export interface Vector3ControlDescription extends AbstractBaseControlDescription<'vector3'> {
+  defaultValue?: [number, number, number]
+}
 
 export type BaseControlDescription =
   | BooleanControlDescription
@@ -122,6 +131,8 @@ export type BaseControlDescription =
   | SliderControlDescription
   | StringControlDescription
   | StyleObjectControlDescription
+  | Vector2ControlDescription
+  | Vector3ControlDescription
 
 // Higher Level Controls
 
@@ -174,6 +185,8 @@ export function isBaseControlDescription(
     case 'slider':
     case 'string':
     case 'styleobject':
+    case 'vector2':
+    case 'vector3':
       return true
     case 'array':
     case 'object':
@@ -202,6 +215,8 @@ export function isHigherLevelControlDescription(
     case 'slider':
     case 'string':
     case 'styleobject':
+    case 'vector2':
+    case 'vector3':
       return false
     case 'array':
     case 'object':

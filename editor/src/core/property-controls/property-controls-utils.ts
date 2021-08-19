@@ -316,6 +316,8 @@ export function getDescriptionUnsetOptionalFields(
       addIfFieldEmpty(controlDescription, 'defaultValue')
       break
     case 'union':
+    case 'vector2':
+    case 'vector3':
       break
     default:
       const _exhaustiveCheck: never = controlDescription
