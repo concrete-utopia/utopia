@@ -828,6 +828,8 @@ function parseOtherJavaScript<E extends TS.Node, T>(
               )
             } else if (TS.isTypeOfExpression(node)) {
               addIfDefinedElsewhere(scope, node.expression, false)
+            } else if (TS.isVariableDeclaration(node) && node.initializer != null) {
+              addIfDefinedElsewhere(scope, node.initializer, false)
             } else if (TS.isVoidExpression(node)) {
               addIfDefinedElsewhere(scope, node.expression, false)
             } else if (TS.isYieldExpression(node)) {
