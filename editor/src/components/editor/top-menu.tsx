@@ -17,8 +17,9 @@ import CanvasActions from '../canvas/canvas-actions'
 import { EditorAction } from './action-types'
 import { ComponentOrInstanceIndicator } from '../editor/component-button'
 import { IconToggleButton } from '../../uuiui/icon-toggle-button'
-import { LeftPaneDefaultWidth, RightMenuTab } from './store/editor-state'
+import { LeftPaneDefaultWidth, RightMenuTab, NavigatorWidthAtom } from './store/editor-state'
 import { CanvasVector } from '../../core/shared/math-utils'
+import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolean) => void] {
   const [shouldResetCanvas, setShouldResetCanvas] = React.useState(false)
@@ -39,15 +40,17 @@ const TopMenuLeftControls = betterReactMemo('TopMenuLeftControls', () => {
     'TopMenuLeftControls navigatorVisible',
   )
 
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
+
   const onClickNavigateTab = React.useCallback(() => {
     let actions: EditorAction[] = [EditorActions.togglePanel('navigator')]
     if (navigatorVisible) {
-      actions.push(CanvasActions.scrollCanvas({ x: LeftPaneDefaultWidth, y: 0 } as CanvasVector))
+      actions.push(CanvasActions.scrollCanvas({ x: navigatorWidth, y: 0 } as CanvasVector))
     } else {
-      actions.push(CanvasActions.scrollCanvas({ x: -LeftPaneDefaultWidth, y: 0 } as CanvasVector))
+      actions.push(CanvasActions.scrollCanvas({ x: -navigatorWidth, y: 0 } as CanvasVector))
     }
     dispatch(actions)
-  }, [dispatch, navigatorVisible])
+  }, [dispatch, navigatorVisible, navigatorWidth])
 
   const followSelection = useEditorState(
     (store) => store.editor.config.followSelection,
