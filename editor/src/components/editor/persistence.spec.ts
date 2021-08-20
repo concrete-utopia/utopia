@@ -11,7 +11,7 @@ import { NO_OP } from '../../core/shared/utils'
 import { createPersistentModel, delay } from '../../utils/utils.test-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import { TextFile } from '../../core/shared/project-file-types'
-import { SaveProjectResponse } from './server'
+import { AssetToSave, SaveProjectResponse } from './server'
 import { localProjectKey } from '../../common/persistence'
 import { MockUtopiaTsWorkers } from '../../core/workers/workers'
 import { addFileToProjectContents, getContentsTreeFileFromString } from '../assets'
@@ -38,8 +38,8 @@ jest.mock('./server', () => ({
 
     return Promise.resolve({ id: projectId, ownerId: 'Owner' })
   },
-  saveImagesFromProject: async (projectId: string, persistentModel: PersistentModel) => {
-    return Promise.resolve(persistentModel)
+  saveAssets: async (_projectId: string, _assets: Array<AssetToSave>): Promise<void> => {
+    return Promise.resolve()
   },
 }))
 

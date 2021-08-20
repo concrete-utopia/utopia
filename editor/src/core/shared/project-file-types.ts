@@ -530,6 +530,7 @@ export interface ImageFile {
 
 export interface AssetFile {
   type: 'ASSET_FILE'
+  base64?: string
 }
 
 export function isAssetFile(projectFile: ProjectFile | null): projectFile is AssetFile {

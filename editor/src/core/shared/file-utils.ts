@@ -57,27 +57,12 @@ export function extractAsset(file: File): Promise<AssetResult> {
   })
 }
 
-function getMimeStrippedBase64(base64: string): string {
-  const splitBase64 = base64.split(',')
-  switch (splitBase64.length) {
-    case 1:
-      // No mime prefix.
-      return base64
-    case 2:
-      // Mime prefix.
-      return splitBase64[1]
-    default:
-      throw new Error('Invalid Base64 content for asset.')
-  }
-}
-
 export function assetResultForBase64(filename: string, base64: string): AssetResult {
-  const mimeStrippedBase64 = getMimeStrippedBase64(base64)
-  const hash = stringHash(mimeStrippedBase64)
+  const hash = stringHash(base64)
   return {
     type: 'ASSET_RESULT',
     filename: filename,
-    base64Bytes: mimeStrippedBase64,
+    base64Bytes: base64,
     hash: hash,
   }
 }
@@ -101,14 +86,8 @@ export async function imageResultForBase64(
   fileType: string,
   base64: string,
 ): Promise<ImageResult> {
-  const mimeStrippedBase64 = getMimeStrippedBase64(base64)
-  const hash = stringHash(mimeStrippedBase64)
-  let imageDataUrl: string
-  if (mimeStrippedBase64 === base64) {
-    imageDataUrl = `data:;base64,${base64}`
-  } else {
-    imageDataUrl = base64
-  }
+  const hash = stringHash(base64)
+  const imageDataUrl: string = base64
   let imageSize: Size
   if (fileType === '.svg') {
     // FIXME: SVGs may not have a viewbox or it may be specified
@@ -120,7 +99,7 @@ export async function imageResultForBase64(
   return {
     type: 'IMAGE_RESULT',
     filename: filename,
-    base64Bytes: mimeStrippedBase64,
+    base64Bytes: base64,
     size: imageSize,
     fileType: fileType,
     hash: hash,

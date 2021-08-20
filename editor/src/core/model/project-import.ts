@@ -101,7 +101,11 @@ export async function importZippedGitProject(
             hash: assetResult.hash,
             size: null,
           })
-          loadedProject = addFileToProjectContents(loadedProject, shiftedFileName, assetFile())
+          loadedProject = addFileToProjectContents(
+            loadedProject,
+            shiftedFileName,
+            assetFile(undefined),
+          )
           break
         }
         case 'IMAGE_FILE': {

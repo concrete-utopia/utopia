@@ -3235,7 +3235,7 @@ export const UPDATE_FNS = {
     let projectFile: ProjectFile
     if (action.imageDetails == null) {
       // Assume stock ASSET_FILE case when there's no image details.
-      projectFile = assetFile()
+      projectFile = assetFile(undefined)
     } else {
       // Assume IMAGE_FILE otherwise.
       projectFile = imageFile(action.fileType, undefined, width, height, action.hash)

@@ -8,8 +8,8 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import { imageFile, isImageFile } from '../../core/model/project-file-utils'
-import { ImageFile } from '../../core/shared/project-file-types'
+import { assetFile, imageFile, isImageFile } from '../../core/model/project-file-utils'
+import { AssetFile, ImageFile, isAssetFile } from '../../core/shared/project-file-types'
 import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
 import { LoginState } from '../../uuiui-deps'
 const urljoin = require('url-join')
@@ -20,6 +20,7 @@ import { notice } from '../common/notice'
 import { EditorDispatch, isLoggedIn } from './action-types'
 import { setLoginState, showToast, removeToast } from './actions/action-creators'
 import { isLocal, isSafeToClose } from './persistence'
+import { getFileExtension } from '../../core/shared/file-utils'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -206,13 +207,28 @@ export async function deleteAssetFile(projectId: string, fileName: string): Prom
   }
 }
 
+function getMimeStrippedBase64(base64: string): string {
+  const splitBase64 = base64.split(',')
+  switch (splitBase64.length) {
+    case 1:
+      // No mime prefix.
+      return base64
+    case 2:
+      // Mime prefix.
+      return splitBase64[1]
+    default:
+      throw new Error('Invalid Base64 content for asset.')
+  }
+}
+
 async function saveAssetRequest(
   projectId: string,
   fileType: string,
   base64: string,
   fileName: string,
 ): Promise<void> {
-  const asset = Buffer.from(base64, 'base64')
+  const mimeStrippedBase64 = getMimeStrippedBase64(base64)
+  const asset = Buffer.from(mimeStrippedBase64, 'base64')
   const url = assetURL(projectId, fileName)
   const response = await fetch(url, {
     method: 'POST',
@@ -244,10 +260,18 @@ export async function saveAsset(
   }
 }
 
-interface AssetToSave {
+export interface AssetToSave {
   fileType: string
   base64: string
   fileName: string
+}
+
+export function assetToSave(fileType: string, base64: string, fileName: string): AssetToSave {
+  return {
+    fileType: fileType,
+    base64: base64,
+    fileName: fileName,
+  }
 }
 
 export async function saveAssets(projectId: string, assets: Array<AssetToSave>): Promise<void> {
@@ -258,27 +282,30 @@ export async function saveAssets(projectId: string, assets: Array<AssetToSave>):
   return
 }
 
-export async function saveImagesFromProject(
+function scrubBase64FromFile(file: ImageFile | AssetFile): ImageFile | AssetFile {
+  if (isImageFile(file)) {
+    return imageFile(undefined, undefined, file.width, file.height, file.hash)
+  } else {
+    return assetFile(undefined)
+  }
+}
+
+export async function saveAssetsFromProject(
   projectId: string,
   model: PersistentModel,
 ): Promise<PersistentModel> {
-  let promises: Array<Promise<{ contentId: string; projectContent: ImageFile }>> = []
+  let promises: Array<Promise<{ contentId: string; fileContent: ImageFile | AssetFile }>> = []
 
-  walkContentsTree(model.projectContents, (fullPath, projectContent) => {
-    if (
-      isImageFile(projectContent) &&
-      projectContent.base64 != null &&
-      projectContent.imageType != null
-    ) {
+  walkContentsTree(model.projectContents, (fullPath, fileContent) => {
+    if ((isImageFile(fileContent) || isAssetFile(fileContent)) && fileContent.base64 != null) {
+      const fileType =
+        isImageFile(fileContent) && fileContent.imageType != null
+          ? fileContent.imageType
+          : getFileExtension(fullPath)
       try {
         promises.push(
-          saveAssetRequest(
-            projectId,
-            projectContent.imageType,
-            projectContent.base64,
-            fullPath,
-          ).then(() => {
-            return { contentId: fullPath, projectContent: projectContent }
+          saveAssetRequest(projectId, fileType, fileContent.base64, fullPath).then(() => {
+            return { contentId: fullPath, fileContent: fileContent }
           }),
         )
       } catch (e) {
@@ -290,15 +317,9 @@ export async function saveImagesFromProject(
 
   return Promise.all(promises).then((updatedFiles) => {
     const updatedProjectContents = updatedFiles.reduce(
-      (workingProjectContents, { contentId, projectContent }) => {
+      (workingProjectContents, { contentId, fileContent }) => {
         // Scrub the image type and base64
-        const updatedFile = imageFile(
-          undefined,
-          undefined,
-          projectContent.width,
-          projectContent.height,
-          projectContent.hash,
-        )
+        const updatedFile = scrubBase64FromFile(fileContent)
         return addFileToProjectContents(workingProjectContents, contentId, updatedFile)
       },
       model.projectContents,

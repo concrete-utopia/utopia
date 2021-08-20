@@ -9,6 +9,7 @@ import {
   isParsedTextFile,
   isTextFile,
   isParseSuccess,
+  isAssetFile,
 } from '../core/shared/project-file-types'
 import { isDirectory, directory, isImageFile } from '../core/model/project-file-utils'
 import Utils from '../utils/utils'
@@ -17,27 +18,26 @@ import { fastForEach } from '../core/shared/utils'
 import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 
-interface ImageAsset {
+export interface AssetFileWithFileName {
   assetPath: string
-  asset: ImageFile
+  asset: ImageFile | AssetFile
 }
 
-function imageAsset(assetPath: string, asset: ImageFile): ImageAsset {
-  return {
-    assetPath: assetPath,
-    asset: asset,
-  }
-}
+export function getAllProjectAssetFiles(
+  projectContents: ProjectContentTreeRoot,
+): Array<AssetFileWithFileName> {
+  let allProjectAssets: Array<AssetFileWithFileName> = []
 
-export function getImageAssets(projectContents: ProjectContents): Array<ImageAsset> {
-  const result: Array<ImageAsset> = []
-  Utils.fastForEach(Object.keys(projectContents), (projectContentKey) => {
-    const projectContent = projectContents[projectContentKey]
-    if (isImageFile(projectContent)) {
-      result.push(imageAsset(projectContentKey, projectContent))
+  walkContentsTree(projectContents, (fullPath, file) => {
+    if (isImageFile(file) || isAssetFile(file)) {
+      allProjectAssets.push({
+        assetPath: fullPath,
+        asset: file,
+      })
     }
   })
-  return result
+
+  return allProjectAssets
 }
 
 export type ProjectContentTreeRoot = { [key: string]: ProjectContentsTree }
