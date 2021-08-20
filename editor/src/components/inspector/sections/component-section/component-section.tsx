@@ -200,7 +200,7 @@ const RowForInvalidControl = betterReactMemo(
     const warning =
       props.warningTooltip == null ? null : <WarningTooltip warning={props.warningTooltip} />
     return (
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
         <PropertyLabel target={propPath}>
           {warning}
           {props.title}
@@ -244,13 +244,13 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
-  const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
 
   const propertyLabel =
     props.label == null ? (
       <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-        {warning}
-        {title}
+        <Tooltip title={title}>
+          <span>{title}</span>
+        </Tooltip>
       </PropertyLabel>
     ) : (
       <props.label />
@@ -262,7 +262,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         {propertyLabel}
         <ControlForProp
           propPath={propPath}

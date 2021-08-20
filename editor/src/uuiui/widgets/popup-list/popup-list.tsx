@@ -223,6 +223,7 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
   const [popupHeight, setPopupHeight] = React.useState(0)
   const [popupTop, setPopupTop] = React.useState(0)
   const [popupLeft, setPopupLeft] = React.useState(0)
+  const [alignRight, setAlignRight] = React.useState(false)
   const [deltaSinceMouseDown, setDeltaSinceMouseDown] = React.useState(0)
   const [croppedTop, setCroppedTop] = React.useState(false)
   const [croppedBottom, setCroppedBottom] = React.useState(false)
@@ -297,9 +298,15 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
           top: scrollTop,
         })
       }
+      const popupRect = refCurrent?.getBoundingClientRect()
+      if (popupRect != null && popupRect.width + popupRect.left > window.innerWidth) {
+        setAlignRight(true)
+      } else {
+        setPopupLeft(referenceRect.left)
+        setAlignRight(false)
+      }
       setPopupHeight(menuHeight + 20)
       setPopupTop(menuTop)
-      setPopupLeft(referenceRect.left)
       setCroppedTop(isCroppedTop)
       setCroppedBottom(isCroppedBottom)
     }
@@ -329,7 +336,8 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
           position: 'absolute',
           height: popupHeight,
           top: popupTop,
-          left: popupLeft - CheckboxInset + ValueContainerLeftPadding,
+          left: alignRight ? undefined : popupLeft - CheckboxInset + ValueContainerLeftPadding,
+          right: alignRight ? ValueContainerLeftPadding : undefined,
           overflow: 'hidden',
           ...UtopiaStyles.popup,
         }}
