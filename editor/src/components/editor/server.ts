@@ -14,7 +14,7 @@ import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './st
 import { LoginState } from '../../uuiui-deps'
 const urljoin = require('url-join')
 import JSZip from 'jszip'
-import { addFileToProjectContents, walkContentsTree } from '../assets'
+import { addFileToProjectContents, AssetFileWithFileName, walkContentsTree } from '../assets'
 import { isLoginLost, isNotLoggedIn } from '../../common/user'
 import { notice } from '../common/notice'
 import { EditorDispatch, isLoggedIn } from './action-types'
@@ -282,56 +282,6 @@ export async function saveAssets(projectId: string, assets: Array<AssetToSave>):
   return
 }
 
-function scrubBase64FromFile(file: ImageFile | AssetFile): ImageFile | AssetFile {
-  if (isImageFile(file)) {
-    return imageFile(undefined, undefined, file.width, file.height, file.hash)
-  } else {
-    return assetFile(undefined)
-  }
-}
-
-export async function saveAssetsFromProject(
-  projectId: string,
-  model: PersistentModel,
-): Promise<PersistentModel> {
-  let promises: Array<Promise<{ contentId: string; fileContent: ImageFile | AssetFile }>> = []
-
-  walkContentsTree(model.projectContents, (fullPath, fileContent) => {
-    if ((isImageFile(fileContent) || isAssetFile(fileContent)) && fileContent.base64 != null) {
-      const fileType =
-        isImageFile(fileContent) && fileContent.imageType != null
-          ? fileContent.imageType
-          : getFileExtension(fullPath)
-      try {
-        promises.push(
-          saveAssetRequest(projectId, fileType, fileContent.base64, fullPath).then(() => {
-            return { contentId: fullPath, fileContent: fileContent }
-          }),
-        )
-      } catch (e) {
-        // FIXME Client should show an error if server requests fail
-        console.error(e)
-      }
-    }
-  })
-
-  return Promise.all(promises).then((updatedFiles) => {
-    const updatedProjectContents = updatedFiles.reduce(
-      (workingProjectContents, { contentId, fileContent }) => {
-        // Scrub the image type and base64
-        const updatedFile = scrubBase64FromFile(fileContent)
-        return addFileToProjectContents(workingProjectContents, contentId, updatedFile)
-      },
-      model.projectContents,
-    )
-
-    return {
-      ...model,
-      projectContents: updatedProjectContents,
-    }
-  })
-}
-
 export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promise<void> {
   const url = thumbnailURL(projectId)
   const response = await fetch(url, {
@@ -458,4 +408,63 @@ export function startPollingLoginState(
     }
     previousLoginState = loginState
   }, 5000)
+}
+
+async function extractBase64FromBlob(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = async () => {
+      resolve(reader.result as string)
+    }
+    reader.onerror = (error) => {
+      reject(error)
+    }
+    reader.readAsDataURL(blob)
+  })
+}
+
+async function downloadAssetFromProject(
+  projectId: string,
+  fileWithName: AssetFileWithFileName,
+): Promise<AssetFileWithFileName> {
+  if (fileWithName.asset.base64 != undefined) {
+    return fileWithName
+  } else {
+    const baseUrl = window.top.location.origin
+    const assetUrl = urljoin(baseUrl, 'p', projectId, fileWithName.assetPath)
+    const assetResponse = await fetch(assetUrl, {
+      method: 'GET',
+      credentials: 'include',
+    })
+    if (assetResponse.ok) {
+      const blob = await assetResponse.blob()
+      const base64 = await extractBase64FromBlob(blob)
+
+      return {
+        ...fileWithName,
+        asset: {
+          ...fileWithName.asset,
+          base64: base64,
+        },
+      }
+    } else {
+      console.error(
+        `Failed to retrieve asset ${fileWithName.assetPath} (${assetResponse.status}): ${assetResponse.statusText}`,
+      )
+      return fileWithName
+    }
+  }
+}
+
+export async function downloadAssetsFromProject(
+  projectId: string | null,
+  allProjectAssets: Array<AssetFileWithFileName>,
+): Promise<Array<AssetFileWithFileName>> {
+  if (projectId == null) {
+    return allProjectAssets
+  } else {
+    const allPromises = allProjectAssets.map((asset) => downloadAssetFromProject(projectId, asset))
+    return Promise.all(allPromises)
+  }
 }

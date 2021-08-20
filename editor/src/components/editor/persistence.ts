@@ -24,6 +24,7 @@ import {
   updateSavedProject,
   AssetToSave,
   assetToSave,
+  downloadAssetsFromProject,
 } from './server'
 import {
   createNewProjectName,
@@ -44,9 +45,7 @@ import { isLoggedIn, isNotLoggedIn, LoginState } from '../../common/user'
 import {
   getAllProjectAssetFiles,
   getContentsTreeFileFromString,
-  AssetFileWithFileName,
   addFileToProjectContents,
-  walkContentsTree,
 } from '../assets'
 import { getFileExtension } from '../../core/shared/file-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
@@ -311,82 +310,18 @@ export async function saveToServer(
   }
 }
 
-async function extractBase64FromBlob(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-
-    reader.onload = async () => {
-      resolve(reader.result as string)
-    }
-    reader.onerror = (error) => {
-      reject(error)
-    }
-    reader.readAsDataURL(blob)
-  })
-}
-
-async function downloadAssetFromProject(
-  projectId: string,
-  fileWithName: AssetFileWithFileName,
-): Promise<AssetFileWithFileName> {
-  if (fileWithName.asset.base64 != undefined) {
-    return fileWithName
-  } else {
-    const baseUrl = window.top.location.origin
-    const assetUrl = urljoin(baseUrl, 'p', projectId, fileWithName.assetPath)
-    const fileType = getFileExtension(fileWithName.assetPath)
-    const assetResponse = await fetch(assetUrl, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Content-Type': fileType,
-        'Content-transfer-encoding': 'base64',
-      },
-    })
-    if (assetResponse.ok) {
-      const blob = await assetResponse.blob()
-      const base64 = await extractBase64FromBlob(blob)
-
-      return {
-        ...fileWithName,
-        asset: {
-          ...fileWithName.asset,
-          base64: base64,
-        },
-      }
-    } else {
-      console.error(
-        `Failed to retrieve asset ${fileWithName.assetPath} (${assetResponse.status}): ${assetResponse.statusText}`,
-      )
-      return fileWithName
-    }
-  }
-}
-
-async function downloadAssetsFromProject(
-  projectId: string | null,
-  allProjectAssets: Array<AssetFileWithFileName>,
-): Promise<Array<AssetFileWithFileName>> {
-  if (projectId == null) {
-    return allProjectAssets
-  } else {
-    const allPromises = allProjectAssets.map((asset) => downloadAssetFromProject(projectId, asset))
-    return Promise.all(allPromises)
-  }
-}
-
 export async function triggerForkProject(
   dispatch: EditorDispatch,
-  editor: EditorState,
+  persistentModel: PersistentModel,
+  oldProjectId: string | null,
+  projectName: string,
   loginState: LoginState,
 ): Promise<void> {
-  const oldProjectId = editor.id
   const newProjectId = await createNewProjectID()
 
-  const persistentModel = persistentModelFromEditorModel(editor)
-  const updatedName = `${editor.projectName} (forked)`
+  const updatedName = `${projectName} (forked)`
 
-  const allProjectAssets = getAllProjectAssetFiles(editor.projectContents)
+  const allProjectAssets = getAllProjectAssetFiles(persistentModel.projectContents)
   const allProjectAssetsDownloaded = await downloadAssetsFromProject(oldProjectId, allProjectAssets)
 
   let updatedProjectContents = persistentModel.projectContents
@@ -400,6 +335,19 @@ export async function triggerForkProject(
         ? null
         : assetToSave(fileType, fileWithName.asset.base64, fileWithName.assetPath)
     }, allProjectAssetsDownloaded)
+    updateFileActions = allProjectAssetsDownloaded.map(({ assetPath, asset }) =>
+      updateFile(assetPath, scrubBase64FromFile(asset), true),
+    )
+    updatedProjectContents = allProjectAssetsDownloaded.reduce(
+      (workingProjectContents, { assetPath, asset }) => {
+        return addFileToProjectContents(
+          workingProjectContents,
+          assetPath,
+          scrubBase64FromFile(asset),
+        )
+      },
+      persistentModel.projectContents,
+    )
   } else {
     updateFileActions = allProjectAssetsDownloaded.map(({ assetPath, asset }) =>
       updateFile(assetPath, asset, true),
@@ -415,7 +363,6 @@ export async function triggerForkProject(
   const updatedPersistentModel = {
     ...persistentModel,
     forkedFromProjectId: oldProjectId,
-    id: newProjectId,
     projectContents: updatedProjectContents,
   }
 
@@ -540,7 +487,13 @@ export async function save(
   const alreadyExistsLocally = projectId != null && (await projectIsStoredLocally(projectId))
   const isFork = !alreadyExistsLocally && !(await checkCanSaveProject(projectId))
   if (isFork) {
-    return triggerForkProject(dispatch, state, loginState)
+    return triggerForkProject(
+      dispatch,
+      persistentModelFromEditorModel(state),
+      projectId,
+      state.projectName,
+      loginState,
+    )
   } else {
     const modelChange =
       saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null

@@ -6,19 +6,33 @@ import {
   LocalProject,
   loadFromLocalStorage,
   forceQueuedSave,
+  triggerForkProject,
 } from './persistence'
-import { NO_OP } from '../../core/shared/utils'
+import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { createPersistentModel, delay } from '../../utils/utils.test-utils'
 import { generateUID } from '../../core/shared/uid-utils'
-import { TextFile } from '../../core/shared/project-file-types'
+import { AssetFile, isAssetFile, ProjectFile, TextFile } from '../../core/shared/project-file-types'
 import { AssetToSave, SaveProjectResponse } from './server'
 import { localProjectKey } from '../../common/persistence'
 import { MockUtopiaTsWorkers } from '../../core/workers/workers'
-import { addFileToProjectContents, getContentsTreeFileFromString } from '../assets'
+import {
+  addFileToProjectContents,
+  AssetFileWithFileName,
+  getContentsTreeFileFromString,
+} from '../assets'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { assetFile } from '../../core/model/project-file-utils'
+import { loggedInUser, notLoggedIn } from '../../common/user'
+import { EditorAction, EditorDispatch } from './action-types'
 
 let mockSaveLog: { [key: string]: Array<PersistentModel> } = {}
+let mockDownloadedAssetsLog: { [projectId: string]: Array<string> } = {}
+let mockUploadedAssetsLog: { [projectId: string]: Array<string> } = {}
 let mockProjectsToError: Set<string> = new Set<string>()
+
+const base64Contents = 'data:asset/xyz;base64,SomeBase64'
+const AssetFileWithBase64 = assetFile(base64Contents)
+const AssetFileWithoutBase64 = assetFile(undefined)
 
 jest.mock('./server', () => ({
   updateSavedProject: async (
@@ -38,8 +52,33 @@ jest.mock('./server', () => ({
 
     return Promise.resolve({ id: projectId, ownerId: 'Owner' })
   },
-  saveAssets: async (_projectId: string, _assets: Array<AssetToSave>): Promise<void> => {
+  saveAssets: async (projectId: string, assets: Array<AssetToSave>): Promise<void> => {
+    const uploadedAssets = assets.map((a) => a.fileName)
+    mockUploadedAssetsLog[projectId] = uploadedAssets
     return Promise.resolve()
+  },
+  downloadAssetsFromProject: async (
+    projectId: string | null,
+    allProjectAssets: Array<AssetFileWithFileName>,
+  ): Promise<Array<AssetFileWithFileName>> => {
+    const downloadedAssets = allProjectAssets
+      .filter((a) => a.asset.base64 == null)
+      .map((a) => a.assetPath)
+    mockDownloadedAssetsLog[projectId!] = downloadedAssets
+    return allProjectAssets.map((assetWithFile) => ({
+      ...assetWithFile,
+      asset: AssetFileWithBase64,
+    }))
+  },
+  createNewProjectID: async (): Promise<string> => {
+    return randomProjectID()
+  },
+  assetToSave: (fileType: string, base64: string, fileName: string): AssetToSave => {
+    return {
+      fileType: fileType,
+      base64: base64,
+      fileName: fileName,
+    }
   },
 }))
 
@@ -78,6 +117,9 @@ jest.mock('localforage', () => ({
   },
   removeItem: async (id: string) => {
     delete localProjects[id]
+  },
+  keys: async () => {
+    return Object.keys(localProjects)
   },
 }))
 
@@ -295,5 +337,126 @@ describe('Loading a local project', () => {
     await delay(20)
     expect(mockSaveLog[projectId]).toEqual([ModelChange])
     expect(localProjects[localProjectKey(projectId)]).toBeUndefined()
+  })
+})
+
+describe('Forking a project', () => {
+  const AssetFileName = 'asset.xyz'
+  const startProject: PersistentModel = {
+    ...ModelChange,
+    projectContents: addFileToProjectContents(
+      ModelChange.projectContents,
+      AssetFileName,
+      AssetFileWithoutBase64,
+    ),
+  }
+  const startProjectIncludingBase64: PersistentModel = {
+    ...ModelChange,
+    projectContents: addFileToProjectContents(
+      ModelChange.projectContents,
+      AssetFileName,
+      AssetFileWithBase64,
+    ),
+  }
+
+  function setupTest() {
+    clearSaveState()
+    setBaseSaveWaitTime(10)
+    const projectId = randomProjectID()
+    let capturedData = {
+      newProjectId: undefined as string | undefined,
+      updatedFiles: {} as { [fileName: string]: AssetFile },
+    }
+    const dispatchFn: EditorDispatch = (actions: ReadonlyArray<EditorAction>) => {
+      fastForEach(actions, (action) => {
+        if (action.action === 'SET_PROJECT_ID') {
+          capturedData.newProjectId = action.id
+        } else if (action.action === 'UPDATE_FILE' && isAssetFile(action.file)) {
+          capturedData.updatedFiles[action.filePath] = action.file
+        }
+      })
+    }
+    return {
+      projectId: projectId,
+      capturedData: capturedData,
+      dispatchFn: dispatchFn,
+    }
+  }
+
+  it('Downloads the base 64 for assets and uploads them against the new project id if the user is signed in', async () => {
+    const { projectId, capturedData, dispatchFn } = setupTest()
+    await triggerForkProject(dispatchFn, startProject, projectId, '', loggedInUser({ userId: '1' }))
+    expect(capturedData.newProjectId).toBeDefined()
+    expect(capturedData.newProjectId).not.toEqual(projectId)
+    expect(mockDownloadedAssetsLog[projectId]).toEqual([AssetFileName])
+    expect(mockUploadedAssetsLog[capturedData.newProjectId!]).toEqual([AssetFileName])
+    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([
+      {
+        ...startProject,
+        forkedFromProjectId: projectId,
+      },
+    ])
+    expect(capturedData.updatedFiles[AssetFileName]).toEqual(AssetFileWithoutBase64)
+  })
+
+  it('Does not download the base 64 if the files already have them, and uploads them against the new project id if the user is signed in', async () => {
+    const { projectId, capturedData, dispatchFn } = setupTest()
+    await triggerForkProject(
+      dispatchFn,
+      startProjectIncludingBase64,
+      projectId,
+      '',
+      loggedInUser({ userId: '1' }),
+    )
+    expect(capturedData.newProjectId).toBeDefined()
+    expect(capturedData.newProjectId).not.toEqual(projectId)
+    expect(mockDownloadedAssetsLog[projectId]).toEqual([])
+    expect(mockUploadedAssetsLog[capturedData.newProjectId!]).toEqual([AssetFileName])
+    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([
+      {
+        ...startProject,
+        forkedFromProjectId: projectId,
+      },
+    ])
+    expect(capturedData.updatedFiles[AssetFileName]).toEqual(AssetFileWithoutBase64)
+  })
+
+  it('Downloads the base 64 for assets and stores them in the project if the user is not signed in', async () => {
+    const { projectId, capturedData, dispatchFn } = setupTest()
+    await triggerForkProject(dispatchFn, startProject, projectId, '', notLoggedIn)
+    await delay(20)
+    expect(capturedData.newProjectId).toBeDefined()
+    expect(capturedData.newProjectId).not.toEqual(projectId)
+    expect(mockDownloadedAssetsLog[projectId]).toEqual([AssetFileName])
+    expect(mockUploadedAssetsLog[capturedData.newProjectId!]).toBeUndefined()
+    expect(mockSaveLog[capturedData.newProjectId!]).toBeUndefined()
+    expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeDefined()
+    expect(localProjects[localProjectKey(capturedData.newProjectId!)]!.model).toEqual({
+      ...startProject,
+      forkedFromProjectId: projectId,
+      projectContents: addFileToProjectContents(
+        ModelChange.projectContents,
+        AssetFileName,
+        assetFile(base64Contents),
+      ),
+    })
+    expect(capturedData.updatedFiles[AssetFileName]).toEqual(AssetFileWithBase64)
+  })
+
+  it('Does not download or upload anything if the original project constains the base 64 and the user is not signed in', async () => {
+    const { projectId, capturedData, dispatchFn } = setupTest()
+    await triggerForkProject(dispatchFn, startProjectIncludingBase64, projectId, '', notLoggedIn)
+    await delay(20)
+    expect(capturedData.newProjectId).toBeDefined()
+    expect(capturedData.newProjectId).not.toEqual(projectId)
+    expect(mockDownloadedAssetsLog[projectId]).toEqual([])
+    expect(mockUploadedAssetsLog[capturedData.newProjectId!]).toBeUndefined()
+    expect(mockSaveLog[capturedData.newProjectId!]).toBeUndefined()
+    expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeDefined()
+    expect(localProjects[localProjectKey(capturedData.newProjectId!)]!.model).toEqual({
+      ...startProjectIncludingBase64,
+      forkedFromProjectId: projectId,
+    })
+    expect(capturedData.updatedFiles[AssetFileName]).toEqual(AssetFileWithBase64)
   })
 })
