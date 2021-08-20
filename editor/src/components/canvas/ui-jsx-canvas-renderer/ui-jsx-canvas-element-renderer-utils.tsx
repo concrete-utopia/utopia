@@ -425,13 +425,12 @@ function renderJSXElement(
       imports,
     )
   } else {
-    const childrenOrNull = childrenElements.length !== 0 ? childrenElements : null
     return renderComponentUsingJsxFactoryFunction(
       inScope,
       jsxFactoryFunctionName,
       FinalElement,
       finalPropsIcludingElementPath,
-      childrenOrNull,
+      ...childrenElements,
     )
   }
 }
@@ -518,14 +517,7 @@ export function renderComponentUsingJsxFactoryFunction(
       throw new Error(`Unable to find factory function ${factoryFunctionName} in scope.`)
     }
   }
-  // This is disgusting, but we want to make sure that if there is only one child it isn't wrapped in an array,
-  // since that code that uses `React.Children.only`
-  const childrenToRender = children.map((innerChildren) =>
-    innerChildren != null && Array.isArray(innerChildren) && innerChildren.length === 1
-      ? innerChildren[0]
-      : innerChildren,
-  )
-  return factoryFunction.call(null, type, fixedProps, ...childrenToRender)
+  return factoryFunction.call(null, type, fixedProps, ...children)
 }
 
 function fixStyleObjectRemoveCommentOnlyValues(props: Readonly<unknown>): any {
