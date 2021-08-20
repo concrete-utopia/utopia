@@ -3,6 +3,7 @@ import { MapLike } from 'typescript'
 import { right } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
   emptyAttributeMetadatada,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
@@ -10,10 +11,22 @@ import {
 } from '../../../core/shared/element-template'
 import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
-import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
+import { fastForEach } from '../../../core/shared/utils'
+
+function clearDescendantsForPath(
+  metadataToMutate: ElementInstanceMetadataMap,
+  pathPrefixToDelete: string,
+): void {
+  fastForEach(Object.keys(metadataToMutate), (pathString) => {
+    if (pathString.startsWith(pathPrefixToDelete)) {
+      delete metadataToMutate[pathString]
+    }
+  })
+}
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
@@ -57,7 +70,9 @@ export function buildSpyWrappedElement(
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
       updateInvalidatedPaths((current) => current, 'invalidate')
-      metadataContext.current.spyValues.metadata[EP.toComponentId(elementPath)] = instanceMetadata
+      const elementPathString = EP.toComponentId(elementPath)
+      clearDescendantsForPath(metadataContext.current.spyValues.metadata, elementPathString)
+      metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
     }
   }
   const spyWrapperProps: SpyWrapperProps = {
