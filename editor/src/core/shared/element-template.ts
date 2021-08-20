@@ -1065,7 +1065,7 @@ export function jsxElementWithoutUID(
 }
 
 export function utopiaJSXComponent(
-  name: string,
+  name: string | null,
   isFunction: boolean,
   declarationSyntax: FunctionDeclarationSyntax,
   blockOrExpression: BlockOrExpression,
@@ -1267,7 +1267,7 @@ export type BlockOrExpression = 'block' | 'parenthesized-expression' | 'expressi
 
 export interface UtopiaJSXComponent {
   type: 'UTOPIA_JSX_COMPONENT'
-  name: string
+  name: string | null
   /**
    * isFunction is true if we are talking about a Function Component
    * isFunction false means that this is an exported Element with no props

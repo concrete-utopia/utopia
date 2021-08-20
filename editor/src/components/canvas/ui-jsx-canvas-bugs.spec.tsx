@@ -285,4 +285,168 @@ export default function App(props) {
       "
     `)
   })
+  it(`#1737 - Parser is broken for 'export const thing = "hello"'`, () => {
+    const result = testCanvasRenderInlineMultifile(
+      null,
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard-entity'>
+    <Scene
+      data-label='Imported App'
+      data-uid='scene-1-entity'
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app-entity' />
+    </Scene>
+  </Storyboard>
+)`,
+      {
+        '/src/app.js': `import * as React from 'react'
+import DefaultFunction, { Card, thing } from '/src/card.js'
+export var App = (props) => {
+  return (
+    <div
+      data-uid='app-outer-div'
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#FFFFFF',
+      }}
+    >
+      <Card
+        data-uid='card-instance'
+        style={{
+          position: 'absolute',
+          left: 67,
+          top: 0,
+          width: 133,
+          height: 300,
+        }}
+      />
+      {thing}
+      <DefaultFunction />
+    </div>
+  )
+}`,
+        '/src/card.js': `import * as React from 'react'
+import { Rectangle } from 'utopia-api'
+export var Card = (props) => {
+  return (
+    <div
+      data-uid='card-outer-div'
+      style={{ ...props.style }}
+    >
+      <div
+        data-uid='card-inner-div'
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 50,
+          height: 50,
+          backgroundColor: 'red',
+        }}
+      />
+      <Rectangle
+        data-uid='card-inner-rectangle'
+        style={{
+          position: 'absolute',
+          left: 100,
+          top: 200,
+          width: 50,
+          height: 50,
+          backgroundColor: 'blue',
+        }}
+      />
+    </div>
+  )
+}
+
+export const thing = 'hello'
+
+export default function () {
+  return <div>Default Function Time</div>
+}`,
+      },
+    )
+    expect(result).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial;\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity\\"
+          data-utopia-root-element-path=\\"storyboard-entity\\"
+        >
+          <div
+            data-utopia-scene-id=\\"storyboard-entity/scene-1-entity\\"
+            data-paths=\\"storyboard-entity/scene-1-entity storyboard-entity\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 0;
+              top: 0;
+              width: 375px;
+              height: 812px;
+            \\"
+            data-uid=\\"scene-1-entity storyboard-entity\\"
+            data-label=\\"Imported App\\"
+          >
+            <div
+              data-uid=\\"app-outer-div app-entity\\"
+              style=\\"
+                position: relative;
+                width: 100%;
+                height: 100%;
+                background-color: #ffffff;
+              \\"
+              data-paths=\\"storyboard-entity/scene-1-entity/app-entity\\"
+            >
+              <div
+                data-uid=\\"card-outer-div card-instance\\"
+                style=\\"
+                  position: absolute;
+                  left: 67px;
+                  top: 0;
+                  width: 133px;
+                  height: 300px;
+                \\"
+              >
+                <div
+                  data-uid=\\"card-inner-div\\"
+                  style=\\"
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 50px;
+                    height: 50px;
+                    background-color: red;
+                  \\"
+                ></div>
+                <div
+                  style=\\"
+                    position: absolute;
+                    left: 100px;
+                    top: 200px;
+                    width: 50px;
+                    height: 50px;
+                    background-color: blue;
+                  \\"
+                  data-uid=\\"card-inner-rectangle\\"
+                  data-utopia-do-not-traverse=\\"true\\"
+                ></div>
+              </div>
+              hello
+              <div>Default Function Time</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
 })

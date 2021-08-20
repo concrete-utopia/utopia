@@ -16,6 +16,10 @@ import {
   ElementPath,
   isParseSuccess,
   isTextFile,
+  isExportDefaultNamed,
+  isExportDefaultModifier,
+  isExportDefaultFunction,
+  isExportDefaultExpression,
 } from '../../core/shared/project-file-types'
 import {
   Either,
@@ -365,8 +369,19 @@ export const UiJsxCanvas = betterReactMemo(
                 for (const s of Object.keys(scope)) {
                   if (s in exportsDetail.namedExports) {
                     filteredScope[s] = scope[s]
-                  } else if (s === exportsDetail.defaultExport?.name) {
-                    filteredScope['default'] = scope[s]
+                  } else if (exportsDetail.defaultExport != null) {
+                    if (
+                      (isExportDefaultNamed(exportsDetail.defaultExport) ||
+                        isExportDefaultModifier(exportsDetail.defaultExport)) &&
+                      s === exportsDetail.defaultExport.name
+                    ) {
+                      filteredScope['default'] = scope[s]
+                    } else if (
+                      isExportDefaultFunction(exportsDetail.defaultExport) ||
+                      isExportDefaultExpression(exportsDetail.defaultExport)
+                    ) {
+                      filteredScope['default'] = scope['default']
+                    }
                   }
                 }
                 return right(filteredScope)
@@ -496,7 +511,7 @@ export const UiJsxCanvas = betterReactMemo(
 
 function useGetStoryboardRoot(
   focusedElementPath: ElementPath | null,
-  topLevelElementsMap: Map<string, UtopiaJSXComponent>,
+  topLevelElementsMap: Map<string | null, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,

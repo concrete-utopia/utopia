@@ -126,21 +126,27 @@ export function getPropertyNameText(
   }
 }
 
-export function isExported(node: TS.Node): boolean {
-  if (TS.isExportAssignment(node)) {
-    return true
-  } else if (node.modifiers == null) {
-    return false
-  } else {
-    return node.modifiers.some((modifier) => modifier.kind === TS.SyntaxKind.ExportKeyword)
-  }
-}
-
-export function isDefaultExport(node: TS.Node): boolean {
+export function markedWithKeyword(node: TS.Node, keyword: TS.SyntaxKind): boolean {
   if (node.modifiers == null) {
     return false
   } else {
-    return node.modifiers.some((modifier) => modifier.kind === TS.SyntaxKind.DefaultKeyword)
+    return node.modifiers.some((modifier) => modifier.kind === keyword)
+  }
+}
+
+export function markedAsDefault(node: TS.Node): boolean {
+  return markedWithKeyword(node, TS.SyntaxKind.DefaultKeyword)
+}
+
+export function markedAsExported(node: TS.Node): boolean {
+  return markedWithKeyword(node, TS.SyntaxKind.ExportKeyword)
+}
+
+export function isExported(node: TS.Node): boolean {
+  if (TS.isExportAssignment(node)) {
+    return true
+  } else {
+    return markedAsExported(node)
   }
 }
 
@@ -396,6 +402,7 @@ function turnCodeSnippetIntoSourceMapNodes(
 ): typeof SourceNode {
   const LetterOrNumber = /[a-zA-Z0-9]/
   const NewLine = /\n/
+  const FunctionStart = /^ *\(/
   let nodes: Array<typeof SourceNode> = []
   let currentLine = startLine
   let currentCol = startChar
@@ -405,6 +412,7 @@ function turnCodeSnippetIntoSourceMapNodes(
   let exportFound = false
   let defaultFound = false
   let lastKeywordWasExport = false
+  let i = 0
   function flushBuffer() {
     // We should ignore the first "export" and "default" keywords we find if the node is exported
     const strippingExport = nodeIsExported && !exportFound && currentStringBuffer === 'export'
@@ -417,6 +425,16 @@ function turnCodeSnippetIntoSourceMapNodes(
     } else if (strippingDefault) {
       defaultFound = true
     } else {
+      // When there's an `export default function()` we strip off the `export default`, but without
+      // that it becomes an invalid chunk of JavaScript without a name so add in a default one.
+      if (
+        exportFound &&
+        defaultFound &&
+        currentStringBuffer === 'function' &&
+        FunctionStart.test(sourceCode.substr(i))
+      ) {
+        currentStringBuffer = 'function defaultFunctionName'
+      }
       const node = new SourceNode(
         bufferStartLine + 1,
         bufferStartChar + 1,
@@ -434,7 +452,7 @@ function turnCodeSnippetIntoSourceMapNodes(
     currentLine += 1
     currentCol = 0
   }
-  for (let i = 0; i < sourceCode.length; i++) {
+  for (; i < sourceCode.length; i++) {
     const currentChar = sourceCode[i]
     // if the current char is not a letter or number, make a cut and push the buffer to a source node
     if (
@@ -934,7 +952,7 @@ export function parseAttributeOtherJavaScript(
   imports: Imports,
   topLevelNames: Array<string>,
   propsObjectName: string | null,
-  expression: TS.Expression,
+  expression: TS.Node,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttributeOtherJavaScript>> {
@@ -1084,7 +1102,7 @@ function parseJSXArbitraryBlock(
   )
 }
 
-function parseAttributeExpression(
+export function parseAttributeExpression(
   sourceFile: TS.SourceFile,
   sourceText: string,
   filename: string,
