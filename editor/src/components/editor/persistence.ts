@@ -5,7 +5,7 @@ import {
 } from '../../common/persistence'
 import { checkProjectOwnership } from '../../common/server'
 import Utils from '../../utils/utils'
-import { EditorDispatch } from './action-types'
+import { EditorAction, EditorDispatch } from './action-types'
 import { load, loadSampleProject, newProject } from './actions/actions'
 import {
   setProjectID,
@@ -14,14 +14,17 @@ import {
   setForkedFromProjectID,
   setProjectName,
   addStoryboardFile,
+  updateFile,
 } from './actions/action-creators'
 import {
   createNewProjectID,
   loadProject,
   saveAssets,
-  saveImagesFromProject,
   saveThumbnail,
   updateSavedProject,
+  AssetToSave,
+  assetToSave,
+  downloadAssetsFromProject,
 } from './server'
 import {
   createNewProjectName,
@@ -39,7 +42,16 @@ import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { notice } from '../common/notice'
 import { replaceAll } from '../../core/shared/string-utils'
 import { isLoggedIn, isNotLoggedIn, LoginState } from '../../common/user'
-import { getContentsTreeFileFromString } from '../assets'
+import {
+  getAllProjectAssetFiles,
+  getContentsTreeFileFromString,
+  addFileToProjectContents,
+} from '../assets'
+import { getFileExtension } from '../../core/shared/file-utils'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { AssetFile, ImageFile } from '../../core/shared/project-file-types'
+import { assetFile, imageFile, isImageFile } from '../../core/model/project-file-utils'
+const urljoin = require('url-join')
 
 interface NeverSaved {
   type: 'never-saved'
@@ -300,22 +312,79 @@ export async function saveToServer(
 
 export async function triggerForkProject(
   dispatch: EditorDispatch,
-  editor: EditorState,
+  persistentModel: PersistentModel,
+  oldProjectId: string | null,
+  projectName: string,
   loginState: LoginState,
 ): Promise<void> {
-  const oldProjectId = editor.id
   const newProjectId = await createNewProjectID()
-  const updatedEditor = {
-    ...editor,
-    forkedFromProjectId: oldProjectId,
-    id: newProjectId,
-    name: `${editor.projectName} (forked)`,
+
+  const updatedName = `${projectName} (forked)`
+
+  const allProjectAssets = getAllProjectAssetFiles(persistentModel.projectContents)
+  const allProjectAssetsDownloaded = await downloadAssetsFromProject(oldProjectId, allProjectAssets)
+
+  let updatedProjectContents = persistentModel.projectContents
+  let updateFileActions: Array<EditorAction> = []
+  let assetsToSave: Array<AssetToSave> = []
+
+  if (isLoggedIn(loginState)) {
+    assetsToSave = mapDropNulls((fileWithName) => {
+      const fileType = getFileExtension(fileWithName.fileName)
+      return fileWithName.file.base64 == null
+        ? null
+        : assetToSave(fileType, fileWithName.file.base64, fileWithName.fileName)
+    }, allProjectAssetsDownloaded)
+    updateFileActions = allProjectAssetsDownloaded.map(({ fileName: assetPath, file: asset }) =>
+      updateFile(assetPath, scrubBase64FromFile(asset), true),
+    )
+    updatedProjectContents = allProjectAssetsDownloaded.reduce(
+      (workingProjectContents, { fileName: assetPath, file: asset }) => {
+        return addFileToProjectContents(
+          workingProjectContents,
+          assetPath,
+          scrubBase64FromFile(asset),
+        )
+      },
+      persistentModel.projectContents,
+    )
+  } else {
+    updateFileActions = allProjectAssetsDownloaded.map(({ fileName: assetPath, file: asset }) =>
+      updateFile(assetPath, asset, true),
+    )
+    updatedProjectContents = allProjectAssetsDownloaded.reduce(
+      (workingProjectContents, { fileName: assetPath, file: asset }) => {
+        return addFileToProjectContents(workingProjectContents, assetPath, asset)
+      },
+      persistentModel.projectContents,
+    )
   }
-  await save(updatedEditor, dispatch, loginState, 'both', true)
+
+  const updatedPersistentModel = {
+    ...persistentModel,
+    forkedFromProjectId: oldProjectId,
+    projectContents: updatedProjectContents,
+  }
+
+  await saveInner(
+    dispatch,
+    newProjectId,
+    updatedName,
+    loginState,
+    updatedPersistentModel,
+    updatedName,
+    true,
+  )
+
+  if (assetsToSave.length > 0) {
+    saveAssets(newProjectId, assetsToSave)
+  }
+
   dispatch([
     setProjectID(newProjectId),
-    setProjectName(editor.projectName + ' (forked)'),
+    setProjectName(updatedName),
     setForkedFromProjectID(oldProjectId),
+    ...updateFileActions,
   ])
 }
 
@@ -414,21 +483,54 @@ export async function save(
   saveType: SaveType,
   forceServerSave: boolean,
 ): Promise<void> {
-  const modelChange =
-    saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
-  const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
+  const projectId = state.id
+  const alreadyExistsLocally = projectId != null && (await projectIsStoredLocally(projectId))
+  const isFork = !alreadyExistsLocally && !(await checkCanSaveProject(projectId))
+  if (isFork) {
+    return triggerForkProject(
+      dispatch,
+      persistentModelFromEditorModel(state),
+      projectId,
+      state.projectName,
+      loginState,
+    )
+  } else {
+    const modelChange =
+      saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
+    const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
+    return saveInner(
+      dispatch,
+      projectId,
+      state.projectName,
+      loginState,
+      modelChange,
+      nameChange,
+      forceServerSave,
+    )
+  }
+}
+
+async function saveInner(
+  dispatch: EditorDispatch,
+  projectId: string | null,
+  projectName: string,
+  loginState: LoginState,
+  modelChange: PersistentModel | null,
+  nameChange: string | null,
+  forceServerSave: boolean,
+): Promise<void> {
   try {
     if (isLoggedIn(loginState)) {
       return saveToServer(
         dispatch,
-        state.id,
-        state.projectName,
+        projectId,
+        projectName,
         modelChange,
         nameChange,
         forceServerSave,
       )
     } else {
-      return saveToLocalStorage(dispatch, state.id, state.projectName, modelChange, nameChange)
+      return saveToLocalStorage(dispatch, projectId, projectName, modelChange, nameChange)
     }
   } catch (error) {
     console.error('Save not successful', error)
@@ -633,6 +735,41 @@ async function fetchLocalProject(projectId: string): Promise<LocalProject> {
   return fetchLocalProjectCommon(projectId) as Promise<LocalProject>
 }
 
+function scrubBase64FromFile(file: ImageFile | AssetFile): ImageFile | AssetFile {
+  if (isImageFile(file)) {
+    return imageFile(undefined, undefined, file.width, file.height, file.hash)
+  } else {
+    return assetFile(undefined)
+  }
+}
+
+function prepareLocalProjectAssetsForUpload(
+  model: PersistentModel,
+): { assetsToUpload: Array<AssetToSave>; updatedModel: PersistentModel } {
+  const allProjectAssets = getAllProjectAssetFiles(model.projectContents)
+  let assetsToUpload: Array<AssetToSave> = []
+
+  const updatedProjectContents = allProjectAssets.reduce(
+    (workingProjectContents, { fileName: assetPath, file: asset }) => {
+      const fileType = getFileExtension(assetPath)
+      if (asset.base64 != null) {
+        assetsToUpload.push(assetToSave(fileType, asset.base64, assetPath))
+      }
+      const updatedFile = scrubBase64FromFile(asset)
+      return addFileToProjectContents(workingProjectContents, assetPath, updatedFile)
+    },
+    model.projectContents,
+  )
+
+  return {
+    assetsToUpload: assetsToUpload,
+    updatedModel: {
+      ...model,
+      projectContents: updatedProjectContents,
+    },
+  }
+}
+
 export async function loadFromLocalStorage(
   projectId: string,
   dispatch: EditorDispatch,
@@ -650,9 +787,12 @@ export async function loadFromLocalStorage(
     await load(dispatch, localProject.model, projectName, projectId, workers, renderEditorRoot)
     if (shouldUploadToServer) {
       // Upload the project now that the user has signed in
-      saveImagesFromProject(projectId, localProject.model).then((modelWithReplacedImages) => {
-        saveToServer(dispatch, projectId, projectName, modelWithReplacedImages, projectName, false)
-      })
+      const { assetsToUpload, updatedModel } = prepareLocalProjectAssetsForUpload(
+        localProject.model,
+      )
+      saveToServer(dispatch, projectId, projectName, updatedModel, projectName, false).then((_) =>
+        saveAssets(projectId, assetsToUpload),
+      )
     }
   }
 }

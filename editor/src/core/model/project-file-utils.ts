@@ -479,9 +479,10 @@ export function imageFile(
   }
 }
 
-export function assetFile(): AssetFile {
+export function assetFile(base64: string | undefined): AssetFile {
   return {
     type: 'ASSET_FILE',
+    base64: base64,
   }
 }
 

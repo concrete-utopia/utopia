@@ -8,18 +8,19 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import { imageFile, isImageFile } from '../../core/model/project-file-utils'
-import { ImageFile } from '../../core/shared/project-file-types'
+import { assetFile, imageFile, isImageFile } from '../../core/model/project-file-utils'
+import { AssetFile, ImageFile, isAssetFile } from '../../core/shared/project-file-types'
 import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
 import { LoginState } from '../../uuiui-deps'
 const urljoin = require('url-join')
 import JSZip from 'jszip'
-import { addFileToProjectContents, walkContentsTree } from '../assets'
+import { addFileToProjectContents, AssetFileWithFileName, walkContentsTree } from '../assets'
 import { isLoginLost, isNotLoggedIn } from '../../common/user'
 import { notice } from '../common/notice'
 import { EditorDispatch, isLoggedIn } from './action-types'
 import { setLoginState, showToast, removeToast } from './actions/action-creators'
 import { isLocal, isSafeToClose } from './persistence'
+import { getFileExtension } from '../../core/shared/file-utils'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -206,13 +207,28 @@ export async function deleteAssetFile(projectId: string, fileName: string): Prom
   }
 }
 
+function getMimeStrippedBase64(base64: string): string {
+  const splitBase64 = base64.split(',')
+  switch (splitBase64.length) {
+    case 1:
+      // No mime prefix.
+      return base64
+    case 2:
+      // Mime prefix.
+      return splitBase64[1]
+    default:
+      throw new Error('Invalid Base64 content for asset.')
+  }
+}
+
 async function saveAssetRequest(
   projectId: string,
   fileType: string,
   base64: string,
   fileName: string,
 ): Promise<void> {
-  const asset = Buffer.from(base64, 'base64')
+  const mimeStrippedBase64 = getMimeStrippedBase64(base64)
+  const asset = Buffer.from(mimeStrippedBase64, 'base64')
   const url = assetURL(projectId, fileName)
   const response = await fetch(url, {
     method: 'POST',
@@ -244,10 +260,18 @@ export async function saveAsset(
   }
 }
 
-interface AssetToSave {
+export interface AssetToSave {
   fileType: string
   base64: string
   fileName: string
+}
+
+export function assetToSave(fileType: string, base64: string, fileName: string): AssetToSave {
+  return {
+    fileType: fileType,
+    base64: base64,
+    fileName: fileName,
+  }
 }
 
 export async function saveAssets(projectId: string, assets: Array<AssetToSave>): Promise<void> {
@@ -256,59 +280,6 @@ export async function saveAssets(projectId: string, assets: Array<AssetToSave>):
   )
   await Promise.all(promises)
   return
-}
-
-export async function saveImagesFromProject(
-  projectId: string,
-  model: PersistentModel,
-): Promise<PersistentModel> {
-  let promises: Array<Promise<{ contentId: string; projectContent: ImageFile }>> = []
-
-  walkContentsTree(model.projectContents, (fullPath, projectContent) => {
-    if (
-      isImageFile(projectContent) &&
-      projectContent.base64 != null &&
-      projectContent.imageType != null
-    ) {
-      try {
-        promises.push(
-          saveAssetRequest(
-            projectId,
-            projectContent.imageType,
-            projectContent.base64,
-            fullPath,
-          ).then(() => {
-            return { contentId: fullPath, projectContent: projectContent }
-          }),
-        )
-      } catch (e) {
-        // FIXME Client should show an error if server requests fail
-        console.error(e)
-      }
-    }
-  })
-
-  return Promise.all(promises).then((updatedFiles) => {
-    const updatedProjectContents = updatedFiles.reduce(
-      (workingProjectContents, { contentId, projectContent }) => {
-        // Scrub the image type and base64
-        const updatedFile = imageFile(
-          undefined,
-          undefined,
-          projectContent.width,
-          projectContent.height,
-          projectContent.hash,
-        )
-        return addFileToProjectContents(workingProjectContents, contentId, updatedFile)
-      },
-      model.projectContents,
-    )
-
-    return {
-      ...model,
-      projectContents: updatedProjectContents,
-    }
-  })
 }
 
 export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promise<void> {
@@ -437,4 +408,63 @@ export function startPollingLoginState(
     }
     previousLoginState = loginState
   }, 5000)
+}
+
+async function extractBase64FromBlob(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = async () => {
+      resolve(reader.result as string)
+    }
+    reader.onerror = (error) => {
+      reject(error)
+    }
+    reader.readAsDataURL(blob)
+  })
+}
+
+async function downloadAssetFromProject(
+  projectId: string,
+  fileWithName: AssetFileWithFileName,
+): Promise<AssetFileWithFileName> {
+  if (fileWithName.file.base64 != undefined) {
+    return fileWithName
+  } else {
+    const baseUrl = window.top.location.origin
+    const assetUrl = urljoin(baseUrl, 'p', projectId, fileWithName.fileName)
+    const assetResponse = await fetch(assetUrl, {
+      method: 'GET',
+      credentials: 'include',
+    })
+    if (assetResponse.ok) {
+      const blob = await assetResponse.blob()
+      const base64 = await extractBase64FromBlob(blob)
+
+      return {
+        ...fileWithName,
+        file: {
+          ...fileWithName.file,
+          base64: base64,
+        },
+      }
+    } else {
+      console.error(
+        `Failed to retrieve asset ${fileWithName.fileName} (${assetResponse.status}): ${assetResponse.statusText}`,
+      )
+      return fileWithName
+    }
+  }
+}
+
+export async function downloadAssetsFromProject(
+  projectId: string | null,
+  allProjectAssets: Array<AssetFileWithFileName>,
+): Promise<Array<AssetFileWithFileName>> {
+  if (projectId == null) {
+    return allProjectAssets
+  } else {
+    const allPromises = allProjectAssets.map((asset) => downloadAssetFromProject(projectId, asset))
+    return Promise.all(allPromises)
+  }
 }
