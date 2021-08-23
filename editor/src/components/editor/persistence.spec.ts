@@ -62,12 +62,12 @@ jest.mock('./server', () => ({
     allProjectAssets: Array<AssetFileWithFileName>,
   ): Promise<Array<AssetFileWithFileName>> => {
     const downloadedAssets = allProjectAssets
-      .filter((a) => a.asset.base64 == null)
-      .map((a) => a.assetPath)
+      .filter((a) => a.file.base64 == null)
+      .map((a) => a.fileName)
     mockDownloadedAssetsLog[projectId!] = downloadedAssets
     return allProjectAssets.map((assetWithFile) => ({
       ...assetWithFile,
-      asset: AssetFileWithBase64,
+      file: AssetFileWithBase64,
     }))
   },
   createNewProjectID: async (): Promise<string> => {

@@ -19,8 +19,8 @@ import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 
 export interface AssetFileWithFileName {
-  assetPath: string
-  asset: ImageFile | AssetFile
+  fileName: string
+  file: ImageFile | AssetFile
 }
 
 export function getAllProjectAssetFiles(
@@ -31,8 +31,8 @@ export function getAllProjectAssetFiles(
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isImageFile(file) || isAssetFile(file)) {
       allProjectAssets.push({
-        assetPath: fullPath,
-        asset: file,
+        fileName: fullPath,
+        file: file,
       })
     }
   })

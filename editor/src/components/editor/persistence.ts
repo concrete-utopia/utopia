@@ -330,16 +330,16 @@ export async function triggerForkProject(
 
   if (isLoggedIn(loginState)) {
     assetsToSave = mapDropNulls((fileWithName) => {
-      const fileType = getFileExtension(fileWithName.assetPath)
-      return fileWithName.asset.base64 == null
+      const fileType = getFileExtension(fileWithName.fileName)
+      return fileWithName.file.base64 == null
         ? null
-        : assetToSave(fileType, fileWithName.asset.base64, fileWithName.assetPath)
+        : assetToSave(fileType, fileWithName.file.base64, fileWithName.fileName)
     }, allProjectAssetsDownloaded)
-    updateFileActions = allProjectAssetsDownloaded.map(({ assetPath, asset }) =>
+    updateFileActions = allProjectAssetsDownloaded.map(({ fileName: assetPath, file: asset }) =>
       updateFile(assetPath, scrubBase64FromFile(asset), true),
     )
     updatedProjectContents = allProjectAssetsDownloaded.reduce(
-      (workingProjectContents, { assetPath, asset }) => {
+      (workingProjectContents, { fileName: assetPath, file: asset }) => {
         return addFileToProjectContents(
           workingProjectContents,
           assetPath,
@@ -349,11 +349,11 @@ export async function triggerForkProject(
       persistentModel.projectContents,
     )
   } else {
-    updateFileActions = allProjectAssetsDownloaded.map(({ assetPath, asset }) =>
+    updateFileActions = allProjectAssetsDownloaded.map(({ fileName: assetPath, file: asset }) =>
       updateFile(assetPath, asset, true),
     )
     updatedProjectContents = allProjectAssetsDownloaded.reduce(
-      (workingProjectContents, { assetPath, asset }) => {
+      (workingProjectContents, { fileName: assetPath, file: asset }) => {
         return addFileToProjectContents(workingProjectContents, assetPath, asset)
       },
       persistentModel.projectContents,
@@ -750,7 +750,7 @@ function prepareLocalProjectAssetsForUpload(
   let assetsToUpload: Array<AssetToSave> = []
 
   const updatedProjectContents = allProjectAssets.reduce(
-    (workingProjectContents, { assetPath, asset }) => {
+    (workingProjectContents, { fileName: assetPath, file: asset }) => {
       const fileType = getFileExtension(assetPath)
       if (asset.base64 != null) {
         assetsToUpload.push(assetToSave(fileType, asset.base64, assetPath))

@@ -428,11 +428,11 @@ async function downloadAssetFromProject(
   projectId: string,
   fileWithName: AssetFileWithFileName,
 ): Promise<AssetFileWithFileName> {
-  if (fileWithName.asset.base64 != undefined) {
+  if (fileWithName.file.base64 != undefined) {
     return fileWithName
   } else {
     const baseUrl = window.top.location.origin
-    const assetUrl = urljoin(baseUrl, 'p', projectId, fileWithName.assetPath)
+    const assetUrl = urljoin(baseUrl, 'p', projectId, fileWithName.fileName)
     const assetResponse = await fetch(assetUrl, {
       method: 'GET',
       credentials: 'include',
@@ -443,14 +443,14 @@ async function downloadAssetFromProject(
 
       return {
         ...fileWithName,
-        asset: {
-          ...fileWithName.asset,
+        file: {
+          ...fileWithName.file,
           base64: base64,
         },
       }
     } else {
       console.error(
-        `Failed to retrieve asset ${fileWithName.assetPath} (${assetResponse.status}): ${assetResponse.statusText}`,
+        `Failed to retrieve asset ${fileWithName.fileName} (${assetResponse.status}): ${assetResponse.statusText}`,
       )
       return fileWithName
     }
