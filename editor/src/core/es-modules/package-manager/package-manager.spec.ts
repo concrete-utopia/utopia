@@ -3,7 +3,11 @@ import * as fileWithImports from '../test-cases/file-with-imports.json'
 import * as fileWithLocalImport from '../test-cases/file-with-local-import.json'
 import * as reactSpringServerResponse from '../test-cases/react-spring-server-response.json'
 import * as antdPackagerResponse from '../test-cases/antd-packager-response.json'
-import { getRequireFn, getDependencyTypeDefinitions } from './package-manager'
+import {
+  getRequireFn,
+  getDependencyTypeDefinitions,
+  createResolvingRemoteDependencyError,
+} from './package-manager'
 import { evaluator } from '../evaluator/evaluator'
 import {
   extractNodeModulesFromPackageResponse,
@@ -237,7 +241,9 @@ describe('ES Dependency Manager — Real-life packages', () => {
       const antd = req('/src/index.js', 'antd')
       expect(Object.keys(antd)).not.toHaveLength(0)
       expect(antd).toHaveProperty('Button')
-      req('/src/index.js', 'antd/dist/antd.css')
+      expect(() => req('/src/index.js', 'antd/dist/antd.css')).toThrow(
+        createResolvingRemoteDependencyError('antd/dist/antd.css'),
+      )
     })
   })
 })
@@ -316,8 +322,9 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
 
         const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {})
-        const styleCss = req('/src/index.js', 'mypackage/dist/style.css')
-        expect(Object.keys(styleCss)).toHaveLength(0)
+        expect(() => req('/src/index.js', 'mypackage/dist/style.css')).toThrow(
+          createResolvingRemoteDependencyError('mypackage/dist/style.css'),
+        )
       },
     )
   })
