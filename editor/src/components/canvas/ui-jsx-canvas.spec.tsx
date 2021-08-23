@@ -1962,4 +1962,109 @@ describe('UiJsxCanvas render multifile projects', () => {
       "
     `)
   })
+
+  it('Properly renders an element that uses props.children', () => {
+    const printedDom = testCanvasRenderInline(
+      null,
+      `
+      import * as React from 'react'
+      import { View, Storyboard, Scene } from 'utopia-api'
+
+      export var App = (props) => {
+        return (
+          <div
+            data-uid='outer-div'
+          >
+            <div
+              data-uid='aaa'
+              children={<div
+                data-uid='bbb'
+              />}
+            />
+            <div
+              data-uid='ccc'
+              children={[
+                <div
+                  data-uid='ddd'
+                />,
+                <div
+                  data-uid='eee'
+                />
+              ]}
+            />
+          </div>
+        )
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+    )
+    expect(printedDom).toMatchInlineSnapshot(`
+      "<div style=\\"all: initial;\\">
+        <div
+          id=\\"canvas-container\\"
+          style=\\"position: absolute;\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:outer-div utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+        >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+            style=\\"
+              position: absolute;
+              background-color: rgba(255, 255, 255, 1);
+              box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+              left: 0;
+              top: 0;
+              width: 400px;
+              height: 400px;
+            \\"
+            data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+          >
+            <div
+              data-uid=\\"outer-div app-entity\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div utopia-storyboard-uid/scene-aaa/app-entity\\"
+            >
+              <div
+                data-uid=\\"aaa\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa\\"
+              >
+                <div
+                  data-uid=\\"bbb~~~1\\"
+                  data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/bbb~~~1\\"
+                ></div>
+              </div>
+              <div
+                data-uid=\\"ccc\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
+              >
+                <div
+                  data-uid=\\"ddd~~~1\\"
+                  data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ddd~~~1\\"
+                ></div>
+                <div
+                  data-uid=\\"eee~~~2\\"
+                  data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/eee~~~2\\"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
 })

@@ -45,7 +45,6 @@ export function buildSpyWrappedElement(
     ...finalProps,
     key: EP.toComponentId(elementPath),
   }
-  const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
     /** This is not so nice, but the way to know if something is an emotion component is
      * that it adds some extra properties to the Element itself, like __emotion_base,
@@ -90,7 +89,7 @@ export function buildSpyWrappedElement(
       ...props,
       ...spyWrapperProps,
     },
-    childrenElementsOrNull,
+    ...childrenElements,
   )
 }
 
