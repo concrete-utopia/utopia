@@ -103,6 +103,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
+    case 'OPEN_CODE_EDITOR_FILE':
       return true
 
     case 'NEW':
@@ -146,7 +147,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
     case 'SET_PROP_WITH_ELEMENT_PATH':
-    case 'OPEN_CODE_EDITOR_FILE':
     case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
     case 'UPDATE_JSX_ELEMENT_NAME':
