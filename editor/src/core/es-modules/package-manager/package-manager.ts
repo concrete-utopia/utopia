@@ -26,9 +26,17 @@ export type EvaluationCache = { [path: string]: FileEvaluationCache }
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
+export const ResolvingRemoteDependencyErrorName = 'ResolvingRemoteDependencyError'
+
 export function createDependencyNotFoundError(importOrigin: string, toImport: string) {
   let error = new Error(`Could not find dependency: '${toImport}' relative to '${importOrigin}'`)
   error.name = DependencyNotFoundErrorName
+  return error
+}
+
+export function createResolvingRemoteDependencyError(toImport: string) {
+  let error = new Error(`Resolving remote dependency '${toImport}'...`)
+  error.name = ResolvingRemoteDependencyErrorName
   return error
 }
 
@@ -38,7 +46,6 @@ export const getCurriedEditorRequireFn = (
   evaluationCache: EvaluationCache,
 ): CurriedUtopiaRequireFn => {
   const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
-    // FIXME Update something in the state to show that we're downloading remote files
     moduleDownload.then((modulesToAdd: NodeModules) =>
       dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
     )
@@ -127,7 +134,7 @@ export function getRequireFn(
           onRemoteModuleDownload(moduleDownload)
         }
 
-        return {} // FIXME Throw or otherwise block further evaluation here
+        throw createResolvingRemoteDependencyError(toImport)
       }
     }
     throw createDependencyNotFoundError(importOrigin, toImport)

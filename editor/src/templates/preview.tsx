@@ -10,7 +10,10 @@ import { projectIsStoredLocally } from '../components/editor/persistence'
 import { loadProject } from '../components/editor/server'
 import { isProjectContentsUpdateMessage } from '../components/preview/preview-pane'
 import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packages'
-import { getRequireFn } from '../core/es-modules/package-manager/package-manager'
+import {
+  getRequireFn,
+  ResolvingRemoteDependencyErrorName,
+} from '../core/es-modules/package-manager/package-manager'
 import { pluck } from '../core/shared/array-utils'
 import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
 import { isTextFile, NodeModules } from '../core/shared/project-file-types'
@@ -276,12 +279,28 @@ const initPreview = () => {
           `Error processing the project files: the build result does not contain the preview file: ${previewJSFilePath}`,
         )
       } else {
-        /**
-         * require the js entry point file which will evaluate the module.
-         * the React entry point js file traditionally has a top level side effect,
-         * calling ReactDOM.render() which starts the Preview app.
-         */
-        requireFn('/', previewJSFilePath)
+        try {
+          /**
+           * require the js entry point file which will evaluate the module.
+           * the React entry point js file traditionally has a top level side effect,
+           * calling ReactDOM.render() which starts the Preview app.
+           */
+          requireFn('/', previewJSFilePath)
+        } catch (e) {
+          if (e?.name === ResolvingRemoteDependencyErrorName && e?.message != null) {
+            const loadingMessageDiv = document.createElement('div')
+            loadingMessageDiv.innerHTML = e.message
+            const loadingMessageStyle = [
+              `font-family: -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'`,
+              'font-size: 11px',
+              'cursor: default',
+            ].join('; ')
+            loadingMessageDiv.setAttribute('style', loadingMessageStyle)
+            document.body.append(loadingMessageDiv)
+          } else {
+            throw e
+          }
+        }
       }
     } else {
       throw new Error(

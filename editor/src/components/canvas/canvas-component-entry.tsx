@@ -23,6 +23,7 @@ import {
 import { ProjectContentTreeRoot } from '../assets'
 import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { DomWalkerProps, useDomWalker } from './dom-walker'
+import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 
 interface CanvasComponentEntryProps {}
 
@@ -75,7 +76,12 @@ export const CanvasComponentEntry = betterReactMemo(
             requireFn={canvasProps.curriedRequireFn}
             key={`canvas-error-boundary-${canvasProps.mountCount}`}
           >
-            <DomWalkerWrapper {...canvasProps} clearErrors={clearRuntimeErrors} />
+            <RemoteDependencyBoundary
+              projectContents={canvasProps.projectContents}
+              requireFn={canvasProps.curriedRequireFn}
+            >
+              <DomWalkerWrapper {...canvasProps} clearErrors={clearRuntimeErrors} />
+            </RemoteDependencyBoundary>
           </CanvasErrorBoundary>
         </div>
       )
@@ -167,6 +173,62 @@ export class CanvasErrorBoundary extends React.Component<
   render(): React.ReactNode {
     if (this.state.hasError) {
       return null
+    } else {
+      return this.props.children
+    }
+  }
+}
+
+interface RemoteDependencyBoundaryProps {
+  projectContents: ProjectContentTreeRoot
+  requireFn: CurriedUtopiaRequireFn | null
+}
+
+function maybeGetResolvingMessage(error: any): string | null {
+  if (error?.name === ResolvingRemoteDependencyErrorName && error?.message != null) {
+    return error.message
+  } else {
+    return null
+  }
+}
+
+interface RemoteDependencyBoundaryState {
+  resolvingMessage: string | null
+}
+export class RemoteDependencyBoundary extends React.Component<
+  RemoteDependencyBoundaryProps,
+  RemoteDependencyBoundaryState
+> {
+  constructor(props: RemoteDependencyBoundaryProps) {
+    super(props)
+    this.state = { resolvingMessage: null }
+  }
+
+  static getDerivedStateFromError(e: any): RemoteDependencyBoundaryState {
+    return {
+      resolvingMessage: maybeGetResolvingMessage(e),
+    }
+  }
+
+  componentDidUpdate(prevProps: RemoteDependencyBoundaryProps): void {
+    if (
+      prevProps.projectContents !== this.props.projectContents ||
+      prevProps.requireFn !== this.props.requireFn
+    ) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({ resolvingMessage: null })
+    }
+  }
+
+  componentDidCatch(error: Error): void {
+    if (error?.name !== ResolvingRemoteDependencyErrorName) {
+      throw error
+    }
+  }
+
+  render(): React.ReactNode {
+    if (this.state.resolvingMessage != null) {
+      return <div>{this.state.resolvingMessage}</div>
     } else {
       return this.props.children
     }
