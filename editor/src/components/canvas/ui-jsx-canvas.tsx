@@ -82,6 +82,7 @@ import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './c
 import { NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
 import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import { reduxDevtoolsLogMessage } from '../../core/shared/redux-devtools'
 
 applyUIDMonkeyPatch()
 
@@ -264,6 +265,7 @@ function useClearSpyMetadataOnRemount(
 export const UiJsxCanvas = betterReactMemo(
   'UiJsxCanvas',
   React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
+    reduxDevtoolsLogMessage('Canvas Render')
     const {
       offset,
       scale,

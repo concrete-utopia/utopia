@@ -2,6 +2,8 @@ import type { EditorAction } from '../../components/editor/action-types'
 import type { EditorStore } from '../../components/editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { pluck } from './array-utils'
+import { ElementInstanceMetadata, ElementInstanceMetadataMap } from './element-template'
+import { objectMap } from './object-utils'
 
 interface Connection {
   subscribe: (listener: (message: { type: string; payload: any }) => void) => () => void // adds a change listener. It will be called any time an action is dispatched from the monitor. Returns a function to unsubscribe the current listener.
@@ -55,11 +57,26 @@ maybeDevTools?.subscribe((message) => {
   }
 })
 
-const ActionsToOmit: Array<EditorAction['action']> = ['UPDATE_PREVIEW_CONNECTED']
+const ActionsToOmit: Array<EditorAction['action']> = ['UPDATE_PREVIEW_CONNECTED', 'LOAD']
+const ActionsWithoutPayload: Array<EditorAction['action']> = ['LOAD', 'UPDATE_CODE_RESULT_CACHE']
 
 let lastDispatchedStore: SanitizedState
 
 const PlaceholderMessage = '<<SANITIZED_FROM_DEVTOOLS>>'
+
+function simplifiedMetadata(elementMetadata: ElementInstanceMetadata) {
+  return {
+    ...elementMetadata,
+    props: PlaceholderMessage,
+  }
+}
+
+function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap) {
+  const sanitizedSpyData = objectMap((elementMetadata, key) => {
+    return simplifiedMetadata(elementMetadata)
+  }, metadata)
+  return sanitizedSpyData
+}
 
 type SanitizedState = ReturnType<typeof sanitizeLoggedState>
 function sanitizeLoggedState(store: EditorStore) {
@@ -67,21 +84,14 @@ function sanitizeLoggedState(store: EditorStore) {
     ...store,
     editor: {
       ...store.editor,
-      codeResultCache: {
-        ...store.editor.codeResultCache,
-        cache: PlaceholderMessage,
-        requireFn: PlaceholderMessage,
-        resolve: PlaceholderMessage,
-        evaluationCache: PlaceholderMessage,
-      },
+      spyMetadata: simplifiedMetadataMap(store.editor.jsxMetadata),
+      domMetadata: store.editor.domMetadata.map(simplifiedMetadata),
+      jsxMetadata: simplifiedMetadataMap(store.editor.jsxMetadata),
+      codeResultCache: PlaceholderMessage,
       nodeModules: {
-        ...store.editor.nodeModules,
-        files: PlaceholderMessage,
+        packageStatus: store.editor.nodeModules.packageStatus,
       },
-      canvas: {
-        ...store.editor.canvas,
-        base64Blobs: PlaceholderMessage,
-      },
+      canvas: PlaceholderMessage,
     },
     history: PlaceholderMessage,
     workers: PlaceholderMessage,
@@ -102,6 +112,9 @@ export function reduxDevtoolsSendActions(
     const filteredActions = actions
       .flat()
       .filter((action) => !ActionsToOmit.includes(action.action))
+      .map((action) =>
+        ActionsWithoutPayload.includes(action.action) ? { action: action.action } : action,
+      )
     if (filteredActions.length > 0) {
       const sanitizedStore = sanitizeLoggedState(newStore)
       const actionNames = pluck(filteredActions, 'action').join(' ')
