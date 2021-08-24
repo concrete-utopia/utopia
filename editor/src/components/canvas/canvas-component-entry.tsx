@@ -210,10 +210,7 @@ export class RemoteDependencyBoundary extends React.Component<
     }
   }
 
-  componentDidUpdate(
-    prevProps: RemoteDependencyBoundaryProps,
-    _prevState: RemoteDependencyBoundaryState,
-  ): void {
+  componentDidUpdate(prevProps: RemoteDependencyBoundaryProps): void {
     if (
       prevProps.projectContents !== this.props.projectContents ||
       prevProps.requireFn !== this.props.requireFn
@@ -223,7 +220,7 @@ export class RemoteDependencyBoundary extends React.Component<
     }
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+  componentDidCatch(error: Error): void {
     if (error?.name !== ResolvingRemoteDependencyErrorName) {
       throw error
     }
