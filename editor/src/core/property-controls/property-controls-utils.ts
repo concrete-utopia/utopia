@@ -53,6 +53,7 @@ import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
+import { absolutePathFromRelativePath } from '../../utils/path-utils'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -462,10 +463,16 @@ export function getPropertyControlsForTarget(
       if (filenameForLookup == null) {
         return null
       } else {
+        const absolutePath = absolutePathFromRelativePath(
+          underlyingFilePath,
+          false,
+          filenameForLookup,
+        )
         // If it's pointing at a path (as opposed to a package), strip off the filename extension.
-        const trimmedPath = filenameForLookup.startsWith('/')
-          ? filenameForLookup.replace(/\.(js|jsx|ts|tsx)$/, '')
-          : filenameForLookup
+        const trimmedPath = absolutePath.includes('/')
+          ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+          : absolutePath
+
         const nameLastPart = getJSXElementNameLastPart(element.name)
         if (
           propertyControlsInfo[trimmedPath] != null &&
