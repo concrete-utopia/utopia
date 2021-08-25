@@ -370,6 +370,9 @@ describe('Forking a project', () => {
     const dispatchFn: EditorDispatch = (actions: ReadonlyArray<EditorAction>) => {
       fastForEach(actions, (action) => {
         if (action.action === 'SET_PROJECT_ID') {
+          if (capturedData.newProjectId != undefined) {
+            fail(`Trying to repeatedly change the project ID`)
+          }
           capturedData.newProjectId = action.id
         } else if (action.action === 'UPDATE_FILE' && isAssetFile(action.file)) {
           capturedData.updatedFiles[action.filePath] = action.file
