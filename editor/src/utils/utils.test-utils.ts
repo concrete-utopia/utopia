@@ -211,7 +211,7 @@ export function createFakeMetadataForComponents(
   Utils.fastForEach(topLevelElements, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
       const sceneUID = createSceneUidFromIndex(index)
-      const componentUID = `${component.name}-${index}`
+      const componentUID = `${component.name ?? 'default'}-${index}`
       const frame = { x: 0, y: 0, width: 100, height: 100 }
       const fakeScene = defaultSceneElement(
         sceneUID,
@@ -219,7 +219,7 @@ export function createFakeMetadataForComponents(
         `Scene ${index}`,
         [
           jsxElement(
-            component.name,
+            component.name ?? 'default',
             componentUID,
             jsxAttributesFromMap({
               'data-uid': jsxAttributeValue(componentUID, emptyComments),

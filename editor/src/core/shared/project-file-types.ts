@@ -1,6 +1,12 @@
 import * as TS from 'typescript'
 import { NormalisedFrame } from 'utopia-api'
-import { ArbitraryJSBlock, ImportStatement, TopLevelElement } from './element-template'
+import {
+  ArbitraryJSBlock,
+  ImportStatement,
+  JSXAttribute,
+  JSXAttributeOtherJavaScript,
+  TopLevelElement,
+} from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
@@ -189,8 +195,32 @@ export function exportDefaultModifier(name: string): ExportDefaultModifier {
   }
 }
 
+export interface ExportDefaultExpression {
+  type: 'EXPORT_DEFAULT_EXPRESSION'
+}
+
+export function exportDefaultExpression(): ExportDefaultExpression {
+  return {
+    type: 'EXPORT_DEFAULT_EXPRESSION',
+  }
+}
+
+export interface ExportDefaultFunction {
+  type: 'EXPORT_DEFAULT_FUNCTION'
+}
+
+export function exportDefaultFunction(): ExportDefaultFunction {
+  return {
+    type: 'EXPORT_DEFAULT_FUNCTION',
+  }
+}
+
 export type ExportDetail = ExportDetailNamed | ExportDetailModifier
-export type ExportDefault = ExportDefaultNamed | ExportDefaultModifier
+export type ExportDefault =
+  | ExportDefaultNamed
+  | ExportDefaultModifier
+  | ExportDefaultExpression
+  | ExportDefaultFunction
 
 export function isExportDetailNamed(detail: ExportDetail): detail is ExportDetailNamed {
   return detail.type === 'EXPORT_DETAIL_NAMED'
@@ -206,6 +236,18 @@ export function isExportDefaultNamed(detail: ExportDefault): detail is ExportDef
 
 export function isExportDefaultModifier(detail: ExportDefault): detail is ExportDefaultModifier {
   return detail.type === 'EXPORT_DEFAULT_MODIFIER'
+}
+
+export function isExportDefaultExpression(
+  detail: ExportDefault | null | undefined,
+): detail is ExportDefaultExpression {
+  return detail?.type === 'EXPORT_DEFAULT_EXPRESSION'
+}
+
+export function isExportDefaultFunction(
+  detail: ExportDefault | null | undefined,
+): detail is ExportDefaultFunction {
+  return detail?.type === 'EXPORT_DEFAULT_FUNCTION'
 }
 
 export interface ExportsDetail {
@@ -273,6 +315,20 @@ export function setModifierDefaultExportInDetail(
 ): ExportsDetail {
   return {
     defaultExport: exportDefaultModifier(name),
+    namedExports: detail.namedExports,
+  }
+}
+
+export function setExpressionDefaultExportInDetail(detail: ExportsDetail): ExportsDetail {
+  return {
+    defaultExport: exportDefaultExpression(),
+    namedExports: detail.namedExports,
+  }
+}
+
+export function setFunctionDefaultExportInDetail(detail: ExportsDetail): ExportsDetail {
+  return {
+    defaultExport: exportDefaultFunction(),
     namedExports: detail.namedExports,
   }
 }

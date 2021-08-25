@@ -273,6 +273,20 @@ export var ${BakedInStoryboardVariableName} = <Storyboard />
 
     testParseThenPrintWithoutUids(spreadCode, spreadCode)
   })
+
+  it('#1737 - Produces the same value for an exported default function', () => {
+    const spreadCode = `import * as React from 'react'
+export default function () {
+  return (
+    <div>
+      <div>Default Function Time</div>
+    </div>
+  )
+}
+`
+
+    testParseThenPrintWithoutUids(spreadCode, spreadCode)
+  })
 })
 
 describe('Imports', () => {

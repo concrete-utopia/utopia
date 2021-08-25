@@ -41,8 +41,9 @@ export type ComponentRendererComponent = React.ComponentType<{
   [UTOPIA_INSTANCE_PATH]: ElementPath
   [UTOPIA_PATHS_KEY]?: string
 }> & {
-  topLevelElementName: string
+  topLevelElementName: string | null
   propertyControls?: PropertyControls
+  utopiaType: 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
 }
 
 export function isComponentRendererComponent(
@@ -51,12 +52,11 @@ export function isComponentRendererComponent(
   return (
     component != null &&
     typeof component === 'function' &&
-    (component as ComponentRendererComponent).topLevelElementName != null
+    (component as ComponentRendererComponent).utopiaType === 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
   )
 }
 
 function tryToGetInstancePath(
-  topLevelElementName: string,
   maybePath: ElementPath | null,
   pathsString: string | null,
 ): ElementPath | null {
@@ -71,7 +71,7 @@ function tryToGetInstancePath(
 }
 
 export function createComponentRendererComponent(params: {
-  topLevelElementName: string
+  topLevelElementName: string | null
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
 }): ComponentRendererComponent {
@@ -126,11 +126,7 @@ export function createComponentRendererComponent(params: {
 
     let codeError: Error | null = null
 
-    const instancePath: ElementPath | null = tryToGetInstancePath(
-      params.topLevelElementName,
-      instancePathAny,
-      pathsString,
-    )
+    const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
     const rootElementPath = optionalMap(
       (path) => EP.appendNewElementPath(path, getUtopiaID(utopiaJsxComponent.rootElement)),
@@ -214,5 +210,6 @@ export function createComponentRendererComponent(params: {
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName
+  Component.utopiaType = 'UTOPIA_COMPONENT_RENDERER_COMPONENT' as const
   return Component
 }

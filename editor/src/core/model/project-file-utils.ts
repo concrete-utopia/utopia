@@ -325,7 +325,7 @@ export function applyUtopiaJSXComponentsChanges(
   // newly updated result with the same name.
   // If it doesn't exist in the updated result, delete it.
   // For any new items in the updated result, add them in.
-  const addedSoFar: Set<string> = emptySet()
+  const addedSoFar: Set<string | null> = emptySet()
   let newTopLevelElements: Array<TopLevelElement> = []
   fastForEach(topLevelElements, (oldTopLevelElement) => {
     if (isUtopiaJSXComponent(oldTopLevelElement)) {

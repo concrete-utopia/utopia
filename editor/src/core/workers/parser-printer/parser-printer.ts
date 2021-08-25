@@ -90,6 +90,8 @@ import {
   isExportDetailModifier,
   isExportDefaultNamed,
   TextFile,
+  setExpressionDefaultExportInDetail,
+  setFunctionDefaultExportInDetail,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { fastForEach, NO_OP } from '../../shared/utils'
@@ -109,9 +111,11 @@ import {
   parseAttributeOtherJavaScript,
   withParserMetadata,
   isExported,
-  isDefaultExport,
   expressionTypeForExpression,
   extractPrefixedCode,
+  parseAttributeExpression,
+  markedAsExported,
+  markedAsDefault,
 } from './parser-printer-parsing'
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParseOrPrint, ParseOrPrintResult, ParsePrintResultMessage } from './parser-printer-worker'
@@ -530,9 +534,14 @@ function getModifersForComponent(
     isExportedAsDefault = true
     isExportedDirectly = true
   } else {
-    const componentExport = detailOfExports.namedExports[element.name]
-    if (componentExport != null && isExportDetailModifier(componentExport)) {
+    if (element.name == null) {
       isExportedDirectly = true
+      isExportedAsDefault = true
+    } else {
+      const componentExport = detailOfExports.namedExports[element.name]
+      if (componentExport != null && isExportDetailModifier(componentExport)) {
+        isExportedDirectly = true
+      }
     }
   }
 
@@ -596,7 +605,7 @@ function printUtopiaJSXComponent(
           undefined,
           modifiers,
           undefined,
-          element.name,
+          element.name ?? undefined,
           undefined,
           functionParams,
           undefined,
@@ -611,14 +620,22 @@ function printUtopiaJSXComponent(
           undefined,
           bodyForArrowFunction(),
         )
-        const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
+        if (element.name == null) {
+          elementNode = TS.createExportAssignment(undefined, modifiers, undefined, arrowFunction)
+        } else {
+          const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
+          const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
+          elementNode = TS.createVariableStatement(modifiers, varDecList)
+        }
+      }
+    } else {
+      if (element.name == null) {
+        elementNode = TS.createExportAssignment(undefined, modifiers, undefined, asJSX)
+      } else {
+        const varDec = TS.createVariableDeclaration(element.name, undefined, asJSX)
         const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
         elementNode = TS.createVariableStatement(modifiers, varDecList)
       }
-    } else {
-      const varDec = TS.createVariableDeclaration(element.name, undefined, asJSX)
-      const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
-      elementNode = TS.createVariableStatement(modifiers, varDecList)
     }
 
     return elementNode
@@ -867,14 +884,14 @@ function possibleCanvasContentsExpression(
 
 interface PossibleCanvasContentsFunction {
   type: 'POSSIBLE_CANVAS_CONTENTS_FUNCTION'
-  name: string
+  name: string | null
   parameters: TS.NodeArray<TS.ParameterDeclaration>
   body: TS.ConciseBody
   declarationSyntax: FunctionDeclarationSyntax
 }
 
 function possibleCanvasContentsFunction(
-  name: string,
+  name: string | null,
   parameters: TS.NodeArray<TS.ParameterDeclaration>,
   body: TS.ConciseBody,
   declarationSyntax: FunctionDeclarationSyntax,
@@ -951,8 +968,8 @@ export function looksLikeCanvasElements(
       }
     }
   } else if (TS.isFunctionDeclaration(node)) {
-    if (node.name != null && node.body != null) {
-      const name = node.name.getText(sourceFile)
+    if (node.body != null) {
+      const name = node.name == null ? null : node.name.getText(sourceFile)
       return right(possibleCanvasContentsFunction(name, node.parameters, node.body, 'function'))
     }
   }
@@ -1001,15 +1018,23 @@ function detailsFromExportDeclaration(
     const result = exportClause.elements.reduce((workingResult, specifier) => {
       const specifierName = specifier.name.getText(sourceFile)
       if (specifier.propertyName == null) {
-        return addNamedExportToDetail(workingResult, specifierName, specifierName, moduleName)
+        if (specifierName === 'default') {
+          return setNamedDefaultExportInDetail(workingResult, specifierName)
+        } else {
+          return addNamedExportToDetail(workingResult, specifierName, specifierName, moduleName)
+        }
       } else {
         const specifierPropertyName = specifier.propertyName.getText(sourceFile)
-        return addNamedExportToDetail(
-          workingResult,
-          specifierName,
-          specifierPropertyName,
-          moduleName,
-        )
+        if (specifierName === 'default') {
+          return setNamedDefaultExportInDetail(workingResult, specifierPropertyName)
+        } else {
+          return addNamedExportToDetail(
+            workingResult,
+            specifierName,
+            specifierPropertyName,
+            moduleName,
+          )
+        }
       }
     }, exportsDetail(null, {}))
     return right(result)
@@ -1021,7 +1046,7 @@ function detailsFromExportDeclaration(
 export function getComponentsRenderedWithReactDOM(
   sourceFile: TS.SourceFile,
   node: TS.Node,
-): Array<string> {
+): Array<string | null> {
   if (TS.isExpressionStatement(node)) {
     const expressionStatement: TS.ExpressionStatement = node
     if (TS.isCallExpression(expressionStatement.expression)) {
@@ -1187,6 +1212,22 @@ export function parseCode(
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromAssignment, (exportDeclaration) => {
+          // Check for an exported default expression.
+          const possibleExpression = parseAttributeExpression(
+            sourceFile,
+            sourceText,
+            filename,
+            imports,
+            topLevelNames,
+            null,
+            topLevelElement.expression,
+            highlightBounds,
+            alreadyExistingUIDs_MUTABLE,
+            [],
+          )
+          forEachRight(possibleExpression, () => {
+            detailOfExports = setExpressionDefaultExportInDetail(detailOfExports)
+          })
           pushArbitraryNode(exportDeclaration)
         })
       } else if (TS.isExportDeclaration(topLevelElement)) {
@@ -1201,18 +1242,11 @@ export function parseCode(
         forEachLeft(fromDeclaration, (exportDeclaration) => {
           pushArbitraryNode(exportDeclaration)
         })
-      } else if (
-        TS.isClassDeclaration(topLevelElement) &&
-        topLevelElement.modifiers != null &&
-        topLevelElement.modifiers.some((modifier) => modifier.kind === TS.SyntaxKind.ExportKeyword)
-      ) {
+      } else if (TS.isClassDeclaration(topLevelElement) && markedAsExported(topLevelElement)) {
         // Handle classes.
-        // Check if this is the 'default' export, which is to say the entire export for the file.
-        if (
-          topLevelElement.modifiers.some(
-            (modifier) => modifier.kind === TS.SyntaxKind.DefaultKeyword,
-          )
-        ) {
+        // Check if this is the 'default' export, which is to say what the caller will get if not
+        // specifying a particular value from the module.
+        if (markedAsDefault(topLevelElement)) {
           if (topLevelElement.name != null) {
             detailOfExports = setModifierDefaultExportInDetail(
               detailOfExports,
@@ -1358,11 +1392,15 @@ export function parseCode(
           if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
             pushArbitraryNode(topLevelElement)
             if (isExported(topLevelElement)) {
-              const defaultExport = isDefaultExport(topLevelElement)
-              if (defaultExport) {
-                detailOfExports = setModifierDefaultExportInDetail(detailOfExports, name)
+              if (name == null) {
+                detailOfExports = setFunctionDefaultExportInDetail(detailOfExports)
               } else {
-                detailOfExports = addModifierExportToDetail(detailOfExports, name)
+                const defaultExport = markedAsDefault(topLevelElement)
+                if (defaultExport) {
+                  detailOfExports = setModifierDefaultExportInDetail(detailOfExports, name)
+                } else {
+                  detailOfExports = addModifierExportToDetail(detailOfExports, name)
+                }
               }
             }
           } else {
@@ -1394,12 +1432,20 @@ export function parseCode(
                 contents.returnStatementComments,
               )
 
-              const defaultExport = isDefaultExport(topLevelElement)
+              const defaultExport = markedAsDefault(topLevelElement)
               if (exported) {
-                if (defaultExport) {
-                  detailOfExports = setModifierDefaultExportInDetail(detailOfExports, name)
+                if (name == null) {
+                  if (isFunction) {
+                    detailOfExports = setFunctionDefaultExportInDetail(detailOfExports)
+                  } else {
+                    detailOfExports = setExpressionDefaultExportInDetail(detailOfExports)
+                  }
                 } else {
-                  detailOfExports = addModifierExportToDetail(detailOfExports, name)
+                  if (defaultExport) {
+                    detailOfExports = setModifierDefaultExportInDetail(detailOfExports, name)
+                  } else {
+                    detailOfExports = addModifierExportToDetail(detailOfExports, name)
+                  }
                 }
               }
 
@@ -1409,7 +1455,94 @@ export function parseCode(
             }
           }
         } else {
-          pushArbitraryNode(topLevelElement)
+          // Fallback for things which don't parse but may be similar to those
+          // node types which do.
+          if (TS.isVariableStatement(topLevelElement)) {
+            if (
+              topLevelElement.modifiers != null &&
+              topLevelElement.modifiers.some(
+                (modifier) => modifier.kind === TS.SyntaxKind.ExportKeyword,
+              )
+            ) {
+              // Handle variable statements.
+              // Check if this is the 'default' export, which is to say what the caller will get if not
+              // specifying a particular value from the module.
+              const isDefault = topLevelElement.modifiers.some(
+                (modifier) => modifier.kind === TS.SyntaxKind.DefaultKeyword,
+              )
+
+              function pushToExports(bindingOrName: TS.Identifier | TS.BindingElement): void {
+                let nameToUse: string
+                let aliasToUse: string
+                if (TS.isIdentifier(bindingOrName)) {
+                  nameToUse = bindingOrName.getText(sourceFile)
+                  aliasToUse = nameToUse
+                } else {
+                  if (bindingOrName.propertyName == null) {
+                    nameToUse = bindingOrName.name.getText(sourceFile)
+                    aliasToUse = nameToUse
+                  } else {
+                    nameToUse = bindingOrName.propertyName.getText(sourceFile)
+                    aliasToUse = bindingOrName.name.getText(sourceFile)
+                  }
+                }
+
+                if (isDefault) {
+                  detailOfExports = setModifierDefaultExportInDetail(detailOfExports, nameToUse)
+                } else {
+                  if (aliasToUse === 'default') {
+                    detailOfExports = setNamedDefaultExportInDetail(detailOfExports, nameToUse)
+                  } else {
+                    detailOfExports = addNamedExportToDetail(
+                      detailOfExports,
+                      nameToUse,
+                      aliasToUse,
+                      undefined,
+                    )
+                  }
+                }
+              }
+
+              function addDeclaration(name: TS.BindingName): void {
+                if (TS.isIdentifier(name)) {
+                  pushToExports(name)
+                } else if (TS.isObjectBindingPattern(name)) {
+                  for (const element of name.elements) {
+                    pushToExports(element)
+                  }
+                }
+              }
+
+              for (const declaration of topLevelElement.declarationList.declarations) {
+                addDeclaration(declaration.name)
+              }
+            }
+            pushArbitraryNode(topLevelElement)
+          } else if (
+            TS.isFunctionDeclaration(topLevelElement) &&
+            topLevelElement.name == null &&
+            markedAsDefault(topLevelElement) &&
+            markedAsExported(topLevelElement)
+          ) {
+            const possibleExpression = parseAttributeOtherJavaScript(
+              sourceFile,
+              sourceText,
+              filename,
+              imports,
+              topLevelNames,
+              null,
+              topLevelElement,
+              highlightBounds,
+              alreadyExistingUIDs_MUTABLE,
+            )
+            forEachRight(possibleExpression, () => {
+              detailOfExports = setFunctionDefaultExportInDetail(detailOfExports)
+            })
+            pushUnparsedCode(topLevelElement.getText(sourceFile))
+          } else {
+            // If all else fails add it as just an arbitrary node.
+            pushArbitraryNode(topLevelElement)
+          }
         }
       }
     }

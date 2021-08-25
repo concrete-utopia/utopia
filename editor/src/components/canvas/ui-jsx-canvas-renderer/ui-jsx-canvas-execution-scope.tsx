@@ -63,7 +63,7 @@ export function createExecutionScope(
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): {
   scope: MapLike<any>
-  topLevelJsxComponents: Map<string, UtopiaJSXComponent>
+  topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
   requireResult: MapLike<any>
 } {
   if (!(filePath in topLevelComponentRendererComponents.current)) {
@@ -106,16 +106,15 @@ export function createExecutionScope(
   }
   // TODO All of this is run on every interaction o_O
 
-  let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
+  let topLevelJsxComponents: Map<string | null, UtopiaJSXComponent> = new Map()
 
   // Make sure there is something in scope for all of the top level components
   fastForEach(topLevelElements, (topLevelElement) => {
     if (isUtopiaJSXComponent(topLevelElement)) {
       topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-      if (!(topLevelElement.name in topLevelComponentRendererComponentsForFile)) {
-        topLevelComponentRendererComponentsForFile[
-          topLevelElement.name
-        ] = createComponentRendererComponent({
+      const elementName = topLevelElement.name ?? 'default'
+      if (!(elementName in topLevelComponentRendererComponentsForFile)) {
+        topLevelComponentRendererComponentsForFile[elementName] = createComponentRendererComponent({
           topLevelElementName: topLevelElement.name,
           mutableContextRef: mutableContextRef,
           filePath: filePath,
@@ -159,7 +158,6 @@ export function createExecutionScope(
 
     runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
   }
-
   // WARNING: mutating the mutableContextRef
   updateMutableUtopiaCtxRefWithNewProps(mutableContextRef, {
     ...mutableContextRef.current,

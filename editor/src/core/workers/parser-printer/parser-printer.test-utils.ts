@@ -47,7 +47,6 @@ import {
   UtopiaJSXComponent,
   utopiaJSXComponent,
   defaultPropsParam,
-  clearArbitraryJSBlockUniqueIDs,
   SingleLineComment,
   MultiLineComment,
   Comment,
@@ -91,7 +90,6 @@ import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
 import { getUtopiaID } from '../../model/element-template-utils'
 import { emptyComments, parsedComments, ParsedComments } from './parser-printer-comments'
-import { node } from 'prop-types'
 import { emptySet } from '../../shared/set-utils'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
@@ -864,7 +862,11 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
         if (topLevelElement.isFunction) {
           return []
         } else {
-          return [topLevelElement.name]
+          if (topLevelElement.name == null) {
+            return []
+          } else {
+            return [topLevelElement.name]
+          }
         }
       } else {
         return []

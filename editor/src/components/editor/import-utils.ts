@@ -73,3 +73,18 @@ export function importedFromWhere(
   }
   return null
 }
+
+export function getTopLevelName(
+  fromWhere: ImportedFromWhereResult,
+  originalTopLevelName: string | null,
+): string | null {
+  switch (fromWhere.type) {
+    case 'IMPORTED_ORIGIN':
+      return fromWhere.exportedName
+    case 'SAME_FILE_ORIGIN':
+      return originalTopLevelName
+    default:
+      const _exhaustiveCheck: never = fromWhere
+      throw new Error(`Unhandled type ${JSON.stringify(fromWhere)}`)
+  }
+}

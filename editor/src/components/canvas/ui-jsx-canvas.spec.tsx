@@ -9,6 +9,92 @@ import {
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
 describe('UiJsxCanvas render', () => {
+  it('renders a canvas testing a multitude of export styles', () => {
+    testCanvasRenderMultifile(
+      null,
+      `
+      import { Storyboard, Scene } from 'utopia-api'
+      import { App } from '/app'
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 600, left: 0, width: 600, top: 0 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+      {
+        '/app.js': `import * as React from 'react'
+import { OriginallyUnassigned1 } from '/originallyunassigned'
+import { OriginallyAssigned1 } from '/originallyassigned'
+import { NamedFunction } from '/namedfunction'
+import { NamedClass } from '/namedclass'
+import { NamedExport, RenamedExport } from '/namedexport'
+import { FirstInStructure, SecondInStructure } from '/destructuredassignment'
+import DefaultExpression from '/defaultexpression'
+import DefaultFunction from '/defaultfunction'
+import DefaultClass from '/defaultclass'
+import DefaultNamedFunction from '/defaultnamedfunction'
+import NamedAsDefault from '/namedasdefault'
+
+export var App = (props) => {
+  return (
+    <div>
+      <OriginallyUnassigned1 />
+      <OriginallyAssigned1 />
+      <NamedFunction />
+      <NamedClass />
+      <NamedExport />
+      <RenamedExport />
+      <FirstInStructure />
+      <SecondInStructure />
+      <div>The Number Is {DefaultExpression}</div>
+      <DefaultFunction />
+      <DefaultClass />
+      <DefaultNamedFunction />
+      <NamedAsDefault />
+    </div>
+  )
+}`,
+        '/originallyunassigned.js': `import * as React from 'react'
+export let OriginallyUnassigned1
+OriginallyUnassigned1 = () => <div>Originally Unassigned</div>`,
+        '/originallyassigned.js': `import * as React from 'react'
+export let OriginallyAssigned1 = () => <div>Originally Assigned</div>`,
+        '/namedfunction.js': `import * as React from 'react'
+export function NamedFunction() { return <div>Named Function</div> }`,
+        '/namedclass.js': `import * as React from 'react'
+export class NamedClass extends React.Component { render() { return <div>Named Class</div> } }`,
+        '/namedexport.js': `import * as React from 'react'
+const NamedExport = () => <div>Named Export</div>
+const ToBeRenamedExport = () => <div>Renamed Export</div>
+export { NamedExport, ToBeRenamedExport as RenamedExport }`,
+        '/destructuredassignment.js': `import * as React from 'react'
+const toDestructure = { FirstInStructure: () => <div>First In Structure</div>, SceodnInStructure: () => <div>Second In Structure</div> }
+        export const { FirstInStructure, SceodnInStructure: SecondInStructure } = toDestructure`,
+        '/defaultexpression.js': `import * as React from 'react'
+export default 2 + 2`,
+        '/defaultfunction.js': `import * as React from 'react'
+export default function() { return <div>Default Function</div> }`,
+        '/defaultclass.js': `import * as React from 'react'
+export default class DefaultClass extends React.Component { render() { return <div>Export Default Class</div> } }`,
+        '/defaultnamedfunction.js': `import * as React from 'react'
+export default function DefaultNamedFunction() { return <div>Default Named Function</div> }`,
+        '/namedasdefault.js': `import * as React from 'react'
+const ToBeDefaultExported = () => <div>Named As Default</div>
+export { ToBeDefaultExported as default }`,
+      },
+    )
+  })
+
   it('renders a canvas reliant on another file that uses module.exports', () => {
     testCanvasRenderMultifile(
       null,
