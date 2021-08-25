@@ -405,6 +405,7 @@ import {
   saveAsset as saveAssetToServer,
   updateAssetFileName,
   saveUserConfiguration,
+  createNewProjectID,
 } from '../server'
 import {
   areGeneratedElementsTargeted,
@@ -506,6 +507,7 @@ import {
   addImports,
   setScrollAnimation,
   updatePackageJson,
+  setProjectID,
 } from './action-creators'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
@@ -5076,6 +5078,7 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesWithEditorRequirements(defaultPersistentModel.projectContents)
+  const projectId = await createNewProjectID()
   const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
@@ -5107,6 +5110,7 @@ export async function newProject(
         codeResultCache: codeResultCache,
         packageResult: packageResult,
       },
+      setProjectID(projectId),
     ],
     'everyone',
   )
