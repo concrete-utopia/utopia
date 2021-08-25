@@ -370,7 +370,7 @@ describe('Forking a project', () => {
     const dispatchFn: EditorDispatch = (actions: ReadonlyArray<EditorAction>) => {
       fastForEach(actions, (action) => {
         if (action.action === 'SET_PROJECT_ID') {
-          if (capturedData.newProjectId != undefined) {
+          if (capturedData.newProjectId != undefined && capturedData.newProjectId !== action.id) {
             fail(`Trying to repeatedly change the project ID`)
           }
           capturedData.newProjectId = action.id

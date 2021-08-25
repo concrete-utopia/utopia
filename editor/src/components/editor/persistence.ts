@@ -389,6 +389,7 @@ export async function triggerForkProject(
   }
 
   dispatch([
+    setProjectID(newProjectId),
     setProjectName(updatedName),
     setForkedFromProjectID(oldProjectId),
     ...updateFileActions,
