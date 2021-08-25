@@ -205,7 +205,7 @@ import { addToMapOfArraysUnique, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { emptySet } from '../../core/shared/set-utils'
 import { WindowMousePositionRaw } from '../../utils/global-positions'
-import { importedFromWhere } from '../editor/import-utils'
+import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
@@ -2683,25 +2683,22 @@ export function getParseSuccessOrTransientForFilePath(
 
 export function getValidElementPaths(
   focusedElementPath: ElementPath | null,
-  topLevelElementName: string | null,
+  topLevelElementName: string,
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
-  if (topLevelElementName == null) {
-    return []
-  }
   const { topLevelElements, imports } = getParseSuccessOrTransientForFilePath(
     filePath,
     projectContents,
     transientFilesState,
   )
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
-    ?.filePath
   if (importSource != null) {
-    const resolvedImportSource = resolve(filePath, importSource)
+    const originTopLevelName = getTopLevelName(importSource, topLevelElementName)
+    const resolvedImportSource = resolve(filePath, importSource.filePath)
     if (isRight(resolvedImportSource)) {
       const resolvedFilePath = resolvedImportSource.value
       const { topLevelElements: resolvedTopLevelElements } = getParseSuccessOrTransientForFilePath(
@@ -2711,7 +2708,7 @@ export function getValidElementPaths(
       )
       const topLevelElement = resolvedTopLevelElements.find(
         (element): element is UtopiaJSXComponent =>
-          isUtopiaJSXComponent(element) && element.name === topLevelElementName,
+          isUtopiaJSXComponent(element) && element.name === originTopLevelName,
       )
       if (topLevelElement != null) {
         return getValidElementPathsFromElement(
