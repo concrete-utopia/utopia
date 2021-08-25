@@ -438,7 +438,7 @@ function jsxElementToExpression(
     }
     case 'JSX_ARBITRARY_BLOCK': {
       const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
-      let rawCode: string = ''
+      let rawCode: string = element.javascript // Fallback for the case where the code is simply a comment
       if (maybeExpressionStatement != null) {
         const { statement, sourceFile } = maybeExpressionStatement
         const lastToken = statement.getLastToken(sourceFile)

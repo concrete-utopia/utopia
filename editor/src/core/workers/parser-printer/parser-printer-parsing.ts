@@ -1046,8 +1046,8 @@ function parseJSXArbitraryBlock(
       if (code === '') {
         return right(
           jsxArbitraryBlock(
-            code,
-            '',
+            expressionFullText,
+            expressionFullText,
             'return undefined',
             definedElsewhere,
             null,

@@ -27,6 +27,7 @@ describe('Parsing and printing code with comments', () => {
     commentAtStartOfJSXExpression: '/* Comment at start of JSX expression */',
     commentInsideJSXExpression: '/* Comment inside JSX expression */',
     commentAtEndOfJSXExpression: '/* Comment at end of JSX expression */',
+    commentInsideAnEmptyJSXExpression: '/* Comment inside an empty JSX expression */',
     commentBeforeExports: '// Comment before exports',
     commentInsideExports: '// Comment inside exports',
     commentAfterExports: '// Comment after exports',
@@ -96,6 +97,7 @@ describe('Parsing and printing code with comments', () => {
             : <div/>
             ${comments.commentAtEndOfJSXExpression}
           }
+          {${comments.commentInsideAnEmptyJSXExpression}}
         </div>
       ) ${comments.commentAfterReturnStatement}
     } ${comments.commentAfterComponent}
@@ -175,6 +177,7 @@ describe('Parsing and printing code with comments', () => {
                 <div data-uid='b93' />
               ) /* Comment at end of JSX expression */
             }
+            {/* Comment inside an empty JSX expression */}
           </div>
         ) // Comment after return statement
       } // Comment after component
