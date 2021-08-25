@@ -433,7 +433,7 @@ function turnCodeSnippetIntoSourceMapNodes(
         currentStringBuffer === 'function' &&
         FunctionStart.test(sourceCode.substr(i))
       ) {
-        currentStringBuffer = 'function defaultFunctionName'
+        currentStringBuffer = 'function utopia_defaultFunctionName'
       }
       const node = new SourceNode(
         bufferStartLine + 1,
