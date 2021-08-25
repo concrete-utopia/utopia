@@ -41,6 +41,7 @@ import { NamedExport, RenamedExport } from '/namedexport'
 import { FirstInStructure, SecondInStructure } from '/destructuredassignment'
 import DefaultExpression from '/defaultexpression'
 import DefaultFunction from '/defaultfunction'
+import DefaultClass from '/defaultclass'
 import DefaultNamedFunction from '/defaultnamedfunction'
 import NamedAsDefault from '/namedasdefault'
 
@@ -57,6 +58,7 @@ export var App = (props) => {
       <SecondInStructure />
       <div>The Number Is {DefaultExpression}</div>
       <DefaultFunction />
+      <DefaultClass />
       <DefaultNamedFunction />
       <NamedAsDefault />
     </div>
@@ -82,6 +84,8 @@ const toDestructure = { FirstInStructure: () => <div>First In Structure</div>, S
 export default 2 + 2`,
         '/defaultfunction.js': `import * as React from 'react'
 export default function() { return <div>Default Function</div> }`,
+        '/defaultclass.js': `import * as React from 'react'
+export default class DefaultClass extends React.Component { render() { return <div>Export Default Class</div> } }`,
         '/defaultnamedfunction.js': `import * as React from 'react'
 export default function DefaultNamedFunction() { return <div>Default Named Function</div> }`,
         '/namedasdefault.js': `import * as React from 'react'

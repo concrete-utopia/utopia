@@ -536,6 +536,7 @@ function getModifersForComponent(
   } else {
     if (element.name == null) {
       isExportedDirectly = true
+      isExportedAsDefault = true
     } else {
       const componentExport = detailOfExports.namedExports[element.name]
       if (componentExport != null && isExportDetailModifier(componentExport)) {

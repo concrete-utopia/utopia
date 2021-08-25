@@ -26261,6 +26261,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
         <div>Second In Structure</div>
         <div>The Number Is 4</div>
         <div>Default Function</div>
+        <div>Export Default Class</div>
         <div>Default Named Function</div>
         <div>Named As Default</div>
       </div>
