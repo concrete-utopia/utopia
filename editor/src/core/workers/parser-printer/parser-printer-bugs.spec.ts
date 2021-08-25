@@ -282,7 +282,8 @@ export default function () {
       <div>Default Function Time</div>
     </div>
   )
-}`
+}
+`
 
     testParseThenPrintWithoutUids(spreadCode, spreadCode)
   })
