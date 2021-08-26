@@ -5,6 +5,7 @@ import {
   Vector2ControlDescription,
   Vector3ControlDescription,
   PropertyControls,
+  expression,
 } from 'utopia-api'
 
 const Vector3: Vector3ControlDescription = {
@@ -325,7 +326,7 @@ const materialControls: PropertyControls = {
     defaultValue: null,
   },
   blending: {
-    type: 'enum',
+    type: 'expression-enum',
     options: [0, 1, 2, 3, 4, 5],
     optionTitles: [
       'NoBlending',
@@ -335,7 +336,15 @@ const materialControls: PropertyControls = {
       'MultiplyBlending',
       'CustomBlending',
     ],
-    defaultValue: 1,
+    expressionOptions: [
+      expression('THREE.NoBlending', 'three', 'THREE', 'star'),
+      expression('THREE.NormalBlending', 'three', 'THREE', 'star'),
+      expression('THREE.AdditiveBlending', 'three', 'THREE', 'star'),
+      expression('THREE.SubtractiveBlending', 'three', 'THREE', 'star'),
+      expression('THREE.MultiplyBlending', 'three', 'THREE', 'star'),
+      expression('THREE.CustomBlending', 'three', 'THREE', 'star'),
+    ],
+    defaultValue: expression('THREE.NoBlending', 'three', 'THREE', 'star'),
   },
   blendSrc: {
     type: 'enum',

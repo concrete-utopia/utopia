@@ -375,7 +375,7 @@ declare module 'utopia-api/primitives/view' {
 }
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
-  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string' | 'styleobject' | 'vector2' | 'vector3';
+  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'expression-enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string' | 'styleobject' | 'vector2' | 'vector3';
   interface AbstractControlDescription<T extends ControlType> {
       title?: string;
       type: T;
@@ -400,6 +400,21 @@ declare module 'utopia-api/property-controls/property-controls' {
       options: AllowedEnumType[];
       optionTitles?: string[] | ((props: unknown | null) => string[]);
       displaySegmentedControl?: boolean;
+  }
+  export interface ImportType {
+      source: string;
+      name: string;
+      type: 'star' | 'default';
+  }
+  export interface ExpressionEnum {
+      value: string;
+      import?: ImportType;
+  }
+  export interface ExpressionEnumControlDescription extends AbstractBaseControlDescription<'expression-enum'> {
+      defaultValue?: ExpressionEnum;
+      options: AllowedEnumType[];
+      expressionOptions: ExpressionEnum[];
+      optionTitles?: string[] | ((props: unknown | null) => string[]);
   }
   export interface EventHandlerControlDescription extends AbstractBaseControlDescription<'eventhandler'> {
       defaultValue?: never;
@@ -453,7 +468,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface Vector3ControlDescription extends AbstractBaseControlDescription<'vector3'> {
       defaultValue?: [number, number, number];
   }
-  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription;
+  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | ExpressionEnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
   export type ControlType = BaseControlType | HigherLevelControlType;
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {
@@ -484,6 +499,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export function getDefaultProps(propertyControls: PropertyControls): {
       [prop: string]: unknown;
   };
+  export function expression(value: string, source: string, name: string, type: 'star' | 'default'): ExpressionEnum;
   export {};
 
 }
