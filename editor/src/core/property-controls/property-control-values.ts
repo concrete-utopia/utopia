@@ -240,6 +240,8 @@ export function unwrapperAndParserForBaseControl(
       return jsUnwrapFirst(parseAny)
     case 'enum':
       return defaultUnwrapFirst(parseAllowedEnum(control.options))
+    case 'expression-enum':
+      return defaultUnwrapFirst(parseAllowedEnum(control.options))
     case 'eventhandler':
       return jsUnwrapFirst(parseAny)
     case 'ignore':
@@ -275,6 +277,7 @@ export function unwrapperAndParserForPropertyControl(
     case 'color':
     case 'componentinstance':
     case 'enum':
+    case 'expression-enum':
     case 'eventhandler':
     case 'ignore':
     case 'image':
@@ -348,6 +351,8 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printJS
     case 'enum':
       return printSimple
+    case 'expression-enum':
+      return printSimple
     case 'eventhandler':
       return printJS
     case 'ignore':
@@ -415,6 +420,7 @@ export function printerForPropertyControl(control: ControlDescription): Printer<
     case 'color':
     case 'componentinstance':
     case 'enum':
+    case 'expression-enum':
     case 'eventhandler':
     case 'ignore':
     case 'image':

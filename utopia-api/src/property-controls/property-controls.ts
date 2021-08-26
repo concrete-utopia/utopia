@@ -57,7 +57,7 @@ export interface EnumControlDescription extends AbstractBaseControlDescription<'
 export interface ImportType {
   source: string // importSource
   name: string
-  type: 'star' | 'default'
+  type: 'star' | 'default' | null
 }
 
 export interface ExpressionEnum {
@@ -277,7 +277,7 @@ export function expression(
   value: string,
   source: string,
   name: string,
-  type: 'star' | 'default',
+  type: 'star' | 'default' | null,
 ): ExpressionEnum {
   return {
     value: value,

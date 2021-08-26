@@ -404,7 +404,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface ImportType {
       source: string;
       name: string;
-      type: 'star' | 'default';
+      type: 'star' | 'default' | null;
   }
   export interface ExpressionEnum {
       value: string;
@@ -499,7 +499,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export function getDefaultProps(propertyControls: PropertyControls): {
       [prop: string]: unknown;
   };
-  export function expression(value: string, source: string, name: string, type: 'star' | 'default'): ExpressionEnum;
+  export function expression(value: string, source: string, name: string, type: 'star' | 'default' | null): ExpressionEnum;
   export {};
 
 }

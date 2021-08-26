@@ -8,6 +8,7 @@ import {
   ComponentInstanceDescription,
   EnumControlDescription,
   EventHandlerControlDescription,
+  ExpressionEnumControlDescription,
   ImageControlDescription,
   NumberControlDescription,
   OptionsControlDescription,
@@ -44,7 +45,12 @@ import { EventHandlerControl } from '../event-handlers-section/event-handlers-se
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import { PropertyPath } from '../../../../core/shared/project-file-types'
+import { importDetails, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { addImports, setProp_UNSAFE } from '../../../editor/actions/action-creators'
+import { jsxAttributeOtherJavaScript } from '../../../../core/shared/element-template'
+import { EditorAction } from '../../../editor/action-types'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -173,6 +179,78 @@ export const ControlForEnumProp = betterReactMemo(
 
     function submitValue(option: SelectOption): void {
       propMetadata.onSubmitValue(option.value)
+    }
+
+    return (
+      <PopupList
+        disabled={!propMetadata.controlStyles.interactive}
+        value={currentValue}
+        onSubmitValue={submitValue}
+        options={options}
+        containerMode={'default'}
+      />
+    )
+  },
+)
+
+export const ControlForExpressionEnumProp = betterReactMemo(
+  'ControlForEnumProp',
+  (props: ControlForPropProps<ExpressionEnumControlDescription>) => {
+    const dispatch = useEditorState(
+      (store) => store.dispatch,
+      'ControlForExpressionEnumProp dispatch',
+    )
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'ControlForExpressionEnumProp selectedViews',
+    )
+    const target = forceNotNull('Inspector control without selected element', selectedViews[0])
+    const { propMetadata, controlDescription } = props
+    const value = propMetadata.propertyStatus.set
+      ? propMetadata.value
+      : controlDescription.defaultValue
+
+    const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
+      controlDescription.expressionOptions.map((option, index) => {
+        return {
+          value: option.value,
+          label:
+            controlDescription.optionTitles == null ||
+            typeof controlDescription.optionTitles === 'function'
+              ? option.value
+              : (controlDescription.optionTitles[index] as string),
+        }
+      }),
+    )
+    const currentValue = options.find((option) => {
+      return fastDeepEquals(option.value, value)
+    })
+
+    function submitValue(option: SelectOption): void {
+      const actions: EditorAction[] = [
+        setProp_UNSAFE(
+          target,
+          props.propPath,
+          jsxAttributeOtherJavaScript(option.value, `return ${option.value}`, [], null, {}),
+        ),
+      ]
+      const expressionOption = controlDescription.expressionOptions.find(
+        (o) => o.value === option.value,
+      )
+      if (expressionOption != null && expressionOption.import != null) {
+        const importOption = expressionOption.import
+        const importToAdd: Imports = {
+          [expressionOption.import.source]: importDetails(
+            importOption.type === 'default' ? importOption.name : null,
+            importOption.type == null
+              ? [{ name: importOption.name, alias: importOption.name }]
+              : [],
+            importOption.type === 'star' ? importOption.name : null,
+          ),
+        }
+        actions.push(addImports(importToAdd, target))
+      }
+      dispatch(actions, 'everyone')
     }
 
     return (

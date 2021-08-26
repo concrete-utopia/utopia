@@ -18,6 +18,9 @@ import {
   StyleObjectControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
+  ExpressionEnumControlDescription,
+  ExpressionEnum,
+  ImportType,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -30,6 +33,7 @@ import {
   parseAny,
   parseArray,
   parseBoolean,
+  parseConstant,
   parseEnum,
   parseFunction,
   parseNull,
@@ -111,6 +115,67 @@ export function parseEnumControlDescription(value: unknown): ParseResult<EnumCon
     objectKeyParser(parseArray(parseEnumValue), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
     optionalObjectKeyParser(parseBoolean, 'displaySegmentedControl')(value),
+  )
+}
+
+export function parseExpressionEnumControlDescription(
+  value: unknown,
+): ParseResult<ExpressionEnumControlDescription> {
+  return applicative6Either(
+    (title, type, defaultValue, options, optionTitles, expressionOptions) => {
+      let enumControlDescription: ExpressionEnumControlDescription = {
+        type: type,
+        options: options,
+        expressionOptions: expressionOptions,
+      }
+      setOptionalProp(enumControlDescription, 'title', title)
+      setOptionalProp(enumControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(enumControlDescription, 'optionTitles', optionTitles)
+
+      return enumControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'title')(value),
+    objectKeyParser(parseEnum(['expression-enum']), 'type')(value),
+    optionalObjectKeyParser(parseExpressionEnum, 'defaultValue')(value),
+    objectKeyParser(parseArray(parseEnumValue), 'options')(value),
+    optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
+    objectKeyParser(parseArray(parseExpressionEnum), 'expressionOptions')(value),
+  )
+}
+
+const parseImportType: Parser<ImportType> = (value: unknown) => {
+  return applicative3Either(
+    (source, name, type) => {
+      let importType: ImportType = {
+        source,
+        name,
+        type,
+      }
+      return importType
+    },
+    objectKeyParser(parseString, 'source')(value),
+    objectKeyParser(parseString, 'name')(value),
+    objectKeyParser(
+      parseAlternative(
+        [parseConstant('default'), parseConstant('star'), parseNull],
+        'invalid import type',
+      ),
+      'type',
+    )(value),
+  )
+}
+
+const parseExpressionEnum: Parser<ExpressionEnum> = (value: unknown) => {
+  return applicative2Either(
+    (expressionValue, importType) => {
+      let expressionEnum: ExpressionEnum = {
+        value: expressionValue,
+      }
+      setOptionalProp(expressionEnum, 'import', importType)
+      return expressionEnum
+    },
+    objectKeyParser(parseString, 'value')(value),
+    optionalObjectKeyParser(parseImportType, 'import')(value),
   )
 }
 
@@ -481,6 +546,8 @@ export function parseControlDescription(value: unknown): ParseResult<ControlDesc
         return parseComponentInstanceControlDescription(value)
       case 'enum':
         return parseEnumControlDescription(value)
+      case 'expression-enum':
+        return parseExpressionEnumControlDescription(value)
       case 'eventhandler':
         return parseEventHandlerControlDescription(value)
       case 'ignore':

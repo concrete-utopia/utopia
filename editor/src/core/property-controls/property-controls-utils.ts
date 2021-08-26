@@ -286,6 +286,7 @@ export function getDescriptionUnsetOptionalFields(
       addIfFieldEmpty(controlDescription, 'optionTitles')
       addIfFieldEmpty(controlDescription, 'displaySegmentedControl')
       break
+    case 'expression-enum':
     case 'eventhandler':
     case 'ignore':
     case 'image':
