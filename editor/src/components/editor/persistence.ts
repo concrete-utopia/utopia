@@ -51,7 +51,6 @@ import { getFileExtension } from '../../core/shared/file-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { AssetFile, ImageFile } from '../../core/shared/project-file-types'
 import { assetFile, imageFile, isImageFile } from '../../core/model/project-file-utils'
-const urljoin = require('url-join')
 
 interface NeverSaved {
   type: 'never-saved'
@@ -310,6 +309,8 @@ export async function saveToServer(
   }
 }
 
+let forkInProgress: boolean = false
+
 export async function triggerForkProject(
   dispatch: EditorDispatch,
   persistentModel: PersistentModel,
@@ -317,6 +318,13 @@ export async function triggerForkProject(
   projectName: string,
   loginState: LoginState,
 ): Promise<void> {
+  if (forkInProgress) {
+    // This will mean that any changes made between starting the fork and completing it won't be saved
+    // until the next save is triggered
+    return
+  }
+  forkInProgress = true
+
   const newProjectId = await createNewProjectID()
 
   const updatedName = `${projectName} (forked)`
@@ -386,6 +394,8 @@ export async function triggerForkProject(
     setForkedFromProjectID(oldProjectId),
     ...updateFileActions,
   ])
+
+  forkInProgress = false
 }
 
 async function checkCanSaveProject(projectId: string | null): Promise<boolean> {
