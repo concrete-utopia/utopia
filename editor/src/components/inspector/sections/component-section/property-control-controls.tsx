@@ -206,9 +206,15 @@ export const ControlForExpressionEnumProp = betterReactMemo(
     )
     const target = forceNotNull('Inspector control without selected element', selectedViews[0])
     const { propMetadata, controlDescription } = props
-    const value = propMetadata.propertyStatus.set
-      ? propMetadata.value
-      : controlDescription.defaultValue
+
+    const detectedValueInOptions = controlDescription.options.findIndex((option) =>
+      fastDeepEquals(option, propMetadata.value),
+    )
+    const detectedValue = controlDescription.expressionOptions[detectedValueInOptions]?.value
+    const value =
+      propMetadata.propertyStatus.set && detectedValue != null
+        ? detectedValue
+        : controlDescription.defaultValue?.value
 
     const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
       controlDescription.expressionOptions.map((option, index) => {
