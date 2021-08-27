@@ -207,29 +207,29 @@ export const ControlForExpressionEnumProp = betterReactMemo(
     const target = forceNotNull('Inspector control without selected element', selectedViews[0])
     const { propMetadata, controlDescription } = props
 
-    const detectedValueInOptions = controlDescription.options.findIndex((option) =>
-      fastDeepEquals(option, propMetadata.value),
-    )
-    const detectedValue = controlDescription.expressionOptions[detectedValueInOptions]?.value
-    const value =
-      propMetadata.propertyStatus.set && detectedValue != null
-        ? detectedValue
-        : controlDescription.defaultValue?.value
+    const detectedExpression = controlDescription.options.find((option) =>
+      fastDeepEquals(option.value, propMetadata.value),
+    )?.expression
+
+    const selectedExpression =
+      propMetadata.propertyStatus.set && detectedExpression != null
+        ? detectedExpression
+        : controlDescription.defaultValue?.expression
 
     const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
-      controlDescription.expressionOptions.map((option, index) => {
+      controlDescription.options.map((option, index) => {
         return {
-          value: option.value,
+          value: option.expression,
           label:
             controlDescription.optionTitles == null ||
             typeof controlDescription.optionTitles === 'function'
-              ? option.value
+              ? option.expression
               : (controlDescription.optionTitles[index] as string),
         }
       }),
     )
     const currentValue = options.find((option) => {
-      return fastDeepEquals(option.value, value)
+      return fastDeepEquals(option.value, selectedExpression)
     })
 
     function submitValue(option: SelectOption): void {
@@ -240,13 +240,11 @@ export const ControlForExpressionEnumProp = betterReactMemo(
           jsxAttributeOtherJavaScript(option.value, `return ${option.value}`, [], null, {}),
         ),
       ]
-      const expressionOption = controlDescription.expressionOptions.find(
-        (o) => o.value === option.value,
-      )
+      const expressionOption = controlDescription.options.find((o) => o.expression === option.value)
       if (expressionOption != null && expressionOption.import != null) {
         const importOption = expressionOption.import
         const importToAdd: Imports = {
-          [expressionOption.import.source]: importDetails(
+          [importOption.source]: importDetails(
             importOption.type === 'default' ? importOption.name : null,
             importOption.type == null
               ? [{ name: importOption.name, alias: importOption.name }]

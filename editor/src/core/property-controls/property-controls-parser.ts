@@ -121,12 +121,11 @@ export function parseEnumControlDescription(value: unknown): ParseResult<EnumCon
 export function parseExpressionEnumControlDescription(
   value: unknown,
 ): ParseResult<ExpressionEnumControlDescription> {
-  return applicative6Either(
-    (title, type, defaultValue, options, optionTitles, expressionOptions) => {
+  return applicative5Either(
+    (title, type, defaultValue, options, optionTitles) => {
       let enumControlDescription: ExpressionEnumControlDescription = {
         type: type,
         options: options,
-        expressionOptions: expressionOptions,
       }
       setOptionalProp(enumControlDescription, 'title', title)
       setOptionalProp(enumControlDescription, 'defaultValue', defaultValue)
@@ -137,9 +136,8 @@ export function parseExpressionEnumControlDescription(
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['expression-enum']), 'type')(value),
     optionalObjectKeyParser(parseExpressionEnum, 'defaultValue')(value),
-    objectKeyParser(parseArray(parseEnumValue), 'options')(value),
+    objectKeyParser(parseArray(parseExpressionEnum), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
-    objectKeyParser(parseArray(parseExpressionEnum), 'expressionOptions')(value),
   )
 }
 
@@ -165,16 +163,18 @@ const parseImportType: Parser<ImportType> = (value: unknown) => {
   )
 }
 
-const parseExpressionEnum: Parser<ExpressionEnum> = (value: unknown) => {
-  return applicative2Either(
-    (expressionValue, importType) => {
+export function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum> {
+  return applicative3Either(
+    (enumValue, expression, importType) => {
       let expressionEnum: ExpressionEnum = {
-        value: expressionValue,
+        value: enumValue,
+        expression: expression,
       }
       setOptionalProp(expressionEnum, 'import', importType)
       return expressionEnum
     },
-    objectKeyParser(parseString, 'value')(value),
+    objectKeyParser(parseEnumValue, 'value')(value),
+    objectKeyParser(parseString, 'expression')(value),
     optionalObjectKeyParser(parseImportType, 'import')(value),
   )
 }

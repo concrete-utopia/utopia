@@ -407,13 +407,13 @@ declare module 'utopia-api/property-controls/property-controls' {
       type: 'star' | 'default' | null;
   }
   export interface ExpressionEnum {
-      value: string;
+      value: AllowedEnumType;
+      expression: string;
       import?: ImportType;
   }
   export interface ExpressionEnumControlDescription extends AbstractBaseControlDescription<'expression-enum'> {
       defaultValue?: ExpressionEnum;
-      options: AllowedEnumType[];
-      expressionOptions: ExpressionEnum[];
+      options: ExpressionEnum[];
       optionTitles?: string[] | ((props: unknown | null) => string[]);
   }
   export interface EventHandlerControlDescription extends AbstractBaseControlDescription<'eventhandler'> {
@@ -499,7 +499,10 @@ declare module 'utopia-api/property-controls/property-controls' {
   export function getDefaultProps(propertyControls: PropertyControls): {
       [prop: string]: unknown;
   };
-  export function expression(value: string, source: string, name: string, type: 'star' | 'default' | null): ExpressionEnum;
+  export function expression(value: AllowedEnumType, expression: string, toImport: ImportType): ExpressionEnum;
+  export function importStar(source: string, name: string): ImportType;
+  export function importDefault(source: string, name: string): ImportType;
+  export function importNamed(source: string, name: string): ImportType;
   export {};
 
 }

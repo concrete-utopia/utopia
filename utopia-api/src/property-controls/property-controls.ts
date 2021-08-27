@@ -61,15 +61,15 @@ export interface ImportType {
 }
 
 export interface ExpressionEnum {
-  value: string
+  value: AllowedEnumType
+  expression: string
   import?: ImportType
 }
 
 export interface ExpressionEnumControlDescription
   extends AbstractBaseControlDescription<'expression-enum'> {
   defaultValue?: ExpressionEnum
-  options: AllowedEnumType[]
-  expressionOptions: ExpressionEnum[]
+  options: ExpressionEnum[]
   optionTitles?: string[] | ((props: unknown | null) => string[])
 }
 
@@ -274,17 +274,35 @@ export function getDefaultProps(propertyControls: PropertyControls): { [prop: st
 }
 
 export function expression(
-  value: string,
-  source: string,
-  name: string,
-  type: 'star' | 'default' | null,
+  value: AllowedEnumType,
+  expression: string,
+  toImport: ImportType,
 ): ExpressionEnum {
   return {
     value: value,
-    import: {
-      source: source,
-      name: name,
-      type: type,
-    },
+    expression: expression,
+    import: toImport,
+  }
+}
+
+export function importStar(source: string, name: string): ImportType {
+  return {
+    source: source,
+    name: name,
+    type: 'star',
+  }
+}
+export function importDefault(source: string, name: string): ImportType {
+  return {
+    source: source,
+    name: name,
+    type: 'default',
+  }
+}
+export function importNamed(source: string, name: string): ImportType {
+  return {
+    source: source,
+    name: name,
+    type: null,
   }
 }

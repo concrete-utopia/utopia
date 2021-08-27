@@ -6,6 +6,7 @@ import {
   Vector3ControlDescription,
   PropertyControls,
   expression,
+  importStar,
 } from 'utopia-api'
 
 const Vector3: Vector3ControlDescription = {
@@ -327,7 +328,6 @@ const materialControls: PropertyControls = {
   },
   blending: {
     type: 'expression-enum',
-    options: [0, 1, 2, 3, 4, 5],
     optionTitles: [
       'NoBlending',
       'NormalBlending',
@@ -336,15 +336,15 @@ const materialControls: PropertyControls = {
       'MultiplyBlending',
       'CustomBlending',
     ],
-    expressionOptions: [
-      expression('THREE.NoBlending', 'three', 'THREE', 'star'),
-      expression('THREE.NormalBlending', 'three', 'THREE', 'star'),
-      expression('THREE.AdditiveBlending', 'three', 'THREE', 'star'),
-      expression('THREE.SubtractiveBlending', 'three', 'THREE', 'star'),
-      expression('THREE.MultiplyBlending', 'three', 'THREE', 'star'),
-      expression('THREE.CustomBlending', 'three', 'THREE', 'star'),
+    options: [
+      expression(0, 'THREE.NoBlending', importStar('three', 'THREE')),
+      expression(1, 'THREE.NormalBlending', importStar('three', 'THREE')),
+      expression(2, 'THREE.AdditiveBlending', importStar('three', 'THREE')),
+      expression(3, 'THREE.SubtractiveBlending', importStar('three', 'THREE')),
+      expression(4, 'THREE.MultiplyBlending', importStar('three', 'THREE')),
+      expression(5, 'THREE.CustomBlending', importStar('three', 'THREE')),
     ],
-    defaultValue: expression('THREE.NoBlending', 'three', 'THREE', 'star'),
+    defaultValue: expression(0, 'THREE.NoBlending', importStar('three', 'THREE')),
   },
   blendSrc: {
     type: 'enum',

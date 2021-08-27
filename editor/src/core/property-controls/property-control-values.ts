@@ -241,7 +241,7 @@ export function unwrapperAndParserForBaseControl(
     case 'enum':
       return defaultUnwrapFirst(parseAllowedEnum(control.options))
     case 'expression-enum':
-      return defaultUnwrapFirst(parseAllowedEnum(control.options))
+      return defaultUnwrapFirst(parseAny)
     case 'eventhandler':
       return jsUnwrapFirst(parseAny)
     case 'ignore':
