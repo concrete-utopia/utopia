@@ -37,9 +37,11 @@ import {
   textFile,
   TextFileContents,
   unparsed,
-  addModifierExportToDetail,
   EmptyExportsDetail,
   importAlias,
+  exportVariable,
+  exportVariables,
+  exportFunction,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -224,7 +226,7 @@ const originalModel = deepFreeze(
     {},
     null,
     null,
-    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    [exportFunction('whatever')],
   ),
 )
 const testEditor: EditorState = deepFreeze({
@@ -337,7 +339,7 @@ describe('moveTemplate', () => {
         {},
         null,
         null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        [exportFunction('whatever')],
       ),
     )
   }
@@ -938,7 +940,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     {},
     null,
     null,
-    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    [exportFunction('whatever')],
   )
 
   const fileForUI = textFile(

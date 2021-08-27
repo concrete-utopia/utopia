@@ -147,190 +147,181 @@ export function importsEquals(first: Imports, second: Imports): boolean {
   return objectEquals(first, second, importDetailsEquals)
 }
 
-export interface ExportDetailNamed {
-  type: 'EXPORT_DETAIL_NAMED'
-  name: string
-  moduleName: string | undefined
+// export let name1, name2, …, nameN; // also var, const
+// export let name1 = …, name2 = …, …, nameN; // also var, const
+export interface ExportVariablesWithModifier {
+  type: 'EXPORT_VARIABLES_WITH_MODIFIER'
+  variables: Array<string>
 }
 
-export function exportDetailNamed(name: string, moduleName: string | undefined): ExportDetailNamed {
+export function exportVariablesWithModifier(variables: Array<string>): ExportVariablesWithModifier {
   return {
-    type: 'EXPORT_DETAIL_NAMED',
+    type: 'EXPORT_VARIABLES_WITH_MODIFIER',
+    variables: variables,
+  }
+}
+
+// export function functionName(){...}
+export interface ExportFunction {
+  type: 'EXPORT_FUNCTION'
+  functionName: string
+}
+
+export function exportFunction(functionName: string): ExportFunction {
+  return {
+    type: 'EXPORT_FUNCTION',
+    functionName: functionName,
+  }
+}
+
+// export class ClassName {...}
+export interface ExportClass {
+  type: 'EXPORT_CLASS'
+  className: string
+}
+
+export function exportClass(className: string): ExportClass {
+  return {
+    type: 'EXPORT_CLASS',
+    className: className,
+  }
+}
+
+// export { name1, name2, …, nameN };
+// export { variable1 as name1, variable2 as name2, …, nameN };
+// export { name1 as default, … };
+export interface ExportVariable {
+  variableName: string
+  variableAlias: string | null
+}
+
+export function exportVariable(variableName: string, variableAlias: string | null): ExportVariable {
+  return {
+    variableName: variableName,
+    variableAlias: variableAlias,
+  }
+}
+
+export interface ExportVariables {
+  type: 'EXPORT_VARIABLES'
+  variables: Array<ExportVariable>
+}
+
+export function exportVariables(variables: Array<ExportVariable>): ExportVariables {
+  return {
+    type: 'EXPORT_VARIABLES',
+    variables: variables,
+  }
+}
+
+// export const { name1, name2: bar } = o;
+export interface ExportDestructuredAssignment {
+  type: 'EXPORT_DESTRUCTURED_ASSIGNMENT'
+  variables: Array<ExportVariable>
+}
+
+export function exportDestructuredAssignment(
+  variables: Array<ExportVariable>,
+): ExportDestructuredAssignment {
+  return {
+    type: 'EXPORT_DESTRUCTURED_ASSIGNMENT',
+    variables: variables,
+  }
+}
+
+// export default function (…) { … } // also class, function*
+// export default function name1(…) { … } // also class, function*
+export interface ExportDefaultFunctionOrClass {
+  type: 'EXPORT_DEFAULT_FUNCTION_OR_CLASS'
+  name: string | null
+}
+
+export function exportDefaultFunctionOrClass(name: string | null): ExportDefaultFunctionOrClass {
+  return {
+    type: 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
     name: name,
-    moduleName: moduleName,
   }
 }
 
-export interface ExportDetailModifier {
-  type: 'EXPORT_DETAIL_MODIFIER'
+// export default expression;
+export interface ExportExpression {
+  type: 'EXPORT_EXPRESSION'
 }
 
-export function exportDetailModifier(): ExportDetailModifier {
+export function exportExpression(): ExportExpression {
   return {
-    type: 'EXPORT_DETAIL_MODIFIER',
+    type: 'EXPORT_EXPRESSION',
   }
 }
 
-export interface ExportDefaultNamed {
-  type: 'EXPORT_DEFAULT_NAMED'
-  name: string
+// export * from …; // does not set the default export
+// export * as name1 from …; // Draft ECMAScript® 2O21
+export interface ReexportWildcard {
+  type: 'REEXPORT_WILDCARD'
+  reexportedModule: string
+  namespacedVariable: string | null
 }
 
-export function exportDefaultNamed(name: string): ExportDefaultNamed {
+export function reexportWildcard(
+  reexportedModule: string,
+  namespacedVariable: string | null,
+): ReexportWildcard {
   return {
-    type: 'EXPORT_DEFAULT_NAMED',
-    name: name,
+    type: 'REEXPORT_WILDCARD',
+    reexportedModule: reexportedModule,
+    namespacedVariable: namespacedVariable,
   }
 }
 
-export interface ExportDefaultModifier {
-  type: 'EXPORT_DEFAULT_MODIFIER'
-  name: string
+//export { name1, name2, …, nameN } from …;
+//export { import1 as name1, import2 as name2, …, nameN } from …;
+//export { default, … } from …;
+export interface ReexportVariables {
+  type: 'REEXPORT_VARIABLES'
+  reexportedModule: string
+  variables: Array<ExportVariable>
 }
 
-export function exportDefaultModifier(name: string): ExportDefaultModifier {
+export function reexportVariables(
+  reexportedModule: string,
+  variables: Array<ExportVariable>,
+): ReexportVariables {
   return {
-    type: 'EXPORT_DEFAULT_MODIFIER',
-    name: name,
+    type: 'REEXPORT_VARIABLES',
+    reexportedModule: reexportedModule,
+    variables: variables,
   }
 }
 
-export interface ExportDefaultExpression {
-  type: 'EXPORT_DEFAULT_EXPRESSION'
-}
+export type ExportDetail =
+  | ExportVariablesWithModifier
+  | ExportFunction
+  | ExportClass
+  | ExportVariables
+  | ExportDestructuredAssignment
+  | ExportDefaultFunctionOrClass
+  | ExportExpression
+  | ReexportWildcard
+  | ReexportVariables
 
-export function exportDefaultExpression(): ExportDefaultExpression {
-  return {
-    type: 'EXPORT_DEFAULT_EXPRESSION',
-  }
-}
+export type ExportsDetail = Array<ExportDetail>
 
-export interface ExportDefaultFunction {
-  type: 'EXPORT_DEFAULT_FUNCTION'
-}
-
-export function exportDefaultFunction(): ExportDefaultFunction {
-  return {
-    type: 'EXPORT_DEFAULT_FUNCTION',
-  }
-}
-
-export type ExportDetail = ExportDetailNamed | ExportDetailModifier
-export type ExportDefault =
-  | ExportDefaultNamed
-  | ExportDefaultModifier
-  | ExportDefaultExpression
-  | ExportDefaultFunction
-
-export function isExportDetailNamed(detail: ExportDetail): detail is ExportDetailNamed {
-  return detail.type === 'EXPORT_DETAIL_NAMED'
-}
-
-export function isExportDetailModifier(detail: ExportDetail): detail is ExportDetailModifier {
-  return detail.type === 'EXPORT_DETAIL_MODIFIER'
-}
-
-export function isExportDefaultNamed(detail: ExportDefault): detail is ExportDefaultNamed {
-  return detail.type === 'EXPORT_DEFAULT_NAMED'
-}
-
-export function isExportDefaultModifier(detail: ExportDefault): detail is ExportDefaultModifier {
-  return detail.type === 'EXPORT_DEFAULT_MODIFIER'
-}
-
-export function isExportDefaultExpression(
-  detail: ExportDefault | null | undefined,
-): detail is ExportDefaultExpression {
-  return detail?.type === 'EXPORT_DEFAULT_EXPRESSION'
-}
-
-export function isExportDefaultFunction(
-  detail: ExportDefault | null | undefined,
-): detail is ExportDefaultFunction {
-  return detail?.type === 'EXPORT_DEFAULT_FUNCTION'
-}
-
-export interface ExportsDetail {
-  defaultExport: ExportDefault | null
-  namedExports: Record<string, ExportDetail>
-}
-
-export function exportsDetail(
-  defaultExport: ExportDefault | null,
-  namedExports: Record<string, ExportDetail>,
-): ExportsDetail {
-  return {
-    defaultExport: defaultExport,
-    namedExports: namedExports,
-  }
-}
-
-export const EmptyExportsDetail: ExportsDetail = exportsDetail(null, {})
+export const EmptyExportsDetail: ExportsDetail = []
 
 export function mergeExportsDetail(first: ExportsDetail, second: ExportsDetail): ExportsDetail {
-  return {
-    defaultExport: second.defaultExport ?? first.defaultExport,
-    namedExports: {
-      ...first.namedExports,
-      ...second.namedExports,
-    },
-  }
+  return [...first, ...second]
 }
 
-export function addNamedExportToDetail(
-  detail: ExportsDetail,
-  name: string,
-  alias: string,
-  moduleName: string | undefined,
-): ExportsDetail {
-  return {
-    defaultExport: detail.defaultExport,
-    namedExports: {
-      ...detail.namedExports,
-      [name]: exportDetailNamed(alias, moduleName),
-    },
-  }
+export function isExportDestructuredAssignment(
+  exportDetail: ExportDetail,
+): exportDetail is ExportDestructuredAssignment {
+  return exportDetail.type === 'EXPORT_DESTRUCTURED_ASSIGNMENT'
 }
 
-export function addModifierExportToDetail(detail: ExportsDetail, name: string): ExportsDetail {
-  return {
-    defaultExport: detail.defaultExport,
-    namedExports: {
-      ...detail.namedExports,
-      [name]: exportDetailModifier(),
-    },
-  }
-}
-
-export function setNamedDefaultExportInDetail(detail: ExportsDetail, name: string): ExportsDetail {
-  return {
-    defaultExport: exportDefaultNamed(name),
-    namedExports: detail.namedExports,
-  }
-}
-
-export function setModifierDefaultExportInDetail(
-  detail: ExportsDetail,
-  name: string,
-): ExportsDetail {
-  return {
-    defaultExport: exportDefaultModifier(name),
-    namedExports: detail.namedExports,
-  }
-}
-
-export function setExpressionDefaultExportInDetail(detail: ExportsDetail): ExportsDetail {
-  return {
-    defaultExport: exportDefaultExpression(),
-    namedExports: detail.namedExports,
-  }
-}
-
-export function setFunctionDefaultExportInDetail(detail: ExportsDetail): ExportsDetail {
-  return {
-    defaultExport: exportDefaultFunction(),
-    namedExports: detail.namedExports,
-  }
+export function isReexportExportDetail(
+  exportDetail: ExportDetail,
+): exportDetail is ReexportWildcard | ReexportVariables {
+  return exportDetail.type === 'REEXPORT_WILDCARD' || exportDetail.type === 'REEXPORT_VARIABLES'
 }
 
 export interface HighlightBounds {
