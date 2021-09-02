@@ -464,7 +464,7 @@ import {
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
-import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
+import { fastForEach, getProjectLockedKey, NO_OP } from '../../../core/shared/utils'
 import { PathForSceneDataLabel, getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
@@ -1442,6 +1442,7 @@ function loadModel(newModel: EditorModel, oldModel: EditorModel): EditorModel {
     localProjectList: oldModel.projectList,
     projectList: oldModel.projectList,
     showcaseProjects: oldModel.showcaseProjects,
+    vscodeBridgeReady: oldModel.vscodeBridgeReady,
   })
 }
 
@@ -1585,6 +1586,7 @@ export const UPDATE_FNS = {
       },
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
+      loadFinished: !action.loadingMode,
     }
     const newModelMergedWithStoredState: EditorModel = mergeStoredEditorStateIntoEditorState(
       action.storedState,
@@ -5136,9 +5138,48 @@ export async function load(
   renderEditorRoot: () => void,
   retryFetchNodeModules: boolean = true,
 ): Promise<void> {
+  renderEditorRoot()
+
   // this action is now async!
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
+  dispatch(
+    [
+      {
+        action: 'LOAD',
+        model: migratedModel,
+        nodeModules: {},
+        packageResult: {},
+        codeResultCache: {
+          skipDeepFreeze: true,
+          exportsInfo: [],
+          cache: {},
+          error: null,
+          curriedRequireFn: () => {
+            return () => {
+              return null
+            }
+          },
+          curriedResolveFn: () => {
+            return () => {
+              return left('cica')
+            }
+          },
+          projectModules: {},
+          evaluationCache: {},
+        },
+        title: title,
+        projectId: projectId,
+        storedState: null,
+        safeMode: false,
+        loadingMode: true,
+      },
+    ],
+    'everyone',
+  )
+
+  // return
+
   const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
@@ -5178,8 +5219,6 @@ export async function load(
 
   const safeMode = await localforage.getItem<boolean>(getProjectLockedKey(projectId))
 
-  renderEditorRoot()
-
   dispatch(
     [
       {
@@ -5192,6 +5231,7 @@ export async function load(
         projectId: projectId,
         storedState: storedState,
         safeMode: safeMode,
+        loadingMode: false,
       },
     ],
     'everyone',

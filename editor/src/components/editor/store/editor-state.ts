@@ -453,6 +453,7 @@ export interface EditorState {
   pasteTargetsToIgnore: ElementPath[]
   parseOrPrintInFlight: boolean
   safeMode: boolean
+  loadFinished: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
   focusedElementPath: ElementPath | null

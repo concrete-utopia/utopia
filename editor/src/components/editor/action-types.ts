@@ -243,6 +243,7 @@ export type Load = {
   projectId: string
   storedState: StoredEditorState | null
   safeMode: boolean
+  loadingMode: boolean
 }
 
 export type Undo = {

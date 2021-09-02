@@ -158,6 +158,8 @@ function watchForChanges(dispatch: EditorDispatch): void {
 
 let currentInit: Promise<void> = Promise.resolve()
 
+let currentProjectID: string | null = null
+
 export async function initVSCodeBridge(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
@@ -196,6 +198,12 @@ export async function initVSCodeBridge(
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }
 
+  if (currentProjectID != null) {
+    // disallow re-initing vscode
+    return
+  }
+
+  currentProjectID = projectID
   // Prevent multiple initialisations from driving over each other.
   currentInit = currentInit.then(innerInit)
 }

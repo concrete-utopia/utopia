@@ -44,6 +44,10 @@ export const CanvasWrapperComponent = betterReactMemo(
       return getAllCodeEditorErrors(editorState, 'fatal', true)
     }, [editorState])
 
+    const canvasLoaded = useEditorState((store) => {
+      return store.editor.loadFinished
+    }, 'CanvasWrapperComponent canvasLoaded')
+
     const safeMode = useEditorState((store) => {
       return store.editor.safeMode
     }, 'CanvasWrapperComponent safeMode')
@@ -68,7 +72,7 @@ export const CanvasWrapperComponent = betterReactMemo(
           // ^ prevents Monaco from pushing the inspector out
         }}
       >
-        {fatalErrors.length === 0 && !safeMode ? (
+        {fatalErrors.length === 0 && !safeMode && canvasLoaded ? (
           <EditorCanvas
             editor={editorState}
             model={createCanvasModelKILLME(editorState, derivedState)}
@@ -97,6 +101,7 @@ export const CanvasWrapperComponent = betterReactMemo(
             }}
           >
             {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
+            {!canvasLoaded ? <>Brew a Coffee, Canvas Loading</> : null}
             <ModeSelectButtons />
           </FlexColumn>
         </FlexRow>

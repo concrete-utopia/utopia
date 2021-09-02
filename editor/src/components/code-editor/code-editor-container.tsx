@@ -8,14 +8,14 @@ import { reduxDevtoolsLogMessage } from '../../core/shared/redux-devtools'
 
 const VSCodeIframeContainer = betterReactMemo(
   'VSCodeIframeContainer',
-  (props: { projectID: string }) => {
+  (props: { projectID: string | null }) => {
     const projectID = props.projectID
     const baseIframeSrc = createIframeUrl(
       MONACO_EDITOR_IFRAME_BASE_URL,
       'vscode-editor-outer-iframe',
     )
     const url = new URL(baseIframeSrc)
-    url.searchParams.append('project_id', projectID)
+    url.searchParams.append('project_id', projectID ?? 'null')
 
     return (
       <iframe
@@ -41,16 +41,9 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', () => {
     }
   }, 'CodeEditorWrapper')
 
-  if (selectedProps.vscodeBridgeReady) {
-    return (
-      <VSCodeIframeContainer
-        projectID={forceNotNull(
-          'VSCode Bridge ID must be set when launching the code editor',
-          selectedProps.vscodeBridgeId,
-        )}
-      />
-    )
-  } else {
-    return <div style={{ flex: 1 }}>Loading...</div>
-  }
+  return <VSCodeIframeContainer projectID={selectedProps.vscodeBridgeId} />
+  // if (selectedProps.vscodeBridgeReady) {
+  // } else {
+  //   return <div style={{ flex: 1 }}>Loading...</div>
+  // }
 })
