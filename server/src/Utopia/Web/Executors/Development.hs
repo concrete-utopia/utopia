@@ -53,22 +53,23 @@ import           Web.Cookie
   Any long living resources like database pools live in here.
 -}
 data DevServerResources = DevServerResources
-                        { _commitHash      :: Text
-                        , _projectPool     :: Pool SqlBackend
-                        , _serverPort      :: Int
-                        , _silentMigration :: Bool
-                        , _logOnStartup    :: Bool
-                        , _proxyManager    :: Maybe Manager
-                        , _auth0Resources  :: Maybe Auth0Resources
-                        , _awsResources    :: Maybe AWSResources
-                        , _sessionState    :: SessionState
-                        , _storeForMetrics :: Store
-                        , _databaseMetrics :: DB.DatabaseMetrics
-                        , _registryManager :: Manager
-                        , _assetsCaches    :: AssetsCaches
-                        , _nodeSemaphore   :: QSem
-                        , _locksRef        :: PackageVersionLocksRef
-                        , _branchDownloads :: Maybe BranchDownloads
+                        { _commitHash            :: Text
+                        , _projectPool           :: Pool SqlBackend
+                        , _serverPort            :: Int
+                        , _silentMigration       :: Bool
+                        , _logOnStartup          :: Bool
+                        , _proxyManager          :: Maybe Manager
+                        , _auth0Resources        :: Maybe Auth0Resources
+                        , _awsResources          :: Maybe AWSResources
+                        , _sessionState          :: SessionState
+                        , _storeForMetrics       :: Store
+                        , _databaseMetrics       :: DB.DatabaseMetrics
+                        , _registryManager       :: Manager
+                        , _assetsCaches          :: AssetsCaches
+                        , _nodeSemaphore         :: QSem
+                        , _locksRef              :: PackageVersionLocksRef
+                        , _branchDownloads       :: Maybe BranchDownloads
+                        , _matchingVersionsCache :: MatchingVersionsCache
                         }
 
 $(makeFieldsNoPrefix ''DevServerResources)
@@ -245,7 +246,8 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
   return $ action packageMetadata
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   semaphore <- fmap _nodeSemaphore ask
-  packageMetadata <- liftIO $ findMatchingVersions semaphore javascriptPackageName maybeJavascriptPackageVersion
+  matchingVersionsCache <- fmap _matchingVersionsCache ask
+  packageMetadata <- liftIO $ findMatchingVersions semaphore matchingVersionsCache javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -356,6 +358,7 @@ initialiseResources = do
   _locksRef <- newIORef mempty
   let _silentMigration = False
   let _logOnStartup = True
+  _matchingVersionsCache <- newMatchingVersionsCache
   return $ DevServerResources{..}
 
 devEnvironmentRuntime :: EnvironmentRuntime DevServerResources
