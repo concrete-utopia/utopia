@@ -83,7 +83,7 @@ import { ProjectContentTreeRoot, getContentsTreeFileFromString, walkContentsTree
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
-import { NO_OP } from '../../core/shared/utils'
+import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
 import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
@@ -263,6 +263,21 @@ function useClearSpyMetadataOnRemount(
 
   canvasMountCountRef.current = canvasMountCount
   domWalkerInvalidateCountRef.current = domWalkerInvalidateCount
+}
+
+function clearSpyCollectorInvalidPaths(
+  validPaths: Array<ElementPath>,
+  spyCollectorContextRef: UiJsxCanvasContextData,
+): void {
+  const spyKeys = Object.keys(spyCollectorContextRef.current.spyValues.metadata)
+  fastForEach(spyKeys, (elementPathString) => {
+    const elementPath = EP.fromString(elementPathString)
+    const staticElementPath = EP.makeLastPartOfPathStatic(elementPath)
+    if (validPaths.every((validPath) => !EP.pathsEqual(validPath, staticElementPath))) {
+      // we found a path that is no longer valid. let's delete it from the spy accumulator!
+      delete spyCollectorContextRef.current.spyValues.metadata[elementPathString]
+    }
+  })
 }
 
 export const UiJsxCanvas = betterReactMemo(
@@ -456,6 +471,8 @@ export const UiJsxCanvas = betterReactMemo(
       transientFilesState,
       resolve,
     )
+
+    clearSpyCollectorInvalidPaths(rootValidPaths, metadataContext)
 
     const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
       validPaths: rootValidPaths,
