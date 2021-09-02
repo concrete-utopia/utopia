@@ -1069,6 +1069,7 @@ describe('LOAD', () => {
       projectId: '',
       storedState: null,
       safeMode: false,
+      loadingMode: false,
     }
 
     const startingState = deepFreeze(createEditorState(NO_OP))

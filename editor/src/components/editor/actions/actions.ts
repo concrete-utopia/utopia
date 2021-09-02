@@ -1069,6 +1069,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     codeEditorErrors: currentEditor.codeEditorErrors,
     parseOrPrintInFlight: false,
     safeMode: currentEditor.safeMode,
+    loadFinished: currentEditor.loadFinished,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
     focusedElementPath: currentEditor.focusedElementPath,

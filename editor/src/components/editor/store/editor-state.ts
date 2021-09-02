@@ -1224,6 +1224,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,
     safeMode: false,
+    loadFinished: false,
     saveError: false,
     vscodeBridgeReady: false,
     focusedElementPath: null,
@@ -1458,6 +1459,7 @@ export function editorModelFromPersistentModel(
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,
     safeMode: false,
+    loadFinished: false,
     saveError: false,
     navigator: {
       dropTargetHint: {
