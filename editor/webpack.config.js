@@ -179,6 +179,16 @@ const config = {
           }),
         ]
       : []),
+
+    // setting up the various process.env.VARIABLE replacements
+    new webpack.EnvironmentPlugin([
+      'REACT_APP_ENVIRONMENT_CONFIG',
+      'REACT_APP_AUTH0_CLIENT_ID',
+      'REACT_APP_AUTH0_ENDPOINT',
+      'REACT_APP_AUTH0_REDIRECT_URI',
+      'REACT_APP_COMMIT_HASH',
+      'GOOGLE_WEB_FONTS_KEY',
+    ]),
   ],
 
   resolve: {
