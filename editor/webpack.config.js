@@ -288,23 +288,29 @@ const config = {
     ? {
         host: '0.0.0.0',
         port: 8088,
-        contentBase: path.join(__dirname, 'resources'),
-        watchContentBase: true, // Watch the above folder for changes too
-        overlay: {
-          warnings: false,
-          errors: true,
-        },
-        disableHostCheck: true, // Because we are proxying this
-        stats: {
-          assets: false,
-          colors: true,
-          version: false,
-          hash: false,
-          timings: false,
-          chunks: false,
-          chunkModules: false,
-        },
+        allowedHosts: 'all', // Because we are proxying this
         hot: hot,
+        static: {
+          directory: path.join(__dirname, 'resources'),
+          watch: true,
+        },
+        devMiddleware: {
+          stats: {
+            assets: false,
+            colors: true,
+            version: false,
+            hash: false,
+            timings: false,
+            chunks: false,
+            chunkModules: false,
+          },
+        },
+        client: {
+          overlay: {
+            warnings: false,
+            errors: true,
+          },
+        },
       }
     : {},
 
