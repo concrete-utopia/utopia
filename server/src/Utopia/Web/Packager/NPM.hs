@@ -9,7 +9,9 @@ import           Control.Monad.Catch
 import           Data.Aeson
 import qualified Data.ByteString.Lazy      as BL
 import           Data.Conduit.Combinators
+import           Data.IORef
 import           Data.List                 (isSuffixOf, stripPrefix)
+import           Data.Time.Clock
 import           Protolude                 hiding (catch, finally, mapM)
 import           RIO                       (readFileUtf8)
 import           System.Directory
@@ -21,19 +23,58 @@ import           System.Process
 
 import qualified Data.HashMap.Strict       as Map
 
+type MatchingVersionsCache = IORef (Map.HashMap (Text, (Maybe Text)) (Maybe Value, UTCTime))
+
+newMatchingVersionsCache :: IO MatchingVersionsCache
+newMatchingVersionsCache = newIORef mempty
+
+matchingVersionsCacheTimeLimit :: NominalDiffTime
+matchingVersionsCacheTimeLimit = 60 * 60 * 24 -- 1 day.
+
 handleVersionsLookupError :: IOException -> IO (Maybe Value)
 handleVersionsLookupError _ = return Nothing
 
+fetchVersionWithCache :: MatchingVersionsCache -> Text -> Maybe Text -> IO (Maybe Value) -> IO (Maybe Value)
+fetchVersionWithCache matchingVersionsCache jsPackageName maybePackageVersion fallback = do
+  let key = (jsPackageName, maybePackageVersion)
+  fromCache <- fmap (Map.lookup key) $ readIORef matchingVersionsCache
+  now <- getCurrentTime
+  let updateCache = do
+        -- Get the result from the fallback.
+        fallbackResult <- fallback
+        let expiryTime = addUTCTime matchingVersionsCacheTimeLimit now
+        let valueToCache = (fallbackResult, expiryTime)
+        -- Update the cache map.
+        _ <- atomicModifyIORef' matchingVersionsCache (\map -> (Map.insert key valueToCache map, ()))
+        pure fallbackResult
+  case fromCache of
+    -- No value is present in the cache.
+    Nothing -> updateCache
+    -- A value is present in the cache.
+    Just (cachedValue, expiryTime) -> do
+      -- Update this in the background, if the expiry time is before now.
+      when (expiryTime < now) $ void $ forkIO $ void updateCache
+      pure cachedValue
+
+packageAndVersionAsText :: Text -> Maybe Text -> Text
+packageAndVersionAsText jsPackageName (Just maybePackageVersion) = jsPackageName <> "@" <> maybePackageVersion
+packageAndVersionAsText jsPackageName Nothing = jsPackageName
+
 -- Find Applicable Versions using `npm view packageName@version version --json
-findMatchingVersions :: QSem -> Text -> Maybe Text -> IO (Maybe Value)
-findMatchingVersions semaphore jsPackageName maybePackageVersion = withSemaphore semaphore $ do
-  let atPackageVersion = maybe "" (\v -> "@" <> toS v) maybePackageVersion
-  let packageNameAtPackageVersion = jsPackageName <> atPackageVersion
-  let versionsProc = proc "npm" ["view", toS packageNameAtPackageVersion, "version", "--json"]
-  foundVersions <- (flip catch) handleVersionsLookupError $ do
-    versionsResult <- readCreateProcess versionsProc ""
-    return $ decode $ toS versionsResult
-  return foundVersions
+findMatchingVersions :: QSem -> MatchingVersionsCache -> Text -> Maybe Text -> IO (Maybe Value)
+findMatchingVersions semaphore matchingVersionsCache jsPackageName maybePackageVersion = do
+  fetchVersionWithCache matchingVersionsCache jsPackageName maybePackageVersion $ do
+    withSemaphore semaphore $ do
+      let packageVersionText = packageAndVersionAsText jsPackageName maybePackageVersion
+      putText ("Starting NPM Versions Lookup: " <> packageVersionText)
+      let atPackageVersion = maybe "" (\v -> "@" <> toS v) maybePackageVersion
+      let packageNameAtPackageVersion = jsPackageName <> atPackageVersion
+      let versionsProc = proc "npm" ["view", toS packageNameAtPackageVersion, "version", "--json"]
+      foundVersions <- (flip catch) handleVersionsLookupError $ do
+        versionsResult <- readCreateProcess versionsProc ""
+        return $ decode $ toS versionsResult
+      putText ("Finished NPM Versions Lookup: " <> packageVersionText)
+      return foundVersions
 
 withSemaphore :: QSem -> IO a -> IO a
 withSemaphore semaphore action = (flip finally) (signalQSem semaphore) $ do
