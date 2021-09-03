@@ -2793,6 +2793,7 @@ export var App = (props) => <View data-uid='bbb'>
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -2917,6 +2918,7 @@ return { getSizing: getSizing, spacing: spacing };`
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true, false, true),
       imports,
       [...topLevelElements],
@@ -2972,6 +2974,7 @@ return { getSizing: getSizing, spacing: spacing };`
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -3050,6 +3053,7 @@ export var whatever = props => {
     const parsedCode = testParseCode(code)
     if (isParseSuccess(parsedCode)) {
       const printedCode = printCode(
+        '/index.js',
         printCodeOptions(false, true, true),
         sampleImportsForTests,
         parsedCode.topLevelElements,
@@ -3099,6 +3103,7 @@ export var whatever = props => {
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -3158,6 +3163,7 @@ export var whatever = props => {
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -3248,6 +3254,7 @@ export var whatever = props => {
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -3284,6 +3291,7 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInSto
     const parsedCode = testParseCode(code)
     if (isParseSuccess(parsedCode)) {
       const printedCode = printCode(
+        '/index.js',
         printCodeOptions(false, true, true),
         emptyImports(),
         parsedCode.topLevelElements,
@@ -3496,6 +3504,7 @@ return { test: test };`
       'storyboard',
     )
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       components,
@@ -3767,6 +3776,7 @@ export var App = props => {
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'App')
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       sampleImportsForTests,
       [component],
@@ -4056,6 +4066,7 @@ export var whatever = props => {
       emptyComments,
     )
     const actualResult = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       sampleImportsForTests,
       [exported],
@@ -4105,6 +4116,7 @@ export var whatever = props => {
       emptyComments,
     )
     const actualResult = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       sampleImportsForTests,
       [exported],
@@ -4571,6 +4583,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
   it('inserts data-uid into elements as part of the parse', () => {
     function checkDataUIDsPopulated(printableProjectContent: PrintableProjectContent): boolean {
       const printedCode = printCode(
+        '/index.js',
         printCodeOptions(false, true, false, false, true),
         printableProjectContent.imports,
         printableProjectContent.topLevelElements,

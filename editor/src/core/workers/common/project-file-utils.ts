@@ -32,6 +32,7 @@ export function codeNeedsParsing(revisionsState: RevisionsState): boolean {
 }
 
 export function getTextFileContents(
+  filename: string,
   file: TextFile,
   pretty: boolean,
   allowPrinting: boolean,
@@ -42,6 +43,7 @@ export function getTextFileContents(
     isParseSuccess(file.fileContents.parsed)
   ) {
     return printCode(
+      filename,
       printCodeOptions(false, pretty, true),
       file.fileContents.parsed.imports,
       file.fileContents.parsed.topLevelElements,
@@ -84,22 +86,34 @@ export function mergeImports(fileUri: string, first: Imports, second: Imports): 
   allKeys.forEach((key) => {
     let existingKeyToUse = key
     const absoluteKey = stripExtension(absolutePathFromRelativePath(fileUri, false, key))
-    if (absoluteKeysToRelativeKeys[absoluteKey] != null) {
-      existingKeyToUse = absoluteKeysToRelativeKeys[absoluteKey]
-    } else {
+    if (absoluteKeysToRelativeKeys[absoluteKey] == null) {
       absoluteKeysToRelativeKeys[absoluteKey] = key
+    } else {
+      existingKeyToUse = absoluteKeysToRelativeKeys[absoluteKey]
     }
-    const firstValue = first[existingKeyToUse]
+    const firstValue = first[key]
     const secondValue = second[key]
+    let mergedValues: ImportDetails | undefined
     if (firstValue === undefined) {
-      if (secondValue !== undefined) {
-        imports[existingKeyToUse] = secondValue
+      if (secondValue === undefined) {
+        mergedValues = undefined
+      } else {
+        mergedValues = secondValue
       }
     } else {
       if (secondValue === undefined) {
-        imports[existingKeyToUse] = firstValue
+        mergedValues = firstValue
       } else {
-        imports[existingKeyToUse] = mergeImportDetails(firstValue, secondValue)
+        mergedValues = mergeImportDetails(firstValue, secondValue)
+      }
+    }
+    // Merge the two values into whatever may already exist.
+    const existingValue = imports[existingKeyToUse]
+    if (mergedValues !== undefined) {
+      if (existingValue === undefined) {
+        imports[existingKeyToUse] = mergedValues
+      } else {
+        imports[existingKeyToUse] = mergeImportDetails(existingValue, mergedValues)
       }
     }
   })

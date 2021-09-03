@@ -164,7 +164,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       false,
     ).formatted
 
-    testParseModifyPrint(code, expectedCode, (success: ParseSuccess) => {
+    testParseModifyPrint('/index.js', code, expectedCode, (success: ParseSuccess) => {
       const firstComponent = success.topLevelElements.find(isUtopiaJSXComponent)
       if (firstComponent != null) {
         const view = firstComponent.rootElement

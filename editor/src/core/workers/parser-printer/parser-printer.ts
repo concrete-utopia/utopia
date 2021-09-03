@@ -134,6 +134,8 @@ import { WorkerCodeUpdate, WorkerParsedUpdate } from '../../../components/editor
 import { fixParseSuccessUIDs } from './uid-fix'
 import { applyPrettier } from 'utopia-vscode-common'
 import { BakedInStoryboardVariableName } from '../../model/scene-utils'
+import { stripExtension } from '../../../components/custom-code/custom-code-utils'
+import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -772,6 +774,7 @@ function printTopLevelElements(
 }
 
 function printCodeImpl(
+  filePath: string,
   printOptions: PrintCodeOptions,
   imports: Imports,
   topLevelElements: Array<TopLevelElement>,
@@ -788,9 +791,19 @@ function printCodeImpl(
 
   fastForEach(importOrigins, (importOrigin) => {
     const importForClause = imports[importOrigin]
-    const matchingTopLevelElements: ImportStatement[] = topLevelElements.filter(
-      (e) => isImportStatement(e) && e.module === importOrigin,
-    ) as ImportStatement[]
+    const absoluteImportOrigin = stripExtension(
+      absolutePathFromRelativePath(filePath, false, importOrigin),
+    )
+    const matchingTopLevelElements: ImportStatement[] = topLevelElements.filter((e) => {
+      if (isImportStatement(e)) {
+        const absoluteImportModule = stripExtension(
+          absolutePathFromRelativePath(filePath, false, e.module),
+        )
+        return absoluteImportOrigin === absoluteImportModule
+      } else {
+        return false
+      }
+    }) as ImportStatement[]
     const { importedWithName, importedFromWithin, importedAs } = importForClause
 
     const hasImportWithName = matchingTopLevelElements.some((e) => e.importWithName)

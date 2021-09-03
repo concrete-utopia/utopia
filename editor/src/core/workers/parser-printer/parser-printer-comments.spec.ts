@@ -112,7 +112,7 @@ describe('Parsing and printing code with comments', () => {
     false,
   ).formatted
 
-  const parsedThenPrinted = parseThenPrint(code)
+  const parsedThenPrinted = parseThenPrint('/index.js', code)
 
   forEachValue((commentText, commentKey) => {
     const testFn = notYetSupported.includes(commentKey) ? xit : it

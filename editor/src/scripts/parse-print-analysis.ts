@@ -32,6 +32,7 @@ async function processFile(
     (_) => initialPrettifiedContents,
     (success) => {
       return printCode(
+        javascriptFilePath,
         printCodeOptions(false, true, false, true),
         success.imports,
         success.topLevelElements,

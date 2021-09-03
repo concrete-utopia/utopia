@@ -203,33 +203,40 @@ export function testParseCode(contents: string): ParsedTextFile {
   return result
 }
 
-export function parseThenPrint(originalCode: string): string {
-  return parseModifyPrint(originalCode, (ps) => ps)
+export function parseThenPrint(filename: string, originalCode: string): string {
+  return parseModifyPrint(filename, originalCode, (ps) => ps)
 }
 
-export function testParseThenPrint(originalCode: string, expectedFinalCode: string): void {
-  return testParseModifyPrint(originalCode, expectedFinalCode, (ps) => ps)
-}
-
-export function testParseThenPrintWithoutUids(
+export function testParseThenPrint(
+  filename: string,
   originalCode: string,
   expectedFinalCode: string,
 ): void {
-  const printedCode = parseModifyPrint(originalCode, (ps) => ps, true)
+  return testParseModifyPrint(filename, originalCode, expectedFinalCode, (ps) => ps)
+}
+
+export function testParseThenPrintWithoutUids(
+  filename: string,
+  originalCode: string,
+  expectedFinalCode: string,
+): void {
+  const printedCode = parseModifyPrint(filename, originalCode, (ps) => ps, true)
   expect(printedCode).toEqual(expectedFinalCode)
 }
 
 export function testParseModifyPrint(
+  filename: string,
   originalCode: string,
   expectedFinalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
   stripUids?: boolean,
 ): void {
-  const printedCode = parseModifyPrint(originalCode, transform, stripUids)
+  const printedCode = parseModifyPrint(filename, originalCode, transform, stripUids)
   expect(printedCode).toEqual(expectedFinalCode)
 }
 
 function parseModifyPrint(
+  filename: string,
   originalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
   stripUids?: boolean,
@@ -240,6 +247,7 @@ function parseModifyPrint(
     (initialParseSuccess) => {
       const transformed = transform(initialParseSuccess)
       const printedCode = printCode(
+        filename,
         printCodeOptions(false, true, true, stripUids),
         transformed.imports,
         transformed.topLevelElements,
