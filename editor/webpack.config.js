@@ -84,7 +84,6 @@ const config = {
     library: 'utopia',
     libraryTarget: 'umd',
     publicPath: `${BaseDomain}/editor/`,
-    globalObject: 'this',
   },
 
   plugins: [
