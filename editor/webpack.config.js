@@ -196,8 +196,11 @@ const config = {
       'REACT_APP_AUTH0_ENDPOINT',
       'REACT_APP_AUTH0_REDIRECT_URI',
       'REACT_APP_COMMIT_HASH',
-      'GOOGLE_WEB_FONTS_KEY',
     ]),
+
+    new webpack.EnvironmentPlugin({
+      GOOGLE_WEB_FONTS_KEY: '', // providing an empty default for GOOGLE_WEB_FONTS_KEY for now
+    }),
   ],
 
   resolve: {
