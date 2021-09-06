@@ -521,7 +521,7 @@ export function renderComponentUsingJsxFactoryFunction(
 }
 
 function fixStyleObjectRemoveCommentOnlyValues(props: Readonly<unknown>): any {
-  if (typeof props === 'object' && 'style' in props) {
+  if (typeof props === 'object' && 'style' in props && (props as any)['style'] != null) {
     const propsAsAny = props as any
     const style = propsAsAny.style
     const fixedStyle: any = objectMap((styleProp) => {
