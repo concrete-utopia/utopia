@@ -15,7 +15,7 @@ describe('parseCode', () => {
       false,
     ).formatted
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
-    expect(testPrintParsedTextFile(actualResult)).toEqual(code)
+    expect(testPrintParsedTextFile('/index.js', actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
       Array [
@@ -38,7 +38,7 @@ describe('parseCode', () => {
       false,
     ).formatted
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
-    expect(testPrintParsedTextFile(actualResult)).toEqual(code)
+    expect(testPrintParsedTextFile('/index.js', actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
       Array [

@@ -1174,6 +1174,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
@@ -1275,6 +1276,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
@@ -1375,6 +1377,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
@@ -1466,6 +1469,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
@@ -1551,6 +1555,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,

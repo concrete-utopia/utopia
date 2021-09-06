@@ -311,6 +311,7 @@ export var app = (props) => {
           return tle
         })
         return printCode(
+          '/index.js',
           printCodeOptions(false, true, false, true),
           success.imports,
           updatedTopLevelElements,

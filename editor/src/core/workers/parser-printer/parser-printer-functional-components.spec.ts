@@ -862,6 +862,7 @@ describe('Parsing, printing, reparsing a function component with props', () => {
     const firstAsParseSuccess = firstParse
 
     const printed = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       firstAsParseSuccess.imports,
       firstAsParseSuccess.topLevelElements,

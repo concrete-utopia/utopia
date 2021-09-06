@@ -221,7 +221,7 @@ type DetailedTypeInfo = {
 }
 
 // FIXME This needs extracting, but getCodeFileContents relies on the parse printer for printing
-function getProjectFileContentsAsString(file: ProjectFile): string | null {
+function getProjectFileContentsAsString(filepath: string, file: ProjectFile): string | null {
   switch (file.type) {
     case 'ASSET_FILE':
       return ''
@@ -230,7 +230,7 @@ function getProjectFileContentsAsString(file: ProjectFile): string | null {
     case 'IMAGE_FILE':
       return file.base64 ?? ''
     case 'TEXT_FILE':
-      return getTextFileContents(file, false, true)
+      return getTextFileContents(filepath, file, false, true)
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
@@ -264,7 +264,7 @@ export function handleMessage(
         if (typeof workerMessage.content === 'string') {
           content = workerMessage.content
         } else {
-          content = getProjectFileContentsAsString(workerMessage.content)
+          content = getProjectFileContentsAsString(workerMessage.filename, workerMessage.content)
         }
 
         if (content != null) {
@@ -344,7 +344,7 @@ export function initBrowserFS(
   })
 
   walkContentsTree(projectContents, (filename, file) => {
-    const fileContents = getProjectFileContentsAsString(file)
+    const fileContents = getProjectFileContentsAsString(filename, file)
     if (fileContents != null) {
       writeFile(fs, filename, fileContents)
     }
