@@ -83,6 +83,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       useStore={storeHook}
       spyCollector={spyCollector}
       propertyControlsInfoSupported={false}
+      vscodeBridgeReady={false}
     />,
   )
   const noFileOpenText = result.getByText('No file open')

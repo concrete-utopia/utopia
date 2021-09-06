@@ -149,6 +149,9 @@ import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
 import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
+
+import { v4 as UUID } from 'uuid'
+
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
@@ -332,7 +335,7 @@ export interface ResizeOptions {
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
-  vscodeBridgeId: string | null
+  vscodeBridgeId: string
   forkedFromProjectId: string | null
   appID: string | null
   projectName: string
@@ -1090,7 +1093,7 @@ export const BaseCanvasOffsetLeftPane = {
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
-    vscodeBridgeId: null,
+    vscodeBridgeId: UUID(),
     forkedFromProjectId: null,
     appID: null,
     projectName: createNewProjectName(),
@@ -1336,7 +1339,7 @@ export function editorModelFromPersistentModel(
   )
   const editor: EditorState = {
     id: null,
-    vscodeBridgeId: null,
+    vscodeBridgeId: UUID(),
     forkedFromProjectId: persistentModel.forkedFromProjectId,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),
