@@ -58,6 +58,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   )
 }
 `
-    testParseThenPrint(originalCode, originalCode)
+    testParseThenPrint('/index.js', originalCode, originalCode)
   })
 })

@@ -107,6 +107,6 @@ export var storyboard = (props) => {
   )
 }
 `
-    testParseThenPrint(originalCode, printedCode)
+    testParseThenPrint('/index.js', originalCode, printedCode)
   })
 })

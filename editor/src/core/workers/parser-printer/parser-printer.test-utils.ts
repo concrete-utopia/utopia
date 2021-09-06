@@ -71,17 +71,15 @@ import {
   mapParsedTextFile,
   forEachParseSuccess,
   ExportsDetail,
-  exportsDetail,
-  ExportDetailNamed,
-  exportDetailNamed,
-  ExportDetailModifier,
-  exportDetailModifier,
   ExportDetail,
   EmptyExportsDetail,
   StaticElementPathPart,
   isParseSuccess,
   isTextFile,
   ProjectFile,
+  ExportVariables,
+  exportVariable,
+  exportVariables,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
@@ -203,33 +201,40 @@ export function testParseCode(contents: string): ParsedTextFile {
   return result
 }
 
-export function parseThenPrint(originalCode: string): string {
-  return parseModifyPrint(originalCode, (ps) => ps)
+export function parseThenPrint(filename: string, originalCode: string): string {
+  return parseModifyPrint(filename, originalCode, (ps) => ps)
 }
 
-export function testParseThenPrint(originalCode: string, expectedFinalCode: string): void {
-  return testParseModifyPrint(originalCode, expectedFinalCode, (ps) => ps)
-}
-
-export function testParseThenPrintWithoutUids(
+export function testParseThenPrint(
+  filename: string,
   originalCode: string,
   expectedFinalCode: string,
 ): void {
-  const printedCode = parseModifyPrint(originalCode, (ps) => ps, true)
+  return testParseModifyPrint(filename, originalCode, expectedFinalCode, (ps) => ps)
+}
+
+export function testParseThenPrintWithoutUids(
+  filename: string,
+  originalCode: string,
+  expectedFinalCode: string,
+): void {
+  const printedCode = parseModifyPrint(filename, originalCode, (ps) => ps, true)
   expect(printedCode).toEqual(expectedFinalCode)
 }
 
 export function testParseModifyPrint(
+  filename: string,
   originalCode: string,
   expectedFinalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
   stripUids?: boolean,
 ): void {
-  const printedCode = parseModifyPrint(originalCode, transform, stripUids)
+  const printedCode = parseModifyPrint(filename, originalCode, transform, stripUids)
   expect(printedCode).toEqual(expectedFinalCode)
 }
 
 function parseModifyPrint(
+  filename: string,
   originalCode: string,
   transform: (parseSuccess: ParseSuccess) => ParseSuccess,
   stripUids?: boolean,
@@ -240,6 +245,7 @@ function parseModifyPrint(
     (initialParseSuccess) => {
       const transformed = transform(initialParseSuccess)
       const printedCode = printCode(
+        filename,
         printCodeOptions(false, true, true, stripUids),
         transformed.imports,
         transformed.topLevelElements,
@@ -657,33 +663,21 @@ export function topLevelElementArbitrary(): Arbitrary<TopLevelElement> {
   )
 }
 
-export function exportDetailNamedArbitrary(
-  possibleNames: Array<string>,
-): Arbitrary<ExportDetailNamed> {
-  return FastCheck.constantFrom(...possibleNames).map((name) => exportDetailNamed(name, undefined))
-}
-
-export function exportDetailModifierArbitrary(): Arbitrary<ExportDetailModifier> {
-  return lowercaseStringArbitrary().map(exportDetailModifier)
+export function exportVariablesArbitrary(possibleNames: Array<string>): Arbitrary<ExportVariables> {
+  return FastCheck.array(
+    FastCheck.constantFrom(...possibleNames).map((name) => exportVariable(name, null)),
+  ).map(exportVariables)
 }
 
 export function exportDetailArbitrary(possibleNames: Array<string>): Arbitrary<ExportDetail> {
-  return FastCheck.oneof<ExportDetail>(
-    exportDetailNamedArbitrary(possibleNames),
-    exportDetailModifierArbitrary(),
-  )
+  return FastCheck.oneof<ExportDetail>(exportVariablesArbitrary(possibleNames))
 }
 
 export function exportsDetailArbitrary(possibleNames: Array<string>): Arbitrary<ExportsDetail> {
   if (possibleNames.length === 0) {
     return FastCheck.constant(EmptyExportsDetail)
   } else {
-    return FastCheck.tuple(
-      FastCheck.constant(null), //FastCheck.option(exportDetailNamedArbitrary(possibleNames)),
-      flatObjectArbitrary(lowercaseStringArbitrary(), exportDetailArbitrary(possibleNames)),
-    ).map(([defaultExport, namedExports]) => {
-      return exportsDetail(defaultExport, namedExports)
-    })
+    return FastCheck.array(exportDetailArbitrary(possibleNames))
   }
 }
 

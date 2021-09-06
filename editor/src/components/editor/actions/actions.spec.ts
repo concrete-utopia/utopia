@@ -37,9 +37,11 @@ import {
   textFile,
   TextFileContents,
   unparsed,
-  addModifierExportToDetail,
   EmptyExportsDetail,
   importAlias,
+  exportVariable,
+  exportVariables,
+  exportFunction,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -224,7 +226,7 @@ const originalModel = deepFreeze(
     {},
     null,
     null,
-    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    [exportFunction('whatever')],
   ),
 )
 const testEditor: EditorState = deepFreeze({
@@ -337,7 +339,7 @@ describe('moveTemplate', () => {
         {},
         null,
         null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        [exportFunction('whatever')],
       ),
     )
   }
@@ -938,7 +940,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     {},
     null,
     null,
-    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    [exportFunction('whatever')],
   )
 
   const fileForUI = textFile(
@@ -1172,6 +1174,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
@@ -1273,6 +1276,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
@@ -1373,6 +1377,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
@@ -1464,6 +1469,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,
@@ -1549,6 +1555,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
         const printedCode = printCode(
+          '/src/card.js',
           printCodeOptions(false, true, true, true),
           parsed.imports,
           parsed.topLevelElements,

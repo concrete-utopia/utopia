@@ -11,7 +11,7 @@ describe('Parsing and then printing code', () => {
         false,
       ).formatted
 
-      const parsedThenPrinted = parseThenPrint(code)
+      const parsedThenPrinted = parseThenPrint('/index.js', code)
       expect(parsedThenPrinted).toEqual(code)
     })
   })
@@ -24,7 +24,7 @@ describe('Parsing and then printing code', () => {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -36,7 +36,7 @@ describe('Parsing and then printing code', () => {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -44,7 +44,7 @@ describe('Parsing and then printing code', () => {
     const code = applyPrettier(`export const whatever = (props) => <div data-uid='aaa' />`, false)
       .formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -56,7 +56,7 @@ describe('Parsing and then printing code', () => {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -68,7 +68,7 @@ describe('Parsing and then printing code', () => {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -96,7 +96,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -108,7 +108,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -122,7 +122,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -134,7 +134,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -156,7 +156,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -179,7 +179,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -205,7 +205,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -219,7 +219,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 
@@ -290,7 +290,7 @@ function Picker() {
       false,
     ).formatted
 
-    const parsedThenPrinted = parseThenPrint(code)
+    const parsedThenPrinted = parseThenPrint('/index.js', code)
     expect(parsedThenPrinted).toEqual(code)
   })
 })

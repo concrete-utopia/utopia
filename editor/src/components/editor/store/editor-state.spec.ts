@@ -30,6 +30,7 @@ function getCodeForFile(actualResult: EditorState, filename: string): string {
   const parsed = codeFile.fileContents.parsed
   if (isParseSuccess(parsed)) {
     return printCode(
+      filename,
       printCodeOptions(false, true, false, true),
       parsed.imports,
       parsed.topLevelElements,

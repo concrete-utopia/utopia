@@ -89,6 +89,7 @@ import {
   isParseSuccess,
   isTextFile,
   HighlightBoundsForUids,
+  ExportsDetail,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -2639,6 +2640,7 @@ export interface GetParseSuccessOrTransientResult {
   jsxFactoryFunction: string | null
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
   highlightBounds: HighlightBoundsForUids | null
+  exportsDetail: ExportsDetail
 }
 
 const EmptyResult: GetParseSuccessOrTransientResult = {
@@ -2647,6 +2649,7 @@ const EmptyResult: GetParseSuccessOrTransientResult = {
   jsxFactoryFunction: null,
   combinedTopLevelArbitraryBlock: null,
   highlightBounds: null,
+  exportsDetail: [],
 }
 
 export function getParseSuccessOrTransientForFilePath(
@@ -2666,6 +2669,7 @@ export function getParseSuccessOrTransientForFilePath(
         jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
         combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
         highlightBounds: parseSuccess.highlightBounds,
+        exportsDetail: parseSuccess.exportsDetail,
       }
     } else {
       return {
@@ -2674,6 +2678,7 @@ export function getParseSuccessOrTransientForFilePath(
         jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
         combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
         highlightBounds: parseSuccess.highlightBounds,
+        exportsDetail: parseSuccess.exportsDetail,
       }
     }
   } else {
@@ -2697,18 +2702,30 @@ export function getValidElementPaths(
   )
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
   if (importSource != null) {
-    const originTopLevelName = getTopLevelName(importSource, topLevelElementName)
+    let originTopLevelName = getTopLevelName(importSource, topLevelElementName)
     const resolvedImportSource = resolve(filePath, importSource.filePath)
     if (isRight(resolvedImportSource)) {
       const resolvedFilePath = resolvedImportSource.value
-      const { topLevelElements: resolvedTopLevelElements } = getParseSuccessOrTransientForFilePath(
+      const {
+        topLevelElements: resolvedTopLevelElements,
+        exportsDetail,
+      } = getParseSuccessOrTransientForFilePath(
         resolvedFilePath,
         projectContents,
         transientFilesState,
       )
+      // Handle default exports as they may actually be named.
+      if (originTopLevelName == null) {
+        for (const exportDetail of exportsDetail) {
+          if (exportDetail.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS') {
+            originTopLevelName = exportDetail.name
+          }
+        }
+      }
       const topLevelElement = resolvedTopLevelElements.find(
-        (element): element is UtopiaJSXComponent =>
-          isUtopiaJSXComponent(element) && element.name === originTopLevelName,
+        (element): element is UtopiaJSXComponent => {
+          return isUtopiaJSXComponent(element) && element.name === originTopLevelName
+        },
       )
       if (topLevelElement != null) {
         return getValidElementPathsFromElement(

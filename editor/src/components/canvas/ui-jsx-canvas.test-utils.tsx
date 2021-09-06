@@ -52,6 +52,7 @@ import { MapLike } from 'typescript'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
 import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 import type { CurriedResolveFn } from '../custom-code/code-file'
+import * as path from 'path'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -71,9 +72,18 @@ function resolveTestFiles(
   importOrigin: string,
   toImport: string,
 ): Either<string, string> {
-  const normalizedName = normalizeName(importOrigin, toImport)
-  if (filenames.includes(normalizedName)) {
-    return right(normalizedName)
+  let normalizedName = normalizeName(importOrigin, toImport)
+  // Partly restoring what `normalizeName` strips away.
+  if (toImport.startsWith('.')) {
+    normalizedName = path.normalize(`${importOrigin}/${normalizedName}`)
+  } else if (toImport.startsWith('/')) {
+    normalizedName = `/${normalizedName}`
+  }
+  for (const extension of ['.js', '.ts', '.jsx', '.tsx']) {
+    const filenameWithExtension = `${normalizedName}${extension}`
+    if (filenames.includes(filenameWithExtension)) {
+      return right(filenameWithExtension)
+    }
   }
   switch (normalizedName) {
     case 'utopia-api':

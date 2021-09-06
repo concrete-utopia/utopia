@@ -4107,7 +4107,10 @@ export const UPDATE_FNS = {
     }, editor)
   },
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
-    const updatedEditor = UPDATE_FNS.ADD_IMPORTS(addImports(action.importsToAdd), editor)
+    const updatedEditor = UPDATE_FNS.ADD_IMPORTS(
+      addImports(action.importsToAdd, action.target),
+      editor,
+    )
 
     return modifyOpenJsxElementAtPath(
       action.target,
@@ -4121,12 +4124,18 @@ export const UPDATE_FNS = {
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
-    return modifyOpenParseSuccess((success, _, underlyingFilePath) => {
-      return {
-        ...success,
-        imports: mergeImports(underlyingFilePath, success.imports, action.importsToAdd),
-      }
-    }, editor)
+    return modifyUnderlyingTarget(
+      action.target,
+      forceNotNull('Missing open file', editor.canvas.openFile?.filename),
+      editor,
+      (element) => element,
+      (success, _, underlyingFilePath) => {
+        return {
+          ...success,
+          imports: mergeImports(underlyingFilePath, success.imports, action.importsToAdd),
+        }
+      },
+    )
   },
   SET_ASPECT_RATIO_LOCK: (action: SetAspectRatioLock, editor: EditorModel): EditorModel => {
     return modifyOpenJsxElementAtPath(

@@ -39,6 +39,7 @@ describe('JSX parser', () => {
       `)
 
       const printedCode = printCode(
+        '/index.js',
         printCodeOptions(false, true, true),
         parseResult.imports,
         parseResult.topLevelElements,

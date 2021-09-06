@@ -705,6 +705,7 @@ export interface UpdateJSXElementName {
 
 export interface AddImports {
   action: 'ADD_IMPORTS'
+  target: ElementPath
   importsToAdd: Imports
 }
 
