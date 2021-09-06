@@ -133,15 +133,15 @@ describe('mergeImports', () => {
     const result = mergeImports(
       '/src/code.js',
       {
-        '/src/fileA.js': importDetails(null, [importAlias('Card')], null),
-        './fileA.js': importDetails(null, [importAlias('OtherCard')], null),
+        '/src/fileA': importDetails(null, [importAlias('Card')], null),
+        './fileA': importDetails(null, [importAlias('OtherCard')], null),
       },
-      { '/src/fileB.js': importDetails(null, [importAlias('FlexRow')], null) },
+      { '/src/fileB': importDetails(null, [importAlias('FlexRow')], null) },
     )
 
     expect(result).toEqual({
-      '/src/fileA.js': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
-      '/src/fileB.js': importDetails(null, [importAlias('FlexRow')], null),
+      '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
+      '/src/fileB': importDetails(null, [importAlias('FlexRow')], null),
     })
   })
 })
