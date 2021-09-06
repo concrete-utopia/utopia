@@ -340,161 +340,20 @@ export const UiJsxCanvas = betterReactMemo(
           ? left<string, string>('Already resolved')
           : resolve(importOrigin, toImport)
 
-        const resolvedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
-          (resolvedFilePath) => {
-            resolvedFromThisOrigin.push(toImport)
-            const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-            if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-              const exportsDetail = projectFile.fileContents.parsed.exportsDetail
-              // Should only use the full scope and components support if the file contains components
-              // or if it does any kind of re-exporting as we can't guarantee that the re-exported
-              // files do not contain components.
-              // Exclude any file with the destructured assignment export style as they're quite problematic
-              // to support.
-              const shouldUseFileScope =
-                (projectFile.fileContents.parsed.topLevelElements.some(isUtopiaJSXComponent) ||
-                  exportsDetail.some(isReexportExportDetail)) &&
-                !exportsDetail.some(isExportDestructuredAssignment)
-              if (shouldUseFileScope) {
-                const { scope } = createExecutionScope(
-                  resolvedFilePath,
-                  customRequire,
-                  mutableContextRef,
-                  topLevelComponentRendererComponents,
-                  projectContents,
-                  uiFilePath,
-                  transientFilesState,
-                  base64FileBlobs,
-                  hiddenInstances,
-                  metadataContext,
-                  updateInvalidatedPaths,
-                  shouldIncludeCanvasRootInTheSpy,
-                )
-                let filteredScope: MapLike<any> = {
-                  ...scope.module.exports,
-                  __esModule: true,
-                }
-
-                function addToFilteredScopeFromSpecificScope(
-                  filteredScopeKey: string,
-                  scopeKey: string,
-                  scopeToWorkWith: MapLike<any>,
-                ): void {
-                  if (scopeKey in scopeToWorkWith) {
-                    filteredScope[filteredScopeKey] = scopeToWorkWith[scopeKey]
-                  }
-                }
-
-                function addToFilteredScope(filteredScopeKey: string, scopeKey: string): void {
-                  addToFilteredScopeFromSpecificScope(filteredScopeKey, scopeKey, scope)
-                }
-
-                for (const exportDetail of exportsDetail) {
-                  switch (exportDetail.type) {
-                    case 'EXPORT_DEFAULT_FUNCTION_OR_CLASS':
-                      if (exportDetail.name == null) {
-                        addToFilteredScope('default', 'default')
-                      } else {
-                        addToFilteredScope('default', exportDetail.name)
-                      }
-                      break
-                    case 'EXPORT_EXPRESSION':
-                      addToFilteredScope('default', 'default')
-                      break
-                    case 'EXPORT_CLASS':
-                      addToFilteredScope(exportDetail.className, exportDetail.className)
-                      break
-                    case 'EXPORT_FUNCTION':
-                      addToFilteredScope(exportDetail.functionName, exportDetail.functionName)
-                      break
-                    case 'EXPORT_VARIABLES':
-                      for (const exportVar of exportDetail.variables) {
-                        const exportName = exportVar.variableAlias ?? exportVar.variableName
-                        addToFilteredScope(exportName, exportVar.variableName)
-                      }
-                      break
-                    case 'EXPORT_DESTRUCTURED_ASSIGNMENT':
-                      throw new Error(
-                        `EXPORT_DESTRUCTURED_ASSIGNMENT cases should not be handled this way.`,
-                      )
-                    case 'REEXPORT_WILDCARD':
-                      {
-                        const reexportedModule = customRequire(
-                          resolvedFilePath,
-                          exportDetail.reexportedModule,
-                        )
-                        if (typeof reexportedModule === 'object') {
-                          if (exportDetail.namespacedVariable == null) {
-                            filteredScope = {
-                              ...filteredScope,
-                              ...omit(['default'], reexportedModule),
-                            }
-                          } else {
-                            filteredScope = {
-                              ...filteredScope,
-                              [exportDetail.namespacedVariable]: {
-                                ...omit(['default'], reexportedModule),
-                              },
-                            }
-                          }
-                        } else {
-                          if (exportDetail.namespacedVariable == null) {
-                            return left(
-                              `Unable to re-export ${exportDetail.reexportedModule} as it does not return an object.`,
-                            )
-                          } else {
-                            filteredScope = {
-                              ...filteredScope,
-                              [exportDetail.namespacedVariable]: omit(
-                                ['default'],
-                                reexportedModule,
-                              ),
-                            }
-                          }
-                        }
-                      }
-                      break
-                    case 'REEXPORT_VARIABLES':
-                      {
-                        const reexportedModule = customRequire(
-                          resolvedFilePath,
-                          exportDetail.reexportedModule,
-                        )
-                        if (typeof reexportedModule === 'object') {
-                          for (const exportVar of exportDetail.variables) {
-                            const exportName = exportVar.variableAlias ?? exportVar.variableName
-                            addToFilteredScopeFromSpecificScope(
-                              exportName,
-                              exportVar.variableName,
-                              reexportedModule,
-                            )
-                          }
-                        } else {
-                          return left(
-                            `Unable to re-export ${exportDetail.reexportedModule} as it does not return an object.`,
-                          )
-                        }
-                      }
-                      break
-                    case 'EXPORT_VARIABLES_WITH_MODIFIER':
-                      for (const exportVar of exportDetail.variables) {
-                        addToFilteredScope(exportVar, exportVar)
-                      }
-                      break
-                    default:
-                      const _exhaustiveCheck: never = exportDetail
-                      throw new Error(`Unhandled type ${JSON.stringify(exportDetail)}`)
-                  }
-                }
-
-                return right(filteredScope)
-              } else {
-                return left(`File ${resolvedFilePath} contains no components`)
-              }
-            } else {
-              return left(`File ${resolvedFilePath} is not a ParseSuccess`)
-            }
-          },
+        const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+          resolvedFromThisOrigin,
+          toImport,
+          projectContents,
+          customRequire,
+          mutableContextRef,
+          topLevelComponentRendererComponents,
+          uiFilePath,
+          transientFilesState,
+          base64FileBlobs,
+          hiddenInstances,
+          metadataContext,
+          updateInvalidatedPaths,
+          shouldIncludeCanvasRootInTheSpy,
           filePathResolveResult,
         )
         return foldEither(
@@ -611,6 +470,177 @@ export const UiJsxCanvas = betterReactMemo(
     )
   }),
 )
+
+function attemptToResolveParsedComponents(
+  resolvedFromThisOrigin: string[],
+  toImport: string,
+  projectContents: ProjectContentTreeRoot,
+  customRequire: (importOrigin: string, toImport: string) => any,
+  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
+  topLevelComponentRendererComponents: React.MutableRefObject<
+    MapLike<MapLike<ComponentRendererComponent>>
+  >,
+  uiFilePath: string,
+  transientFilesState: TransientFilesState | null,
+  base64FileBlobs: CanvasBase64Blobs,
+  hiddenInstances: ElementPath[],
+  metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: SetValueCallback<Set<string>>,
+  shouldIncludeCanvasRootInTheSpy: boolean,
+  filePathResolveResult: Either<string, string>,
+): Either<string, MapLike<any>> {
+  return flatMapEither((resolvedFilePath) => {
+    resolvedFromThisOrigin.push(toImport)
+    const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+      const exportsDetail = projectFile.fileContents.parsed.exportsDetail
+      // Should only use the full scope and components support if the file contains components
+      // or if it does any kind of re-exporting as we can't guarantee that the re-exported
+      // files do not contain components.
+      // Exclude any file with the destructured assignment export style as they're quite problematic
+      // to support.
+      const shouldUseFileScope =
+        (projectFile.fileContents.parsed.topLevelElements.some(isUtopiaJSXComponent) ||
+          exportsDetail.some(isReexportExportDetail)) &&
+        !exportsDetail.some(isExportDestructuredAssignment)
+      if (shouldUseFileScope) {
+        const { scope } = createExecutionScope(
+          resolvedFilePath,
+          customRequire,
+          mutableContextRef,
+          topLevelComponentRendererComponents,
+          projectContents,
+          uiFilePath,
+          transientFilesState,
+          base64FileBlobs,
+          hiddenInstances,
+          metadataContext,
+          updateInvalidatedPaths,
+          shouldIncludeCanvasRootInTheSpy,
+        )
+        let filteredScope: MapLike<any> = {
+          ...scope.module.exports,
+          __esModule: true,
+        }
+
+        function addToFilteredScopeFromSpecificScope(
+          filteredScopeKey: string,
+          scopeKey: string,
+          scopeToWorkWith: MapLike<any>,
+        ): void {
+          if (scopeKey in scopeToWorkWith) {
+            filteredScope[filteredScopeKey] = scopeToWorkWith[scopeKey]
+          }
+        }
+
+        function addToFilteredScope(filteredScopeKey: string, scopeKey: string): void {
+          addToFilteredScopeFromSpecificScope(filteredScopeKey, scopeKey, scope)
+        }
+
+        for (const exportDetail of exportsDetail) {
+          switch (exportDetail.type) {
+            case 'EXPORT_DEFAULT_FUNCTION_OR_CLASS':
+              if (exportDetail.name == null) {
+                addToFilteredScope('default', 'default')
+              } else {
+                addToFilteredScope('default', exportDetail.name)
+              }
+              break
+            case 'EXPORT_EXPRESSION':
+              addToFilteredScope('default', 'default')
+              break
+            case 'EXPORT_CLASS':
+              addToFilteredScope(exportDetail.className, exportDetail.className)
+              break
+            case 'EXPORT_FUNCTION':
+              addToFilteredScope(exportDetail.functionName, exportDetail.functionName)
+              break
+            case 'EXPORT_VARIABLES':
+              for (const exportVar of exportDetail.variables) {
+                const exportName = exportVar.variableAlias ?? exportVar.variableName
+                addToFilteredScope(exportName, exportVar.variableName)
+              }
+              break
+            case 'EXPORT_DESTRUCTURED_ASSIGNMENT':
+              throw new Error(
+                `EXPORT_DESTRUCTURED_ASSIGNMENT cases should not be handled this way.`,
+              )
+            case 'REEXPORT_WILDCARD':
+              {
+                const reexportedModule = customRequire(
+                  resolvedFilePath,
+                  exportDetail.reexportedModule,
+                )
+                if (typeof reexportedModule === 'object') {
+                  if (exportDetail.namespacedVariable == null) {
+                    filteredScope = {
+                      ...filteredScope,
+                      ...omit(['default'], reexportedModule),
+                    }
+                  } else {
+                    filteredScope = {
+                      ...filteredScope,
+                      [exportDetail.namespacedVariable]: {
+                        ...omit(['default'], reexportedModule),
+                      },
+                    }
+                  }
+                } else {
+                  if (exportDetail.namespacedVariable == null) {
+                    return left(
+                      `Unable to re-export ${exportDetail.reexportedModule} as it does not return an object.`,
+                    )
+                  } else {
+                    filteredScope = {
+                      ...filteredScope,
+                      [exportDetail.namespacedVariable]: omit(['default'], reexportedModule),
+                    }
+                  }
+                }
+              }
+              break
+            case 'REEXPORT_VARIABLES':
+              {
+                const reexportedModule = customRequire(
+                  resolvedFilePath,
+                  exportDetail.reexportedModule,
+                )
+                if (typeof reexportedModule === 'object') {
+                  for (const exportVar of exportDetail.variables) {
+                    const exportName = exportVar.variableAlias ?? exportVar.variableName
+                    addToFilteredScopeFromSpecificScope(
+                      exportName,
+                      exportVar.variableName,
+                      reexportedModule,
+                    )
+                  }
+                } else {
+                  return left(
+                    `Unable to re-export ${exportDetail.reexportedModule} as it does not return an object.`,
+                  )
+                }
+              }
+              break
+            case 'EXPORT_VARIABLES_WITH_MODIFIER':
+              for (const exportVar of exportDetail.variables) {
+                addToFilteredScope(exportVar, exportVar)
+              }
+              break
+            default:
+              const _exhaustiveCheck: never = exportDetail
+              throw new Error(`Unhandled type ${JSON.stringify(exportDetail)}`)
+          }
+        }
+
+        return right(filteredScope)
+      } else {
+        return left(`File ${resolvedFilePath} contains no components`)
+      }
+    } else {
+      return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+    }
+  }, filePathResolveResult)
+}
 
 function useGetStoryboardRoot(
   focusedElementPath: ElementPath | null,
