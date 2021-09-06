@@ -8,6 +8,7 @@ export type BaseControlType =
   | 'color'
   | 'componentinstance'
   | 'enum'
+  | 'expression-enum'
   | 'eventhandler'
   | 'ignore'
   | 'image'
@@ -51,6 +52,25 @@ export interface EnumControlDescription extends AbstractBaseControlDescription<'
   options: AllowedEnumType[]
   optionTitles?: string[] | ((props: unknown | null) => string[])
   displaySegmentedControl?: boolean
+}
+
+export interface ImportType {
+  source: string // importSource
+  name: string
+  type: 'star' | 'default' | null
+}
+
+export interface ExpressionEnum {
+  value: AllowedEnumType
+  expression: string
+  import?: ImportType
+}
+
+export interface ExpressionEnumControlDescription
+  extends AbstractBaseControlDescription<'expression-enum'> {
+  defaultValue?: ExpressionEnum
+  options: ExpressionEnum[]
+  optionTitles?: string[] | ((props: unknown | null) => string[])
 }
 
 export interface EventHandlerControlDescription
@@ -122,6 +142,7 @@ export type BaseControlDescription =
   | ColorControlDescription
   | ComponentInstanceDescription
   | EnumControlDescription
+  | ExpressionEnumControlDescription
   | EventHandlerControlDescription
   | IgnoreControlDescription
   | ImageControlDescription
@@ -176,6 +197,7 @@ export function isBaseControlDescription(
     case 'color':
     case 'componentinstance':
     case 'enum':
+    case 'expression-enum':
     case 'eventhandler':
     case 'ignore':
     case 'image':
@@ -206,6 +228,7 @@ export function isHigherLevelControlDescription(
     case 'color':
     case 'componentinstance':
     case 'enum':
+    case 'expression-enum':
     case 'eventhandler':
     case 'ignore':
     case 'image':
@@ -248,4 +271,38 @@ export function getDefaultProps(propertyControls: PropertyControls): { [prop: st
     }
   })
   return defaults
+}
+
+export function expression(
+  value: AllowedEnumType,
+  expression: string,
+  toImport: ImportType,
+): ExpressionEnum {
+  return {
+    value: value,
+    expression: expression,
+    import: toImport,
+  }
+}
+
+export function importStar(source: string, name: string): ImportType {
+  return {
+    source: source,
+    name: name,
+    type: 'star',
+  }
+}
+export function importDefault(source: string, name: string): ImportType {
+  return {
+    source: source,
+    name: name,
+    type: 'default',
+  }
+}
+export function importNamed(source: string, name: string): ImportType {
+  return {
+    source: source,
+    name: name,
+    type: null,
+  }
 }

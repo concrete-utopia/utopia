@@ -1153,9 +1153,10 @@ export function updateJSXElementName(
   }
 }
 
-export function addImports(importsToAdd: Imports): AddImports {
+export function addImports(importsToAdd: Imports, target: ElementPath): AddImports {
   return {
     action: 'ADD_IMPORTS',
+    target: target,
     importsToAdd: importsToAdd,
   }
 }

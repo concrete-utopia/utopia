@@ -79,6 +79,7 @@ import {
   ControlForComponentInstanceProp,
   ControlForEnumProp,
   ControlForEventHandlerProp,
+  ControlForExpressionEnumProp,
   ControlForImageProp,
   ControlForNumberProp,
   ControlForOptionsProp,
@@ -127,6 +128,8 @@ const ControlForProp = betterReactMemo(
           )
         case 'enum':
           return <ControlForEnumProp {...props} controlDescription={controlDescription} />
+        case 'expression-enum':
+          return <ControlForExpressionEnumProp {...props} controlDescription={controlDescription} />
         case 'eventhandler':
           return <ControlForEventHandlerProp {...props} controlDescription={controlDescription} />
         case 'ignore':
