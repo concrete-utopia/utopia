@@ -19,6 +19,7 @@ declare module 'babel-plugin-transform-react-jsx'
 declare module 'babel-plugin-syntax-jsx'
 declare module '@babel/standalone'
 declare module '@babel/plugin-transform-modules-commonjs'
+declare module '@babel/plugin-proposal-export-namespace-from'
 
 declare module 'lodash.clamp' {
   export const clamp = (number: number, lower: number, upper: number) => number

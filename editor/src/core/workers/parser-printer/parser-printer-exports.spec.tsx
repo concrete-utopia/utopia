@@ -18,14 +18,12 @@ describe('parseCode', () => {
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
-      Object {
-        "defaultExport": null,
-        "namedExports": Object {
-          "whatever": Object {
-            "type": "EXPORT_DETAIL_MODIFIER",
-          },
+      Array [
+        Object {
+          "functionName": "whatever",
+          "type": "EXPORT_FUNCTION",
         },
-      }
+      ]
     `)
   })
   it('should parse a component exported handled with an external export clause', () => {
@@ -43,16 +41,17 @@ describe('parseCode', () => {
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
-      Object {
-        "defaultExport": null,
-        "namedExports": Object {
-          "whatever": Object {
-            "moduleName": undefined,
-            "name": "whatever",
-            "type": "EXPORT_DETAIL_NAMED",
-          },
+      Array [
+        Object {
+          "type": "EXPORT_VARIABLES",
+          "variables": Array [
+            Object {
+              "variableAlias": null,
+              "variableName": "whatever",
+            },
+          ],
         },
-      }
+      ]
     `)
   })
 
@@ -60,14 +59,7 @@ describe('parseCode', () => {
     const code = `export default 2 + 2`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
-      expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": Object {
-            "type": "EXPORT_DEFAULT_EXPRESSION",
-          },
-          "namedExports": Object {},
-        }
-      `)
+      expect(actualResult.exportsDetail).toMatchInlineSnapshot(`Array []`)
     } else {
       fail('Did not parse successfully.')
     }
@@ -79,21 +71,21 @@ export const { name: firstName, surname } = entireValue`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": null,
-          "namedExports": Object {
-            "name": Object {
-              "moduleName": undefined,
-              "name": "firstName",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "surname": Object {
-              "moduleName": undefined,
-              "name": "surname",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
+        Array [
+          Object {
+            "type": "EXPORT_DESTRUCTURED_ASSIGNMENT",
+            "variables": Array [
+              Object {
+                "variableAlias": "name",
+                "variableName": "firstName",
+              },
+              Object {
+                "variableAlias": null,
+                "variableName": "surname",
+              },
+            ],
           },
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -107,21 +99,21 @@ export { thing1, thing2 }`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": null,
-          "namedExports": Object {
-            "thing1": Object {
-              "moduleName": undefined,
-              "name": "thing1",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "thing2": Object {
-              "moduleName": undefined,
-              "name": "thing2",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
+        Array [
+          Object {
+            "type": "EXPORT_VARIABLES",
+            "variables": Array [
+              Object {
+                "variableAlias": null,
+                "variableName": "thing1",
+              },
+              Object {
+                "variableAlias": null,
+                "variableName": "thing2",
+              },
+            ],
           },
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -135,21 +127,21 @@ export { thing1 as importantThing1, thing2 as importantThing2 }`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": null,
-          "namedExports": Object {
-            "importantThing1": Object {
-              "moduleName": undefined,
-              "name": "thing1",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "importantThing2": Object {
-              "moduleName": undefined,
-              "name": "thing2",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
+        Array [
+          Object {
+            "type": "EXPORT_VARIABLES",
+            "variables": Array [
+              Object {
+                "variableAlias": "importantThing1",
+                "variableName": "thing1",
+              },
+              Object {
+                "variableAlias": "importantThing2",
+                "variableName": "thing2",
+              },
+            ],
           },
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -163,19 +155,21 @@ export { thing1 as default, thing2 as importantThing2 }`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": Object {
-            "name": "thing1",
-            "type": "EXPORT_DEFAULT_NAMED",
+        Array [
+          Object {
+            "type": "EXPORT_VARIABLES",
+            "variables": Array [
+              Object {
+                "variableAlias": "default",
+                "variableName": "thing1",
+              },
+              Object {
+                "variableAlias": "importantThing2",
+                "variableName": "thing2",
+              },
+            ],
           },
-          "namedExports": Object {
-            "importantThing2": Object {
-              "moduleName": undefined,
-              "name": "thing2",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-          },
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -190,31 +184,32 @@ export let exportedLet1, exportedLet2;
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": null,
-          "namedExports": Object {
-            "exportedLet1": Object {
-              "moduleName": undefined,
-              "name": "exportedLet1",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "exportedLet2": Object {
-              "moduleName": undefined,
-              "name": "exportedLet2",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "exportedVar1": Object {
-              "moduleName": undefined,
-              "name": "exportedVar1",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "exportedVar2": Object {
-              "moduleName": undefined,
-              "name": "exportedVar2",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
+        Array [
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedVar1",
+            ],
           },
-        }
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedVar2",
+            ],
+          },
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedLet1",
+            ],
+          },
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedLet2",
+            ],
+          },
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -230,41 +225,44 @@ export const exportedConst1 = 'const1', exportedConst2 = 'const2';
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": null,
-          "namedExports": Object {
-            "exportedConst1": Object {
-              "moduleName": undefined,
-              "name": "exportedConst1",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "exportedConst2": Object {
-              "moduleName": undefined,
-              "name": "exportedConst2",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "exportedLet1": Object {
-              "moduleName": undefined,
-              "name": "exportedLet1",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "exportedLet2": Object {
-              "moduleName": undefined,
-              "name": "exportedLet2",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "exportedVar1": Object {
-              "moduleName": undefined,
-              "name": "exportedVar1",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
-            "exportedVar2": Object {
-              "moduleName": undefined,
-              "name": "exportedVar2",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
+        Array [
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedVar1",
+            ],
           },
-        }
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedVar2",
+            ],
+          },
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedLet1",
+            ],
+          },
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedLet2",
+            ],
+          },
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedConst1",
+            ],
+          },
+          Object {
+            "type": "EXPORT_VARIABLES_WITH_MODIFIER",
+            "variables": Array [
+              "exportedConst2",
+            ],
+          },
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -280,14 +278,12 @@ export function App() {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": null,
-          "namedExports": Object {
-            "App": Object {
-              "type": "EXPORT_DETAIL_MODIFIER",
-            },
+        Array [
+          Object {
+            "functionName": "App",
+            "type": "EXPORT_FUNCTION",
           },
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -303,14 +299,12 @@ export function App() {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": null,
-          "namedExports": Object {
-            "App": Object {
-              "type": "EXPORT_DETAIL_MODIFIER",
-            },
+        Array [
+          Object {
+            "functionName": "App",
+            "type": "EXPORT_FUNCTION",
           },
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -324,16 +318,12 @@ export class App {}
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": null,
-          "namedExports": Object {
-            "App": Object {
-              "moduleName": undefined,
-              "name": "App",
-              "type": "EXPORT_DETAIL_NAMED",
-            },
+        Array [
+          Object {
+            "className": "App",
+            "type": "EXPORT_CLASS",
           },
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -347,12 +337,12 @@ export default function() { return 5 }
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": Object {
-            "type": "EXPORT_DEFAULT_FUNCTION",
+        Array [
+          Object {
+            "name": null,
+            "type": "EXPORT_DEFAULT_FUNCTION_OR_CLASS",
           },
-          "namedExports": Object {},
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -366,13 +356,12 @@ export default function addFive() { return 5 }
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": Object {
+        Array [
+          Object {
             "name": "addFive",
-            "type": "EXPORT_DEFAULT_MODIFIER",
+            "type": "EXPORT_DEFAULT_FUNCTION_OR_CLASS",
           },
-          "namedExports": Object {},
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
@@ -386,16 +375,130 @@ export default class App {}
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Object {
-          "defaultExport": Object {
+        Array [
+          Object {
             "name": "App",
-            "type": "EXPORT_DEFAULT_MODIFIER",
+            "type": "EXPORT_DEFAULT_FUNCTION_OR_CLASS",
           },
-          "namedExports": Object {},
-        }
+        ]
       `)
     } else {
       fail('Did not parse successfully.')
     }
+  })
+  describe(`re-exports`, () => {
+    it(`parses a wildcard re-export from another module`, () => {
+      const code = `export * from 'othermodule'`
+
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+      if (isParseSuccess(actualResult)) {
+        expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
+          Array [
+            Object {
+              "namespacedVariable": null,
+              "reexportedModule": "othermodule",
+              "type": "REEXPORT_WILDCARD",
+            },
+          ]
+        `)
+      } else {
+        fail(actualResult)
+      }
+    })
+    it(`parses a wildcard re-export into a named value from another module`, () => {
+      const code = `export * as thatmodule from 'othermodule'`
+
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+      if (isParseSuccess(actualResult)) {
+        expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
+          Array [
+            Object {
+              "namespacedVariable": "thatmodule",
+              "reexportedModule": "othermodule",
+              "type": "REEXPORT_WILDCARD",
+            },
+          ]
+        `)
+      } else {
+        fail(actualResult)
+      }
+    })
+    it(`parses a re-export of specific named values from another module`, () => {
+      const code = `export { thing1, thing2 } from 'othermodule'`
+
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+      if (isParseSuccess(actualResult)) {
+        expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
+          Array [
+            Object {
+              "reexportedModule": "othermodule",
+              "type": "REEXPORT_VARIABLES",
+              "variables": Array [
+                Object {
+                  "variableAlias": null,
+                  "variableName": "thing1",
+                },
+                Object {
+                  "variableAlias": null,
+                  "variableName": "thing2",
+                },
+              ],
+            },
+          ]
+        `)
+      } else {
+        fail(actualResult)
+      }
+    })
+    it(`parses a re-export of specific named values from another module`, () => {
+      const code = `export { import1 as thing1, import2 as thing2 } from 'othermodule'`
+
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+      if (isParseSuccess(actualResult)) {
+        expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
+          Array [
+            Object {
+              "reexportedModule": "othermodule",
+              "type": "REEXPORT_VARIABLES",
+              "variables": Array [
+                Object {
+                  "variableAlias": "thing1",
+                  "variableName": "import1",
+                },
+                Object {
+                  "variableAlias": "thing2",
+                  "variableName": "import2",
+                },
+              ],
+            },
+          ]
+        `)
+      } else {
+        fail(actualResult)
+      }
+    })
+    it(`parses a re-export of the default export from another module`, () => {
+      const code = `export { default } from 'othermodule'`
+
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+      if (isParseSuccess(actualResult)) {
+        expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
+          Array [
+            Object {
+              "reexportedModule": "othermodule",
+              "type": "REEXPORT_VARIABLES",
+              "variables": Array [
+                Object {
+                  "variableAlias": null,
+                  "variableName": "default",
+                },
+              ],
+            },
+          ]
+        `)
+      } else {
+        fail(actualResult)
+      }
+    })
   })
 })

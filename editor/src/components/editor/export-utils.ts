@@ -55,7 +55,7 @@ export function getExportedComponentImports(
 
       // All the heavy lifting for what to add happens in here.
       function addToResult(
-        elementMatchesName: string,
+        elementMatchesName: string | null,
         listingName: string,
         importDetailsToAdd: ImportDetails,
       ): void {
@@ -73,37 +73,61 @@ export function getExportedComponentImports(
         }
       }
 
-      // Default export for the entire file.
-      if (success.exportsDetail.defaultExport != null) {
-        const defaultExport = success.exportsDetail.defaultExport
-        switch (defaultExport.type) {
-          case 'EXPORT_DEFAULT_NAMED':
-            addToResult(defaultExport.name, '(default)', importDetails(pathLastPart, [], null))
+      for (const exportDetail of success.exportsDetail) {
+        switch (exportDetail.type) {
+          case 'EXPORT_DEFAULT_FUNCTION_OR_CLASS':
+            addToResult(exportDetail.name, '(default)', importDetails(pathLastPart, [], null))
             break
-          case 'EXPORT_DEFAULT_MODIFIER':
-            addToResult(defaultExport.name, '(default)', importDetails(pathLastPart, [], null))
-            break
-        }
-      }
-
-      // Handle exports where the component is against a key in the exports object.
-      for (const namedExportKey of Object.keys(success.exportsDetail.namedExports)) {
-        const namedExport = success.exportsDetail.namedExports[namedExportKey]
-        switch (namedExport.type) {
-          case 'EXPORT_DETAIL_NAMED':
+          case 'EXPORT_CLASS':
             addToResult(
-              namedExport.name,
-              namedExportKey,
-              importDetails(null, [importAlias(namedExportKey)], null),
+              exportDetail.className,
+              exportDetail.className,
+              importDetails(null, [importAlias(exportDetail.className)], null),
             )
             break
-          case 'EXPORT_DETAIL_MODIFIER':
+          case 'EXPORT_FUNCTION':
             addToResult(
-              namedExportKey,
-              namedExportKey,
-              importDetails(null, [importAlias(namedExportKey)], null),
+              exportDetail.functionName,
+              exportDetail.functionName,
+              importDetails(null, [importAlias(exportDetail.functionName)], null),
             )
             break
+          case 'EXPORT_VARIABLES':
+          case 'EXPORT_DESTRUCTURED_ASSIGNMENT':
+          case 'REEXPORT_VARIABLES':
+            for (const exportVar of exportDetail.variables) {
+              const exportName = exportVar.variableAlias ?? exportVar.variableName
+              addToResult(
+                exportVar.variableName,
+                exportName === 'default' ? '(default)' : exportName,
+                importDetails(
+                  null,
+                  exportName === 'default' ? [] : [importAlias(exportVar.variableName)],
+                  null,
+                ),
+              )
+            }
+            break
+          case 'EXPORT_EXPRESSION':
+            break
+          case 'REEXPORT_WILDCARD':
+            break
+          case 'EXPORT_VARIABLES_WITH_MODIFIER':
+            for (const exportName of exportDetail.variables) {
+              addToResult(
+                exportName,
+                exportName === 'default' ? '(default)' : exportName,
+                importDetails(
+                  null,
+                  exportName === 'default' ? [] : [importAlias(exportName)],
+                  null,
+                ),
+              )
+            }
+            break
+          default:
+            const _exhaustiveCheck: never = exportDetail
+            throw new Error(`Unhandled type ${JSON.stringify(exportDetail)}`)
         }
       }
 

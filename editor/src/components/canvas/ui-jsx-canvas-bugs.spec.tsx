@@ -378,7 +378,7 @@ export default function () {
         <div
           id=\\"canvas-container\\"
           style=\\"position: absolute;\\"
-          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity\\"
+          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f\\"
           data-utopia-root-element-path=\\"storyboard-entity\\"
         >
           <div
@@ -404,7 +404,7 @@ export default function () {
                 height: 100%;
                 background-color: #ffffff;
               \\"
-              data-paths=\\"storyboard-entity/scene-1-entity/app-entity\\"
+              data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity\\"
             >
               <div
                 data-uid=\\"card-outer-div card-instance\\"
@@ -415,6 +415,7 @@ export default function () {
                   width: 133px;
                   height: 300px;
                 \\"
+                data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance\\"
               >
                 <div
                   data-uid=\\"card-inner-div\\"
@@ -426,6 +427,7 @@ export default function () {
                     height: 50px;
                     background-color: red;
                   \\"
+                  data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div\\"
                 ></div>
                 <div
                   style=\\"
@@ -436,12 +438,18 @@ export default function () {
                     height: 50px;
                     background-color: blue;
                   \\"
+                  data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle\\"
                   data-uid=\\"card-inner-rectangle\\"
                   data-utopia-do-not-traverse=\\"true\\"
                 ></div>
               </div>
               hello
-              <div>Default Function Time</div>
+              <div
+                data-uid=\\"4cf d7f\\"
+                data-paths=\\"storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f:4cf storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f\\"
+              >
+                Default Function Time
+              </div>
             </div>
           </div>
         </div>

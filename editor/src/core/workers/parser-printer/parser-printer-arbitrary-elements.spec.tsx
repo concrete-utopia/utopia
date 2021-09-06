@@ -20,9 +20,10 @@ import {
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
 import {
-  addModifierExportToDetail,
-  addNamedExportToDetail,
   EmptyExportsDetail,
+  exportFunction,
+  exportVariable,
+  exportVariables,
   foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
@@ -263,7 +264,7 @@ export var whatever = props => (
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -364,7 +365,7 @@ return { arr: arr };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -467,7 +468,7 @@ return { arr: arr };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -571,7 +572,7 @@ return { arr: arr };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -663,7 +664,7 @@ export var whatever = (props) => {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -767,7 +768,7 @@ return { arr: arr };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -859,7 +860,7 @@ export var whatever = (props) => {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -963,7 +964,7 @@ return { arr: arr };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
