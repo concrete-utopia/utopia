@@ -225,6 +225,7 @@ export async function renderTestEditorWithModel(
         useStore={storeHook}
         spyCollector={spyCollector}
         propertyControlsInfoSupported={false}
+        vscodeBridgeReady={false}
       />
     </React.Profiler>,
   )
