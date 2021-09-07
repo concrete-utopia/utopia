@@ -219,6 +219,7 @@ async function fetchNpmMatchingVersion(
 export async function findMatchingVersion(
   packageName: string,
   version: string,
+  mode: 'skipFetch' | 'searchVersion' = 'searchVersion',
 ): Promise<VersionLookupResult> {
   const versionType = getVersionType(packageName, version)
   switch (versionType) {
@@ -236,7 +237,9 @@ export async function findMatchingVersion(
       return Promise.resolve(packageNotFound)
     case 'SEMVER':
     case 'TAG':
-      return fetchNpmMatchingVersion(packageName, version)
+      return mode === 'skipFetch'
+        ? Promise.resolve(npmVersionLookupSuccess(version))
+        : fetchNpmMatchingVersion(packageName, version)
     case 'URL':
       return Promise.resolve(packageNotFound)
     default:
