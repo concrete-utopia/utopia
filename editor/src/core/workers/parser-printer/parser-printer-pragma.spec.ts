@@ -60,7 +60,7 @@ describe('Parsing JSX Pragma:', () => {
     }`,
       false,
     ).formatted
-    testParseThenPrint(code, code)
+    testParseThenPrint('/index.js', code, code)
   })
 
   it('parses a pragma with dot notation', () => {

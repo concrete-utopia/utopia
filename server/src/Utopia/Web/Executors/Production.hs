@@ -47,20 +47,21 @@ import           Utopia.Web.Utils.Files
   Any long living resources like database pools live in here.
 -}
 data ProductionServerResources = ProductionServerResources
-                               { _commitHash      :: Text
-                               , _projectPool     :: Pool SqlBackend
-                               , _auth0Resources  :: Auth0Resources
-                               , _awsResources    :: AWSResources
-                               , _sessionState    :: SessionState
-                               , _serverPort      :: Int
-                               , _storeForMetrics :: Store
-                               , _databaseMetrics :: DB.DatabaseMetrics
-                               , _registryManager :: Manager
-                               , _assetsCaches    :: AssetsCaches
-                               , _nodeSemaphore   :: QSem
-                               , _locksRef        :: PackageVersionLocksRef
-                               , _siteHost        :: Text
-                               , _branchDownloads :: Maybe BranchDownloads
+                               { _commitHash              :: Text
+                               , _projectPool             :: Pool SqlBackend
+                               , _auth0Resources          :: Auth0Resources
+                               , _awsResources            :: AWSResources
+                               , _sessionState            :: SessionState
+                               , _serverPort              :: Int
+                               , _storeForMetrics         :: Store
+                               , _databaseMetrics         :: DB.DatabaseMetrics
+                               , _registryManager         :: Manager
+                               , _assetsCaches            :: AssetsCaches
+                               , _nodeSemaphore           :: QSem
+                               , _locksRef                :: PackageVersionLocksRef
+                               , _siteHost                :: Text
+                               , _branchDownloads         :: Maybe BranchDownloads
+                                , _matchingVersionsCache  :: MatchingVersionsCache
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -181,7 +182,8 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
   return $ action packageMetadata
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   semaphore <- fmap _nodeSemaphore ask
-  packageMetadata <- liftIO $ findMatchingVersions semaphore javascriptPackageName maybeJavascriptPackageVersion
+  matchingVersionsCache <- fmap _matchingVersionsCache ask
+  packageMetadata <- liftIO $ findMatchingVersions semaphore matchingVersionsCache javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -275,6 +277,7 @@ initialiseResources = do
   _siteHost <- fmap toS $ getEnv "SITE_HOST"
   _branchDownloads <- createBranchDownloads
   _locksRef <- newIORef mempty
+  _matchingVersionsCache <- newMatchingVersionsCache
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop

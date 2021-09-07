@@ -26230,7 +26230,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute;\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0 utopia-storyboard-uid/scene-aaa/app-entity:b93/59c utopia-storyboard-uid/scene-aaa/app-entity:b93/54b utopia-storyboard-uid/scene-aaa/app-entity:b93/d18 utopia-storyboard-uid/scene-aaa/app-entity:b93/995 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d00 utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0 utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f utopia-storyboard-uid/scene-aaa/app-entity:b93/315 utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9 utopia-storyboard-uid/scene-aaa/app-entity:b93/301 utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce utopia-storyboard-uid/scene-aaa/app-entity:b93/f77 utopia-storyboard-uid/scene-aaa/app-entity:b93/218 utopia-storyboard-uid/scene-aaa/app-entity:b93/a17 utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -26248,22 +26248,117 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
       data-uid=\\"scene-aaa utopia-storyboard-uid\\"
     >
       <div
-        data-uid=\\"app-entity\\"
-        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+        data-uid=\\"b93 app-entity\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity\\"
       >
-        <div>Originally Unassigned</div>
-        <div>Originally Assigned</div>
-        <div>Named Function</div>
-        <div>Named Class</div>
-        <div>Named Export</div>
-        <div>Renamed Export</div>
-        <div>First In Structure</div>
-        <div>Second In Structure</div>
-        <div>The Number Is 4</div>
-        <div>Default Function</div>
-        <div>Export Default Class</div>
-        <div>Default Named Function</div>
-        <div>Named As Default</div>
+        <div
+          data-uid=\\"2f0\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0\\"
+        >
+          Originally Unassigned
+        </div>
+        <div
+          data-uid=\\"4cf 59c\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/59c:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/59c\\"
+        >
+          Originally Assigned
+        </div>
+        <div
+          data-uid=\\"4cf 54b\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/54b:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/54b\\"
+        >
+          Named Function
+        </div>
+        <div
+          data-uid=\\"d18\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/d18\\"
+        >
+          Named Class
+        </div>
+        <div
+          data-uid=\\"4cf 995\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/995:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/995\\"
+        >
+          Named Export
+        </div>
+        <div
+          data-uid=\\"b93 0cf\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf\\"
+        >
+          Renamed Export
+        </div>
+        <div
+          data-uid=\\"d00\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/d00\\"
+        >
+          First In Structure
+        </div>
+        <div
+          data-uid=\\"7d0\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0\\"
+        >
+          Second In Structure
+        </div>
+        <div
+          data-uid=\\"4cf\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf\\"
+        >
+          The Number Is 4
+        </div>
+        <div
+          data-uid=\\"4cf d7f\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f\\"
+        >
+          Default Function
+        </div>
+        <div
+          data-uid=\\"315\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/315\\"
+        >
+          Export Default Class
+        </div>
+        <div
+          data-uid=\\"4cf 5b9\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9\\"
+        >
+          Default Named Function
+        </div>
+        <div
+          data-uid=\\"4cf 301\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/301:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/301\\"
+        >
+          Named As Default
+        </div>
+        <div
+          data-uid=\\"4cf 8ce\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce\\"
+        >
+          Originally Assigned
+        </div>
+        <div
+          data-uid=\\"4cf f77\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/f77:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/f77\\"
+        >
+          Originally Assigned
+        </div>
+        <div
+          data-uid=\\"4cf 218\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/218:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/218\\"
+        >
+          Originally Assigned
+        </div>
+        <div
+          data-uid=\\"4cf a17\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/a17:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/a17\\"
+        >
+          Originally Assigned
+        </div>
+        <div
+          data-uid=\\"4cf 8aa\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
+        >
+          Default Function
+        </div>
       </div>
     </div>
   </div>
@@ -26532,12 +26627,2813 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+        ],
+        "type": "elementpath",
+      },
       "skipDeepFreeze": true,
       "style": Object {
         "height": "100%",
         "position": "absolute",
         "width": "100%",
       },
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "OriginallyUnassigned1",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "2f0",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "2f0",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "OriginallyAssigned1",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "59c",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "59c",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "NamedFunction",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "54b",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "54b",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "NamedClass",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "d18",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "d18",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "NamedExport",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "995",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "995",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "RenamedExport",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "0cf",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "0cf",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "FirstInStructure",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "d00",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "d00",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "SecondInStructure",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "7d0",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "7d0",
+          },
+          Object {
+            "children": Array [
+              Object {
+                "text": "The Number Is ",
+                "type": "JSX_TEXT_BLOCK",
+                "uniqueID": "",
+              },
+              Object {
+                "definedElsewhere": Array [
+                  "DefaultExpression",
+                ],
+                "elementsWithin": Object {},
+                "javascript": "DefaultExpression;",
+                "originalJavascript": "DefaultExpression",
+                "sourceMap": Object {
+                  "file": "code.tsx",
+                  "mappings": "OAAA,iBAACA",
+                  "names": Array [
+                    "DefaultExpression",
+                  ],
+                  "sources": Array [
+                    "code.tsx",
+                  ],
+                  "sourcesContent": Array [
+                    "import * as React from 'react'
+import { OriginallyUnassigned1 } from '/originallyunassigned'
+import { OriginallyAssigned1 } from '/originallyassigned'
+import { NamedFunction } from '/namedfunction'
+import { NamedClass } from '/namedclass'
+import { NamedExport, RenamedExport } from '/namedexport'
+import { FirstInStructure, SecondInStructure } from '/destructuredassignment'
+import DefaultExpression from '/defaultexpression'
+import DefaultFunction from '/defaultfunction'
+import DefaultClass from '/defaultclass'
+import DefaultNamedFunction from '/defaultnamedfunction'
+import NamedAsDefault from '/namedasdefault'
+import * as ReexportWildcard from '/reexportwildcard'
+import { assigned } from '/reexportmoduleintonamedexport'
+import { OriginallyAssigned1 as OriginallyAssigned2 } from '/reexportspecificnamed'
+import { NewlyAssigned } from '/reexportspecificrenamed'
+import DefaultFunction2 from '/reexportdefault'
+
+export var App = (props) => {
+  return (
+    <div>
+      <OriginallyUnassigned1 />
+      <OriginallyAssigned1 />
+      <NamedFunction />
+      <NamedClass />
+      <NamedExport />
+      <RenamedExport />
+      <FirstInStructure />
+      <SecondInStructure />
+      <div>The Number Is {DefaultExpression}</div>
+      <DefaultFunction />
+      <DefaultClass />
+      <DefaultNamedFunction />
+      <NamedAsDefault />
+      <ReexportWildcard.OriginallyAssigned1 />
+      <assigned.OriginallyAssigned1 />
+      <OriginallyAssigned2 />
+      <NewlyAssigned />
+      <DefaultFunction2 />
+    </div>
+  )
+}",
+                  ],
+                  "version": 3,
+                },
+                "transpiledJavascript": "return DefaultExpression;",
+                "type": "JSX_ARBITRARY_BLOCK",
+                "uniqueID": "",
+              },
+            ],
+            "name": Object {
+              "baseVariable": "div",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "4cf",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "4cf",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "DefaultFunction",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "d7f",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "d7f",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "DefaultClass",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "315",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "315",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "DefaultNamedFunction",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "5b9",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "5b9",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "NamedAsDefault",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "301",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "301",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "ReexportWildcard",
+              "propertyPath": Object {
+                "propertyElements": Array [
+                  "OriginallyAssigned1",
+                ],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "8ce",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "8ce",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "assigned",
+              "propertyPath": Object {
+                "propertyElements": Array [
+                  "OriginallyAssigned1",
+                ],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "f77",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "f77",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "OriginallyAssigned2",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "218",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "218",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "NewlyAssigned",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "a17",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "a17",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "DefaultFunction2",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "8aa",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "8aa",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "b93",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "b93",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-uid": "b93 app-entity",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "RenamedExport",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "0cf",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "0cf",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "0cf",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "RenamedExport",
+        "path": "/namedexport",
+        "variableName": "RenamedExport",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf",
+      "data-uid": "0cf",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "0cf",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/218": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "OriginallyAssigned2",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "218",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "218",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "218",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "OriginallyAssigned1",
+        "path": "/reexportspecificnamed",
+        "variableName": "OriginallyAssigned2",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/218",
+      "data-uid": "218",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "218",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "OriginallyUnassigned1",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "2f0",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "2f0",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "2f0",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "OriginallyUnassigned1",
+        "path": "/originallyunassigned",
+        "variableName": "OriginallyUnassigned1",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0",
+      "data-uid": "2f0",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/301": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NamedAsDefault",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "301",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "301",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "301",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": null,
+        "path": "/namedasdefault",
+        "variableName": "NamedAsDefault",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/301",
+      "data-uid": "301",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "301",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/315": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "DefaultClass",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "315",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "315",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "315",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": null,
+        "path": "/defaultclass",
+        "variableName": "DefaultClass",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/315",
+      "data-uid": "315",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "The Number Is ",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+          Object {
+            "definedElsewhere": Array [
+              "DefaultExpression",
+            ],
+            "elementsWithin": Object {},
+            "javascript": "DefaultExpression;",
+            "originalJavascript": "DefaultExpression",
+            "sourceMap": Object {
+              "file": "code.tsx",
+              "mappings": "OAAA,iBAACA",
+              "names": Array [
+                "DefaultExpression",
+              ],
+              "sources": Array [
+                "code.tsx",
+              ],
+              "sourcesContent": Array [
+                "import * as React from 'react'
+import { OriginallyUnassigned1 } from '/originallyunassigned'
+import { OriginallyAssigned1 } from '/originallyassigned'
+import { NamedFunction } from '/namedfunction'
+import { NamedClass } from '/namedclass'
+import { NamedExport, RenamedExport } from '/namedexport'
+import { FirstInStructure, SecondInStructure } from '/destructuredassignment'
+import DefaultExpression from '/defaultexpression'
+import DefaultFunction from '/defaultfunction'
+import DefaultClass from '/defaultclass'
+import DefaultNamedFunction from '/defaultnamedfunction'
+import NamedAsDefault from '/namedasdefault'
+import * as ReexportWildcard from '/reexportwildcard'
+import { assigned } from '/reexportmoduleintonamedexport'
+import { OriginallyAssigned1 as OriginallyAssigned2 } from '/reexportspecificnamed'
+import { NewlyAssigned } from '/reexportspecificrenamed'
+import DefaultFunction2 from '/reexportdefault'
+
+export var App = (props) => {
+  return (
+    <div>
+      <OriginallyUnassigned1 />
+      <OriginallyAssigned1 />
+      <NamedFunction />
+      <NamedClass />
+      <NamedExport />
+      <RenamedExport />
+      <FirstInStructure />
+      <SecondInStructure />
+      <div>The Number Is {DefaultExpression}</div>
+      <DefaultFunction />
+      <DefaultClass />
+      <DefaultNamedFunction />
+      <NamedAsDefault />
+      <ReexportWildcard.OriginallyAssigned1 />
+      <assigned.OriginallyAssigned1 />
+      <OriginallyAssigned2 />
+      <NewlyAssigned />
+      <DefaultFunction2 />
+    </div>
+  )
+}",
+              ],
+              "version": 3,
+            },
+            "transpiledJavascript": "return DefaultExpression;",
+            "type": "JSX_ARBITRARY_BLOCK",
+            "uniqueID": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "4cf",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "4cf",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "4cf",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf",
+      "data-uid": "4cf",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/54b": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NamedFunction",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "54b",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "54b",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "54b",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "NamedFunction",
+        "path": "/namedfunction",
+        "variableName": "NamedFunction",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/54b",
+      "data-uid": "54b",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "54b",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/59c": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "OriginallyAssigned1",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "59c",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "59c",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "59c",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "OriginallyAssigned1",
+        "path": "/originallyassigned",
+        "variableName": "OriginallyAssigned1",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/59c",
+      "data-uid": "59c",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "59c",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "DefaultNamedFunction",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "5b9",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "5b9",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "5b9",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": null,
+        "path": "/defaultnamedfunction",
+        "variableName": "DefaultNamedFunction",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9",
+      "data-uid": "5b9",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "5b9",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "SecondInStructure",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "7d0",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "7d0",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "7d0",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "SecondInStructure",
+        "path": "/destructuredassignment",
+        "variableName": "SecondInStructure",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0",
+      "data-uid": "7d0",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "DefaultFunction2",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "8aa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "8aa",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "8aa",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": null,
+        "path": "/reexportdefault",
+        "variableName": "DefaultFunction2",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa",
+      "data-uid": "8aa",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "8aa",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "ReexportWildcard",
+          "propertyPath": Object {
+            "propertyElements": Array [
+              "OriginallyAssigned1",
+            ],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "8ce",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "8ce",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "8ce",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": null,
+        "path": "/reexportwildcard",
+        "variableName": "ReexportWildcard",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce",
+      "data-uid": "8ce",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "8ce",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/995": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NamedExport",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "995",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "995",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "995",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "NamedExport",
+        "path": "/namedexport",
+        "variableName": "NamedExport",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/995",
+      "data-uid": "995",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "995",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/a17": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NewlyAssigned",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "a17",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "a17",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "a17",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "NewlyAssigned",
+        "path": "/reexportspecificrenamed",
+        "variableName": "NewlyAssigned",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/a17",
+      "data-uid": "a17",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "a17",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/d00": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "FirstInStructure",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "d00",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "d00",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "d00",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "FirstInStructure",
+        "path": "/destructuredassignment",
+        "variableName": "FirstInStructure",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/d00",
+      "data-uid": "d00",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/d18": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "NamedClass",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "d18",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "d18",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "d18",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "NamedClass",
+        "path": "/namedclass",
+        "variableName": "NamedClass",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/d18",
+      "data-uid": "d18",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "DefaultFunction",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "d7f",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "d7f",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "d7f",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": null,
+        "path": "/defaultfunction",
+        "variableName": "DefaultFunction",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f",
+      "data-uid": "d7f",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "d7f",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/f77": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "assigned",
+          "propertyPath": Object {
+            "propertyElements": Array [
+              "OriginallyAssigned1",
+            ],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "f77",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "f77",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "f77",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "assigned",
+        "path": "/reexportmoduleintonamedexport",
+        "variableName": "assigned",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/f77",
+      "data-uid": "f77",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "f77",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
       "clientHeight": 0,

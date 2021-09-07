@@ -218,6 +218,7 @@ export async function renderTestEditorWithModel(
         useStore={storeHook}
         spyCollector={spyCollector}
         propertyControlsInfoSupported={false}
+        vscodeBridgeReady={false}
       />
     </React.Profiler>,
   )
@@ -285,6 +286,7 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
   const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
+      StoryboardFilePath,
       printCodeOptions(false, true, false, true),
       file.fileContents.parsed.imports,
       file.fileContents.parsed.topLevelElements,
@@ -417,8 +419,12 @@ export function editorStateToParseSuccess(
   }
 }
 
-export function testPrintCodeFromParseSuccess(parseSuccess: ParseSuccess): string {
+export function testPrintCodeFromParseSuccess(
+  filename: string,
+  parseSuccess: ParseSuccess,
+): string {
   return printCode(
+    filename,
     printCodeOptions(false, true, true),
     parseSuccess.imports,
     parseSuccess.topLevelElements,
@@ -432,13 +438,13 @@ export function testPrintCodeFromEditorState(
   filePath: string = StoryboardFilePath,
 ): string {
   const parseSuccess = editorStateToParseSuccess(editorState, filePath)
-  return testPrintCodeFromParseSuccess(parseSuccess)
+  return testPrintCodeFromParseSuccess(filePath, parseSuccess)
 }
 
-export function testPrintParsedTextFile(parsedTextFile: ParsedTextFile): string {
+export function testPrintParsedTextFile(filename: string, parsedTextFile: ParsedTextFile): string {
   return foldParsedTextFile(
     (_) => 'FAILURE',
-    testPrintCodeFromParseSuccess,
+    (success) => testPrintCodeFromParseSuccess(filename, success),
     (_) => 'UNPARSED',
     parsedTextFile,
   )

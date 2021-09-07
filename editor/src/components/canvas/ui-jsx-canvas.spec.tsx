@@ -44,6 +44,11 @@ import DefaultFunction from '/defaultfunction'
 import DefaultClass from '/defaultclass'
 import DefaultNamedFunction from '/defaultnamedfunction'
 import NamedAsDefault from '/namedasdefault'
+import * as ReexportWildcard from '/reexportwildcard'
+import { assigned } from '/reexportmoduleintonamedexport'
+import { OriginallyAssigned1 as OriginallyAssigned2 } from '/reexportspecificnamed'
+import { NewlyAssigned } from '/reexportspecificrenamed'
+import DefaultFunction2 from '/reexportdefault'
 
 export var App = (props) => {
   return (
@@ -61,6 +66,11 @@ export var App = (props) => {
       <DefaultClass />
       <DefaultNamedFunction />
       <NamedAsDefault />
+      <ReexportWildcard.OriginallyAssigned1 />
+      <assigned.OriginallyAssigned1 />
+      <OriginallyAssigned2 />
+      <NewlyAssigned />
+      <DefaultFunction2 />
     </div>
   )
 }`,
@@ -91,6 +101,11 @@ export default function DefaultNamedFunction() { return <div>Default Named Funct
         '/namedasdefault.js': `import * as React from 'react'
 const ToBeDefaultExported = () => <div>Named As Default</div>
 export { ToBeDefaultExported as default }`,
+        '/reexportwildcard.js': `export * from '/originallyassigned'`,
+        '/reexportmoduleintonamedexport.js': `export * as assigned from '/originallyassigned'`,
+        '/reexportspecificnamed.js': `export { OriginallyAssigned1 } from '/originallyassigned'`,
+        '/reexportspecificrenamed.js': `export { OriginallyAssigned1 as NewlyAssigned } from '/originallyassigned'`,
+        '/reexportdefault.js': `export { default } from '/defaultfunction'`,
       },
     )
   })
@@ -1744,7 +1759,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       null,
       `import * as React from 'react'
       import { Storyboard, Scene } from 'utopia-api'
-      import { App } from 'app.js'
+      import { App } from '/app'
 
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -1764,7 +1779,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       }
       `,
       {
-        'app.js': `
+        '/app.js': `
       import * as React from 'react'
       export var App = (props) => {
         return <div data-uid='app-outer-div'>
@@ -1817,7 +1832,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       null,
       `import * as React from 'react'
       import { Storyboard, Scene } from 'utopia-api'
-      import { App } from 'app.js'
+      import { App } from '/app'
 
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -1837,9 +1852,9 @@ describe('UiJsxCanvas render multifile projects', () => {
       }
       `,
       {
-        'app.js': `
+        '/app.js': `
       import * as React from 'react'
-      import { Card } from 'card.js'
+      import { Card } from '/card'
       export var App = (props) => {
         return <div data-uid='app-outer-div'>
           <Card data-uid='card-instance'>
@@ -1847,7 +1862,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           </Card>
         </div>
       }`,
-        'card.js': `
+        '/card.js': `
         import * as React from 'react'
         export var Card = (props) => {
           return <div data-uid='card-outer-div'>
@@ -1912,7 +1927,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       null,
       `import * as React from 'react'
       import { Storyboard, Scene } from 'utopia-api'
-      import App from './app'
+      import App from '/app'
 
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -1932,7 +1947,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       }
       `,
       {
-        'app.js': `
+        '/app.js': `
       import * as React from 'react'
       export default class App extends React.Component {
         render() {
@@ -1983,7 +1998,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       null,
       `import * as React from 'react'
       import { Storyboard, Scene } from 'utopia-api'
-      import { App } from './app'
+      import { App } from '/app'
 
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -2003,7 +2018,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       }
       `,
       {
-        'app.js': `
+        '/app.js': `
       import * as React from 'react'
       export class App extends React.Component {
         render() {

@@ -17,17 +17,6 @@ import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { fastForEach } from '../../../core/shared/utils'
 
-function clearDescendantsForPath(
-  metadataToMutate: ElementInstanceMetadataMap,
-  pathPrefixToDelete: string,
-): void {
-  fastForEach(Object.keys(metadataToMutate), (pathString) => {
-    if (pathString.startsWith(pathPrefixToDelete)) {
-      delete metadataToMutate[pathString]
-    }
-  })
-}
-
 export function buildSpyWrappedElement(
   jsx: JSXElement,
   finalProps: any,
@@ -70,7 +59,6 @@ export function buildSpyWrappedElement(
       // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
       updateInvalidatedPaths((current) => current, 'invalidate')
       const elementPathString = EP.toComponentId(elementPath)
-      clearDescendantsForPath(metadataContext.current.spyValues.metadata, elementPathString)
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
     }
   }

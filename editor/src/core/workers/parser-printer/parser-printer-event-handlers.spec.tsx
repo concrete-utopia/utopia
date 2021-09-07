@@ -44,6 +44,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     const parseResult = testParseCode(code)
     if (isParseSuccess(parseResult)) {
       const printedCode = printCode(
+        '/index.js',
         printCodeOptions(false, true, true),
         parseResult.imports,
         parseResult.topLevelElements,

@@ -111,17 +111,16 @@ return { a: a, b: b };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
   },
-  "exportsDetail": Object {
-    "defaultExport": null,
-    "namedExports": Object {
-      "App": Object {
-        "type": "EXPORT_DETAIL_MODIFIER",
-      },
-      "storyboard": Object {
-        "type": "EXPORT_DETAIL_MODIFIER",
-      },
+  "exportsDetail": Array [
+    Object {
+      "functionName": "App",
+      "type": "EXPORT_FUNCTION",
     },
-  },
+    Object {
+      "functionName": "storyboard",
+      "type": "EXPORT_FUNCTION",
+    },
+  ],
   "highlightBounds": Object {
     "aaa": Object {
       "endCol": 26,

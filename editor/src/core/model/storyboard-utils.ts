@@ -25,17 +25,16 @@ import {
 import { forEachValue } from '../shared/object-utils'
 import { forceNotNull } from '../shared/optional-utils'
 import {
-  addModifierExportToDetail,
-  addNamedExportToDetail,
   EmptyExportsDetail,
   ExportDetail,
+  exportVariable,
+  exportVariables,
   forEachParseSuccess,
   importAlias,
-  isExportDefaultModifier,
-  isExportDefaultNamed,
   isParsedTextFile,
   isParseSuccess,
   isTextFile,
+  mergeExportsDetail,
   ParseSuccess,
   RevisionsState,
   textFile,
@@ -179,34 +178,80 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
       if (isParsedTextFile(file)) {
         // For those successfully parsed files, we want to search all of the components.
         forEachParseSuccess((success) => {
-          if (success.exportsDetail.defaultExport != null) {
-            updateCandidate(defaultComponentToImport(fullPath))
-          }
-
-          forEachValue((exportDetail, exportName) => {
-            const possibleMainComponentName = PossiblyMainComponentNames.includes(exportName)
-            updateCandidate(namedComponentToImport(fullPath, possibleMainComponentName, exportName))
-          }, success.exportsDetail.namedExports)
-
-          const namedExportKeys = Object.keys(success.exportsDetail.namedExports)
-          for (const topLevelElement of success.topLevelElements) {
-            if (isUtopiaJSXComponent(topLevelElement) && topLevelElement.usedInReactDOMRender) {
-              // Exported as the default, so exclude it.
-              if (
-                success.exportsDetail.defaultExport != null &&
-                (isExportDefaultNamed(success.exportsDetail.defaultExport) ||
-                  isExportDefaultModifier(success.exportsDetail.defaultExport)) &&
-                success.exportsDetail.defaultExport.name === topLevelElement.name
-              ) {
-                continue
-              }
-
-              // Exported by name, so exclude it.
-              if (topLevelElement.name == null || namedExportKeys.includes(topLevelElement.name)) {
-                continue
-              }
-
-              updateCandidate(unexportedRenderedComponent(fullPath, topLevelElement.name))
+          let namedExportKeys: Array<string> = []
+          for (const exportDetail of success.exportsDetail) {
+            switch (exportDetail.type) {
+              case 'EXPORT_DEFAULT_FUNCTION_OR_CLASS':
+                updateCandidate(defaultComponentToImport(fullPath))
+                break
+              case 'EXPORT_CLASS':
+                {
+                  const possibleMainComponentName = PossiblyMainComponentNames.includes(
+                    exportDetail.className,
+                  )
+                  updateCandidate(
+                    namedComponentToImport(
+                      fullPath,
+                      possibleMainComponentName,
+                      exportDetail.className,
+                    ),
+                  )
+                }
+                break
+              case 'EXPORT_FUNCTION':
+                {
+                  const possibleMainComponentName = PossiblyMainComponentNames.includes(
+                    exportDetail.functionName,
+                  )
+                  updateCandidate(
+                    namedComponentToImport(
+                      fullPath,
+                      possibleMainComponentName,
+                      exportDetail.functionName,
+                    ),
+                  )
+                }
+                break
+              case 'EXPORT_VARIABLES':
+              case 'EXPORT_DESTRUCTURED_ASSIGNMENT':
+              case 'REEXPORT_VARIABLES':
+                {
+                  for (const exportVar of exportDetail.variables) {
+                    const exportName = exportVar.variableAlias ?? exportVar.variableName
+                    if (exportName !== 'default') {
+                      namedExportKeys.push(exportName)
+                      const possibleMainComponentName = PossiblyMainComponentNames.includes(
+                        exportName,
+                      )
+                      updateCandidate(
+                        namedComponentToImport(fullPath, possibleMainComponentName, exportName),
+                      )
+                    }
+                  }
+                }
+                break
+              case 'EXPORT_EXPRESSION':
+                break
+              case 'REEXPORT_WILDCARD':
+                break
+              case 'EXPORT_VARIABLES_WITH_MODIFIER':
+                {
+                  for (const exportName of exportDetail.variables) {
+                    if (exportName !== 'default') {
+                      namedExportKeys.push(exportName)
+                      const possibleMainComponentName = PossiblyMainComponentNames.includes(
+                        exportName,
+                      )
+                      updateCandidate(
+                        namedComponentToImport(fullPath, possibleMainComponentName, exportName),
+                      )
+                    }
+                  }
+                }
+                break
+              default:
+                const _exhaustiveCheck: never = exportDetail
+                throw new Error(`Unhandled type ${JSON.stringify(exportDetail)}`)
             }
           }
         }, file.fileContents.parsed)
@@ -289,10 +334,9 @@ function addStoryboardFileForComponent(
       if (isTextFile(fileToModify)) {
         if (isParseSuccess(fileToModify.fileContents.parsed)) {
           const currentSuccess: ParseSuccess = fileToModify.fileContents.parsed
-          const updatedExports = addModifierExportToDetail(
-            currentSuccess.exportsDetail,
-            createFileWithComponent.elementName,
-          )
+          const updatedExports = mergeExportsDetail(currentSuccess.exportsDetail, [
+            exportVariables([exportVariable(createFileWithComponent.elementName, null)]),
+          ])
           const updatedParseSuccess = parseSuccess(
             currentSuccess.imports,
             currentSuccess.topLevelElements,
@@ -349,7 +393,7 @@ function addStoryboardFileForComponent(
     {},
     null,
     null,
-    addModifierExportToDetail(EmptyExportsDetail, BakedInStoryboardVariableName),
+    [exportVariables([exportVariable(BakedInStoryboardVariableName, null)])],
   )
   const storyboardFileContents = textFile(
     textFileContents('', success, RevisionsState.ParsedAhead),

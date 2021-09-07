@@ -15,6 +15,7 @@ import           Utopia.Web.Executors.Common
 import qualified Utopia.Web.Executors.Common      as C
 import           Utopia.Web.Executors.Development
 import qualified Utopia.Web.Executors.Development as D
+import           Utopia.Web.Packager.NPM
 
 initialiseTestResources :: IO DevServerResources
 initialiseTestResources = do
@@ -27,6 +28,7 @@ initialiseTestResources = do
   testAssetsCaches <- emptyAssetsCaches []
   semaphoreForNode <- newQSem 1
   locksRef <- newIORef mempty
+  matchingVersionsCache <- newMatchingVersionsCache
   return $ DevServerResources
          { _commitHash = "nocommit"
          , _projectPool = pool
@@ -44,6 +46,7 @@ initialiseTestResources = do
          , _nodeSemaphore = semaphoreForNode
          , _locksRef = locksRef
          , _branchDownloads = Nothing
+         , _matchingVersionsCache = matchingVersionsCache
          }
 
 testEnvironmentRuntime :: EnvironmentRuntime DevServerResources

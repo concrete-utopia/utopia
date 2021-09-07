@@ -207,6 +207,7 @@ function getPrintCodeResult(
   lastRevisedTime: number,
 ): PrintCodeResult {
   const withUIDs = printCode(
+    filename,
     printCodeOptions(false, true, true, false),
     parseSuccess.imports,
     parseSuccess.topLevelElements,
@@ -216,6 +217,7 @@ function getPrintCodeResult(
   const highlightBoundsWithUID = getHighlightBoundsWithUID('with-uids', withUIDs)
 
   const withoutUIDs = printCode(
+    filename,
     printCodeOptions(false, true, true, stripUIDs),
     parseSuccess.imports,
     parseSuccess.topLevelElements,

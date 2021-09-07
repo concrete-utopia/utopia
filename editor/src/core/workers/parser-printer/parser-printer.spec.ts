@@ -36,13 +36,11 @@ import {
   isParseSuccess,
   importAlias,
   foldParsedTextFile,
-  exportsDetail,
-  addNamedExportToDetail,
   EmptyExportsDetail,
-  setNamedDefaultExportInDetail,
-  addModifierExportToDetail,
-  setModifierDefaultExportInDetail,
-  setExpressionDefaultExportInDetail,
+  exportFunction,
+  exportDefaultFunctionOrClass,
+  exportVariables,
+  exportVariable,
 } from '../../shared/project-file-types'
 import {
   lintAndParse,
@@ -137,7 +135,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -199,7 +197,7 @@ export var whatever = () => <View data-uid='aaa'>
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -271,7 +269,7 @@ export function whatever(props) {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -337,7 +335,7 @@ export function whatever() {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -409,7 +407,7 @@ export default function whatever(props) {
       expect.objectContaining({}),
       null,
       null,
-      setModifierDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
+      [exportDefaultFunctionOrClass('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -475,7 +473,7 @@ export default function whatever() {
       expect.objectContaining({}),
       null,
       null,
-      setModifierDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
+      [exportDefaultFunctionOrClass('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -545,7 +543,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -628,7 +626,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   }),
@@ -696,7 +694,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         expect.objectContaining({}),
         null,
         null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        [exportFunction('whatever')],
       )
       expect(actualResult).toEqual(expectedResult)
     }),
@@ -781,7 +779,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         expect.objectContaining({}),
         null,
         null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        [exportFunction('whatever')],
       )
       expect(actualResult).toEqual(expectedResult)
     })
@@ -858,7 +856,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1006,7 +1004,7 @@ return { getSizing: getSizing, spacing: spacing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1099,10 +1097,7 @@ return { getSizing: getSizing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
-      setModifierDefaultExportInDetail(
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-        'getSizing',
-      ),
+      [exportDefaultFunctionOrClass('getSizing'), exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1211,10 +1206,7 @@ return { getSizing: getSizing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
-      addModifierExportToDetail(
-        addModifierExportToDetail(EmptyExportsDetail, 'getSizing'),
-        'whatever',
-      ),
+      [exportFunction('getSizing'), exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1307,7 +1299,7 @@ return {  };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
-      setExpressionDefaultExportInDetail(addModifierExportToDetail(EmptyExportsDetail, 'whatever')),
+      [exportDefaultFunctionOrClass(null), exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1395,7 +1387,7 @@ return { spacing: spacing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1469,7 +1461,7 @@ return { bgs: bgs, bg: bg };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1544,7 +1536,7 @@ return { greys: greys };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1613,7 +1605,7 @@ return { a: a, b: b };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1685,7 +1677,7 @@ return { a: a, b: b, c: c };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1762,7 +1754,7 @@ return { a: a };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1833,7 +1825,7 @@ return { a: a, b: b };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1909,7 +1901,7 @@ return { bg: bg };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1997,7 +1989,7 @@ return { count: count };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2086,7 +2078,7 @@ return { use20: use20 };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2147,7 +2139,7 @@ return { mySet: mySet };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2236,7 +2228,7 @@ return { spacing: spacing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2337,7 +2329,7 @@ return { MyComp: MyComp };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(MyComp),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2479,7 +2471,7 @@ export var whatever = props => (
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2616,7 +2608,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2679,7 +2671,7 @@ export var whatever = () => <View data-uid='aaa'>
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2728,7 +2720,7 @@ export var App = (props) => <View data-uid='bbb'>
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      [exportFunction('App')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2791,8 +2783,9 @@ export var App = (props) => <View data-uid='bbb'>
       null,
       sampleImportsForTests,
     )
-    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const detailOfExports = [exportFunction('whatever')]
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -2915,8 +2908,9 @@ return { getSizing: getSizing, spacing: spacing };`
       null,
       sampleImportsForTests,
     )
-    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const detailOfExports = [exportFunction('whatever')]
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true, false, true),
       imports,
       [...topLevelElements],
@@ -2970,8 +2964,9 @@ return { getSizing: getSizing, spacing: spacing };`
       null,
       sampleImportsForTests,
     )
-    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const detailOfExports = [exportFunction('whatever')]
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -3050,11 +3045,12 @@ export var whatever = props => {
     const parsedCode = testParseCode(code)
     if (isParseSuccess(parsedCode)) {
       const printedCode = printCode(
+        '/index.js',
         printCodeOptions(false, true, true),
         sampleImportsForTests,
         parsedCode.topLevelElements,
         null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        [exportFunction('whatever')],
       )
       expect(printedCode).toEqual(code)
     } else {
@@ -3097,8 +3093,9 @@ export var whatever = props => {
       null,
       sampleImportsForTests,
     )
-    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const detailOfExports = [exportFunction('whatever')]
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -3156,8 +3153,9 @@ export var whatever = props => {
       null,
       sampleImportsForTests,
     )
-    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const detailOfExports = [exportFunction('whatever')]
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -3246,8 +3244,9 @@ export var whatever = props => {
       null,
       sampleImportsForTests,
     )
-    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
+    const detailOfExports = [exportFunction('whatever')]
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       [exported],
@@ -3284,11 +3283,12 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInSto
     const parsedCode = testParseCode(code)
     if (isParseSuccess(parsedCode)) {
       const printedCode = printCode(
+        '/index.js',
         printCodeOptions(false, true, true),
         emptyImports(),
         parsedCode.topLevelElements,
         null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        [exportFunction('whatever')],
       )
       expect(printedCode).toEqual(expectedCode)
     } else {
@@ -3395,7 +3395,7 @@ return { test: test };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
 
     expect(actualResult).toEqual(expectedResult)
@@ -3491,11 +3491,9 @@ return { test: test };`
         ),
       ),
     ]
-    const detailOfExports = addModifierExportToDetail(
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      'storyboard',
-    )
+    const detailOfExports = [exportFunction('whatever'), exportFunction('storyboard')]
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       imports,
       components,
@@ -3582,7 +3580,7 @@ export var App = props => {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      [exportFunction('App')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3630,7 +3628,7 @@ export var App = props => {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      [exportFunction('App')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3708,7 +3706,7 @@ export var App = props => {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      [exportFunction('App')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3765,8 +3763,9 @@ export var App = props => {
       false,
       emptyComments,
     )
-    const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'App')
+    const detailOfExports = [exportFunction('App')]
     const printedCode = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       sampleImportsForTests,
       [component],
@@ -3961,7 +3960,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      [exportFunction('App')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4011,7 +4010,7 @@ export var App = props => {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'App'),
+      [exportFunction('App')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4056,11 +4055,12 @@ export var whatever = props => {
       emptyComments,
     )
     const actualResult = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       sampleImportsForTests,
       [exported],
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4105,11 +4105,12 @@ export var whatever = props => {
       emptyComments,
     )
     const actualResult = printCode(
+      '/index.js',
       printCodeOptions(false, true, true),
       sampleImportsForTests,
       [exported],
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4186,7 +4187,7 @@ return {  };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4276,7 +4277,7 @@ return { result: result };`
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4375,7 +4376,7 @@ export var whatever = props => {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4491,7 +4492,7 @@ return { a: a };`,
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4525,7 +4526,7 @@ export var whatever = props => {
       expect.objectContaining({}),
       null,
       null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      [exportFunction('whatever')],
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4571,6 +4572,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
   it('inserts data-uid into elements as part of the parse', () => {
     function checkDataUIDsPopulated(printableProjectContent: PrintableProjectContent): boolean {
       const printedCode = printCode(
+        '/index.js',
         printCodeOptions(false, true, false, false, true),
         printableProjectContent.imports,
         printableProjectContent.topLevelElements,

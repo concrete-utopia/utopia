@@ -179,6 +179,16 @@ const config = {
           }),
         ]
       : []),
+
+    // setting up the various process.env.VARIABLE replacements
+    new webpack.EnvironmentPlugin([
+      'REACT_APP_ENVIRONMENT_CONFIG',
+      'REACT_APP_AUTH0_CLIENT_ID',
+      'REACT_APP_AUTH0_ENDPOINT',
+      'REACT_APP_AUTH0_REDIRECT_URI',
+      'REACT_APP_COMMIT_HASH',
+      'GOOGLE_WEB_FONTS_KEY',
+    ]),
   ],
 
   resolve: {
@@ -278,23 +288,29 @@ const config = {
     ? {
         host: '0.0.0.0',
         port: 8088,
-        contentBase: path.join(__dirname, 'resources'),
-        watchContentBase: true, // Watch the above folder for changes too
-        overlay: {
-          warnings: false,
-          errors: true,
-        },
-        disableHostCheck: true, // Because we are proxying this
-        stats: {
-          assets: false,
-          colors: true,
-          version: false,
-          hash: false,
-          timings: false,
-          chunks: false,
-          chunkModules: false,
-        },
+        allowedHosts: 'all', // Because we are proxying this
         hot: hot,
+        static: {
+          directory: path.join(__dirname, 'resources'),
+          watch: true,
+        },
+        devMiddleware: {
+          stats: {
+            assets: false,
+            colors: true,
+            version: false,
+            hash: false,
+            timings: false,
+            chunks: false,
+            chunkModules: false,
+          },
+        },
+        client: {
+          overlay: {
+            warnings: false,
+            errors: true,
+          },
+        },
       }
     : {},
 

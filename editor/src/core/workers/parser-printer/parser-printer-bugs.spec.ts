@@ -166,7 +166,7 @@ export var ${BakedInStoryboardVariableName} = (
   <Storyboard data-uid='${BakedInStoryboardUID}' />
 )
 `
-    testParseThenPrint(code, code)
+    testParseThenPrint('/index.js', code, code)
   })
   it('components are not reordered when printing', () => {
     const code = `import * as React from 'react'
@@ -184,7 +184,7 @@ export var ${BakedInStoryboardVariableName} = (
   <Storyboard data-uid='${BakedInStoryboardUID}' />
 )
 `
-    testParseThenPrint(code, code)
+    testParseThenPrint('/index.js', code, code)
   })
 
   it('object property names with special characters should be printed in string quotes', () => {
@@ -209,7 +209,7 @@ export var ${BakedInStoryboardVariableName} = (
   <Storyboard data-uid='${BakedInStoryboardUID}' />
 )
 `
-    testParseThenPrint(code, code)
+    testParseThenPrint('/index.js', code, code)
   })
 
   it('definedWithin and definedElsewhere are mutually exclusive properties', () => {
@@ -231,7 +231,7 @@ export var ${BakedInStoryboardVariableName} = (
   <Storyboard data-uid='${BakedInStoryboardUID}' />
 )
 `
-    testParseThenPrint(code, code)
+    testParseThenPrint('/index.js', code, code)
   })
   it('parses elements that use props spreading - #1365', () => {
     const spreadCode = `import * as React from 'react'
@@ -254,7 +254,7 @@ export var ${BakedInStoryboardVariableName} = (
 )
 `
 
-    testParseThenPrint(spreadCode, spreadCode)
+    testParseThenPrint('/index.js', spreadCode, spreadCode)
   })
   it('parses elements that use props spreading without an explicit uid - #1515', () => {
     const spreadCode = `import * as React from 'react'
@@ -271,7 +271,7 @@ const Test = (props) => {
 export var ${BakedInStoryboardVariableName} = <Storyboard />
 `
 
-    testParseThenPrintWithoutUids(spreadCode, spreadCode)
+    testParseThenPrintWithoutUids('/index.js', spreadCode, spreadCode)
   })
 
   it('#1737 - Produces the same value for an exported default function', () => {
@@ -285,7 +285,23 @@ export default function () {
 }
 `
 
-    testParseThenPrintWithoutUids(spreadCode, spreadCode)
+    testParseThenPrintWithoutUids('/index.js', spreadCode, spreadCode)
+  })
+
+  it('#1773 - Handles imports which relate to the same file but have differing paths.', () => {
+    const spreadCode = `import * as React from 'react'
+import { FirstComponent } from './components.js'
+import { SecondComponent } from '/components.js'
+export default function () {
+  return (
+    <div>
+      <div>Default Function Time</div>
+    </div>
+  )
+}
+`
+
+    testParseThenPrintWithoutUids('/index.js', spreadCode, spreadCode)
   })
 })
 
@@ -310,6 +326,6 @@ export var ${BakedInStoryboardVariableName} = (
   <Storyboard data-uid='${BakedInStoryboardUID}' />
 )
 `
-    testParseThenPrint(code, code)
+    testParseThenPrint('/index.js', code, code)
   })
 })

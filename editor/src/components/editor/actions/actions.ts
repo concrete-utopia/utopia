@@ -461,6 +461,8 @@ import {
   getPackageJsonFromEditorState,
   transformElementAtPath,
   getNewSceneName,
+  packageJsonFileFromProjectContents,
+  vsCodeBridgeIdProjectId,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -965,8 +967,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     nodeModules: currentEditor.nodeModules,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
-    selectedViews: poppedEditor.selectedViews,
-    highlightedViews: poppedEditor.highlightedViews,
+    selectedViews: currentEditor.selectedViews,
+    highlightedViews: currentEditor.highlightedViews,
     hiddenInstances: poppedEditor.hiddenInstances,
     warnedInstances: poppedEditor.warnedInstances,
     mode: EditorModes.selectMode(),
@@ -1576,7 +1578,7 @@ export const UPDATE_FNS = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
-      vscodeBridgeId: action.projectId, // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
+      vscodeBridgeId: vsCodeBridgeIdProjectId(action.projectId), // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
@@ -3428,16 +3430,16 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    let newVscodeBridgeId = editor.vscodeBridgeId
-    if (editor.vscodeBridgeId == null) {
-      // ONLY update vscodeBridgeId if it was null
-      newVscodeBridgeId = action.id
+    let vscodeBridgeId = editor.vscodeBridgeId
+    if (vscodeBridgeId.type === 'VSCODE_BRIDGE_ID_DEFAULT') {
+      vscodeBridgeId = vsCodeBridgeIdProjectId(action.id)
+      // Side effect.
       initVSCodeBridge(action.id, editor.projectContents, dispatch)
     }
     return {
       ...editor,
       id: action.id,
-      vscodeBridgeId: newVscodeBridgeId,
+      vscodeBridgeId: vscodeBridgeId,
     }
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {
@@ -3659,8 +3661,18 @@ export const UPDATE_FNS = {
           packageStatus[dep.name] = { status: 'loading' }
           return packageStatus
         }, {})
-
-        fetchNodeModules(deps).then((fetchNodeModulesResult) => {
+        let depsToLoad = deps
+        const currentDepsFile = packageJsonFileFromProjectContents(editor.projectContents)
+        if (isTextFile(currentDepsFile)) {
+          const currentDeps = dependenciesFromPackageJsonContents(currentDepsFile.fileContents.code)
+          depsToLoad = deps.filter(
+            (dep) =>
+              !currentDeps.find(
+                (currentDep) => currentDep.name === dep.name && currentDep.version === dep.version,
+              ),
+          )
+        }
+        fetchNodeModules(depsToLoad).then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
@@ -4107,7 +4119,10 @@ export const UPDATE_FNS = {
     }, editor)
   },
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
-    const updatedEditor = UPDATE_FNS.ADD_IMPORTS(addImports(action.importsToAdd), editor)
+    const updatedEditor = UPDATE_FNS.ADD_IMPORTS(
+      addImports(action.importsToAdd, action.target),
+      editor,
+    )
 
     return modifyOpenJsxElementAtPath(
       action.target,
@@ -4121,12 +4136,18 @@ export const UPDATE_FNS = {
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
-    return modifyOpenParseSuccess((success, _, underlyingFilePath) => {
-      return {
-        ...success,
-        imports: mergeImports(underlyingFilePath, success.imports, action.importsToAdd),
-      }
-    }, editor)
+    return modifyUnderlyingTarget(
+      action.target,
+      forceNotNull('Missing open file', editor.canvas.openFile?.filename),
+      editor,
+      (element) => element,
+      (success, _, underlyingFilePath) => {
+        return {
+          ...success,
+          imports: mergeImports(underlyingFilePath, success.imports, action.importsToAdd),
+        }
+      },
+    )
   },
   SET_ASPECT_RATIO_LOCK: (action: SetAspectRatioLock, editor: EditorModel): EditorModel => {
     return modifyOpenJsxElementAtPath(
