@@ -3,6 +3,7 @@ import { betterReactMemo } from '../../uuiui-deps'
 import { useEditorState } from '../editor/store/store-hook'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import { createIframeUrl } from '../../core/shared/utils'
+import { getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
 
 const VSCodeIframeContainer = betterReactMemo(
   'VSCodeIframeContainer',
@@ -34,7 +35,7 @@ const VSCodeIframeContainer = betterReactMemo(
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', () => {
   const selectedProps = useEditorState((store) => {
     return {
-      vscodeBridgeId: store.editor.vscodeBridgeId,
+      vscodeBridgeId: getUnderlyingVSCodeBridgeID(store.editor.vscodeBridgeId),
     }
   }, 'CodeEditorWrapper')
 

@@ -29,6 +29,7 @@ import {
   EditorState,
   getHighlightBoundsForElementPaths,
   getHighlightBoundsForUids,
+  getUnderlyingVSCodeBridgeID,
 } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 
@@ -215,7 +216,7 @@ export function getProjectContentsChanges(
 ): Array<ProjectChange> {
   if (oldEditorState.vscodeBridgeId != null && !updateCameFromVSCode) {
     return collateProjectChanges(
-      oldEditorState.vscodeBridgeId,
+      getUnderlyingVSCodeBridgeID(oldEditorState.vscodeBridgeId),
       oldEditorState.projectContents,
       newEditorState.projectContents,
     )
