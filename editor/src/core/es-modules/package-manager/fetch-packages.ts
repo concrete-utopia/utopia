@@ -281,7 +281,11 @@ export async function fetchNodeModules(
     dependenciesToDownload.map(
       async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {
         try {
-          const matchingVersionResponse = await findMatchingVersion(newDep.name, newDep.version)
+          const matchingVersionResponse = await findMatchingVersion(
+            newDep.name,
+            newDep.version,
+            'skipFetch',
+          )
           if (isPackageNotFound(matchingVersionResponse)) {
             return left(failNotFound(newDep))
           }
