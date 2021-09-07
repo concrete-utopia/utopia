@@ -3668,7 +3668,7 @@ export const UPDATE_FNS = {
           depsToLoad = deps.filter(
             (dep) =>
               !currentDeps.find(
-                (currentDep) => currentDep.name === dep.name && currentDep.type === dep.type,
+                (currentDep) => currentDep.name === dep.name && currentDep.version === dep.version,
               ),
           )
         }
