@@ -362,12 +362,16 @@ export class NewBundlerWorker {
             )
           },
           initializeWorkerPromise: (context, event) => {
-            return sendIdGuardedinitializeWorkerPromise(
-              this.worker,
-              event.payload.typeDefinitions,
-              event.payload.projectContents,
-              event.payload.jobID,
-            )
+            if (event.type === 'INITIALIZE') {
+              return sendIdGuardedinitializeWorkerPromise(
+                this.worker,
+                event.payload.typeDefinitions,
+                event.payload.projectContents,
+                event.payload.jobID,
+              )
+            } else {
+              return Promise.resolve()
+            }
           },
         },
       }),
