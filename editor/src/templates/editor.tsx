@@ -242,6 +242,7 @@ export class Editor {
                 this.utopiaStoreApi,
                 this.spyCollector,
                 true,
+                this.storedState.editor.vscodeBridgeReady,
               ),
             )
           } else if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
@@ -270,6 +271,7 @@ export class Editor {
                             this.utopiaStoreApi,
                             this.spyCollector,
                             true,
+                            this.storedState.editor.vscodeBridgeReady,
                           ),
                       )
                     } else {
@@ -290,12 +292,19 @@ export class Editor {
                 this.utopiaStoreApi,
                 this.spyCollector,
                 true,
+                this.storedState.editor.vscodeBridgeReady,
               ),
             )
           }
         } else if (isCookiesOrLocalForageUnavailable(loginState)) {
           createNewProject(this.boundDispatch, () =>
-            renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true),
+            renderRootComponent(
+              this.utopiaStoreHook,
+              this.utopiaStoreApi,
+              this.spyCollector,
+              true,
+              this.storedState.editor.vscodeBridgeReady,
+            ),
           )
         } else if (isSampleProject(projectId)) {
           createNewProjectFromSampleProject(
@@ -308,6 +317,7 @@ export class Editor {
                 this.utopiaStoreApi,
                 this.spyCollector,
                 true,
+                this.storedState.editor.vscodeBridgeReady,
               ),
           )
         } else {
@@ -324,6 +334,7 @@ export class Editor {
                     this.utopiaStoreApi,
                     this.spyCollector,
                     true,
+                    this.storedState.editor.vscodeBridgeReady,
                   ),
               )
             } else {
@@ -337,6 +348,7 @@ export class Editor {
                     this.utopiaStoreApi,
                     this.spyCollector,
                     true,
+                    this.storedState.editor.vscodeBridgeReady,
                   )
                 },
                 () => {
@@ -414,11 +426,15 @@ export const HotRoot: React.FunctionComponent<{
   useStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   propertyControlsInfoSupported: boolean
-}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
+  vscodeBridgeReady: boolean
+}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-        <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
+        <EditorComponent
+          propertyControlsInfoSupported={propertyControlsInfoSupported}
+          vscodeBridgeReady={vscodeBridgeReady}
+        />
       </UiJsxCanvasCtxAtom.Provider>
     </EditorStateContext.Provider>
   )
@@ -430,6 +446,7 @@ async function renderRootComponent(
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
   propertyControlsInfoSupported: boolean,
+  vscodeBridgeReady: boolean,
 ): Promise<void> {
   return triggerHashedAssetsUpdate().then(() => {
     // NOTE: we only need to call this function once,
@@ -442,6 +459,7 @@ async function renderRootComponent(
           useStore={useStore}
           spyCollector={spyCollector}
           propertyControlsInfoSupported={propertyControlsInfoSupported}
+          vscodeBridgeReady={vscodeBridgeReady}
         />,
         rootElement,
       )

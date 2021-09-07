@@ -462,6 +462,7 @@ import {
   transformElementAtPath,
   getNewSceneName,
   packageJsonFileFromProjectContents,
+  vsCodeBridgeIdProjectId,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -1577,7 +1578,7 @@ export const UPDATE_FNS = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
-      vscodeBridgeId: action.projectId, // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
+      vscodeBridgeId: vsCodeBridgeIdProjectId(action.projectId), // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
@@ -3429,16 +3430,16 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    let newVscodeBridgeId = editor.vscodeBridgeId
-    if (editor.vscodeBridgeId == null) {
-      // ONLY update vscodeBridgeId if it was null
-      newVscodeBridgeId = action.id
+    let vscodeBridgeId = editor.vscodeBridgeId
+    if (vscodeBridgeId.type === 'VSCODE_BRIDGE_ID_DEFAULT') {
+      vscodeBridgeId = vsCodeBridgeIdProjectId(action.id)
+      // Side effect.
       initVSCodeBridge(action.id, editor.projectContents, dispatch)
     }
     return {
       ...editor,
       id: action.id,
-      vscodeBridgeId: newVscodeBridgeId,
+      vscodeBridgeId: vscodeBridgeId,
     }
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {

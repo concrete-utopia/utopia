@@ -149,6 +149,9 @@ import { MapLike } from 'typescript'
 import { pick } from '../../../core/shared/object-utils'
 import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
+
+import { v4 as UUID } from 'uuid'
+
 const ObjectPathImmutable: any = OPI
 
 export enum LeftMenuTab {
@@ -329,10 +332,48 @@ export interface ResizeOptions {
   propertyTargetSelectedIndex: number
 }
 
+export interface VSCodeBridgeIdDefault {
+  type: 'VSCODE_BRIDGE_ID_DEFAULT'
+  defaultID: string
+}
+
+export function vsCodeBridgeIdDefault(defaultID: string): VSCodeBridgeIdDefault {
+  return {
+    type: 'VSCODE_BRIDGE_ID_DEFAULT',
+    defaultID: defaultID,
+  }
+}
+
+export interface VSCodeBridgeIdProjectId {
+  type: 'VSCODE_BRIDGE_ID_PROJECT_ID'
+  projectID: string
+}
+
+export function vsCodeBridgeIdProjectId(projectID: string): VSCodeBridgeIdProjectId {
+  return {
+    type: 'VSCODE_BRIDGE_ID_PROJECT_ID',
+    projectID: projectID,
+  }
+}
+
+export type VSCodeBridgeId = VSCodeBridgeIdDefault | VSCodeBridgeIdProjectId
+
+export function getUnderlyingVSCodeBridgeID(bridgeId: VSCodeBridgeId): string {
+  switch (bridgeId.type) {
+    case 'VSCODE_BRIDGE_ID_DEFAULT':
+      return bridgeId.defaultID
+    case 'VSCODE_BRIDGE_ID_PROJECT_ID':
+      return bridgeId.projectID
+    default:
+      const _exhaustiveCheck: never = bridgeId
+      throw new Error(`Unhandled type ${JSON.stringify(bridgeId)}`)
+  }
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
-  vscodeBridgeId: string | null
+  vscodeBridgeId: VSCodeBridgeId
   forkedFromProjectId: string | null
   appID: string | null
   projectName: string
@@ -1090,7 +1131,7 @@ export const BaseCanvasOffsetLeftPane = {
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
-    vscodeBridgeId: null,
+    vscodeBridgeId: vsCodeBridgeIdDefault(UUID()),
     forkedFromProjectId: null,
     appID: null,
     projectName: createNewProjectName(),
@@ -1336,7 +1377,7 @@ export function editorModelFromPersistentModel(
   )
   const editor: EditorState = {
     id: null,
-    vscodeBridgeId: null,
+    vscodeBridgeId: vsCodeBridgeIdDefault(UUID()),
     forkedFromProjectId: persistentModel.forkedFromProjectId,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),

@@ -61,6 +61,7 @@ interface NumberSize {
 
 export interface EditorProps {
   propertyControlsInfoSupported: boolean
+  vscodeBridgeReady: boolean
 }
 
 function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
@@ -331,7 +332,9 @@ export const EditorComponentInner = betterReactMemo(
         <ModalComponent />
         <ToastRenderer />
         <CanvasCursorComponent />
-        {props.propertyControlsInfoSupported ? <PropertyControlsInfoComponent /> : null}
+        {props.propertyControlsInfoSupported && props.vscodeBridgeReady ? (
+          <PropertyControlsInfoComponent />
+        ) : null}
       </SimpleFlexRow>
     )
   },
