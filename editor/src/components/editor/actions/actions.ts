@@ -461,6 +461,7 @@ import {
   getPackageJsonFromEditorState,
   transformElementAtPath,
   getNewSceneName,
+  packageJsonFileFromProjectContents,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -3659,8 +3660,18 @@ export const UPDATE_FNS = {
           packageStatus[dep.name] = { status: 'loading' }
           return packageStatus
         }, {})
-
-        fetchNodeModules(deps).then((fetchNodeModulesResult) => {
+        let depsToLoad = deps
+        const currentDepsFile = packageJsonFileFromProjectContents(editor.projectContents)
+        if (isTextFile(currentDepsFile)) {
+          const currentDeps = dependenciesFromPackageJsonContents(currentDepsFile.fileContents.code)
+          depsToLoad = deps.filter(
+            (dep) =>
+              !currentDeps.find(
+                (currentDep) => currentDep.name === dep.name && currentDep.type === dep.type,
+              ),
+          )
+        }
+        fetchNodeModules(depsToLoad).then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
