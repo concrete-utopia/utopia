@@ -82,16 +82,9 @@ import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 
-// eslint-disable-next-line no-unused-expressions
-typeof process !== 'undefined' &&
-  process.on('unhandledRejection', (reason, promise) => {
-    console.warn(
-      'Unhandled promise rejection:',
-      promise,
-      'reason:',
-      (reason as any)?.stack ?? reason,
-    )
-  })
+process.on('unhandledRejection', (reason, promise) => {
+  console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack ?? reason)
+})
 
 try {
   jest.mock('../../core/vscode/vscode-bridge')
