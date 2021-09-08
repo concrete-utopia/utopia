@@ -15,6 +15,7 @@ import {
   downloadAssetsFromProject,
   loadProject as loadServerProject,
   saveAssets,
+  saveThumbnail,
   updateSavedProject,
 } from '../server'
 const { choose } = actions
@@ -27,17 +28,42 @@ import {
 import { arrayContains } from '../../../core/shared/utils'
 import { checkProjectOwnership } from '../../../common/server'
 import { PersistentModel } from '../store/editor-state'
-import {
-  addFileToProjectContents,
-  AssetFileWithFileName,
-  getAllProjectAssetFiles,
-} from '../../assets'
+import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
 import { getFileExtension } from '../../../core/shared/file-utils'
-import { AssetFile, ImageFile } from '../../../core/shared/project-file-types'
+import { AssetFile, ImageFile, ProjectFile } from '../../../core/shared/project-file-types'
 import { assetFile, imageFile, isImageFile } from '../../../core/model/project-file-utils'
-import { EditorDispatch } from '../action-types'
+import { EditorAction, EditorDispatch } from '../action-types'
+import {
+  setForkedFromProjectID,
+  setProjectID,
+  setProjectName,
+  showToast,
+  updateFile,
+} from '../actions/action-creators'
+import { notice } from '../../common/notice'
+import { getPNGBufferOfElementWithID } from '../screenshot-utils'
 
 // Backend Calls
+
+let _lastThumbnailGenerated: number = 0
+const THUMBNAIL_THROTTLE = 300000
+
+async function generateThumbnail(force: boolean): Promise<Buffer | null> {
+  const now = Date.now()
+  if (now - _lastThumbnailGenerated > THUMBNAIL_THROTTLE || force) {
+    _lastThumbnailGenerated = now
+    return getPNGBufferOfElementWithID('canvas-root', { width: 1152, height: 720 })
+  } else {
+    return Promise.resolve(null)
+  }
+}
+
+export async function updateRemoteThumbnail(projectId: string, force: boolean): Promise<void> {
+  const buffer = await generateThumbnail(force)
+  if (buffer != null) {
+    await saveThumbnail(buffer, projectId)
+  }
+}
 
 export interface LocalProject {
   model: PersistentModel
@@ -116,22 +142,58 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult> {
   }
 }
 
+interface FileWithFileName {
+  fileName: string
+  file: ProjectFile
+}
+
+function fileWithFileName(fileName: string, file: ProjectFile): FileWithFileName {
+  return {
+    fileName: fileName,
+    file: file,
+  }
+}
+
+interface ProjectWithFileChanges {
+  filesWithFileNames: Array<FileWithFileName>
+  projectModel: ProjectModel
+}
+
+function projectWithFileChanges(
+  filesWithFileNames: Array<FileWithFileName>,
+  projectModel: ProjectModel,
+): ProjectWithFileChanges {
+  return {
+    filesWithFileNames: filesWithFileNames,
+    projectModel: projectModel,
+  }
+}
+
 async function saveProjectToServer(
   projectId: string,
   projectModel: ProjectModel,
-): Promise<ProjectModelWithId> {
-  await updateSavedProject(projectId, projectModel.content, projectModel.name)
+): Promise<ProjectWithFileChanges> {
+  const { assetsToUpload, projectWithChanges } = prepareAssetsForUploading(projectModel)
 
-  return {
-    projectId: projectId,
-    projectModel: projectModel,
+  await updateSavedProject(
+    projectId,
+    projectWithChanges.projectModel.content,
+    projectWithChanges.projectModel.name,
+  )
+  if (assetsToUpload.length > 0) {
+    await saveAssets(projectId, assetsToUpload)
   }
+
+  updateRemoteThumbnail(projectId, false)
+  deleteLocalProject(projectId)
+
+  return projectWithChanges
 }
 
 async function saveProjectLocally(
   projectId: string,
   projectModel: ProjectModel,
-): Promise<ProjectModelWithId> {
+): Promise<ProjectWithFileChanges> {
   const existing = await localforage.getItem<LocalProject | null>(localProjectKey(projectId))
   const existingThumbnail = existing == null ? '' : existing.thumbnail
   const now = new Date().toISOString()
@@ -148,21 +210,13 @@ async function saveProjectLocally(
 
   await localforage.setItem(localProjectKey(projectId), localProject)
 
-  return {
-    projectId: projectId,
-    projectModel: projectModel,
-  }
-}
-
-interface DownloadedAssetsResult {
-  assetsWithFileNames: Array<AssetFileWithFileName>
-  projectModel: ProjectModel
+  return projectWithFileChanges([], projectModel)
 }
 
 async function downloadAssets(
   projectId: string,
   projectModel: ProjectModel,
-): Promise<DownloadedAssetsResult> {
+): Promise<ProjectWithFileChanges> {
   const allProjectAssets = getAllProjectAssetFiles(projectModel.content.projectContents)
   const allProjectAssetsDownloaded = await downloadAssetsFromProject(projectId, allProjectAssets)
   const updatedProjectContents = allProjectAssetsDownloaded.reduce(
@@ -179,10 +233,7 @@ async function downloadAssets(
     },
   }
 
-  return {
-    assetsWithFileNames: allProjectAssetsDownloaded,
-    projectModel: updatedProjectModel,
-  }
+  return projectWithFileChanges(allProjectAssetsDownloaded, updatedProjectModel)
 }
 
 function scrubBase64FromFile(file: ImageFile | AssetFile): ImageFile | AssetFile {
@@ -193,23 +244,30 @@ function scrubBase64FromFile(file: ImageFile | AssetFile): ImageFile | AssetFile
   }
 }
 
-async function uploadAssets(projectId: string, projectModel: ProjectModel): Promise<ProjectModel> {
+interface PreparedProject {
+  assetsToUpload: Array<AssetToSave>
+  projectWithChanges: ProjectWithFileChanges
+}
+
+function prepareAssetsForUploading(projectModel: ProjectModel): PreparedProject {
   const allProjectAssets = getAllProjectAssetFiles(projectModel.content.projectContents)
   let assetsToUpload: Array<AssetToSave> = []
+  let updatedAssets: Array<FileWithFileName> = []
 
   const updatedProjectContents = allProjectAssets.reduce(
     (workingProjectContents, { fileName: assetPath, file: asset }) => {
       const fileType = getFileExtension(assetPath)
       if (asset.base64 != null) {
+        const updatedFile = scrubBase64FromFile(asset)
         assetsToUpload.push(assetToSave(fileType, asset.base64, assetPath))
+        updatedAssets.push(fileWithFileName(assetPath, updatedFile))
+        return addFileToProjectContents(workingProjectContents, assetPath, updatedFile)
+      } else {
+        return workingProjectContents
       }
-      const updatedFile = scrubBase64FromFile(asset)
-      return addFileToProjectContents(workingProjectContents, assetPath, updatedFile)
     },
     projectModel.content.projectContents,
   )
-
-  await saveAssets(projectId, assetsToUpload)
 
   const updatedProjectModel: ProjectModel = {
     name: projectModel.name,
@@ -219,7 +277,10 @@ async function uploadAssets(projectId: string, projectModel: ProjectModel): Prom
     },
   }
 
-  return updatedProjectModel
+  return {
+    assetsToUpload: assetsToUpload,
+    projectWithChanges: projectWithFileChanges(updatedAssets, updatedProjectModel),
+  }
 }
 
 // End Backend Calls
@@ -298,11 +359,13 @@ function saveEvent(projectModel: ProjectModel): SaveEvent {
 
 interface SaveCompleteEvent {
   type: 'SAVE_COMPLETE'
+  saveResult: ProjectWithFileChanges
 }
 
-function saveCompleteEvent(): SaveCompleteEvent {
+function saveCompleteEvent(saveResult: ProjectWithFileChanges): SaveCompleteEvent {
   return {
     type: 'SAVE_COMPLETE',
+    saveResult: saveResult,
   }
 }
 
@@ -330,51 +393,15 @@ function forkEvent(): ForkEvent {
 
 interface DownloadAssetsCompleteEvent {
   type: 'DOWNLOAD_ASSETS_COMPLETE'
-  downloadedAssetsResult: DownloadedAssetsResult
+  downloadAssetsResult: ProjectWithFileChanges
 }
 
 function downloadAssetsCompleteEvent(
-  downloadedAssetsResult: DownloadedAssetsResult,
+  downloadAssetsResult: ProjectWithFileChanges,
 ): DownloadAssetsCompleteEvent {
   return {
     type: 'DOWNLOAD_ASSETS_COMPLETE',
-    downloadedAssetsResult: downloadedAssetsResult,
-  }
-}
-
-interface UploadAssetsEvent {
-  type: 'UPLOAD_ASSETS'
-  projectModel: ProjectModel
-}
-
-function uploadAssetsEvent(projectModel: ProjectModel): UploadAssetsEvent {
-  return {
-    type: 'UPLOAD_ASSETS',
-    projectModel: projectModel,
-  }
-}
-
-interface SkipUploadAssetsEvent {
-  type: 'SKIP_UPLOAD_ASSETS'
-  projectModel: ProjectModel
-}
-
-function skipUploadAssetsEvent(projectModel: ProjectModel): SkipUploadAssetsEvent {
-  return {
-    type: 'SKIP_UPLOAD_ASSETS',
-    projectModel: projectModel,
-  }
-}
-
-interface UploadAssetsCompleteEvent {
-  type: 'UPLOAD_ASSETS_COMPLETE'
-  projectModel: ProjectModel
-}
-
-function uploadAssetsCompleteEvent(projectModel: ProjectModel): UploadAssetsCompleteEvent {
-  return {
-    type: 'UPLOAD_ASSETS_COMPLETE',
-    projectModel: projectModel,
+    downloadAssetsResult: downloadAssetsResult,
   }
 }
 
@@ -401,9 +428,6 @@ type CoreEvent =
   | SaveCompleteEvent
   | ForkEvent
   | DownloadAssetsCompleteEvent
-  | UploadAssetsEvent
-  | SkipUploadAssetsEvent
-  | UploadAssetsCompleteEvent
   | InnerSaveEvent
 
 interface BackendCreateProjectIdEvent {
@@ -428,23 +452,6 @@ function backendDownloadAssetsEvent(
 ): BackendDownloadAssetsEvent {
   return {
     type: 'BACKEND_DOWNLOAD_ASSETS',
-    projectId: projectId,
-    projectModel: projectModel,
-  }
-}
-
-interface BackendUploadAssetsEvent {
-  type: 'BACKEND_UPLOAD_ASSETS'
-  projectId: string
-  projectModel: ProjectModel
-}
-
-function backendUploadAssetsEvent(
-  projectId: string,
-  projectModel: ProjectModel,
-): BackendUploadAssetsEvent {
-  return {
-    type: 'BACKEND_UPLOAD_ASSETS',
     projectId: projectId,
     projectModel: projectModel,
   }
@@ -523,7 +530,6 @@ function backendErrorEvent(message: string): BackendErrorEvent {
 type BackendEvent =
   | BackendCreateProjectIdEvent
   | BackendDownloadAssetsEvent
-  | BackendUploadAssetsEvent
   | BackendServerSaveEvent
   | BackendLocalSaveEvent
   | BackendLoadEvent
@@ -574,7 +580,6 @@ const ProjectLoaded = 'project-loaded'
 
 // InternalSavingStates
 const CheckLoggedIn = 'check-logged-in'
-const UploadingAssets = 'uploading-assets'
 const SavingProjectToServer = 'saving-project-to-server'
 const SavingProjectLocally = 'saving-project-locally'
 const ProjectSaved = 'project-saved'
@@ -588,9 +593,7 @@ const BackendIdle = 'idle'
 const BackendCreatingProjectId = 'creating-project-id'
 const BackendCheckingOwnership = 'checking-ownership'
 const BackendDownloadingAssets = 'downloading-assets'
-const BackendUploadingAssets = 'uploading-assets'
 const BackendServerSaving = 'server-saving'
-const BackendDeletingLocal = 'deleting-local'
 const BackendLocalSaving = 'local-saving'
 const BackendLoading = 'loading'
 
@@ -634,7 +637,6 @@ const persistenceMachine = createMachine<
             BACKEND_CREATE_PROJECT_ID: BackendCreatingProjectId,
             BACKEND_CHECK_OWNERSHIP: BackendCheckingOwnership,
             BACKEND_DOWNLOAD_ASSETS: BackendDownloadingAssets,
-            BACKEND_UPLOAD_ASSETS: BackendUploadingAssets,
             BACKEND_SERVER_SAVE: BackendServerSaving,
             BACKEND_LOCAL_SAVE: BackendLocalSaving,
             BACKEND_LOAD: BackendLoading,
@@ -697,34 +699,8 @@ const persistenceMachine = createMachine<
             onDone: {
               target: BackendIdle,
               actions: [
-                send((_, event: DoneInvokeEvent<DownloadedAssetsResult>) =>
+                send((_, event: DoneInvokeEvent<ProjectWithFileChanges>) =>
                   downloadAssetsCompleteEvent(event.data),
-                ),
-              ],
-            },
-            onError: {
-              target: BackendIdle,
-              actions: send((_, event) => backendErrorEvent(event.data)),
-            },
-          },
-        },
-        [BackendUploadingAssets]: {
-          invoke: {
-            id: 'upload-assets',
-            src: (_, event) => {
-              if (event.type === 'BACKEND_UPLOAD_ASSETS') {
-                return uploadAssets(event.projectId, event.projectModel)
-              } else {
-                throw new Error(
-                  `Incorrect event type triggered asset upload, ${JSON.stringify(event)}`,
-                )
-              }
-            },
-            onDone: {
-              target: BackendIdle,
-              actions: [
-                send((_, event: DoneInvokeEvent<ProjectModel>) =>
-                  uploadAssetsCompleteEvent(event.data),
                 ),
               ],
             },
@@ -753,28 +729,10 @@ const persistenceMachine = createMachine<
               }
             },
             onDone: {
-              target: BackendDeletingLocal,
-              actions: [
-                assign((_, event: DoneInvokeEvent<ProjectModelWithId>) => {
-                  return {
-                    project: event.data.projectModel,
-                  }
-                }),
-              ],
-            },
-            onError: {
               target: BackendIdle,
-              actions: send((_, event) => backendErrorEvent(event.data)),
-            },
-          },
-        },
-        [BackendDeletingLocal]: {
-          invoke: {
-            id: 'delete-local-save',
-            src: (context, _) => deleteLocalProject(context.projectId!),
-            onDone: {
-              target: BackendIdle,
-              actions: send(saveCompleteEvent()),
+              actions: send((_, event: DoneInvokeEvent<ProjectWithFileChanges>) =>
+                saveCompleteEvent(event.data),
+              ),
             },
             onError: {
               target: BackendIdle,
@@ -802,14 +760,9 @@ const persistenceMachine = createMachine<
             },
             onDone: {
               target: BackendIdle,
-              actions: [
-                assign((_, event: DoneInvokeEvent<ProjectModelWithId>) => {
-                  return {
-                    project: event.data.projectModel,
-                  }
-                }),
-                send(saveCompleteEvent()),
-              ],
+              actions: send((_, event: DoneInvokeEvent<ProjectWithFileChanges>) =>
+                saveCompleteEvent(event.data),
+              ),
             },
             onError: {
               target: BackendIdle,
@@ -1000,71 +953,33 @@ const persistenceMachine = createMachine<
           },
         },
         [Saving]: {
-          initial: CheckLoggedIn,
-          states: {
-            [CheckLoggedIn]: {
-              entry: choose([
-                {
-                  cond: (context, _) => context.loggedIn,
-                  actions: send((_, event) => uploadAssetsEvent((event as SaveEvent).projectModel)),
-                },
-                {
-                  actions: send((_, event) =>
-                    skipUploadAssetsEvent((event as SaveEvent).projectModel),
-                  ),
-                },
-              ]),
-              on: {
-                UPLOAD_ASSETS: UploadingAssets,
-                SKIP_UPLOAD_ASSETS: SavingProjectLocally,
-              },
-            },
-            [UploadingAssets]: {
-              entry: send((context, event) =>
-                backendUploadAssetsEvent(
-                  context.projectId!,
-                  (event as UploadAssetsEvent).projectModel,
-                ),
+          entry: choose([
+            {
+              cond: (context, _) => context.loggedIn,
+              actions: send((context, event) =>
+                backendServerSaveEvent(context.projectId!, (event as SaveEvent).projectModel),
               ),
-              on: {
-                UPLOAD_ASSETS_COMPLETE: SavingProjectToServer,
-              },
             },
-            [SavingProjectLocally]: {
-              entry: send((context, event) =>
-                backendLocalSaveEvent(
-                  context.projectId!,
-                  (event as SkipUploadAssetsEvent).projectModel,
-                ),
+            {
+              actions: send((context, event) =>
+                backendLocalSaveEvent(context.projectId!, (event as SaveEvent).projectModel),
               ),
-              on: {
-                SAVE_COMPLETE: ProjectSaved,
-              },
             },
-            [SavingProjectToServer]: {
-              entry: send((context, event) =>
-                backendServerSaveEvent(
-                  context.projectId!,
-                  (event as UploadAssetsCompleteEvent).projectModel,
-                ),
-              ),
-              on: {
-                SAVE_COMPLETE: ProjectSaved,
-              },
-            },
-            [ProjectSaved]: {
-              type: 'final',
-            },
-          },
+          ]),
           on: {
             SAVE: {
               actions: queuePush,
             },
+            SAVE_COMPLETE: {
+              target: Ready,
+              actions: assign((_context, event) => {
+                return {
+                  projectOwned: true,
+                  project: event.saveResult.projectModel,
+                }
+              }),
+            },
             BACKEND_ERROR: Ready,
-          },
-          onDone: {
-            target: Ready,
-            actions: assign({ projectOwned: (_context, _event) => true }),
           },
         },
         [Forking]: {
@@ -1083,7 +998,7 @@ const persistenceMachine = createMachine<
                 DOWNLOAD_ASSETS_COMPLETE: {
                   target: CreatingProjectId,
                   actions: assign({
-                    project: (_, event) => event.downloadedAssetsResult.projectModel,
+                    project: (_, event) => event.downloadAssetsResult.projectModel,
                   }),
                 },
               },
@@ -1118,8 +1033,10 @@ const persistenceMachine = createMachine<
 })
 
 let interpreter: Interpreter<PersistenceContext, any, PersistenceEvent> | null = null
+let queuedActions: Array<EditorAction> = [] // Queue up actions during events and transitions, then dispatch when ready
 
-export function initialisePersistence(dispatch: EditorDispatch) {
+export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFound: () => void) {
+  queuedActions = [] // TODO This should really be part of the state machine most likely
   if (interpreter != null) {
     interpreter.stop()
   }
@@ -1127,31 +1044,46 @@ export function initialisePersistence(dispatch: EditorDispatch) {
   interpreter = interpret(persistenceMachine)
 
   interpreter.onTransition((state, event) => {
-    switch (state.value) {
-      case ProjectForked:
-        // TODO Update forked project name and forkedFromProjectId
-        break
-      default:
+    if (state.changed) {
+      if (state.matches(`${Forking}.${DownloadingAssets}`)) {
+        queuedActions.push(setForkedFromProjectID(state.context.projectId!))
+        queuedActions.push(setProjectName(`${state.context.project!.name} (forked)`))
+        queuedActions.push(showToast(notice('Project successfully forked!')))
+      } else if (state.matches(Ready)) {
+        const actionsToDispatch = queuedActions
+        queuedActions = []
+        dispatch(actionsToDispatch)
+      } else {
         switch (event.type) {
+          case 'PROJECT_ID_CREATED':
+            queuedActions.push(setProjectID(event.projectId))
+            // TODO Update URL
+            break
           case 'LOAD_FAILED':
-            // TODO Handle 404s
+            onProjectNotFound()
             break
-          case 'UPLOAD_ASSETS_COMPLETE':
-            // TODO Clean model after asset upload
+          case 'DOWNLOAD_ASSETS_COMPLETE': {
+            const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
+              ({ fileName, file }) => updateFile(fileName, file, true),
+            )
+            queuedActions.push(...updateFileActions)
             break
+          }
           case 'SAVE_COMPLETE':
+            const updateFileActions = event.saveResult.filesWithFileNames.map(
+              ({ fileName, file }) => updateFile(fileName, file, true),
+            )
+            queuedActions.push(...updateFileActions)
             // TODO Show toasts after:
             // [ ] first local save
             // [ ] first server save
-            // [ ] fork
             break
         }
+      }
     }
   })
 
   interpreter.start()
 }
 
-// TODO Claim ownership of project before uploading assets
-// TODO Thumbnails
 // TODO Throttling
