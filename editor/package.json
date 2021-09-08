@@ -321,7 +321,7 @@
     "string-replace-loader": "2.2.0",
     "style-loader": "0.18.2",
     "tar": "6.0.5",
-    "terser-webpack-plugin": "^5.2.3",
+    "terser-webpack-plugin": "5.2.3",
     "three": "0.129.0",
     "tmp": "0.0.31",
     "ts-jest": "26.1.1",
