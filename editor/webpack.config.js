@@ -179,13 +179,16 @@ const config = {
         ]
       : []),
 
+    // Webpack 5 does not provide buffer out of the box
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+
     new webpack.DefinePlugin({
       // with Webpack 5, process is not shimmed anymore, these are some properties that I had to replace with undefined so the various checks do not throw a runtime type error
       'process.platform': 'undefined',
       'process.env.BABEL_TYPES_8_BREAKING': 'undefined',
       'process.env.JEST_WORKER_ID': 'undefined',
-
-      'Buffer.isBuffer': '() => undefined', // for node_modules/jsesc, the only module that relies on Buffer
     }),
 
     // setting up the various process.env.VARIABLE replacements

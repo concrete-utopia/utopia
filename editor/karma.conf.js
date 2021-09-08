@@ -7,7 +7,6 @@ webpackConfig['resolve']['fallback']['module'] = false
 
 webpackConfig['plugins'].push(
   new webpack.DefinePlugin({
-    Buffer: 'undefined', // for jest-matcher-utils
     'process.env.RTL_SKIP_AUTO_CLEANUP': 'undefined',
   }),
 )
