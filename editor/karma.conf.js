@@ -1,9 +1,16 @@
+const webpack = require('webpack')
 var webpackConfig = require('./webpack.config')
 delete webpackConfig['entry']
-webpackConfig['node'] = {
-  // handles stack-utils looking for 'module'
-  module: 'empty',
-}
+
+// handles stack-utils looking for 'module'
+webpackConfig['resolve']['fallback']['module'] = false
+
+webpackConfig['plugins'].push(
+  new webpack.DefinePlugin({
+    'process.env.RTL_SKIP_AUTO_CLEANUP': 'undefined',
+  }),
+)
+
 module.exports = function (config) {
   config.set({
     plugins: ['karma-webpack', 'karma-mocha', 'karma-chrome-launcher'],
