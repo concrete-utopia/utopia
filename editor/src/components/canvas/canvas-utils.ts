@@ -51,6 +51,7 @@ import {
   isJSXFragment,
   isUtopiaJSXComponent,
   SettableLayoutSystem,
+  emptyComments,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -198,7 +199,6 @@ import {
   getContentsTreeFileFromString,
   ProjectContentTreeRoot,
 } from '../assets'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from './dom-lookup'
 import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
@@ -2604,34 +2604,6 @@ export function reorderComponent(
   }
 
   return workingComponents
-}
-
-export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
-  const baseModel = defaultProject()
-  const parsedFile = lintAndParse(
-    StoryboardFilePath,
-    appUiJsFile,
-    null,
-    emptySet(),
-  ) as ParsedTextFile
-
-  if (!isParseSuccess(parsedFile)) {
-    fail('The test file parse failed')
-  }
-
-  return {
-    ...baseModel,
-    projectContents: addFileToProjectContents(
-      baseModel.projectContents,
-      StoryboardFilePath,
-      textFile(
-        textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
-        null,
-        parsedFile,
-        Date.now(),
-      ),
-    ),
-  }
 }
 
 export interface GetParseSuccessOrTransientResult {

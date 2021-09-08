@@ -1,7 +1,7 @@
 import { interpret } from 'xstate'
-import { InitCompleteMessage, BuildResultMessage } from './ts/ts-worker'
 import { bundlerMachine } from './bundler-bridge'
 import utils from '../../utils/utils'
+import { InitCompleteMessage, BuildResultMessage } from './common/worker-types'
 
 const initEvent = {
   type: 'INITIALIZE',

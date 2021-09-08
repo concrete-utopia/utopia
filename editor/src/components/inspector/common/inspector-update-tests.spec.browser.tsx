@@ -8,8 +8,7 @@ import {
 import { setElectronWindow } from '../../../core/shared/test-setup.test-utils'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as PP from '../../../core/shared/property-path'
-import { jsxAttributeValue } from '../../../core/shared/element-template'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 
 describe('updating style properties keeps the original order', () => {
   beforeAll(setElectronWindow)

@@ -39,13 +39,13 @@ import {
   generateUidWithExistingComponents,
 } from '../../../core/model/element-template-utils'
 import {
+  emptyComments,
   jsxAttributeValue,
   jsxElement,
   JSXElementName,
   jsxTextBlock,
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import {
   getElementsToTarget,
   useHandleCloseOnESCOrEnter,

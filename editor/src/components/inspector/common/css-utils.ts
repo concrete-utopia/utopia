@@ -29,6 +29,7 @@ import {
   traverseEither,
 } from '../../../core/shared/either'
 import {
+  emptyComments,
   isJSXAttributeFunctionCall,
   isJSXAttributeNotFound,
   isPartOfJSXAttributeValue,
@@ -63,7 +64,6 @@ import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-bac
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 import Utils from '../../../utils/utils'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import {
   parsePadding,
   printPaddingAsAttributeValue,

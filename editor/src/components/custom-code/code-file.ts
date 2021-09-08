@@ -1,11 +1,5 @@
 import Utils from '../../utils/utils'
-import {
-  ExportType,
-  ExportsInfo,
-  MultiFileBuildResult,
-  BuildType,
-  EmitFileResult,
-} from '../../core/workers/ts/ts-worker'
+import { EmitFileResult } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import {
@@ -57,6 +51,12 @@ import { getTransitiveReverseDependencies } from '../../core/shared/project-cont
 import { optionalMap } from '../../core/shared/optional-utils'
 import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
+import {
+  ExportsInfo,
+  MultiFileBuildResult,
+  ExportType,
+  BuildType,
+} from '../../core/workers/common/worker-types'
 
 export interface CodeResult {
   exports: ModuleExportTypes

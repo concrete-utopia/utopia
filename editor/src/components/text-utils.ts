@@ -7,6 +7,7 @@ import {
   ElementInstanceMetadata,
   jsxAttributeValue,
   ElementInstanceMetadataMap,
+  emptyComments,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { NodeModules, PropertyPath, ElementPath } from '../core/shared/project-file-types'
@@ -16,7 +17,6 @@ import { EditorAction, EditorDispatch, TextFormattingType } from './editor/actio
 import * as EditorActions from './editor/actions/action-creators'
 import { EditorState } from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
-import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 import { ProjectContentTreeRoot } from './assets'
 
 const ObjectPathImmutable: any = OPI

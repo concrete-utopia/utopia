@@ -30,7 +30,6 @@ import * as History from '../components/editor/history'
 import {
   createNewProject,
   createNewProjectFromImportedProject,
-  createNewProjectFromSampleProject,
   loadFromLocalStorage,
   loadFromServer,
   projectIsStoredLocally,
@@ -75,8 +74,6 @@ import {
   RealWatchdogWorker,
   UtopiaTsWorkersImplementation,
 } from '../core/workers/workers'
-import { isSampleProject } from '../sample-projects/sample-project-utils'
-import { OutgoingWorkerMessage } from '../core/workers/ts/ts-worker'
 import '../utils/react-shim'
 import Utils from '../utils/utils'
 import { HeartbeatRequestMessage } from '../core/workers/watchdog-worker'
@@ -88,7 +85,7 @@ import {
 } from '../components/canvas/ui-jsx-canvas'
 import { isLeft } from '../core/shared/either'
 import { importZippedGitProject, isProjectImportSuccess } from '../core/model/project-import'
-import { UtopiaTsWorkers } from '../core/workers/common/worker-types'
+import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../core/workers/common/worker-types'
 import {
   isPropertyControlsIFrameReady,
   isSendPreviewModel,
@@ -305,20 +302,6 @@ export class Editor {
               true,
               this.storedState.editor.vscodeBridgeReady,
             ),
-          )
-        } else if (isSampleProject(projectId)) {
-          createNewProjectFromSampleProject(
-            projectId,
-            this.boundDispatch,
-            this.storedState.workers,
-            () =>
-              renderRootComponent(
-                this.utopiaStoreHook,
-                this.utopiaStoreApi,
-                this.spyCollector,
-                true,
-                this.storedState.editor.vscodeBridgeReady,
-              ),
           )
         } else {
           projectIsStoredLocally(projectId).then((isLocal) => {

@@ -13,7 +13,6 @@ import {
 } from '../core/model/new-project-files'
 import { directory } from '../core/model/project-file-utils'
 import {
-  isParseSuccess,
   ProjectContents,
   RevisionsState,
   TextFile,
@@ -21,11 +20,6 @@ import {
   textFileContents,
   unparsed,
 } from '../core/shared/project-file-types'
-import { emptySet } from '../core/shared/set-utils'
-import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
-import { getSampleComponentsFile, getUiBuilderUIJSFile } from './ui-builder-ui-js-file'
-
-export const UI_BUILDER_PROJECT_ID = 'UI-BUILDER'
 
 export function simpleDefaultProject(): PersistentModel {
   const projectContents: ProjectContents = {
@@ -33,7 +27,7 @@ export function simpleDefaultProject(): PersistentModel {
       textFileContents(
         JSON.stringify(DefaultPackageJson, null, 2),
         unparsed,
-        RevisionsState.BothMatch,
+        RevisionsState.CodeAhead,
       ),
       null,
       null,
@@ -53,13 +47,11 @@ export function simpleDefaultProject(): PersistentModel {
 }
 
 export function createComplexDefaultProjectContents(): ProjectContents {
-  const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
   function createCodeFile(path: string, contents: string): TextFile {
-    const result = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE)
     return textFile(
-      textFileContents(contents, result, RevisionsState.BothMatch),
+      textFileContents(contents, unparsed, RevisionsState.CodeAhead),
       null,
-      isParseSuccess(result) ? result : null,
+      null,
       Date.now(),
     )
   }
@@ -69,7 +61,7 @@ export function createComplexDefaultProjectContents(): ProjectContents {
       textFileContents(
         JSON.stringify(DefaultPackageJson, null, 2),
         unparsed,
-        RevisionsState.BothMatch,
+        RevisionsState.CodeAhead,
       ),
       null,
       null,
@@ -149,51 +141,5 @@ export function defaultProject(): PersistentModel {
     return simpleDefaultProject()
   } else {
     return complexDefaultProject()
-  }
-}
-
-function uiBuilderProject(): PersistentModel {
-  const projectContents: ProjectContents = {
-    '/package.json': textFile(
-      textFileContents(
-        JSON.stringify(DefaultPackageJson, null, 2),
-        unparsed,
-        RevisionsState.BothMatch,
-      ),
-      null,
-      null,
-      0,
-    ),
-    '/src': directory(),
-    [StoryboardFilePath]: getUiBuilderUIJSFile(),
-    '/src/components.js': getSampleComponentsFile(),
-    '/assets': directory(),
-    '/public': directory(),
-    '/src/index.js': getSamplePreviewFile(),
-    '/public/index.html': getSamplePreviewHTMLFile(),
-  }
-
-  let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
-  return persistentModel
-}
-
-export interface SampleProject {
-  name: string
-  model: PersistentModel
-}
-
-export function isSampleProject(projectID: string): boolean {
-  return sampleProjectForId(projectID) != null
-}
-
-export function sampleProjectForId(projectID: string): SampleProject | null {
-  switch (projectID) {
-    case UI_BUILDER_PROJECT_ID:
-      return {
-        name: projectID,
-        model: uiBuilderProject(),
-      }
-    default:
-      return null
   }
 }

@@ -16,7 +16,7 @@ import { RequestedNpmDependency } from '../shared/npm-dependency-types'
 import { NodeModules } from '../shared/project-file-types'
 import { fastForEach } from '../shared/utils'
 import { resolvedDependencyVersions } from '../third-party/third-party-components'
-import { ExportsInfo, MultiFileBuildResult } from '../workers/ts/ts-worker'
+import { MultiFileBuildResult } from '../workers/common/worker-types'
 
 export const initPropertyControlsProcessor = (
   onControlsProcessed: (propertyControlsInfo: PropertyControlsInfo) => void,

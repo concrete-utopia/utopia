@@ -1,11 +1,10 @@
 import deepEqual from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
-import { jsxAttributeValue } from '../../../core/shared/element-template'
+import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 import { objectMap } from '../../../core/shared/object-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { arrayEquals, NO_OP } from '../../../core/shared/utils'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import {
   setProp_UNSAFE,

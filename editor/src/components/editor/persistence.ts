@@ -6,7 +6,7 @@ import {
 import { checkProjectOwnership } from '../../common/server'
 import Utils from '../../utils/utils'
 import { EditorAction, EditorDispatch } from './action-types'
-import { load, loadSampleProject, newProject } from './actions/actions'
+import { load, newProject } from './actions/actions'
 import {
   setProjectID,
   showToast,
@@ -251,17 +251,6 @@ export async function createNewProjectFromImportedProject(
   if (storyboardFileMissing) {
     dispatch([addStoryboardFile()])
   }
-}
-
-export async function createNewProjectFromSampleProject(
-  projectId: string,
-  dispatch: EditorDispatch,
-  workers: UtopiaTsWorkers,
-  renderEditorRoot: () => void,
-): Promise<void> {
-  _saveState = saved(true, Date.now(), projectId, projectId, dispatch, null, null, null)
-  _lastThumbnailGenerated = 0
-  await loadSampleProject(projectId, dispatch, workers, renderEditorRoot)
 }
 
 export function pushProjectURLToBrowserHistory(

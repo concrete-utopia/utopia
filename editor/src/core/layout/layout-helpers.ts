@@ -32,6 +32,7 @@ import {
   JSXElement,
   UtopiaJSXComponent,
   ElementInstanceMetadataMap,
+  emptyComments,
 } from '../shared/element-template'
 import {
   setJSXValueAtPath,
@@ -46,7 +47,6 @@ import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element
 import { EdgePosition } from '../../components/canvas/canvas-types'
 import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
 export function targetRespectsLayout(

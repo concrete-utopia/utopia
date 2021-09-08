@@ -1,7 +1,7 @@
-import { ExportsInfo } from '../core/workers/ts/ts-worker'
-
 // If you wish to update this auto-generated file, go to codeBundle.spec.ts and find the test called
 // 'Update Saved Bundle' and change the test function from xit(... to it(... to enable it
+
+import { ExportsInfo } from '../core/workers/common/worker-types'
 
 export const SampleFileBuildResult = JSON.parse(`{
   "/src/app.js": {

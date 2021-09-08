@@ -62,8 +62,10 @@ import {
   ImportStatement,
   importStatement,
   isImportStatement,
-  UnparsedCode,
   unparsedCode,
+  emptyComments,
+  ParsedComments,
+  parsedComments,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -92,10 +94,12 @@ import {
   ExportVariable,
   exportDestructuredAssignment,
   exportVariablesWithModifier,
+  parseFailure,
+  parseSuccess,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { fastForEach, NO_OP } from '../../shared/utils'
-import { addImport, emptyImports, parseFailure, parseSuccess } from '../common/project-file-utils'
+import { addImport, emptyImports } from '../common/project-file-utils'
 import { UtopiaTsWorkers } from '../common/worker-types'
 import { lintCode } from '../linter/linter'
 import {
@@ -118,17 +122,10 @@ import {
   markedAsDefault,
 } from './parser-printer-parsing'
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
-import { ParseOrPrint, ParseOrPrintResult, ParsePrintResultMessage } from './parser-printer-worker'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
-import {
-  addCommentsToNode,
-  emptyComments,
-  getLeadingComments,
-  parsedComments,
-  ParsedComments,
-} from './parser-printer-comments'
+import { addCommentsToNode, getLeadingComments } from './parser-printer-comments'
 import { replaceAll } from '../../shared/string-utils'
 import { WorkerCodeUpdate, WorkerParsedUpdate } from '../../../components/editor/action-types'
 import { fixParseSuccessUIDs } from './uid-fix'
@@ -1821,32 +1818,6 @@ function parseBindingName(
   } else {
     return left('Unable to parse binding element')
   }
-}
-
-export function getParseResult(
-  workers: UtopiaTsWorkers,
-  files: Array<ParseOrPrint>,
-): Promise<Array<ParseOrPrintResult>> {
-  return new Promise((resolve, reject) => {
-    const handleMessage = (e: MessageEvent) => {
-      const data = e.data as ParsePrintResultMessage
-      switch (data.type) {
-        case 'parseprintfilesresult': {
-          resolve(data.files)
-          workers.removeParserPrinterEventListener(handleMessage)
-          break
-        }
-        case 'parseprintfailed': {
-          reject()
-          workers.removeParserPrinterEventListener(handleMessage)
-          break
-        }
-      }
-    }
-
-    workers.addParserPrinterEventListener(handleMessage)
-    workers.sendParsePrintMessage(files)
-  })
 }
 
 function withJSXElementAttributes(

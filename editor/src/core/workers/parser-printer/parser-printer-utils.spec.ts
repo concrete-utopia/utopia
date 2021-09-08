@@ -12,10 +12,10 @@ import {
   getJSXAttribute,
   JSXElement,
   JSXAttributes,
+  emptyComments,
 } from '../../shared/element-template'
 import { guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import Utils from '../../../utils/utils'
-import { emptyComments } from './parser-printer-comments'
 
 describe('guaranteeUniqueUidsFromTopLevel', () => {
   it('creates an ID where there was none', () => {

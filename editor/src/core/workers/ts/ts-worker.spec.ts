@@ -11,8 +11,7 @@ import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 
 import SampleTypeDefinitions from './sample-type-definitions.json'
 import { contentsToTree } from '../../../components/assets'
-import { emptyComments } from '../parser-printer/parser-printer-comments'
-import { jsxAttributesFromMap } from '../../shared/element-template'
+import { emptyComments, jsxAttributesFromMap } from '../../shared/element-template'
 
 describe('Typescript worker builds the project', () => {
   it('initializing a new project', (done) => {
@@ -70,7 +69,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
       textFileContents(
         '{\n  "name": "Utopia Project",\n  "version": "0.1.0",\n  "utopia": {\n    "main-ui": "app.js",\n    "html": "index.html",\n    "js": "index.js"\n  },\n  "dependencies": {\n    "react": "16.8.6",\n    "@types/react": "16.8.17",\n    "csstype": "2.6.7",\n    "react-dom": "16.8.6",\n    "@types/react-dom": "16.8.4",\n    "utopia-api": "0.4.1",\n    "react-spring": "8.0.27"\n  }\n}',
         unparsed,
-        RevisionsState.BothMatch,
+        RevisionsState.CodeAhead,
       ),
       null,
       null,

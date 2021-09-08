@@ -25,13 +25,13 @@ import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch } from '../editor/store/dispatch'
 import { createEditorState, deriveState, EditorStore } from '../editor/store/editor-state'
-import { createTestProjectWithCode } from './canvas-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
+import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   delete element.props['children']

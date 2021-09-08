@@ -4,17 +4,9 @@ import {
   DependencyBoundDescriptors,
   ComponentDescriptor,
 } from './third-party-types'
-import {
-  JSXAttributes,
-  jsxAttributesEntry,
-  jsxAttributeValue,
-  jsxElementName,
-  jsxElementWithoutUID,
-} from '../shared/element-template'
+import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
-import { getDefaultProps, PropertyControls } from 'utopia-api'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { objectMap } from '../shared/object-utils'
+import { PropertyControls } from 'utopia-api'
 import { getDefaultPropsAsAttributes } from './shared'
 
 const StyleObjectProps: PropertyControls = {

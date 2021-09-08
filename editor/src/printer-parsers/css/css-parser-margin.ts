@@ -5,8 +5,11 @@ import {
   printCSSNumberWithDefaultUnit,
 } from '../../components/inspector/common/css-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
-import { JSXAttributeValue, jsxAttributeValue } from '../../core/shared/element-template'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import {
+  emptyComments,
+  JSXAttributeValue,
+  jsxAttributeValue,
+} from '../../core/shared/element-template'
 import {
   canUseOneValueSyntax,
   canUseThreeValueSyntax,

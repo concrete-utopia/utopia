@@ -1,4 +1,5 @@
-import { ParsePrintResultMessage, handleMessage } from './parser-printer-worker'
+import { ParsePrintResultMessage } from '../common/worker-types'
+import { handleMessage } from './parser-printer-worker'
 
 const ctx: Worker = self as any
 

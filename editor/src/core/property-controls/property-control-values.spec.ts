@@ -25,6 +25,7 @@ import {
   jsxAttributeNestedArray,
   jsxAttributeNestedObject,
   jsxPropertyAssignment,
+  emptyComments,
 } from '../shared/element-template'
 import {
   unwrapperAndParserForPropertyControl,
@@ -33,7 +34,6 @@ import {
 import { right, isLeft } from '../shared/either'
 import { fastForEach } from '../shared/utils'
 import { cssColor } from '../../components/inspector/common/css-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 function runBaseTestSuite<T>(
   validValue: T,

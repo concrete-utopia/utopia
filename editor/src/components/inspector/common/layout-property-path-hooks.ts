@@ -19,7 +19,11 @@ import {
 } from '../../../core/layout/layout-helpers-new'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isLeft, right } from '../../../core/shared/either'
-import { isJSXElement, jsxAttributeValue } from '../../../core/shared/element-template'
+import {
+  emptyComments,
+  isJSXElement,
+  jsxAttributeValue,
+} from '../../../core/shared/element-template'
 import { LocalRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
@@ -35,8 +39,6 @@ import {
 } from './property-path-hooks'
 
 import * as React from 'react'
-import { usePropControlledRef_DANGEROUS } from './inspector-utils'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { CSSNumber, cssNumberToString } from './css-utils'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 

@@ -17,16 +17,16 @@ import {
   omittedParam,
   jsxAttributeOtherJavaScript,
   jsxAttributesFromMap,
+  emptyComments,
 } from '../../shared/element-template'
-import { parseSuccess } from '../common/project-file-utils'
 import { printCode, printCodeOptions } from './parser-printer'
 import {
   exportFunction,
   exportVariable,
   exportVariables,
   isParseSuccess,
+  parseSuccess,
 } from '../../shared/project-file-types'
-import { emptyComments } from './parser-printer-comments'
 
 const codeWithBasicPropsObject = `import React from "react";
 import { View } from "utopia-api";

@@ -15,6 +15,7 @@ import {
   JSXElement,
   ComputedStyle,
   StyleAttributeMetadata,
+  emptyComments,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import * as PP from '../../core/shared/property-path'
@@ -73,7 +74,6 @@ import {
   FlexRow,
   Button,
 } from '../../uuiui'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
 import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { when } from '../../utils/react-conditionals'

@@ -1,4 +1,5 @@
-import { OutgoingWorkerMessage, handleMessage } from './ts-worker'
+import { OutgoingWorkerMessage } from '../common/worker-types'
+import { handleMessage } from './ts-worker'
 
 const ctx: Worker = self as any
 

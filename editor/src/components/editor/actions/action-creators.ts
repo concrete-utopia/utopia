@@ -32,7 +32,7 @@ import type {
   StaticElementPathPart,
   ElementPath,
 } from '../../../core/shared/project-file-types'
-import type { BuildType } from '../../../core/workers/ts/ts-worker'
+import { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
 import { IndexPosition } from '../../../utils/utils'
 import type { objectKeyParser, parseString } from '../../../utils/value-parser-utils'

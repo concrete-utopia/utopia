@@ -7,6 +7,7 @@ import {
 } from '../../core/property-controls/property-controls-utils'
 import { flatMapEither, foldEither, right } from '../../core/shared/either'
 import {
+  emptyComments,
   JSXAttributes,
   jsxAttributesEntry,
   jsxAttributeValue,
@@ -34,7 +35,6 @@ import {
   DependencyDescriptor,
 } from '../../core/third-party/third-party-types'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { PropertyControlsInfo } from '../custom-code/code-file'

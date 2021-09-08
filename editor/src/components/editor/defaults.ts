@@ -5,9 +5,9 @@ import {
   jsxElementName,
   jsxAttributesFromMap,
   JSXElementChildren,
+  emptyComments,
 } from '../../core/shared/element-template'
 import { NormalisedFrame } from 'utopia-api'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export function defaultSceneElement(
   uid: string,

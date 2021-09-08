@@ -39,7 +39,6 @@ import { addingChildElement, FileBrowserItem } from './fileitem'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import {
   Section,

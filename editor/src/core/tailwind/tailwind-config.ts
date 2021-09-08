@@ -1,5 +1,10 @@
-import { RevisionsState, TextFile, textFile, textFileContents } from '../shared/project-file-types'
-import { lintAndParse } from '../workers/parser-printer/parser-printer'
+import {
+  RevisionsState,
+  TextFile,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../shared/project-file-types'
 
 export const PostCSSPath = '/postcss.config.js'
 export const TailwindConfigPath = '/tailwind.config.js'
@@ -24,11 +29,7 @@ module.exports = {
 
 export const DefaultTailwindConfig = (): TextFile =>
   textFile(
-    textFileContents(
-      TailwindConfigJs,
-      lintAndParse(TailwindConfigPath, TailwindConfigJs, null, new Set()),
-      RevisionsState.BothMatch,
-    ),
+    textFileContents(TailwindConfigJs, unparsed, RevisionsState.CodeAhead),
     null,
     null,
     Date.now(),
@@ -36,11 +37,7 @@ export const DefaultTailwindConfig = (): TextFile =>
 
 export const DefaultPostCSSConfig = (): TextFile =>
   textFile(
-    textFileContents(
-      PostCSSConfigJs,
-      lintAndParse(PostCSSPath, PostCSSConfigJs, null, new Set()),
-      RevisionsState.BothMatch,
-    ),
+    textFileContents(PostCSSConfigJs, unparsed, RevisionsState.CodeAhead),
     null,
     null,
     Date.now(),

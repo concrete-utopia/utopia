@@ -16,6 +16,7 @@ import {
   isArbitraryJSBlock,
   ArbitraryJSBlock,
   jsxElementName,
+  emptyComments,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
@@ -27,9 +28,9 @@ import {
   foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
+  parseSuccess,
   ParseSuccess,
 } from '../../shared/project-file-types'
-import { parseSuccess } from '../common/project-file-utils'
 import {
   clearParseResultUniqueIDsAndEmptyBlocks,
   JustImportViewAndReact,
@@ -37,10 +38,9 @@ import {
   testParseModifyPrint,
 } from './parser-printer.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
-import { emptyComments } from './parser-printer-comments'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
 import { TestAppUID, TestSceneUID } from '../../../components/canvas/ui-jsx.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 
 describe('JSX parser', () => {
   it('should add in uid attributes for elements', () => {

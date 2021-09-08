@@ -1,6 +1,5 @@
-import { isParseSuccess, unparsed } from '../../core/shared/project-file-types'
+import { isParseSuccess, parseFailure, unparsed } from '../../core/shared/project-file-types'
 import { emptySet } from '../../core/shared/set-utils'
-import { parseFailure } from '../../core/workers/common/project-file-utils'
 import { parseCode } from '../../core/workers/parser-printer/parser-printer'
 import { getExportedComponentImports } from './export-utils'
 

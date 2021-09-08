@@ -1,14 +1,14 @@
 import { SampleNodeModules } from '../../components/custom-code/code-file.test-utils'
 import {
-  complexDefaultProject,
-  simpleDefaultProject,
-} from '../../sample-projects/sample-project-utils'
+  complexDefaultProjectPreParsed,
+  simpleDefaultProjectPreParsed,
+} from '../../sample-projects/sample-project-utils.test-utils'
 import { getDirectReverseDependencies } from './project-contents-dependencies'
 
 describe('getDirectReverseDependencies', () => {
   it('should return some expected value for a multi-file project', () => {
     const actualResult = getDirectReverseDependencies(
-      complexDefaultProject().projectContents,
+      complexDefaultProjectPreParsed().projectContents,
       SampleNodeModules,
     )
     expect(actualResult).toMatchInlineSnapshot(`
@@ -25,12 +25,13 @@ describe('getDirectReverseDependencies', () => {
   })
   it('should return some expected value for a simple project', () => {
     const actualResult = getDirectReverseDependencies(
-      simpleDefaultProject().projectContents,
+      simpleDefaultProjectPreParsed().projectContents,
       SampleNodeModules,
     )
     expect(actualResult).toMatchInlineSnapshot(`
       Object {
         "/src/app.js": Array [
+          "/src/index.js",
           "/utopia/storyboard.js",
         ],
       }
