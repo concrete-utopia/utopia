@@ -41,7 +41,7 @@ function srcPath(subdir) {
 // 2. [chunkhash] - this is a hash of the chunk itself, so if the chunk stays the same then so does the hash
 // 3. [contenthash] - this is a hash of the extracted data of the chunk, which appears to only be useful when
 //                    using the ExtractedTextPlugin - https://v4.webpack.js.org/plugins/extract-text-webpack-plugin/
-const hashPattern = hot ? '[hash]' : '[chunkhash]'
+const hashPattern = hot ? '[contenthash]' : '[chunkhash]' // I changed [hash] to [contenthash] as per https://webpack.js.org/migrate/5/#clean-up-configuration
 
 const BaseDomain = isProd ? 'https://cdn.utopia.app' : isStaging ? 'https://cdn.utopia.pizza' : ''
 const VSCodeBaseDomain = BaseDomain === '' ? '${window.location.origin}' : BaseDomain
@@ -84,7 +84,6 @@ const config = {
     library: 'utopia',
     libraryTarget: 'umd',
     publicPath: `${BaseDomain}/editor/`,
-    globalObject: 'this',
   },
 
   plugins: [
@@ -180,6 +179,15 @@ const config = {
         ]
       : []),
 
+    new webpack.DefinePlugin({
+      // with Webpack 5, process is not shimmed anymore, these are some properties that I had to replace with undefined so the various checks do not throw a runtime type error
+      'process.platform': 'undefined',
+      'process.env.BABEL_TYPES_8_BREAKING': 'undefined',
+      'process.env.JEST_WORKER_ID': 'undefined',
+
+      'Buffer.isBuffer': '() => undefined', // for node_modules/jsesc, the only module that relies on Buffer
+    }),
+
     // setting up the various process.env.VARIABLE replacements
     new webpack.EnvironmentPlugin([
       'REACT_APP_ENVIRONMENT_CONFIG',
@@ -187,8 +195,11 @@ const config = {
       'REACT_APP_AUTH0_ENDPOINT',
       'REACT_APP_AUTH0_REDIRECT_URI',
       'REACT_APP_COMMIT_HASH',
-      'GOOGLE_WEB_FONTS_KEY',
     ]),
+
+    new webpack.EnvironmentPlugin({
+      GOOGLE_WEB_FONTS_KEY: '', // providing an empty default for GOOGLE_WEB_FONTS_KEY for now
+    }),
   ],
 
   resolve: {
@@ -212,6 +223,10 @@ const config = {
             'react-dom$': '@hot-loader/react-dom/profiling',
           }
         : {}),
+    },
+    fallback: {
+      path: require.resolve('path-browserify'),
+      os: false,
     },
   },
 
@@ -330,7 +345,6 @@ const config = {
       : [],
     moduleIds: 'hashed', // "Short hashes as ids for better long term caching."
     splitChunks: {
-      name: false, // "It is recommended to set splitChunks.name to false for production builds so that it doesn't change names unnecessarily."
       chunks(chunk) {
         // exclude workers until we figure out a way to chunk those
         return (
