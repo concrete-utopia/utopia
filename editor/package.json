@@ -30,8 +30,8 @@
     "move-fast-and-break-things": "REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` NODE_OPTIONS=--max_old_space_size=8192 webpack-dev-server --progress",
     "performance-test": "NODE_ENV=production REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` NODE_OPTIONS=--max_old_space_size=8192 PERFORMANCE='true' webpack-dev-server --progress",
     "move-fast-and-break-things-hot": "REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` NODE_OPTIONS=--max_old_space_size=8192 HOT='true' webpack-dev-server --progress",
-    "production": "REACT_APP_ENVIRONMENT_CONFIG=production REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=$UTOPIA_SHA WEBPACK_MODE='production' REACT_APP_COMMIT_HASH=`git rev-parse HEAD` NODE_OPTIONS=--max_old_space_size=6656 webpack",
-    "staging": "REACT_APP_ENVIRONMENT_CONFIG=staging REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=$UTOPIA_SHA WEBPACK_MODE='staging' REACT_APP_COMMIT_HASH=`git rev-parse HEAD` NODE_OPTIONS=--max_old_space_size=6656 webpack",
+    "production": "REACT_APP_ENVIRONMENT_CONFIG=production REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=$UTOPIA_SHA WEBPACK_MODE='production' NODE_OPTIONS=--max_old_space_size=6656 webpack",
+    "staging": "REACT_APP_ENVIRONMENT_CONFIG=staging REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=$UTOPIA_SHA WEBPACK_MODE='staging' NODE_OPTIONS=--max_old_space_size=6656 webpack",
     "install-utopia-api": "cd ../utopia-api && npm install && npm run build && npm run dts-bundle",
     "preinstall": "npm run install-utopia-api",
     "postinstall": "patch-package",
@@ -209,6 +209,7 @@
     "@babel/preset-typescript": "7.14.5",
     "@hot-loader/react-dom": "16.13.0",
     "@jest-runner/electron": "3.0.0",
+    "@react-three/fiber": "7.0.1",
     "@testing-library/react": "9.1.4",
     "@testing-library/react-hooks": "5.1.2",
     "@types/chai": "3.5.1",
@@ -320,7 +321,8 @@
     "string-replace-loader": "2.2.0",
     "style-loader": "0.18.2",
     "tar": "6.0.5",
-    "terser-webpack-plugin": "2.3.5",
+    "terser-webpack-plugin": "5.2.3",
+    "three": "0.129.0",
     "tmp": "0.0.31",
     "ts-jest": "26.1.1",
     "ts-loader": "5.3.3",
@@ -331,9 +333,7 @@
     "webpack-cli": "4.8.0",
     "webpack-dev-server": "4.1.0",
     "webpack-merge": "4.2.2",
-    "webpack-node-externals": "1.7.2",
-    "three": "0.129.0",
-    "@react-three/fiber": "7.0.1"
+    "webpack-node-externals": "1.7.2"
   },
   "optionalDependencies": {
     "fsevents": "2.1.2"
