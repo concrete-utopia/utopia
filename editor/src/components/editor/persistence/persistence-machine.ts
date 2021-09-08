@@ -25,7 +25,7 @@ import {
   localProjectKey,
   deleteProject as deleteLocalProject,
 } from '../../../common/persistence'
-import { arrayContains } from '../../../core/shared/utils'
+import { arrayContains, projectURLForProject } from '../../../core/shared/utils'
 import { checkProjectOwnership } from '../../../common/server'
 import { PersistentModel } from '../store/editor-state'
 import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
@@ -549,8 +549,8 @@ type UserEvent = UserLogInEvent | UserLogOutEvent
 type PersistenceEvent = CoreEvent | BackendEvent | UserEvent
 
 interface ProjectModel {
-  content: PersistentModel
   name: string
+  content: PersistentModel
 }
 
 interface PersistenceContext {
@@ -1035,7 +1035,29 @@ const persistenceMachine = createMachine<
 let interpreter: Interpreter<PersistenceContext, any, PersistenceEvent> | null = null
 let queuedActions: Array<EditorAction> = [] // Queue up actions during events and transitions, then dispatch when ready
 
+let SaveThrottle = 30000
+let lastSavedTS = 0
+let throttledSaveTimeoutId: NodeJS.Timer | null = null
+let waitingThrottledSaveEvent: SaveEvent | null
+
+function clearThrottledSave(): void {
+  if (throttledSaveTimeoutId != null) {
+    clearTimeout(throttledSaveTimeoutId)
+    throttledSaveTimeoutId = null
+  }
+
+  waitingThrottledSaveEvent = null
+}
+
+function sendThrottledSave(): void {
+  if (waitingThrottledSaveEvent) {
+    interpreter?.send(waitingThrottledSaveEvent)
+  }
+  clearThrottledSave()
+}
+
 export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFound: () => void) {
+  clearThrottledSave()
   queuedActions = [] // TODO This should really be part of the state machine most likely
   if (interpreter != null) {
     interpreter.stop()
@@ -1051,6 +1073,12 @@ export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFoun
         queuedActions.push(showToast(notice('Project successfully forked!')))
       } else if (state.matches(Ready)) {
         const actionsToDispatch = queuedActions
+        const projectIdChanged = actionsToDispatch.some(
+          (action) => action.action === 'SET_PROJECT_ID',
+        )
+        if (projectIdChanged) {
+          pushProjectURLToBrowserHistory(state.context.projectId!, state.context.project!.name)
+        }
         queuedActions = []
         dispatch(actionsToDispatch)
       } else {
@@ -1061,6 +1089,9 @@ export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFoun
             break
           case 'LOAD_FAILED':
             onProjectNotFound()
+            break
+          case 'LOAD_COMPLETE':
+            // pull in the contents of the load function from actions.ts, or otherwise call it from here
             break
           case 'DOWNLOAD_ASSETS_COMPLETE': {
             const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
@@ -1074,6 +1105,7 @@ export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFoun
               ({ fileName, file }) => updateFile(fileName, file, true),
             )
             queuedActions.push(...updateFileActions)
+            lastSavedTS = Date.now()
             // TODO Show toasts after:
             // [ ] first local save
             // [ ] first server save
@@ -1086,4 +1118,58 @@ export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFoun
   interpreter.start()
 }
 
-// TODO Throttling
+function getRemainingSaveDelay(): number {
+  return Math.min(0, Date.now() - SaveThrottle - lastSavedTS)
+}
+
+function shouldThrottle(forced: boolean): boolean {
+  return !forced && getRemainingSaveDelay() > 0
+}
+
+export function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
+  // Make sure we don't replace the query params
+  const queryParams = window.top.location.search
+  const projectURL = projectURLForProject(projectId, projectName)
+  const title = `Utopia ${projectName}`
+  window.top.history.pushState({}, title, `${projectURL}${queryParams}`)
+}
+
+// API
+
+export function save(projectName: string, project: PersistentModel, forced: boolean = false): void {
+  const eventToFire = saveEvent({ name: projectName, content: project })
+
+  if (shouldThrottle(forced)) {
+    waitingThrottledSaveEvent = eventToFire
+    throttledSaveTimeoutId = setTimeout(sendThrottledSave, getRemainingSaveDelay())
+  } else {
+    interpreter?.send(eventToFire)
+  }
+}
+
+window.addEventListener('beforeunload', (e) => {
+  sendThrottledSave()
+  e.preventDefault()
+  e.returnValue = ''
+})
+
+export function load(projectId: string): void {
+  interpreter?.send(loadEvent(projectId))
+}
+
+export function createNew(projectName: string, project: PersistentModel): void {
+  interpreter?.send(newEvent({ name: projectName, content: project }))
+}
+
+export function fork(): void {
+  interpreter?.send(forkEvent())
+}
+
+// For testing purposes only
+export function setSaveThrottle(delay: number): void {
+  SaveThrottle = delay
+}
+
+// createNewProjectFromImportedProject
+// loadingSampleProjects?
+// loading and creating new are still a shit show
