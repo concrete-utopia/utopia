@@ -25,9 +25,9 @@ import {
   localProjectKey,
   deleteProject as deleteLocalProject,
 } from '../../../common/persistence'
-import { arrayContains, projectURLForProject } from '../../../core/shared/utils'
+import { arrayContains, NO_OP, projectURLForProject } from '../../../core/shared/utils'
 import { checkProjectOwnership } from '../../../common/server'
-import { PersistentModel } from '../store/editor-state'
+import { PersistentModel, createNewProjectName } from '../store/editor-state'
 import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
 import { getFileExtension } from '../../../core/shared/file-utils'
 import { AssetFile, ImageFile, ProjectFile } from '../../../core/shared/project-file-types'
@@ -42,6 +42,7 @@ import {
 } from '../actions/action-creators'
 import { notice } from '../../common/notice'
 import { getPNGBufferOfElementWithID } from '../screenshot-utils'
+import { defaultProject } from '../../../sample-projects/sample-project-utils'
 
 // Backend Calls
 
@@ -287,13 +288,11 @@ function prepareAssetsForUploading(projectModel: ProjectModel): PreparedProject 
 
 interface NewEvent {
   type: 'NEW'
-  projectModel: ProjectModel
 }
 
-function newEvent(projectModel: ProjectModel): NewEvent {
+function newEvent(): NewEvent {
   return {
     type: 'NEW',
-    projectModel: projectModel,
   }
 }
 
@@ -306,6 +305,18 @@ function projectIdCreatedEvent(projectId: string): ProjectIdCreatedEvent {
   return {
     type: 'PROJECT_ID_CREATED',
     projectId: projectId,
+  }
+}
+
+interface NewProjectCreatedEvent {
+  type: 'NEW_PROJECT_CREATED'
+  projectModel: ProjectModel
+}
+
+function newProjectCreatedEvent(projectModel: ProjectModel): NewProjectCreatedEvent {
+  return {
+    type: 'NEW_PROJECT_CREATED',
+    projectModel: projectModel,
   }
 }
 
@@ -420,6 +431,7 @@ function checkOwnershipCompleteEvent(isOwner: boolean): CheckOwnershipCompleteEv
 type CoreEvent =
   | NewEvent
   | ProjectIdCreatedEvent
+  | NewProjectCreatedEvent
   | LoadEvent
   | LoadCompleteEvent
   | LoadFailedEvent
@@ -572,17 +584,12 @@ const Forking = 'forking'
 // InternalCreatingNewStates
 const CreatingProjectId = 'creating-project-id'
 const ProjectIdCreated = 'project-id-created'
+const ProjectCreated = 'project-created'
 
 // InternalLoadingStates
 const LoadingProject = 'loading-project'
 const CheckingOwnership = 'checking-ownership'
 const ProjectLoaded = 'project-loaded'
-
-// InternalSavingStates
-const CheckLoggedIn = 'check-logged-in'
-const SavingProjectToServer = 'saving-project-to-server'
-const SavingProjectLocally = 'saving-project-locally'
-const ProjectSaved = 'project-saved'
 
 // InternalForkingStates
 const DownloadingAssets = 'downloading-assets'
@@ -617,6 +624,13 @@ const checkQueue = choose<PersistenceContext, PersistenceEvent>([
 const queueClear = assign<PersistenceContext, PersistenceEvent>({
   queuedSave: undefined,
 })
+
+function createNewProjectModel(): Promise<ProjectModel> {
+  return Promise.resolve({
+    name: createNewProjectName(),
+    content: defaultProject(),
+  })
+}
 
 const persistenceMachine = createMachine<
   Model<PersistenceContext, PersistenceEvent>,
@@ -871,7 +885,7 @@ const persistenceMachine = createMachine<
                 assign((_, event) => {
                   return {
                     projectId: undefined,
-                    project: (event as NewEvent).projectModel,
+                    project: undefined,
                     queuedSave: undefined,
                     projectOwned: true,
                   }
@@ -887,7 +901,28 @@ const persistenceMachine = createMachine<
                 },
               },
             },
-            [ProjectIdCreated]: { type: 'final' },
+            [ProjectIdCreated]: {
+              invoke: {
+                id: 'create-new-project-model',
+                src: createNewProjectModel,
+                onDone: {
+                  actions: send((_, event: DoneInvokeEvent<ProjectModel>) =>
+                    newProjectCreatedEvent(event.data),
+                  ),
+                },
+              },
+              on: {
+                NEW_PROJECT_CREATED: {
+                  target: ProjectCreated,
+                  actions: assign((_, event) => {
+                    return {
+                      project: (event as NewProjectCreatedEvent).projectModel,
+                    }
+                  }),
+                },
+              },
+            },
+            [ProjectCreated]: { type: 'final' },
           },
           onDone: {
             actions: send((context, _) => innerSave(context.project!)),
@@ -1033,7 +1068,6 @@ const persistenceMachine = createMachine<
 })
 
 let interpreter: Interpreter<PersistenceContext, any, PersistenceEvent> | null = null
-let queuedActions: Array<EditorAction> = [] // Queue up actions during events and transitions, then dispatch when ready
 
 let SaveThrottle = 30000
 let lastSavedTS = 0
@@ -1056,9 +1090,14 @@ function sendThrottledSave(): void {
   clearThrottledSave()
 }
 
-export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFound: () => void) {
+export function initialisePersistence(
+  dispatch: EditorDispatch,
+  onProjectNotFound: () => void,
+  onCreatedOrLoadedProject: (projectName: string, project: PersistentModel) => void,
+) {
   clearThrottledSave()
-  queuedActions = [] // TODO This should really be part of the state machine most likely
+  lastSavedTS = 0
+  let queuedActions: Array<EditorAction> = [] // Queue up actions during events and transitions, then dispatch when ready
   if (interpreter != null) {
     interpreter.stop()
   }
@@ -1067,11 +1106,7 @@ export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFoun
 
   interpreter.onTransition((state, event) => {
     if (state.changed) {
-      if (state.matches(`${Forking}.${DownloadingAssets}`)) {
-        queuedActions.push(setForkedFromProjectID(state.context.projectId!))
-        queuedActions.push(setProjectName(`${state.context.project!.name} (forked)`))
-        queuedActions.push(showToast(notice('Project successfully forked!')))
-      } else if (state.matches(Ready)) {
+      if (state.matches(Ready)) {
         const actionsToDispatch = queuedActions
         const projectIdChanged = actionsToDispatch.some(
           (action) => action.action === 'SET_PROJECT_ID',
@@ -1081,17 +1116,23 @@ export function initialisePersistence(dispatch: EditorDispatch, onProjectNotFoun
         }
         queuedActions = []
         dispatch(actionsToDispatch)
+      } else if (state.matches(`${Forking}.${DownloadingAssets}`)) {
+        queuedActions.push(setForkedFromProjectID(state.context.projectId!))
+        queuedActions.push(setProjectName(`${state.context.project!.name} (forked)`))
+        queuedActions.push(showToast(notice('Project successfully forked!')))
       } else {
         switch (event.type) {
+          case 'NEW_PROJECT_CREATED':
+            onCreatedOrLoadedProject(event.projectModel.name, event.projectModel.content)
+            break
+          case 'LOAD_COMPLETE':
+            onCreatedOrLoadedProject(event.projectModel.name, event.projectModel.content)
+            break
           case 'PROJECT_ID_CREATED':
             queuedActions.push(setProjectID(event.projectId))
-            // TODO Update URL
             break
           case 'LOAD_FAILED':
             onProjectNotFound()
-            break
-          case 'LOAD_COMPLETE':
-            // pull in the contents of the load function from actions.ts, or otherwise call it from here
             break
           case 'DOWNLOAD_ASSETS_COMPLETE': {
             const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
@@ -1157,8 +1198,8 @@ export function load(projectId: string): void {
   interpreter?.send(loadEvent(projectId))
 }
 
-export function createNew(projectName: string, project: PersistentModel): void {
-  interpreter?.send(newEvent({ name: projectName, content: project }))
+export function createNew(): void {
+  interpreter?.send(newEvent())
 }
 
 export function fork(): void {
