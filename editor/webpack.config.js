@@ -337,9 +337,7 @@ const config = {
     minimizer: isProd
       ? [
           new TerserPlugin({
-            cache: true,
             parallel: true,
-            sourceMap: true,
             terserOptions: {
               ecma: 8,
             },
