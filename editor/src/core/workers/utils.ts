@@ -13,7 +13,6 @@ import { BASE_URL } from '../../common/env-vars'
 export function createTsWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = BASE_URL
-  console.info('create ts worker', import.meta.url, oldPublicPath, __webpack_public_path__)
   const worker = new Worker(new URL('./ts/ts.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
