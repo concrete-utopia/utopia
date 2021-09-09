@@ -7,7 +7,6 @@ import {
 import { importAlias, importDetails, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import Keyboard, {
   KeyCharacter,
   KeysPressed,

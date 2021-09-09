@@ -25,6 +25,7 @@ import {
   jsxElementWithoutUID,
   jsxAttributesEntry,
   elementInstanceMetadata,
+  emptyComments,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -42,12 +43,10 @@ import {
   exportVariable,
   exportVariables,
   exportFunction,
-} from '../../../core/shared/project-file-types'
-import {
-  addImport,
-  emptyImports,
   parseSuccess,
-} from '../../../core/workers/common/project-file-utils'
+  isUnparsed,
+} from '../../../core/shared/project-file-types'
+import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import { right, forceRight, left, isRight } from '../../../core/shared/either'
 import {
@@ -62,7 +61,7 @@ import {
   localRectangle,
   zeroRectangle,
 } from '../../../core/shared/math-utils'
-import { createTestProjectWithCode, getFrameChange } from '../../canvas/canvas-utils'
+import { getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -98,7 +97,7 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
-import { getDefaultUIJsFile, sampleCode } from '../../../core/model/new-project-files'
+import { sampleCode } from '../../../core/model/new-project-files'
 import { TestScenePath } from '../../canvas/ui-jsx.test-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
@@ -109,9 +108,7 @@ import {
   treeToContents,
   walkContentsTreeForParseSuccess,
 } from '../../assets'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import { complexDefaultProject } from '../../../sample-projects/sample-project-utils'
 import {
   getComponentGroups,
   insertableComponent,
@@ -122,6 +119,7 @@ import { printCode, printCodeOptions } from '../../../core/workers/parser-printe
 import { getThirdPartyPropertyControls } from '../../../core/property-controls/property-controls-utils'
 import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -944,7 +942,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   )
 
   const fileForUI = textFile(
-    textFileContents('', parsedUIFile, RevisionsState.BothMatch),
+    textFileContents('', parsedUIFile, RevisionsState.ParsedAhead),
     null,
     parsedUIFile,
     0,
@@ -1029,7 +1027,7 @@ describe('LOAD', () => {
     const initialFileContents: TextFileContents = textFileContents(
       sampleCode,
       unparsed,
-      RevisionsState.BothMatch,
+      RevisionsState.CodeAhead,
     )
     const loadedModel: PersistentModel = {
       appID: null,
@@ -1079,20 +1077,20 @@ describe('LOAD', () => {
       result.projectContents,
       firstUIJSFile,
     ) as TextFile).fileContents
-    expect(isParseSuccess(newFirstFileContents.parsed)).toBeTruthy()
+    expect(isUnparsed(newFirstFileContents.parsed)).toBeTruthy()
     expect(newFirstFileContents.code).toEqual(initialFileContents.code)
     const newSecondFileContents = (getContentsTreeFileFromString(
       result.projectContents,
       secondUIJSFile,
     ) as TextFile).fileContents
-    expect(isParseSuccess(newSecondFileContents.parsed)).toBeTruthy()
+    expect(isUnparsed(newSecondFileContents.parsed)).toBeTruthy()
     expect(newSecondFileContents.code).toEqual(initialFileContents.code)
   })
 })
 
 describe('UPDATE_FILE_PATH', () => {
   it('updates the files in a directory and imports related to it', () => {
-    const project = complexDefaultProject()
+    const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
     const actualResult = UPDATE_FNS.UPDATE_FILE_PATH(
       updateFilePath('/src', '/src2'),
@@ -1131,7 +1129,7 @@ describe('UPDATE_FILE_PATH', () => {
 
 describe('INSERT_WITH_DEFAULTS', () => {
   it('inserts an element into the project with the given defaults', () => {
-    const project = complexDefaultProject()
+    const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
@@ -1233,7 +1231,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
   })
 
   it('inserts an element into the project with the given defaults, also adding style props', () => {
-    const project = complexDefaultProject()
+    const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
@@ -1336,7 +1334,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
   })
 
   it('inserts an img element into the project, also adding style props', () => {
-    const project = complexDefaultProject()
+    const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
@@ -1428,7 +1426,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
   })
 
   it('inserts an img element into the project, also adding style props, added at the back', () => {
-    const project = complexDefaultProject()
+    const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
@@ -1520,7 +1518,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
   })
 
   it('inserts a div into the project, wrapping the parents existing children if selected', () => {
-    const project = complexDefaultProject()
+    const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
@@ -1606,7 +1604,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
 
 describe('SET_FOCUSED_ELEMENT', () => {
   it('prevents focusing a non-focusable element', () => {
-    const project = complexDefaultProject()
+    const project = complexDefaultProjectPreParsed()
     let editorState = editorModelFromPersistentModel(project, NO_OP)
     const pathToFocus = EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div')
     const underlyingElement = forceNotNull(
@@ -1639,7 +1637,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
     expect(updatedEditorState).toBe(editorState)
   })
   it('focuses a focusable element without a problem', () => {
-    const project = complexDefaultProject()
+    const project = complexDefaultProjectPreParsed()
     let editorState = editorModelFromPersistentModel(project, NO_OP)
     const pathToFocus = EP.fromString(
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance',

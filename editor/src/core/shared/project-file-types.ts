@@ -1,4 +1,3 @@
-import * as TS from 'typescript'
 import { NormalisedFrame } from 'utopia-api'
 import {
   ArbitraryJSBlock,
@@ -350,16 +349,50 @@ export interface ParseSuccess {
   exportsDetail: ExportsDetail
 }
 
+export function parseSuccess(
+  imports: Imports,
+  topLevelElements: Array<TopLevelElement>,
+  highlightBounds: HighlightBoundsForUids,
+  jsxFactoryFunction: string | null,
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
+  exportsDetail: ExportsDetail,
+): ParseSuccess {
+  return {
+    type: 'PARSE_SUCCESS',
+    imports: imports,
+    topLevelElements: topLevelElements,
+    highlightBounds: highlightBounds,
+    jsxFactoryFunction: jsxFactoryFunction,
+    combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+    exportsDetail: exportsDetail,
+  }
+}
+
 export function isParseSuccess(parsed: ParsedTextFile): parsed is ParseSuccess {
   return parsed.type === 'PARSE_SUCCESS'
 }
 
 export interface ParseFailure {
   type: 'PARSE_FAILURE'
-  diagnostics: Array<TS.Diagnostic> | null
+  diagnostics: Array<ErrorMessage> | null
   parsedJSONFailure: ParsedJSONFailure | null
   errorMessage: string | null
   errorMessages: Array<ErrorMessage>
+}
+
+export function parseFailure(
+  diagnostics: Array<ErrorMessage> | null,
+  parsedJSON: ParsedJSONFailure | null,
+  errorMessage: string | null,
+  errorMessages: Array<ErrorMessage>,
+): ParseFailure {
+  return {
+    type: 'PARSE_FAILURE',
+    diagnostics: diagnostics,
+    parsedJSONFailure: parsedJSON,
+    errorMessage: errorMessage,
+    errorMessages: errorMessages,
+  }
 }
 
 export function isParseFailure(parsed: ParsedTextFile): parsed is ParseFailure {
@@ -430,7 +463,6 @@ export function isParsedJSONSuccess(result: ParsedJSONResult): result is ParsedJ
 
 export interface ParsedJSONFailure {
   type: 'FAILURE'
-  errorNode: TS.Node
   codeSnippet: string
   reason: string
   startLine: number

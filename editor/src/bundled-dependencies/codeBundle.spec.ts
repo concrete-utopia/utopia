@@ -1,17 +1,17 @@
-import { defaultProject, simpleDefaultProject } from '../sample-projects/sample-project-utils'
-import {
-  initTsIncrementalBuild,
-  BuildResultMessage,
-  ExportsInfo,
-  MultiFileBuildResult,
-} from '../core/workers/ts/ts-worker'
+import { initTsIncrementalBuild } from '../core/workers/ts/ts-worker'
 import { SampleFileBuildResult, SampleFileBundledExportsInfo } from './codeBundle'
 import { InitialNpmTypeDefinitions } from './npmBundle'
 
 import * as fs from 'fs'
+import {
+  BuildResultMessage,
+  MultiFileBuildResult,
+  ExportsInfo,
+} from '../core/workers/common/worker-types'
+import { simpleDefaultProjectPreParsed } from '../sample-projects/sample-project-utils.test-utils'
 
 function getBuildResultMessageForDefaultProject(onResult: (result: BuildResultMessage) => void) {
-  const project = simpleDefaultProject()
+  const project = simpleDefaultProjectPreParsed()
   // can I make a worker?!?!?!
   initTsIncrementalBuild(
     InitialNpmTypeDefinitions,

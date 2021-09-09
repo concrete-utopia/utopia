@@ -1,15 +1,15 @@
 import { Machine, interpret, send, assign, actions, Interpreter, StateSchema } from 'xstate'
-import { FileContent } from './common/worker-types'
-import { TypeDefinitions } from '../shared/npm-dependency-types'
-import { TextFile } from '../shared/project-file-types'
 import {
+  BuildResultMessage,
+  createInitTSWorkerMessage,
+  createUpdateFileMessage,
+  FileContent,
   InitCompleteMessage,
   OutgoingWorkerMessage,
-  createInitTSWorkerMessage,
-  BuildResultMessage,
-  createUpdateFileMessage,
   UpdateProcessedMessage,
-} from './ts/ts-worker'
+} from './common/worker-types'
+import { TypeDefinitions } from '../shared/npm-dependency-types'
+import { TextFile } from '../shared/project-file-types'
 import utils from '../../utils/utils'
 import { createTsWorker } from './utils'
 import { ProjectContentTreeRoot } from '../../components/assets'

@@ -12,6 +12,7 @@ import {
   getJSXAttribute,
   TopLevelElement,
   jsxElement,
+  emptyComments,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -22,7 +23,6 @@ import {
 import * as PP from './property-path'
 import * as EP from './element-path'
 import { objectMap, objectValues } from './object-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { getDOMAttribute } from './dom-utils'
 import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
 import { addAllUniquely, mapDropNulls } from './array-utils'

@@ -9,11 +9,17 @@ import {
   textFileContents,
 } from '../../core/shared/project-file-types'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
-import { ProjectContentTreeRoot, contentsToTree, getContentsTreeFileFromString } from '../assets'
+import {
+  ProjectContentTreeRoot,
+  contentsToTree,
+  getContentsTreeFileFromString,
+  treeToContents,
+} from '../assets'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
 import { replaceAll } from '../../core/shared/string-utils'
 import { emptySet } from '../../core/shared/set-utils'
+import { parseProjectContents } from '../../sample-projects/sample-project-utils.test-utils'
 
 export const SampleNodeModules: NodeModules = {
   '/node_modules/utopia-api/index.js': esCodeFile(
@@ -61,7 +67,7 @@ export const SampleNodeModules: NodeModules = {
 export function createCodeFile(path: string, contents: string): TextFile {
   const result = lintAndParse(path, contents, null, emptySet())
   return textFile(
-    textFileContents(contents, result, RevisionsState.CodeAhead),
+    textFileContents(contents, result, RevisionsState.BothMatch),
     null,
     null,
     Date.now(),
@@ -69,7 +75,9 @@ export function createCodeFile(path: string, contents: string): TextFile {
 }
 
 export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {
-  const defaultProjectContents = createComplexDefaultProjectContents()
+  const defaultProjectContents = treeToContents(
+    parseProjectContents(contentsToTree(createComplexDefaultProjectContents())),
+  )
 
   const unparsedCode = replaceAll(
     (defaultProjectContents[StoryboardFilePath] as TextFile).fileContents.code,

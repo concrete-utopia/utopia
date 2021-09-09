@@ -6,8 +6,11 @@ import {
   printCSSNumberWithDefaultUnit,
 } from '../../components/inspector/common/css-utils'
 import { Either, isRight, left, mapEither, right } from '../../core/shared/either'
-import { JSXAttributeValue, jsxAttributeValue } from '../../core/shared/element-template'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import {
+  emptyComments,
+  JSXAttributeValue,
+  jsxAttributeValue,
+} from '../../core/shared/element-template'
 import { descriptionParseError, Parser } from '../../utils/value-parser-utils'
 import {
   getLexerPropertyMatches,

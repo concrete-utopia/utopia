@@ -3,7 +3,13 @@ import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import * as TS from 'typescript'
 import * as BrowserFS from 'browserfs'
 import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import { isTextFile, TextFile, ProjectContents, ProjectFile } from '../../shared/project-file-types'
+import {
+  isTextFile,
+  TextFile,
+  ProjectContents,
+  ProjectFile,
+  isParseSuccess,
+} from '../../shared/project-file-types'
 import { RawSourceMap } from './ts-typings/RawSourceMap'
 import { libfile } from './libfile'
 import { FSModule } from 'browserfs/dist/node/core/FS'
@@ -28,7 +34,6 @@ import { diagnosticToErrorMessage } from './ts-utils'
 import { MapLike } from 'typescript'
 import { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
-import { getTextFileContents } from '../common/project-file-utils'
 import infiniteLoopPrevention from '../parser-printer/transform-prevent-infinite-loops'
 import { ProjectContentTreeRoot, walkContentsTree } from '../../../components/assets'
 import { isDirectory } from '../../model/project-file-utils'
@@ -37,6 +42,22 @@ import {
   filenameWithoutJSSuffix,
   loaderExistsForFile,
 } from '../../webpack-loaders/loaders'
+import { isCssFile, isJsOrTsFile, isTsFile, isJsFile } from '../../shared/file-utils'
+import {
+  ExportsInfo,
+  MultiFileBuildResult,
+  BuildType,
+  BuildResultMessage,
+  UpdateProcessedMessage,
+  InitCompleteMessage,
+  OutgoingWorkerMessage,
+  DetailedTypeInfo,
+  ExportType,
+  InitTSWorkerMessage,
+  UpdateFileMessage,
+} from '../common/worker-types'
+import { codeNeedsPrinting } from '../common/project-file-utils'
+import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
 
 const TS_LIB_FILES: { [key: string]: string } = {
   'lib.d.ts': libfile,
@@ -68,110 +89,9 @@ let fileChanged: (
 void = () => {}
 
 export type IncomingWorkerMessage = UpdateFileMessage | InitTSWorkerMessage
-export type OutgoingWorkerMessage =
-  | BuildResultMessage
-  | UpdateProcessedMessage
-  | InitCompleteMessage
-
-interface UpdateFileMessage {
-  type: 'updatefile'
-  filename: string
-  content: string | ProjectFile
-  jobID: string
-}
-
-interface InitTSWorkerMessage {
-  type: 'inittsworker'
-  typeDefinitions: TypeDefinitions
-  projectContents: ProjectContentTreeRoot
-  buildOrParsePrint: 'build' | 'parse-print'
-  jobID: string
-}
-
-interface SingleFileBuildResult {
-  transpiledCode: string | null
-  sourceMap: RawSourceMap | null
-  errors: Array<ErrorMessage>
-}
-
-export interface MultiFileBuildResult {
-  [filename: string]: SingleFileBuildResult
-}
-
-export type BuildType = 'full-build' | 'incremental'
-
-export interface BuildResultMessage {
-  type: 'build'
-  exportsInfo: ReadonlyArray<ExportsInfo>
-  buildResult: MultiFileBuildResult
-  jobID: string
-  buildType: BuildType
-}
-
-export interface UpdateProcessedMessage {
-  type: 'updateprocessed'
-  jobID: string
-}
-
-export interface InitCompleteMessage {
-  type: 'initcomplete'
-  jobID: string
-}
-
 export interface FileVersion {
   versionNr: number
   asStringCached: string | null
-}
-
-export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
-  let passTimes: MapLike<number> = {}
-  fastForEach(errorMessages, (errorMessage) => {
-    if (errorMessage.passTime != null) {
-      if (errorMessage.source in passTimes) {
-        const existingPassCount = passTimes[errorMessage.source]
-        if (errorMessage.passTime > existingPassCount) {
-          passTimes[errorMessage.source] = errorMessage.passTime
-        }
-      } else {
-        passTimes[errorMessage.source] = errorMessage.passTime
-      }
-    }
-  })
-  return errorMessages.filter((errorMessage) => {
-    if (errorMessage.passTime == null) {
-      return true
-    } else {
-      return passTimes[errorMessage.source] === errorMessage.passTime
-    }
-  })
-}
-
-export function createUpdateFileMessage(
-  filename: string,
-  content: string | TextFile,
-  jobID: string,
-): UpdateFileMessage {
-  return {
-    type: 'updatefile',
-    filename: filename,
-    content: content,
-    jobID: jobID,
-  }
-}
-
-export function createInitTSWorkerMessage(
-  typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContentTreeRoot,
-  buildOrParsePrint: 'build' | 'parse-print',
-  jobID: string,
-): InitTSWorkerMessage {
-  return {
-    type: 'inittsworker',
-    typeDefinitions: typeDefinitions,
-    projectContents: projectContents,
-    buildOrParsePrint: buildOrParsePrint,
-    jobID: jobID,
-  }
 }
 
 function createBuildResultMessage(
@@ -203,21 +123,28 @@ function createInitCompleteMessage(jobID: string): InitCompleteMessage {
   }
 }
 
-export interface ExportsInfo {
-  filename: string
-  code: string
-  exportTypes: { [name: string]: ExportType }
-}
-
-export type ExportType = {
-  type: string
-  functionInfo: Array<DetailedTypeInfo> | null
-  reactClassInfo: DetailedTypeInfo | null
-}
-
-type DetailedTypeInfo = {
-  name: string
-  memberInfo: { type: string; members: { [member: string]: string } }
+export function getTextFileContents(
+  filename: string,
+  file: TextFile,
+  pretty: boolean,
+  allowPrinting: boolean,
+): string {
+  if (
+    allowPrinting &&
+    codeNeedsPrinting(file.fileContents.revisionsState) &&
+    isParseSuccess(file.fileContents.parsed)
+  ) {
+    return printCode(
+      filename,
+      printCodeOptions(false, pretty, true),
+      file.fileContents.parsed.imports,
+      file.fileContents.parsed.topLevelElements,
+      file.fileContents.parsed.jsxFactoryFunction,
+      file.fileContents.parsed.exportsDetail,
+    )
+  } else {
+    return file.fileContents.code
+  }
 }
 
 // FIXME This needs extracting, but getCodeFileContents relies on the parse printer for printing
@@ -778,10 +705,6 @@ function watch(
   }
 }
 
-function isTsFile(filename: string) {
-  return filename.endsWith('.ts') || filename.endsWith('.tsx')
-}
-
 function runBabel(code: string, filename: string, sourceMap: RawSourceMap | null) {
   const plugins = [infiniteLoopPrevention]
   return Babel.transform(code, {
@@ -794,18 +717,6 @@ function runBabel(code: string, filename: string, sourceMap: RawSourceMap | null
   })
 }
 
-export function isJsFile(filename: string) {
-  return filename.endsWith('.js') || filename.endsWith('.jsx')
-}
-
-export function isCssFile(filename: string) {
-  return filename.endsWith('.css')
-}
-
-export function isJsOrTsFile(filename: string) {
-  return isJsFile(filename) || isTsFile(filename)
-}
-
-export function isTsLib(filename: string) {
+export function isTsLib(filename: string): boolean {
   return TS_LIB_FILES[filename] != null
 }

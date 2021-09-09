@@ -10,6 +10,7 @@ import {
   ComputedStyle,
   jsxAttributesFromMap,
   StyleAttributeMetadata,
+  emptyComments,
 } from '../../../core/shared/element-template'
 import { CanvasMetadataName } from '../../../core/workers/parser-printer/parser-printer-parsing'
 import { testParseCode } from '../../../core/workers/parser-printer/parser-printer.test-utils'
@@ -49,7 +50,6 @@ import {
 } from './property-path-hooks'
 import { isParseSuccess, ElementPath } from '../../../core/shared/project-file-types'
 import { betterReactMemo } from '../../../utils/react-performance'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import {
   getPropsForStyleProp,
   makeInspectorHookContextProvider,

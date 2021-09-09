@@ -23,13 +23,32 @@ import {
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
-import {
-  emptyComments,
-  isParsedCommentsEmpty,
-  ParsedComments,
-} from '../workers/parser-printer/parser-printer-comments'
 import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
+
+export interface ParsedComments {
+  leadingComments: Array<Comment>
+  trailingComments: Array<Comment>
+}
+
+export const emptyComments: ParsedComments = {
+  leadingComments: [],
+  trailingComments: [],
+}
+
+export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
+  return comments.leadingComments.length === 0 && comments.trailingComments.length === 0
+}
+
+export function parsedComments(
+  leadingComments: Array<Comment>,
+  trailingComments: Array<Comment>,
+): ParsedComments {
+  return {
+    leadingComments: leadingComments,
+    trailingComments: trailingComments,
+  }
+}
 
 interface BaseComment {
   comment: string

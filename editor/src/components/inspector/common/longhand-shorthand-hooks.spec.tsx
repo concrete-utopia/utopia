@@ -2,6 +2,7 @@ import * as React from 'react'
 import { renderHook } from '@testing-library/react-hooks'
 import {
   ComputedStyle,
+  emptyComments,
   jsxAttributeValue,
   StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
@@ -18,7 +19,6 @@ import { EditorStateContext } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 const TestSelectedComponent = EP.elementPath([['scene1'], ['aaa', 'bbb']])
 

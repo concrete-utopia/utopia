@@ -5,7 +5,11 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
 import { ControlProps } from './new-canvas-controls'
-import { ElementInstanceMetadata, jsxAttributeValue } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadata,
+  emptyComments,
+  jsxAttributeValue,
+} from '../../../core/shared/element-template'
 import { betterReactMemo } from '../../../uuiui-deps'
 import {
   clearHighlightedViews,
@@ -17,7 +21,6 @@ import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 
 const EmptyChildren: ElementInstanceMetadata[] = []

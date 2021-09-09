@@ -6,6 +6,7 @@ import {
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
 import {
+  emptyComments,
   isJSXElement,
   JSXAttribute,
   JSXAttributes,
@@ -50,7 +51,6 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { RightMenuTab } from '../../editor/store/editor-state'
 

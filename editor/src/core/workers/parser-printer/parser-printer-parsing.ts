@@ -63,6 +63,9 @@ import {
   setJSXAttributesAttribute,
   jsxAttributesSpread,
   isIntrinsicElementFromString,
+  emptyComments,
+  ParsedComments,
+  parsedComments,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -85,19 +88,10 @@ import {
   insertDataUIDsIntoCode,
 } from './parser-printer-transpiling'
 import * as PP from '../../shared/property-path'
-import {
-  prependToSourceString,
-  ElementsWithinInPosition,
-  JSX_CANVAS_LOOKUP_FUNCTION_NAME,
-} from './parser-printer-utils'
+import { prependToSourceString, ElementsWithinInPosition } from './parser-printer-utils'
 import Hash from 'object-hash'
-import {
-  emptyComments,
-  getComments,
-  getTrailingComments,
-  parsedComments,
-  ParsedComments,
-} from './parser-printer-comments'
+import { getComments, getTrailingComments } from './parser-printer-comments'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}

@@ -28,9 +28,10 @@ import {
   jsxAttributesFromMap,
   getJSXAttributeForced,
   isJSXAttributesEntry,
+  emptyComments,
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
-import { addImport, emptyImports, parseSuccess } from '../common/project-file-utils'
+import { addImport, emptyImports } from '../common/project-file-utils'
 import { onlyImportReact, sampleImportsForTests } from '../../model/test-ui-js-file.test-utils'
 import {
   isParseSuccess,
@@ -41,6 +42,7 @@ import {
   exportDefaultFunctionOrClass,
   exportVariables,
   exportVariable,
+  parseSuccess,
 } from '../../shared/project-file-types'
 import {
   lintAndParse,
@@ -64,11 +66,10 @@ import {
 } from './parser-printer.test-utils'
 import { InfiniteLoopError, InfiniteLoopMaxIterations } from './transform-prevent-infinite-loops'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
-import { emptyComments } from './parser-printer-comments'
 import { optionalMap } from '../../shared/optional-utils'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
 import { emptySet } from '../../shared/set-utils'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 
 describe('JSX parser', () => {
   it('parses the code when it is a var', () => {

@@ -47,6 +47,7 @@ import {
   jsxAttributeNestedArray,
   jsxAttributeNestedObject,
   jsxPropertyAssignment,
+  emptyComments,
 } from '../shared/element-template'
 import {
   ModifiableAttribute,
@@ -57,7 +58,6 @@ import { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { fastForEach } from '../shared/utils'
 import { mapToArray } from '../shared/object-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 type Printer<T> = (value: T) => JSXAttribute
 

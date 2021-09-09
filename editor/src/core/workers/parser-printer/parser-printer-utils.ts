@@ -126,8 +126,6 @@ export function prependToSourceString(
   }
 }
 
-export const JSX_CANVAS_LOOKUP_FUNCTION_NAME = 'utopiaCanvasJSXLookup'
-
 interface ElementWithinInPosition {
   uid: string
   element: JSXElement

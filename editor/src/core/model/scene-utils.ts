@@ -23,6 +23,7 @@ import {
   jsxAttributesFromMap,
   ElementInstanceMetadata,
   walkElements,
+  emptyComments,
 } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -41,10 +42,8 @@ import {
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
 import { stripNulls } from '../shared/array-utils'
-import { isPercentPin } from 'utopia-api'
 import { UTOPIA_UIDS_KEY } from './utopia-constants'
 import { getUtopiaID } from './element-template-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import { generateConsistentUID, generateUID } from '../shared/uid-utils'

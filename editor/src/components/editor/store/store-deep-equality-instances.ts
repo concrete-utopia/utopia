@@ -63,12 +63,10 @@ import {
   JSXAttributesPart,
   isJSXAttributesEntry,
   isJSXAttributesSpread,
+  ParsedComments,
+  parsedComments,
 } from '../../../core/shared/element-template'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
-import {
-  parsedComments,
-  ParsedComments,
-} from '../../../core/workers/parser-printer/parser-printer-comments'
 import {
   KeepDeepEqualityResult,
   keepDeepEqualityResult,

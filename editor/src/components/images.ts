@@ -1,6 +1,7 @@
 import { BASE_URL } from '../common/env-vars'
 import {
   ElementInstanceMetadata,
+  emptyComments,
   jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElement,
@@ -13,7 +14,6 @@ import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/sha
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull } from '../core/shared/optional-utils'
-import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 
 export function getImageSrc(
   projectId: string | null,

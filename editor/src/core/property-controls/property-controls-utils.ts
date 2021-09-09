@@ -47,7 +47,6 @@ import {
 } from '../../components/editor/store/editor-state'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
-import { ExportsInfo } from '../workers/ts/ts-worker'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { importedFromWhere } from '../../components/editor/import-utils'

@@ -9,19 +9,20 @@ import {
   getTextFileByPath,
 } from '../../custom-code/code-file.test-utils'
 import {
+  emptyComments,
   jsxAttributeValue,
   jsxElement,
   JSXElement,
   setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
-import { Imports, isParseSuccess, ParseSuccess } from '../../../core/shared/project-file-types'
 import {
-  addImport,
-  emptyImports,
+  Imports,
+  isParseSuccess,
   parseSuccess,
-} from '../../../core/workers/common/project-file-utils'
+  ParseSuccess,
+} from '../../../core/shared/project-file-types'
+import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
 import { omit } from '../../../core/shared/object-utils'
 import * as EP from '../../../core/shared/element-path'
 

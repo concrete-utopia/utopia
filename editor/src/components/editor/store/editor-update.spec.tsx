@@ -2,6 +2,7 @@ import * as Chai from 'chai'
 import { NormalisedFrame } from 'utopia-api'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
+  emptyComments,
   isJSXElement,
   jsxAttributesFromMap,
   jsxAttributeValue,
@@ -73,7 +74,6 @@ import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
 import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { notice } from '../../common/notice'
 import {
   getPrintedUiJsCode,

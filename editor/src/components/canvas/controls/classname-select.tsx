@@ -17,7 +17,7 @@ import {
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../../core/shared/atom-with-pub-sub'
-import { jsxAttributeValue } from '../../../core/shared/element-template'
+import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import {
   getTailwindOptionForClassName,
@@ -27,7 +27,6 @@ import {
   useFilteredOptions,
   useGetSelectedClasses,
 } from '../../../core/tailwind/tailwind-options'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { colorTheme, FlexColumn, FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import * as EditorActions from '../../editor/actions/action-creators'

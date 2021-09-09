@@ -17,7 +17,6 @@ import { fastForEach } from '../../shared/utils'
 import { defaultIfNull } from '../../shared/optional-utils'
 import { ErrorMessage } from '../../shared/error-messages'
 
-import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
 import { ArbitraryJSBlock, Comment, TopLevelElement } from '../../shared/element-template'
 import { emptySet } from '../../shared/set-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
@@ -29,30 +28,6 @@ export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
 
 export function codeNeedsParsing(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.CodeAhead
-}
-
-export function getTextFileContents(
-  filename: string,
-  file: TextFile,
-  pretty: boolean,
-  allowPrinting: boolean,
-): string {
-  if (
-    allowPrinting &&
-    codeNeedsPrinting(file.fileContents.revisionsState) &&
-    isParseSuccess(file.fileContents.parsed)
-  ) {
-    return printCode(
-      filename,
-      printCodeOptions(false, pretty, true),
-      file.fileContents.parsed.imports,
-      file.fileContents.parsed.topLevelElements,
-      file.fileContents.parsed.jsxFactoryFunction,
-      file.fileContents.parsed.exportsDetail,
-    )
-  } else {
-    return file.fileContents.code
-  }
 }
 
 export function emptyImports(): Imports {
@@ -138,40 +113,6 @@ export function addImport(
   return mergeImports(fileUri, imports, toAdd)
 }
 
-export function parseSuccess(
-  imports: Imports,
-  topLevelElements: Array<TopLevelElement>,
-  highlightBounds: HighlightBoundsForUids,
-  jsxFactoryFunction: string | null,
-  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
-  exportsDetail: ExportsDetail,
-): ParseSuccess {
-  return {
-    type: 'PARSE_SUCCESS',
-    imports: imports,
-    topLevelElements: topLevelElements,
-    highlightBounds: highlightBounds,
-    jsxFactoryFunction: jsxFactoryFunction,
-    combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-    exportsDetail: exportsDetail,
-  }
-}
-
-export function parseFailure(
-  diagnostics: Array<TS.Diagnostic> | null,
-  parsedJSON: ParsedJSONFailure | null,
-  errorMessage: string | null,
-  errorMessages: Array<ErrorMessage>,
-): ParseFailure {
-  return {
-    type: 'PARSE_FAILURE',
-    diagnostics: diagnostics,
-    parsedJSONFailure: parsedJSON,
-    errorMessage: errorMessage,
-    errorMessages: errorMessages,
-  }
-}
-
 export function parsedJSONSuccess(value: any): ParsedJSONSuccess {
   return {
     type: 'SUCCESS',
@@ -180,7 +121,6 @@ export function parsedJSONSuccess(value: any): ParsedJSONSuccess {
 }
 
 export function parsedJSONFailure(
-  errorNode: TS.Node,
   codeSnippet: string,
   reason: string,
   startLine: number,
@@ -190,7 +130,6 @@ export function parsedJSONFailure(
 ): ParsedJSONFailure {
   return {
     type: 'FAILURE',
-    errorNode: errorNode,
     codeSnippet: codeSnippet,
     reason: reason,
     startLine: startLine,

@@ -34,12 +34,12 @@ import {
   unparsed,
 } from '../../core/shared/project-file-types'
 import {
+  emptyComments,
   jsxAttributesEntry,
   jsxAttributeValue,
   jsxElement,
   jsxElementName,
 } from '../../core/shared/element-template'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 const NewUID = 'catdog'
 
@@ -273,7 +273,7 @@ describe('moveTemplate', () => {
         textFileContents(
           JSON.stringify(DefaultPackageJson, null, 2),
           unparsed,
-          RevisionsState.BothMatch,
+          RevisionsState.CodeAhead,
         ),
         null,
         null,
@@ -351,7 +351,7 @@ describe('moveTemplate', () => {
         textFileContents(
           JSON.stringify(DefaultPackageJson, null, 2),
           unparsed,
-          RevisionsState.BothMatch,
+          RevisionsState.CodeAhead,
         ),
         null,
         null,

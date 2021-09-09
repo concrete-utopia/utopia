@@ -31,11 +31,11 @@ import {
   getJSXElementNameAsString,
   JSXElement,
   walkElements,
+  emptyComments,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import { parseSuccess } from '../core/workers/common/project-file-utils'
 import {
   sampleImportsForTests,
   sampleJsxComponentWithScene,
@@ -49,6 +49,7 @@ import {
   textFileContents,
   unparsed,
   EmptyExportsDetail,
+  parseSuccess,
 } from '../core/shared/project-file-types'
 import { foldEither, right } from '../core/shared/either'
 import Utils from './utils'
@@ -64,7 +65,6 @@ import { mapArrayToDictionary, mapDropNulls } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
-import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 import { objectMap } from '../core/shared/object-utils'
 
 export function delay<T>(time: number): Promise<T> {

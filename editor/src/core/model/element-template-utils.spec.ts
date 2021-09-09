@@ -10,11 +10,11 @@ import {
   jsxAttributesFromMap,
   getJSXAttribute,
   isJSXElement,
+  emptyComments,
 } from '../shared/element-template'
 import { getUtopiaID, guaranteeUniqueUids, removeJSXElementChild } from './element-template-utils'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from './scene-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { testStaticElementPath } from '../shared/element-path.test-utils'
 
 describe('guaranteeUniqueUids', () => {

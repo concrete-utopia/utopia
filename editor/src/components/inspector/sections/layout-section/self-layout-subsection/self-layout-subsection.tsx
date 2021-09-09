@@ -2,6 +2,7 @@ import * as React from 'react'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
   DetectedLayoutSystem,
+  emptyComments,
   jsxAttributeValue,
 } from '../../../../../core/shared/element-template'
 import { shallowEqual } from '../../../../../core/shared/equality-utils'
@@ -39,7 +40,6 @@ import {
   LayoutProp,
   StyleLayoutProp,
 } from '../../../../../core/layout/layout-helpers-new'
-import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 
 type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'

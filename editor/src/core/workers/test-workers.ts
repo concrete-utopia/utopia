@@ -4,14 +4,14 @@ import {
   OutgoingLinterWorkerMessage,
 } from './linter/linter-worker'
 import { LinterWorker, ParserPrinterWorker, WatchdogWorker } from './workers'
-import {
-  createParsePrintFilesRequest,
-  handleMessage as handleParserPrinterMessage,
-  ParseOrPrint,
-  ParsePrintResultMessage,
-} from './parser-printer/parser-printer-worker'
+import { handleMessage as handleParserPrinterMessage } from './parser-printer/parser-printer-worker'
 import { handleMessage as handleTSWorkerMessage } from './ts/ts-worker'
 import { BundlerWorker } from './bundler-bridge'
+import {
+  createParsePrintFilesRequest,
+  ParseOrPrint,
+  ParsePrintResultMessage,
+} from './common/worker-types'
 
 export class FakeBundlerWorker implements BundlerWorker {
   messageListeners: Array<(ev: MessageEvent) => any> = []

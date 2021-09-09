@@ -2,8 +2,7 @@ import { syntaxParsers } from './css-parser-map'
 import { AssumedFlexDefaults, printFlexAsAttributeValue } from './css-parser-flex'
 import { right } from '../../core/shared/either'
 import { cssFlex, cssNumber } from '../../components/inspector/common/css-utils'
-import { jsxAttributeValue } from '../../core/shared/element-template'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import { emptyComments, jsxAttributeValue } from '../../core/shared/element-template'
 
 describe('parse flex css shorthand', () => {
   it("parses unitless number <'flex'> property as flexgrow, 1-value", () => {

@@ -3,6 +3,7 @@ import { getAllUniqueUids } from '../../model/element-template-utils'
 import { directory, getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import { uniq } from '../../shared/array-utils'
 import {
+  emptyComments,
   isJSXArbitraryBlock,
   isJSXElement,
   isUtopiaJSXComponent,
@@ -23,7 +24,6 @@ import {
   unparsed,
 } from '../../shared/project-file-types'
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
-import { emptyComments } from './parser-printer-comments'
 import { testParseCode } from './parser-printer.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
 import {
@@ -153,7 +153,7 @@ describe('parseCode', () => {
         textFileContents(
           JSON.stringify(DefaultPackageJson, null, 2),
           unparsed,
-          RevisionsState.BothMatch,
+          RevisionsState.CodeAhead,
         ),
         null,
         null,

@@ -10,11 +10,11 @@ import {
   defaultPropsParam,
   jsxFragment,
   jsxAttributesFromMap,
+  emptyComments,
 } from '../shared/element-template'
 import { addImport, emptyImports, mergeImports } from '../workers/common/project-file-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-utils'
 import { defaultSceneElement } from '../../components/editor/defaults'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { testStaticElementPath } from '../shared/element-path.test-utils'
 
 const sampleIncludedElementTypes: Array<string> = [

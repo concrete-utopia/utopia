@@ -8,6 +8,7 @@ import {
   jsxAttributeValue,
   setJSXAttributesAttribute,
   jsxElement,
+  emptyComments,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -59,7 +60,6 @@ import {
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import { PropertyControlsInfo } from '../custom-code/code-file'
-import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import {
   FlexRow,
   UtopiaTheme,
