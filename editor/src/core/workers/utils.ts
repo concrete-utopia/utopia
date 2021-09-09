@@ -22,7 +22,6 @@ export function createTsWorker(): Worker {
 export function createParserPrinterWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = BASE_URL
-  console.info('createParserPrinterWorker', import.meta.url, oldPublicPath, __webpack_public_path__)
   const worker = new Worker(new URL('./parser-printer/parser-printer.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
