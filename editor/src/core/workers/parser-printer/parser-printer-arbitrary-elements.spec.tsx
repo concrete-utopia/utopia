@@ -597,7 +597,7 @@ export var whatever = (props) => {
       [
         jsxArbitraryBlock(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
-          `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
+          `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
     n: n,
@@ -793,7 +793,7 @@ export var whatever = (props) => {
       [
         jsxArbitraryBlock(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
-          `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
+          `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
     n: n,
