@@ -371,7 +371,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath) ?? false
     const isCanvasFile = isAppDotJS || isStoryboardFile // FIXME This is not how we should determine whether or not to open the canvas
     return {
-      isUiJsFileOpen: selectedFile != null && isParsedTextFile(selectedFile) && isCanvasFile,
+      isUiJsFileOpen: selectedFile != null && isCanvasFile,
     }
   }, 'OpenFileEditor')
 
