@@ -11,7 +11,7 @@ import {
   UpdateProcessedMessage,
 } from './ts/ts-worker'
 import utils from '../../utils/utils'
-import { workerForFile } from './utils'
+import { createTsWorker } from './utils'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
 export interface BundlerContext {
@@ -326,7 +326,7 @@ export interface BundlerWorker {
 }
 
 export class RealBundlerWorker implements BundlerWorker {
-  worker = workerForFile('editor/tsWorker.js')
+  worker = createTsWorker()
 
   addMessageListener = (listener: (ev: MessageEvent) => any): void => {
     this.worker.addEventListener('message', listener)

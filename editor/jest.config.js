@@ -109,6 +109,7 @@ module.exports = {
       },
       roots: ['src', 'node_modules', '<rootDir>/node_modules'],
       transformIgnorePatterns: ['/node_modules/(?!utopia-api)'], // this lets ts-jest work on `/node_modules/utopia-api` which is a simlink to `../utopia-api`.
+      setupFiles: ['./jest-setup-beforeall.js'],
     },
     {
       testEnvironment: '@jest-runner/electron/environment',
@@ -129,6 +130,7 @@ module.exports = {
         },
       },
       roots: ['src', 'node_modules', '<rootDir>/node_modules'],
+      setupFiles: ['./jest-setup-beforeall.js'],
     },
   ],
 }
