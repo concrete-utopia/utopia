@@ -93,3 +93,8 @@ declare module '@svgr/plugin-jsx'
 declare module '@root/encoding/base64'
 
 declare module 'react/jsx-runtime'
+
+/**
+ * the __webpack_public_path__ is a global variable supported by Webpack that can be used to dynamically change the value of import.meta.url
+ */
+declare var __webpack_public_path__: string

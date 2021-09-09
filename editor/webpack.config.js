@@ -62,22 +62,12 @@ const config = {
     vsCodeEditorOuterIframe: hot
       ? ['react-hot-loader/patch', './src/templates/vscode-editor-outer-iframe.tsx']
       : './src/templates/vscode-editor-outer-iframe.tsx',
-    tsWorker: './src/core/workers/ts/ts.worker.ts',
-    parserPrinterWorker: './src/core/workers/parser-printer/parser-printer.worker.ts',
-    linterWorker: './src/core/workers/linter/linter.worker.ts',
-    watchdogWorker: './src/core/workers/watchdog.worker.ts',
   },
 
   output: {
     crossOriginLoading: 'anonymous',
     filename: (chunkData) => {
-      const name = chunkData.chunk.name
-      const nameOnly =
-        name === 'tsWorker' ||
-        name === 'parserPrinterWorker' ||
-        name === 'linterWorker' ||
-        name === 'watchdogWorker'
-      return nameOnly ? '[name].js' : `[name].${hashPattern}.js`
+      return `[name].${hashPattern}.js`
     },
     chunkFilename: `[id].${hashPattern}.js`,
     path: __dirname + '/lib',
@@ -203,6 +193,8 @@ const config = {
     new webpack.EnvironmentPlugin({
       GOOGLE_WEB_FONTS_KEY: '', // providing an empty default for GOOGLE_WEB_FONTS_KEY for now
     }),
+
+    new webpack.ProvidePlugin({ BrowserFS: 'browserfs' }), // weirdly, the browserfs/dist/shims/fs shim assumes a global BrowserFS being available
   ],
 
   resolve: {
@@ -346,18 +338,7 @@ const config = {
       : [],
     moduleIds: 'hashed', // "Short hashes as ids for better long term caching."
     splitChunks: {
-      chunks(chunk) {
-        // exclude workers until we figure out a way to chunk those
-        return (
-          chunk.name !== 'tsWorker' &&
-          chunk.name !== 'parserPrinterWorker' &&
-          chunk.name !== 'linterWorker' &&
-          chunk.name !== 'watchdogWorker'
-        )
-      },
-      minSize: 10000, // Minimum size before chunking
-      maxAsyncRequests: isProdOrStaging ? 6 : Infinity,
-      maxInitialRequests: isProdOrStaging ? 6 : Infinity,
+      chunks: 'all',
     },
   },
 
