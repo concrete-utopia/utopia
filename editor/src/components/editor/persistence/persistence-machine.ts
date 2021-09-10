@@ -310,12 +310,17 @@ function projectIdCreatedEvent(projectId: string): ProjectIdCreatedEvent {
 
 interface NewProjectCreatedEvent {
   type: 'NEW_PROJECT_CREATED'
+  projectId: string
   projectModel: ProjectModel
 }
 
-function newProjectCreatedEvent(projectModel: ProjectModel): NewProjectCreatedEvent {
+function newProjectCreatedEvent(
+  projectId: string,
+  projectModel: ProjectModel,
+): NewProjectCreatedEvent {
   return {
     type: 'NEW_PROJECT_CREATED',
+    projectId: projectId,
     projectModel: projectModel,
   }
 }
@@ -552,8 +557,20 @@ interface UserLogInEvent {
   type: 'USER_LOG_IN'
 }
 
+function userLogInEvent(): UserLogInEvent {
+  return {
+    type: 'USER_LOG_IN',
+  }
+}
+
 interface UserLogOutEvent {
   type: 'USER_LOG_OUT'
+}
+
+function userLogOutEvent(): UserLogOutEvent {
+  return {
+    type: 'USER_LOG_OUT',
+  }
 }
 
 type UserEvent = UserLogInEvent | UserLogOutEvent
@@ -906,8 +923,8 @@ const persistenceMachine = createMachine<
                 id: 'create-new-project-model',
                 src: createNewProjectModel,
                 onDone: {
-                  actions: send((_, event: DoneInvokeEvent<ProjectModel>) =>
-                    newProjectCreatedEvent(event.data),
+                  actions: send((context, event: DoneInvokeEvent<ProjectModel>) =>
+                    newProjectCreatedEvent(context.projectId!, event.data),
                   ),
                 },
               },
@@ -1093,7 +1110,11 @@ function sendThrottledSave(): void {
 export function initialisePersistence(
   dispatch: EditorDispatch,
   onProjectNotFound: () => void,
-  onCreatedOrLoadedProject: (projectName: string, project: PersistentModel) => void,
+  onCreatedOrLoadedProject: (
+    projectId: string,
+    projectName: string,
+    project: PersistentModel,
+  ) => void,
 ) {
   clearThrottledSave()
   lastSavedTS = 0
@@ -1123,10 +1144,18 @@ export function initialisePersistence(
       } else {
         switch (event.type) {
           case 'NEW_PROJECT_CREATED':
-            onCreatedOrLoadedProject(event.projectModel.name, event.projectModel.content)
+            onCreatedOrLoadedProject(
+              event.projectId,
+              event.projectModel.name,
+              event.projectModel.content,
+            )
             break
           case 'LOAD_COMPLETE':
-            onCreatedOrLoadedProject(event.projectModel.name, event.projectModel.content)
+            onCreatedOrLoadedProject(
+              event.projectId,
+              event.projectModel.name,
+              event.projectModel.content,
+            )
             break
           case 'PROJECT_ID_CREATED':
             queuedActions.push(setProjectID(event.projectId))
@@ -1206,11 +1235,23 @@ export function fork(): void {
   interpreter?.send(forkEvent())
 }
 
+export function login(): void {
+  interpreter?.send(userLogInEvent())
+}
+
+export function logout(): void {
+  interpreter?.send(userLogOutEvent())
+}
+
 // For testing purposes only
 export function setSaveThrottle(delay: number): void {
   SaveThrottle = delay
 }
 
 // createNewProjectFromImportedProject
-// loadingSampleProjects?
 // loading and creating new are still a shit show
+// Error handling for:
+// [ ] Failed Save
+// [ ] Failed Fork
+// [ ] Failed (non-404) Load
+// [ ] Failed New
