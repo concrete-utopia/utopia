@@ -1,8 +1,7 @@
 import { TypeDefinitions } from '../shared/npm-dependency-types'
-import { createParsePrintFilesRequest, ParseOrPrint } from './parser-printer/parser-printer-worker'
 import { createLinterRequestMessage } from './linter/linter-worker'
 import { NewBundlerWorker, BundlerWorker } from './bundler-bridge'
-import { workerForFile } from './utils'
+import { createLinterWorker, createParserPrinterWorker, createWatchdogWorker } from './utils'
 import {
   createWatchdogInitMessage,
   createHeartbeatResponseMessage,
@@ -10,7 +9,12 @@ import {
   DEFAULT_HEARTBEAT_INTERVAL_MS,
   createWatchdogTerminateMessage,
 } from './watchdog-worker'
-import { UtopiaTsWorkers, FileContent } from './common/worker-types'
+import {
+  UtopiaTsWorkers,
+  FileContent,
+  createParsePrintFilesRequest,
+  ParseOrPrint,
+} from './common/worker-types'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
@@ -88,7 +92,7 @@ export interface ParserPrinterWorker {
 export class RealParserPrinterWorker implements ParserPrinterWorker {
   private worker: Worker
   constructor() {
-    this.worker = workerForFile('editor/parserPrinterWorker.js')
+    this.worker = createParserPrinterWorker()
   }
 
   sendParsePrintMessage(files: Array<ParseOrPrint>): void {
@@ -115,7 +119,7 @@ export interface LinterWorker {
 export class RealLinterWorker implements LinterWorker {
   private worker: Worker
   constructor() {
-    this.worker = workerForFile('editor/linterWorker.js')
+    this.worker = createLinterWorker()
   }
 
   sendLinterRequestMessage(filename: string, content: string): void {
@@ -143,7 +147,7 @@ export class RealWatchdogWorker implements WatchdogWorker {
   private setIntervalId: NodeJS.Timer | null = null
 
   constructor() {
-    this.worker = workerForFile('editor/watchdogWorker.js')
+    this.worker = createWatchdogWorker()
   }
 
   initWatchdogWorker(projectId: string): void {

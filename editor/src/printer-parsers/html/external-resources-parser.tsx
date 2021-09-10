@@ -430,7 +430,7 @@ export function getExternalResourcesInfo(
             const newFileContents = textFileContents(
               updatedTextFileContents.value,
               unparsed,
-              RevisionsState.BothMatch,
+              RevisionsState.CodeAhead,
             )
             dispatch([
               updateFile(

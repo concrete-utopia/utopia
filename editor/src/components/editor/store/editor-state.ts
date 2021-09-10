@@ -54,10 +54,14 @@ import {
   HighlightBoundsWithFile,
   PropertyPath,
   HighlightBoundsWithFileForUids,
+  parseSuccess,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
-import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
-import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import {
+  ExportsInfo,
+  MultiFileBuildResult,
+  UtopiaTsWorkers,
+} from '../../../core/workers/common/worker-types'
 import {
   bimapEither,
   Either,
@@ -133,7 +137,6 @@ import { ShortcutConfiguration } from '../shortcut-definitions'
 import { notLoggedIn } from '../../../common/user'
 import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
-import { parseSuccess } from '../../../core/workers/common/project-file-utils'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
@@ -1783,7 +1786,7 @@ export function parseFailureAsErrorMessages(
     const fileNameString = fileName ?? ''
     let errors: Array<ErrorMessage> = []
     if (parseFailure.diagnostics != null && parseFailure.diagnostics.length > 0) {
-      errors.push(...parseFailure.diagnostics.map(diagnosticToErrorMessage))
+      errors.push(...parseFailure.diagnostics)
     }
     errors.push(...parseFailure.errorMessages)
     if (parseFailure.errorMessage != null) {

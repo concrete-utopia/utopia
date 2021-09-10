@@ -17,11 +17,11 @@ import {
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
   emptySpecialSizeMeasurements,
+  emptyComments,
 } from '../shared/element-template'
 import { generateUidWithExistingComponents } from '../model/element-template-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const NewUID = 'catdog'
 

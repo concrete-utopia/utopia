@@ -8,8 +8,7 @@ import {
 import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/action-creators'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
-import { jsxAttributeValue } from '../shared/element-template'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { emptyComments, jsxAttributeValue } from '../shared/element-template'
 
 jest.mock('../../components/canvas/controls/outline-utils', () => ({
   isZeroSizedElement: () => false, // in test environment elements have no size
@@ -175,8 +174,8 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(425) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(435)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2695) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(2700)
   })
 
   it('Changing the selected view with a less simple project', async () => {
@@ -238,7 +237,7 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(430) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(440)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2730) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(2735)
   })
 })

@@ -2,6 +2,7 @@ import * as PP from '../shared/property-path'
 import { deepFreeze } from '../../utils/deep-freeze'
 import { Either, forceRight, isLeft, isRight, right } from '../shared/either'
 import {
+  emptyComments,
   getJSXAttributeForced,
   isJSXAttributeFunctionCall,
   isJSXAttributeNotFound,
@@ -32,8 +33,6 @@ import {
   setJSXValueAtPath,
   unsetJSXValueAtPath,
 } from '../shared/jsx-attributes'
-import { NO_OP } from '../shared/utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const sampleParentProps = {
   hello: 'kitty',

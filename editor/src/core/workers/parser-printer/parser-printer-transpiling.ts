@@ -16,11 +16,11 @@ import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import infiniteLoopPrevention from './transform-prevent-infinite-loops'
 import {
   ElementsWithinInPosition,
-  JSX_CANVAS_LOOKUP_FUNCTION_NAME,
   CodeWithMap,
   wrapCodeInParens,
   wrapCodeInParensWithMap,
 } from './parser-printer-utils'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 
 interface TranspileResult {
   code: string

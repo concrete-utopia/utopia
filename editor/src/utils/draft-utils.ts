@@ -7,8 +7,7 @@ import {
   convertToRaw,
 } from 'draft-js'
 import createStyles from 'draft-js-custom-styles'
-import { jsxAttributeValue } from '../core/shared/element-template'
-import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
+import { emptyComments, jsxAttributeValue } from '../core/shared/element-template'
 
 export function createContentState(text: RawDraftContentState | string): ContentState {
   const safeText = text ?? ''

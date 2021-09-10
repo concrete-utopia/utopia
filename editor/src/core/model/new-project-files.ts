@@ -1,13 +1,11 @@
 import {
   codeFile,
-  isParseSuccess,
   RevisionsState,
   textFile,
   TextFile,
   textFileContents,
+  unparsed,
 } from '../shared/project-file-types'
-import { emptySet } from '../shared/set-utils'
-import { lintAndParse } from '../workers/parser-printer/parser-printer'
 
 export const sampleAppJSCode = `
 import * as React from 'react'
@@ -20,21 +18,19 @@ export var App = (props) => {
 }`
 
 export function appJSFile(): TextFile {
-  const result = lintAndParse('/src/app.js', sampleAppJSCode, null, emptySet())
   return textFile(
-    textFileContents(sampleAppJSCode, result, RevisionsState.BothMatch),
+    textFileContents(sampleAppJSCode, unparsed, RevisionsState.CodeAhead),
     null,
-    isParseSuccess(result) ? result : null,
+    null,
     Date.now(),
   )
 }
 
 export function getDefaultUIJsFile(): TextFile {
-  const result = lintAndParse('code.tsx', sampleCode, null, emptySet())
   return textFile(
-    textFileContents(sampleCode, result, RevisionsState.BothMatch),
+    textFileContents(sampleCode, unparsed, RevisionsState.CodeAhead),
     null,
-    isParseSuccess(result) ? result : null,
+    null,
     Date.now(),
   )
 }

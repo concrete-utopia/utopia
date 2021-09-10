@@ -1,5 +1,6 @@
 import { Either, isLeft, isRight, right } from '../../../core/shared/either'
 import {
+  emptyComments,
   jsxAttributeFunctionCall,
   jsxAttributeNestedObjectSimple,
   jsxAttributesFromMap,
@@ -65,7 +66,6 @@ import {
   toggleSimple,
   toggleStylePropPath,
 } from './css-utils'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 describe('toggleStyleProp', () => {
   const simpleToggleProp = toggleStylePropPath(

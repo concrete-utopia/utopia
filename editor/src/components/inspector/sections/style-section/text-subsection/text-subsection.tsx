@@ -2,6 +2,7 @@ import * as OPI from 'object-path-immutable'
 import * as React from 'react'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
+  emptyComments,
   isJSXAttributeValue,
   JSXAttribute,
   jsxAttributeValue,
@@ -41,7 +42,6 @@ import { OptionControl } from '../../../controls/option-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
-import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
 import { FlexRow } from 'utopia-api'
 
 const ObjectPathImmutable: any = OPI

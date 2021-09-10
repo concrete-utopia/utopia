@@ -8,8 +8,6 @@ import {
   normalisePathUnableToProceed,
 } from './code-file'
 import {
-  ExportsInfo,
-  MultiFileBuildResult,
   EmitFileResult,
   DefaultLanguageServiceCompilerOptions,
   configureLanguageService,
@@ -36,6 +34,7 @@ import {
   unparsed,
 } from '../../core/shared/project-file-types'
 import { addFileToProjectContents } from '../assets'
+import { ExportsInfo, MultiFileBuildResult } from '../../core/workers/common/worker-types'
 
 function transpileCode(
   rootFilenames: Array<string>,

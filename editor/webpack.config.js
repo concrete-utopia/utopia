@@ -41,7 +41,7 @@ function srcPath(subdir) {
 // 2. [chunkhash] - this is a hash of the chunk itself, so if the chunk stays the same then so does the hash
 // 3. [contenthash] - this is a hash of the extracted data of the chunk, which appears to only be useful when
 //                    using the ExtractedTextPlugin - https://v4.webpack.js.org/plugins/extract-text-webpack-plugin/
-const hashPattern = hot ? '[hash]' : '[chunkhash]'
+const hashPattern = hot ? '[contenthash]' : '[chunkhash]' // I changed [hash] to [contenthash] as per https://webpack.js.org/migrate/5/#clean-up-configuration
 
 const BaseDomain = isProd ? 'https://cdn.utopia.app' : isStaging ? 'https://cdn.utopia.pizza' : ''
 const VSCodeBaseDomain = BaseDomain === '' ? '${window.location.origin}' : BaseDomain
@@ -62,29 +62,18 @@ const config = {
     vsCodeEditorOuterIframe: hot
       ? ['react-hot-loader/patch', './src/templates/vscode-editor-outer-iframe.tsx']
       : './src/templates/vscode-editor-outer-iframe.tsx',
-    tsWorker: './src/core/workers/ts/ts.worker.ts',
-    parserPrinterWorker: './src/core/workers/parser-printer/parser-printer.worker.ts',
-    linterWorker: './src/core/workers/linter/linter.worker.ts',
-    watchdogWorker: './src/core/workers/watchdog.worker.ts',
   },
 
   output: {
     crossOriginLoading: 'anonymous',
     filename: (chunkData) => {
-      const name = chunkData.chunk.name
-      const nameOnly =
-        name === 'tsWorker' ||
-        name === 'parserPrinterWorker' ||
-        name === 'linterWorker' ||
-        name === 'watchdogWorker'
-      return nameOnly ? '[name].js' : `[name].${hashPattern}.js`
+      return `[name].${hashPattern}.js`
     },
     chunkFilename: `[id].${hashPattern}.js`,
     path: __dirname + '/lib',
     library: 'utopia',
     libraryTarget: 'umd',
     publicPath: `${BaseDomain}/editor/`,
-    globalObject: 'this',
   },
 
   plugins: [
@@ -180,6 +169,18 @@ const config = {
         ]
       : []),
 
+    // Webpack 5 does not provide buffer out of the box
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+
+    new webpack.DefinePlugin({
+      // with Webpack 5, process is not shimmed anymore, these are some properties that I had to replace with undefined so the various checks do not throw a runtime type error
+      'process.platform': 'undefined',
+      'process.env.BABEL_TYPES_8_BREAKING': 'undefined',
+      'process.env.JEST_WORKER_ID': 'undefined',
+    }),
+
     // setting up the various process.env.VARIABLE replacements
     new webpack.EnvironmentPlugin([
       'REACT_APP_ENVIRONMENT_CONFIG',
@@ -187,8 +188,13 @@ const config = {
       'REACT_APP_AUTH0_ENDPOINT',
       'REACT_APP_AUTH0_REDIRECT_URI',
       'REACT_APP_COMMIT_HASH',
-      'GOOGLE_WEB_FONTS_KEY',
     ]),
+
+    new webpack.EnvironmentPlugin({
+      GOOGLE_WEB_FONTS_KEY: '', // providing an empty default for GOOGLE_WEB_FONTS_KEY for now
+    }),
+
+    new webpack.ProvidePlugin({ BrowserFS: 'browserfs' }), // weirdly, the browserfs/dist/shims/fs shim assumes a global BrowserFS being available
   ],
 
   resolve: {
@@ -212,6 +218,10 @@ const config = {
             'react-dom$': '@hot-loader/react-dom/profiling',
           }
         : {}),
+    },
+    fallback: {
+      path: require.resolve('path-browserify'),
+      os: false,
     },
   },
 
@@ -319,9 +329,7 @@ const config = {
     minimizer: isProd
       ? [
           new TerserPlugin({
-            cache: true,
             parallel: true,
-            sourceMap: true,
             terserOptions: {
               ecma: 8,
             },
@@ -330,19 +338,7 @@ const config = {
       : [],
     moduleIds: 'hashed', // "Short hashes as ids for better long term caching."
     splitChunks: {
-      name: false, // "It is recommended to set splitChunks.name to false for production builds so that it doesn't change names unnecessarily."
-      chunks(chunk) {
-        // exclude workers until we figure out a way to chunk those
-        return (
-          chunk.name !== 'tsWorker' &&
-          chunk.name !== 'parserPrinterWorker' &&
-          chunk.name !== 'linterWorker' &&
-          chunk.name !== 'watchdogWorker'
-        )
-      },
-      minSize: 10000, // Minimum size before chunking
-      maxAsyncRequests: isProdOrStaging ? 6 : Infinity,
-      maxInitialRequests: isProdOrStaging ? 6 : Infinity,
+      chunks: 'all',
     },
   },
 

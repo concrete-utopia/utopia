@@ -12,6 +12,13 @@ Array [
   Object {
     "insertableComponents": Array [],
     "source": Object {
+      "path": "/src/index.js",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [],
+    "source": Object {
       "path": "/utopia/storyboard.js",
       "type": "PROJECT_COMPONENT_GROUP",
     },

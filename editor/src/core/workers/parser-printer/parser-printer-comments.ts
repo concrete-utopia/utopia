@@ -1,30 +1,12 @@
 import * as TS from 'typescript'
-import { Comment, multiLineComment, singleLineComment } from '../../shared/element-template'
+import {
+  Comment,
+  multiLineComment,
+  ParsedComments,
+  parsedComments,
+  singleLineComment,
+} from '../../shared/element-template'
 import { fastForEach } from '../../shared/utils'
-
-export interface ParsedComments {
-  leadingComments: Array<Comment>
-  trailingComments: Array<Comment>
-}
-
-export const emptyComments: ParsedComments = {
-  leadingComments: [],
-  trailingComments: [],
-}
-
-export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
-  return comments.leadingComments.length === 0 && comments.trailingComments.length === 0
-}
-
-export function parsedComments(
-  leadingComments: Array<Comment>,
-  trailingComments: Array<Comment>,
-): ParsedComments {
-  return {
-    leadingComments: leadingComments,
-    trailingComments: trailingComments,
-  }
-}
 
 function parseComment(
   sourceText: string,

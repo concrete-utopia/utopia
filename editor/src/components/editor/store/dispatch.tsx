@@ -1,7 +1,3 @@
-import * as deepEquals from 'fast-deep-equal'
-import { produce } from 'immer'
-import * as React from 'react'
-import * as ReactDOMServer from 'react-dom/server'
 import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -17,18 +13,20 @@ import {
   codeNeedsParsing,
   codeNeedsPrinting,
 } from '../../../core/workers/common/project-file-utils'
-import { getParseResult } from '../../../core/workers/parser-printer/parser-printer'
-import { isJsOrTsFile, isCssFile, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
-import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import {
+  createParseFile,
+  createPrintCode,
+  getParseResult,
+  ParseOrPrint,
+  UtopiaTsWorkers,
+} from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
-import { bimapEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CanvasAction } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
-import * as EP from '../../../core/shared/element-path'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
 import {
   isTransientAction,
@@ -81,11 +79,6 @@ import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/
 import { ElementPathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
-  createParseFile,
-  createPrintCode,
-  ParseOrPrint,
-} from '../../../core/workers/parser-printer/parser-printer-worker'
-import {
   getTransitiveReverseDependencies,
   identifyFilesThatHaveChanged,
 } from '../../../core/shared/project-contents-dependencies'
@@ -108,6 +101,7 @@ import {
   sendVSCodeChanges,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean

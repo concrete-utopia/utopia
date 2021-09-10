@@ -264,3 +264,5 @@ export function addScriptToPage(
   }
   document.body.appendChild(script)
 }
+
+export const JSX_CANVAS_LOOKUP_FUNCTION_NAME = 'utopiaCanvasJSXLookup'

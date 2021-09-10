@@ -425,7 +425,7 @@ Object {
                 "uid": "bbb",
               },
             },
-            "javascript": "[1, 2, 3].map(n => {
+            "javascript": "[1, 2, 3].map((n) => {
   return <div data-uid={'bbb'} data-label={'Plane'} />;
 });",
             "originalJavascript": "[1, 2, 3].map(n => {
@@ -433,7 +433,7 @@ Object {
           })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,aAAI;AACR;AAAA;AAAA;AADZ,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,UAAC,CAAD,EAAK;AACR;AAAA;AAAA;AADZ,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -2469,7 +2469,7 @@ Object {
                 "uid": "aaa",
               },
             },
-            "javascript": "[1, 2, 3].map(n => {
+            "javascript": "[1, 2, 3].map((n) => {
   return <div data-uid=\\"aaa\\">{n}</div>;
 });",
             "originalJavascript": "[1, 2, 3].map((n) => {
@@ -2477,8 +2477,10 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACT;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
-              "names": Array [],
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACT;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+              "names": Array [
+                "n",
+              ],
               "sources": Array [
                 "code.tsx",
               ],
@@ -3593,7 +3595,7 @@ Object {
                         "uid": "bbb",
                       },
                     },
-                    "javascript": "[4, 5, 6].map(m => {
+                    "javascript": "[4, 5, 6].map((m) => {
   return <div data-uid=\\"bbb\\">{n * m}</div>;
 });",
                     "originalJavascript": "[4, 5, 6].map((m) => {
@@ -3601,8 +3603,10 @@ Object {
                })",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
-                      "names": Array [],
+                      "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+                      "names": Array [
+                        "m",
+                      ],
                       "sources": Array [
                         "code.tsx",
                       ],
@@ -3680,9 +3684,9 @@ Object {
                 "uid": "aaa",
               },
             },
-            "javascript": "[1, 2, 3].map(n => {
+            "javascript": "[1, 2, 3].map((n) => {
   return <div data-uid=\\"aaa\\">
-               {[4, 5, 6].map(m => {
+               {[4, 5, 6].map((m) => {
       return <div data-uid=\\"bbb\\">{n * m}</div>;
     })}
              </div>;
@@ -3696,8 +3700,10 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACT;AAAA;AAAA;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
-              "names": Array [],
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACT;AAAA;AAAA;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+              "names": Array [
+                "n",
+              ],
               "sources": Array [
                 "code.tsx",
               ],
@@ -3940,7 +3946,7 @@ Object {
                 "uid": "bbb",
               },
             },
-            "javascript": "[4, 5, 6].map(m => {
+            "javascript": "[4, 5, 6].map((m) => {
   return <div data-uid=\\"bbb\\">{n * m}</div>;
 });",
             "originalJavascript": "[4, 5, 6].map((m) => {
@@ -3948,8 +3954,10 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
-              "names": Array [],
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "names": Array [
+                "m",
+              ],
               "sources": Array [
                 "code.tsx",
               ],
@@ -4663,7 +4671,7 @@ Object {
                 "uid": "bbb",
               },
             },
-            "javascript": "[4, 5, 6].map(m => {
+            "javascript": "[4, 5, 6].map((m) => {
   return <div data-uid=\\"bbb\\">{n * m}</div>;
 });",
             "originalJavascript": "[4, 5, 6].map((m) => {
@@ -4671,8 +4679,10 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
-              "names": Array [],
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "names": Array [
+                "m",
+              ],
               "sources": Array [
                 "code.tsx",
               ],
@@ -5386,7 +5396,7 @@ Object {
                 "uid": "bbb",
               },
             },
-            "javascript": "[4, 5, 6].map(m => {
+            "javascript": "[4, 5, 6].map((m) => {
   return <div data-uid=\\"bbb\\">{n * m}</div>;
 });",
             "originalJavascript": "[4, 5, 6].map((m) => {
@@ -5394,8 +5404,10 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
-              "names": Array [],
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "names": Array [
+                "m",
+              ],
               "sources": Array [
                 "code.tsx",
               ],
@@ -10701,7 +10713,7 @@ Object {
                 "uid": "aaa",
               },
             },
-            "javascript": "[1, 2].map(data => {
+            "javascript": "[1, 2].map((data) => {
   return <Thing data-uid=\\"aaa\\" />;
 });",
             "originalJavascript": "[1, 2].map((data) => {
@@ -10709,8 +10721,10 @@ Object {
             })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAU,gBAAU;AACR;AAAA;AAAA;AADd,CAAE,CAAD",
-              "names": Array [],
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAWA,UAAD,IAACA,EAAS;AACR;AAAA;AAAA;AADd,CAAE,CAAD",
+              "names": Array [
+                "data",
+              ],
               "sources": Array [
                 "code.tsx",
               ],
@@ -39079,7 +39093,7 @@ Object {
                 "uid": "bbb",
               },
             },
-            "javascript": "[1, 2, 3].map(n => {
+            "javascript": "[1, 2, 3].map((n) => {
   return <div data-uid={'bbb'}>
                <div data-uid={'ccc'}>{n}</div>
              </div>;
@@ -39091,7 +39105,7 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAG,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,aAAI;AACR;AAAA;AAAA;AAAA;AADb,CAAG,CAAD",
+              "mappings": "OAAG,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,UAAC,CAAD,EAAK;AACR;AAAA;AAAA;AAAA;AADb,CAAG,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",

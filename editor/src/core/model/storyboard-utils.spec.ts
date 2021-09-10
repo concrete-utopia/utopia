@@ -3,14 +3,12 @@ import {
   getContentsTreeFileFromString,
   removeFromProjectContents,
 } from '../../components/assets'
-import { createTestProjectWithCode } from '../../components/canvas/canvas-utils'
 import {
   editorModelFromPersistentModel,
   EditorState,
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
 import { defaultProject } from '../../sample-projects/sample-project-utils'
-import { foldEither } from '../shared/either'
 import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
 import {
   foldParsedTextFile,

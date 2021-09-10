@@ -19,6 +19,7 @@ import {
   isIntrinsicHTMLElement,
   JSXArbitraryBlock,
   getJSXAttribute,
+  emptyComments,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -31,7 +32,6 @@ import {
   Imports,
 } from '../../../core/shared/project-file-types'
 import { fastForEach, NO_OP } from '../../../core/shared/utils'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -45,11 +45,11 @@ import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-p
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { appendToUidString, createIndexedUid } from '../../../core/shared/uid-utils'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -521,7 +521,7 @@ export function renderComponentUsingJsxFactoryFunction(
 }
 
 function fixStyleObjectRemoveCommentOnlyValues(props: Readonly<unknown>): any {
-  if (typeof props === 'object' && 'style' in props) {
+  if (typeof props === 'object' && 'style' in props && (props as any)['style'] != null) {
     const propsAsAny = props as any
     const style = propsAsAny.style
     const fixedStyle: any = objectMap((styleProp) => {

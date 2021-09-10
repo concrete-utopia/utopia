@@ -12,137 +12,22 @@ import {
 } from './parser-printer'
 import { fastForEach } from '../../shared/utils'
 import { emptySet } from '../../shared/set-utils'
-
-interface PrintCode {
-  type: 'printcode'
-  filename: string
-  parseSuccess: ParseSuccess
-  stripUIDs: boolean
-  lastRevisedTime: number
-}
-
-export function createPrintCode(
-  filename: string,
-  parseSuccess: ParseSuccess,
-  stripUIDs: boolean,
-  lastRevisedTime: number,
-): PrintCode {
-  return {
-    type: 'printcode',
-    filename: filename,
-    parseSuccess: parseSuccess,
-    stripUIDs: stripUIDs,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
-interface PrintCodeResult {
-  type: 'printcoderesult'
-  filename: string
-  printResult: string
-  highlightBounds: HighlightBoundsForUids
-  lastRevisedTime: number
-}
-
-function createPrintCodeResult(
-  filename: string,
-  printResult: string,
-  highlightBounds: HighlightBoundsForUids,
-  lastRevisedTime: number,
-): PrintCodeResult {
-  return {
-    type: 'printcoderesult',
-    filename: filename,
-    printResult: printResult,
-    highlightBounds: highlightBounds,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
-interface ParseFile {
-  type: 'parsefile'
-  filename: string
-  content: string
-  previousParsed: ParseSuccess | null
-  lastRevisedTime: number
-}
-
-export function createParseFile(
-  filename: string,
-  content: string,
-  previousParsed: ParseSuccess | null,
-  lastRevisedTime: number,
-): ParseFile {
-  return {
-    type: 'parsefile',
-    filename: filename,
-    content: content,
-    previousParsed: previousParsed,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
-export interface ParseFileResult {
-  type: 'parsefileresult'
-  filename: string
-  parseResult: ParsedTextFile
-  lastRevisedTime: number
-}
-
-function createParseFileResult(
-  filename: string,
-  parseResult: ParsedTextFile,
-  lastRevisedTime: number,
-): ParseFileResult {
-  return {
-    type: 'parsefileresult',
-    filename: filename,
-    parseResult: parseResult,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
-export interface ParsePrintFailedMessage {
-  type: 'parseprintfailed'
-}
-
-function createParsePrintFailedMessage(): ParsePrintFailedMessage {
-  return {
-    type: 'parseprintfailed',
-  }
-}
-
-export type ParseOrPrint = PrintCode | ParseFile
-
-export interface ParsePrintFilesRequest {
-  type: 'parseprintfiles'
-  files: Array<ParseOrPrint>
-}
-
-export function createParsePrintFilesRequest(files: Array<ParseOrPrint>): ParsePrintFilesRequest {
-  return {
-    type: 'parseprintfiles',
-    files: files,
-  }
-}
-
-export type ParseOrPrintResult = PrintCodeResult | ParseFileResult
-
-export interface ParsePrintFilesResult {
-  type: 'parseprintfilesresult'
-  files: Array<ParseOrPrintResult>
-}
-
-export function createParsePrintFilesResult(
-  files: Array<ParseOrPrintResult>,
-): ParsePrintFilesResult {
-  return {
-    type: 'parseprintfilesresult',
-    files: files,
-  }
-}
-
-export type ParsePrintResultMessage = ParsePrintFilesResult | ParsePrintFailedMessage
+import {
+  PrintCode,
+  PrintCodeResult,
+  ParseFile,
+  ParseFileResult,
+  ParseOrPrint,
+  ParseOrPrintResult,
+  ParsePrintFailedMessage,
+  ParsePrintFilesResult,
+  createParseFileResult,
+  createParsePrintFailedMessage,
+  createParsePrintFilesResult,
+  createPrintCodeResult,
+  ParsePrintFilesRequest,
+  ParsePrintResultMessage,
+} from '../common/worker-types'
 
 export function handleMessage(
   workerMessage: ParsePrintFilesRequest,

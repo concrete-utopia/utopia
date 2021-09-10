@@ -29,13 +29,13 @@ import {
   simplifyAttributesIfPossible,
   ElementsWithin,
   isJSXAttributeOtherJavaScript,
+  emptyComments,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
 import * as PP from './property-path'
 import { fastForEach } from './utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { defaultIfNull, optionalMap } from './optional-utils'
+import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
 
 export type AnyMap = { [key: string]: any }

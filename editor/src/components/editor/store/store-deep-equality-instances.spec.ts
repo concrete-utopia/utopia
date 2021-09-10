@@ -1,7 +1,10 @@
-import { jsxElement, utopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  emptyComments,
+  jsxElement,
+  utopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import * as EP from '../../../core/shared/element-path'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { addToComplexMap, emptyComplexMap } from '../../../utils/map'
 import {
   defaultElementWarnings,

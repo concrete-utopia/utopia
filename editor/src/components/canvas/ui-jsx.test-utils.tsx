@@ -67,7 +67,6 @@ import {
   persistentModelForProjectContents,
   StoryboardFilePath,
 } from '../editor/store/editor-state'
-import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { elementPath } from '../../core/shared/element-path'
 import { NO_OP } from '../../core/shared/utils'
@@ -81,10 +80,18 @@ import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
+import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack ?? reason)
-})
+// eslint-disable-next-line no-unused-expressions
+typeof process !== 'undefined' &&
+  process.on('unhandledRejection', (reason, promise) => {
+    console.warn(
+      'Unhandled promise rejection:',
+      promise,
+      'reason:',
+      (reason as any)?.stack ?? reason,
+    )
+  })
 
 try {
   jest.mock('../../core/vscode/vscode-bridge')

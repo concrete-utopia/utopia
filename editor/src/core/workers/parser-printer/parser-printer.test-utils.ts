@@ -58,6 +58,9 @@ import {
   jsxAttributesFromMap,
   ImportStatement,
   importStatement,
+  emptyComments,
+  ParsedComments,
+  parsedComments,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -87,7 +90,6 @@ import { fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
 import { getUtopiaID } from '../../model/element-template-utils'
-import { emptyComments, parsedComments, ParsedComments } from './parser-printer-comments'
 import { emptySet } from '../../shared/set-utils'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(

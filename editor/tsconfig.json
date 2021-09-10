@@ -2,7 +2,8 @@
   "compilerOptions": {
     "outDir": "./lib",
     "target": "es2019",
-    "module": "commonjs",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,

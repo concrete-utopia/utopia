@@ -7,8 +7,8 @@ import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'
 import * as EmotionStyled from '@emotion/styled'
 
-import * as editorPackageJSON from '../../../../package.json'
-import * as utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
+import editorPackageJSON from '../../../../package.json'
+import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 
 applyUIDMonkeyPatch()

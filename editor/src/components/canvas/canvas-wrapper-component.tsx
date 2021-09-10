@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { filterOldPasses } from '../../core/workers/ts/ts-worker'
 import { EditorCanvas } from '../../templates/editor-canvas'
 import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-error-overlay'
 import { setFocus } from '../common/actions'
@@ -15,7 +14,7 @@ import {
 import { useEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
-import { NO_OP } from '../../core/shared/utils'
+import { fastForEach, NO_OP } from '../../core/shared/utils'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
 import { FlexColumn, Button, UtopiaTheme, FlexRow } from '../../uuiui'
@@ -23,10 +22,33 @@ import { betterReactMemo } from '../../uuiui-deps'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { ModeSelectButtons } from './mode-select-buttons'
-import { FloatingInsertMenu } from './ui/floating-insert-menu'
-import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import { ErrorMessage } from '../../core/shared/error-messages'
 
 interface CanvasWrapperComponentProps {}
+
+export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
+  let passTimes: { [key: string]: number } = {}
+  fastForEach(errorMessages, (errorMessage) => {
+    if (errorMessage.passTime != null) {
+      if (errorMessage.source in passTimes) {
+        const existingPassCount = passTimes[errorMessage.source]
+        if (errorMessage.passTime > existingPassCount) {
+          passTimes[errorMessage.source] = errorMessage.passTime
+        }
+      } else {
+        passTimes[errorMessage.source] = errorMessage.passTime
+      }
+    }
+  })
+  return errorMessages.filter((errorMessage) => {
+    if (errorMessage.passTime == null) {
+      return true
+    } else {
+      return passTimes[errorMessage.source] === errorMessage.passTime
+    }
+  })
+}
 
 export const CanvasWrapperComponent = betterReactMemo(
   'CanvasWrapperComponent',

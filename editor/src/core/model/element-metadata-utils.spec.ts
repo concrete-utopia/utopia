@@ -22,11 +22,11 @@ import {
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
+  emptyComments,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { ElementPath } from '../shared/project-file-types'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const TestScenePath = 'scene-aaa'
 

@@ -86,7 +86,7 @@ const rules = [
 module.exports = {
   reporters: [
     ['jest-clean-console-reporter', { rules: rules }],
-    '@jest/reporters/build/summary_reporter', // when upgrading to jest 26.6.2 or newer, replace this with "@jest/reporters/build/SummaryReporter"
+    '@jest/reporters/build/SummaryReporter',
   ],
   projects: [
     '../utopia-api',
@@ -109,6 +109,7 @@ module.exports = {
       },
       roots: ['src', 'node_modules', '<rootDir>/node_modules'],
       transformIgnorePatterns: ['/node_modules/(?!utopia-api)'], // this lets ts-jest work on `/node_modules/utopia-api` which is a simlink to `../utopia-api`.
+      setupFiles: ['./jest-setup-beforeall.js'],
     },
     {
       testEnvironment: '@jest-runner/electron/environment',
@@ -129,6 +130,7 @@ module.exports = {
         },
       },
       roots: ['src', 'node_modules', '<rootDir>/node_modules'],
+      setupFiles: ['./jest-setup-beforeall.js'],
     },
   ],
 }

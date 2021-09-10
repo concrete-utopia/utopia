@@ -34,6 +34,7 @@ import {
   isJSXElement,
   JSXElementChild,
   ElementInstanceMetadata,
+  emptyComments,
 } from '../shared/element-template'
 import { findJSXElementAtStaticPath } from '../model/element-template-utils'
 import {
@@ -53,7 +54,6 @@ import {
   StyleLayoutProp,
 } from './layout-helpers-new'
 import { CSSPosition } from '../../components/inspector/common/css-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import type { Notice } from '../../components/common/notice'
 import { createStylePostActionToast } from './layout-notice'
 

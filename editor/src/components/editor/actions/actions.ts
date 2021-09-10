@@ -67,6 +67,7 @@ import {
   isImportStatement,
   isIntrinsicHTMLElement,
   JSXElementChildren,
+  emptyComments,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -89,7 +90,6 @@ import {
   setJSXValuesAtPaths,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import {
   canUpdateFile,
   directory,
@@ -165,9 +165,8 @@ import {
   emptyImports,
   mergeImports,
 } from '../../../core/workers/common/project-file-utils'
-import { OutgoingWorkerMessage, isJsFile, BuildType } from '../../../core/workers/ts/ts-worker'
-import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import { defaultProject, sampleProjectForId } from '../../../sample-projects/sample-project-utils'
+import { OutgoingWorkerMessage, UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import { defaultProject } from '../../../sample-projects/sample-project-utils'
 import { KeysPressed, Key } from '../../../utils/keyboard'
 import Utils, { IndexPosition } from '../../../utils/utils'
 import {
@@ -481,7 +480,6 @@ import {
   setPropertyControlsIFrameReady,
 } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
@@ -509,7 +507,6 @@ import {
   setScrollAnimation,
   updatePackageJson,
 } from './action-creators'
-import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
   initVSCodeBridge,
@@ -1542,29 +1539,16 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
-    const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
-        const parseResult = lintAndParse(
-          filename,
-          file.fileContents.code,
-          null,
-          alreadyExistingUIDs_MUTABLE,
-        )
         const lastSavedFileContents = optionalMap((lastSaved) => {
-          const lastSavedParseResult = lintAndParse(
-            filename,
-            lastSaved.code,
-            null,
-            alreadyExistingUIDs_MUTABLE,
-          )
-          return textFileContents(lastSaved.code, lastSavedParseResult, RevisionsState.BothMatch)
+          return textFileContents(lastSaved.code, unparsed, RevisionsState.CodeAhead)
         }, file.lastSavedContents)
         return textFile(
-          textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
+          textFileContents(file.fileContents.code, unparsed, RevisionsState.CodeAhead),
           lastSavedFileContents,
-          isParseSuccess(parseResult) ? parseResult : null,
+          null,
           Date.now(),
         )
       },
@@ -5131,21 +5115,6 @@ export async function newProject(
     ],
     'everyone',
   )
-}
-
-export async function loadSampleProject(
-  projectID: string,
-  dispatch: EditorDispatch,
-  workers: UtopiaTsWorkers,
-  renderEditorRoot: () => void,
-): Promise<void> {
-  const sampleProject = sampleProjectForId(projectID)
-  if (sampleProject == null) {
-    return newProject(dispatch, renderEditorRoot)
-  } else {
-    const { name, model } = sampleProject
-    return load(dispatch, model, name, projectID, workers, renderEditorRoot)
-  }
 }
 
 export async function load(

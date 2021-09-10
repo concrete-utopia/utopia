@@ -28,7 +28,7 @@ describe('copy to clipboard', () => {
         textFileContents(
           JSON.stringify(DefaultPackageJson, null, 2),
           unparsed,
-          RevisionsState.BothMatch,
+          RevisionsState.CodeAhead,
         ),
         null,
         null,

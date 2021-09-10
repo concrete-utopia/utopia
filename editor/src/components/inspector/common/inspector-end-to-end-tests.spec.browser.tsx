@@ -1789,7 +1789,7 @@ describe('inspector tests with real metadata', () => {
         textFileContents(
           JSON.stringify(DefaultPackageJson, null, 2),
           unparsed,
-          RevisionsState.BothMatch,
+          RevisionsState.CodeAhead,
         ),
         null,
         null,

@@ -4,9 +4,9 @@ import {
   jsxAttributeNestedObject,
   jsxPropertyAssignment,
   jsxAttributesFromMap,
+  emptyComments,
 } from '../shared/element-template'
 import { roundAttributeLayoutValues } from './layout-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 describe('roundAttributeLayoutValues', () => {
   it('rounds values within a complex attribute value', () => {

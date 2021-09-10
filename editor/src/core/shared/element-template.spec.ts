@@ -1,6 +1,6 @@
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import {
   deleteJSXAttribute,
+  emptyComments,
   jsxAttributesEntry,
   jsxAttributesSpread,
   jsxAttributeValue,

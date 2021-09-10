@@ -1,9 +1,8 @@
 import type { TypeDefinitions } from '../shared/npm-dependency-types'
-import type { MultiFileBuildResult, OutgoingWorkerMessage } from './ts/ts-worker'
-import type { ProjectContents } from '../shared/project-file-types'
 import { NewBundlerWorker } from './bundler-bridge'
 import utils from '../../utils/utils'
 import { ProjectContentTreeRoot } from '../../components/assets'
+import { MultiFileBuildResult, OutgoingWorkerMessage } from './common/worker-types'
 
 export function createBundle(
   worker: NewBundlerWorker,

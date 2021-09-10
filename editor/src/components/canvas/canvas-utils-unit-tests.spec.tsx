@@ -8,13 +8,13 @@ import {
 import { singleResizeChange, EdgePosition, pinMoveChange } from './canvas-types'
 import { CanvasVector, canvasRectangle } from '../../core/shared/math-utils'
 import { updateFramesOfScenesAndComponents } from './canvas-utils'
-import { complexDefaultProject } from '../../sample-projects/sample-project-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { editorModelFromPersistentModel } from '../editor/store/editor-state'
+import { complexDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
 
 describe('updateFramesOfScenesAndComponents - multi-file', () => {
   it('a simple TLWH pin change works', async () => {
-    const testProject = editorModelFromPersistentModel(complexDefaultProject(), NO_OP)
+    const testProject = editorModelFromPersistentModel(complexDefaultProjectPreParsed(), NO_OP)
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
@@ -68,7 +68,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
   })
 
   it('an element move works', async () => {
-    const testProject = editorModelFromPersistentModel(complexDefaultProject(), NO_OP)
+    const testProject = editorModelFromPersistentModel(complexDefaultProjectPreParsed(), NO_OP)
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],

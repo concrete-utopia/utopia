@@ -1,6 +1,10 @@
 import { getDefaultProps, PropertyControls } from 'utopia-api'
-import { JSXAttributes, jsxAttributesEntry, jsxAttributeValue } from '../shared/element-template'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import {
+  emptyComments,
+  JSXAttributes,
+  jsxAttributesEntry,
+  jsxAttributeValue,
+} from '../shared/element-template'
 
 export function getDefaultPropsAsAttributes(
   propertyControls: PropertyControls | null | undefined,

@@ -16,6 +16,7 @@ import {
   comparePrimitive,
 } from '../../utils/compare'
 import {
+  emptyComments,
   isUtopiaJSXComponent,
   JSXElement,
   unparsedCode,
@@ -35,14 +36,13 @@ import {
   isParseSuccess,
   isTextFile,
   mergeExportsDetail,
+  parseSuccess,
   ParseSuccess,
   RevisionsState,
   textFile,
   textFileContents,
 } from '../shared/project-file-types'
-import { fastForEach } from '../shared/utils'
-import { addImport, parseSuccess } from '../workers/common/project-file-utils'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { addImport } from '../workers/common/project-file-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,

@@ -1,5 +1,6 @@
 import * as TS from 'typescript'
 import { ErrorMessage } from '../../shared/error-messages'
+import { fastForEach } from '../../shared/utils'
 
 export function diagnosticToErrorMessage(diagnostic: TS.Diagnostic): ErrorMessage {
   let message = TS.flattenDiagnosticMessageText(diagnostic.messageText, '\n')

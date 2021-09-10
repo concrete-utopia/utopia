@@ -1,4 +1,5 @@
 import {
+  emptyComments,
   isJSXElement,
   isUtopiaJSXComponent,
   JSXAttributes,
@@ -17,7 +18,6 @@ import {
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
-import { emptyComments } from './parser-printer-comments'
 
 export function stripUnhelpfulFields(value: any): any {
   switch (typeof value) {

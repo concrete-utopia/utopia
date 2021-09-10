@@ -150,3 +150,19 @@ export function getFileExtension(filename: string): string {
     return '' // TODO How do we handle files with no extension?
   }
 }
+
+export function isTsFile(filename: string): boolean {
+  return filename.endsWith('.ts') || filename.endsWith('.tsx')
+}
+
+export function isJsFile(filename: string): boolean {
+  return filename.endsWith('.js') || filename.endsWith('.jsx')
+}
+
+export function isCssFile(filename: string): boolean {
+  return filename.endsWith('.css')
+}
+
+export function isJsOrTsFile(filename: string): boolean {
+  return isJsFile(filename) || isTsFile(filename)
+}
