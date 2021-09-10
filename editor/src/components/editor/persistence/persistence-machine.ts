@@ -23,7 +23,7 @@ import localforage from 'localforage'
 import {
   fetchLocalProject as loadLocalProject,
   localProjectKey,
-  deleteProject as deleteLocalProject,
+  deleteLocalProject,
 } from '../../../common/persistence'
 import { arrayContains, NO_OP, projectURLForProject } from '../../../core/shared/utils'
 import { checkProjectOwnership } from '../../../common/server'
@@ -649,7 +649,7 @@ function createNewProjectModel(): Promise<ProjectModel> {
   })
 }
 
-const persistenceMachine = createMachine<
+export const persistenceMachine = createMachine<
   Model<PersistenceContext, PersistenceEvent>,
   PersistenceContext,
   PersistenceEvent
@@ -973,17 +973,6 @@ const persistenceMachine = createMachine<
                     }
                   }),
                 },
-                LOAD_FAILED: {
-                  target: Empty,
-                  actions: assign((_context, _event) => {
-                    return {
-                      projectId: undefined,
-                      project: undefined,
-                      queuedSave: undefined,
-                      projectOwned: false,
-                    }
-                  }),
-                },
               },
             },
             [CheckingOwnership]: {
@@ -1002,6 +991,17 @@ const persistenceMachine = createMachine<
           onDone: Ready,
           on: {
             BACKEND_ERROR: Ready,
+            LOAD_FAILED: {
+              target: Empty,
+              actions: assign((_context, _event) => {
+                return {
+                  projectId: undefined,
+                  project: undefined,
+                  queuedSave: undefined,
+                  projectOwned: false,
+                }
+              }),
+            },
           },
         },
         [Saving]: {
@@ -1101,7 +1101,7 @@ function clearThrottledSave(): void {
 }
 
 function sendThrottledSave(): void {
-  if (waitingThrottledSaveEvent) {
+  if (waitingThrottledSaveEvent != null) {
     interpreter?.send(waitingThrottledSaveEvent)
   }
   clearThrottledSave()
@@ -1127,59 +1127,63 @@ export function initialisePersistence(
 
   interpreter.onTransition((state, event) => {
     if (state.changed) {
-      if (state.matches(Ready)) {
-        const actionsToDispatch = queuedActions
-        const projectIdChanged = actionsToDispatch.some(
-          (action) => action.action === 'SET_PROJECT_ID',
-        )
-        if (projectIdChanged) {
-          pushProjectURLToBrowserHistory(state.context.projectId!, state.context.project!.name)
-        }
-        queuedActions = []
-        dispatch(actionsToDispatch)
-      } else if (state.matches(`${Forking}.${DownloadingAssets}`)) {
-        queuedActions.push(setForkedFromProjectID(state.context.projectId!))
-        queuedActions.push(setProjectName(`${state.context.project!.name} (forked)`))
-        queuedActions.push(showToast(notice('Project successfully forked!')))
-      } else {
-        switch (event.type) {
-          case 'NEW_PROJECT_CREATED':
-            onCreatedOrLoadedProject(
-              event.projectId,
-              event.projectModel.name,
-              event.projectModel.content,
-            )
-            break
-          case 'LOAD_COMPLETE':
-            onCreatedOrLoadedProject(
-              event.projectId,
-              event.projectModel.name,
-              event.projectModel.content,
-            )
-            break
-          case 'PROJECT_ID_CREATED':
-            queuedActions.push(setProjectID(event.projectId))
-            break
-          case 'LOAD_FAILED':
-            onProjectNotFound()
-            break
-          case 'DOWNLOAD_ASSETS_COMPLETE': {
-            const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
-              ({ fileName, file }) => updateFile(fileName, file, true),
-            )
-            queuedActions.push(...updateFileActions)
-            break
+      switch (event.type) {
+        case 'NEW_PROJECT_CREATED':
+          onCreatedOrLoadedProject(
+            event.projectId,
+            event.projectModel.name,
+            event.projectModel.content,
+          )
+          break
+        case 'LOAD_COMPLETE':
+          onCreatedOrLoadedProject(
+            event.projectId,
+            event.projectModel.name,
+            event.projectModel.content,
+          )
+          break
+        case 'PROJECT_ID_CREATED':
+          queuedActions.push(setProjectID(event.projectId))
+          break
+        case 'LOAD_FAILED':
+          onProjectNotFound()
+          break
+        case 'DOWNLOAD_ASSETS_COMPLETE': {
+          if (state.matches({ core: { [Forking]: CreatingProjectId } })) {
+            queuedActions.push(setForkedFromProjectID(state.context.projectId!))
+            queuedActions.push(setProjectName(`${state.context.project!.name} (forked)`))
+            queuedActions.push(showToast(notice('Project successfully forked!')))
           }
-          case 'SAVE_COMPLETE':
-            const updateFileActions = event.saveResult.filesWithFileNames.map(
-              ({ fileName, file }) => updateFile(fileName, file, true),
-            )
-            queuedActions.push(...updateFileActions)
-            lastSavedTS = Date.now()
-            // TODO Show toasts after:
-            // [ ] first local save
-            // [ ] first server save
-            break
+
+          const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
+            ({ fileName, file }) => updateFile(fileName, file, true),
+          )
+          queuedActions.push(...updateFileActions)
+          break
+        }
+        case 'SAVE_COMPLETE':
+          const updateFileActions = event.saveResult.filesWithFileNames.map(({ fileName, file }) =>
+            updateFile(fileName, file, true),
+          )
+          queuedActions.push(...updateFileActions)
+          lastSavedTS = Date.now()
+          // TODO Show toasts after:
+          // [ ] first local save
+          // [ ] first server save
+          break
+      }
+
+      if (state.matches({ core: Ready })) {
+        if (queuedActions.length > 0) {
+          const actionsToDispatch = queuedActions
+          const projectIdOrNameChanged = actionsToDispatch.some(
+            (action) => action.action === 'SET_PROJECT_ID' || action.action === 'SET_PROJECT_NAME',
+          )
+          if (projectIdOrNameChanged) {
+            pushProjectURLToBrowserHistory(state.context.projectId!, state.context.project!.name)
+          }
+          queuedActions = []
+          dispatch(actionsToDispatch)
         }
       }
     }
@@ -1189,7 +1193,7 @@ export function initialisePersistence(
 }
 
 function getRemainingSaveDelay(): number {
-  return Math.min(0, Date.now() - SaveThrottle - lastSavedTS)
+  return Math.max(0, lastSavedTS + SaveThrottle - Date.now())
 }
 
 function shouldThrottle(forced: boolean): boolean {
@@ -1218,9 +1222,11 @@ export function save(projectName: string, project: PersistentModel, forced: bool
 }
 
 window.addEventListener('beforeunload', (e) => {
-  sendThrottledSave()
-  e.preventDefault()
-  e.returnValue = ''
+  if (waitingThrottledSaveEvent != null) {
+    sendThrottledSave()
+    e.preventDefault()
+    e.returnValue = ''
+  }
 })
 
 export function load(projectId: string): void {
@@ -1249,7 +1255,6 @@ export function setSaveThrottle(delay: number): void {
 }
 
 // createNewProjectFromImportedProject
-// loading and creating new are still a shit show
 // Error handling for:
 // [ ] Failed Save
 // [ ] Failed Fork

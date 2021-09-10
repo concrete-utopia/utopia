@@ -37,13 +37,6 @@ import {
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
-import {
-  saveToLocalStorage,
-  saveToServer,
-  pushProjectURLToBrowserHistory,
-  SaveType,
-  save,
-} from '../persistence'
 import { saveStoredState } from '../stored-state'
 import {
   DerivedState,
@@ -102,6 +95,11 @@ import {
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
+import {
+  save,
+  login as stateMachineLogin,
+  logout as stateMachineLogout,
+} from '../persistence/persistence-machine'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -337,7 +335,11 @@ export function editorDispatch(
     (action) => action.action === 'SET_PROJECT_NAME' || action.action === 'SET_PROJECT_ID',
   )
   const forceSave =
-    nameUpdated || dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
+    nameUpdated ||
+    dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE') ||
+    dispatchedActions.some(
+      (action) => action.action === 'UPDATE_FROM_CODE_EDITOR' && action.unsavedContent == null,
+    )
   const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
   const allTransient = dispatchedActions.every(isTransientAction)
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
@@ -413,15 +415,6 @@ export function editorDispatch(
     newHistory = History.add(result.history, frozenEditorState, frozenDerivedState)
   }
 
-  let saveType: SaveType = 'model'
-  if (nameUpdated) {
-    if (onlyNameUpdated) {
-      saveType = 'name'
-    } else {
-      saveType = 'both'
-    }
-  }
-
   const alreadySaved = result.alreadySaved
 
   const isLoaded = frozenEditorState.isLoaded
@@ -455,8 +448,20 @@ export function editorDispatch(
     reduxDevtoolsSendActions(actionGroupsToProcess, finalStore)
   }
 
+  if (storedState.userState.loginState.type !== result.userState.loginState.type) {
+    if (isLoggedIn(result.userState.loginState)) {
+      stateMachineLogin()
+    } else {
+      stateMachineLogout()
+    }
+  }
+
   if (shouldSave) {
-    save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
+    save(
+      frozenEditorState.projectName,
+      persistentModelFromEditorModel(frozenEditorState),
+      forceSave,
+    )
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
@@ -483,14 +488,6 @@ export function editorDispatch(
       console.error('Error sending updates to VS Code', error)
     })
   })
-
-  if ((isLoadAction || nameUpdated) && frozenEditorState.id != null) {
-    pushProjectURLToBrowserHistory(
-      `Utopia ${frozenEditorState.projectName}`,
-      frozenEditorState.id,
-      frozenEditorState.projectName,
-    )
-  }
 
   const shouldUpdatePreview =
     anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents

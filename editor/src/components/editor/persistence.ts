@@ -191,14 +191,6 @@ export function clearSaveState(): void {
   _saveState = neverSaved()
 }
 
-window.addEventListener('beforeunload', (e) => {
-  if (!isSafeToClose()) {
-    forceQueuedSave()
-    e.preventDefault()
-    e.returnValue = ''
-  }
-})
-
 export interface LocalProject {
   model: PersistentModel
   createdAt: string
