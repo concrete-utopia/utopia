@@ -121,6 +121,7 @@ data ServiceCallsF a = NotFound
                      | GetPackagePackagerContent Text ((ConduitT () ByteString (ResourceT IO) (), UTCTime) -> a)
                      | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      | GetSiteRoot (Text -> a)
+                     | GetCDNRoot (Text -> a)
                      | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
                      | GetVSCodeAssetRoot (FilePath -> a)
                      | GetUserConfiguration Text (Maybe DecodedUserConfiguration -> a)

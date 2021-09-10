@@ -1,14 +1,23 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE TypeApplications  #-}
+
 
 module Utopia.Web.Packager.NPM where
 
 import           Conduit
+import           Control.Lens              hiding ((.=))
 import           Control.Monad.Catch
 import           Data.Aeson
+import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy      as BL
-import           Data.Conduit.Combinators
+import           Data.Conduit.Combinators  hiding (encodeUtf8)
+import           Data.Generics.Product
+import           Data.Generics.Sum
+import qualified Data.HashMap.Strict       as Map
 import           Data.IORef
 import           Data.List                 (isSuffixOf, stripPrefix)
 import           Data.Time.Clock
@@ -20,8 +29,8 @@ import           System.FilePath
 import           System.IO.Error
 import           System.IO.Temp
 import           System.Process
-
-import qualified Data.HashMap.Strict       as Map
+import           Utopia.Web.ClientModel
+import qualified Utopia.Web.Database.Types as DB
 
 type MatchingVersionsCache = IORef (Map.HashMap (Text, (Maybe Text)) (Maybe Value, UTCTime))
 
@@ -126,3 +135,37 @@ getFileContent rootPath path = do
 getModuleAndDependenciesFiles :: MonadResource m => FilePath -> ConduitT () (FilePath, Value) m ()
 getModuleAndDependenciesFiles projectPath = do
   sourceDirectoryDeep True projectPath .| mapM (getFileContent projectPath)
+
+data ProjectDependency = ProjectDependency
+                       { dependencyName    :: Text
+                       , dependencyVersion :: Text
+                       }
+                       deriving (Eq, Show, Generic)
+
+data MinimalPackageJSON = MinimalPackageJSON
+                        { dependencies :: Maybe (Map.HashMap Text Text)
+                        , devDependencies :: Maybe (Map.HashMap Text Text)
+                        }
+                        deriving (Eq, Show, Generic)
+
+instance FromJSON MinimalPackageJSON where
+  parseJSON = genericParseJSON defaultOptions
+
+projectFileToCodeLens :: Getting (Leftmost Text) ProjectFile Text
+projectFileToCodeLens = _Ctor @"ProjectTextFile" . field @"fileContents" . field @"code"
+
+-- Ensure this is kept up to date with:
+-- editor/src/core/es-modules/package-manager/built-in-dependencies-list.ts
+providedDependencies :: [Text]
+providedDependencies = ["utopia-api", "uuiui", "uuiui-deps", "react/jsx-runtime", "react", "react-dom", "@emotion/react", "@emotion/core", "@emotion/styled"]
+
+getProjectDependenciesFromPackageJSON :: DB.DecodedProject -> [ProjectDependency]
+getProjectDependenciesFromPackageJSON decodedProject = either (const []) identity $ do
+  contentsTreeRoot <- first toS $ projectContentsTreeFromDecodedProject decodedProject
+  packageJsonFile <- maybe (Left "No package.json found.") pure $ getProjectContentsTreeFile contentsTreeRoot ["package.json"]
+  packageJsonCode <- maybe (Left "package.json not a text file.") pure $ firstOf projectFileToCodeLens packageJsonFile
+  MinimalPackageJSON{..} <- eitherDecode' $ BL.fromStrict $ encodeUtf8 packageJsonCode
+  let fullDependencies = fromMaybe mempty (dependencies <> devDependencies)
+  pure $ Map.foldMapWithKey (\key -> \value -> [ProjectDependency key value]) fullDependencies
+
+

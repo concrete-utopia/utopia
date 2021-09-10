@@ -273,6 +273,10 @@ innerServerExecutor (GetSiteRoot action) = do
   portOfServer <- fmap _serverPort ask
   let siteRoot = "http://localhost:" <> show portOfServer
   return $ action siteRoot
+innerServerExecutor (GetCDNRoot action) = do
+  portOfServer <- fmap _serverPort ask
+  let siteRoot = "http://localhost:" <> show portOfServer
+  return $ action siteRoot
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
   pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
