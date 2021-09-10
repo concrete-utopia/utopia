@@ -1,20 +1,4 @@
-export const utopiaApiTypings = `declare module 'utopia-api/draft-utils' {
-  import { ContentBlock, ContentState, Editor as DraftEditor, RawDraftContentState } from 'draft-js';
-  export function createContentState(text: string | RawDraftContentState | undefined): ContentState;
-  export function getNewSizeFromContent(content: ContentState, scale: number, draftEditor: DraftEditor): {
-      width: number | null;
-      height: number | null;
-  };
-  export function getDraftJSWidth(content: ContentState, scale: number, draftEditor: DraftEditor): number | null;
-  export function getDraftJSHeight(content: ContentState, scale: number, draftEditor: DraftEditor): number | null;
-  export function getDomNodeOfDraftJSBlock(block: ContentBlock, nodeType: 'span' | 'div', draftEditor: DraftEditor): any;
-  export function createDraftStyles(): {
-      styles: any;
-      customStyleFn: any;
-  };
-
-}
-declare module 'utopia-api/helpers/helper-functions' {
+export const utopiaApiTypings = `declare module 'utopia-api/helpers/helper-functions' {
   export type RawSingleBorderWidth = number | string;
   export type RawSplitBorderWidth = [
       RawSingleBorderWidth,
@@ -346,21 +330,8 @@ declare module 'utopia-api/primitives/storyboard' {
 }
 declare module 'utopia-api/primitives/text' {
   import React from 'react';
-  import { EditorState as DraftEditorState, RawDraftContentState } from 'draft-js';
-  import { UtopiaComponentProps } from 'utopia-api/primitives/common';
-  export type TextSizing = 'auto' | 'fixed';
-  export interface TextProps extends React.DOMAttributes<Text>, UtopiaComponentProps {
-      text: string | RawDraftContentState;
-      css?: any;
-      actionHandlers?: any;
-      textSizing?: TextSizing;
-      scale?: number;
-      componentSizeResult?: ((width: number | null, height: number | null) => void) | null;
-  }
-  export interface TextState {
-      editorState: DraftEditorState;
-  }
-  export const Text: React.FunctionComponent<TextProps>;
+  import { ViewProps } from 'utopia-api/index';
+  export const Text: React.FunctionComponent<ViewProps>;
 
 }
 declare module 'utopia-api/primitives/view' {

@@ -39,9 +39,7 @@
   "homepage": "https://utopia.app",
   "peerDependencies": {
     "react-dom": "17.0.0-rc.1",
-    "react": "17.0.0-rc.1",
-    "draft-js": "git://github.com/concrete-utopia/draft-js.git#6b21131",
-    "draft-js-custom-styles": "2.0.1"
+    "react": "17.0.0-rc.1"
   },
   "dependencies": {
     "@emotion/react": "11.1.2",
