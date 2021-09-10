@@ -95,7 +95,7 @@ dummyUser :: UserDetails
 dummyUser = UserDetails { userDetailsUserId  = "1"
                         , userDetailsEmail   = Just "team@utopia.app"
                         , userDetailsName    = Just "Utopian Worker #296"
-                        , userDetailsPicture = Just "https://utopia.app/editor/utopia-icon.png"
+                        , userDetailsPicture = Just "https://utopia.app/editor/avatars/utopino3.png"
                         }
 
 {-|
