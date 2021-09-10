@@ -597,7 +597,7 @@ export var whatever = (props) => {
       [
         jsxArbitraryBlock(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
-          `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
+          `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
     n: n,
@@ -793,7 +793,7 @@ export var whatever = (props) => {
       [
         jsxArbitraryBlock(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
-          `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
+          `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
     n: n,
@@ -1092,9 +1092,9 @@ export var storyboard = (
             "219",
             "971",
           ],
-          "js": "function _createSuper(Derived) { return function () { var Super = babelHelpers.getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
+          "js": "function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = babelHelpers.getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
 
-        function _isNativeReflectConstruct() { if (typeof Reflect === \\"undefined\\" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === \\"function\\") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+        function _isNativeReflectConstruct() { if (typeof Reflect === \\"undefined\\" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === \\"function\\") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
         function getPicker() {
           var Picker = function (_React$Component) {
@@ -1143,9 +1143,9 @@ export var storyboard = (
             "833",
             "65e",
           ],
-          "js": "function _createSuper(Derived) { return function () { var Super = babelHelpers.getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
+          "js": "function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = babelHelpers.getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
 
-        function _isNativeReflectConstruct() { if (typeof Reflect === \\"undefined\\" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === \\"function\\") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+        function _isNativeReflectConstruct() { if (typeof Reflect === \\"undefined\\" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === \\"function\\") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
         var RenderPropsFunctionChild = function (_React$Component) {
           \\"use strict\\";

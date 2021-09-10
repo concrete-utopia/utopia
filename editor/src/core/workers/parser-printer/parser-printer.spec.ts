@@ -3548,7 +3548,7 @@ export var App = props => {
         [
           jsxArbitraryBlock(
             `[1,2,3].map(x=> <View data-uid='abc' />)`,
-            `[1, 2, 3].map(x => <View data-uid='abc' />);`,
+            `[1, 2, 3].map((x) => <View data-uid='abc' />);`,
             `return [1, 2, 3].map(function (x) {
   return utopiaCanvasJSXLookup("abc", {
     callerThis: this
@@ -4295,7 +4295,7 @@ export var whatever = props => {
     const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
       return <div style={{left: n * 30, top: n * 30}} data-uid='bbb' />
     })`
-    const arbitraryBlockCode = `[1, 2, 3].map(n => {
+    const arbitraryBlockCode = `[1, 2, 3].map((n) => {
   return <div style={{ left: n * 30, top: n * 30 }} data-uid='bbb' />;
 });`
     const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
@@ -4395,7 +4395,7 @@ export var whatever = props => {
     const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
       return <div style={{left: n * a, top: n * a}} data-uid='bbb' />
     })`
-    const arbitraryBlockCode = `[1, 2, 3].map(n => {
+    const arbitraryBlockCode = `[1, 2, 3].map((n) => {
   return <div style={{ left: n * a, top: n * a }} data-uid='bbb' />;
 });`
     const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
