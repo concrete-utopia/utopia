@@ -1,8 +1,6 @@
 import React from 'react'
-import { addEventHandlersToDivProps, ViewProps } from '..'
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-const NoOp = () => {}
+import { addEventHandlersToDivProps } from './common'
+import { ViewProps } from './view'
 
 export const Text: React.FunctionComponent<ViewProps> = (props: ViewProps) => {
   let { 'data-uid': dataUid, 'data-label': dataLabel, ...divProps } = props

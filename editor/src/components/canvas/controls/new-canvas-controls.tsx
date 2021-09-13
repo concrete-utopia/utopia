@@ -20,7 +20,6 @@ import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
-import { TextEditor } from '../../editor/text-editor'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
   ElementInstanceMetadataMap,

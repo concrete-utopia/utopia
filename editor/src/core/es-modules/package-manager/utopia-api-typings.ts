@@ -330,7 +330,7 @@ declare module 'utopia-api/primitives/storyboard' {
 }
 declare module 'utopia-api/primitives/text' {
   import React from 'react';
-  import { ViewProps } from 'utopia-api/index';
+  import { ViewProps } from 'utopia-api/primitives/view';
   export const Text: React.FunctionComponent<ViewProps>;
 
 }

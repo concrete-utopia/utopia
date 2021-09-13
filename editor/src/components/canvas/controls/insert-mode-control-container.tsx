@@ -325,60 +325,6 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  setTextElementFixedSize = (element: JSXElement): JSXElement => {
-    const attributes = element.props
-    const updatedAttributes = forceSetValueAtPath(
-      attributes,
-      PP.create(['textSizing']),
-      jsxAttributeValue('fixed', emptyComments),
-    )
-
-    return {
-      ...element,
-      props: updatedAttributes,
-    }
-  }
-
-  getTextElementAutoSizeWithPosition(
-    insertionSubject: JSXElement,
-    mousePosition: CanvasPoint,
-  ): JSXElement {
-    const attributes = insertionSubject.props
-    const globalFrameAsRectangle = {
-      x: mousePosition.x,
-      y: mousePosition.y,
-      width: NaN,
-      height: 16,
-    } as CanvasRectangle
-    const frame = this.getInsertedElementFrameProps(
-      this.props.highlightedViews[0],
-      globalFrameAsRectangle,
-    )
-
-    const parentAttributes = this.getParentAttributes(this.props.highlightedViews[0])
-    const updatedAttributes = LayoutHelpers.updateLayoutPropsWithFrame(
-      this.parentIsFlex(this.props.highlightedViews[0]),
-      parentAttributes,
-      attributes,
-      frame,
-    )
-
-    if (isLeft(updatedAttributes)) {
-      throw new Error(`Problem setting frame on an element we just created.`)
-    }
-
-    const updatedAttributes2 = forceSetValueAtPath(
-      updatedAttributes.value,
-      PP.create(['textSizing']),
-      jsxAttributeValue('auto', emptyComments),
-    )
-
-    return {
-      ...insertionSubject,
-      props: updatedAttributes2,
-    }
-  }
-
   onMouseDown = (e: MouseEvent) => {
     const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
     const snappedMousePoint = applySnappingToPoint(mousePoint, this.state.guidelines)
@@ -400,9 +346,7 @@ export class InsertModeControlContainer extends React.Component<
       const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
 
       let { element } = this.props.mode.subject
-      if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
-        element = this.getTextElementAutoSizeWithPosition(element, snappedMousePoint)
-      } else if (this.parentIsFlex(this.props.highlightedViews[0])) {
+      if (this.parentIsFlex(this.props.highlightedViews[0])) {
         element = {
           ...element,
           props:
@@ -489,13 +433,6 @@ export class InsertModeControlContainer extends React.Component<
         element = this.elementWithDragFrame(insertionElement)
       }
 
-      if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
-        if (parentPath != null) {
-          const path = EP.appendToPath(parentPath, insertionSubject.uid)
-          extraActions.push(EditorActions.openTextEditor(path, null))
-        }
-      }
-
       if (element == null) {
         this.props.dispatch(baseActions, 'everyone')
       } else {
@@ -550,9 +487,6 @@ export class InsertModeControlContainer extends React.Component<
         const parent = this.props.highlightedViews[0]
         const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
         let element = this.elementWithDragFrame(insertionSubject.element)
-        if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
-          element = this.setTextElementFixedSize(element)
-        }
 
         const aspectRatioCorrectedMousePoint =
           this.state.aspectRatio != null
