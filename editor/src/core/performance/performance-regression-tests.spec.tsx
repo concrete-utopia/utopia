@@ -174,7 +174,7 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2695) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2690) // if this breaks, GREAT NEWS but update the test please :)
     expect(renderCountAfter - renderCountBefore).toBeLessThan(2700)
   })
 
@@ -237,7 +237,7 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2730) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2725) // if this breaks, GREAT NEWS but update the test please :)
     expect(renderCountAfter - renderCountBefore).toBeLessThan(2735)
   })
 })
