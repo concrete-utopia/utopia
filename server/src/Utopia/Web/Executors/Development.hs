@@ -91,11 +91,11 @@ handleAuthCodeResponse action response = do
 localAuthURL :: Text
 localAuthURL = "/authenticate?code=logmein&state=shrugemoji"
 
-dummyUser :: UserDetails
-dummyUser = UserDetails { userDetailsUserId  = "1"
+dummyUser :: Text -> UserDetails
+dummyUser cdnRoot = UserDetails { userDetailsUserId  = "1"
                         , userDetailsEmail   = Just "team@utopia.app"
                         , userDetailsName    = Just "Utopian Worker #296"
-                        , userDetailsPicture = Just "https://utopia.app/editor/utopia-icon.png"
+                        , userDetailsPicture = Just (cdnRoot <> "/editor/utopia-icon.png")
                         }
 
 {-|
@@ -106,7 +106,9 @@ localAuthCodeCheck "logmein" action = do
   sessionStore <- fmap _sessionState ask
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  successfulAuthCheck metrics pool sessionStore action dummyUser
+  portOfServer <- fmap _serverPort ask
+  let cdnRoot = "http://localhost:" <> show portOfServer
+  successfulAuthCheck metrics pool sessionStore action $ dummyUser cdnRoot
 localAuthCodeCheck _ action = do
   return $ action Nothing
 
