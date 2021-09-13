@@ -22,7 +22,6 @@ const editorCSS = [
   `${STATIC_BASE_URL}editor/initial-load.css`,
   `${STATIC_BASE_URL}editor/canvas.css`,
   `${STATIC_BASE_URL}editor/slider.css`,
-  `${STATIC_BASE_URL}editor/cursors.css`,
   `${STATIC_BASE_URL}editor/ReactContexify.css`,
   `${STATIC_BASE_URL}editor/css/codicons.css`,
 ]
