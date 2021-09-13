@@ -19,10 +19,9 @@ import { addStyleSheetToPage } from '../core/shared/dom-utils'
 import { STATIC_BASE_URL } from '../common/env-vars'
 
 const editorCSS = [
-  `${STATIC_BASE_URL}editor/canvas.css`,
-  `${STATIC_BASE_URL}editor/slider.css`,
-  `${STATIC_BASE_URL}editor/cursors.css`,
-  `${STATIC_BASE_URL}editor/ReactContexify.css`,
+  `${STATIC_BASE_URL}editor/css/canvas.css`,
+  `${STATIC_BASE_URL}editor/css/slider.css`,
+  `${STATIC_BASE_URL}editor/css/ReactContexify.css`,
   `${STATIC_BASE_URL}editor/css/codicons.css`,
 ]
 
