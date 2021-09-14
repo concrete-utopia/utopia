@@ -8,30 +8,9 @@ import {
   send,
 } from 'xstate'
 import type { Model } from 'xstate/lib/model.types'
-import {
-  assetToSave,
-  AssetToSave,
-  createNewProjectID,
-  downloadAssetsFromProject,
-  loadProject as loadServerProject,
-  saveAssets,
-  saveThumbnail,
-  updateSavedProject,
-} from '../server'
-const { choose } = actions
-import localforage from 'localforage'
-import {
-  fetchLocalProject as loadLocalProject,
-  localProjectKey,
-  deleteLocalProject,
-} from '../../../common/persistence'
-import { arrayContains, NO_OP, projectURLForProject } from '../../../core/shared/utils'
-import { checkProjectOwnership } from '../../../common/server'
-import { PersistentModel, createNewProjectName } from '../store/editor-state'
-import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
-import { getFileExtension } from '../../../core/shared/file-utils'
-import { AssetFile, ImageFile, ProjectFile } from '../../../core/shared/project-file-types'
-import { assetFile, imageFile, isImageFile } from '../../../core/model/project-file-utils'
+import { projectURLForProject } from '../../../core/shared/utils'
+import { defaultProject } from '../../../sample-projects/sample-project-utils'
+import { notice } from '../../common/notice'
 import { EditorAction, EditorDispatch } from '../action-types'
 import {
   setForkedFromProjectID,
@@ -40,15 +19,14 @@ import {
   showToast,
   updateFile,
 } from '../actions/action-creators'
-import { notice } from '../../common/notice'
-import { getPNGBufferOfElementWithID } from '../screenshot-utils'
-import { defaultProject } from '../../../sample-projects/sample-project-utils'
+import { createNewProjectName, PersistentModel } from '../store/editor-state'
 import {
   PersistenceBackendAPI,
   ProjectLoadResult,
   ProjectModel,
   ProjectWithFileChanges,
 } from './persistence-types'
+const { choose } = actions
 
 interface NewEvent {
   type: 'NEW'
@@ -884,6 +862,14 @@ export class PersistenceMachine {
       if (state.changed) {
         switch (event.type) {
           case 'NEW_PROJECT_CREATED':
+            if (state.matches({ user: LoggedIn })) {
+              this.queuedActions.push(showToast(notice('Project successfully uploaded!')))
+            } else {
+              this.queuedActions.push(
+                showToast(notice('Locally cached project. Sign in to share!')),
+              )
+            }
+
             onCreatedOrLoadedProject(
               event.projectId,
               event.projectModel.name,
@@ -922,9 +908,7 @@ export class PersistenceMachine {
             )
             this.queuedActions.push(...updateFileActions)
             this.lastSavedTS = Date.now()
-            // TODO Show toasts after:
-            // [ ] first local save
-            // [ ] first server save
+            // TODO Show toasts after first server save of a previously local project
             break
         }
 
