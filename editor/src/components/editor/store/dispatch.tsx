@@ -95,11 +95,6 @@ import {
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
-import {
-  save,
-  login as stateMachineLogin,
-  logout as stateMachineLogout,
-} from '../persistence/persistence-machine'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -198,6 +193,7 @@ function processAction(
       history: newStateHistory,
       userState: working.userState,
       workers: working.workers,
+      persistence: working.persistence,
       dispatch: dispatchEvent,
       alreadySaved: working.alreadySaved,
     }
@@ -430,6 +426,7 @@ export function editorDispatch(
     history: newHistory,
     userState: result.userState,
     workers: storedState.workers,
+    persistence: storedState.persistence,
     dispatch: boundDispatch,
     nothingChanged: result.nothingChanged,
     entireUpdateFinished: Promise.all([
@@ -450,14 +447,14 @@ export function editorDispatch(
 
   if (storedState.userState.loginState.type !== result.userState.loginState.type) {
     if (isLoggedIn(result.userState.loginState)) {
-      stateMachineLogin()
+      storedState.persistence.login()
     } else {
-      stateMachineLogout()
+      storedState.persistence.logout()
     }
   }
 
   if (shouldSave) {
-    save(
+    storedState.persistence.save(
       frozenEditorState.projectName,
       persistentModelFromEditorModel(frozenEditorState),
       forceSave,
@@ -608,6 +605,7 @@ function editorDispatchInner(
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,
+      persistence: storedState.persistence,
       dispatch: boundDispatch,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),

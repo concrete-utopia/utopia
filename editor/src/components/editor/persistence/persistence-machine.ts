@@ -43,248 +43,12 @@ import {
 import { notice } from '../../common/notice'
 import { getPNGBufferOfElementWithID } from '../screenshot-utils'
 import { defaultProject } from '../../../sample-projects/sample-project-utils'
-
-// Backend Calls
-
-let _lastThumbnailGenerated: number = 0
-const THUMBNAIL_THROTTLE = 300000
-
-async function generateThumbnail(force: boolean): Promise<Buffer | null> {
-  const now = Date.now()
-  if (now - _lastThumbnailGenerated > THUMBNAIL_THROTTLE || force) {
-    _lastThumbnailGenerated = now
-    return getPNGBufferOfElementWithID('canvas-root', { width: 1152, height: 720 })
-  } else {
-    return Promise.resolve(null)
-  }
-}
-
-export async function updateRemoteThumbnail(projectId: string, force: boolean): Promise<void> {
-  const buffer = await generateThumbnail(force)
-  if (buffer != null) {
-    await saveThumbnail(buffer, projectId)
-  }
-}
-
-export interface LocalProject {
-  model: PersistentModel
-  createdAt: string
-  lastModified: string
-  thumbnail: string
-  name: string
-}
-
-export async function projectIsStoredLocally(projectId: string): Promise<boolean> {
-  const keys = await localforage.keys().catch(() => [])
-  const targetKey = localProjectKey(projectId)
-  return arrayContains(keys, targetKey)
-}
-
-async function getNewProjectId(): Promise<string> {
-  return createNewProjectID()
-}
-
-async function checkProjectOwned(projectId: string): Promise<boolean> {
-  const existsLocally = await projectIsStoredLocally(projectId)
-  if (existsLocally) {
-    return true
-  } else {
-    const ownerState = await checkProjectOwnership(projectId)
-    return ownerState === 'unowned' || ownerState.isOwner
-  }
-}
-
-interface ProjectModelWithId {
-  projectId: string
-  projectModel: ProjectModel
-}
-
-interface ProjectLoadSuccess extends ProjectModelWithId {
-  type: 'PROJECT_LOAD_SUCCESS'
-}
-
-interface ProjectNotFount {
-  type: 'PROJECT_NOT_FOUND'
-}
-
-type ProjectLoadResult = ProjectLoadSuccess | ProjectNotFount
-
-async function loadProject(projectId: string): Promise<ProjectLoadResult> {
-  const serverProject = await loadServerProject(projectId)
-
-  switch (serverProject.type) {
-    case 'ProjectLoaded':
-      return {
-        type: 'PROJECT_LOAD_SUCCESS',
-        projectId: projectId,
-        projectModel: {
-          content: serverProject.content,
-          name: serverProject.title,
-        },
-      }
-    case 'ProjectNotFound':
-      const localProject = (await loadLocalProject(projectId)) as LocalProject | null
-      if (localProject == null) {
-        return {
-          type: 'PROJECT_NOT_FOUND',
-        }
-      } else {
-        return {
-          type: 'PROJECT_LOAD_SUCCESS',
-          projectId: projectId,
-          projectModel: {
-            content: localProject.model,
-            name: localProject.name,
-          },
-        }
-      }
-    default:
-      throw new Error(`Invalid project load response: ${serverProject}`)
-  }
-}
-
-interface FileWithFileName {
-  fileName: string
-  file: ProjectFile
-}
-
-function fileWithFileName(fileName: string, file: ProjectFile): FileWithFileName {
-  return {
-    fileName: fileName,
-    file: file,
-  }
-}
-
-interface ProjectWithFileChanges {
-  filesWithFileNames: Array<FileWithFileName>
-  projectModel: ProjectModel
-}
-
-function projectWithFileChanges(
-  filesWithFileNames: Array<FileWithFileName>,
-  projectModel: ProjectModel,
-): ProjectWithFileChanges {
-  return {
-    filesWithFileNames: filesWithFileNames,
-    projectModel: projectModel,
-  }
-}
-
-async function saveProjectToServer(
-  projectId: string,
-  projectModel: ProjectModel,
-): Promise<ProjectWithFileChanges> {
-  const { assetsToUpload, projectWithChanges } = prepareAssetsForUploading(projectModel)
-
-  await updateSavedProject(
-    projectId,
-    projectWithChanges.projectModel.content,
-    projectWithChanges.projectModel.name,
-  )
-  if (assetsToUpload.length > 0) {
-    await saveAssets(projectId, assetsToUpload)
-  }
-
-  updateRemoteThumbnail(projectId, false)
-  deleteLocalProject(projectId)
-
-  return projectWithChanges
-}
-
-async function saveProjectLocally(
-  projectId: string,
-  projectModel: ProjectModel,
-): Promise<ProjectWithFileChanges> {
-  const existing = await localforage.getItem<LocalProject | null>(localProjectKey(projectId))
-  const existingThumbnail = existing == null ? '' : existing.thumbnail
-  const now = new Date().toISOString()
-  const createdAt = existing == null ? now : existing.createdAt
-  const modifiedAt = now
-
-  const localProject: LocalProject = {
-    model: projectModel.content,
-    createdAt: createdAt,
-    lastModified: modifiedAt,
-    thumbnail: existingThumbnail,
-    name: projectModel.name,
-  }
-
-  await localforage.setItem(localProjectKey(projectId), localProject)
-
-  return projectWithFileChanges([], projectModel)
-}
-
-async function downloadAssets(
-  projectId: string,
-  projectModel: ProjectModel,
-): Promise<ProjectWithFileChanges> {
-  const allProjectAssets = getAllProjectAssetFiles(projectModel.content.projectContents)
-  const allProjectAssetsDownloaded = await downloadAssetsFromProject(projectId, allProjectAssets)
-  const updatedProjectContents = allProjectAssetsDownloaded.reduce(
-    (workingProjectContents, { fileName: assetPath, file: asset }) => {
-      return addFileToProjectContents(workingProjectContents, assetPath, asset)
-    },
-    projectModel.content.projectContents,
-  )
-  const updatedProjectModel: ProjectModel = {
-    name: projectModel.name,
-    content: {
-      ...projectModel.content,
-      projectContents: updatedProjectContents,
-    },
-  }
-
-  return projectWithFileChanges(allProjectAssetsDownloaded, updatedProjectModel)
-}
-
-function scrubBase64FromFile(file: ImageFile | AssetFile): ImageFile | AssetFile {
-  if (isImageFile(file)) {
-    return imageFile(undefined, undefined, file.width, file.height, file.hash)
-  } else {
-    return assetFile(undefined)
-  }
-}
-
-interface PreparedProject {
-  assetsToUpload: Array<AssetToSave>
-  projectWithChanges: ProjectWithFileChanges
-}
-
-function prepareAssetsForUploading(projectModel: ProjectModel): PreparedProject {
-  const allProjectAssets = getAllProjectAssetFiles(projectModel.content.projectContents)
-  let assetsToUpload: Array<AssetToSave> = []
-  let updatedAssets: Array<FileWithFileName> = []
-
-  const updatedProjectContents = allProjectAssets.reduce(
-    (workingProjectContents, { fileName: assetPath, file: asset }) => {
-      const fileType = getFileExtension(assetPath)
-      if (asset.base64 != null) {
-        const updatedFile = scrubBase64FromFile(asset)
-        assetsToUpload.push(assetToSave(fileType, asset.base64, assetPath))
-        updatedAssets.push(fileWithFileName(assetPath, updatedFile))
-        return addFileToProjectContents(workingProjectContents, assetPath, updatedFile)
-      } else {
-        return workingProjectContents
-      }
-    },
-    projectModel.content.projectContents,
-  )
-
-  const updatedProjectModel: ProjectModel = {
-    name: projectModel.name,
-    content: {
-      ...projectModel.content,
-      projectContents: updatedProjectContents,
-    },
-  }
-
-  return {
-    assetsToUpload: assetsToUpload,
-    projectWithChanges: projectWithFileChanges(updatedAssets, updatedProjectModel),
-  }
-}
-
-// End Backend Calls
+import {
+  PersistenceBackendAPI,
+  ProjectLoadResult,
+  ProjectModel,
+  ProjectWithFileChanges,
+} from './persistence-types'
 
 interface NewEvent {
   type: 'NEW'
@@ -577,11 +341,6 @@ type UserEvent = UserLogInEvent | UserLogOutEvent
 
 type PersistenceEvent = CoreEvent | BackendEvent | UserEvent
 
-interface ProjectModel {
-  name: string
-  content: PersistentModel
-}
-
 interface PersistenceContext {
   projectId?: string
   project?: ProjectModel
@@ -676,7 +435,7 @@ export const persistenceMachine = createMachine<
         [BackendCreatingProjectId]: {
           invoke: {
             id: 'create-project-id',
-            src: getNewProjectId,
+            src: 'getNewProjectId',
             onDone: {
               target: BackendIdle,
               actions: [
@@ -692,15 +451,7 @@ export const persistenceMachine = createMachine<
         [BackendCheckingOwnership]: {
           invoke: {
             id: 'check-ownership',
-            src: (_, event) => {
-              if (event.type === 'BACKEND_CHECK_OWNERSHIP') {
-                return checkProjectOwned(event.projectId)
-              } else {
-                throw new Error(
-                  `Incorrect event type triggered check ownership, ${JSON.stringify(event)}`,
-                )
-              }
-            },
+            src: 'checkProjectOwned',
             onDone: {
               target: BackendIdle,
               actions: [
@@ -718,15 +469,7 @@ export const persistenceMachine = createMachine<
         [BackendDownloadingAssets]: {
           invoke: {
             id: 'download-assets',
-            src: (_, event) => {
-              if (event.type === 'BACKEND_DOWNLOAD_ASSETS') {
-                return downloadAssets(event.projectId, event.projectModel)
-              } else {
-                throw new Error(
-                  `Incorrect event type triggered asset download, ${JSON.stringify(event)}`,
-                )
-              }
-            },
+            src: 'downloadAssets',
             onDone: {
               target: BackendIdle,
               actions: [
@@ -744,21 +487,7 @@ export const persistenceMachine = createMachine<
         [BackendServerSaving]: {
           invoke: {
             id: 'server-save-project',
-            src: (context, event) => {
-              if (
-                event.type === 'BACKEND_SERVER_SAVE' &&
-                event.projectModel != null &&
-                context.projectId != null
-              ) {
-                return saveProjectToServer(context.projectId, event.projectModel)
-              } else {
-                throw new Error(
-                  `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
-                    event,
-                  )}`,
-                )
-              }
-            },
+            src: 'saveProjectToServer',
             onDone: {
               target: BackendIdle,
               actions: send((_, event: DoneInvokeEvent<ProjectWithFileChanges>) =>
@@ -774,21 +503,7 @@ export const persistenceMachine = createMachine<
         [BackendLocalSaving]: {
           invoke: {
             id: 'local-save-project',
-            src: (context, event) => {
-              if (
-                event.type === 'BACKEND_LOCAL_SAVE' &&
-                event.projectModel != null &&
-                context.projectId != null
-              ) {
-                return saveProjectLocally(context.projectId, event.projectModel)
-              } else {
-                throw new Error(
-                  `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
-                    event,
-                  )}`,
-                )
-              }
-            },
+            src: 'saveProjectLocally',
             onDone: {
               target: BackendIdle,
               actions: send((_, event: DoneInvokeEvent<ProjectWithFileChanges>) =>
@@ -804,15 +519,7 @@ export const persistenceMachine = createMachine<
         [BackendLoading]: {
           invoke: {
             id: 'load-project',
-            src: (_, event) => {
-              if (event.type === 'BACKEND_LOAD') {
-                return loadProject(event.projectId)
-              } else {
-                throw new Error(
-                  `Invalid event type triggered project load ${JSON.stringify(event)}`,
-                )
-              }
-            },
+            src: 'loadProject',
             onDone: {
               target: BackendIdle,
               actions: [
@@ -1222,12 +929,16 @@ export function save(projectName: string, project: PersistentModel, forced: bool
 }
 
 window.addEventListener('beforeunload', (e) => {
-  if (waitingThrottledSaveEvent != null) {
+  if (!isSafeToClose()) {
     sendThrottledSave()
     e.preventDefault()
     e.returnValue = ''
   }
 })
+
+function isSafeToClose(): boolean {
+  return waitingThrottledSaveEvent == null
+}
 
 export function load(projectId: string): void {
   interpreter?.send(loadEvent(projectId))
@@ -1252,6 +963,230 @@ export function logout(): void {
 // For testing purposes only
 export function setSaveThrottle(delay: number): void {
   SaveThrottle = delay
+}
+
+export class PersistenceMachine {
+  private interpreter: Interpreter<PersistenceContext, any, PersistenceEvent>
+  private lastSavedTS: number = 0
+  private throttledSaveTimeoutId: NodeJS.Timer | null = null
+  private waitingThrottledSaveEvent: SaveEvent | null = null
+  private queuedActions: Array<EditorAction> = [] // Queue up actions during events and transitions, then dispatch when ready
+
+  constructor(
+    backendAPI: PersistenceBackendAPI,
+    dispatch: EditorDispatch,
+    onProjectNotFound: () => void,
+    onCreatedOrLoadedProject: (
+      projectId: string,
+      projectName: string,
+      project: PersistentModel,
+    ) => void,
+    private saveThrottle: number = 30000,
+  ) {
+    this.interpreter = interpret(
+      persistenceMachine.withConfig({
+        services: {
+          getNewProjectId: backendAPI.getNewProjectId,
+          checkProjectOwned: (_, event) => {
+            if (event.type === 'BACKEND_CHECK_OWNERSHIP') {
+              return backendAPI.checkProjectOwned(event.projectId)
+            } else {
+              throw new Error(
+                `Incorrect event type triggered check ownership, ${JSON.stringify(event)}`,
+              )
+            }
+          },
+          downloadAssets: (_, event) => {
+            if (event.type === 'BACKEND_DOWNLOAD_ASSETS') {
+              return backendAPI.downloadAssets(event.projectId, event.projectModel)
+            } else {
+              throw new Error(
+                `Incorrect event type triggered asset download, ${JSON.stringify(event)}`,
+              )
+            }
+          },
+          saveProjectToServer: (context, event) => {
+            if (
+              event.type === 'BACKEND_SERVER_SAVE' &&
+              event.projectModel != null &&
+              context.projectId != null
+            ) {
+              return backendAPI.saveProjectToServer(context.projectId, event.projectModel)
+            } else {
+              throw new Error(
+                `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
+                  event,
+                )}`,
+              )
+            }
+          },
+          saveProjectLocally: (context, event) => {
+            if (
+              event.type === 'BACKEND_LOCAL_SAVE' &&
+              event.projectModel != null &&
+              context.projectId != null
+            ) {
+              return backendAPI.saveProjectLocally(context.projectId, event.projectModel)
+            } else {
+              throw new Error(
+                `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
+                  event,
+                )}`,
+              )
+            }
+          },
+          loadProject: (_, event) => {
+            if (event.type === 'BACKEND_LOAD') {
+              return backendAPI.loadProject(event.projectId)
+            } else {
+              throw new Error(`Invalid event type triggered project load ${JSON.stringify(event)}`)
+            }
+          },
+        },
+      }),
+    )
+
+    this.interpreter.onTransition((state, event) => {
+      if (state.changed) {
+        switch (event.type) {
+          case 'NEW_PROJECT_CREATED':
+            onCreatedOrLoadedProject(
+              event.projectId,
+              event.projectModel.name,
+              event.projectModel.content,
+            )
+            break
+          case 'LOAD_COMPLETE':
+            onCreatedOrLoadedProject(
+              event.projectId,
+              event.projectModel.name,
+              event.projectModel.content,
+            )
+            break
+          case 'PROJECT_ID_CREATED':
+            this.queuedActions.push(setProjectID(event.projectId))
+            break
+          case 'LOAD_FAILED':
+            onProjectNotFound()
+            break
+          case 'DOWNLOAD_ASSETS_COMPLETE': {
+            if (state.matches({ core: { [Forking]: CreatingProjectId } })) {
+              this.queuedActions.push(setForkedFromProjectID(state.context.projectId!))
+              this.queuedActions.push(setProjectName(`${state.context.project!.name} (forked)`))
+              this.queuedActions.push(showToast(notice('Project successfully forked!')))
+            }
+
+            const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
+              ({ fileName, file }) => updateFile(fileName, file, true),
+            )
+            this.queuedActions.push(...updateFileActions)
+            break
+          }
+          case 'SAVE_COMPLETE':
+            const updateFileActions = event.saveResult.filesWithFileNames.map(
+              ({ fileName, file }) => updateFile(fileName, file, true),
+            )
+            this.queuedActions.push(...updateFileActions)
+            this.lastSavedTS = Date.now()
+            // TODO Show toasts after:
+            // [ ] first local save
+            // [ ] first server save
+            break
+        }
+
+        if (state.matches({ core: Ready })) {
+          if (this.queuedActions.length > 0) {
+            const actionsToDispatch = this.queuedActions
+            const projectIdOrNameChanged = actionsToDispatch.some(
+              (action) =>
+                action.action === 'SET_PROJECT_ID' || action.action === 'SET_PROJECT_NAME',
+            )
+            if (projectIdOrNameChanged) {
+              pushProjectURLToBrowserHistory(state.context.projectId!, state.context.project!.name)
+            }
+            this.queuedActions = []
+            dispatch(actionsToDispatch)
+          }
+        }
+      }
+    })
+
+    this.interpreter.start()
+
+    window.addEventListener('beforeunload', (e) => {
+      // FIXME bind this?
+      if (!this.isSafeToClose()) {
+        this.sendThrottledSave()
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    })
+  }
+
+  private isSafeToClose(): boolean {
+    return this.waitingThrottledSaveEvent == null
+  }
+
+  private clearThrottledSave(): void {
+    if (this.throttledSaveTimeoutId != null) {
+      clearTimeout(this.throttledSaveTimeoutId)
+      this.throttledSaveTimeoutId = null
+    }
+
+    this.waitingThrottledSaveEvent = null
+  }
+
+  private sendThrottledSave(): void {
+    if (this.waitingThrottledSaveEvent != null) {
+      this.interpreter.send(this.waitingThrottledSaveEvent)
+    }
+    this.clearThrottledSave()
+  }
+
+  private getRemainingSaveDelay(): number {
+    return Math.max(0, this.lastSavedTS + this.saveThrottle - Date.now())
+  }
+
+  private shouldThrottle(forced: boolean): boolean {
+    return !forced && this.getRemainingSaveDelay() > 0
+  }
+
+  // API
+
+  save(projectName: string, project: PersistentModel, forced: boolean = false): void {
+    const eventToFire = saveEvent({ name: projectName, content: project })
+
+    if (this.shouldThrottle(forced)) {
+      this.waitingThrottledSaveEvent = eventToFire
+      this.throttledSaveTimeoutId = setTimeout(sendThrottledSave, getRemainingSaveDelay())
+    } else {
+      this.interpreter.send(eventToFire)
+    }
+  }
+
+  load(projectId: string): void {
+    this.interpreter.send(loadEvent(projectId))
+  }
+
+  createNew(): void {
+    this.interpreter.send(newEvent())
+  }
+
+  fork(): void {
+    this.interpreter.send(forkEvent())
+  }
+
+  login(): void {
+    this.interpreter.send(userLogInEvent())
+  }
+
+  logout(): void {
+    this.interpreter.send(userLogOutEvent())
+  }
+
+  stop(): void {
+    // FIXME Destructor?
+  }
 }
 
 // createNewProjectFromImportedProject

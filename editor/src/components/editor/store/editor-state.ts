@@ -154,6 +154,7 @@ import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layo
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 
 import { v4 as UUID } from 'uuid'
+import { PersistenceMachine } from '../persistence/persistence-machine'
 
 const ObjectPathImmutable: any = OPI
 
@@ -244,6 +245,7 @@ export type EditorStore = {
   history: StateHistory
   userState: UserState
   workers: UtopiaTsWorkers
+  persistence: PersistenceMachine
   dispatch: EditorDispatch
   alreadySaved: boolean
 }

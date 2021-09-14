@@ -97,12 +97,8 @@ import { updateCssVars, UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
-import {
-  initialisePersistence,
-  load as loadProject,
-  createNew,
-  login,
-} from '../components/editor/persistence/persistence-machine'
+import { PersistenceMachine } from '../components/editor/persistence/persistence-machine'
+import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -139,6 +135,29 @@ export class Editor {
 
     const watchdogWorker = new RealWatchdogWorker()
 
+    const renderRootEditor = () =>
+      renderRootComponent(
+        this.utopiaStoreHook,
+        this.utopiaStoreApi,
+        this.spyCollector,
+        true,
+        this.storedState.editor.vscodeBridgeReady,
+      )
+
+    const onCreatedOrLoadedProject = (
+      projectId: string,
+      projectName: string,
+      project: PersistentModel,
+    ) =>
+      load(
+        this.storedState.dispatch,
+        project,
+        projectName,
+        projectId,
+        this.storedState.workers,
+        renderRootEditor,
+      )
+
     this.storedState = {
       editor: emptyEditorState,
       derived: derivedState,
@@ -149,6 +168,12 @@ export class Editor {
         new RealParserPrinterWorker(),
         new RealLinterWorker(),
         watchdogWorker,
+      ),
+      persistence: new PersistenceMachine(
+        PersistenceBackend,
+        this.boundDispatch,
+        renderProjectNotFound,
+        onCreatedOrLoadedProject,
       ),
       dispatch: this.boundDispatch,
       alreadySaved: false,
@@ -225,35 +250,6 @@ export class Editor {
       handleHeartbeatRequestMessage(e.data),
     )
 
-    const renderRootEditor = () =>
-      renderRootComponent(
-        this.utopiaStoreHook,
-        this.utopiaStoreApi,
-        this.spyCollector,
-        true,
-        this.storedState.editor.vscodeBridgeReady,
-      )
-
-    const onCreatedOrLoadedProject = (
-      projectId: string,
-      projectName: string,
-      project: PersistentModel,
-    ) =>
-      load(
-        this.storedState.dispatch,
-        project,
-        projectName,
-        projectId,
-        this.storedState.workers,
-        renderRootEditor,
-      )
-
-    initialisePersistence(
-      this.storedState.dispatch,
-      renderProjectNotFound,
-      onCreatedOrLoadedProject,
-    )
-
     getLoginState('cache').then((loginState: LoginState) => {
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
@@ -265,13 +261,13 @@ export class Editor {
 
         const projectId = getProjectID()
         if (isLoggedIn(loginState)) {
-          login()
+          this.storedState.persistence.login()
         }
 
         if (isCookiesOrLocalForageUnavailable(loginState) || projectId == null) {
-          createNew()
+          this.storedState.persistence.createNew()
         } else {
-          loadProject(projectId)
+          this.storedState.persistence.load(projectId)
         }
 
         // if (projectId == null) {
