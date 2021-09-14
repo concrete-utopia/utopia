@@ -2,7 +2,6 @@
 import * as React from 'react'
 import { jsx } from '@emotion/react'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
-import { focusTextEditorIfPresent } from '../../editor/text-editor'
 import { IcnProps, UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
@@ -33,7 +32,6 @@ export const OptionControl: React.FunctionComponent<
   const propsOnSubmitValue = props.onSubmitValue
   const onSubmitValue = React.useCallback(() => {
     propsOnSubmitValue(!isChecked)
-    focusTextEditorIfPresent()
   }, [propsOnSubmitValue, isChecked])
 
   const controlOptions: DEPRECATEDOptionControlOptions = {

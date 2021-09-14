@@ -26,9 +26,6 @@ declare module 'lodash.clamp' {
   export const clamp = (number: number, upper: number) => number
 }
 
-declare module 'draft-js-custom-styles'
-declare module 'draft-js-export-html'
-
 declare module 'resize-observer-polyfill'
 
 declare module 'jest-matcher-deep-close-to'

@@ -1,80 +1,15 @@
-import * as OPI from 'object-path-immutable'
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
-import { Text, TextProps } from 'utopia-api'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   jsxAttributeValue,
-  ElementInstanceMetadataMap,
   emptyComments,
 } from '../core/shared/element-template'
-import { getUtopiaID } from '../core/model/element-template-utils'
 import { NodeModules, PropertyPath, ElementPath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
-import { Size } from '../core/shared/math-utils'
 import { EditorAction, EditorDispatch, TextFormattingType } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import { EditorState } from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
-import { ProjectContentTreeRoot } from './assets'
-
-const ObjectPathImmutable: any = OPI
-
-export function autosizingTextResizeNew(
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null,
-  metadata: ElementInstanceMetadataMap,
-  targets: Array<ElementPath>,
-  dispatch: EditorDispatch,
-  property: PropertyPath,
-  newValue: any,
-  onChange: (v: any) => Array<EditorAction>,
-): Array<EditorAction> {
-  const onChangeActions: Array<EditorAction> = onChange(newValue)
-  let promises: Array<Promise<Array<EditorAction>>> = []
-
-  let changeAttachedToPromise: boolean = false
-  Utils.fastForEach(targets, (target) => {
-    const element = MetadataUtils.findElementByElementPath(metadata, target)
-
-    if (element != null && MetadataUtils.isTextAgainstImports(element)) {
-      const updatedElementProps = ObjectPathImmutable.set(
-        element.props,
-        PP.toString(property),
-        newValue,
-      )
-      const updatedElement = {
-        ...element,
-        props: updatedElementProps,
-      }
-
-      if (updatedElement.props.textSizing === 'auto') {
-        changeAttachedToPromise = true
-        promises.push(
-          measureTextFieldNew(updatedElement).then((size: Size) => {
-            return [EditorActions.updateFrameDimensions(target, size.width, size.height)]
-          }),
-        )
-      }
-    }
-  })
-
-  Promise.all(promises).then((actionArrays) => {
-    let actions = Utils.flatMapArray((array) => array, actionArrays)
-    if (changeAttachedToPromise) {
-      actions = [...onChangeActions, ...actions]
-    }
-    dispatch(actions, 'canvas')
-  })
-
-  if (changeAttachedToPromise) {
-    return []
-  } else {
-    return onChangeActions
-  }
-}
 
 export function italicStyleTransform(value: 'italic' | 'normal'): boolean {
   return value === 'italic'
@@ -210,44 +145,12 @@ export function toggleTextFormatting(
       }
     })
 
-    // Property to modify.
-    const propertyToModify = propertyForTextFormatting(textFormatting)
-
     // Flip the option to the inverse of the most prominent one.
     const optionMajorityEnabled = withTextFormatting > textElements.length / 2
     const newValue = valueForTextFormatting(textFormatting, !optionMajorityEnabled)
 
-    return autosizingTextResizeNew(
-      editor.projectContents,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? null,
-      editor.jsxMetadata,
-      textElementPaths,
-      dispatch,
-      propertyToModify,
-      newValue,
-      actionForTextFormatting(textFormatting, textElementPaths),
-    )
+    return actionForTextFormatting(textFormatting, textElementPaths)(newValue)
   } else {
     return []
   }
-}
-
-export async function measureTextFieldNew(element: ElementInstanceMetadata): Promise<Size> {
-  const containerNode = document.getElementById('text-field-placeholder')
-  return new Promise<Size>((resolve, reject) => {
-    const textFieldProps = {
-      ...(element.props as TextProps),
-      key: `textmeasurement-${getUtopiaID(element)}`,
-      componentSizeResult: (width: number | null, height: number | null) => {
-        if (containerNode != null) {
-          ReactDOM.unmountComponentAtNode(containerNode)
-        }
-        resolve({ width: width, height: height } as Size)
-      },
-      scale: 1,
-    }
-    const textElement = React.createElement(Text, textFieldProps)
-    ReactDOM.render(textElement, containerNode)
-  })
 }
