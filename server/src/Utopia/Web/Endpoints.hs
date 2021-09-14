@@ -13,6 +13,7 @@
 -}
 module Utopia.Web.Endpoints where
 
+import Control.Arrow((&&&))
 import           Control.Lens
 import           Data.Aeson
 import           Data.Aeson.Lens
@@ -29,9 +30,8 @@ import           Protolude
 import           Servant                         hiding
                                                  (serveDirectoryFileServer,
                                                   serveDirectoryWith)
-import           Servant.Conduit
 import           Servant.RawM.Server
-import           Text.Blaze.Html.Renderer.Text
+import Text.HTML.TagSoup
 import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
 import qualified Text.Blaze.Html5.Attributes     as HA
@@ -48,6 +48,9 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
+import Servant.Conduit()
+
+type TagSoupTags = [Tag Text]
 
 checkForUser :: Maybe Text -> (Maybe SessionUser -> ServerMonad a) -> ServerMonad a
 checkForUser (Just sessionCookie) action = do
@@ -119,80 +122,155 @@ projectDescription Nothing = "A Utopia project"
 isoFormatTime :: FormatTime t => t -> [Char]
 isoFormatTime = formatTime defaultTimeLocale "%s"
 
-twitterCardMetadata :: ProjectMetadata -> Text -> H.Html
-twitterCardMetadata projectMetadata siteRoot = do
-  H.meta ! HA.name "twitter:card" ! HA.content "summary_large_image"
-  H.meta ! HA.name "twitter:site" ! HA.content "@UtopiaApp"
-  H.meta ! HA.name "twitter:title" ! HA.content (H.textValue $ view title projectMetadata)
-  H.meta ! HA.name "twitter:image" ! HA.content (H.textValue $ thumbnailUrl siteRoot $ view id projectMetadata)
-  H.meta ! HA.name "twitter:description" ! HA.content (H.textValue $ projectDescription $ view ownerName projectMetadata)
+twitterCardMetadata :: ProjectMetadata -> Text -> TagSoupTags
+twitterCardMetadata projectMetadata siteRoot =
+  [ TagOpen "meta" [("name", "twitter:card"), ("content", "summary_large_image")], TagClose "meta"
+  , TagOpen "meta" [("name", "twitter:site"), ("content", "@UtopiaApp")], TagClose "meta"
+  , TagOpen "meta" [("name", "twitter:title"), ("content", view title projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("name", "twitter:image"), ("content", thumbnailUrl siteRoot $ view id projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("name", "twitter:description"), ("content", projectDescription $ view ownerName projectMetadata)], TagClose "meta"
+  ]
 
-facebookCardMetadata :: ProjectMetadata -> Text -> H.Html
-facebookCardMetadata projectMetadata siteRoot = do
-  H.meta ! H.customAttribute "property" "fb:app_id" ! HA.content "415342622608327"
-  H.meta ! H.customAttribute "property" "og:image" ! HA.content (H.textValue $ thumbnailUrl siteRoot $ view id projectMetadata) ! HA.itemprop "thumbnailUrl"
-  H.meta ! H.customAttribute "property" "og:image:width" ! HA.content "288px"
-  H.meta ! H.customAttribute "property" "og:image:height" ! HA.content "180px"
-  H.meta ! H.customAttribute "property" "og:title" ! HA.content (H.textValue $ view title projectMetadata)
-  H.meta ! H.customAttribute "property" "og:type" ! HA.content "website"
-  H.meta ! H.customAttribute "property" "og:url" ! HA.content (H.textValue $ projectUrl siteRoot $ view id projectMetadata)
-  H.meta ! H.customAttribute "property" "og:updated_time" ! HA.content (H.stringValue $ isoFormatTime $ view modifiedAt projectMetadata)
-  H.meta ! H.customAttribute "property" "og:site_name" ! HA.content "Utopia"
-  H.meta ! H.customAttribute "property" "og:description" ! HA.content (H.textValue $ projectDescription $ view ownerName projectMetadata)
+facebookCardMetadata :: ProjectMetadata -> Text -> TagSoupTags
+facebookCardMetadata projectMetadata siteRoot = 
+  [ TagOpen "meta" [("property", "fb:app_id"), ("content", "415342622608327")], TagClose "meta"
+  , TagOpen "meta" [("property", "og:image"), ("content", thumbnailUrl siteRoot $ view id projectMetadata), ("itemprop", "thumbnailUrl")], TagClose "meta"
+  , TagOpen "meta" [("property", "og:image:width"), ("content", "288px")], TagClose "meta"
+  , TagOpen "meta" [("property", "og:image:height"), ("content", "180px")], TagClose "meta"
+  , TagOpen "meta" [("property", "og:title"), ("content", view title projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("property", "og:type"), ("content", "website")], TagClose "meta"
+  , TagOpen "meta" [("property", "og:url"), ("content", projectUrl siteRoot $ view id projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("property", "og:updated_time"), ("content", toS $ isoFormatTime $ view modifiedAt projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("property", "og:site_name"), ("content", "Utopia")], TagClose "meta"
+  , TagOpen "meta" [("property", "og:description"), ("content", projectDescription $ view ownerName projectMetadata)], TagClose "meta"
+  ]
 
-projectTitleMetadata :: ProjectMetadata -> H.Html
-projectTitleMetadata projectMetadata = do
-  H.title (H.text $ (view title projectMetadata) <> " - Utopia")
-  H.meta ! HA.title (H.textValue $ (view title projectMetadata) <> " Utopia")
+projectTitleMetadata :: ProjectMetadata -> TagSoupTags 
+projectTitleMetadata projectMetadata =
+  [ TagOpen "title" [], TagText (view title projectMetadata <> " - Utopia"), TagClose "title"
+  , TagOpen "meta" [("title", view title projectMetadata <> " Utopia")], TagClose "meta"
+  ]
 
-noProjectTitleMetadata :: H.Html
-noProjectTitleMetadata = do
-  H.title "Utopia"
-  H.meta ! HA.title "Utopia"
+noProjectTitleMetadata :: TagSoupTags
+noProjectTitleMetadata =
+  [ TagOpen "title" [], TagText "Utopia", TagClose "title"
+  , TagOpen "meta" [("title", "Utopia")], TagClose "meta"
+  ]
 
-projectHTMLMetadata :: Maybe ProjectMetadata -> Text -> H.Html
-projectHTMLMetadata Nothing _ = do
+projectHTMLMetadata :: Maybe ProjectMetadata -> Text -> TagSoupTags
+projectHTMLMetadata Nothing _ =
   noProjectTitleMetadata
-projectHTMLMetadata (Just projectMetadata) siteRoot = do
-  projectTitleMetadata projectMetadata
-  twitterCardMetadata projectMetadata siteRoot
-  facebookCardMetadata projectMetadata siteRoot
+projectHTMLMetadata (Just projectMetadata) siteRoot =
+     projectTitleMetadata projectMetadata
+  <> twitterCardMetadata projectMetadata siteRoot
+  <> facebookCardMetadata projectMetadata siteRoot
 
-projectIDScript :: ProjectIdWithSuffix -> H.Html
-projectIDScript (ProjectIdWithSuffix projectID _) = do
-  H.script ! HA.type_ "text/javascript" $ H.toMarkup
-    ("window.utopiaProjectID = \"" <> projectID <> "\";")
+projectIDScript :: ProjectIdWithSuffix -> TagSoupTags 
+projectIDScript (ProjectIdWithSuffix projectID _) =
+  [ TagOpen "script" [("type", "text/javascript")], TagText ("window.utopiaProjectID = \"" <> projectID <> "\";"), TagClose "script"]
 
 projectDetailsToPossibleMetadata :: ProjectDetails -> Maybe ProjectMetadata
 projectDetailsToPossibleMetadata UnknownProject = Nothing
 projectDetailsToPossibleMetadata (ReservedProjectID _) = Nothing
 projectDetailsToPossibleMetadata (ProjectDetailsMetadata metadata) = Just metadata
 
-dependencyPreload :: Text -> ProjectDependency -> H.Html
+dependencyPreload :: Text -> ProjectDependency -> TagSoupTags 
 dependencyPreload cdnRoot ProjectDependency{..} =
   let dependencyURL = cdnRoot <> "/" <> packagerLink dependencyName dependencyVersion
-      linkHtml = H.link ! HA.href (H.toValue dependencyURL) ! HA.rel "preload" ! H.customAttribute "as" "fetch"
-   in linkHtml <> H.toMarkup ("\n    " :: Text)
+      linkOpen = TagOpen "link" [("href", dependencyURL), ("rel", "preload"), ("as", "fetch")]
+   in [linkOpen, TagClose "link", TagText "\n    "]
 
-dependenciesHtmlFromProject :: Text -> Maybe DB.DecodedProject -> H.Html
+dependenciesHtmlFromProject :: Text -> Maybe DB.DecodedProject -> TagSoupTags 
 dependenciesHtmlFromProject _ Nothing = mempty
 dependenciesHtmlFromProject cdnRoot (Just decodedProject) = do
   let dependencies = getProjectDependenciesFromPackageJSON decodedProject
   let withoutProvidedDependencies = filter (\ProjectDependency{..} -> notElem dependencyName providedDependencies) dependencies
   foldMap (dependencyPreload cdnRoot) withoutProvidedDependencies
 
+data VSCodePreloadType = VSCodeJS | VSCodeCSS
+                       deriving (Eq, Show)
+
+vsCodePathsToPreload :: [(Text, VSCodePreloadType)]
+vsCodePathsToPreload = [
+        ("extensions.js", VSCodeJS),
+        ("vscode/vs/code/browser/workbench/workbench.js", VSCodeJS),
+        ("vscode/vs/loader.js", VSCodeJS),
+        ("vscode/vs/workbench/workbench.web.api.css", VSCodeCSS),
+        ("vscode/vs/workbench/workbench.web.api.js", VSCodeJS),
+        ("vscode/vs/workbench/workbench.web.api.nls.js", VSCodeJS)
+        ]
+
+vscodePreloadTypeToPreloadAs :: VSCodePreloadType -> Text
+vscodePreloadTypeToPreloadAs VSCodeJS  = "script"
+vscodePreloadTypeToPreloadAs VSCodeCSS = "style"
+
+vscodePreload :: Text -> Text -> (Text, VSCodePreloadType) -> TagSoupTags 
+vscodePreload cdnRoot commitHash (vsCodePath, preloadType) =
+  let vscodeURL = cdnRoot <> "/vscode/" <> vsCodePath <> "?hash=" <> commitHash
+      htmlAs = vscodePreloadTypeToPreloadAs preloadType
+      linkHtml = TagOpen "link" [("href", vscodeURL), ("rel", "preload"), ("as", htmlAs)]
+   in [linkHtml, TagClose "link", TagText "\n    "]
+
+vscodePreloads :: Text -> Text -> TagSoupTags 
+vscodePreloads cdnRoot commitHash = foldMap (vscodePreload cdnRoot commitHash) vsCodePathsToPreload
+
+isDeferAttribute :: Attribute Text -> Any
+isDeferAttribute ("defer", "") = Any True
+isDeferAttribute _ = Any False
+
+isEditorJSSrcAttribute :: Attribute Text -> Any
+isEditorJSSrcAttribute ("src", srcURL) = Any (T.isSuffixOf ".js" srcURL)
+isEditorJSSrcAttribute _ = Any False
+
+isScriptJSElementWithDefer :: [Attribute Text] -> Bool
+isScriptJSElementWithDefer attributes = foldMap (isDeferAttribute &&& isEditorJSSrcAttribute) attributes == (Any True, Any True)
+
+partitionOutScriptDefer :: Bool -> TagSoupTags -> (TagSoupTags, TagSoupTags)
+partitionOutScriptDefer False (closeHead@(TagClose "head") : remainder) =
+  ([], closeHead : []) <> partitionOutScriptDefer True remainder
+partitionOutScriptDefer False (firstTag : remainder) =
+  ([], firstTag : []) <> partitionOutScriptDefer False remainder
+partitionOutScriptDefer False [] = ([], [])
+partitionOutScriptDefer True (firstTag@(TagClose "script") : secondTag@(TagOpen "script" attributes) : remainder) = 
+  let ifScript = (firstTag : secondTag : TagText "\n    " : [], []) <> partitionOutScriptDefer True remainder
+      ifNotScript = ([], firstTag : secondTag : []) <> partitionOutScriptDefer True remainder
+   in if isScriptJSElementWithDefer attributes then ifScript else ifNotScript
+partitionOutScriptDefer True remainder = ([], remainder)
+
+preloadsForScripts :: TagSoupTags -> TagSoupTags
+preloadsForScripts (TagOpen "script" attributes : remainder) =
+  let srcURL = fmap snd $ find (\(attrName, _) -> attrName == "src") attributes
+      forRemainder = preloadsForScripts remainder
+   in maybe forRemainder (\url -> TagOpen "link" [("href", url), ("rel", "preload"), ("as", "script")] : TagClose "link" : TagText "\n    " : forRemainder) srcURL
+preloadsForScripts (_ : remainder) = preloadsForScripts remainder
+preloadsForScripts [] = []
+
+injectIntoPage :: (TagSoupTags, TagSoupTags, TagSoupTags, TagSoupTags, TagSoupTags) -> TagSoupTags -> TagSoupTags
+injectIntoPage toInject@(ogTags, _, _, _, _) (TagComment "ogTags" : remainder) = ogTags <> injectIntoPage toInject remainder
+injectIntoPage toInject@(_, projectIDTags, _, _, _) (TagComment "projectIDScript" : remainder) = projectIDTags <> injectIntoPage toInject remainder
+injectIntoPage toInject@(_, _, projectDependencyTags, _, _) (TagComment "preloadProjectDependencies" : remainder) = projectDependencyTags <> injectIntoPage toInject remainder
+injectIntoPage toInject@(_, _, _, vsCodeTags, _) (TagComment "preloadVSCode" : remainder) = vsCodeTags <> injectIntoPage toInject remainder
+injectIntoPage toInject@(_, _, _, _, editorScriptTags) (TagComment "editorScript" : remainder) = editorScriptTags <> injectIntoPage toInject remainder
+injectIntoPage toInject (firstTag : remainder) = firstTag : injectIntoPage toInject remainder
+injectIntoPage _ [] = []
+
 renderPageWithMetadata :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe DB.DecodedProject -> Maybe Text -> Text -> ServerMonad H.Html
 renderPageWithMetadata possibleProjectID possibleMetadata possibleProject branchName pagePath = do
   indexHtml <- getEditorTextContent branchName pagePath
   siteRoot <- getSiteRoot
   cdnRoot <- getCDNRoot
-  let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
-  let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
-  let projectIDScriptHtml = maybe "" (\projectID -> toS $ renderHtml $ projectIDScript projectID) possibleProjectID
-  let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
-  let dependenciesHtml = toS $ renderHtml $ dependenciesHtmlFromProject cdnRoot possibleProject
-  let withPreloadedDependencies = T.replace "<!-- preloadProjectDependencies -->" dependenciesHtml withProjectIdWithSuffixScript
-  return $ H.preEscapedToHtml withPreloadedDependencies
+  commitHash <- getCommitHash
+  let ogTags = projectHTMLMetadata possibleMetadata siteRoot
+  let projectIDScriptTags = maybe [] projectIDScript possibleProjectID
+  let dependenciesTags = dependenciesHtmlFromProject cdnRoot possibleProject
+  let vscodePreloadTags = vscodePreloads cdnRoot commitHash
+  let parsedTags = parseTags indexHtml
+  let (reversedEditorScriptTags, reversedRemainingTags) = partitionOutScriptDefer False $ reverse parsedTags
+  let editorScriptTags = reverse reversedEditorScriptTags
+  let remainingTags = reverse reversedRemainingTags
+  let editorScriptPreloads = preloadsForScripts editorScriptTags
+  let updatedContent = injectIntoPage (ogTags, projectIDScriptTags, dependenciesTags, vscodePreloadTags, editorScriptPreloads <> editorScriptTags) remainingTags
+  return $ H.preEscapedToHtml $ renderTags updatedContent 
 
 innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
 innerProjectPage (Just _) UnknownProject _ branchName = do
@@ -405,9 +483,9 @@ servePath' defaultPathToServe settingsChange branchName = do
   pathToServe <- getPathToServe defaultPathToServe branchName
   let defaultSettings = defaultFileServerSettings pathToServe
   let withIndicesTurnedOff = defaultSettings { ssListing = Nothing, ssUseHash = True }
-  app <- serveDirectoryWith $ settingsChange withIndicesTurnedOff
+  appToServeWith <- serveDirectoryWith $ settingsChange withIndicesTurnedOff
   let gzipConfig = def{gzipFiles = GzipCompress}
-  return $ gzip gzipConfig app
+  return $ gzip gzipConfig appToServeWith
 
 servePath :: FilePath -> Maybe Text -> ServerMonad Application
 servePath pathToServe branchName = do

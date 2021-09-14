@@ -248,8 +248,8 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
   return $ action packageMetadata
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   semaphore <- fmap _nodeSemaphore ask
-  matchingVersionsCache <- fmap _matchingVersionsCache ask
-  packageMetadata <- liftIO $ findMatchingVersions semaphore matchingVersionsCache javascriptPackageName maybeJavascriptPackageVersion
+  versionsCache <- fmap _matchingVersionsCache ask
+  packageMetadata <- liftIO $ findMatchingVersions semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -266,8 +266,8 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   return $ action _editorMappings
 innerServerExecutor (GetPackagePackagerContent versionedPackageName action) = do
   semaphore <- fmap _nodeSemaphore ask
-  locksRef <- fmap _locksRef ask
-  packagerContent <- liftIO $ getPackagerContent semaphore locksRef versionedPackageName
+  packagerLocksRef <- fmap _locksRef ask
+  packagerContent <- liftIO $ getPackagerContent semaphore packagerLocksRef versionedPackageName
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
