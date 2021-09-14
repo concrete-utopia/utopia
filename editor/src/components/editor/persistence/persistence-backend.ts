@@ -75,36 +75,39 @@ async function checkProjectOwned(projectId: string): Promise<boolean> {
 }
 
 async function loadProject(projectId: string): Promise<ProjectLoadResult> {
-  const serverProject = await loadServerProject(projectId)
+  // Attempt to load a local version first in case changes were made whilst the user was offline
+  const localProject = (await loadLocalProject(projectId)) as LocalProject | null
 
-  switch (serverProject.type) {
-    case 'ProjectLoaded':
-      return {
-        type: 'PROJECT_LOAD_SUCCESS',
-        projectId: projectId,
-        projectModel: {
-          content: serverProject.content,
-          name: serverProject.title,
-        },
-      }
-    case 'ProjectNotFound':
-      const localProject = (await loadLocalProject(projectId)) as LocalProject | null
-      if (localProject == null) {
-        return {
-          type: 'PROJECT_NOT_FOUND',
-        }
-      } else {
+  if (localProject == null) {
+    const serverProject = await loadServerProject(projectId)
+
+    switch (serverProject.type) {
+      case 'ProjectLoaded':
         return {
           type: 'PROJECT_LOAD_SUCCESS',
           projectId: projectId,
           projectModel: {
-            content: localProject.model,
-            name: localProject.name,
+            content: serverProject.content,
+            name: serverProject.title,
           },
         }
-      }
-    default:
-      throw new Error(`Invalid project load response: ${serverProject}`)
+      case 'ProjectNotFound':
+        return {
+          type: 'PROJECT_NOT_FOUND',
+        }
+
+      default:
+        throw new Error(`Invalid project load response: ${serverProject}`)
+    }
+  } else {
+    return {
+      type: 'PROJECT_LOAD_SUCCESS',
+      projectId: projectId,
+      projectModel: {
+        content: localProject.model,
+        name: localProject.name,
+      },
+    }
   }
 }
 

@@ -54,7 +54,7 @@ interface ProjectNotFound {
   type: 'ProjectNotFound'
 }
 
-type LoadProjectResponse = ProjectLoaded | ProjectUnchanged | ProjectNotFound
+export type LoadProjectResponse = ProjectLoaded | ProjectUnchanged | ProjectNotFound
 
 interface SaveAssetResponse {
   id: string

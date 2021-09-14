@@ -457,7 +457,7 @@ export function editorDispatch(
     storedState.persistence.save(
       frozenEditorState.projectName,
       persistentModelFromEditorModel(frozenEditorState),
-      forceSave,
+      forceSave ? 'force' : 'throttle',
     )
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
     saveStoredState(storedState.editor.id, stateToStore)

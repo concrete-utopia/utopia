@@ -791,178 +791,12 @@ export const persistenceMachine = createMachine<
   },
 })
 
-let interpreter: Interpreter<PersistenceContext, any, PersistenceEvent> | null = null
-
-let SaveThrottle = 30000
-let lastSavedTS = 0
-let throttledSaveTimeoutId: NodeJS.Timer | null = null
-let waitingThrottledSaveEvent: SaveEvent | null
-
-function clearThrottledSave(): void {
-  if (throttledSaveTimeoutId != null) {
-    clearTimeout(throttledSaveTimeoutId)
-    throttledSaveTimeoutId = null
-  }
-
-  waitingThrottledSaveEvent = null
-}
-
-function sendThrottledSave(): void {
-  if (waitingThrottledSaveEvent != null) {
-    interpreter?.send(waitingThrottledSaveEvent)
-  }
-  clearThrottledSave()
-}
-
-export function initialisePersistence(
-  dispatch: EditorDispatch,
-  onProjectNotFound: () => void,
-  onCreatedOrLoadedProject: (
-    projectId: string,
-    projectName: string,
-    project: PersistentModel,
-  ) => void,
-) {
-  clearThrottledSave()
-  lastSavedTS = 0
-  let queuedActions: Array<EditorAction> = [] // Queue up actions during events and transitions, then dispatch when ready
-  if (interpreter != null) {
-    interpreter.stop()
-  }
-
-  interpreter = interpret(persistenceMachine)
-
-  interpreter.onTransition((state, event) => {
-    if (state.changed) {
-      switch (event.type) {
-        case 'NEW_PROJECT_CREATED':
-          onCreatedOrLoadedProject(
-            event.projectId,
-            event.projectModel.name,
-            event.projectModel.content,
-          )
-          break
-        case 'LOAD_COMPLETE':
-          onCreatedOrLoadedProject(
-            event.projectId,
-            event.projectModel.name,
-            event.projectModel.content,
-          )
-          break
-        case 'PROJECT_ID_CREATED':
-          queuedActions.push(setProjectID(event.projectId))
-          break
-        case 'LOAD_FAILED':
-          onProjectNotFound()
-          break
-        case 'DOWNLOAD_ASSETS_COMPLETE': {
-          if (state.matches({ core: { [Forking]: CreatingProjectId } })) {
-            queuedActions.push(setForkedFromProjectID(state.context.projectId!))
-            queuedActions.push(setProjectName(`${state.context.project!.name} (forked)`))
-            queuedActions.push(showToast(notice('Project successfully forked!')))
-          }
-
-          const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
-            ({ fileName, file }) => updateFile(fileName, file, true),
-          )
-          queuedActions.push(...updateFileActions)
-          break
-        }
-        case 'SAVE_COMPLETE':
-          const updateFileActions = event.saveResult.filesWithFileNames.map(({ fileName, file }) =>
-            updateFile(fileName, file, true),
-          )
-          queuedActions.push(...updateFileActions)
-          lastSavedTS = Date.now()
-          // TODO Show toasts after:
-          // [ ] first local save
-          // [ ] first server save
-          break
-      }
-
-      if (state.matches({ core: Ready })) {
-        if (queuedActions.length > 0) {
-          const actionsToDispatch = queuedActions
-          const projectIdOrNameChanged = actionsToDispatch.some(
-            (action) => action.action === 'SET_PROJECT_ID' || action.action === 'SET_PROJECT_NAME',
-          )
-          if (projectIdOrNameChanged) {
-            pushProjectURLToBrowserHistory(state.context.projectId!, state.context.project!.name)
-          }
-          queuedActions = []
-          dispatch(actionsToDispatch)
-        }
-      }
-    }
-  })
-
-  interpreter.start()
-}
-
-function getRemainingSaveDelay(): number {
-  return Math.max(0, lastSavedTS + SaveThrottle - Date.now())
-}
-
-function shouldThrottle(forced: boolean): boolean {
-  return !forced && getRemainingSaveDelay() > 0
-}
-
 export function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
   const queryParams = window.top.location.search
   const projectURL = projectURLForProject(projectId, projectName)
   const title = `Utopia ${projectName}`
   window.top.history.pushState({}, title, `${projectURL}${queryParams}`)
-}
-
-// API
-
-export function save(projectName: string, project: PersistentModel, forced: boolean = false): void {
-  const eventToFire = saveEvent({ name: projectName, content: project })
-
-  if (shouldThrottle(forced)) {
-    waitingThrottledSaveEvent = eventToFire
-    throttledSaveTimeoutId = setTimeout(sendThrottledSave, getRemainingSaveDelay())
-  } else {
-    interpreter?.send(eventToFire)
-  }
-}
-
-window.addEventListener('beforeunload', (e) => {
-  if (!isSafeToClose()) {
-    sendThrottledSave()
-    e.preventDefault()
-    e.returnValue = ''
-  }
-})
-
-function isSafeToClose(): boolean {
-  return waitingThrottledSaveEvent == null
-}
-
-export function load(projectId: string): void {
-  interpreter?.send(loadEvent(projectId))
-}
-
-export function createNew(): void {
-  interpreter?.send(newEvent())
-}
-
-export function fork(): void {
-  interpreter?.send(forkEvent())
-}
-
-export function login(): void {
-  interpreter?.send(userLogInEvent())
-}
-
-export function logout(): void {
-  interpreter?.send(userLogOutEvent())
-}
-
-// For testing purposes only
-export function setSaveThrottle(delay: number): void {
-  SaveThrottle = delay
 }
 
 export class PersistenceMachine {
@@ -1136,29 +970,34 @@ export class PersistenceMachine {
     this.waitingThrottledSaveEvent = null
   }
 
-  private sendThrottledSave(): void {
+  private getRemainingSaveDelay(): number {
+    return Math.max(0, this.lastSavedTS + this.saveThrottle - Date.now())
+  }
+
+  private shouldThrottle(forceOrThrottle: 'force' | 'throttle'): boolean {
+    return forceOrThrottle === 'throttle' && this.getRemainingSaveDelay() > 0
+  }
+
+  // Exposed for testing
+  sendThrottledSave(): void {
     if (this.waitingThrottledSaveEvent != null) {
       this.interpreter.send(this.waitingThrottledSaveEvent)
     }
     this.clearThrottledSave()
   }
 
-  private getRemainingSaveDelay(): number {
-    return Math.max(0, this.lastSavedTS + this.saveThrottle - Date.now())
-  }
-
-  private shouldThrottle(forced: boolean): boolean {
-    return !forced && this.getRemainingSaveDelay() > 0
-  }
-
   // API
 
-  save(projectName: string, project: PersistentModel, forced: boolean = false): void {
+  save(
+    projectName: string,
+    project: PersistentModel,
+    forceOrThrottle: 'force' | 'throttle' = 'throttle',
+  ): void {
     const eventToFire = saveEvent({ name: projectName, content: project })
 
-    if (this.shouldThrottle(forced)) {
+    if (this.shouldThrottle(forceOrThrottle)) {
       this.waitingThrottledSaveEvent = eventToFire
-      this.throttledSaveTimeoutId = setTimeout(sendThrottledSave, getRemainingSaveDelay())
+      this.throttledSaveTimeoutId = setTimeout(this.sendThrottledSave, this.getRemainingSaveDelay())
     } else {
       this.interpreter.send(eventToFire)
     }
@@ -1185,7 +1024,8 @@ export class PersistenceMachine {
   }
 
   stop(): void {
-    // FIXME Destructor?
+    this.interpreter.stop()
+    this.clearThrottledSave()
   }
 }
 
