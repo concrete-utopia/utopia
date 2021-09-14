@@ -51,7 +51,6 @@ import {
   SquareButton,
   Icons,
 } from '../../uuiui'
-import { isLocal } from '../editor/persistence'
 import { unless, when } from '../../utils/react-conditionals'
 import { AddingFile, applyAddingFile } from './filepath-utils'
 
@@ -99,7 +98,8 @@ function collectFileBrowserItems(
         modified: isModifiedFile(element),
         exportedFunction: false,
         isUploadedAssetFile:
-          !isLocal() && (element.type === 'IMAGE_FILE' || element.type === 'ASSET_FILE'),
+          (element.type === 'IMAGE_FILE' || element.type === 'ASSET_FILE') &&
+          element.base64 == undefined,
       })
       if (
         element.type === 'TEXT_FILE' &&

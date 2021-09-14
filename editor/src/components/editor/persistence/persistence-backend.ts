@@ -11,7 +11,6 @@ import { getFileExtension } from '../../../core/shared/file-utils'
 import { AssetFile, ImageFile } from '../../../core/shared/project-file-types'
 import { arrayContains } from '../../../core/shared/utils'
 import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
-import { LocalProject } from '../persistence'
 import { getPNGBufferOfElementWithID } from '../screenshot-utils'
 import {
   assetToSave,
@@ -31,6 +30,7 @@ import {
   ProjectModel,
   ProjectWithFileChanges,
   projectWithFileChanges,
+  LocalProject,
 } from './persistence-types'
 const { choose } = actions
 
@@ -64,7 +64,7 @@ async function getNewProjectId(): Promise<string> {
   return createNewProjectID()
 }
 
-async function checkProjectOwned(projectId: string): Promise<boolean> {
+export async function checkProjectOwned(projectId: string): Promise<boolean> {
   const existsLocally = await projectIsStoredLocally(projectId)
   if (existsLocally) {
     return true

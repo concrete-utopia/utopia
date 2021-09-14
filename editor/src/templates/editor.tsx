@@ -28,13 +28,6 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
-  createNewProject,
-  createNewProjectFromImportedProject,
-  loadFromLocalStorage,
-  loadFromServer,
-  projectIsStoredLocally,
-} from '../components/editor/persistence'
-import {
   InternalPreviewTimeout,
   previewIsAlive,
   startPreviewConnectedMonitoring,

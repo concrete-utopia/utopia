@@ -948,7 +948,6 @@ export class PersistenceMachine {
     this.interpreter.start()
 
     window.addEventListener('beforeunload', (e) => {
-      // FIXME bind this?
       if (!this.isSafeToClose()) {
         this.sendThrottledSave()
         e.preventDefault()
