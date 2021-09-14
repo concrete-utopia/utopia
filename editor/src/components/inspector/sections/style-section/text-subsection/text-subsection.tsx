@@ -25,7 +25,6 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { EditorAction } from '../../../../editor/action-types'
 import * as EditorActions from '../../../../editor/actions/action-creators'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
-import { measureTextFieldNew } from '../../../../text-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { CSSFontStyle, cssNumber, CSSTextDecorationLine } from '../../../common/css-utils'
 import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
@@ -43,6 +42,8 @@ import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
 import { FlexRow } from 'utopia-api'
+import { getControlStyles } from '../../../common/control-status'
+import { Utils } from '../../../../../uuiui-deps'
 
 const ObjectPathImmutable: any = OPI
 
@@ -72,8 +73,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 
   const textAlignMetadata = useInspectorStyleInfo('textAlign')
 
-  const textSizingMetadata = useInspectorElementInfo('textSizing')
-
   const textDecorationLineMetadata = useInspectorStyleInfo('textDecorationLine')
   const [onUnderlinedSubmitValue] = textDecorationLineMetadata.useSubmitValueFactory(
     updateUnderlinedTextDecoration,
@@ -91,7 +90,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
     fontStyleMetadata.controlStyles.unsettable ||
     fontSizeMetadata.controlStyles.unsettable ||
     textAlignMetadata.controlStyles.unsettable ||
-    textSizingMetadata.controlStyles.unsettable ||
     textDecorationLineMetadata.controlStyles.unsettable ||
     letterSpacingMetadata.controlStyles.unsettable ||
     lineHeightMetadata.controlStyles.unsettable
@@ -102,7 +100,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
     fontStyleMetadata.onUnsetValues()
     fontSizeMetadata.onUnsetValues()
     textAlignMetadata.onUnsetValues()
-    textSizingMetadata.onUnsetValues()
     textDecorationLineMetadata.onUnsetValues()
     letterSpacingMetadata.onUnsetValues()
     lineHeightMetadata.onUnsetValues()
@@ -123,12 +120,6 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
   const colorContextMenuItems = utils.stripNulls([
     colorMetadata.controlStyles.unsettable
       ? addOnUnsetValues(['color'], colorMetadata.onUnsetValues)
-      : null,
-  ])
-
-  const textSizingContextMenuItems = utils.stripNulls([
-    textSizingMetadata.controlStyles.unsettable
-      ? addOnUnsetValues(['textSizing'], textSizingMetadata.onUnsetValues)
       : null,
   ])
 
@@ -261,7 +252,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
       <PropertyRow style={{ gridColumnGap: 8 }}>
         <InspectorContextMenuWrapper
           id='textSizing-context-menu'
-          items={textSizingContextMenuItems}
+          items={[]}
           data={null}
           style={{ gridColumn: '1 / span 2' }}
         >
@@ -269,10 +260,10 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             id='textAutoSizing'
             key='textAutoSizing'
             testId='textAutoSizing'
-            controlStatus={textSizingMetadata.controlStatus}
-            controlStyles={textSizingMetadata.controlStyles}
-            onSubmitValue={textSizingMetadata.onSubmitValue}
-            value={textSizingMetadata.value}
+            controlStatus={'disabled'}
+            controlStyles={getControlStyles('disabled')}
+            onSubmitValue={Utils.NO_OP}
+            value={null}
             options={
               [
                 {
@@ -468,82 +459,3 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
   )
 })
 TextSubsection.displayName = 'TextSubsection'
-
-export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsection', () => {
-  const selectedViewsRef = usePropControlledRef_DANGEROUS(useSelectedViews())
-
-  const stateRef = useRefEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      componentMetadata: store.editor.jsxMetadata,
-    }
-  })
-
-  const inspectorContext = React.useContext(InspectorCallbackContext)
-
-  const onSubmitValue = React.useCallback(
-    async (newValue: JSXAttribute, propertyPath: PropertyPath, transient: boolean) => {
-      const selectedPaths = selectedViewsRef.current
-
-      let actions: Array<EditorAction> = []
-      for (let path of selectedPaths) {
-        const element = MetadataUtils.findElementByElementPath(
-          stateRef.current.componentMetadata,
-          path,
-        )
-
-        // if this is a value attribute update, let's resize autosizing text, because property change can
-        // affect size
-        if (isJSXAttributeValue(newValue)) {
-          const rawNewValue = newValue.value
-
-          const settingTextSizingToAuto =
-            PP.pathsEqual(propertyPath, PP.create(['textSizing'])) && rawNewValue == 'auto'
-
-          if (element != null && (element.props.textSizing == 'auto' || settingTextSizingToAuto)) {
-            // apply the current change to the prop for proper size measurement
-            const updatedProps = ObjectPathImmutable.set(
-              element.props,
-              propertyPath.propertyElements as any,
-              rawNewValue,
-            )
-            const updatedElement = {
-              ...element,
-              props: updatedProps,
-            }
-            const size = await measureTextFieldNew(updatedElement)
-            if (size.width != null && size.height != null) {
-              actions.push(EditorActions.updateFrameDimensions(path, size.width, size.height))
-            }
-          }
-          // if this is not a value attribute, set the text to fixed sizing, because we can not measure it anyway
-        } else if (element != null && element.props.textSizing == 'auto') {
-          actions.push(
-            EditorActions.setProp_UNSAFE(
-              path,
-              PP.create(['textSizing']),
-              jsxAttributeValue('fixed', emptyComments),
-            ),
-          )
-        }
-      }
-      stateRef.current.dispatch(actions, 'inspector')
-      inspectorContext.onSubmitValue(newValue, propertyPath, transient)
-    },
-    [stateRef, inspectorContext, selectedViewsRef],
-  )
-
-  const updatedContext = useKeepShallowReferenceEquality({
-    ...inspectorContext,
-    onSubmitValue: onSubmitValue,
-  })
-
-  return (
-    <>
-      <InspectorCallbackContext.Provider value={updatedContext}>
-        <TextSubsection />
-      </InspectorCallbackContext.Provider>
-    </>
-  )
-})
-AutosizingTextSubsection.displayName = 'AutosizingTextSubsection'

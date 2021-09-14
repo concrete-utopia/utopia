@@ -61,7 +61,8 @@ data ProductionServerResources = ProductionServerResources
                                , _locksRef                :: PackageVersionLocksRef
                                , _siteHost                :: Text
                                , _branchDownloads         :: Maybe BranchDownloads
-                                , _matchingVersionsCache  :: MatchingVersionsCache
+                               , _matchingVersionsCache   :: MatchingVersionsCache
+                               , _cdnHost                 :: Text
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -207,6 +208,10 @@ innerServerExecutor (GetSiteRoot action) = do
   hostOfServer <- fmap _siteHost ask
   let siteRoot = "https://" <> hostOfServer
   return $ action siteRoot
+innerServerExecutor (GetCDNRoot action) = do
+  hostOfCDN <- fmap _cdnHost ask
+  let cdnRoot = "https://" <> hostOfCDN
+  return $ action cdnRoot
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
   pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
@@ -275,6 +280,7 @@ initialiseResources = do
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
   _siteHost <- fmap toS $ getEnv "SITE_HOST"
+  _cdnHost <- fmap toS $ getEnv "CDN_HOST"
   _branchDownloads <- createBranchDownloads
   _locksRef <- newIORef mempty
   _matchingVersionsCache <- newMatchingVersionsCache

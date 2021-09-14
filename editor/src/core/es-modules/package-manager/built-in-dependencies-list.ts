@@ -45,6 +45,8 @@ function builtInDependency(
   }
 }
 
+// Ensure this is kept up to date with:
+// server/src/Utopia/Web/Packager/NPM.hs
 export const BuiltInDependencies: Array<BuiltInDependency> = [
   builtInDependency('utopia-api', UtopiaAPI, utopiaAPIPackageJSON.version),
   builtInDependency('uuiui', UUIUI, editorPackageJSON.version),

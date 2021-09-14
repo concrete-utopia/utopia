@@ -1553,7 +1553,10 @@ export const UPDATE_FNS = {
         )
       },
     )
-    initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch)
+    const storyboardFile = getContentsTreeFileFromString(parsedProjectFiles, StoryboardFilePath)
+    const openFilePath = storyboardFile != null ? StoryboardFilePath : null
+    initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch, openFilePath)
+
     const parsedModel = {
       ...migratedModel,
       projectContents: parsedProjectFiles,
@@ -3418,7 +3421,12 @@ export const UPDATE_FNS = {
     if (vscodeBridgeId.type === 'VSCODE_BRIDGE_ID_DEFAULT') {
       vscodeBridgeId = vsCodeBridgeIdProjectId(action.id)
       // Side effect.
-      initVSCodeBridge(action.id, editor.projectContents, dispatch)
+      initVSCodeBridge(
+        action.id,
+        editor.projectContents,
+        dispatch,
+        editor.canvas.openFile?.filename ?? null,
+      )
     }
     return {
       ...editor,

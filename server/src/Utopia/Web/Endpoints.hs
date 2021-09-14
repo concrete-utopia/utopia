@@ -40,6 +40,7 @@ import           Utopia.Web.ClientModel
 import           Utopia.Web.Database.Types
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Executors.Common
+import           Utopia.Web.Packager.NPM
 import           Utopia.Web.Proxy
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
@@ -167,45 +168,63 @@ projectDetailsToPossibleMetadata UnknownProject = Nothing
 projectDetailsToPossibleMetadata (ReservedProjectID _) = Nothing
 projectDetailsToPossibleMetadata (ProjectDetailsMetadata metadata) = Just metadata
 
-renderPageWithMetadata :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> Text -> ServerMonad H.Html
-renderPageWithMetadata possibleProjectID possibleMetadata branchName pagePath = do
+dependencyPreload :: Text -> ProjectDependency -> H.Html
+dependencyPreload cdnRoot ProjectDependency{..} =
+  let dependencyURL = cdnRoot <> "/" <> packagerLink dependencyName dependencyVersion
+      linkHtml = H.link ! HA.href (H.toValue dependencyURL) ! HA.rel "preload" ! H.customAttribute "as" "fetch"
+   in linkHtml <> H.toMarkup ("\n    " :: Text)
+
+dependenciesHtmlFromProject :: Text -> Maybe DB.DecodedProject -> H.Html
+dependenciesHtmlFromProject _ Nothing = mempty
+dependenciesHtmlFromProject cdnRoot (Just decodedProject) = do
+  let dependencies = getProjectDependenciesFromPackageJSON decodedProject
+  let withoutProvidedDependencies = filter (\ProjectDependency{..} -> notElem dependencyName providedDependencies) dependencies
+  foldMap (dependencyPreload cdnRoot) withoutProvidedDependencies
+
+renderPageWithMetadata :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe DB.DecodedProject -> Maybe Text -> Text -> ServerMonad H.Html
+renderPageWithMetadata possibleProjectID possibleMetadata possibleProject branchName pagePath = do
   indexHtml <- getEditorTextContent branchName pagePath
   siteRoot <- getSiteRoot
+  cdnRoot <- getCDNRoot
   let ogTags = toS $ renderHtml $ projectHTMLMetadata possibleMetadata siteRoot
   let withOgTags = T.replace "<!-- ogTags -->" ogTags indexHtml
   let projectIDScriptHtml = maybe "" (\projectID -> toS $ renderHtml $ projectIDScript projectID) possibleProjectID
   let withProjectIdWithSuffixScript = T.replace "<!-- projectIDScript -->" projectIDScriptHtml withOgTags
-  return $ H.preEscapedToHtml withProjectIdWithSuffixScript
+  let dependenciesHtml = toS $ renderHtml $ dependenciesHtmlFromProject cdnRoot possibleProject
+  let withPreloadedDependencies = T.replace "<!-- preloadProjectDependencies -->" dependenciesHtml withProjectIdWithSuffixScript
+  return $ H.preEscapedToHtml withPreloadedDependencies
 
-innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe Text -> ServerMonad H.Html
-innerProjectPage (Just _) UnknownProject branchName = do
+innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
+innerProjectPage (Just _) UnknownProject _ branchName = do
   projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
   return $ H.preEscapedToHtml projectNotFoundHtml
-innerProjectPage possibleProjectID details branchName = do
-  renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) branchName "index.html"
+innerProjectPage possibleProjectID details possibleProject branchName = do
+  renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "index.html"
 
 projectPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
 projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
   possibleMetadata <- getProjectMetadata projectID
-  innerProjectPage (Just projectIDWithSuffix) possibleMetadata branchName
+  possibleProject <- loadProject projectID
+  innerProjectPage (Just projectIDWithSuffix) possibleMetadata possibleProject branchName
 
 emptyProjectPage :: Maybe Text -> ServerMonad H.Html
-emptyProjectPage branchName = innerProjectPage Nothing UnknownProject branchName
+emptyProjectPage branchName = innerProjectPage Nothing UnknownProject Nothing branchName
 
-innerPreviewPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe Text -> ServerMonad H.Html
-innerPreviewPage (Just _) UnknownProject branchName = do
+innerPreviewPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
+innerPreviewPage (Just _) UnknownProject _ branchName = do
   projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
   return $ H.preEscapedToHtml projectNotFoundHtml
-innerPreviewPage possibleProjectID details branchName = do
-  renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) branchName "preview.html"
+innerPreviewPage possibleProjectID details possibleProject branchName = do
+  renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "preview.html"
 
 previewPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
 previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
   possibleMetadata <- getProjectMetadata projectID
-  innerPreviewPage (Just projectIDWithSuffix) possibleMetadata branchName
+  possibleProject <- loadProject projectID
+  innerPreviewPage (Just projectIDWithSuffix) possibleMetadata possibleProject branchName
 
 emptyPreviewPage :: Maybe Text -> ServerMonad H.Html
-emptyPreviewPage branchName = innerPreviewPage Nothing UnknownProject branchName
+emptyPreviewPage branchName = innerPreviewPage Nothing UnknownProject Nothing branchName
 
 getUserEndpoint :: Maybe Text -> ServerMonad UserResponse
 getUserEndpoint cookie = checkForUser cookie maybeSessionUserToUser
