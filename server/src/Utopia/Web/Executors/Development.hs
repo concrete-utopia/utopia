@@ -95,7 +95,7 @@ dummyUser :: Text -> UserDetails
 dummyUser cdnRoot = UserDetails { userDetailsUserId  = "1"
                         , userDetailsEmail   = Just "team@utopia.app"
                         , userDetailsName    = Just "Utopian Worker #296"
-                        , userDetailsPicture = Just (cdnRoot <> "/editor/utopia-icon.png")
+                        , userDetailsPicture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
                         }
 
 {-|
