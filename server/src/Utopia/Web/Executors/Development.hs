@@ -93,10 +93,10 @@ localAuthURL = "/authenticate?code=logmein&state=shrugemoji"
 
 dummyUser :: Text -> UserDetails
 dummyUser cdnRoot = UserDetails { userDetailsUserId  = "1"
-                        , userDetailsEmail   = Just "team@utopia.app"
-                        , userDetailsName    = Just "Utopian Worker #296"
-                        , userDetailsPicture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
-                        }
+                                , userDetailsEmail   = Just "team@utopia.app"
+                                , userDetailsName    = Just "Utopian Worker #296"
+                                , userDetailsPicture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
+                                }
 
 {-|
   Fallback for validating the authentication code in the case where Auth0 isn't setup locally.

@@ -143,7 +143,7 @@ data ProjectDependency = ProjectDependency
                        deriving (Eq, Show, Generic)
 
 data MinimalPackageJSON = MinimalPackageJSON
-                        { dependencies :: Maybe (Map.HashMap Text Text)
+                        { dependencies    :: Maybe (Map.HashMap Text Text)
                         , devDependencies :: Maybe (Map.HashMap Text Text)
                         }
                         deriving (Eq, Show, Generic)
