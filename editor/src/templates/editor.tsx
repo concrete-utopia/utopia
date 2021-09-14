@@ -263,22 +263,12 @@ export class Editor {
           this.storedState.persistence.load(projectId)
         }
 
-        // if (projectId == null) {
-        //   // Check if this is a github import
+        // FIXME Restore github project importing
+
         //   const urlParams = new URLSearchParams(window.location.search)
         //   const githubOwner = urlParams.get('github_owner')
         //   const githubRepo = urlParams.get('github_repo')
-        //   if (isCookiesOrLocalForageUnavailable(loginState)) {
-        //     createNewProject(this.boundDispatch, () =>
-        //       renderRootComponent(
-        //         this.utopiaStoreHook,
-        //         this.utopiaStoreApi,
-        //         this.spyCollector,
-        //         true,
-        //         this.storedState.editor.vscodeBridgeReady,
-        //       ),
-        //     )
-        //   } else if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
+        //   if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
         //     // TODO Should we require users to be logged in for this?
         //     downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
         //       if (isRequestFailure(repoResult)) {
@@ -318,65 +308,7 @@ export class Editor {
         //     })
         //   } else if (githubOwner != null && githubRepo != null) {
         //     renderProjectLoadError('Github repo import is only supported for logged in users')
-        //   } else {
-        //     createNewProject(this.boundDispatch, () =>
-        //       renderRootComponent(
-        //         this.utopiaStoreHook,
-        //         this.utopiaStoreApi,
-        //         this.spyCollector,
-        //         true,
-        //         this.storedState.editor.vscodeBridgeReady,
-        //       ),
-        //     )
         //   }
-        // } else if (isCookiesOrLocalForageUnavailable(loginState)) {
-        //   createNewProject(this.boundDispatch, () =>
-        //     renderRootComponent(
-        //       this.utopiaStoreHook,
-        //       this.utopiaStoreApi,
-        //       this.spyCollector,
-        //       true,
-        //       this.storedState.editor.vscodeBridgeReady,
-        //     ),
-        //   )
-        // } else {
-        //   projectIsStoredLocally(projectId).then((isLocal) => {
-        //     if (isLocal) {
-        //       loadFromLocalStorage(
-        //         projectId,
-        //         this.boundDispatch,
-        //         isLoggedIn(loginState),
-        //         this.storedState.workers,
-        //         () =>
-        //           renderRootComponent(
-        //             this.utopiaStoreHook,
-        //             this.utopiaStoreApi,
-        //             this.spyCollector,
-        //             true,
-        //             this.storedState.editor.vscodeBridgeReady,
-        //           ),
-        //       )
-        //     } else {
-        //       loadFromServer(
-        //         projectId,
-        //         this.boundDispatch,
-        //         this.storedState.workers,
-        //         () => {
-        //           renderRootComponent(
-        //             this.utopiaStoreHook,
-        //             this.utopiaStoreApi,
-        //             this.spyCollector,
-        //             true,
-        //             this.storedState.editor.vscodeBridgeReady,
-        //           )
-        //         },
-        //         () => {
-        //           renderProjectNotFound()
-        //         },
-        //       )
-        //     }
-        //   })
-        // }
       })
     })
   }

@@ -379,6 +379,12 @@ const queueClear = assign<PersistenceContext, PersistenceEvent>({
   queuedSave: undefined,
 })
 
+const logError = (context: PersistenceContext, event: PersistenceEvent) => {
+  if (event.type === 'BACKEND_ERROR') {
+    console.error(event.message)
+  }
+}
+
 function createNewProjectModel(): Promise<ProjectModel> {
   return Promise.resolve({
     name: createNewProjectName(),
@@ -634,7 +640,10 @@ export const persistenceMachine = createMachine<
             SAVE: {
               actions: queuePush,
             },
-            BACKEND_ERROR: Ready,
+            BACKEND_ERROR: {
+              target: Ready,
+              actions: logError,
+            },
           },
         },
         [Loading]: {
@@ -675,7 +684,10 @@ export const persistenceMachine = createMachine<
           },
           onDone: Ready,
           on: {
-            BACKEND_ERROR: Ready,
+            BACKEND_ERROR: {
+              target: Ready,
+              actions: logError,
+            },
             LOAD_FAILED: {
               target: Empty,
               actions: assign((_context, _event) => {
@@ -716,7 +728,11 @@ export const persistenceMachine = createMachine<
                 }
               }),
             },
-            BACKEND_ERROR: Ready,
+
+            BACKEND_ERROR: {
+              target: Ready,
+              actions: logError,
+            },
           },
         },
         [Forking]: {
@@ -761,7 +777,11 @@ export const persistenceMachine = createMachine<
             SAVE: {
               actions: queuePush,
             },
-            BACKEND_ERROR: Ready,
+
+            BACKEND_ERROR: {
+              target: Ready,
+              actions: logError,
+            },
           },
         },
       },
@@ -1011,10 +1031,3 @@ export class PersistenceMachine {
     this.clearThrottledSave()
   }
 }
-
-// createNewProjectFromImportedProject
-// Error handling for:
-// [ ] Failed Save
-// [ ] Failed Fork
-// [ ] Failed (non-404) Load
-// [ ] Failed New

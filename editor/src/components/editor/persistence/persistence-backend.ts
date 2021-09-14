@@ -97,7 +97,7 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult> {
         }
 
       default:
-        throw new Error(`Invalid project load response: ${serverProject}`)
+        throw new Error(`Invalid project load response: ${JSON.stringify(serverProject)}`)
     }
   } else {
     return {
