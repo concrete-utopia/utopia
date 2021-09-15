@@ -1,6 +1,8 @@
 {-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE TypeApplications  #-}
 
 module Utopia.Web.Editor.Branches where
 
@@ -11,6 +13,8 @@ import           Control.Lens
 import           Control.Monad
 import           Control.Monad.Trans.Maybe
 import qualified Data.ByteString.Lazy      as BSL
+import           Data.Generics.Product
+import           Data.Generics.Sum
 import qualified Data.HashMap.Strict       as M
 import           Data.IORef
 import qualified Data.Text                 as T
@@ -31,33 +35,41 @@ fullSemaphoreLimit = 100
 data BranchDownloadResult = BranchDownloadSuccess FilePath
                           | BranchDownloadFailure SomeException
                           | BranchDownloadNotStarted
+                          deriving (Show, Generic)
 
 data BranchDownload = BranchDownload
-                    { _branchDownloadResult    :: BranchDownloadResult
-                    , _branchDownloadSemaphore :: QSemN
+                    { branchDownloadResult    :: BranchDownloadResult
+                    , branchDownloadSemaphore :: QSemN
                     }
+                    deriving (Generic)
 
 type BranchDownloadsMap = M.HashMap Text BranchDownload
 
 data BranchDownloads = BranchDownloads
-                     { _branchDownloadsContent              :: IORef BranchDownloadsMap
-                     , _branchDownloadsBaseFolder           :: FilePath
-                     , _branchDownloadsAWSAccessKey         :: Text
-                     , _branchDownloadsAWSSecretKey         :: Text
-                     , _branchDownloadsAWSRegion            :: Text
-                     , _branchDownloadsAWSBucket            :: Text
-                     , _branchDownloadsURLTextToReplace     :: Text
-                     , _branchDownloadsReplaceURLTextWith   :: Text
+                     { branchDownloadsContent              :: IORef BranchDownloadsMap
+                     , branchDownloadsBaseFolder           :: FilePath
+                     , branchDownloadsAWSAccessKey         :: Text
+                     , branchDownloadsAWSSecretKey         :: Text
+                     , branchDownloadsAWSRegion            :: Text
+                     , branchDownloadsAWSBucket            :: Text
+                     , branchDownloadsURLTextToReplace     :: Text
+                     , branchDownloadsReplaceURLTextWith   :: Text
                      }
+                     deriving (Generic)
 
 fixBranchName :: Text -> Text
 fixBranchName = T.replace "/" "-"
 
+getDownloadedLocalFolders :: BranchDownloads -> IO [FilePath]
+getDownloadedLocalFolders BranchDownloads{..} = do
+  currentDownloads <- readIORef branchDownloadsContent
+  pure $ toListOf (traverse . field @"branchDownloadResult" . _Ctor @"BranchDownloadSuccess") currentDownloads
+
 getLocalFolder :: BranchDownloads -> Text -> IO FilePath
 getLocalFolder BranchDownloads{..} branchName = do
   let fixedBranchName = fixBranchName branchName
-  absoluteBaseFolder <- makeAbsolute _branchDownloadsBaseFolder
-  let branchFolder = _branchDownloadsBaseFolder </> toS fixedBranchName
+  absoluteBaseFolder <- makeAbsolute branchDownloadsBaseFolder
+  let branchFolder = branchDownloadsBaseFolder </> toS fixedBranchName
   absoluteBranchFolder <- makeAbsolute branchFolder
   -- Ensure the path isn't pointing up to parent directories and potentially reaching
   -- something it shouldn't.
@@ -69,24 +81,24 @@ getLocalFolder BranchDownloads{..} branchName = do
 getOptionalEnv :: Text -> MaybeT IO Text
 getOptionalEnv envVar = do
   result <- fmap toS $ MaybeT $ lookupEnv $ toS envVar
-  return result
+  pure result
 
 createBranchDownloads :: IO (Maybe BranchDownloads)
 createBranchDownloads = runMaybeT $ do
-  _branchDownloadsContent <- liftIO $ newIORef mempty
-  let _branchDownloadsBaseFolder = "./.branches-content"
-  _branchDownloadsAWSAccessKey <- getOptionalEnv "STAGING_BUNDLE_ACCESS_KEY"
-  _branchDownloadsAWSSecretKey <- getOptionalEnv "STAGING_BUNDLE_SECRET_ACCESS_KEY"
-  _branchDownloadsAWSBucket <- getOptionalEnv "STAGING_BUNDLE_S3_BUCKET"
-  _branchDownloadsAWSRegion <- getOptionalEnv "STAGING_BUNDLE_REGION"
-  _branchDownloadsURLTextToReplace <- getOptionalEnv "STAGING_BUNDLE_URL_TEXT_TO_REPLACE"
-  _branchDownloadsReplaceURLTextWith <- getOptionalEnv "STAGING_BUNDLE_REPLACE_URL_TEXT_WITH"
-  return $ BranchDownloads{..}
+  branchDownloadsContent <- liftIO $ newIORef mempty
+  let branchDownloadsBaseFolder = "./.branches-content"
+  branchDownloadsAWSAccessKey <- getOptionalEnv "STAGING_BUNDLE_ACCESS_KEY"
+  branchDownloadsAWSSecretKey <- getOptionalEnv "STAGING_BUNDLE_SECRET_ACCESS_KEY"
+  branchDownloadsAWSBucket <- getOptionalEnv "STAGING_BUNDLE_S3_BUCKET"
+  branchDownloadsAWSRegion <- getOptionalEnv "STAGING_BUNDLE_REGION"
+  branchDownloadsURLTextToReplace <- getOptionalEnv "STAGING_BUNDLE_URL_TEXT_TO_REPLACE"
+  branchDownloadsReplaceURLTextWith <- getOptionalEnv "STAGING_BUNDLE_REPLACE_URL_TEXT_WITH"
+  pure $ BranchDownloads{..}
 
 newBranchDownload :: IO BranchDownload
 newBranchDownload = do
-  _branchDownloadSemaphore <- newQSemN fullSemaphoreLimit
-  let _branchDownloadResult = BranchDownloadNotStarted
+  branchDownloadSemaphore <- newQSemN fullSemaphoreLimit
+  let branchDownloadResult = BranchDownloadNotStarted
   pure BranchDownload{..}
 
 addDownloadStorage :: Text -> BranchDownload -> BranchDownloadsMap -> (BranchDownloadsMap, BranchDownload)
@@ -99,25 +111,25 @@ addDownloadStorage branchName newDownload downloads =
 getBranchDownload :: BranchDownloads -> Text -> IO BranchDownload
 getBranchDownload BranchDownloads{..} branchName = do
   defaultedBranchDownload <- newBranchDownload
-  atomicModifyIORef' _branchDownloadsContent (addDownloadStorage branchName defaultedBranchDownload)
+  atomicModifyIORef' branchDownloadsContent (addDownloadStorage branchName defaultedBranchDownload)
 
 readLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
 readLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
   BranchDownload{..} <- getBranchDownload branchDownloads branchName
-  bracket_ (waitQSemN _branchDownloadSemaphore 1) (signalQSemN _branchDownloadSemaphore 1) $ do
+  bracket_ (waitQSemN branchDownloadSemaphore 1) (signalQSemN branchDownloadSemaphore 1) $ do
     action
 
 writeLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
 writeLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
   BranchDownload{..} <- getBranchDownload branchDownloads branchName
-  bracket_ (waitQSemN _branchDownloadSemaphore fullSemaphoreLimit) (signalQSemN _branchDownloadSemaphore fullSemaphoreLimit) $ do
+  bracket_ (waitQSemN branchDownloadSemaphore fullSemaphoreLimit) (signalQSemN branchDownloadSemaphore fullSemaphoreLimit) $ do
     action
 
 elevateIntoWriteLockForBranch :: BranchDownloads -> Text -> IO a -> IO a
 elevateIntoWriteLockForBranch branchDownloads@BranchDownloads{..} branchName action = do
   BranchDownload{..} <- getBranchDownload branchDownloads branchName
   -- Reverse of the read lock, nesting will lead to bad times.
-  bracket_ (signalQSemN _branchDownloadSemaphore 1) (waitQSemN _branchDownloadSemaphore 1) $ do
+  bracket_ (signalQSemN branchDownloadSemaphore 1) (waitQSemN branchDownloadSemaphore 1) $ do
     writeLockForBranch branchDownloads branchName action
 
 writeEntry :: FilePath -> IO () -> Entry -> IO ()
@@ -141,12 +153,12 @@ updateDownloadResultMap :: Text -> BranchDownloadResult -> BranchDownloadsMap ->
 updateDownloadResultMap branchName downloadResult downloads =
   let lookupResult = M.lookup branchName downloads
       nonExistant = (downloads, False)
-      downloadExists _ = (M.adjust (\result -> result { _branchDownloadResult = downloadResult }) branchName downloads, True)
+      downloadExists _ = (M.adjust (\result -> result { branchDownloadResult = downloadResult }) branchName downloads, True)
   in  maybe nonExistant downloadExists lookupResult
 
 updateDownloadResult :: BranchDownloads -> Text -> BranchDownloadResult -> IO ()
 updateDownloadResult BranchDownloads{..} branchName result = do
-  updateResult <- atomicModifyIORef' _branchDownloadsContent (updateDownloadResultMap branchName result)
+  updateResult <- atomicModifyIORef' branchDownloadsContent (updateDownloadResultMap branchName result)
   unless updateResult $ fail ("Non-existant download result for " <> toS branchName <> ".")
 
 triggerDownloadAsNeeded :: BranchDownloads -> Text -> BranchDownloadResult -> IO FilePath
@@ -156,8 +168,8 @@ triggerDownloadAsNeeded branchDownloads@BranchDownloads{..} branchName BranchDow
   putText ("Downloading for branch " <> branchName)
   let fixedBranchName = fixBranchName branchName
   branchFolder <- getLocalFolder branchDownloads branchName
-  let wreqOptions = W.defaults & W.auth ?~ W.awsAuth W.AWSv4 (toS _branchDownloadsAWSAccessKey) (toS _branchDownloadsAWSSecretKey)
-  let targetURL = "https://" <> _branchDownloadsAWSBucket <> ".s3.amazonaws.com/editor/" <> fixedBranchName <> ".tar.gz"
+  let wreqOptions = W.defaults & W.auth ?~ W.awsAuth W.AWSv4 (toS branchDownloadsAWSAccessKey) (toS branchDownloadsAWSSecretKey)
+  let targetURL = "https://" <> branchDownloadsAWSBucket <> ".s3.amazonaws.com/editor/" <> fixedBranchName <> ".tar.gz"
   -- Warning, this expects to be launched inside a read locked context.
   elevateIntoWriteLockForBranch branchDownloads branchName $ do
     -- On an error put that into the download MVar.
@@ -179,8 +191,8 @@ getBranchBundleFolder branchDownloads branchName = downloadBranchBundle branchDo
 downloadBranchBundle :: BranchDownloads -> Text -> (FilePath -> IO a) -> IO a
 downloadBranchBundle branchDownloads@BranchDownloads{..} branchName action = readLockForBranch branchDownloads branchName $ do
   defaultedBranchDownload <- newBranchDownload
-  download <- atomicModifyIORef' _branchDownloadsContent (addDownloadStorage branchName defaultedBranchDownload)
-  branchPath <- triggerDownloadAsNeeded branchDownloads branchName (_branchDownloadResult download)
+  download <- atomicModifyIORef' branchDownloadsContent (addDownloadStorage branchName defaultedBranchDownload)
+  branchPath <- triggerDownloadAsNeeded branchDownloads branchName (branchDownloadResult download)
   action branchPath
 
 deleteBranchCache :: BranchDownloads -> Text -> IO ()
@@ -195,7 +207,7 @@ deleteBranchCache branchDownloads@BranchDownloads{..} branchName = do
 rewriteURL :: BranchDownloads -> QueryParam -> Text -> Text
 rewriteURL BranchDownloads{..} branchNameQueryParam possibleURL =
       -- Straight replacement of some textual part of the URL, which is easy to specify in environment variables.
-  let replacedText = T.replace _branchDownloadsURLTextToReplace _branchDownloadsReplaceURLTextWith possibleURL
+  let replacedText = T.replace branchDownloadsURLTextToReplace branchDownloadsReplaceURLTextWith possibleURL
       -- Parse the URL so that it can be manipulated later.
       parsedURI = mkURI replacedText
       -- Function for inserting the branch name query parameter into the parsed form, then produces the rendered URL.
@@ -232,5 +244,5 @@ readBranchHTMLContent downloads@BranchDownloads{..} branchName fileToLoad = do
     branchNameAttributeKey <- mkQueryKey "branch_name"
     let branchNameQueryParam = QueryParam branchNameAttributeKey branchNameQueryValue
     let updatedTags = fmap (rewriteTag downloads branchNameQueryParam) parsedTags
-    return $ renderTags updatedTags
+    pure $ renderTags updatedTags
 
