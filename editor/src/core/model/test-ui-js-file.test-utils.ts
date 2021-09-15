@@ -277,7 +277,6 @@ const mainComponentForTests = utopiaJSXComponent(
             },
             emptyComments,
           ),
-          textSizing: jsxAttributeValue('auto', emptyComments),
           'data-uid': jsxAttributeValue('hhh', emptyComments),
         }),
         [],

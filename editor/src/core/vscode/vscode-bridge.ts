@@ -162,6 +162,7 @@ export async function initVSCodeBridge(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
+  openFilePath: string | null,
 ): Promise<void> {
   async function innerInit(): Promise<void> {
     dispatch([markVSCodeBridgeReady(false)], 'everyone')
@@ -192,6 +193,9 @@ export async function initVSCodeBridge(
       })
       sendGetUtopiaVSCodeConfigMessage()
       watchForChanges(dispatch)
+      if (openFilePath != null) {
+        sendOpenFileMessage(openFilePath)
+      }
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }

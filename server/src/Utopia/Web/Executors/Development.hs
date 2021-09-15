@@ -91,12 +91,12 @@ handleAuthCodeResponse action response = do
 localAuthURL :: Text
 localAuthURL = "/authenticate?code=logmein&state=shrugemoji"
 
-dummyUser :: UserDetails
-dummyUser = UserDetails { userDetailsUserId  = "1"
-                        , userDetailsEmail   = Just "team@utopia.app"
-                        , userDetailsName    = Just "Utopian Worker #296"
-                        , userDetailsPicture = Just "https://utopia.app/editor/avatars/utopino3.png"
-                        }
+dummyUser :: Text -> UserDetails
+dummyUser cdnRoot = UserDetails { userDetailsUserId  = "1"
+                                , userDetailsEmail   = Just "team@utopia.app"
+                                , userDetailsName    = Just "Utopian Worker #296"
+                                , userDetailsPicture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
+                                }
 
 {-|
   Fallback for validating the authentication code in the case where Auth0 isn't setup locally.
@@ -106,7 +106,9 @@ localAuthCodeCheck "logmein" action = do
   sessionStore <- fmap _sessionState ask
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  successfulAuthCheck metrics pool sessionStore action dummyUser
+  portOfServer <- fmap _serverPort ask
+  let cdnRoot = "http://localhost:" <> show portOfServer
+  successfulAuthCheck metrics pool sessionStore action $ dummyUser cdnRoot
 localAuthCodeCheck _ action = do
   return $ action Nothing
 
@@ -246,8 +248,8 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
   return $ action packageMetadata
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   semaphore <- fmap _nodeSemaphore ask
-  matchingVersionsCache <- fmap _matchingVersionsCache ask
-  packageMetadata <- liftIO $ findMatchingVersions semaphore matchingVersionsCache javascriptPackageName maybeJavascriptPackageVersion
+  versionsCache <- fmap _matchingVersionsCache ask
+  packageMetadata <- liftIO $ findMatchingVersions semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -264,12 +266,16 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   return $ action _editorMappings
 innerServerExecutor (GetPackagePackagerContent versionedPackageName action) = do
   semaphore <- fmap _nodeSemaphore ask
-  locksRef <- fmap _locksRef ask
-  packagerContent <- liftIO $ getPackagerContent semaphore locksRef versionedPackageName
+  packagerLocksRef <- fmap _locksRef ask
+  packagerContent <- liftIO $ getPackagerContent semaphore packagerLocksRef versionedPackageName
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
 innerServerExecutor (GetSiteRoot action) = do
+  portOfServer <- fmap _serverPort ask
+  let siteRoot = "http://localhost:" <> show portOfServer
+  return $ action siteRoot
+innerServerExecutor (GetCDNRoot action) = do
   portOfServer <- fmap _serverPort ask
   let siteRoot = "http://localhost:" <> show portOfServer
   return $ action siteRoot

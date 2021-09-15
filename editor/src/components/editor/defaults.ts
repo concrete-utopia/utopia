@@ -6,6 +6,7 @@ import {
   jsxAttributesFromMap,
   JSXElementChildren,
   emptyComments,
+  jsxTextBlock,
 } from '../../core/shared/element-template'
 import { NormalisedFrame } from 'utopia-api'
 
@@ -93,10 +94,9 @@ export function defaultTextElement(uid: string): JSXElement {
         },
         emptyComments,
       ),
-      text: jsxAttributeValue('Text', emptyComments),
       'data-uid': jsxAttributeValue(uid, emptyComments),
     }),
-    [],
+    [jsxTextBlock('Text')],
   )
 }
 

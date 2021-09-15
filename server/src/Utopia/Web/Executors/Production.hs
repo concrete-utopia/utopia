@@ -61,7 +61,8 @@ data ProductionServerResources = ProductionServerResources
                                , _locksRef                :: PackageVersionLocksRef
                                , _siteHost                :: Text
                                , _branchDownloads         :: Maybe BranchDownloads
-                                , _matchingVersionsCache  :: MatchingVersionsCache
+                               , _matchingVersionsCache   :: MatchingVersionsCache
+                               , _cdnHost                 :: Text
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -182,8 +183,8 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
   return $ action packageMetadata
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   semaphore <- fmap _nodeSemaphore ask
-  matchingVersionsCache <- fmap _matchingVersionsCache ask
-  packageMetadata <- liftIO $ findMatchingVersions semaphore matchingVersionsCache javascriptPackageName maybeJavascriptPackageVersion
+  versionsCache <- fmap _matchingVersionsCache ask
+  packageMetadata <- liftIO $ findMatchingVersions semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -198,8 +199,8 @@ innerServerExecutor (GetHashedAssetPaths action) = do
   return $ action _editorMappings
 innerServerExecutor (GetPackagePackagerContent versionedPackageName action) = do
   semaphore <- fmap _nodeSemaphore ask
-  locksRef <- fmap _locksRef ask
-  packagerContent <- liftIO $ getPackagerContent semaphore locksRef versionedPackageName
+  packagerLocksRef <- fmap _locksRef ask
+  packagerContent <- liftIO $ getPackagerContent semaphore packagerLocksRef versionedPackageName
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
@@ -207,6 +208,10 @@ innerServerExecutor (GetSiteRoot action) = do
   hostOfServer <- fmap _siteHost ask
   let siteRoot = "https://" <> hostOfServer
   return $ action siteRoot
+innerServerExecutor (GetCDNRoot action) = do
+  hostOfCDN <- fmap _cdnHost ask
+  let cdnRoot = "https://" <> hostOfCDN
+  return $ action cdnRoot
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
   pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
@@ -275,6 +280,7 @@ initialiseResources = do
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
   _siteHost <- fmap toS $ getEnv "SITE_HOST"
+  _cdnHost <- fmap toS $ getEnv "CDN_HOST"
   _branchDownloads <- createBranchDownloads
   _locksRef <- newIORef mempty
   _matchingVersionsCache <- newMatchingVersionsCache

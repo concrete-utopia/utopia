@@ -714,7 +714,11 @@ export const MetadataUtils = {
       const element = elementEither.value
       if (isJSXElement(element) && isUtopiaAPIComponentFromMetadata(instance)) {
         // Explicitly prevent components / elements that we *know* don't support children
-        return isViewLikeFromMetadata(instance) || isSceneFromMetadata(instance)
+        return (
+          isViewLikeFromMetadata(instance) ||
+          isSceneFromMetadata(instance) ||
+          isGivenUtopiaElementFromMetadata(instance, 'Text')
+        )
       } else {
         // We don't know at this stage
         return true

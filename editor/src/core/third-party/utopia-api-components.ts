@@ -4,7 +4,12 @@ import {
   DependencyBoundDescriptors,
   ComponentDescriptor,
 } from './third-party-types'
-import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
+import {
+  JSXElementChildren,
+  jsxElementName,
+  jsxElementWithoutUID,
+  jsxTextBlock,
+} from '../shared/element-template'
 import { PropertyControls } from 'utopia-api'
 import { getDefaultPropsAsAttributes } from './shared'
 
@@ -12,13 +17,14 @@ function createBasicUtopiaComponent(
   baseVariable: string,
   name: string,
   propertyControls: PropertyControls | null,
+  children: JSXElementChildren = [],
 ): ComponentDescriptor {
   const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
   return componentDescriptor(
     {
       'utopia-api': importDetails(null, [importAlias(baseVariable)], null),
     },
-    jsxElementWithoutUID(jsxElementName(baseVariable, []), defaultAttributes, []),
+    jsxElementWithoutUID(jsxElementName(baseVariable, []), defaultAttributes, children),
     name,
     propertyControls,
   )
@@ -36,7 +42,7 @@ export const UtopiaApiComponents: DependencyBoundDescriptors = {
     components: [
       createBasicUtopiaComponent('Ellipse', 'Ellipse', StyleObjectProps),
       createBasicUtopiaComponent('Rectangle', 'Rectangle', StyleObjectProps),
-      createBasicUtopiaComponent('Text', 'Text', StyleObjectProps),
+      createBasicUtopiaComponent('Text', 'Text', StyleObjectProps, [jsxTextBlock('Utopia')]),
       createBasicUtopiaComponent('View', 'View', StyleObjectProps),
       createBasicUtopiaComponent('FlexRow', 'FlexRow', StyleObjectProps),
       createBasicUtopiaComponent('FlexCol', 'FlexCol', StyleObjectProps),

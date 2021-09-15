@@ -48,7 +48,6 @@ import {
 import { InsertMenu } from '../editor/insertmenu'
 import { DerivedState, EditorState, LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
 import { UIGridRow } from '../inspector/widgets/ui-grid-row'
 import { DependencyList } from './dependency-list'
@@ -99,7 +98,6 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         backgroundColor: colorTheme.leftPaneBackground.value,
         paddingLeft: 4,
       }}
-      onMouseDown={() => closeTextEditorIfPresent()}
     >
       <div
         id={LeftPaneOverflowScrollId}
