@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e83d456103edba455f137157039a03c0c8ffec40f6796a1389ac1cacf963ee6f
+-- hash: adf78f12b8a13baf00c23769be7544868d8b3259901648968bebebc54b9941d1
 
 name:           utopia-web
 version:        0.1.0.4
@@ -52,7 +52,7 @@ executable utopia-web
   hs-source-dirs:
       src
   default-extensions: NoImplicitPrelude
-  ghc-options: -threaded -rtsopts
+  ghc-options: -Wall -threaded -rtsopts
   extra-libraries:
       z
   build-depends:
@@ -171,7 +171,7 @@ test-suite utopia-web-test
       test
       src
   default-extensions: NoImplicitPrelude
-  ghc-options: -threaded -rtsopts
+  ghc-options: -Wall -threaded -rtsopts
   extra-libraries:
       z
   build-depends:
