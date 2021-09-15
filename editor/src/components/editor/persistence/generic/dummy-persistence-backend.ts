@@ -1,4 +1,3 @@
-import { v4 as UUID } from 'uuid'
 import {
   PersistenceBackendAPI,
   ProjectLoadResult,
@@ -8,9 +7,10 @@ import {
 } from './persistence-types'
 
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
+let projectCounter = 0
 
 function getNewProjectId(): Promise<string> {
-  return Promise.resolve(UUID())
+  return Promise.resolve(`Project_${projectCounter++}`)
 }
 
 function checkProjectOwned(projectId: string): Promise<boolean> {

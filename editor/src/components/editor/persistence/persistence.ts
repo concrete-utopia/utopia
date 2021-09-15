@@ -74,68 +74,7 @@ export class PersistenceMachine {
     ) => void,
     private saveThrottle: number = 30000,
   ) {
-    this.interpreter = interpret(
-      createPersistenceMachine<PersistentModel, ProjectFile>().withConfig({
-        services: {
-          getNewProjectId: backendAPI.getNewProjectId,
-          checkProjectOwned: (_, event) => {
-            if (event.type === 'BACKEND_CHECK_OWNERSHIP') {
-              return backendAPI.checkProjectOwned(event.projectId)
-            } else {
-              throw new Error(
-                `Incorrect event type triggered check ownership, ${JSON.stringify(event)}`,
-              )
-            }
-          },
-          downloadAssets: (_, event) => {
-            if (event.type === 'BACKEND_DOWNLOAD_ASSETS') {
-              return backendAPI.downloadAssets(event.projectId, event.projectModel)
-            } else {
-              throw new Error(
-                `Incorrect event type triggered asset download, ${JSON.stringify(event)}`,
-              )
-            }
-          },
-          saveProjectToServer: (context, event) => {
-            if (
-              event.type === 'BACKEND_SERVER_SAVE' &&
-              event.projectModel != null &&
-              context.projectId != null
-            ) {
-              return backendAPI.saveProjectToServer(context.projectId, event.projectModel)
-            } else {
-              throw new Error(
-                `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
-                  event,
-                )}`,
-              )
-            }
-          },
-          saveProjectLocally: (context, event) => {
-            if (
-              event.type === 'BACKEND_LOCAL_SAVE' &&
-              event.projectModel != null &&
-              context.projectId != null
-            ) {
-              return backendAPI.saveProjectLocally(context.projectId, event.projectModel)
-            } else {
-              throw new Error(
-                `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
-                  event,
-                )}`,
-              )
-            }
-          },
-          loadProject: (_, event) => {
-            if (event.type === 'BACKEND_LOAD') {
-              return backendAPI.loadProject(event.projectId)
-            } else {
-              throw new Error(`Invalid event type triggered project load ${JSON.stringify(event)}`)
-            }
-          },
-        },
-      }),
-    )
+    this.interpreter = interpret(createPersistenceMachine<PersistentModel, ProjectFile>(backendAPI))
 
     this.interpreter.onTransition((state, event) => {
       if (state.changed) {

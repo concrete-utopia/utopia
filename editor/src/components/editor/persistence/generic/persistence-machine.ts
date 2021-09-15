@@ -1,10 +1,15 @@
 import { actions, assign, createMachine, DoneInvokeEvent, send } from 'xstate'
 import type { Model } from 'xstate/lib/model.types'
-import { ProjectLoadResult, ProjectModel, ProjectWithFileChanges } from './persistence-types'
+import {
+  PersistenceBackendAPI,
+  ProjectLoadResult,
+  ProjectModel,
+  ProjectWithFileChanges,
+} from './persistence-types'
 const { choose } = actions
 
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
-// To use this in the visualiser, copy everything from the generic files into one, and use the VisualiserBackend
+// To use this in the visualiser, copy everything from the generic files into one, and call createPersistenceMachine(VisualiserBackend)
 
 interface NewEvent<ModelType> {
   type: 'NEW'
@@ -350,7 +355,9 @@ export const BackendLoading = 'loading'
 export const LoggedOut = 'logged-out'
 export const LoggedIn = 'logged-in'
 
-export function createPersistenceMachine<ModelType, FileType>() {
+export function createPersistenceMachine<ModelType, FileType>(
+  backendAPI: PersistenceBackendAPI<ModelType, FileType>,
+) {
   const queuePush = assign<PersistenceContext<ModelType>, SaveEvent<ModelType>>(
     (_context, event) => {
       return {
@@ -762,6 +769,63 @@ export function createPersistenceMachine<ModelType, FileType>() {
             },
           },
         },
+      },
+    },
+  }).withConfig({
+    services: {
+      getNewProjectId: backendAPI.getNewProjectId,
+      checkProjectOwned: (_, event) => {
+        if (event.type === 'BACKEND_CHECK_OWNERSHIP') {
+          return backendAPI.checkProjectOwned(event.projectId)
+        } else {
+          throw new Error(
+            `Incorrect event type triggered check ownership, ${JSON.stringify(event)}`,
+          )
+        }
+      },
+      downloadAssets: (_, event) => {
+        if (event.type === 'BACKEND_DOWNLOAD_ASSETS') {
+          return backendAPI.downloadAssets(event.projectId, event.projectModel)
+        } else {
+          throw new Error(`Incorrect event type triggered asset download, ${JSON.stringify(event)}`)
+        }
+      },
+      saveProjectToServer: (context, event) => {
+        if (
+          event.type === 'BACKEND_SERVER_SAVE' &&
+          event.projectModel != null &&
+          context.projectId != null
+        ) {
+          return backendAPI.saveProjectToServer(context.projectId, event.projectModel)
+        } else {
+          throw new Error(
+            `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
+              event,
+            )}`,
+          )
+        }
+      },
+      saveProjectLocally: (context, event) => {
+        if (
+          event.type === 'BACKEND_LOCAL_SAVE' &&
+          event.projectModel != null &&
+          context.projectId != null
+        ) {
+          return backendAPI.saveProjectLocally(context.projectId, event.projectModel)
+        } else {
+          throw new Error(
+            `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
+              event,
+            )}`,
+          )
+        }
+      },
+      loadProject: (_, event) => {
+        if (event.type === 'BACKEND_LOAD') {
+          return backendAPI.loadProject(event.projectId)
+        } else {
+          throw new Error(`Invalid event type triggered project load ${JSON.stringify(event)}`)
+        }
       },
     },
   })
