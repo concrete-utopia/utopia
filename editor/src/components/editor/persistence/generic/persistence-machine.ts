@@ -599,7 +599,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                   ],
                   on: {
                     PROJECT_ID_CREATED: {
-                      target: ProjectCreated,
                       actions: [
                         assign({ projectId: (_, event) => event.projectId }),
                         send((context, event) =>
@@ -607,6 +606,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                         ),
                       ],
                     },
+                    NEW_PROJECT_CREATED: ProjectCreated,
                   },
                 },
                 [ProjectCreated]: { type: 'final' },

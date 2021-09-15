@@ -62,6 +62,7 @@ export class PersistenceMachine {
   private throttledSaveTimeoutId: NodeJS.Timer | null = null
   private waitingThrottledSaveEvent: SaveEvent<PersistentModel> | null = null
   private queuedActions: Array<EditorAction> = [] // Queue up actions during events and transitions, then dispatch when ready
+  private projectCreatedOrLoadedThisTick: boolean = false
 
   constructor(
     backendAPI: PersistenceBackendAPI<PersistentModel, ProjectFile>,
@@ -88,18 +89,10 @@ export class PersistenceMachine {
               )
             }
 
-            onCreatedOrLoadedProject(
-              event.projectId,
-              event.projectModel.name,
-              event.projectModel.content,
-            )
+            this.projectCreatedOrLoadedThisTick = true
             break
           case 'LOAD_COMPLETE':
-            onCreatedOrLoadedProject(
-              event.projectId,
-              event.projectModel.name,
-              event.projectModel.content,
-            )
+            this.projectCreatedOrLoadedThisTick = true
             break
           case 'PROJECT_ID_CREATED':
             this.queuedActions.push(setProjectID(event.projectId))
@@ -131,6 +124,16 @@ export class PersistenceMachine {
         }
 
         if (state.matches({ core: Ready })) {
+          if (this.projectCreatedOrLoadedThisTick) {
+            this.projectCreatedOrLoadedThisTick = false
+
+            onCreatedOrLoadedProject(
+              state.context.projectId!,
+              state.context.project!.name,
+              state.context.project!.content,
+            )
+          }
+
           if (this.queuedActions.length > 0) {
             const actionsToDispatch = this.queuedActions
             const projectIdOrNameChanged = actionsToDispatch.some(

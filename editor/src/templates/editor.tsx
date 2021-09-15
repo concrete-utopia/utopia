@@ -55,6 +55,7 @@ import {
   UserState,
   PersistentModel,
   createNewProjectName,
+  persistentModelForProjectContents,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -259,58 +260,49 @@ export class Editor {
           this.storedState.persistence.login()
         }
 
-        if (isCookiesOrLocalForageUnavailable(loginState) || projectId == null) {
+        const urlParams = new URLSearchParams(window.location.search)
+        const githubOwner = urlParams.get('github_owner')
+        const githubRepo = urlParams.get('github_repo')
+
+        if (isCookiesOrLocalForageUnavailable(loginState)) {
           this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
+        } else if (projectId == null) {
+          if (githubOwner != null && githubRepo != null) {
+            replaceLoadingMessage('Downloading Repo...')
+
+            downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
+              if (isRequestFailure(repoResult)) {
+                if (repoResult.statusCode === 404) {
+                  renderProjectNotFound()
+                } else {
+                  renderProjectLoadError(repoResult.errorMessage)
+                }
+              } else {
+                replaceLoadingMessage('Importing Project...')
+
+                const projectName = `${githubOwner}-${githubRepo}`
+                importZippedGitProject(projectName, repoResult.value)
+                  .then((importProjectResult) => {
+                    if (isProjectImportSuccess(importProjectResult)) {
+                      const importedProject = persistentModelForProjectContents(
+                        importProjectResult.contents,
+                      )
+                      this.storedState.persistence.createNew(projectName, importedProject)
+                    } else {
+                      renderProjectLoadError(importProjectResult.errorMessage)
+                    }
+                  })
+                  .catch((err) => {
+                    console.error('Import error.', err)
+                  })
+              }
+            })
+          } else {
+            this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
+          }
         } else {
           this.storedState.persistence.load(projectId)
         }
-
-        // FIXME Restore github project importing
-
-        //   const urlParams = new URLSearchParams(window.location.search)
-        //   const githubOwner = urlParams.get('github_owner')
-        //   const githubRepo = urlParams.get('github_repo')
-        //   if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
-        //     // TODO Should we require users to be logged in for this?
-        //     downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-        //       if (isRequestFailure(repoResult)) {
-        //         if (repoResult.statusCode === 404) {
-        //           renderProjectNotFound()
-        //         } else {
-        //           renderProjectLoadError(repoResult.errorMessage)
-        //         }
-        //       } else {
-        //         const projectName = `${githubOwner}-${githubRepo}`
-        //         replaceLoadingMessage('Downloading Repo...')
-        //         importZippedGitProject(projectName, repoResult.value)
-        //           .then((importProjectResult) => {
-        //             if (isProjectImportSuccess(importProjectResult)) {
-        //               replaceLoadingMessage('Importing Project...')
-        //               createNewProjectFromImportedProject(
-        //                 importProjectResult,
-        //                 this.storedState.workers,
-        //                 this.boundDispatch,
-        //                 () =>
-        //                   renderRootComponent(
-        //                     this.utopiaStoreHook,
-        //                     this.utopiaStoreApi,
-        //                     this.spyCollector,
-        //                     true,
-        //                     this.storedState.editor.vscodeBridgeReady,
-        //                   ),
-        //               )
-        //             } else {
-        //               renderProjectLoadError(importProjectResult.errorMessage)
-        //             }
-        //           })
-        //           .catch((err) => {
-        //             console.error('Import error.', err)
-        //           })
-        //       }
-        //     })
-        //   } else if (githubOwner != null && githubRepo != null) {
-        //     renderProjectLoadError('Github repo import is only supported for logged in users')
-        //   }
       })
     })
   }
