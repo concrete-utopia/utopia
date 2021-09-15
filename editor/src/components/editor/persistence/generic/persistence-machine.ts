@@ -330,7 +330,6 @@ export const Forking = 'forking'
 
 // InternalCreatingNewStates
 export const CreatingProjectId = 'creating-project-id'
-export const ProjectIdCreated = 'project-id-created'
 export const ProjectCreated = 'project-created'
 
 // InternalLoadingStates
