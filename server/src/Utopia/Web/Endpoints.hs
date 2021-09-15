@@ -225,24 +225,25 @@ isEditorJSSrcAttribute _ = Any False
 isScriptJSElementWithDefer :: [Attribute Text] -> Bool
 isScriptJSElementWithDefer attributes = foldMap (isDeferAttribute &&& isEditorJSSrcAttribute) attributes == (Any True, Any True)
 
-partitionOutScriptDefer :: Bool -> TagSoupTags -> (TagSoupTags, TagSoupTags)
-partitionOutScriptDefer False (closeHead@(TagClose "head") : remainder) =
-  ([], closeHead : []) <> partitionOutScriptDefer True remainder
-partitionOutScriptDefer False (firstTag : remainder) =
-  ([], firstTag : []) <> partitionOutScriptDefer False remainder
-partitionOutScriptDefer False [] = ([], [])
-partitionOutScriptDefer True (firstTag@(TagClose "script") : secondTag@(TagOpen "script" attributes) : remainder) = 
-  let ifScript = (firstTag : secondTag : TagText "\n    " : [], []) <> partitionOutScriptDefer True remainder
-      ifNotScript = ([], firstTag : secondTag : []) <> partitionOutScriptDefer True remainder
+partitionOutScriptDefer :: Bool -> TagSoupTags -> [Text]
+partitionOutScriptDefer False (TagClose "head" : remainder) =
+  partitionOutScriptDefer True remainder
+partitionOutScriptDefer False (_ : remainder) =
+  partitionOutScriptDefer False remainder
+partitionOutScriptDefer False [] = []
+partitionOutScriptDefer True (TagClose "script" : secondTag@(TagOpen "script" attributes) : remainder) = 
+  let ifScript = fromAttrib "src" secondTag : partitionOutScriptDefer True remainder
+      ifNotScript = partitionOutScriptDefer True remainder
    in if isScriptJSElementWithDefer attributes then ifScript else ifNotScript
-partitionOutScriptDefer True remainder = ([], remainder)
+partitionOutScriptDefer True _ = [] 
 
-preloadsForScripts :: TagSoupTags -> TagSoupTags
-preloadsForScripts (TagOpen "script" attributes : remainder) =
-  let srcURL = fmap snd $ find (\(attrName, _) -> attrName == "src") attributes
-      forRemainder = preloadsForScripts remainder
-   in maybe forRemainder (\url -> TagOpen "link" [("href", url), ("rel", "preload"), ("as", "script")] : TagClose "link" : TagText "\n    " : forRemainder) srcURL
-preloadsForScripts (_ : remainder) = preloadsForScripts remainder
+preloadsForScripts :: [Text] -> TagSoupTags
+preloadsForScripts (srcURL : remainder) =
+  let forRemainder = preloadsForScripts remainder
+      openTag = TagOpen "link" [("href", srcURL), ("rel", "preload"), ("as", "script")]
+      closeTag = TagClose "link"
+      textTag = TagText "\n    "
+   in openTag : closeTag : textTag : forRemainder
 preloadsForScripts [] = []
 
 injectIntoPage :: (TagSoupTags, TagSoupTags, TagSoupTags, TagSoupTags, TagSoupTags) -> TagSoupTags -> TagSoupTags
@@ -265,11 +266,12 @@ renderPageWithMetadata possibleProjectID possibleMetadata possibleProject branch
   let dependenciesTags = dependenciesHtmlFromProject cdnRoot possibleProject
   let vscodePreloadTags = vscodePreloads cdnRoot commitHash
   let parsedTags = parseTags indexHtml
-  let (reversedEditorScriptTags, reversedRemainingTags) = partitionOutScriptDefer False $ reverse parsedTags
-  let editorScriptTags = reverse reversedEditorScriptTags
-  let remainingTags = reverse reversedRemainingTags
-  let editorScriptPreloads = preloadsForScripts editorScriptTags
-  let updatedContent = injectIntoPage (ogTags, projectIDScriptTags, dependenciesTags, vscodePreloadTags, editorScriptPreloads <> editorScriptTags) remainingTags
+  -- Parse these in reverse because webpack puts the editor script content at the end
+  -- of the head element, so we can more easily look for that by looking for the `head`
+  -- close tag and then lifting the script elements from there.
+  let reversedEditorScriptTags = partitionOutScriptDefer False $ reverse parsedTags
+  let editorScriptPreloads = preloadsForScripts $ reverse reversedEditorScriptTags
+  let updatedContent = injectIntoPage (ogTags, projectIDScriptTags, dependenciesTags, vscodePreloadTags, editorScriptPreloads) parsedTags 
   return $ H.preEscapedToHtml $ renderTags updatedContent 
 
 innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
