@@ -390,443 +390,448 @@ export function createPersistenceMachine<ModelType, FileType>(
     Model<PersistenceContext<ModelType>, PersistenceEvent<ModelType, FileType>>,
     PersistenceContext<ModelType>,
     PersistenceEvent<ModelType, FileType>
-  >({
-    id: 'persistence-parallel',
-    type: 'parallel',
-    context: { projectOwned: false, loggedIn: false },
-    states: {
-      // Backend Communication
-      backend: {
-        id: 'backend',
-        initial: BackendIdle,
-        states: {
-          [BackendIdle]: {
-            on: {
-              BACKEND_CREATE_PROJECT_ID: BackendCreatingProjectId,
-              BACKEND_CHECK_OWNERSHIP: BackendCheckingOwnership,
-              BACKEND_DOWNLOAD_ASSETS: BackendDownloadingAssets,
-              BACKEND_SERVER_SAVE: BackendServerSaving,
-              BACKEND_LOCAL_SAVE: BackendLocalSaving,
-              BACKEND_LOAD: BackendLoading,
-            },
-          },
-          [BackendCreatingProjectId]: {
-            invoke: {
-              id: 'create-project-id',
-              src: 'getNewProjectId',
-              onDone: {
-                target: BackendIdle,
-                actions: [
-                  send((_, event: DoneInvokeEvent<string>) => projectIdCreatedEvent(event.data)),
-                ],
-              },
-              onError: {
-                target: BackendIdle,
-                actions: send((_, event) => backendErrorEvent(event.data)),
+  >(
+    {
+      id: 'persistence-parallel',
+      type: 'parallel',
+      context: { projectOwned: false, loggedIn: false },
+      states: {
+        // Backend Communication
+        backend: {
+          id: 'backend',
+          initial: BackendIdle,
+          states: {
+            [BackendIdle]: {
+              on: {
+                BACKEND_CREATE_PROJECT_ID: BackendCreatingProjectId,
+                BACKEND_CHECK_OWNERSHIP: BackendCheckingOwnership,
+                BACKEND_DOWNLOAD_ASSETS: BackendDownloadingAssets,
+                BACKEND_SERVER_SAVE: BackendServerSaving,
+                BACKEND_LOCAL_SAVE: BackendLocalSaving,
+                BACKEND_LOAD: BackendLoading,
               },
             },
-          },
-          [BackendCheckingOwnership]: {
-            invoke: {
-              id: 'check-ownership',
-              src: 'checkProjectOwned',
-              onDone: {
-                target: BackendIdle,
-                actions: [
-                  send((_, event: DoneInvokeEvent<boolean>) =>
-                    checkOwnershipCompleteEvent(event.data),
+            [BackendCreatingProjectId]: {
+              invoke: {
+                id: 'create-project-id',
+                src: 'getNewProjectId',
+                onDone: {
+                  target: BackendIdle,
+                  actions: [
+                    send((_, event: DoneInvokeEvent<string>) => projectIdCreatedEvent(event.data)),
+                  ],
+                },
+                onError: {
+                  target: BackendIdle,
+                  actions: send((_, event) => backendErrorEvent(event.data)),
+                },
+              },
+            },
+            [BackendCheckingOwnership]: {
+              invoke: {
+                id: 'check-ownership',
+                src: 'checkProjectOwned',
+                onDone: {
+                  target: BackendIdle,
+                  actions: [
+                    send((_, event: DoneInvokeEvent<boolean>) =>
+                      checkOwnershipCompleteEvent(event.data),
+                    ),
+                  ],
+                },
+                onError: {
+                  target: BackendIdle,
+                  actions: send((_, event) => backendErrorEvent(event.data)),
+                },
+              },
+            },
+            [BackendDownloadingAssets]: {
+              invoke: {
+                id: 'download-assets',
+                src: 'downloadAssets',
+                onDone: {
+                  target: BackendIdle,
+                  actions: [
+                    send((_, event: DoneInvokeEvent<ProjectWithFileChanges<ModelType, FileType>>) =>
+                      downloadAssetsCompleteEvent(event.data),
+                    ),
+                  ],
+                },
+                onError: {
+                  target: BackendIdle,
+                  actions: send((_, event) => backendErrorEvent(event.data)),
+                },
+              },
+            },
+            [BackendServerSaving]: {
+              invoke: {
+                id: 'server-save-project',
+                src: 'saveProjectToServer',
+                onDone: {
+                  target: BackendIdle,
+                  actions: send(
+                    (_, event: DoneInvokeEvent<ProjectWithFileChanges<ModelType, FileType>>) =>
+                      saveCompleteEvent(event.data),
                   ),
-                ],
-              },
-              onError: {
-                target: BackendIdle,
-                actions: send((_, event) => backendErrorEvent(event.data)),
+                },
+                onError: {
+                  target: BackendIdle,
+                  actions: send((_, event) => backendErrorEvent(event.data)),
+                },
               },
             },
-          },
-          [BackendDownloadingAssets]: {
-            invoke: {
-              id: 'download-assets',
-              src: 'downloadAssets',
-              onDone: {
-                target: BackendIdle,
-                actions: [
-                  send((_, event: DoneInvokeEvent<ProjectWithFileChanges<ModelType, FileType>>) =>
-                    downloadAssetsCompleteEvent(event.data),
+            [BackendLocalSaving]: {
+              invoke: {
+                id: 'local-save-project',
+                src: 'saveProjectLocally',
+                onDone: {
+                  target: BackendIdle,
+                  actions: send(
+                    (_, event: DoneInvokeEvent<ProjectWithFileChanges<ModelType, FileType>>) =>
+                      saveCompleteEvent(event.data),
                   ),
-                ],
-              },
-              onError: {
-                target: BackendIdle,
-                actions: send((_, event) => backendErrorEvent(event.data)),
-              },
-            },
-          },
-          [BackendServerSaving]: {
-            invoke: {
-              id: 'server-save-project',
-              src: 'saveProjectToServer',
-              onDone: {
-                target: BackendIdle,
-                actions: send(
-                  (_, event: DoneInvokeEvent<ProjectWithFileChanges<ModelType, FileType>>) =>
-                    saveCompleteEvent(event.data),
-                ),
-              },
-              onError: {
-                target: BackendIdle,
-                actions: send((_, event) => backendErrorEvent(event.data)),
-              },
-            },
-          },
-          [BackendLocalSaving]: {
-            invoke: {
-              id: 'local-save-project',
-              src: 'saveProjectLocally',
-              onDone: {
-                target: BackendIdle,
-                actions: send(
-                  (_, event: DoneInvokeEvent<ProjectWithFileChanges<ModelType, FileType>>) =>
-                    saveCompleteEvent(event.data),
-                ),
-              },
-              onError: {
-                target: BackendIdle,
-                actions: send((_, event) => backendErrorEvent(event.data)),
-              },
-            },
-          },
-          [BackendLoading]: {
-            invoke: {
-              id: 'load-project',
-              src: 'loadProject',
-              onDone: {
-                target: BackendIdle,
-                actions: [
-                  send((_, event: DoneInvokeEvent<ProjectLoadResult<ModelType>>) => {
-                    if (event.data.type === 'PROJECT_LOAD_SUCCESS') {
-                      return loadCompleteEvent(event.data.projectId, event.data.projectModel)
-                    } else {
-                      return loadFailedEvent()
-                    }
-                  }),
-                ],
-              },
-              onError: {
-                target: BackendIdle,
-                actions: send((_, event) => backendErrorEvent(event.data)),
-              },
-            },
-          },
-        },
-      },
-
-      // User Log In State
-      user: {
-        id: 'user',
-        initial: LoggedOut,
-        states: {
-          [LoggedOut]: {
-            on: {
-              USER_LOG_IN: {
-                target: LoggedIn,
-                actions: assign({ loggedIn: (_context, _event) => true }),
-              },
-            },
-          },
-          [LoggedIn]: {
-            on: {
-              USER_LOG_OUT: {
-                target: LoggedOut,
-                actions: assign({ loggedIn: (_context, _event) => false }),
-              },
-            },
-          },
-        },
-      },
-
-      // Core Machine
-      core: {
-        id: 'persistence-core',
-        initial: Empty,
-        states: {
-          // Idle states
-          [Empty]: {
-            on: {
-              NEW: CreatingNew,
-              LOAD: Loading,
-            },
-          },
-          [Ready]: {
-            entry: checkQueue,
-            exit: queueClear,
-            on: {
-              NEW: CreatingNew,
-              LOAD: Loading,
-              SAVE: [
-                {
-                  cond: (context, _) => context.projectOwned,
-                  target: Saving,
                 },
-                { target: Forking },
-              ],
-              FORK: Forking,
-              USER_LOG_IN: [
-                {
-                  cond: (context, _) => context.projectOwned,
-                  actions: send((context, _) => saveEvent(context.project!)),
-                },
-              ],
-            },
-          },
-
-          // Intermediate states
-          [CreatingNew]: {
-            initial: CreatingProjectId,
-            states: {
-              [CreatingProjectId]: {
-                entry: [
-                  assign((_, event) => {
-                    return {
-                      projectId: undefined,
-                      project: (event as NewEvent<ModelType>).projectModel,
-                      queuedSave: undefined,
-                      projectOwned: true,
-                    }
-                  }),
-                  send(backendCreateProjectIdEvent()),
-                ],
-                on: {
-                  PROJECT_ID_CREATED: {
-                    target: ProjectCreated,
-                    actions: [
-                      assign({ projectId: (_, event) => event.projectId }),
-                      send((context, event) =>
-                        newProjectCreatedEvent(event.projectId, context.project!),
-                      ),
-                    ],
-                  },
+                onError: {
+                  target: BackendIdle,
+                  actions: send((_, event) => backendErrorEvent(event.data)),
                 },
               },
-              [ProjectCreated]: { type: 'final' },
             },
-            onDone: {
-              actions: send((context, _) => innerSave(context.project!)),
-            },
-            on: {
-              INNER_SAVE: Saving,
-              SAVE: {
-                actions: queuePush,
-              },
-              BACKEND_ERROR: {
-                target: Ready,
-                actions: logError,
-              },
-            },
-          },
-          [Loading]: {
-            initial: LoadingProject,
-            states: {
-              [LoadingProject]: {
-                entry: choose([
-                  {
-                    cond: (_, event) => event.type === 'LOAD',
-                    actions: send((_, event) => backendLoadEvent((event as LoadEvent).projectId)),
-                  },
-                ]),
-                on: {
-                  LOAD_COMPLETE: {
-                    target: CheckingOwnership,
-                    actions: assign((_, event) => {
-                      return {
-                        projectId: event.projectId,
-                        project: event.projectModel,
-                        queuedSave: undefined,
+            [BackendLoading]: {
+              invoke: {
+                id: 'load-project',
+                src: 'loadProject',
+                onDone: {
+                  target: BackendIdle,
+                  actions: [
+                    send((_, event: DoneInvokeEvent<ProjectLoadResult<ModelType>>) => {
+                      if (event.data.type === 'PROJECT_LOAD_SUCCESS') {
+                        return loadCompleteEvent(event.data.projectId, event.data.projectModel)
+                      } else {
+                        return loadFailedEvent()
                       }
                     }),
-                  },
+                  ],
                 },
-              },
-              [CheckingOwnership]: {
-                entry: send((context, _) => backendCheckOwnershipEvent(context.projectId!)),
-                on: {
-                  CHECK_OWNERSHIP_COMPLETE: {
-                    target: ProjectLoaded,
-                    actions: assign({
-                      projectOwned: (_, event) => event.isOwner,
-                    }),
-                  },
+                onError: {
+                  target: BackendIdle,
+                  actions: send((_, event) => backendErrorEvent(event.data)),
                 },
-              },
-              [ProjectLoaded]: { type: 'final' },
-            },
-            onDone: Ready,
-            on: {
-              BACKEND_ERROR: {
-                target: Ready,
-                actions: logError,
-              },
-              LOAD_FAILED: {
-                target: Empty,
-                actions: assign((_context, _event) => {
-                  return {
-                    projectId: undefined,
-                    project: undefined,
-                    queuedSave: undefined,
-                    projectOwned: false,
-                  }
-                }),
               },
             },
           },
-          [Saving]: {
-            entry: choose([
-              {
-                cond: (context, _) => context.loggedIn,
-                actions: send((context, event) =>
-                  backendServerSaveEvent(
-                    context.projectId!,
-                    (event as SaveEvent<ModelType>).projectModel,
-                  ),
-                ),
-              },
-              {
-                actions: send((context, event) =>
-                  backendLocalSaveEvent(
-                    context.projectId!,
-                    (event as SaveEvent<ModelType>).projectModel,
-                  ),
-                ),
-              },
-            ]),
-            on: {
-              SAVE: {
-                actions: queuePush,
-              },
-              SAVE_COMPLETE: {
-                target: Ready,
-                actions: assign((_context, event) => {
-                  return {
-                    projectOwned: true,
-                    project: event.saveResult.projectModel,
-                  }
-                }),
-              },
+        },
 
-              BACKEND_ERROR: {
-                target: Ready,
-                actions: logError,
+        // User Log In State
+        user: {
+          id: 'user',
+          initial: LoggedOut,
+          states: {
+            [LoggedOut]: {
+              on: {
+                USER_LOG_IN: {
+                  target: LoggedIn,
+                  actions: assign({ loggedIn: (_context, _event) => true }),
+                },
+              },
+            },
+            [LoggedIn]: {
+              on: {
+                USER_LOG_OUT: {
+                  target: LoggedOut,
+                  actions: assign({ loggedIn: (_context, _event) => false }),
+                },
               },
             },
           },
-          [Forking]: {
-            initial: DownloadingAssets,
-            states: {
-              [DownloadingAssets]: {
-                entry: choose([
+        },
+
+        // Core Machine
+        core: {
+          id: 'persistence-core',
+          initial: Empty,
+          states: {
+            // Idle states
+            [Empty]: {
+              on: {
+                NEW: CreatingNew,
+                LOAD: Loading,
+              },
+            },
+            [Ready]: {
+              entry: checkQueue,
+              exit: queueClear,
+              on: {
+                NEW: CreatingNew,
+                LOAD: Loading,
+                SAVE: [
                   {
-                    cond: (context, _) => context.project != null && context.projectId != null,
-                    actions: send((context, _) =>
-                      backendDownloadAssetsEvent(context.projectId!, context.project!),
-                    ),
+                    cond: (context, _) => context.projectOwned,
+                    target: Saving,
                   },
-                ]),
-                on: {
-                  DOWNLOAD_ASSETS_COMPLETE: {
-                    target: CreatingProjectId,
-                    actions: assign({
-                      project: (_, event) => event.downloadAssetsResult.projectModel,
-                    }),
+                  { target: Forking },
+                ],
+                FORK: Forking,
+                USER_LOG_IN: [
+                  {
+                    cond: (context, _) => context.projectOwned,
+                    actions: send((context, _) => saveEvent(context.project!)),
                   },
-                },
+                ],
               },
-              [CreatingProjectId]: {
-                entry: send(backendCreateProjectIdEvent()),
-                on: {
-                  PROJECT_ID_CREATED: {
-                    target: ProjectForked,
-                    actions: assign({
-                      projectId: (_, event) => event.projectId,
-                    }),
-                  },
-                },
-              },
-              [ProjectForked]: { type: 'final' },
             },
-            onDone: {
-              actions: [send((context, _) => innerSave(context.project!))],
-            },
-            on: {
-              INNER_SAVE: Saving,
-              SAVE: {
-                actions: queuePush,
-              },
 
-              BACKEND_ERROR: {
-                target: Ready,
-                actions: logError,
+            // Intermediate states
+            [CreatingNew]: {
+              initial: CreatingProjectId,
+              states: {
+                [CreatingProjectId]: {
+                  entry: [
+                    assign((_, event) => {
+                      return {
+                        projectId: undefined,
+                        project: (event as NewEvent<ModelType>).projectModel,
+                        queuedSave: undefined,
+                        projectOwned: true,
+                      }
+                    }),
+                    send(backendCreateProjectIdEvent()),
+                  ],
+                  on: {
+                    PROJECT_ID_CREATED: {
+                      target: ProjectCreated,
+                      actions: [
+                        assign({ projectId: (_, event) => event.projectId }),
+                        send((context, event) =>
+                          newProjectCreatedEvent(event.projectId, context.project!),
+                        ),
+                      ],
+                    },
+                  },
+                },
+                [ProjectCreated]: { type: 'final' },
+              },
+              onDone: {
+                actions: send((context, _) => innerSave(context.project!)),
+              },
+              on: {
+                INNER_SAVE: Saving,
+                SAVE: {
+                  actions: queuePush,
+                },
+                BACKEND_ERROR: {
+                  target: Ready,
+                  actions: logError,
+                },
+              },
+            },
+            [Loading]: {
+              initial: LoadingProject,
+              states: {
+                [LoadingProject]: {
+                  entry: choose([
+                    {
+                      cond: (_, event) => event.type === 'LOAD',
+                      actions: send((_, event) => backendLoadEvent((event as LoadEvent).projectId)),
+                    },
+                  ]),
+                  on: {
+                    LOAD_COMPLETE: {
+                      target: CheckingOwnership,
+                      actions: assign((_, event) => {
+                        return {
+                          projectId: event.projectId,
+                          project: event.projectModel,
+                          queuedSave: undefined,
+                        }
+                      }),
+                    },
+                  },
+                },
+                [CheckingOwnership]: {
+                  entry: send((context, _) => backendCheckOwnershipEvent(context.projectId!)),
+                  on: {
+                    CHECK_OWNERSHIP_COMPLETE: {
+                      target: ProjectLoaded,
+                      actions: assign({
+                        projectOwned: (_, event) => event.isOwner,
+                      }),
+                    },
+                  },
+                },
+                [ProjectLoaded]: { type: 'final' },
+              },
+              onDone: Ready,
+              on: {
+                BACKEND_ERROR: {
+                  target: Ready,
+                  actions: logError,
+                },
+                LOAD_FAILED: {
+                  target: Empty,
+                  actions: assign((_context, _event) => {
+                    return {
+                      projectId: undefined,
+                      project: undefined,
+                      queuedSave: undefined,
+                      projectOwned: false,
+                    }
+                  }),
+                },
+              },
+            },
+            [Saving]: {
+              entry: choose([
+                {
+                  cond: (context, _) => context.loggedIn,
+                  actions: send((context, event) =>
+                    backendServerSaveEvent(
+                      context.projectId!,
+                      (event as SaveEvent<ModelType>).projectModel,
+                    ),
+                  ),
+                },
+                {
+                  actions: send((context, event) =>
+                    backendLocalSaveEvent(
+                      context.projectId!,
+                      (event as SaveEvent<ModelType>).projectModel,
+                    ),
+                  ),
+                },
+              ]),
+              on: {
+                SAVE: {
+                  actions: queuePush,
+                },
+                SAVE_COMPLETE: {
+                  target: Ready,
+                  actions: assign((_context, event) => {
+                    return {
+                      projectOwned: true,
+                      project: event.saveResult.projectModel,
+                    }
+                  }),
+                },
+
+                BACKEND_ERROR: {
+                  target: Ready,
+                  actions: logError,
+                },
+              },
+            },
+            [Forking]: {
+              initial: DownloadingAssets,
+              states: {
+                [DownloadingAssets]: {
+                  entry: choose([
+                    {
+                      cond: (context, _) => context.project != null && context.projectId != null,
+                      actions: send((context, _) =>
+                        backendDownloadAssetsEvent(context.projectId!, context.project!),
+                      ),
+                    },
+                  ]),
+                  on: {
+                    DOWNLOAD_ASSETS_COMPLETE: {
+                      target: CreatingProjectId,
+                      actions: assign({
+                        project: (_, event) => event.downloadAssetsResult.projectModel,
+                      }),
+                    },
+                  },
+                },
+                [CreatingProjectId]: {
+                  entry: send(backendCreateProjectIdEvent()),
+                  on: {
+                    PROJECT_ID_CREATED: {
+                      target: ProjectForked,
+                      actions: assign({
+                        projectId: (_, event) => event.projectId,
+                      }),
+                    },
+                  },
+                },
+                [ProjectForked]: { type: 'final' },
+              },
+              onDone: {
+                actions: [send((context, _) => innerSave(context.project!))],
+              },
+              on: {
+                INNER_SAVE: Saving,
+                SAVE: {
+                  actions: queuePush,
+                },
+
+                BACKEND_ERROR: {
+                  target: Ready,
+                  actions: logError,
+                },
               },
             },
           },
         },
       },
     },
-  }).withConfig({
-    services: {
-      getNewProjectId: backendAPI.getNewProjectId,
-      checkProjectOwned: (_, event) => {
-        if (event.type === 'BACKEND_CHECK_OWNERSHIP') {
-          return backendAPI.checkProjectOwned(event.projectId)
-        } else {
-          throw new Error(
-            `Incorrect event type triggered check ownership, ${JSON.stringify(event)}`,
-          )
-        }
-      },
-      downloadAssets: (_, event) => {
-        if (event.type === 'BACKEND_DOWNLOAD_ASSETS') {
-          return backendAPI.downloadAssets(event.projectId, event.projectModel)
-        } else {
-          throw new Error(`Incorrect event type triggered asset download, ${JSON.stringify(event)}`)
-        }
-      },
-      saveProjectToServer: (context, event) => {
-        if (
-          event.type === 'BACKEND_SERVER_SAVE' &&
-          event.projectModel != null &&
-          context.projectId != null
-        ) {
-          return backendAPI.saveProjectToServer(context.projectId, event.projectModel)
-        } else {
-          throw new Error(
-            `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
-              event,
-            )}`,
-          )
-        }
-      },
-      saveProjectLocally: (context, event) => {
-        if (
-          event.type === 'BACKEND_LOCAL_SAVE' &&
-          event.projectModel != null &&
-          context.projectId != null
-        ) {
-          return backendAPI.saveProjectLocally(context.projectId, event.projectModel)
-        } else {
-          throw new Error(
-            `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
-              event,
-            )}`,
-          )
-        }
-      },
-      loadProject: (_, event) => {
-        if (event.type === 'BACKEND_LOAD') {
-          return backendAPI.loadProject(event.projectId)
-        } else {
-          throw new Error(`Invalid event type triggered project load ${JSON.stringify(event)}`)
-        }
+    {
+      services: {
+        getNewProjectId: backendAPI.getNewProjectId,
+        checkProjectOwned: (_, event) => {
+          if (event.type === 'BACKEND_CHECK_OWNERSHIP') {
+            return backendAPI.checkProjectOwned(event.projectId)
+          } else {
+            throw new Error(
+              `Incorrect event type triggered check ownership, ${JSON.stringify(event)}`,
+            )
+          }
+        },
+        downloadAssets: (_, event) => {
+          if (event.type === 'BACKEND_DOWNLOAD_ASSETS') {
+            return backendAPI.downloadAssets(event.projectId, event.projectModel)
+          } else {
+            throw new Error(
+              `Incorrect event type triggered asset download, ${JSON.stringify(event)}`,
+            )
+          }
+        },
+        saveProjectToServer: (context, event) => {
+          if (
+            event.type === 'BACKEND_SERVER_SAVE' &&
+            event.projectModel != null &&
+            context.projectId != null
+          ) {
+            return backendAPI.saveProjectToServer(context.projectId, event.projectModel)
+          } else {
+            throw new Error(
+              `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
+                event,
+              )}`,
+            )
+          }
+        },
+        saveProjectLocally: (context, event) => {
+          if (
+            event.type === 'BACKEND_LOCAL_SAVE' &&
+            event.projectModel != null &&
+            context.projectId != null
+          ) {
+            return backendAPI.saveProjectLocally(context.projectId, event.projectModel)
+          } else {
+            throw new Error(
+              `Unable to save project with ID ${context.projectId} after event ${JSON.stringify(
+                event,
+              )}`,
+            )
+          }
+        },
+        loadProject: (_, event) => {
+          if (event.type === 'BACKEND_LOAD') {
+            return backendAPI.loadProject(event.projectId)
+          } else {
+            throw new Error(`Invalid event type triggered project load ${JSON.stringify(event)}`)
+          }
+        },
       },
     },
-  })
+  )
 }
