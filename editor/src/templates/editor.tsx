@@ -54,6 +54,7 @@ import {
   DerivedState,
   UserState,
   PersistentModel,
+  createNewProjectName,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -90,8 +91,9 @@ import { updateCssVars, UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
-import { PersistenceMachine } from '../components/editor/persistence/persistence-machine'
+import { PersistenceMachine } from '../components/editor/persistence/persistence'
 import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
+import { defaultProject } from '../sample-projects/sample-project-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -258,7 +260,7 @@ export class Editor {
         }
 
         if (isCookiesOrLocalForageUnavailable(loginState) || projectId == null) {
-          this.storedState.persistence.createNew()
+          this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
         } else {
           this.storedState.persistence.load(projectId)
         }

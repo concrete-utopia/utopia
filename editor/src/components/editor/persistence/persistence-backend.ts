@@ -8,7 +8,7 @@ import {
 import { checkProjectOwnership } from '../../../common/server'
 import { assetFile, imageFile, isImageFile } from '../../../core/model/project-file-utils'
 import { getFileExtension } from '../../../core/shared/file-utils'
-import { AssetFile, ImageFile } from '../../../core/shared/project-file-types'
+import { AssetFile, ImageFile, ProjectFile } from '../../../core/shared/project-file-types'
 import { arrayContains } from '../../../core/shared/utils'
 import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
 import { getPNGBufferOfElementWithID } from '../screenshot-utils'
@@ -31,8 +31,8 @@ import {
   ProjectWithFileChanges,
   projectWithFileChanges,
   LocalProject,
-} from './persistence-types'
-const { choose } = actions
+} from './generic/persistence-types'
+import { PersistentModel } from '../store/editor-state'
 
 let _lastThumbnailGenerated: number = 0
 const THUMBNAIL_THROTTLE = 300000
@@ -74,9 +74,9 @@ export async function checkProjectOwned(projectId: string): Promise<boolean> {
   }
 }
 
-async function loadProject(projectId: string): Promise<ProjectLoadResult> {
+async function loadProject(projectId: string): Promise<ProjectLoadResult<PersistentModel>> {
   // Attempt to load a local version first in case changes were made whilst the user was offline
-  const localProject = (await loadLocalProject(projectId)) as LocalProject | null
+  const localProject = (await loadLocalProject(projectId)) as LocalProject<PersistentModel> | null
 
   if (localProject == null) {
     const serverProject = await loadServerProject(projectId)
@@ -113,8 +113,8 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult> {
 
 async function saveProjectToServer(
   projectId: string,
-  projectModel: ProjectModel,
-): Promise<ProjectWithFileChanges> {
+  projectModel: ProjectModel<PersistentModel>,
+): Promise<ProjectWithFileChanges<PersistentModel, ProjectFile>> {
   const { assetsToUpload, projectWithChanges } = prepareAssetsForUploading(projectModel)
 
   await updateSavedProject(
@@ -134,15 +134,17 @@ async function saveProjectToServer(
 
 async function saveProjectLocally(
   projectId: string,
-  projectModel: ProjectModel,
-): Promise<ProjectWithFileChanges> {
-  const existing = await localforage.getItem<LocalProject | null>(localProjectKey(projectId))
+  projectModel: ProjectModel<PersistentModel>,
+): Promise<ProjectWithFileChanges<PersistentModel, ProjectFile>> {
+  const existing = await localforage.getItem<LocalProject<PersistentModel> | null>(
+    localProjectKey(projectId),
+  )
   const existingThumbnail = existing == null ? '' : existing.thumbnail
   const now = new Date().toISOString()
   const createdAt = existing == null ? now : existing.createdAt
   const modifiedAt = now
 
-  const localProject: LocalProject = {
+  const localProject: LocalProject<PersistentModel> = {
     model: projectModel.content,
     createdAt: createdAt,
     lastModified: modifiedAt,
@@ -157,8 +159,8 @@ async function saveProjectLocally(
 
 async function downloadAssets(
   projectId: string,
-  projectModel: ProjectModel,
-): Promise<ProjectWithFileChanges> {
+  projectModel: ProjectModel<PersistentModel>,
+): Promise<ProjectWithFileChanges<PersistentModel, ProjectFile>> {
   const allProjectAssets = getAllProjectAssetFiles(projectModel.content.projectContents)
   const allProjectAssetsDownloaded = await downloadAssetsFromProject(projectId, allProjectAssets)
   const updatedProjectContents = allProjectAssetsDownloaded.reduce(
@@ -167,7 +169,7 @@ async function downloadAssets(
     },
     projectModel.content.projectContents,
   )
-  const updatedProjectModel: ProjectModel = {
+  const updatedProjectModel: ProjectModel<PersistentModel> = {
     name: projectModel.name,
     content: {
       ...projectModel.content,
@@ -188,13 +190,13 @@ function scrubBase64FromFile(file: ImageFile | AssetFile): ImageFile | AssetFile
 
 interface PreparedProject {
   assetsToUpload: Array<AssetToSave>
-  projectWithChanges: ProjectWithFileChanges
+  projectWithChanges: ProjectWithFileChanges<PersistentModel, ProjectFile>
 }
 
-function prepareAssetsForUploading(projectModel: ProjectModel): PreparedProject {
+function prepareAssetsForUploading(projectModel: ProjectModel<PersistentModel>): PreparedProject {
   const allProjectAssets = getAllProjectAssetFiles(projectModel.content.projectContents)
   let assetsToUpload: Array<AssetToSave> = []
-  let updatedAssets: Array<FileWithFileName> = []
+  let updatedAssets: Array<FileWithFileName<ProjectFile>> = []
 
   const updatedProjectContents = allProjectAssets.reduce(
     (workingProjectContents, { fileName: assetPath, file: asset }) => {
@@ -211,7 +213,7 @@ function prepareAssetsForUploading(projectModel: ProjectModel): PreparedProject 
     projectModel.content.projectContents,
   )
 
-  const updatedProjectModel: ProjectModel = {
+  const updatedProjectModel: ProjectModel<PersistentModel> = {
     name: projectModel.name,
     content: {
       ...projectModel.content,
@@ -225,7 +227,7 @@ function prepareAssetsForUploading(projectModel: ProjectModel): PreparedProject 
   }
 }
 
-export const PersistenceBackend: PersistenceBackendAPI = {
+export const PersistenceBackend: PersistenceBackendAPI<PersistentModel, ProjectFile> = {
   getNewProjectId: getNewProjectId,
   checkProjectOwned: checkProjectOwned,
   loadProject: loadProject,

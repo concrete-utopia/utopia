@@ -20,8 +20,8 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assetFile } from '../../../core/model/project-file-utils'
 import { loggedInUser, notLoggedIn } from '../../../common/user'
 import { EditorAction, EditorDispatch } from '../action-types'
-import { LocalProject } from './persistence-types'
-import { PersistenceMachine } from './persistence-machine'
+import { LocalProject } from './generic/persistence-types'
+import { PersistenceMachine } from './persistence'
 import { PersistenceBackend } from './persistence-backend'
 
 let mockSaveLog: { [key: string]: Array<PersistentModel> } = {}
@@ -31,7 +31,7 @@ let mockProjectsToError: Set<string> = new Set<string>()
 
 let allProjectIds: Array<string> = []
 let serverProjects: { [key: string]: PersistentModel } = {}
-let localProjects: { [key: string]: LocalProject } = {}
+let localProjects: { [key: string]: LocalProject<PersistentModel> } = {}
 
 const base64Contents = 'data:asset/xyz;base64,SomeBase64'
 const AssetFileWithBase64 = assetFile(base64Contents)
@@ -39,6 +39,10 @@ const AssetFileWithoutBase64 = assetFile(undefined)
 
 const ProjectName = 'Project Name'
 const BaseModel = createPersistentModel()
+const FirstRevision = updateModel(BaseModel)
+const SecondRevision = updateModel(FirstRevision)
+const ThirdRevision = updateModel(SecondRevision)
+const FourthRevision = updateModel(ThirdRevision)
 
 function randomProjectID(): string {
   const newId = generateUID(allProjectIds)
@@ -148,10 +152,10 @@ jest.mock('../../../common/server', () => ({
 jest.setTimeout(10000)
 
 jest.mock('localforage', () => ({
-  getItem: async (id: string): Promise<LocalProject | null> => {
+  getItem: async (id: string): Promise<LocalProject<PersistentModel> | null> => {
     return Promise.resolve(localProjects[id])
   },
-  setItem: async (id: string, project: LocalProject) => {
+  setItem: async (id: string, project: LocalProject<PersistentModel>) => {
     localProjects[id] = project
   },
   removeItem: async (id: string) => {
@@ -205,16 +209,16 @@ describe('Saving', () => {
   it('Saves locally when logged out', async () => {
     const { capturedData, testMachine } = setupTest()
 
-    testMachine.createNew()
+    testMachine.createNew(ProjectName, BaseModel)
     await delay(20)
-    testMachine.save(ProjectName, BaseModel, 'force')
+    testMachine.save(ProjectName, FirstRevision, 'force')
     await delay(20)
     testMachine.stop()
 
     expect(capturedData.newProjectId).toBeDefined()
     expect(mockSaveLog[capturedData.newProjectId!]).toBeUndefined()
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeDefined()
-    expect(localProjects[localProjectKey(capturedData.newProjectId!)]!.model).toEqual(BaseModel)
+    expect(localProjects[localProjectKey(capturedData.newProjectId!)]!.model).toEqual(FirstRevision)
   })
 
   it('Saves to server when logged in', async () => {
@@ -222,83 +226,66 @@ describe('Saving', () => {
 
     testMachine.login()
     await delay(20)
-    testMachine.createNew()
+    testMachine.createNew(ProjectName, BaseModel)
     await delay(20)
-    testMachine.save(ProjectName, BaseModel, 'force')
+    testMachine.save(ProjectName, FirstRevision, 'force')
     await delay(20)
     testMachine.stop()
 
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeUndefined()
     expect(capturedData.newProjectId).toBeDefined()
-    expect(mockSaveLog[capturedData.newProjectId!].length).toEqual(2) // First save is the default project triggered by createNew
-    expect(mockSaveLog[capturedData.newProjectId!][1]).toEqual(BaseModel)
+    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([BaseModel, FirstRevision])
   })
 
   it('Throttles saves', async () => {
     const { capturedData, testMachine } = setupTest(10000)
 
-    const firstRevision = updateModel(BaseModel)
-    const secondRevision = updateModel(firstRevision)
-    const thirdRevision = updateModel(secondRevision)
-    const fourthRevision = updateModel(thirdRevision)
-
     testMachine.login()
     await delay(20)
-    testMachine.createNew()
+    testMachine.createNew(ProjectName, BaseModel)
     await delay(20)
-    testMachine.save(ProjectName, BaseModel, 'force')
+    testMachine.save(ProjectName, FirstRevision, 'throttle') // Should be throttled and replaced by the next save
     await delay(20)
-    testMachine.save(ProjectName, firstRevision, 'throttle') // Should be throttled and replaced by the next save
+    testMachine.save(ProjectName, SecondRevision, 'throttle') // Should be throttled and replaced by the next save
     await delay(20)
-    testMachine.save(ProjectName, secondRevision, 'throttle') // Should be throttled and replaced by the next save
-    await delay(20)
-    testMachine.save(ProjectName, thirdRevision, 'throttle')
+    testMachine.save(ProjectName, ThirdRevision, 'throttle')
     await delay(20)
     testMachine.sendThrottledSave()
     await delay(20)
-    testMachine.save(ProjectName, fourthRevision, 'throttle') // Should be throttled and won't save before the end of the test
+    testMachine.save(ProjectName, FourthRevision, 'throttle') // Should be throttled and won't save before the end of the test
     await delay(20)
     testMachine.stop()
 
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeUndefined()
     expect(capturedData.newProjectId).toBeDefined()
-    expect(mockSaveLog[capturedData.newProjectId!].length).toEqual(3) // First save is the default project triggered by createNew
-    expect(mockSaveLog[capturedData.newProjectId!].slice(1)).toEqual([BaseModel, thirdRevision])
+    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([BaseModel, ThirdRevision])
   })
 
   it('Does not throttle forced saves', async () => {
     const { capturedData, testMachine } = setupTest(10000)
 
-    const firstRevision = updateModel(BaseModel)
-    const secondRevision = updateModel(firstRevision)
-    const thirdRevision = updateModel(secondRevision)
-    const fourthRevision = updateModel(thirdRevision)
-
     testMachine.login()
     await delay(20)
-    testMachine.createNew()
+    testMachine.createNew(ProjectName, BaseModel)
     await delay(20)
-    testMachine.save(ProjectName, BaseModel, 'force')
+    testMachine.save(ProjectName, FirstRevision, 'force')
     await delay(20)
-    testMachine.save(ProjectName, firstRevision, 'force')
+    testMachine.save(ProjectName, SecondRevision, 'force')
     await delay(20)
-    testMachine.save(ProjectName, secondRevision, 'force')
+    testMachine.save(ProjectName, ThirdRevision, 'force')
     await delay(20)
-    testMachine.save(ProjectName, thirdRevision, 'force')
-    await delay(20)
-    testMachine.save(ProjectName, fourthRevision, 'force')
+    testMachine.save(ProjectName, FourthRevision, 'force')
     await delay(20)
     testMachine.stop()
 
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeUndefined()
     expect(capturedData.newProjectId).toBeDefined()
-    expect(mockSaveLog[capturedData.newProjectId!].length).toEqual(6) // First save is the default project triggered by createNew
-    expect(mockSaveLog[capturedData.newProjectId!].slice(1)).toEqual([
+    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([
       BaseModel,
-      firstRevision,
-      secondRevision,
-      thirdRevision,
-      fourthRevision,
+      FirstRevision,
+      SecondRevision,
+      ThirdRevision,
+      FourthRevision,
     ])
   })
 })
@@ -307,9 +294,7 @@ describe('Login state', () => {
   it('Logging in mid-session will switch to server saving and delete the local save', async () => {
     const { capturedData, testMachine } = setupTest()
 
-    testMachine.createNew()
-    await delay(20)
-    testMachine.save(ProjectName, BaseModel, 'force')
+    testMachine.createNew(ProjectName, BaseModel)
     await delay(20)
 
     // Check it was saved locally only
@@ -325,13 +310,12 @@ describe('Login state', () => {
     expect(mockSaveLog[capturedData.newProjectId!]).toEqual([BaseModel])
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeUndefined()
 
-    const firstRevision = updateModel(BaseModel)
-    testMachine.save(ProjectName, firstRevision, 'force')
+    testMachine.save(ProjectName, FirstRevision, 'force')
     await delay(20)
     testMachine.stop()
 
     // Check that future saves go to the server
-    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([BaseModel, firstRevision])
+    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([BaseModel, FirstRevision])
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeUndefined()
   })
 
@@ -340,30 +324,25 @@ describe('Login state', () => {
 
     testMachine.login()
     await delay(20)
-    testMachine.createNew()
-    await delay(20)
-    testMachine.save(ProjectName, BaseModel, 'force')
+    testMachine.createNew(ProjectName, BaseModel)
     await delay(20)
 
     // Check it was saved to the server
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeUndefined()
     expect(capturedData.newProjectId).toBeDefined()
-    expect(mockSaveLog[capturedData.newProjectId!].length).toEqual(2) // First save is the default project triggered by createNew
-    expect(mockSaveLog[capturedData.newProjectId!][1]).toEqual(BaseModel)
+    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([BaseModel])
 
     testMachine.logout()
     await delay(20)
 
-    const firstRevision = updateModel(BaseModel)
-    testMachine.save(ProjectName, firstRevision, 'force')
+    testMachine.save(ProjectName, FirstRevision, 'force')
     await delay(20)
     testMachine.stop()
 
     // Check it was saved locally
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]).toBeDefined()
-    expect(localProjects[localProjectKey(capturedData.newProjectId!)]!.model).toEqual(firstRevision)
-    expect(mockSaveLog[capturedData.newProjectId!].length).toEqual(2) // Should be no new saves
-    expect(mockSaveLog[capturedData.newProjectId!][1]).toEqual(BaseModel)
+    expect(localProjects[localProjectKey(capturedData.newProjectId!)]!.model).toEqual(FirstRevision)
+    expect(mockSaveLog[capturedData.newProjectId!]).toEqual([BaseModel]) // Should be no new saves
   })
 })
 
@@ -451,9 +430,7 @@ describe('Forking a project', () => {
     // Create the initial project
     testMachine.login()
     await delay(20)
-    testMachine.createNew()
-    await delay(20)
-    testMachine.save(ProjectName, startProject, 'force')
+    testMachine.createNew(ProjectName, startProject)
     await delay(20)
 
     expect(capturedData.newProjectId).toBeDefined()
@@ -482,9 +459,7 @@ describe('Forking a project', () => {
     // Create the initial project
     testMachine.login()
     await delay(20)
-    testMachine.createNew()
-    await delay(20)
-    testMachine.save(ProjectName, startProject, 'force')
+    testMachine.createNew(ProjectName, startProject)
     await delay(20)
 
     expect(capturedData.newProjectId).toBeDefined()
@@ -523,9 +498,7 @@ describe('Forking a project', () => {
 
     // Create the initial project
     await delay(20)
-    testMachine.createNew()
-    await delay(20)
-    testMachine.save(ProjectName, startProjectIncludingBase64, 'force')
+    testMachine.createNew(ProjectName, startProjectIncludingBase64)
     await delay(20)
 
     expect(capturedData.newProjectId).toBeDefined()

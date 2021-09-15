@@ -154,7 +154,7 @@ import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layo
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 
 import { v4 as UUID } from 'uuid'
-import { PersistenceMachine } from '../persistence/persistence-machine'
+import { PersistenceMachine } from '../persistence/persistence'
 
 const ObjectPathImmutable: any = OPI
 
