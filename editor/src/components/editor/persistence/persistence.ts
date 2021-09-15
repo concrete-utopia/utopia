@@ -161,11 +161,11 @@ export class PersistenceMachine {
     })
   }
 
-  private isSafeToClose(): boolean {
+  private isSafeToClose = (): boolean => {
     return this.waitingThrottledSaveEvent == null
   }
 
-  private clearThrottledSave(): void {
+  private clearThrottledSave = (): void => {
     if (this.throttledSaveTimeoutId != null) {
       clearTimeout(this.throttledSaveTimeoutId)
       this.throttledSaveTimeoutId = null
@@ -174,16 +174,16 @@ export class PersistenceMachine {
     this.waitingThrottledSaveEvent = null
   }
 
-  private getRemainingSaveDelay(): number {
+  private getRemainingSaveDelay = (): number => {
     return Math.max(0, this.lastSavedTS + this.saveThrottle - Date.now())
   }
 
-  private shouldThrottle(forceOrThrottle: 'force' | 'throttle'): boolean {
+  private shouldThrottle = (forceOrThrottle: 'force' | 'throttle'): boolean => {
     return forceOrThrottle === 'throttle' && this.getRemainingSaveDelay() > 0
   }
 
   // Exposed for testing
-  sendThrottledSave(): void {
+  sendThrottledSave = (): void => {
     if (this.waitingThrottledSaveEvent != null) {
       this.interpreter.send(this.waitingThrottledSaveEvent)
     }
@@ -192,11 +192,11 @@ export class PersistenceMachine {
 
   // API
 
-  save(
+  save = (
     projectName: string,
     project: PersistentModel,
     forceOrThrottle: 'force' | 'throttle' = 'throttle',
-  ): void {
+  ): void => {
     const eventToFire = saveEvent({ name: projectName, content: project })
 
     if (this.shouldThrottle(forceOrThrottle)) {
@@ -207,27 +207,27 @@ export class PersistenceMachine {
     }
   }
 
-  load(projectId: string): void {
+  load = (projectId: string): void => {
     this.interpreter.send(loadEvent(projectId))
   }
 
-  createNew(projectName: string, project: PersistentModel): void {
+  createNew = (projectName: string, project: PersistentModel): void => {
     this.interpreter.send(newEvent({ name: projectName, content: project }))
   }
 
-  fork(): void {
+  fork = (): void => {
     this.interpreter.send(forkEvent())
   }
 
-  login(): void {
+  login = (): void => {
     this.interpreter.send(userLogInEvent())
   }
 
-  logout(): void {
+  logout = (): void => {
     this.interpreter.send(userLogOutEvent())
   }
 
-  stop(): void {
+  stop = (): void => {
     this.interpreter.stop()
     this.clearThrottledSave()
   }
