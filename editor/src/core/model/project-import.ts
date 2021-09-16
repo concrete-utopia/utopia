@@ -4,7 +4,6 @@ import { isText } from 'istextorbinary'
 import { RevisionsState, textFile, textFileContents, unparsed } from '../shared/project-file-types'
 import { assetFile, directory, fileTypeFromFileName, imageFile } from './project-file-utils'
 import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '../shared/file-utils'
-import { Size } from '../shared/math-utils'
 import { addFileToProjectContents, ProjectContentTreeRoot } from '../../components/assets'
 
 async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promise<string | null> {
@@ -16,19 +15,10 @@ async function attemptedTextFileLoad(fileName: string, file: JSZipObject): Promi
   }
 }
 
-export interface UnsavedAsset {
-  fileName: string
-  fileType: string
-  base64: string
-  hash: number
-  size: Size | null
-}
-
 export interface ProjectImportSuccess {
   type: 'SUCCESS'
   projectName: string
   contents: ProjectContentTreeRoot
-  assetsToUpload: Array<UnsavedAsset>
 }
 
 export interface ProjectImportFailure {
@@ -39,13 +29,11 @@ export interface ProjectImportFailure {
 function projectImportSuccess(
   projectName: string,
   contents: ProjectContentTreeRoot,
-  assetsToUpload: Array<UnsavedAsset>,
 ): ProjectImportSuccess {
   return {
     type: 'SUCCESS',
     projectName: projectName,
     contents: contents,
-    assetsToUpload: assetsToUpload,
   }
 }
 
@@ -76,7 +64,6 @@ export async function importZippedGitProject(
 ): Promise<ProjectImportResult> {
   let loadedProject: ProjectContentTreeRoot = {}
   let promises: Array<Promise<void>> = []
-  let assetsToUpload: Array<UnsavedAsset> = []
   let errors: Array<string> = []
 
   const loadFile = async (fileName: string, file: JSZip.JSZipObject) => {
@@ -91,20 +78,12 @@ export async function importZippedGitProject(
       const expectedFileType = fileTypeFromFileName(shiftedFileName)
       switch (expectedFileType) {
         case 'ASSET_FILE': {
-          const fileType = getFileExtension(shiftedFileName)
           const base64 = await file.async('base64')
           const assetResult = assetResultForBase64(shiftedFileName, base64)
-          assetsToUpload.push({
-            fileName: assetResult.filename,
-            fileType: fileType,
-            base64: assetResult.base64Bytes,
-            hash: assetResult.hash,
-            size: null,
-          })
           loadedProject = addFileToProjectContents(
             loadedProject,
             shiftedFileName,
-            assetFile(undefined),
+            assetFile(assetResult.base64Bytes),
           )
           break
         }
@@ -112,17 +91,16 @@ export async function importZippedGitProject(
           const fileType = getFileExtension(shiftedFileName)
           const base64 = await file.async('base64')
           const imageResult = await imageResultForBase64(shiftedFileName, fileType, base64)
-          assetsToUpload.push({
-            fileName: imageResult.filename,
-            fileType: fileType,
-            base64: imageResult.base64Bytes,
-            hash: imageResult.hash,
-            size: imageResult.size,
-          })
           loadedProject = addFileToProjectContents(
             loadedProject,
             shiftedFileName,
-            imageFile(undefined, undefined, undefined, undefined, imageResult.hash),
+            imageFile(
+              fileType,
+              imageResult.base64Bytes,
+              imageResult.size.width,
+              imageResult.size.height,
+              imageResult.hash,
+            ),
           )
           break
         }
@@ -159,6 +137,6 @@ export async function importZippedGitProject(
   if (errors.length > 0) {
     return projectImportFailure(errors.join(`\n`))
   } else {
-    return projectImportSuccess(projectName, loadedProject, assetsToUpload)
+    return projectImportSuccess(projectName, loadedProject)
   }
 }

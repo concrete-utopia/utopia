@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { isLocal } from '../editor/persistence'
+import { checkProjectOwned } from '../editor/persistence/persistence-backend'
 import { reduxDevtoolsLogMessage } from '../../core/shared/redux-devtools'
-import { checkProjectOwnership, fetchProjectMetadata } from '../../common/server'
+import { fetchProjectMetadata } from '../../common/server'
 
 type ProjectMetadata = {
   title: string
@@ -46,11 +46,9 @@ export function useIsMyProject(projectId: string | null): 'yes' | 'no' | 'unknow
     if (projectId == null) {
       setMyProject('yes')
     } else {
-      checkProjectOwnership(projectId).then((ownershipResult) => {
-        const isMyProject = isLocal() || ownershipResult === 'unowned' || ownershipResult.isOwner
+      checkProjectOwned(projectId).then((isMyProject) => {
         reduxDevtoolsLogMessage('useIsMyProject called', {
-          isLocal: isLocal(),
-          ownershipResult: ownershipResult,
+          isMyProject: isMyProject,
         })
         setMyProject(isMyProject ? 'yes' : 'no')
       })

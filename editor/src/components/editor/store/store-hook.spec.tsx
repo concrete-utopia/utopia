@@ -17,6 +17,7 @@ function createEmptyEditorStoreHook() {
     history: null as any,
     userState: null as any,
     workers: null as any,
+    persistence: null as any,
     dispatch: null as any,
     alreadySaved: false,
   }

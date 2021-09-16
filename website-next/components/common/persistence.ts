@@ -73,8 +73,12 @@ export async function getAndClearRedirectUrl(): Promise<string> {
 export async function deleteProject(projectId: string): Promise<void> {
   const localProject = await fetchLocalProject(projectId)
   if (localProject != null) {
-    return localforage.removeItem(localProjectKey(projectId))
+    return deleteLocalProject(projectId)
   } else {
     return deleteProjectFromServer(projectId)
   }
+}
+
+export async function deleteLocalProject(projectId: string): Promise<void> {
+  return localforage.removeItem(localProjectKey(projectId))
 }

@@ -28,13 +28,6 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
-  createNewProject,
-  createNewProjectFromImportedProject,
-  loadFromLocalStorage,
-  loadFromServer,
-  projectIsStoredLocally,
-} from '../components/editor/persistence'
-import {
   InternalPreviewTimeout,
   previewIsAlive,
   startPreviewConnectedMonitoring,
@@ -60,6 +53,9 @@ import {
   EditorState,
   DerivedState,
   UserState,
+  PersistentModel,
+  createNewProjectName,
+  persistentModelForProjectContents,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -90,11 +86,15 @@ import {
   isPropertyControlsIFrameReady,
   isSendPreviewModel,
   isUpdatePropertyControlsInfo,
+  load,
 } from '../components/editor/actions/actions'
 import { updateCssVars, UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 import { notice } from '../components/common/notice'
 import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
+import { PersistenceMachine } from '../components/editor/persistence/persistence'
+import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
+import { defaultProject } from '../sample-projects/sample-project-utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -131,6 +131,29 @@ export class Editor {
 
     const watchdogWorker = new RealWatchdogWorker()
 
+    const renderRootEditor = () =>
+      renderRootComponent(
+        this.utopiaStoreHook,
+        this.utopiaStoreApi,
+        this.spyCollector,
+        true,
+        this.storedState.editor.vscodeBridgeReady,
+      )
+
+    const onCreatedOrLoadedProject = (
+      projectId: string,
+      projectName: string,
+      project: PersistentModel,
+    ) =>
+      load(
+        this.storedState.dispatch,
+        project,
+        projectName,
+        projectId,
+        this.storedState.workers,
+        renderRootEditor,
+      )
+
     this.storedState = {
       editor: emptyEditorState,
       derived: derivedState,
@@ -141,6 +164,12 @@ export class Editor {
         new RealParserPrinterWorker(),
         new RealLinterWorker(),
         watchdogWorker,
+      ),
+      persistence: new PersistenceMachine(
+        PersistenceBackend,
+        this.boundDispatch,
+        renderProjectNotFound,
+        onCreatedOrLoadedProject,
       ),
       dispatch: this.boundDispatch,
       alreadySaved: false,
@@ -227,23 +256,20 @@ export class Editor {
         }
 
         const projectId = getProjectID()
-        if (projectId == null) {
-          // Check if this is a github import
-          const urlParams = new URLSearchParams(window.location.search)
-          const githubOwner = urlParams.get('github_owner')
-          const githubRepo = urlParams.get('github_repo')
-          if (isCookiesOrLocalForageUnavailable(loginState)) {
-            createNewProject(this.boundDispatch, () =>
-              renderRootComponent(
-                this.utopiaStoreHook,
-                this.utopiaStoreApi,
-                this.spyCollector,
-                true,
-                this.storedState.editor.vscodeBridgeReady,
-              ),
-            )
-          } else if (isLoggedIn(loginState) && githubOwner != null && githubRepo != null) {
-            // TODO Should we require users to be logged in for this?
+        if (isLoggedIn(loginState)) {
+          this.storedState.persistence.login()
+        }
+
+        const urlParams = new URLSearchParams(window.location.search)
+        const githubOwner = urlParams.get('github_owner')
+        const githubRepo = urlParams.get('github_repo')
+
+        if (isCookiesOrLocalForageUnavailable(loginState)) {
+          this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
+        } else if (projectId == null) {
+          if (githubOwner != null && githubRepo != null) {
+            replaceLoadingMessage('Downloading Repo...')
+
             downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
               if (isRequestFailure(repoResult)) {
                 if (repoResult.statusCode === 404) {
@@ -252,25 +278,16 @@ export class Editor {
                   renderProjectLoadError(repoResult.errorMessage)
                 }
               } else {
+                replaceLoadingMessage('Importing Project...')
+
                 const projectName = `${githubOwner}-${githubRepo}`
-                replaceLoadingMessage('Downloading Repo...')
                 importZippedGitProject(projectName, repoResult.value)
                   .then((importProjectResult) => {
                     if (isProjectImportSuccess(importProjectResult)) {
-                      replaceLoadingMessage('Importing Project...')
-                      createNewProjectFromImportedProject(
-                        importProjectResult,
-                        this.storedState.workers,
-                        this.boundDispatch,
-                        () =>
-                          renderRootComponent(
-                            this.utopiaStoreHook,
-                            this.utopiaStoreApi,
-                            this.spyCollector,
-                            true,
-                            this.storedState.editor.vscodeBridgeReady,
-                          ),
+                      const importedProject = persistentModelForProjectContents(
+                        importProjectResult.contents,
                       )
+                      this.storedState.persistence.createNew(projectName, importedProject)
                     } else {
                       renderProjectLoadError(importProjectResult.errorMessage)
                     }
@@ -280,66 +297,11 @@ export class Editor {
                   })
               }
             })
-          } else if (githubOwner != null && githubRepo != null) {
-            renderProjectLoadError('Github repo import is only supported for logged in users')
           } else {
-            createNewProject(this.boundDispatch, () =>
-              renderRootComponent(
-                this.utopiaStoreHook,
-                this.utopiaStoreApi,
-                this.spyCollector,
-                true,
-                this.storedState.editor.vscodeBridgeReady,
-              ),
-            )
+            this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           }
-        } else if (isCookiesOrLocalForageUnavailable(loginState)) {
-          createNewProject(this.boundDispatch, () =>
-            renderRootComponent(
-              this.utopiaStoreHook,
-              this.utopiaStoreApi,
-              this.spyCollector,
-              true,
-              this.storedState.editor.vscodeBridgeReady,
-            ),
-          )
         } else {
-          projectIsStoredLocally(projectId).then((isLocal) => {
-            if (isLocal) {
-              loadFromLocalStorage(
-                projectId,
-                this.boundDispatch,
-                isLoggedIn(loginState),
-                this.storedState.workers,
-                () =>
-                  renderRootComponent(
-                    this.utopiaStoreHook,
-                    this.utopiaStoreApi,
-                    this.spyCollector,
-                    true,
-                    this.storedState.editor.vscodeBridgeReady,
-                  ),
-              )
-            } else {
-              loadFromServer(
-                projectId,
-                this.boundDispatch,
-                this.storedState.workers,
-                () => {
-                  renderRootComponent(
-                    this.utopiaStoreHook,
-                    this.utopiaStoreApi,
-                    this.spyCollector,
-                    true,
-                    this.storedState.editor.vscodeBridgeReady,
-                  )
-                },
-                () => {
-                  renderProjectNotFound()
-                },
-              )
-            }
-          })
+          this.storedState.persistence.load(projectId)
         }
       })
     })
