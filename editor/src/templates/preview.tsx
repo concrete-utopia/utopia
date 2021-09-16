@@ -6,7 +6,7 @@ import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../compon
 import { incorporateBuildResult } from '../components/custom-code/code-file'
 import { sendPreviewModel } from '../components/editor/actions/action-creators'
 import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
-import { projectIsStoredLocally } from '../components/editor/persistence'
+import { projectIsStoredLocally } from '../components/editor/persistence/persistence-backend'
 import { loadProject } from '../components/editor/server'
 import { isProjectContentsUpdateMessage } from '../components/preview/preview-pane'
 import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packages'

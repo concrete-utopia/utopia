@@ -52,6 +52,7 @@ export function getStoreHook(
     },
     userState: defaultUserState,
     workers: null as any,
+    persistence: null as any,
     dispatch: mockDispatch,
     alreadySaved: false,
   }

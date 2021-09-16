@@ -398,7 +398,7 @@ import {
   dependenciesFromPackageJson,
   findLatestVersion,
 } from '../npm-dependency/npm-dependency'
-import { updateRemoteThumbnail } from '../persistence'
+import { updateRemoteThumbnail } from '../persistence/persistence-backend'
 import {
   deleteAssetFile,
   saveAsset as saveAssetToServer,

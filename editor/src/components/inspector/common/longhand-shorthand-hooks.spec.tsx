@@ -53,6 +53,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       history: null as any,
       userState: null as any,
       workers: null as any,
+      persistence: null as any,
       dispatch: mockDispatch,
       alreadySaved: false,
     }

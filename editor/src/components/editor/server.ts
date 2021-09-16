@@ -19,7 +19,6 @@ import { isLoginLost, isNotLoggedIn } from '../../common/user'
 import { notice } from '../common/notice'
 import { EditorDispatch, isLoggedIn } from './action-types'
 import { setLoginState, showToast, removeToast } from './actions/action-creators'
-import { isLocal, isSafeToClose } from './persistence'
 import { getFileExtension } from '../../core/shared/file-utils'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
@@ -54,7 +53,7 @@ interface ProjectNotFound {
   type: 'ProjectNotFound'
 }
 
-type LoadProjectResponse = ProjectLoaded | ProjectUnchanged | ProjectNotFound
+export type LoadProjectResponse = ProjectLoaded | ProjectUnchanged | ProjectNotFound
 
 interface SaveAssetResponse {
   id: string
@@ -395,14 +394,6 @@ export function startPollingLoginState(
         if (isLoginLost(previousLoginState)) {
           // Login was lost and subsequently regained so remove the persistent toast.
           dispatch([removeToast(loginLostNoticeID)])
-        }
-        if (isNotLoggedIn(previousLoginState)) {
-          if (isLocal() && isSafeToClose()) {
-            // The handling of local file uploading is done on load currently.
-            // Since there's implications around the project ID from that, it's
-            // likely vastly easier to just reload the page here.
-            window.location.reload()
-          }
         }
       }
     }

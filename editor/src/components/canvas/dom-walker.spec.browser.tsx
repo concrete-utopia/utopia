@@ -32,6 +32,7 @@ import { mapValues } from '../../core/shared/object-utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
+import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   delete element.props['children']
@@ -71,6 +72,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       new FakeLinterWorker(),
       new FakeWatchdogWorker(),
     ),
+    persistence: DummyPersistenceMachine,
     dispatch: dispatch,
     alreadySaved: false,
   }
