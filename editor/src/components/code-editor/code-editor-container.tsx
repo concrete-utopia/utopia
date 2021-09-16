@@ -4,6 +4,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import { createIframeUrl } from '../../core/shared/utils'
 import { getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
+import { getEditorBranchNameFromURL, setBranchNameFromURL } from '../../utils/branches'
 
 const VSCodeIframeContainer = betterReactMemo(
   'VSCodeIframeContainer',
@@ -16,10 +17,7 @@ const VSCodeIframeContainer = betterReactMemo(
     const url = new URL(baseIframeSrc)
     url.searchParams.append('project_id', projectID)
 
-    const branchName = url.searchParams.get('branch_name')
-    if (branchName != null) {
-      url.searchParams.append('branch_name', branchName)
-    }
+    setBranchNameFromURL(url.searchParams)
     return (
       <iframe
         key={'vscode-editor'}

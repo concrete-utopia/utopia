@@ -26,6 +26,7 @@ import {
   UIRow,
 } from '../../uuiui'
 import { betterReactMemo } from '../../utils/react-performance'
+import { setBranchNameFromURL } from '../../utils/branches'
 
 export const PreviewIframeId = 'preview-column-container'
 
@@ -215,16 +216,12 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
       </FlexRow>
     )
 
-    const urlParams = new URLSearchParams(window.location.search)
     function addInBranchNames(url: string): string {
       if (url === '') {
         return url
       } else {
-        const branchName = urlParams.get('branch_name')
         const parsedURL = new URL(url)
-        if (branchName != null) {
-          parsedURL.searchParams.append('branch_name', branchName)
-        }
+        setBranchNameFromURL(parsedURL.searchParams)
         return parsedURL.toString()
       }
     }

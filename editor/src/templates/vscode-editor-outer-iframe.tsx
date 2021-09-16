@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { VSCODE_EDITOR_IFRAME_BASE_URL } from '../common/env-vars'
 import { createIframeUrl } from '../core/shared/utils'
+import { setBranchNameFromURL } from '../utils/branches'
 
 function VSCodeOuterIframe(): React.ReactElement {
   // TODO: Alternative root handling.
@@ -10,10 +11,7 @@ function VSCodeOuterIframe(): React.ReactElement {
   const baseIframeSrc = createIframeUrl(VSCODE_EDITOR_IFRAME_BASE_URL, 'vscode-editor-inner-iframe')
   const url = new URL(baseIframeSrc)
   url.searchParams.append('project_id', projectID)
-  const branchName = urlParams.get('branch_name')
-  if (branchName != null) {
-    url.searchParams.append('branch_name', branchName)
-  }
+  setBranchNameFromURL(url.searchParams)
   return (
     <iframe
       id={'vscode-outer'}
