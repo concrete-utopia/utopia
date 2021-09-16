@@ -233,6 +233,10 @@ innerServerExecutor (ClearBranchCache branchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
   liftIO $ traverse_ (\d -> deleteBranchCache d branchName) possibleDownloads
   return action
+innerServerExecutor (GetDownloadBranchFolders action) = do
+  downloads <- fmap _branchDownloads ask
+  folders <- liftIO $ maybe (pure []) getDownloadedLocalFolders downloads
+  pure $ action folders
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do

@@ -13,12 +13,12 @@
 -}
 module Utopia.Web.Endpoints where
 
-import Control.Arrow((&&&))
+import           Control.Arrow                   ((&&&))
 import           Control.Lens
 import           Data.Aeson
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
-import           Data.CaseInsensitive
+import           Data.CaseInsensitive            hiding (traverse)
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
 import           Data.Time
@@ -29,12 +29,15 @@ import           Network.Wai.Middleware.Gzip
 import           Protolude
 import           Servant                         hiding
                                                  (serveDirectoryFileServer,
-                                                  serveDirectoryWith)
+                                                  serveDirectoryWith, uriPath)
+import           Servant.Conduit                 ()
 import           Servant.RawM.Server
-import Text.HTML.TagSoup
 import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
 import qualified Text.Blaze.Html5.Attributes     as HA
+import           Text.HTML.TagSoup
+import           Text.URI                        hiding (unRText, uriPath)
+import           Text.URI.Lens
 import           Utopia.Web.Assets
 import           Utopia.Web.ClientModel
 import           Utopia.Web.Database.Types
@@ -48,7 +51,6 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
-import Servant.Conduit()
 
 type TagSoupTags = [Tag Text]
 
@@ -132,7 +134,7 @@ twitterCardMetadata projectMetadata siteRoot =
   ]
 
 facebookCardMetadata :: ProjectMetadata -> Text -> TagSoupTags
-facebookCardMetadata projectMetadata siteRoot = 
+facebookCardMetadata projectMetadata siteRoot =
   [ TagOpen "meta" [("property", "fb:app_id"), ("content", "415342622608327")], TagClose "meta"
   , TagOpen "meta" [("property", "og:image"), ("content", thumbnailUrl siteRoot $ view id projectMetadata), ("itemprop", "thumbnailUrl")], TagClose "meta"
   , TagOpen "meta" [("property", "og:image:width"), ("content", "288px")], TagClose "meta"
@@ -145,7 +147,7 @@ facebookCardMetadata projectMetadata siteRoot =
   , TagOpen "meta" [("property", "og:description"), ("content", projectDescription $ view ownerName projectMetadata)], TagClose "meta"
   ]
 
-projectTitleMetadata :: ProjectMetadata -> TagSoupTags 
+projectTitleMetadata :: ProjectMetadata -> TagSoupTags
 projectTitleMetadata projectMetadata =
   [ TagOpen "title" [], TagText (view title projectMetadata <> " - Utopia"), TagClose "title"
   , TagOpen "meta" [("title", view title projectMetadata <> " Utopia")], TagClose "meta"
@@ -165,7 +167,7 @@ projectHTMLMetadata (Just projectMetadata) siteRoot =
   <> twitterCardMetadata projectMetadata siteRoot
   <> facebookCardMetadata projectMetadata siteRoot
 
-projectIDScript :: ProjectIdWithSuffix -> TagSoupTags 
+projectIDScript :: ProjectIdWithSuffix -> TagSoupTags
 projectIDScript (ProjectIdWithSuffix projectID _) =
   [ TagOpen "script" [("type", "text/javascript")], TagText ("window.utopiaProjectID = \"" <> projectID <> "\";"), TagClose "script"]
 
@@ -174,13 +176,13 @@ projectDetailsToPossibleMetadata UnknownProject = Nothing
 projectDetailsToPossibleMetadata (ReservedProjectID _) = Nothing
 projectDetailsToPossibleMetadata (ProjectDetailsMetadata metadata) = Just metadata
 
-dependencyPreload :: Text -> ProjectDependency -> TagSoupTags 
+dependencyPreload :: Text -> ProjectDependency -> TagSoupTags
 dependencyPreload cdnRoot ProjectDependency{..} =
   let dependencyURL = cdnRoot <> "/" <> packagerLink dependencyName dependencyVersion
       linkOpen = TagOpen "link" [("href", dependencyURL), ("rel", "preload"), ("as", "fetch")]
    in [linkOpen, TagClose "link", TagText "\n    "]
 
-dependenciesHtmlFromProject :: Text -> Maybe DB.DecodedProject -> TagSoupTags 
+dependenciesHtmlFromProject :: Text -> Maybe DB.DecodedProject -> TagSoupTags
 dependenciesHtmlFromProject _ Nothing = mempty
 dependenciesHtmlFromProject cdnRoot (Just decodedProject) = do
   let dependencies = getProjectDependenciesFromPackageJSON decodedProject
@@ -204,22 +206,25 @@ vscodePreloadTypeToPreloadAs :: VSCodePreloadType -> Text
 vscodePreloadTypeToPreloadAs VSCodeJS  = "script"
 vscodePreloadTypeToPreloadAs VSCodeCSS = "style"
 
-vscodePreload :: Text -> Text -> (Text, VSCodePreloadType) -> TagSoupTags 
+vscodePreload :: Text -> Text -> (Text, VSCodePreloadType) -> TagSoupTags
 vscodePreload cdnRoot commitHash (vsCodePath, preloadType) =
   let vscodeURL = cdnRoot <> "/vscode/" <> vsCodePath <> "?hash=" <> commitHash
       htmlAs = vscodePreloadTypeToPreloadAs preloadType
       linkHtml = TagOpen "link" [("href", vscodeURL), ("rel", "preload"), ("as", htmlAs)]
    in [linkHtml, TagClose "link", TagText "\n    "]
 
-vscodePreloads :: Text -> Text -> TagSoupTags 
+vscodePreloads :: Text -> Text -> TagSoupTags
 vscodePreloads cdnRoot commitHash = foldMap (vscodePreload cdnRoot commitHash) vsCodePathsToPreload
 
 isDeferAttribute :: Attribute Text -> Any
 isDeferAttribute ("defer", "") = Any True
-isDeferAttribute _ = Any False
+isDeferAttribute _             = Any False
 
 isEditorJSSrcAttribute :: Attribute Text -> Any
-isEditorJSSrcAttribute ("src", srcURL) = Any (T.isSuffixOf ".js" srcURL)
+isEditorJSSrcAttribute ("src", srcURL) =
+  let parsedURL = mkURI srcURL
+      lastPathPart = firstOf (_Just . uriPath . _last . unRText) parsedURL
+   in Any $ maybe False (T.isSuffixOf ".js") lastPathPart
 isEditorJSSrcAttribute _ = Any False
 
 isScriptJSElementWithDefer :: [Attribute Text] -> Bool
@@ -231,11 +236,11 @@ partitionOutScriptDefer False (TagClose "head" : remainder) =
 partitionOutScriptDefer False (_ : remainder) =
   partitionOutScriptDefer False remainder
 partitionOutScriptDefer False [] = []
-partitionOutScriptDefer True (TagClose "script" : secondTag@(TagOpen "script" attributes) : remainder) = 
+partitionOutScriptDefer True (TagClose "script" : secondTag@(TagOpen "script" attributes) : remainder) =
   let ifScript = fromAttrib "src" secondTag : partitionOutScriptDefer True remainder
       ifNotScript = partitionOutScriptDefer True remainder
    in if isScriptJSElementWithDefer attributes then ifScript else ifNotScript
-partitionOutScriptDefer True _ = [] 
+partitionOutScriptDefer True _ = []
 
 preloadsForScripts :: [Text] -> TagSoupTags
 preloadsForScripts (srcURL : remainder) =
@@ -271,8 +276,8 @@ renderPageWithMetadata possibleProjectID possibleMetadata possibleProject branch
   -- close tag and then lifting the script elements from there.
   let reversedEditorScriptTags = partitionOutScriptDefer False $ reverse parsedTags
   let editorScriptPreloads = preloadsForScripts $ reverse reversedEditorScriptTags
-  let updatedContent = injectIntoPage (ogTags, projectIDScriptTags, dependenciesTags, vscodePreloadTags, editorScriptPreloads) parsedTags 
-  return $ H.preEscapedToHtml $ renderTags updatedContent 
+  let updatedContent = injectIntoPage (ogTags, projectIDScriptTags, dependenciesTags, vscodePreloadTags, editorScriptPreloads) parsedTags
+  return $ H.preEscapedToHtml $ renderTags updatedContent
 
 innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
 innerProjectPage (Just _) UnknownProject _ branchName = do
@@ -513,14 +518,29 @@ addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
 addCDNHeadersCacheRevalidate :: Middleware
 addCDNHeadersCacheRevalidate = addCacheControlRevalidate . addAccessControlAllowOrigin
 
+fallbackOn404 :: Application -> Application -> Application
+fallbackOn404 firstApplication secondApplication request sendResponse = do
+  firstApplication request $ \firstAppResponse -> do
+    let shouldFallback = responseStatus firstAppResponse == status404
+    let runWithSecond = secondApplication request sendResponse
+    if shouldFallback then runWithSecond else sendResponse firstAppResponse
+
+branchDownloadsFallbacks :: ServerMonad [Application]
+branchDownloadsFallbacks = do
+  folders <- getDownloadBranchFolders
+  traverse (\path -> servePath (toS path) Nothing) folders
+
 editorAssetsEndpoint :: FilePath -> Maybe Text -> ServerMonad Application
 editorAssetsEndpoint notProxiedPath possibleBranchName = do
   possibleProxyManager <- getProxyManager
-  let loadLocally = fmap addCDNHeaders $ servePath notProxiedPath possibleBranchName
+  loadLocally <- servePath notProxiedPath possibleBranchName
+  branchFallbacks <- branchDownloadsFallbacks
+  let downloadWithFallbacks app = foldl' fallbackOn404 app branchFallbacks
   let loadFromProxy proxyManager = return $ proxyApplication proxyManager 8088 ["editor"]
-  case possibleBranchName of
-    Just _  -> loadLocally
-    Nothing -> maybe loadLocally loadFromProxy possibleProxyManager
+  mainApp <- case possibleBranchName of
+    Just _  -> pure loadLocally
+    Nothing -> maybe (pure loadLocally) loadFromProxy possibleProxyManager
+  pure $ addCDNHeaders $ downloadWithFallbacks mainApp
 
 downloadGithubProjectEndpoint :: Maybe Text -> Text -> Text -> ServerMonad BL.ByteString
 downloadGithubProjectEndpoint cookie owner repo = requireUser cookie $ \_ -> do
