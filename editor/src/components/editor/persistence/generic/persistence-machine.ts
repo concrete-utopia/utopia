@@ -735,7 +735,12 @@ export function createPersistenceMachine<ModelType, FileType>(
                     DOWNLOAD_ASSETS_COMPLETE: {
                       target: CreatingProjectId,
                       actions: assign({
-                        project: (_, event) => event.downloadAssetsResult.projectModel,
+                        project: (_, event) => {
+                          return {
+                            name: `${event.downloadAssetsResult.projectModel.name} (forked)`,
+                            content: event.downloadAssetsResult.projectModel.content,
+                          }
+                        },
                       }),
                     },
                   },
