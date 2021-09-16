@@ -504,6 +504,7 @@ export interface EditorState {
   focusedElementPath: ElementPath | null
   config: UtopiaVSCodeConfig
   theme: Theme
+  vscodeReady: boolean
 }
 
 export interface StoredEditorState {
@@ -1274,6 +1275,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     focusedElementPath: null,
     config: defaultConfig(),
     theme: 'light',
+    vscodeReady: false,
   }
 }
 
@@ -1523,6 +1525,7 @@ export function editorModelFromPersistentModel(
     focusedElementPath: null,
     config: defaultConfig(),
     theme: 'light',
+    vscodeReady: false,
   }
   return editor
 }

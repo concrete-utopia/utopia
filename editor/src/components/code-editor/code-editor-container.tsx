@@ -9,7 +9,7 @@ import { unless } from '../../utils/react-conditionals'
 
 const VSCodeIframeContainer = betterReactMemo(
   'VSCodeIframeContainer',
-  (props: { projectID: string; vscodeBridgeReady: boolean }) => {
+  (props: { projectID: string; vscodeReady: boolean }) => {
     const projectID = props.projectID
     const baseIframeSrc = createIframeUrl(
       MONACO_EDITOR_IFRAME_BASE_URL,
@@ -24,7 +24,7 @@ const VSCodeIframeContainer = betterReactMemo(
           flex: 1,
         }}
       >
-        {unless(props.vscodeBridgeReady, <VSCodeLoadingScreen />)}
+        {unless(props.vscodeReady, <VSCodeLoadingScreen />)}
         <iframe
           key={'vscode-editor'}
           id={'vscode-editor'}
@@ -46,14 +46,14 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', () => {
   const selectedProps = useEditorState((store) => {
     return {
       vscodeBridgeId: getUnderlyingVSCodeBridgeID(store.editor.vscodeBridgeId),
-      vscodeBridgeReady: store.editor.vscodeBridgeReady,
+      vscodeReady: store.editor.vscodeReady,
     }
   }, 'CodeEditorWrapper')
 
   return (
     <VSCodeIframeContainer
       projectID={selectedProps.vscodeBridgeId}
-      vscodeBridgeReady={selectedProps.vscodeBridgeReady}
+      vscodeReady={selectedProps.vscodeReady}
     />
   )
 })
