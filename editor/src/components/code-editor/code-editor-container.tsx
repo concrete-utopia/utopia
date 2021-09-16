@@ -16,6 +16,10 @@ const VSCodeIframeContainer = betterReactMemo(
     const url = new URL(baseIframeSrc)
     url.searchParams.append('project_id', projectID)
 
+    const branchName = url.searchParams.get('branch_name')
+    if (branchName != null) {
+      url.searchParams.append('branch_name', branchName)
+    }
     return (
       <iframe
         key={'vscode-editor'}

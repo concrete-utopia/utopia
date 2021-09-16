@@ -434,13 +434,19 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
 const PropertyControlsInfoComponent = betterReactMemo('PropertyControlsInfoComponent', () => {
   const iframeSrc = createIframeUrl(PROPERTY_CONTROLS_INFO_BASE_URL, 'property-controls-info.html')
 
+  const urlParams = new URLSearchParams(window.location.search)
+  const branchName = urlParams.get('branch_name')
+  const url = new URL(iframeSrc)
+  if (branchName != null) {
+    url.searchParams.append('branch_name', branchName)
+  }
   return (
     <iframe
       key={PropertyControlsInfoIFrameID}
       id={PropertyControlsInfoIFrameID}
       width='0px'
       height='0px'
-      src={iframeSrc}
+      src={url.toString()}
       allow='autoplay'
       style={{
         backgroundColor: 'transparent',

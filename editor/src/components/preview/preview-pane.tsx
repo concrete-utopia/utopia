@@ -215,18 +215,34 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
       </FlexRow>
     )
 
-    const floatingPreviewURL =
+    const urlParams = new URLSearchParams(window.location.search)
+    function addInBranchNames(url: string): string {
+      if (url === '') {
+        return url
+      } else {
+        const branchName = urlParams.get('branch_name')
+        const parsedURL = new URL(url)
+        if (branchName != null) {
+          parsedURL.searchParams.append('branch_name', branchName)
+        }
+        return parsedURL.toString()
+      }
+    }
+    let floatingPreviewURL =
       this.props.id == null
         ? ''
         : shareURLForProject(FLOATING_PREVIEW_BASE_URL, this.props.id, this.props.projectName)
-    const iframePreviewURL =
+    floatingPreviewURL = addInBranchNames(floatingPreviewURL)
+    let iframePreviewURL =
       this.props.id == null
         ? ''
         : `${floatingPreviewURL}?embedded=true&refreshCount=${this.state.refreshCount}`
-    const popoutPreviewURL =
+    iframePreviewURL = addInBranchNames(iframePreviewURL)
+    let popoutPreviewURL =
       this.props.id == null
         ? ''
         : shareURLForProject(BASE_URL, this.props.id, this.props.projectName)
+    popoutPreviewURL = addInBranchNames(popoutPreviewURL)
 
     const iFrame = (
       <iframe
