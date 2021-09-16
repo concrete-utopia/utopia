@@ -473,18 +473,20 @@ export function editorDispatch(
     )
   }
 
-  // Chain off of the previous one to ensure the ordering is maintained.
-  currentVSCodeChanges = combineAccumulatedVSCodeChanges(
-    currentVSCodeChanges,
-    getVSCodeChanges(storedState.editor, frozenEditorState, updatedFromVSCode),
-  )
-  applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-    const changesToSend = currentVSCodeChanges
-    currentVSCodeChanges = emptyAccumulatedVSCodeChanges
-    return sendVSCodeChanges(changesToSend).catch((error) => {
-      console.error('Error sending updates to VS Code', error)
+  if (frozenEditorState.vscodeReady) {
+    // Chain off of the previous one to ensure the ordering is maintained.
+    currentVSCodeChanges = combineAccumulatedVSCodeChanges(
+      currentVSCodeChanges,
+      getVSCodeChanges(storedState.editor, frozenEditorState, updatedFromVSCode),
+    )
+    applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
+      const changesToSend = currentVSCodeChanges
+      currentVSCodeChanges = emptyAccumulatedVSCodeChanges
+      return sendVSCodeChanges(changesToSend).catch((error) => {
+        console.error('Error sending updates to VS Code', error)
+      })
     })
-  })
+  }
 
   const shouldUpdatePreview =
     anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
