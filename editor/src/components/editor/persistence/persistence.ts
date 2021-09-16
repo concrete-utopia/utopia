@@ -103,7 +103,7 @@ export class PersistenceMachine {
           case 'DOWNLOAD_ASSETS_COMPLETE': {
             if (state.matches({ core: { [Forking]: CreatingProjectId } })) {
               this.queuedActions.push(setForkedFromProjectID(state.context.projectId!))
-              this.queuedActions.push(setProjectName(`${state.context.project!.name} (forked)`))
+              this.queuedActions.push(setProjectName(state.context.project!.name))
               this.queuedActions.push(showToast(notice('Project successfully forked!')))
             }
 
