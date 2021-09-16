@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom'
 
 import { VSCODE_EDITOR_IFRAME_BASE_URL } from '../common/env-vars'
 import { createIframeUrl } from '../core/shared/utils'
+import { setBranchNameFromURL } from '../utils/branches'
 
 const Chevron = () => (
   <svg
@@ -152,7 +153,7 @@ function VSCodeOuterIframe(): React.ReactElement {
   const baseIframeSrc = createIframeUrl(VSCODE_EDITOR_IFRAME_BASE_URL, 'vscode-editor-inner-iframe')
   const url = new URL(baseIframeSrc)
   url.searchParams.append('project_id', projectID)
-
+  setBranchNameFromURL(url.searchParams)
   return (
     <React.Fragment>
       <VSCodeLoadingScreen />
