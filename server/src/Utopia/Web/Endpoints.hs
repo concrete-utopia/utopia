@@ -179,7 +179,7 @@ projectDetailsToPossibleMetadata (ProjectDetailsMetadata metadata) = Just metada
 dependencyPreload :: Text -> ProjectDependency -> TagSoupTags
 dependencyPreload cdnRoot ProjectDependency{..} =
   let dependencyURL = cdnRoot <> "/" <> packagerLink dependencyName dependencyVersion
-      linkOpen = TagOpen "link" [("href", dependencyURL), ("rel", "preload"), ("as", "fetch")]
+      linkOpen = TagOpen "link" [("href", dependencyURL), ("rel", "preload"), ("as", "fetch"), ("crossorigin", "anonymous")]
    in [linkOpen, TagClose "link", TagText "\n    "]
 
 dependenciesHtmlFromProject :: Text -> Maybe DB.DecodedProject -> TagSoupTags
@@ -245,7 +245,7 @@ partitionOutScriptDefer True _ = []
 preloadsForScripts :: [Text] -> TagSoupTags
 preloadsForScripts (srcURL : remainder) =
   let forRemainder = preloadsForScripts remainder
-      openTag = TagOpen "link" [("href", srcURL), ("rel", "preload"), ("as", "script")]
+      openTag = TagOpen "link" [("href", srcURL), ("rel", "preload"), ("as", "script"), ("crossorigin", "anonymous")]
       closeTag = TagClose "link"
       textTag = TagText "\n    "
    in openTag : closeTag : textTag : forRemainder
