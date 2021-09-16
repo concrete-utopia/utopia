@@ -1522,10 +1522,6 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const newPersistentModel = applyMigrations(action.persistentModel)
     const newModel = editorModelFromPersistentModel(newPersistentModel, dispatch)
-    workers.sendInitMessage(
-      getDependencyTypeDefinitions(action.nodeModules),
-      newModel.projectContents,
-    )
     return {
       ...loadModel(newModel, oldEditor),
       nodeModules: {
@@ -5146,31 +5142,18 @@ export async function load(
     fetchNodeModulesResult.dependenciesNotFound,
   )
 
-  const typeDefinitions = getDependencyTypeDefinitions(nodeModules)
-
-  let codeResultCache: CodeResultCache
-  if (migratedModel.exportsInfo.length > 0) {
-    workers.sendInitMessage(typeDefinitions, migratedModel.projectContents)
-    codeResultCache = generateCodeResultCache(
-      migratedModel.projectContents,
-      {},
-      {},
-      migratedModel.exportsInfo,
-      nodeModules,
-      dispatch,
-      {},
-      'full-build',
-      false,
-    )
-  } else {
-    codeResultCache = await loadCodeResult(
-      workers,
-      nodeModules,
-      dispatch,
-      typeDefinitions,
-      migratedModel.projectContents,
-    )
-  }
+  const codeResultCache: CodeResultCache = generateCodeResultCache(
+    // TODO is this sufficient here?
+    migratedModel.projectContents,
+    {},
+    {},
+    migratedModel.exportsInfo,
+    nodeModules,
+    dispatch,
+    {},
+    'full-build',
+    false,
+  )
 
   const storedState = await loadStoredState(projectId)
 
@@ -5194,41 +5177,6 @@ export async function load(
     ],
     'everyone',
   )
-}
-
-function loadCodeResult(
-  workers: UtopiaTsWorkers,
-  nodeModules: NodeModules,
-  dispatch: EditorDispatch,
-  typeDefinitions: TypeDefinitions,
-  projectContents: ProjectContentTreeRoot,
-): Promise<CodeResultCache> {
-  return new Promise((resolve, reject) => {
-    const handleMessage = (e: MessageEvent) => {
-      const data = e.data as OutgoingWorkerMessage
-      switch (data.type) {
-        case 'build': {
-          const codeResultCache = generateCodeResultCache(
-            projectContents,
-            {},
-            data.buildResult,
-            data.exportsInfo,
-            nodeModules,
-            dispatch,
-            {},
-            'full-build',
-            false,
-          )
-          resolve(codeResultCache)
-          workers.removeBundleResultEventListener(handleMessage)
-          break
-        }
-      }
-    }
-
-    workers.addBundleResultEventListener(handleMessage)
-    workers.sendInitMessage(typeDefinitions, projectContents)
-  })
 }
 
 export function isSendPreviewModel(action: any): action is SendPreviewModel {

@@ -1,6 +1,5 @@
 import { TypeDefinitions } from '../shared/npm-dependency-types'
 import { createLinterRequestMessage } from './linter/linter-worker'
-import { NewBundlerWorker, BundlerWorker } from './bundler-bridge'
 import { createLinterWorker, createParserPrinterWorker, createWatchdogWorker } from './utils'
 import {
   createWatchdogInitMessage,
@@ -18,34 +17,14 @@ import {
 import { ProjectContentTreeRoot } from '../../components/assets'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
-  private bundlerWorker: NewBundlerWorker
-
   constructor(
-    bundlerWorker: BundlerWorker,
     private parserPrinterWorker: ParserPrinterWorker,
     private linterWorker: LinterWorker,
     private watchdogWorker: WatchdogWorker,
-  ) {
-    this.bundlerWorker = new NewBundlerWorker(bundlerWorker)
-  }
-  sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContentTreeRoot): void {
-    this.bundlerWorker.sendInitMessage(typeDefinitions, projectContents, null)
-  }
-
-  sendUpdateFileMessage(filename: string, content: FileContent): void {
-    this.bundlerWorker.sendUpdateFileMessage(filename, content)
-  }
+  ) {}
 
   sendLinterRequestMessage(filename: string, content: string): void {
     this.linterWorker.sendLinterRequestMessage(filename, content)
-  }
-
-  addBundleResultEventListener(handler: (e: MessageEvent) => void): void {
-    this.bundlerWorker.addBundleResultEventListener(handler)
-  }
-
-  removeBundleResultEventListener(handler: (e: MessageEvent) => void): void {
-    this.bundlerWorker.removeBundleResultEventListener(handler)
   }
 
   sendParsePrintMessage(files: Array<ParseOrPrint>): void {

@@ -13,28 +13,6 @@ import {
   ParsePrintResultMessage,
 } from './common/worker-types'
 
-export class FakeBundlerWorker implements BundlerWorker {
-  messageListeners: Array<(ev: MessageEvent) => any> = []
-
-  addMessageListener = (listener: (ev: MessageEvent) => any): void => {
-    this.messageListeners.push(listener)
-  }
-
-  removeMessageListener = (listener: (ev: MessageEvent) => any): void => {
-    this.messageListeners = this.messageListeners.filter((l) => l !== listener)
-  }
-
-  receiveMessage = (data: any) => {
-    this.messageListeners.forEach((l) => {
-      l(new MessageEvent('message', { data: data }))
-    })
-  }
-
-  postMessage = (message: any): void => {
-    handleTSWorkerMessage(message, this.receiveMessage)
-  }
-}
-
 export class FakeParserPrinterWorker implements ParserPrinterWorker {
   messageListeners: Array<(ev: MessageEvent) => any> = []
 

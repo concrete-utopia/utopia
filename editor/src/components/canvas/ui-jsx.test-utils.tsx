@@ -46,7 +46,6 @@ import {
 } from '../../core/shared/project-file-types'
 import { PrettierConfig } from 'utopia-vscode-common'
 import {
-  FakeBundlerWorker,
   FakeLinterWorker,
   FakeParserPrinterWorker,
   FakeWatchdogWorker,
@@ -195,7 +194,6 @@ export async function renderTestEditorWithModel(
       shortcutConfig: {},
     },
     workers: new UtopiaTsWorkersImplementation(
-      new FakeBundlerWorker(),
       new FakeParserPrinterWorker(),
       new FakeLinterWorker(),
       new FakeWatchdogWorker(),

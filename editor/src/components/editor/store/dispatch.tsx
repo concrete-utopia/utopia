@@ -459,7 +459,6 @@ export function editorDispatch(
     save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
     saveStoredState(storedState.editor.id, stateToStore)
-    notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
     reduxDevtoolsUpdateState('Save Editor', finalStore)
   }
 
@@ -639,47 +638,6 @@ function filterEditorForFiles(editor: EditorState) {
       buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
     },
-  }
-}
-
-function notifyTsWorker(
-  newEditorState: EditorState,
-  oldEditorState: EditorState,
-  workers: UtopiaTsWorkers,
-) {
-  let shouldInitTsWorker = false
-  let filesToUpdateInTsWorker: string[] = []
-  // notify the ts worker if any file is new or has been changed compared to the previous state
-  walkContentsTree(newEditorState.projectContents, (filename, file) => {
-    const oldFile = getContentsTreeFileFromString(oldEditorState.projectContents, filename)
-    if (oldFile == null) {
-      shouldInitTsWorker = true
-    } else {
-      if (file != null && isTextFile(file) && oldFile != file) {
-        filesToUpdateInTsWorker.push(filename)
-      }
-    }
-  })
-  // notify the ts worker if any file has been removed compared to the previous state
-  walkContentsTree(oldEditorState.projectContents, (filename, _) => {
-    const file = getContentsTreeFileFromString(newEditorState.projectContents, filename)
-    if (file == null) {
-      shouldInitTsWorker = true
-    }
-  })
-
-  if (shouldInitTsWorker) {
-    workers.sendInitMessage(
-      getDependencyTypeDefinitions(newEditorState.nodeModules.files),
-      newEditorState.projectContents,
-    )
-  } else {
-    Utils.fastForEach(filesToUpdateInTsWorker, (filename) => {
-      const file = getContentsTreeFileFromString(newEditorState.projectContents, filename)
-      if (file != null && isTextFile(file) && (isJsOrTsFile(filename) || isCssFile(filename))) {
-        workers.sendUpdateFileMessage(filename, file, true)
-      }
-    })
   }
 }
 
