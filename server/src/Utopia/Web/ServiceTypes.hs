@@ -127,6 +127,7 @@ data ServiceCallsF a = NotFound
                      | GetUserConfiguration Text (Maybe DecodedUserConfiguration -> a)
                      | SaveUserConfiguration Text (Maybe Value) a
                      | ClearBranchCache Text a
+                     | GetDownloadBranchFolders ([FilePath] -> a)
                      deriving Functor
 
 {-

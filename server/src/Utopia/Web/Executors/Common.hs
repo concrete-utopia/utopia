@@ -15,10 +15,8 @@ import           Control.Lens                     hiding ((.=), (<.>))
 import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
-import           Data.Binary.Builder
 import qualified Data.ByteString.Lazy             as BL
 import           Data.Conduit.Combinators         hiding (foldMap)
-import qualified Data.HashMap.Strict              as M
 import           Data.IORef
 import           Data.Pool
 import           Data.String                      (String)
