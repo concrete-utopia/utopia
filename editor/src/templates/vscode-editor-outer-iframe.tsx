@@ -3,7 +3,6 @@ import * as ReactDOM from 'react-dom'
 
 import { VSCODE_EDITOR_IFRAME_BASE_URL } from '../common/env-vars'
 import { createIframeUrl } from '../core/shared/utils'
-import { VSCodeLoadingScreen } from './vscode-editor-loading-screen'
 
 function VSCodeOuterIframe(): React.ReactElement {
   // TODO: Alternative root handling.
@@ -14,24 +13,21 @@ function VSCodeOuterIframe(): React.ReactElement {
   url.searchParams.append('project_id', projectID)
 
   return (
-    <React.Fragment>
-      <VSCodeLoadingScreen />
-      <iframe
-        id={'vscode-outer'}
-        allow='autoplay'
-        style={{
-          flex: 1,
-          backgroundColor: 'transparent',
-          borderWidth: 0,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          height: '100%',
-          width: '100%',
-        }}
-        src={url.toString()}
-      />
-    </React.Fragment>
+    <iframe
+      id={'vscode-outer'}
+      allow='autoplay'
+      style={{
+        flex: 1,
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        height: '100%',
+        width: '100%',
+      }}
+      src={url.toString()}
+    />
   )
 }
 

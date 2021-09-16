@@ -80,6 +80,8 @@ const JSIcon = () => (
 export const VSCodeLoadingScreen = (): React.ReactElement => (
   <div
     style={{
+      width: '100%',
+      height: '100%',
       fontSize: 13,
       display: 'flex',
       flexDirection: 'column',
@@ -171,7 +173,9 @@ export const VSCodeLoadingScreen = (): React.ReactElement => (
         >
           <div className='monaco-icon-label-container' title='~/utopia'>
             <span className='monaco-icon-name-container'>
-              <a className='label-name'>utopia</a>
+              <a style={{ color: 'rgba(97, 97, 97, 0.8)' }} className='label-name'>
+                utopia
+              </a>
             </span>
             <span className='monaco-icon-description-container'></span>
           </div>
@@ -205,7 +209,9 @@ export const VSCodeLoadingScreen = (): React.ReactElement => (
           </div>
           <div className='monaco-icon-label-container' title='~/utopia/storyboard.js'>
             <span className='monaco-icon-name-container'>
-              <a className='label-name'>storyboard.js</a>
+              <a style={{ color: 'rgba(97, 97, 97, 0.8)' }} className='label-name'>
+                storyboard.js
+              </a>
             </span>
             <span className='monaco-icon-description-container'></span>
           </div>

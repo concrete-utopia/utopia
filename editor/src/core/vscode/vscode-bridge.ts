@@ -194,7 +194,7 @@ export async function initVSCodeBridge(
       sendGetUtopiaVSCodeConfigMessage()
       watchForChanges(dispatch)
       if (openFilePath != null) {
-        sendOpenFileMessage(openFilePath)
+        await sendOpenFileMessage(openFilePath)
       }
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
