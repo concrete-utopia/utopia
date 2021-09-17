@@ -160,7 +160,6 @@ export class Editor {
       history: history,
       userState: defaultUserState,
       workers: new UtopiaTsWorkersImplementation(
-        new RealBundlerWorker(),
         new RealParserPrinterWorker(),
         new RealLinterWorker(),
         watchdogWorker,
@@ -182,39 +181,6 @@ export class Editor {
     this.utopiaStoreApi = storeHook
 
     reduxDevtoolsSendInitialState(this.storedState)
-
-    const handleWorkerMessage = (msg: OutgoingWorkerMessage) => {
-      switch (msg.type) {
-        case 'build': {
-          // FIXME: In theory, we could get back an error from an old build here, which would no longer be
-          // applicable, but since we now clear those on code changes, and failed builds are extremely fast,
-          // this is near impossible to reproduce *right now*. However, it could still become a very real
-          // issue in the future, so it still needs addressing
-          let actions: Array<EditorAction> = []
-          if (!this.storedState.editor.safeMode) {
-            const codeResultCache = generateCodeResultCache(
-              this.storedState.editor.projectContents,
-              this.storedState.editor.codeResultCache.projectModules,
-              msg.buildResult,
-              msg.exportsInfo,
-              this.storedState.editor.nodeModules.files,
-              this.boundDispatch,
-              this.storedState.editor.codeResultCache.evaluationCache,
-              msg.buildType,
-              true,
-            )
-
-            if (codeResultCache != null) {
-              actions.push(EditorActions.updateCodeResultCache(codeResultCache, msg.buildType))
-            }
-          }
-          const errors = getAllErrorsFromBuildResult(msg.buildResult)
-          actions.push(EditorActions.setCodeEditorBuildErrors(errors))
-          this.storedState.dispatch(actions, 'everyone')
-          break
-        }
-      }
-    }
 
     const handleLinterMessage = (msg: LinterResultMessage) => {
       switch (msg.type) {
@@ -240,7 +206,6 @@ export class Editor {
       }
     }
 
-    this.storedState.workers.addBundleResultEventListener((e) => handleWorkerMessage(e.data))
     this.storedState.workers.addLinterResultEventListener((e) => handleLinterMessage(e.data))
     this.storedState.workers.addHeartbeatRequestEventListener((e) =>
       handleHeartbeatRequestMessage(e.data),

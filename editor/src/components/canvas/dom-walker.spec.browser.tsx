@@ -12,7 +12,6 @@ import {
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import {
-  FakeBundlerWorker,
   FakeLinterWorker,
   FakeParserPrinterWorker,
   FakeWatchdogWorker,
@@ -67,7 +66,6 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       shortcutConfig: {},
     },
     workers: new UtopiaTsWorkersImplementation(
-      new FakeBundlerWorker(),
       new FakeParserPrinterWorker(),
       new FakeLinterWorker(),
       new FakeWatchdogWorker(),

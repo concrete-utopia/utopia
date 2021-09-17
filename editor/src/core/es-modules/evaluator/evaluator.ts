@@ -17,7 +17,9 @@ function isEsModuleError(error: Error) {
     // I cannot test for a more explicit string because Node.js (Jest) and Chrome has slightly different error messages,
     // and it made me feel like I shouldn't codify the string matching to today's version of Chrome, so
     // I went with this more generic solution.
-    (error.message.indexOf('export') > -1 || error.message.indexOf('import') > -1)
+    (error.message.indexOf('export') > -1 ||
+      error.message.indexOf('import') > -1 ||
+      error.message.indexOf('*') > -1)
   )
 }
 

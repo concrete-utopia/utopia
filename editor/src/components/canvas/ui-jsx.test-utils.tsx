@@ -46,7 +46,6 @@ import {
 } from '../../core/shared/project-file-types'
 import { PrettierConfig } from 'utopia-vscode-common'
 import {
-  FakeBundlerWorker,
   FakeLinterWorker,
   FakeParserPrinterWorker,
   FakeWatchdogWorker,
@@ -104,6 +103,8 @@ const FailJestOnCanvasError = () => {
   const stableCallback = React.useCallback((newRuntimeErrors: Array<RuntimeErrorInfo>) => {
     // we have new runtime errors, let's take the tests down
     if (newRuntimeErrors.length > 0) {
+      console.error('Canvas Error!!!!!', newRuntimeErrors[0]?.error)
+      fail(newRuntimeErrors[0]?.error)
       expect(newRuntimeErrors[0]?.error ?? null).toEqual(null)
     }
   }, [])
@@ -196,7 +197,6 @@ export async function renderTestEditorWithModel(
       shortcutConfig: {},
     },
     workers: new UtopiaTsWorkersImplementation(
-      new FakeBundlerWorker(),
       new FakeParserPrinterWorker(),
       new FakeLinterWorker(),
       new FakeWatchdogWorker(),
