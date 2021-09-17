@@ -316,6 +316,7 @@ export async function getUserConfiguration(loginState: LoginState): Promise<User
         // FIXME Client should show an error if server requests fail
         throw new Error(`server responded with ${response.status} ${response.statusText}`)
       }
+    case 'LOGIN_NOT_YET_KNOWN':
     case 'NOT_LOGGED_IN':
     case 'LOGIN_LOST':
     case 'OFFLINE_STATE':

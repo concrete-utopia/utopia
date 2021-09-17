@@ -5,6 +5,10 @@ export interface UserDetails {
   picture?: string
 }
 
+interface LoginNotYetKnown {
+  type: 'LOGIN_NOT_YET_KNOWN'
+}
+
 interface LoggedInUser {
   type: 'LOGGED_IN'
   user: UserDetails
@@ -27,6 +31,7 @@ interface CookiesOrLocalForageUnavailable {
 }
 
 export type LoginState =
+  | LoginNotYetKnown
   | LoggedInUser
   | NotLoggedIn
   | LoginLost
@@ -38,6 +43,14 @@ export function loggedInUser(user: UserDetails): LoggedInUser {
     type: 'LOGGED_IN',
     user: user,
   }
+}
+
+export const loginNotYetKnown: LoginNotYetKnown = {
+  type: 'LOGIN_NOT_YET_KNOWN',
+}
+
+export function isLoginNotYetKnown(loginState: unknown): loginState is LoginNotYetKnown {
+  return (loginState as Partial<LoginState>)?.type === 'LOGIN_NOT_YET_KNOWN'
 }
 
 export const notLoggedIn: NotLoggedIn = {

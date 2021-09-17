@@ -172,6 +172,8 @@ export class Editor {
     this.updateStore = storeHook.setState
     this.utopiaStoreApi = storeHook
 
+    renderRootEditor()
+
     reduxDevtoolsSendInitialState(this.storedState)
 
     const handleLinterMessage = (msg: LinterResultMessage) => {
@@ -205,7 +207,6 @@ export class Editor {
 
     getLoginState('cache').then((loginState: LoginState) => {
       startPollingLoginState(this.boundDispatch, loginState)
-      renderRootEditor()
       this.storedState.userState.loginState = loginState
       getUserConfiguration(loginState).then((shortcutConfiguration) => {
         this.storedState.userState = {
