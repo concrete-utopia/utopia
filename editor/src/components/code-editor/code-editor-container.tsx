@@ -5,12 +5,11 @@ import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import { createIframeUrl } from '../../core/shared/utils'
 import { getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
 import { VSCodeLoadingScreen } from './vscode-editor-loading-screen'
-import { when } from '../../utils/react-conditionals'
 import { getEditorBranchNameFromURL, setBranchNameFromURL } from '../../utils/branches'
 
 const VSCodeIframeContainer = betterReactMemo(
   'VSCodeIframeContainer',
-  (props: { projectID: string; vscodeLoadingScreenVisible: boolean }) => {
+  (props: { projectID: string }) => {
     const projectID = props.projectID
     const baseIframeSrc = createIframeUrl(
       MONACO_EDITOR_IFRAME_BASE_URL,
@@ -20,13 +19,14 @@ const VSCodeIframeContainer = betterReactMemo(
     url.searchParams.append('project_id', projectID)
 
     setBranchNameFromURL(url.searchParams)
+
     return (
       <div
         style={{
           flex: 1,
         }}
       >
-        {when(props.vscodeLoadingScreenVisible, <VSCodeLoadingScreen />)}
+        <VSCodeLoadingScreen />
         <iframe
           key={'vscode-editor'}
           id={'vscode-editor'}
@@ -48,14 +48,8 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', () => {
   const selectedProps = useEditorState((store) => {
     return {
       vscodeBridgeId: getUnderlyingVSCodeBridgeID(store.editor.vscodeBridgeId),
-      vscodeLoadingScreenVisible: store.editor.vscodeLoadingScreenVisible,
     }
   }, 'CodeEditorWrapper')
 
-  return (
-    <VSCodeIframeContainer
-      projectID={selectedProps.vscodeBridgeId}
-      vscodeLoadingScreenVisible={selectedProps.vscodeLoadingScreenVisible}
-    />
-  )
+  return <VSCodeIframeContainer projectID={selectedProps.vscodeBridgeId} />
 })
