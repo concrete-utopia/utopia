@@ -207,6 +207,7 @@ import type {
   DecrementResizeOptionsSelectedIndex,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
+  HideVSCodeLoadingScreen,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1468,5 +1469,10 @@ export function setResizeOptionsTargetOptions(
   return {
     action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS',
     propertyTargetOptions: propertyTargetOptions,
+  }
+}
+export function hideVSCodeLoadingScreen(): HideVSCodeLoadingScreen {
+  return {
+    action: 'HIDE_VSCODE_LOADING_SCREEN',
   }
 }

@@ -16,6 +16,7 @@ import {
   sendCodeEditorInitialisation,
   updateConfigFromVSCode,
   sendLinterRequestMessage,
+  hideVSCodeLoadingScreen,
 } from '../../components/editor/actions/action-creators'
 import {
   getSavedCodeFromTextFile,
@@ -164,6 +165,7 @@ export async function initVSCodeBridge(
   dispatch: EditorDispatch,
   openFilePath: string | null,
 ): Promise<void> {
+  let loadingScreenHidden = false
   async function innerInit(): Promise<void> {
     dispatch([markVSCodeBridgeReady(false)], 'everyone')
     if (isBrowserEnvironment) {
@@ -186,6 +188,12 @@ export async function initVSCodeBridge(
           case 'UTOPIA_VSCODE_CONFIG_VALUES':
             dispatch([updateConfigFromVSCode(message.config)], 'everyone')
             break
+          case 'FILE_OPENED':
+            if (!loadingScreenHidden) {
+              loadingScreenHidden = true
+              dispatch([hideVSCodeLoadingScreen()], 'everyone')
+            }
+            break
           default:
             const _exhaustiveCheck: never = message
             throw new Error(`Unhandled message type${JSON.stringify(message)}`)
@@ -194,7 +202,10 @@ export async function initVSCodeBridge(
       sendGetUtopiaVSCodeConfigMessage()
       watchForChanges(dispatch)
       if (openFilePath != null) {
-        await sendOpenFileMessage(openFilePath)
+        sendOpenFileMessage(openFilePath)
+      } else {
+        loadingScreenHidden = true
+        dispatch([hideVSCodeLoadingScreen()], 'everyone')
       }
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')

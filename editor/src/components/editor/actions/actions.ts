@@ -377,6 +377,7 @@ import {
   SetInspectorLayoutSectionHovered,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
+  HideVSCodeLoadingScreen,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1073,7 +1074,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     focusedElementPath: currentEditor.focusedElementPath,
     config: defaultConfig(),
     theme: currentEditor.theme,
-    vscodeReady: currentEditor.vscodeReady,
+    vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
   }
 }
 
@@ -4458,7 +4459,7 @@ export const UPDATE_FNS = {
     // Side effects.
     sendCodeEditorDecorations(editor)
     sendSelectedElement(editor)
-    return { ...editor, vscodeReady: true }
+    return editor
   },
   SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
     let shouldApplyChange: boolean = false
@@ -4905,6 +4906,12 @@ export const UPDATE_FNS = {
         },
       },
     }
+  },
+  HIDE_VSCODE_LOADING_SCREEN: (
+    action: HideVSCodeLoadingScreen,
+    editor: EditorModel,
+  ): EditorModel => {
+    return { ...editor, vscodeLoadingScreenVisible: false }
   },
 }
 
