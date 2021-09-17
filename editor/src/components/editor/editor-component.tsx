@@ -53,6 +53,7 @@ import {
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { createIframeUrl } from '../../core/shared/utils'
+import { setBranchNameFromURL } from '../../utils/branches'
 
 interface NumberSize {
   width: number
@@ -434,13 +435,15 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
 const PropertyControlsInfoComponent = betterReactMemo('PropertyControlsInfoComponent', () => {
   const iframeSrc = createIframeUrl(PROPERTY_CONTROLS_INFO_BASE_URL, 'property-controls-info.html')
 
+  const url = new URL(iframeSrc)
+  setBranchNameFromURL(url.searchParams)
   return (
     <iframe
       key={PropertyControlsInfoIFrameID}
       id={PropertyControlsInfoIFrameID}
       width='0px'
       height='0px'
-      src={iframeSrc}
+      src={url.toString()}
       allow='autoplay'
       style={{
         backgroundColor: 'transparent',

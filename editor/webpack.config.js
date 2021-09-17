@@ -352,6 +352,16 @@ const config = {
 
   // Use default source maps in dev mode, or attach a source map if in prod
   devtool: isProd ? 'source-map' : 'eval',
+
+  stats: isProdOrStaging
+    ? {
+        assetsSpace: 1000,
+        chunkGroupMaxAssets: 1000,
+        groupAssetsByEmitStatus: false,
+        groupAssetsByChunk: false,
+        colors: true,
+      }
+    : {},
 }
 
 if (verbose) {

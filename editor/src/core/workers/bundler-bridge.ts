@@ -200,10 +200,8 @@ export const bundlerMachine = Machine<BundlerContext, BundlerSchema, BundlerEven
         // then automatically go to the initializing state again, so there is a real state transition.
         // This initagain state is that temporary state.
         initagain: {
-          on: {
-            '': {
-              target: 'initializing',
-            },
+          always: {
+            target: 'initializing',
           },
         },
         idle: {
@@ -289,13 +287,8 @@ export const bundlerMachine = Machine<BundlerContext, BundlerSchema, BundlerEven
             // the value of queuedUpdateFiles to include event.payload.fileContent.
             assign((context, event) => pushToQueue(context, event)),
           ],
-          on: {
-            // the `''` event is a special event, that is fired when we step into this state. since I am
-            // describing a transition with a target as the handler,
-            // it basically means "as soon as we step into the state called `pushing`, move to a new state"
-            '': {
-              target: 'ready',
-            },
+          always: {
+            target: 'ready',
           },
         },
         popping: {
@@ -304,14 +297,8 @@ export const bundlerMachine = Machine<BundlerContext, BundlerSchema, BundlerEven
             // we fire the PROCESS_FILE_FROM_QUEUE, letting the bundler state machine know it can start working!
             send('PROCESS_FILE_FROM_QUEUE'),
           ],
-          on: {
-            // same as in pushing, I should remove this copy paste, either by making this object a global const,
-            // or by coming up with a better representation than the empty/ready states.
-            '': [
-              {
-                target: 'ready',
-              },
-            ],
+          always: {
+            target: 'ready',
           },
         },
       },

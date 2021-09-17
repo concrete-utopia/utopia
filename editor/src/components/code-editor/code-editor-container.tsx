@@ -6,6 +6,7 @@ import { createIframeUrl } from '../../core/shared/utils'
 import { getUnderlyingVSCodeBridgeID } from '../editor/store/editor-state'
 import { VSCodeLoadingScreen } from './vscode-editor-loading-screen'
 import { when } from '../../utils/react-conditionals'
+import { getEditorBranchNameFromURL, setBranchNameFromURL } from '../../utils/branches'
 
 const VSCodeIframeContainer = betterReactMemo(
   'VSCodeIframeContainer',
@@ -18,6 +19,7 @@ const VSCodeIframeContainer = betterReactMemo(
     const url = new URL(baseIframeSrc)
     url.searchParams.append('project_id', projectID)
 
+    setBranchNameFromURL(url.searchParams)
     return (
       <div
         style={{
