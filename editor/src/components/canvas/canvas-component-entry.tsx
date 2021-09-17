@@ -24,6 +24,7 @@ import { ProjectContentTreeRoot } from '../assets'
 import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { DomWalkerProps, useDomWalker } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
+import { CanvasLoadingScreen } from './canvas-loading-screen'
 
 interface CanvasComponentEntryProps {}
 
@@ -55,7 +56,7 @@ export const CanvasComponentEntry = betterReactMemo(
     }, 'CanvasComponentEntry canvasProps')
 
     if (canvasProps == null) {
-      return null
+      return <CanvasLoadingScreen />
     } else {
       return (
         <div
