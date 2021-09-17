@@ -124,8 +124,6 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
           persistentModel,
           entireStateRef.current.editor.projectName,
           entireStateRef.current.editor.id!,
-          entireStateRef.current.workers,
-          NO_OP,
         )
       }
     },

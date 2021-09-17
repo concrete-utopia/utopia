@@ -293,7 +293,7 @@ export const EditorComponentInner = betterReactMemo(
                   overflowX: 'hidden',
                 }}
               >
-                <OpenFileEditor />
+                <DesignPanelRoot />
               </SimpleFlexRow>
               {/* insert more columns here */}
 
@@ -363,26 +363,6 @@ export function EditorComponent(props: EditorProps) {
     </DndProvider>
   )
 }
-
-const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
-  const { isUiJsFileOpen } = useEditorState((store) => {
-    const selectedFile = getOpenFile(store.editor)
-    const selectedFileName = getOpenTextFileKey(store.editor)
-    const isAppDotJS = selectedFileName?.endsWith('app.js') ?? false
-    const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath) ?? false
-    const isCanvasFile = isAppDotJS || isStoryboardFile // FIXME This is not how we should determine whether or not to open the canvas
-    return {
-      isUiJsFileOpen: selectedFile != null && isCanvasFile,
-    }
-  }, 'OpenFileEditor')
-
-  if (isUiJsFileOpen) {
-    return <DesignPanelRoot isUiJsFileOpen={isUiJsFileOpen} />
-  } else {
-    return <Subdued>No file open</Subdued>
-  }
-})
-OpenFileEditor.displayName = 'OpenFileEditor'
 
 const CanvasCursorComponent = betterReactMemo('CanvasCursorComponent', () => {
   const cursor = useEditorState((store) => {

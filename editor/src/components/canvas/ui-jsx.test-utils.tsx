@@ -232,9 +232,6 @@ export async function renderTestEditorWithModel(
     </React.Profiler>,
   )
 
-  const noFileOpenText = result.getByText('No file open')
-  expect(noFileOpenText).toBeDefined()
-
   await act(async () => {
     await new Promise<void>((resolve, reject) => {
       load(
@@ -249,8 +246,6 @@ export async function renderTestEditorWithModel(
         model,
         'Test',
         '0',
-        initialEditorStore.workers,
-        Utils.NO_OP,
         false,
       )
     })
