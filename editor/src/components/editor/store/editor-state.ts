@@ -134,7 +134,7 @@ import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map
 import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
-import { notLoggedIn } from '../../../common/user'
+import { loginNotYetKnown, notLoggedIn } from '../../../common/user'
 import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
 import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import {
@@ -235,7 +235,7 @@ export interface UserState extends UserConfiguration {
 }
 
 export const defaultUserState: UserState = {
-  loginState: notLoggedIn,
+  loginState: loginNotYetKnown,
   shortcutConfig: {},
 }
 

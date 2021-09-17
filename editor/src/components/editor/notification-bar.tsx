@@ -39,6 +39,8 @@ export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
   }
 
   switch (loginState.type) {
+    case 'LOGIN_NOT_YET_KNOWN':
+      return null
     case 'LOGGED_IN':
       return null
     case 'OFFLINE_STATE':

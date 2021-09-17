@@ -144,15 +144,7 @@ export class Editor {
       projectId: string,
       projectName: string,
       project: PersistentModel,
-    ) =>
-      load(
-        this.storedState.dispatch,
-        project,
-        projectName,
-        projectId,
-        this.storedState.workers,
-        renderRootEditor,
-      )
+    ) => load(this.storedState.dispatch, project, projectName, projectId)
 
     this.storedState = {
       editor: emptyEditorState,
@@ -179,6 +171,8 @@ export class Editor {
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
     this.utopiaStoreApi = storeHook
+
+    renderRootEditor()
 
     reduxDevtoolsSendInitialState(this.storedState)
 
