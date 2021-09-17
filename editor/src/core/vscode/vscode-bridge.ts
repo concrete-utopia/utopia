@@ -297,6 +297,9 @@ export function getSelectedElementChangedMessage(
   newEditorState: EditorState,
 ): SelectedElementChanged | null {
   const selectedView = newEditorState.selectedViews[0]
+  if (selectedView == null) {
+    return null
+  }
   const highlightBounds = getHighlightBoundsForElementPath(selectedView, newEditorState)
   if (highlightBounds == null) {
     return null
