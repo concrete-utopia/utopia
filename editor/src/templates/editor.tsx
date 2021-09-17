@@ -269,6 +269,8 @@ export class Editor {
           this.storedState.persistence.load(projectId)
         }
       })
+
+      renderRootEditor()
     })
   }
 
