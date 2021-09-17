@@ -1071,6 +1071,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
+    vscodeReady: currentEditor.vscodeReady,
     focusedElementPath: currentEditor.focusedElementPath,
     config: defaultConfig(),
     theme: currentEditor.theme,
@@ -4459,7 +4460,10 @@ export const UPDATE_FNS = {
     // Side effects.
     sendCodeEditorDecorations(editor)
     sendSelectedElement(editor)
-    return editor
+    return {
+      ...editor,
+      vscodeReady: true,
+    }
   },
   SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
     let shouldApplyChange: boolean = false

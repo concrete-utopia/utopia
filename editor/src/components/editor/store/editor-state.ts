@@ -501,6 +501,7 @@ export interface EditorState {
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
+  vscodeReady: boolean
   focusedElementPath: ElementPath | null
   config: UtopiaVSCodeConfig
   theme: Theme
@@ -1272,6 +1273,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     safeMode: false,
     saveError: false,
     vscodeBridgeReady: false,
+    vscodeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
     theme: 'light',
@@ -1522,6 +1524,7 @@ export function editorModelFromPersistentModel(
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
     vscodeBridgeReady: false,
+    vscodeReady: false,
     focusedElementPath: null,
     config: defaultConfig(),
     theme: 'light',
