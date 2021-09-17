@@ -25,8 +25,6 @@ import { ModeSelectButtons } from './mode-select-buttons'
 import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
 
-interface CanvasWrapperComponentProps {}
-
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
   fastForEach(errorMessages, (errorMessage) => {
@@ -50,82 +48,79 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
   })
 }
 
-export const CanvasWrapperComponent = betterReactMemo(
-  'CanvasWrapperComponent',
-  (props: CanvasWrapperComponentProps) => {
-    const { dispatch, editorState, derivedState } = useEditorState(
-      (store) => ({
-        dispatch: store.dispatch,
-        editorState: store.editor,
-        derivedState: store.derived,
-      }),
-      'CanvasWrapperComponent',
-    )
+export const CanvasWrapperComponent = betterReactMemo('CanvasWrapperComponent', () => {
+  const { dispatch, editorState, derivedState } = useEditorState(
+    (store) => ({
+      dispatch: store.dispatch,
+      editorState: store.editor,
+      derivedState: store.derived,
+    }),
+    'CanvasWrapperComponent',
+  )
 
-    const fatalErrors = React.useMemo(() => {
-      return getAllCodeEditorErrors(editorState, 'fatal', true)
-    }, [editorState])
+  const fatalErrors = React.useMemo(() => {
+    return getAllCodeEditorErrors(editorState, 'fatal', true)
+  }, [editorState])
 
-    const safeMode = useEditorState((store) => {
-      return store.editor.safeMode
-    }, 'CanvasWrapperComponent safeMode')
+  const safeMode = useEditorState((store) => {
+    return store.editor.safeMode
+  }, 'CanvasWrapperComponent safeMode')
 
-    const isNavigatorOverCanvas = useEditorState(
-      (store) => !store.editor.navigator.minimised,
-      'ErrorOverlayComponent isOverlappingWithNavigator',
-    )
+  const isNavigatorOverCanvas = useEditorState(
+    (store) => !store.editor.navigator.minimised,
+    'ErrorOverlayComponent isOverlappingWithNavigator',
+  )
 
-    const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
+  const navigatorWidth = usePubSubAtomReadOnly(NavigatorWidthAtom)
 
-    return (
-      <FlexColumn
-        className='CanvasWrapperComponent'
+  return (
+    <FlexColumn
+      className='CanvasWrapperComponent'
+      style={{
+        position: 'relative',
+        overflowX: 'hidden',
+        justifyContent: 'stretch',
+        alignItems: 'stretch',
+        flexGrow: 1,
+        height: '100%',
+        // ^ prevents Monaco from pushing the inspector out
+      }}
+    >
+      {fatalErrors.length === 0 && !safeMode ? (
+        <EditorCanvas
+          editor={editorState}
+          model={createCanvasModelKILLME(editorState, derivedState)}
+          dispatch={dispatch}
+        />
+      ) : null}
+      <FlexRow
         style={{
-          position: 'relative',
-          overflowX: 'hidden',
-          justifyContent: 'stretch',
-          alignItems: 'stretch',
-          flexGrow: 1,
+          position: 'absolute',
+          width: '100%',
           height: '100%',
-          // ^ prevents Monaco from pushing the inspector out
+          transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
+          pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
         }}
       >
-        {fatalErrors.length === 0 && !safeMode ? (
-          <EditorCanvas
-            editor={editorState}
-            model={createCanvasModelKILLME(editorState, derivedState)}
-            dispatch={dispatch}
-          />
-        ) : null}
-        <FlexRow
+        <div
           style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
-            pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
+            width: isNavigatorOverCanvas ? navigatorWidth : 0,
+          }}
+        />
+        <FlexColumn
+          style={{
+            alignSelf: 'stretch',
+            flexGrow: 1,
+            position: 'relative',
           }}
         >
-          <div
-            style={{
-              width: isNavigatorOverCanvas ? navigatorWidth : 0,
-            }}
-          />
-          <FlexColumn
-            style={{
-              alignSelf: 'stretch',
-              flexGrow: 1,
-              position: 'relative',
-            }}
-          >
-            {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-            <ModeSelectButtons />
-          </FlexColumn>
-        </FlexRow>
-      </FlexColumn>
-    )
-  },
-)
+          {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
+          <ModeSelectButtons />
+        </FlexColumn>
+      </FlexRow>
+    </FlexColumn>
+  )
+})
 
 interface ErrorOverlayComponentProps {}
 
