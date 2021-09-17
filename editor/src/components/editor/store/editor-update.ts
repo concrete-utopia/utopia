@@ -329,6 +329,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_RESIZE_OPTIONS_TARGET_OPTIONS(action, state)
     case 'SEND_CODE_EDITOR_INITIALISATION':
       return UPDATE_FNS.SEND_CODE_EDITOR_INITIALISATION(action, state)
+    case 'HIDE_VSCODE_LOADING_SCREEN':
+      return UPDATE_FNS.HIDE_VSCODE_LOADING_SCREEN(action, state)
     default:
       return state
   }

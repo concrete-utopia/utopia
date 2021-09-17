@@ -104,6 +104,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
     case 'OPEN_CODE_EDITOR_FILE':
+    case 'HIDE_VSCODE_LOADING_SCREEN':
       return true
 
     case 'NEW':

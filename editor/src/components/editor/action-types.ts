@@ -916,6 +916,10 @@ export interface SetResizeOptionsTargetOptions {
   propertyTargetOptions: Array<LayoutTargetableProp>
 }
 
+export interface HideVSCodeLoadingScreen {
+  action: 'HIDE_VSCODE_LOADING_SCREEN'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1068,6 +1072,7 @@ export type EditorAction =
   | DecrementResizeOptionsSelectedIndex
   | IncrementResizeOptionsSelectedIndex
   | SetResizeOptionsTargetOptions
+  | HideVSCodeLoadingScreen
 
 export type DispatchPriority =
   | 'everyone'

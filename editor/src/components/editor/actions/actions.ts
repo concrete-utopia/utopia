@@ -377,6 +377,7 @@ import {
   SetInspectorLayoutSectionHovered,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
+  HideVSCodeLoadingScreen,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1074,6 +1075,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     focusedElementPath: currentEditor.focusedElementPath,
     config: defaultConfig(),
     theme: currentEditor.theme,
+    vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
   }
 }
 
@@ -4908,6 +4910,12 @@ export const UPDATE_FNS = {
         },
       },
     }
+  },
+  HIDE_VSCODE_LOADING_SCREEN: (
+    action: HideVSCodeLoadingScreen,
+    editor: EditorModel,
+  ): EditorModel => {
+    return { ...editor, vscodeLoadingScreenVisible: false }
   },
 }
 

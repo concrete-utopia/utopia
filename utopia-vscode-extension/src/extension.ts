@@ -24,6 +24,7 @@ import {
   applyPrettier,
   UtopiaVSCodeConfig,
   utopiaVSCodeConfigValues,
+  fileOpened,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
@@ -152,8 +153,24 @@ function didClose(path: string): DidClose {
     path: path,
   }
 }
+interface DidOpen {
+  type: 'DID_OPEN'
+  path: string
+}
 
-type SubscriptionWork = UpdateDirtyContentChange | DidChangeTextChange | WillSaveText | DidClose
+function didOpen(path: string): DidOpen {
+  return {
+    type: 'DID_OPEN',
+    path: path,
+  }
+}
+
+type SubscriptionWork =
+  | UpdateDirtyContentChange
+  | DidChangeTextChange
+  | WillSaveText
+  | DidClose
+  | DidOpen
 let pendingWork: Array<SubscriptionWork> = []
 
 function minimisePendingWork(): void {
@@ -220,6 +237,11 @@ async function doSubscriptionWork(work: SubscriptionWork): Promise<void> {
 
       break
     }
+    case 'DID_OPEN': {
+      const { path } = work
+      sendMessage(fileOpened(path))
+      break
+    }
     default:
       const _exhaustiveCheck: never = work
       console.error(`Unhandled work type ${JSON.stringify(work)}`)
@@ -276,6 +298,7 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
       if (isUtopiaDocument(document)) {
         const path = fromUtopiaURI(document.uri)
         pendingWork.push(updateDirtyContentChange(path, document.uri))
+        pendingWork.push(didOpen(path))
       }
     }),
   )

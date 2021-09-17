@@ -238,10 +238,23 @@ export function utopiaVSCodeConfigValues(config: UtopiaVSCodeConfig): UtopiaVSCo
   }
 }
 
+export interface FileOpened {
+  type: 'FILE_OPENED'
+  path: string
+}
+
+export function fileOpened(path: string): FileOpened {
+  return {
+    type: 'FILE_OPENED',
+    path: path,
+  }
+}
+
 export type FromVSCodeMessage =
   | EditorCursorPositionChanged
   | SendInitialData
   | UtopiaVSCodeConfigValues
+  | FileOpened
 
 export function isEditorCursorPositionChanged(
   message: unknown,
@@ -269,12 +282,21 @@ export function isUtopiaVSCodeConfigValues(message: unknown): message is UtopiaV
   )
 }
 
+export function isFileOpened(message: unknown): message is UtopiaVSCodeConfigValues {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'FILE_OPENED'
+  )
+}
+
 export function parseFromVSCodeMessage(unparsed: string): FromVSCodeMessage {
   const message = JSON.parse(unparsed)
   if (
     isEditorCursorPositionChanged(message) ||
     isSendInitialData(message) ||
-    isUtopiaVSCodeConfigValues(message)
+    isUtopiaVSCodeConfigValues(message) || 
+    isFileOpened(message)
   ) {
     return message
   } else {
