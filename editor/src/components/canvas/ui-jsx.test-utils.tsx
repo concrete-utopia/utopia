@@ -249,8 +249,6 @@ export async function renderTestEditorWithModel(
         model,
         'Test',
         '0',
-        initialEditorStore.workers,
-        Utils.NO_OP,
         false,
       )
     })

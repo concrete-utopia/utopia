@@ -144,15 +144,7 @@ export class Editor {
       projectId: string,
       projectName: string,
       project: PersistentModel,
-    ) =>
-      load(
-        this.storedState.dispatch,
-        project,
-        projectName,
-        projectId,
-        this.storedState.workers,
-        renderRootEditor,
-      )
+    ) => load(this.storedState.dispatch, project, projectName, projectId)
 
     this.storedState = {
       editor: emptyEditorState,
@@ -213,6 +205,7 @@ export class Editor {
 
     getLoginState('cache').then((loginState: LoginState) => {
       startPollingLoginState(this.boundDispatch, loginState)
+      renderRootEditor()
       this.storedState.userState.loginState = loginState
       getUserConfiguration(loginState).then((shortcutConfiguration) => {
         this.storedState.userState = {
@@ -269,8 +262,6 @@ export class Editor {
           this.storedState.persistence.load(projectId)
         }
       })
-
-      renderRootEditor()
     })
   }
 

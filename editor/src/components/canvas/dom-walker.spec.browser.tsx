@@ -90,15 +90,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
   expect(noFileOpenText).toBeDefined()
 
   await act(async () => {
-    await load(
-      dispatch,
-      createTestProjectWithCode(appUiJsFileCode),
-      'Test',
-      '0',
-      initialEditorStore.workers,
-      Utils.NO_OP,
-      false,
-    )
+    await load(dispatch, createTestProjectWithCode(appUiJsFileCode), 'Test', '0', false)
   })
   const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadata)
   expect(sanitizedMetadata).toMatchSnapshot()

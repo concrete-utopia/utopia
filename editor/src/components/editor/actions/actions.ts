@@ -5091,55 +5091,11 @@ function setCanvasFramesInnerNew(
   return updateFramesOfScenesAndComponents(editor, framesAndTargets, optionalParentFrame)
 }
 
-export async function newProject(
-  dispatch: EditorDispatch,
-  renderEditorRoot: () => void,
-): Promise<void> {
-  const defaultPersistentModel = defaultProject()
-  const npmDependencies = dependenciesWithEditorRequirements(defaultPersistentModel.projectContents)
-  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
-
-  const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
-  const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
-    npmDependencies,
-    fetchNodeModulesResult.dependenciesWithError,
-    fetchNodeModulesResult.dependenciesNotFound,
-  )
-
-  const codeResultCache = generateCodeResultCache(
-    defaultPersistentModel.projectContents,
-    {},
-    SampleFileBuildResult,
-    SampleFileBundledExportsInfo,
-    nodeModules,
-    dispatch,
-    {},
-    'full-build',
-    false,
-  )
-
-  renderEditorRoot()
-  dispatch(
-    [
-      {
-        action: 'NEW',
-        nodeModules: nodeModules,
-        persistentModel: defaultPersistentModel,
-        codeResultCache: codeResultCache,
-        packageResult: packageResult,
-      },
-    ],
-    'everyone',
-  )
-}
-
 export async function load(
   dispatch: EditorDispatch,
   model: PersistentModel,
   title: string,
   projectId: string,
-  workers: UtopiaTsWorkers,
-  renderEditorRoot: () => void,
   retryFetchNodeModules: boolean = true,
 ): Promise<void> {
   // this action is now async!
@@ -5170,8 +5126,6 @@ export async function load(
   const storedState = await loadStoredState(projectId)
 
   const safeMode = await localforage.getItem<boolean>(getProjectLockedKey(projectId))
-
-  renderEditorRoot()
 
   dispatch(
     [
