@@ -36,10 +36,6 @@ import { usePubSubAtom } from '../../core/shared/atom-with-pub-sub'
 import CanvasActions from './canvas-actions'
 import { canvasPoint } from '../../core/shared/math-utils'
 
-interface DesignPanelRootProps {
-  isUiJsFileOpen: boolean
-}
-
 interface NumberSize {
   width: number
   height: number
@@ -117,7 +113,7 @@ const NothingOpenCard = betterReactMemo('NothingOpen', () => {
   )
 })
 
-export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: DesignPanelRootProps) => {
+export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', () => {
   const dispatch = useEditorState((store) => store.dispatch, 'DesignPanelRoot dispatch')
   const interfaceDesigner = useEditorState(
     (store) => store.editor.interfaceDesigner,
@@ -169,12 +165,9 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
       elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
-      if (props.isUiJsFileOpen) {
-        updateDeltaWidth(delta.width)
-      }
-      setCodeEditorResizingWidth(null)
+      updateDeltaWidth(delta.width)
     },
-    [updateDeltaWidth, props.isUiJsFileOpen],
+    [updateDeltaWidth],
   )
 
   const onResize = React.useCallback(
@@ -184,11 +177,11 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
       elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
-      if (props.isUiJsFileOpen && navigatorVisible) {
+      if (navigatorVisible) {
         setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
       }
     },
-    [interfaceDesigner, navigatorVisible, props.isUiJsFileOpen],
+    [interfaceDesigner, navigatorVisible],
   )
 
   const [navigatorWidth, setNavigatorWidth] = usePubSubAtom(NavigatorWidthAtom)
@@ -264,7 +257,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
             className='resizableFlexColumnCanvasCode'
             style={{
               ...UtopiaStyles.flexColumn,
-              display: !props.isUiJsFileOpen || interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+              display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
               width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
               height: '100%',
               position: 'relative',
@@ -279,7 +272,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           </Resizable>
         </SimpleFlexColumn>
 
-        {props.isUiJsFileOpen && isCanvasVisible ? (
+        {isCanvasVisible ? (
           <SimpleFlexColumn
             style={{
               flexGrow: 1,
@@ -301,7 +294,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
               <TopMenu />
             </SimpleFlexRow>
 
-            {isCanvasVisible && props.isUiJsFileOpen && navigatorVisible ? (
+            {isCanvasVisible && navigatorVisible ? (
               <div
                 style={{
                   height: `calc(100% - ${TopMenuHeight}px)`,
@@ -339,13 +332,13 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
                 </ResizableFlexColumn>
               </div>
             ) : null}
-            <CanvasWrapperComponent {...props} />
+            <CanvasWrapperComponent />
             <FloatingInsertMenu />
           </SimpleFlexColumn>
         ) : null}
       </SimpleFlexRow>
 
-      {isCanvasVisible && props.isUiJsFileOpen ? (
+      {isCanvasVisible ? (
         <>
           {isRightMenuExpanded ? (
             <SimpleFlexRow

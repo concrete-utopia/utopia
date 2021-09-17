@@ -77,7 +77,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)
 
-  const result = render(
+  render(
     <HotRoot
       api={storeHook}
       useStore={storeHook}
@@ -86,8 +86,6 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       vscodeBridgeReady={false}
     />,
   )
-  const noFileOpenText = result.getByText('No file open')
-  expect(noFileOpenText).toBeDefined()
 
   await act(async () => {
     await load(dispatch, createTestProjectWithCode(appUiJsFileCode), 'Test', '0', false)
