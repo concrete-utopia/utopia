@@ -327,6 +327,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX(state)
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
       return UPDATE_FNS.SET_RESIZE_OPTIONS_TARGET_OPTIONS(action, state)
+    case 'SEND_CODE_EDITOR_INITIALISATION':
+      return UPDATE_FNS.SEND_CODE_EDITOR_INITIALISATION(action, state)
     default:
       return state
   }
