@@ -128,6 +128,13 @@ export function createComponentRendererComponent(params: {
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
+    // Protect against infinite recursion by taking the view that anything
+    // beyond a particular depth is going infinite or is likely
+    // to be out of control otherwise.
+    if (instancePath != null && EP.depth(instancePath) > 100) {
+      throw new Error(`Element hierarchy is too deep, potentially has become infinite.`)
+    }
+
     const rootElementPath = optionalMap(
       (path) => EP.appendNewElementPath(path, getUtopiaID(utopiaJsxComponent.rootElement)),
       instancePath,

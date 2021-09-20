@@ -3,7 +3,25 @@
 exports[`getComponentGroups returns all the various default groups 1`] = `
 Array [
   Object {
-    "insertableComponents": Array [],
+    "insertableComponents": Array [
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "App",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {},
+        "name": "App",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
     "source": Object {
       "path": "/src/app.js",
       "type": "PROJECT_COMPONENT_GROUP",
