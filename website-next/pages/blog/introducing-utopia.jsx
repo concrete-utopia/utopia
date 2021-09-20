@@ -151,7 +151,7 @@ export default function Blog() {
           Team Utopia
         </Paragraph>
       </div>
-      <div className='max-w-3xl mx-auto pt-12 pb-28'>
+      <div className='max-w-5xl mx-auto pt-12 pb-28'>
         <ContactUs />
       </div>
       <CookieConsentBar />

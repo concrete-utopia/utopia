@@ -4,6 +4,8 @@ const navigation = [
   { name: 'Play with Utopia', href: 'https://utopia.app/p/36ae27be-welcome-to-utopia' },
   { name: 'Join our Discord', href: 'https://discord.gg/NEEnPKCgzC' },
   { name: 'Check us on Github', href: 'https://github.com/concrete-utopia/utopia' },
+  { name: 'Privacy Policy', href: '/policies#privacy-policy' },
+  { name: 'Terms and Conditions', href: '/policies' },
 ]
 
 export const ContactUs = (props) => (
@@ -42,7 +44,7 @@ export const ContactUs = (props) => (
         <a
           key={item.name}
           href={item.href}
-          className='block px-6 py-2 rounded-md text-body hover:text-gray-900 hover:bg-gray-50'
+          className='block px-6 py-2 rounded-md text-body hover:text-gray-900 hover:bg-gray-50 text-center'
           onMouseDown={() =>
             gtag('event', 'navigate', { category: 'links', label: item.href, value: 1 })
           }
