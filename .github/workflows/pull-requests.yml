@@ -147,6 +147,8 @@ jobs:
           nix_path: nixpkgs=channel:nixos-20.09
       - name: Build Editor
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        env:
+          RELATIVE_CI_KEY: ${{ secrets.RELATIVE_CI_KEY }}
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
       - name: Create Editor Bundle
