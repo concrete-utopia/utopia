@@ -5,6 +5,7 @@ import {
   testCanvasRenderInline,
   testCanvasRenderMultifile,
   testCanvasRenderInlineMultifile,
+  testCanvasErrorMultifile,
 } from './ui-jsx-canvas.test-utils'
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
@@ -2167,5 +2168,50 @@ describe('UiJsxCanvas render multifile projects', () => {
       </div>
       "
     `)
+  })
+
+  it('renders a canvas with App imported from a file', () => {
+    testCanvasErrorMultifile(
+      null,
+      `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      import { App } from '/app'
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+      {
+        '/app.js': `
+        import * as React from 'react'
+        import { App2 } from '/app2'
+        export var App = (props) => {
+          return <div data-uid='app-outer-div'>
+            <App2 />
+          </div>
+        }`,
+        '/app2.js': `
+        import * as React from 'react'
+        import { App } from '/app'
+        export var App2 = (props) => {
+          return <div data-uid='app-outer-div'>
+            <App />
+          </div>
+        }`,
+      },
+    )
   })
 })

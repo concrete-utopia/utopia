@@ -20870,6 +20870,16 @@ export var storyboard = (props) => {
 }
 `;
 
+exports[`UiJsxCanvas render multifile projects renders a canvas with App imported from a file 2`] = `
+Array [
+  Object {
+    "message": "Element hierarchy is too deep, potentially has become infinite.",
+    "name": "Error",
+    "stackFrames": Array [],
+  },
+]
+`;
+
 exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block inside a text range 1`] = `
 "<div style=\\"all: initial;\\">
   <div
