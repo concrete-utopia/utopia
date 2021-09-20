@@ -176,3 +176,48 @@ jobs:
           token: ${{ secrets.DEPLOY_REPO_ACCESS_TOKEN }}
           repository: concrete-utopia/utopia-deploy
           event-type: trigger-deploy
+
+  build-staging-baseline:
+    name: Build Staging Editor for Relative CI Baseline
+    runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
+      AUTH0_ENDPOINT: enter.utopia.app
+      AUTH0_REDIRECT_URI: https://utopia.app/authenticate
+    steps:
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache editor modules
+        uses: actions/cache@v2
+        with:
+          path: editor/node_modules
+          key: ${{ runner.os }}-node-editor-PRs-${{ hashFiles('editor/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-editor-PRs-
+      - name: Cache utopia-api modules
+        uses: actions/cache@v2
+        with:
+          path: utopia-api/node_modules
+          key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-utopia-api-PRs-
+      - name: Cache utopia-vscode-common modules
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/node_modules
+          key: ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-${{ hashFiles('utopia-vscode-common/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=channel:nixos-20.09
+      - name: Build Editor
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        env:
+          RELATIVE_CI_KEY: ${{ secrets.RELATIVE_CI_KEY }}
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
