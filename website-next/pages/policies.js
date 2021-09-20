@@ -2,7 +2,7 @@ import * as React from 'react'
 
 export default function Policies() {
   return (
-    <div>
+    <div className='max-w-3xl mx-auto'>
       <h1>Momentumworks Inc / Utopia's Terms of Service, Privacy Policy, and GDPR policy</h1>
       <p>
         Hi and welcome! You're reading Utopia’s Terms of Service, which include an agreement between
@@ -502,7 +502,7 @@ export default function Policies() {
         telephone at (916) 445-1254 or (800) 952-5210. Hearing impaired users can reach the
         Complaint Assistance Unit at TDD (800) 326-2297 or TDD (916) 322-1700.
       </p>
-      <h2>Privacy Policy</h2>
+      <h2 id='privacy-policy'>Privacy Policy</h2>
       <h3>Last Modified: 2017-03-12</h3>
       <p>
         Momentumworks Inc takes the private nature of your personal information very seriously. We
