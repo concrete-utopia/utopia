@@ -1,9 +1,3 @@
-declare module 'eases'
-declare module 'eases/linear'
-declare module 'eases/quad-in'
-declare module 'eases/quad-out'
-declare module 'eases/quad-in-out'
-
 declare module '@storybook/react'
 declare module '@storybook/addon-actions'
 
