@@ -2994,7 +2994,7 @@ export function getResizeOptions(
             case 'before':
               return ['PinnedTop', 'Height', 'marginTop', 'minHeight', 'maxHeight']
             case 'after':
-              return ['Height', 'PinnedBottom', 'marginBottom', 'minHeight', 'maxHeight']
+              return ['PinnedBottom', 'Height', 'marginBottom', 'minHeight', 'maxHeight']
             default:
               const _exhaustiveCheck: never = edge
               throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
@@ -3004,7 +3004,7 @@ export function getResizeOptions(
             case 'before':
               return ['PinnedLeft', 'Width', 'marginLeft', 'minWidth', 'maxWidth']
             case 'after':
-              return ['Width', 'PinnedRight', 'marginRight', 'minWidth', 'maxWidth']
+              return ['PinnedRight', 'Width', 'marginRight', 'minWidth', 'maxWidth']
             default:
               const _exhaustiveCheck: never = edge
               throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
