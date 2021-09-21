@@ -914,6 +914,7 @@ export interface IncrementResizeOptionsSelectedIndex {
 export interface SetResizeOptionsTargetOptions {
   action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS'
   propertyTargetOptions: Array<LayoutTargetableProp>
+  index: number | null
 }
 
 export interface HideVSCodeLoadingScreen {

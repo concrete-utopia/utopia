@@ -4902,7 +4902,7 @@ export const UPDATE_FNS = {
         ...editor.canvas,
         resizeOptions: {
           propertyTargetOptions: action.propertyTargetOptions,
-          propertyTargetSelectedIndex: 0,
+          propertyTargetSelectedIndex: action.index ?? 0,
         },
       },
     }
