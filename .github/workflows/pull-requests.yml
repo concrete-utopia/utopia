@@ -147,10 +147,14 @@ jobs:
           nix_path: nixpkgs=channel:nixos-20.09
       - name: Build Editor
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
-        env:
-          RELATIVE_CI_KEY: ${{ secrets.RELATIVE_CI_KEY }}
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
+      - name: Send webpack stats to RelativeCI
+        uses: relative-ci/agent-action@v1.1.0
+        with:
+          webpackStatsFile: ./lib/staging-stats.json
+          key: ${{ secrets.RELATIVE_CI_KEY }}
+          debug: false
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
