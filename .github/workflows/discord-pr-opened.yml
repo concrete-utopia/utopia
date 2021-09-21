@@ -9,26 +9,40 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
     steps:
+      - name: Build Embeds JSON
+        env:
+          TEMPLATE: >-
+            [{
+              "author": {
+                "name": $author_name,
+                "icon_url": $author_icon_url,
+                "url": $author_html_url
+              },
+              "title": $title,
+              "color": 7291585,
+              "url": $html_url,
+              "description": $description,
+              "footer": {
+                "text": $repo_full_name
+              }
+            }]
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          AUTHOR_ICON_URL: ${{ github.event.pull_request.user.avatar_url }}
+          AUTHOR_HTML_URL: ${{ github.event.pull_request.user.html_url }}
+          TITLE: '#${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
+          HTML_URL: ${{ github.event.pull_request.html_url }}
+          DESCRIPTION: ${{ github.event.pull_request.body }}
+          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+        run: |
+          # This provides the env variable used by the next step
+          # We have to do it like this to prevent any of the values screwing up the json
+          echo "DISCORD_EMBEDS=$(jq -nc --arg author_name "$AUTHOR" --arg author_icon_url "$AUTHOR_ICON_URL" --arg author_html_url "$AUTHOR_HTML_URL" --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
       - name: Send Notification
         uses: Ilshidur/action-discord@0.3.2
         env:
+          BODY: ${{ github.event.pull_request.body }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
           DISCORD_USERNAME: 'GitHub'
           DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
-          DISCORD_EMBEDS: >-
-            [{
-              "author": {
-                "name": "${{ github.event.pull_request.user.login }}",
-                "icon_url": "${{ github.event.pull_request.user.avatar_url }}",
-                "url": "${{ github.event.pull_request.user.html_url }}",
-              },
-              "title": "#${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}",
-              "color": 7291585,
-              "url": "${{ github.event.pull_request.html_url }}",
-              "description": "${{ github.event.pull_request.body }}",
-              "footer": {
-                "text": "${{ github.event.repository.full_name }}",
-              },
-            }]
         with:
           args: 'PR opened by ${{ github.event.sender.login }}'
