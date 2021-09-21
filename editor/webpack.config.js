@@ -8,6 +8,7 @@ const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const path = require('path')
 const webpack = require('webpack')
+const { RelativeCiAgentWebpackPlugin } = require('@relative-ci/agent')
 
 const Production = 'production'
 const Staging = 'staging'
@@ -195,6 +196,10 @@ const config = {
     }),
 
     new webpack.ProvidePlugin({ BrowserFS: 'browserfs' }), // weirdly, the browserfs/dist/shims/fs shim assumes a global BrowserFS being available
+
+    new RelativeCiAgentWebpackPlugin({
+      includeCommitMessage: false,
+    }),
   ],
 
   resolve: {
