@@ -1613,9 +1613,22 @@ export function produceResizeSingleSelectCanvasTransientState(
           ) {
             if (propertyChange.targetProperty != null) {
               if (propertyChange.drag != null) {
+                const elementMetadata = MetadataUtils.findElementByElementPath(
+                  editorState.jsxMetadata,
+                  elementToTarget,
+                )
+                const isAbsolute = MetadataUtils.isPositionAbsolute(elementMetadata)
+
+                const deltaX = isAbsolute
+                  ? originalFrame.width - roundedFrame.width
+                  : propertyChange.drag.x
+                const deltaY = isAbsolute
+                  ? originalFrame.height - roundedFrame.height
+                  : propertyChange.drag.y
+
                 const newDelta = isTargetPropertyHorizontal(dragState.edgePosition)
-                  ? propertyChange.drag.x ?? 0
-                  : propertyChange.drag.y ?? 0
+                  ? deltaX ?? 0
+                  : deltaY ?? 0
 
                 framesAndTargets.push(
                   flexResizeChange(elementToTarget, propertyChange.targetProperty, newDelta),
