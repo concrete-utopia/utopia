@@ -49,6 +49,7 @@ import {
 } from '../canvas-utils'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { CSSPosition } from '../../inspector/common/css-utils'
+import * as EP from '../../../core/shared/element-path'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -139,7 +140,10 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         [
           CanvasActions.createDragState(newDragState),
           setCanvasAnimationsEnabled(false),
-          setResizeOptionsTargetOptions(propertyTargetOptions),
+          setResizeOptionsTargetOptions(
+            propertyTargetOptions,
+            this.props.propertyTargetSelectedIndex,
+          ),
         ],
         'canvas',
       )
@@ -285,6 +289,11 @@ class ResizeEdge extends React.Component<ResizeEdgeProps, ResizeEdgeState> {
             left={left + shiftPropertyTargetSelectorAxis('vertical', this.props.direction, edge)}
             options={getResizeOptions(layoutSystem, this.props.direction, edge)}
             targetComponentMetadata={this.props.targetComponentMetadata}
+            key={
+              this.props.targetComponentMetadata != null
+                ? EP.toString(this.props.targetComponentMetadata.elementPath)
+                : `${this.props.direction}-${this.props.position.x}-${this.props.position.y}`
+            }
           />,
         )}
       </React.Fragment>
@@ -374,6 +383,11 @@ const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => 
           left={left + shiftPropertyTargetSelectorAxis('vertical', props.direction, edge)}
           options={getResizeOptions(layoutSystem, props.direction, edge)}
           targetComponentMetadata={props.targetComponentMetadata}
+          key={
+            props.targetComponentMetadata != null
+              ? EP.toString(props.targetComponentMetadata.elementPath)
+              : `${props.direction}-${props.position.x}-${props.position.y}`
+          }
         />,
       )}
       {mouseCatcher}

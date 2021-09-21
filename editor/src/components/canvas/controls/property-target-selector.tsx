@@ -76,18 +76,28 @@ export const PropertyTargetSelector = betterReactMemo(
       }
     }, [dispatch, onKeyDown])
 
-    // Update the current options to be the ones listed against this control,
-    // but only if they're different to the current options.
+    const valuesForProp = React.useMemo(() => {
+      return resizeOptions.propertyTargetOptions.map((option) =>
+        eitherToMaybe(
+          getSimpleAttributeAtPath(
+            left(props.targetComponentMetadata?.props ?? {}),
+            createLayoutPropertyPath(option),
+          ),
+        ),
+      )
+    }, [resizeOptions.propertyTargetOptions, props.targetComponentMetadata?.props])
+
+    const defaultSelectedOptionIndex = React.useMemo(() => {
+      const indexOfFirstWithValue = valuesForProp.findIndex((value) => value != null)
+      return indexOfFirstWithValue > -1 ? indexOfFirstWithValue : null
+    }, [valuesForProp])
+
+    // Update the current options to be the ones listed against this control
     React.useEffect(() => {
-      if (
-        !LayoutTargetablePropArrayKeepDeepEquality(
-          resizeOptions.propertyTargetOptions,
-          props.options,
-        ).areEqual
-      ) {
-        dispatch([setResizeOptionsTargetOptions(props.options)], 'canvas')
-      }
-    }, [dispatch, props.options, resizeOptions])
+      dispatch([setResizeOptionsTargetOptions(props.options, defaultSelectedOptionIndex)], 'canvas')
+      // important! the array is empty because it should only run once
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return (
       <div
@@ -101,13 +111,7 @@ export const PropertyTargetSelector = betterReactMemo(
         }}
       >
         {resizeOptions.propertyTargetOptions.map((option, index) => {
-          const valueForProp =
-            eitherToMaybe(
-              getSimpleAttributeAtPath(
-                left(props.targetComponentMetadata?.props ?? {}),
-                createLayoutPropertyPath(option),
-              ),
-            ) ?? '—'
+          const valueForProp = valuesForProp[index] ?? '—'
 
           return (
             <div
