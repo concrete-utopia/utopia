@@ -1,0 +1,46 @@
+name: Discord Integration - PR Closed
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  post-to-discord:
+    name: Post Notification To Discord
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Merged Notification
+        if: ${{ github.event.pull_request.merged }}
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
+          DISCORD_USERNAME: 'GitHub'
+          DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
+          DISCORD_EMBEDS: >-
+            [{
+              "title": "Merged #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}",
+              "color": 7291585,
+              "url": "${{ github.event.pull_request.html_url }}",
+              "footer": {
+                "text": "${{ github.event.repository.full_name }}",
+              },
+            }]
+        with:
+          args: 'PR Merged by ${{ github.event.sender.login }}'
+      - name: Send Closed Without Merge Notification
+        if: ${{ !github.event.pull_request.merged }}
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
+          DISCORD_USERNAME: 'GitHub'
+          DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
+          DISCORD_EMBEDS: >-
+            [{
+              "title": "Closed (Without Merge) #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}",
+              "color": 13313073,
+              "url": "${{ github.event.pull_request.html_url }}",
+              "footer": {
+                "text": "${{ github.event.repository.full_name }}",
+              },
+            }]
+        with:
+          args: 'PR closed by ${{ github.event.sender.login }}'

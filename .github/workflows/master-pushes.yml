@@ -59,7 +59,7 @@ jobs:
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-all-ci
       - name: Discord Notification
-        uses: Ilshidur/action-discord@0.3.0
+        uses: Ilshidur/action-discord@0.3.2
         if: failure()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
@@ -111,7 +111,7 @@ jobs:
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-move-template-only-ci
       - name: Discord Notification
-        uses: Ilshidur/action-discord@0.3.0
+        uses: Ilshidur/action-discord@0.3.2
         if: failure()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
@@ -157,7 +157,7 @@ jobs:
         if: steps.cache-server-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
       - name: Discord Notification
-        uses: Ilshidur/action-discord@0.3.0
+        uses: Ilshidur/action-discord@0.3.2
         if: failure()
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}

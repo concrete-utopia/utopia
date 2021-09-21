@@ -1,0 +1,30 @@
+name: Discord Integration - Issue Comments
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  post-to-discord:
+    name: Post Comment To Discord
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.issue.pull_request }}
+    steps:
+      - name: Send Notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_ISSUES_WEBHOOK }}
+          DISCORD_USERNAME: 'GitHub'
+          DISCORD_AVATAR: https://octodex.github.com/images/original.png
+          DISCORD_EMBEDS: >-
+            [{
+              "title": "Comment on #${{ github.event.issue.number }} ${{ github.event.issue.title }}",
+              "color": 2369839,
+              "url": "${{ github.event.comment.html_url }}",
+              "description": "${{ github.event.comment.body }}",
+              "footer": {
+                "text": "${{ github.event.sender.login }} | ${{ github.event.repository.full_name }}",
+                "icon_url": "${{ github.event.sender.avatar_url }}",
+              },
+            }]
+        with:
+          args: 'New comment by ${{ github.event.sender.login }}'

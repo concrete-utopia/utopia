@@ -1,0 +1,44 @@
+name: Discord Integration - PR Comments
+on:
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+
+jobs:
+  post-to-discord:
+    name: Post Notification To Discord
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request || github.event.issue.pull_request }}
+    steps:
+      - name: Capture PR Data From PR Comment
+        if: ${{ github.event.pull_request }}
+        run: echo "PR_DATA=${{ github.event.pull_request }}" >> $GITHUB_ENV
+      - name: Capture PR Data From Issue Comment
+        if: ${{ github.event.issue.pull_request }}
+        run: echo "PR_DATA=${{ github.event.issue.pull_request }}" >> $GITHUB_ENV
+      - name: Capture Diff Hunk
+        if: ${{ github.event.comment.diff_hunk }}
+        run: echo "DIFF_HUNK=\`\`\`${{ github.event.comment.diff_hunk }}\`\`\`\n" >> $GITHUB_ENV
+      - name: Exclude Diff Hunk If None
+        if: ${{ !github.event.comment.diff_hunk }}
+        run: echo "DIFF_HUNK=" >> $GITHUB_ENV
+      - name: Send Notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
+          DISCORD_USERNAME: 'GitHub'
+          DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
+          DISCORD_EMBEDS: >-
+            [{
+              "title": "Comment on #${{ env.PR_DATA.number }} ${{ env.PR_DATA.title }}",
+              "color": 2369839,
+              "url": "${{ github.event.comment.html_url }}",
+              "description": "${{ env.DIFF_HUNK }}${{ github.event.comment.body }}",
+              "footer": {
+                "text": "${{ github.event.sender.login }} | ${{ github.event.repository.full_name }}",
+                "icon_url": "${{ github.event.sender.avatar_url }}",
+              },
+            }]
+        with:
+          args: 'New comment by ${{ github.event.sender.login }}'

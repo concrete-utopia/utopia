@@ -1,0 +1,28 @@
+name: Discord Integration - Issue Closed
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  post-to-discord:
+    name: Post Notification To Discord
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_ISSUES_WEBHOOK }}
+          DISCORD_USERNAME: 'GitHub'
+          DISCORD_AVATAR: https://octodex.github.com/images/original.png
+          DISCORD_EMBEDS: >-
+            [{
+              "title": "Closed #${{ github.event.issue.number }} ${{ github.event.issue.title }}",
+              "color": 13313073,
+              "url": "${{ github.event.issue.html_url }}",
+              "description": "${{ github.event.issue.body }}",
+              "footer": {
+                "text": "${{ github.event.repository.full_name }}",
+              },
+            }]
+        with:
+          args: 'Issue closed by ${{ github.event.sender.login }}'

@@ -1,0 +1,34 @@
+name: Discord Integration - PR Opened
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  post-to-discord:
+    name: Post Notification To Discord
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
+    steps:
+      - name: Send Notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
+          DISCORD_USERNAME: 'GitHub'
+          DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
+          DISCORD_EMBEDS: >-
+            [{
+              "author": {
+                "name": "${{ github.event.pull_request.user.login }}",
+                "icon_url": "${{ github.event.pull_request.user.avatar_url }}",
+                "url": "${{ github.event.pull_request.user.html_url }}",
+              },
+              "title": "#${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}",
+              "color": 7291585,
+              "url": "${{ github.event.pull_request.html_url }}",
+              "description": "${{ github.event.pull_request.body }}",
+              "footer": {
+                "text": "${{ github.event.repository.full_name }}",
+              },
+            }]
+        with:
+          args: 'PR opened by ${{ github.event.sender.login }}'
