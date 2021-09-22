@@ -9,40 +9,43 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
     steps:
-      - name: Build Partial Embeds JSON
+      - name: Build Approval Args
+        if: ${{ github.event.review.state == 'approved' }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          SENDER_NAME: ${{ github.event.sender.login }}
+        run: |
+          echo "TITLE=Approved #$PR_NUMBER $PR_TITLE" >> $GITHUB_ENV
+          echo "COLOR=3581519" >> $GITHUB_ENV
+          echo "MESSAGE_ARGS=PR approved by $SENDER_NAME" >> $GITHUB_ENV
+      - name: Build Changes Requested Args
+        if: ${{ github.event.review.state == 'changes_requested' }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          SENDER_NAME: ${{ github.event.sender.login }}
+        run: |
+          echo "TITLE=Changes Requested #$PR_NUMBER $PR_TITLE" >> $GITHUB_ENV
+          echo "COLOR=13313073" >> $GITHUB_ENV
+          echo "MESSAGE_ARGS=Changes requested by $SENDER_NAME" >> $GITHUB_ENV
+      - name: Build Embeds JSON
         env:
           TEMPLATE: >-
             [{
-              "title": "$review_status #$pull_request_number $title",
+              "title": $title,
               "color": $color,
               "url": $html_url,
               "footer": {
-                "text": "$sender_name | $repo_full_name",
+                "text": $sender_name,
                 "icon_url": $sender_avatar
               }
             }]
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          TITLE: ${{ github.event.pull_request.title }}
           HTML_URL: ${{ github.event.review.html_url }}
           SENDER_NAME: ${{ github.event.sender.login }}
           SENDER_AVATAR: ${{ github.event.sender.avatar_url }}
-          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
         run: |
-          echo "PARTIAL_EMBEDS=$(jq -nc --arg pull_request_number "$PR_NUMBER" --arg title "$TITLE" --arg html_url "$HTML_URL" --arg sender_name "$SENDER_NAME" --arg sender_avatar "$SENDER_AVATAR" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
-      - name: Build Approval Embeds JSON
-        if: ${{ github.event.review.state == 'approved' }}
-        env:
-          SENDER_NAME: ${{ github.event.sender.login }}
-        run: |
-          echo "DISCORD_EMBEDS=$(jq -nc --arg review_status "Approved" --arg color "3581519" "$PARTIAL_EMBEDS")" >> $GITHUB_ENV
-          echo "MESSAGE_ARGS='PR approved by $SENDER_NAME'" >> $GITHUB_ENV
-      - name: Build Changes Requested Embeds JSON
-        if: ${{ github.event.review.state == 'changes_requested' }}
-        env:
-          SENDER_NAME: ${{ github.event.sender.login }}
-        run: |
-          echo "DISCORD_EMBEDS=$(jq -nc --arg review_status "Changes Requested" --arg color "13313073" "$PARTIAL_EMBEDS")" >> $GITHUB_ENV
-          echo "MESSAGE_ARGS='Changes requested by $SENDER_NAME'" >> $GITHUB_ENV
+          echo "DISCORD_EMBEDS=$(jq -nc --arg --arg title "$TITLE" --arg color "$COLOR" --arg html_url "$HTML_URL" --arg sender_name "$SENDER_NAME" --arg sender_avatar "$SENDER_AVATAR" "$TEMPLATE")" >> $GITHUB_ENV
       - name: Send Notification
         uses: Ilshidur/action-discord@0.3.2
         env:

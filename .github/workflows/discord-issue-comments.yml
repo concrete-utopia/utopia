@@ -13,23 +13,22 @@ jobs:
         env:
           TEMPLATE: >-
             [{
-              "title": "Comment on $title",
+              "title": $title,
               "color": 2369839,
               "url": $html_url,
               "description": $body,
               "footer": {
-                "text": "$sender_name | $repo_full_name",
+                "text": $sender_name,
                 "icon_url": $sender_avatar
               }
             }]
-          TITLE: '#${{ github.event.issue.number }} ${{ github.event.issue.title }}'
+          TITLE: 'Comment on #${{ github.event.issue.number }} ${{ github.event.issue.title }}'
           BODY: ${{ github.event.comment.body }}
           HTML_URL: ${{ github.event.review.html_url }}
           SENDER_NAME: ${{ github.event.sender.login }}
           SENDER_AVATAR: ${{ github.event.sender.avatar_url }}
-          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
         run: |
-          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg body "$BODY" --arg sender_name "$SENDER_NAME" --arg sender_avatar "$SENDER_AVATAR" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
+          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg body "$BODY" --arg sender_name "$SENDER_NAME" --arg sender_avatar "$SENDER_AVATAR" "$TEMPLATE")" >> $GITHUB_ENV
       - name: Send Notification
         uses: Ilshidur/action-discord@0.3.2
         env:

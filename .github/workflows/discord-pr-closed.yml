@@ -28,7 +28,7 @@ jobs:
           echo "TITLE=Closed (Without Merge) #$PR_NUMBER $PR_TITLE" >> $GITHUB_ENV
           echo "COLOR=13313073" >> $GITHUB_ENV
           echo "MESSAGE_ARGS=PR closed by $SENDER_NAME" >> $GITHUB_ENV
-      - name: Build Partial Embeds JSON
+      - name: Build Embeds JSON
         env:
           TEMPLATE: >-
             [{

@@ -12,7 +12,7 @@ jobs:
         env:
           TEMPLATE: >-
             [{
-              "title": "Closed $title",
+              "title": $title,
               "color": 13313073,
               "url": $html_url,
               "description": $description,
@@ -20,8 +20,7 @@ jobs:
                 "text": $repo_full_name
               }
             }]
-
-          TITLE: '#${{ github.event.issue.number }} ${{ github.event.issue.title }}'
+          TITLE: 'Closed #${{ github.event.issue.number }} ${{ github.event.issue.title }}'
           HTML_URL: ${{ github.event.issue.html_url }}
           DESCRIPTION: ${{ github.event.issue.body }}
           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
