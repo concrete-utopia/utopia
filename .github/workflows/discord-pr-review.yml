@@ -45,7 +45,7 @@ jobs:
           SENDER_NAME: ${{ github.event.sender.login }}
           SENDER_AVATAR: ${{ github.event.sender.avatar_url }}
         run: |
-          echo "DISCORD_EMBEDS=$(jq -nc --arg --arg title "$TITLE" --arg color "$COLOR" --arg html_url "$HTML_URL" --arg sender_name "$SENDER_NAME" --arg sender_avatar "$SENDER_AVATAR" "$TEMPLATE")" >> $GITHUB_ENV
+          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg color "$COLOR" --arg html_url "$HTML_URL" --arg sender_name "$SENDER_NAME" --arg sender_avatar "$SENDER_AVATAR" "$TEMPLATE")" >> $GITHUB_ENV
       - name: Send Notification
         uses: Ilshidur/action-discord@0.3.2
         env:
