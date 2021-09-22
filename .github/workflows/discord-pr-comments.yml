@@ -1,0 +1,66 @@
+name: Discord Integration - PR Comments
+on:
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+
+jobs:
+  post-to-discord:
+    name: Post Notification To Discord
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request || github.event.issue.pull_request }}
+    steps:
+      - name: Capture Body With Diff
+        if: ${{ github.event.comment.diff_hunk }}
+        env:
+          BASE_DIFF_HUNK: ${{ github.event.comment.diff_hunk }}
+          BODY: ${{ github.event.comment.body }}
+        run: echo "BODY=\`\`\`$BASE_DIFF_HUNK\`\`\`\n$BODY" >> $GITHUB_ENV
+      - name: Build PR Review Comment Args
+        if: ${{ github.event.pull_request }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "TITLE=Comment on #$PR_NUMBER $PR_TITLE" >> $GITHUB_ENV
+      - name: Build PR Issue Comment Args
+        if: ${{ github.event.issue.pull_request }}
+        env:
+          PR_NUMBER: ${{ github.event.issue.number }}
+          PR_TITLE: ${{ github.event.issue.title }}
+        run: |
+          echo "TITLE=Comment on #$PR_NUMBER $PR_TITLE" >> $GITHUB_ENV
+      - name: Build Embeds JSON
+        env:
+          TEMPLATE: >-
+            [{
+              "author": {
+                "name": $author_name,
+                "icon_url": $author_icon_url,
+                "url": $author_html_url
+              },
+              "title": $title,
+              "color": 2369839,
+              "url": $html_url,
+              "description": $body,
+              "footer": {
+                "text": $repo_full_name
+              }
+            }]
+          AUTHOR: ${{ github.event.sender.login }}
+          AUTHOR_ICON_URL: ${{ github.event.sender.avatar_url }}
+          AUTHOR_HTML_URL: ${{ github.event.sender.html_url }}
+          HTML_URL: ${{ github.event.review.html_url }}
+          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+        run: |
+          echo "PARTIAL_EMBEDS=$(jq -nc --arg author_name "$AUTHOR" --arg author_icon_url "$AUTHOR_ICON_URL" --arg author_html_url "$AUTHOR_HTML_URL" --arg title "$TITLE" --arg html_url "$HTML_URL" --arg body "$BODY" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
+      - name: Send Notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
+          DISCORD_USERNAME: 'GitHub'
+          DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
+          SENDER_NAME: ${{ github.event.sender.login }}
+        with:
+          args: 'New comment by ${{ env.SENDER_NAME }}'
