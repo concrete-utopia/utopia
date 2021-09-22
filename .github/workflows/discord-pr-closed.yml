@@ -17,7 +17,7 @@ jobs:
         run: |
           echo "TITLE=Merged #$PR_NUMBER $PR_TITLE" >> $GITHUB_ENV
           echo "COLOR=7291585" >> $GITHUB_ENV
-          echo "MESSAGE_ARGS=PR merged by $SENDER_NAME'" >> $GITHUB_ENV
+          echo "MESSAGE_ARGS=PR merged by $SENDER_NAME" >> $GITHUB_ENV
       - name: Build Closed Args
         if: ${{ !github.event.pull_request.merged }}
         env:
