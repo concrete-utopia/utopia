@@ -41,7 +41,6 @@ jobs:
           echo "DISCORD_EMBEDS=$(jq -nc --arg close_type "Closed (Without Merge)" --arg color "13313073" "$PARTIAL_EMBEDS")" >> $GITHUB_ENV
           echo "MESSAGE_ARGS='PR closed by $SENDER_NAME'" >> $GITHUB_ENV
       - name: Send Notification
-        if: ${{ github.event.pull_request.merged }}
         uses: Ilshidur/action-discord@0.3.2
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
