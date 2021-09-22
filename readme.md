@@ -3,7 +3,6 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-
 # Welcome to Utopia 🏝
 
 Utopia is an integrated design and development environment for React. It uses React code as the source of truth, and lets you make real time changes to components by editing it and using a suite of design tools. It's early software, but you can [try it today](https://utopia.app/project), look at an [example project](https://utopia.app/p/36ae27be-welcome-to-utopia/), or read about it on our [blog](https://utopia.app/blog)!
