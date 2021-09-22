@@ -308,7 +308,7 @@
     "mocha": "8.4.0",
     "node-fetch": "2.6.1",
     "null-loader": "4.0.1",
-    "patch-package": "6.1.2",
+    "patch-package": "github:milahu/patch-package#pnpm-support-2",
     "pegjs": "0.10.0",
     "react-dev-utils": "10.2.1",
     "react-test-renderer": "16.9.0",
