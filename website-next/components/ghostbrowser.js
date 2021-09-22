@@ -8,7 +8,7 @@ export const EyeButton = (props) => (
       border: '1px solid #383C4A',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     }}
   >
     <div
@@ -17,21 +17,22 @@ export const EyeButton = (props) => (
         height: 8,
         width: 8,
         background: props.dark ? '#181818' : '#383C4A',
-      }}>
-        <div
-          style={{
-            borderRadius: '50%',
-            height: 2,
-            width: 2,
-            background: 'white',
-            position: 'relative',
-            left: 4,
-            top: 3,
-            display: props.dark ? 'none' : 'block'
-          }}
-        />
-      </div>
+      }}
+    >
+      <div
+        style={{
+          borderRadius: '50%',
+          height: 2,
+          width: 2,
+          background: 'white',
+          position: 'relative',
+          left: 4,
+          top: 3,
+          display: props.dark ? 'none' : 'block',
+        }}
+      />
     </div>
+  </div>
 )
 
 export const GhostBrowser = (props) => (
@@ -68,8 +69,8 @@ export const GhostBrowser = (props) => (
           gap: 6,
         }}
       >
-        <EyeButton dark={props.dark}/>
-        <EyeButton dark={props.dark}/>
+        <EyeButton dark={props.dark} />
+        <EyeButton dark={props.dark} />
       </div>
 
       <div style={{ cursor: 'grab' }}>{props.title}</div>
@@ -79,6 +80,4 @@ export const GhostBrowser = (props) => (
   </div>
 )
 
-export const GhostBrowserDark = props => (
-  <GhostBrowser {...props} dark/>
-)
+export const GhostBrowserDark = (props) => <GhostBrowser {...props} dark />

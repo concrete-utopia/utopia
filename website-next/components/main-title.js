@@ -5,7 +5,7 @@ export function MainTitle({ children, dark }) {
     <h1
       className='md:text-6xl text-3xl leading-normal tracking-tight font-headline'
       style={{
-        color: dark ? '#FFFFFF' : '#383C4A'
+        color: dark ? '#FFFFFF' : '#383C4A',
       }}
     >
       {children}

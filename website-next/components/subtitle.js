@@ -13,7 +13,7 @@ export function Subtitle({ children, center, dark }) {
         'inline-block '
       }
       style={{
-        color: dark ? '#D0D0D0' :  '#383C4A'
+        color: dark ? '#D0D0D0' : '#383C4A',
       }}
     >
       {children}
