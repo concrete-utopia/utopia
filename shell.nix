@@ -23,6 +23,7 @@ let
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
+      ${node}/bin/npm --scripts-prepend-node-path=true install
       update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
@@ -30,6 +31,7 @@ let
     (pkgs.writeScriptBin "install-editor-ci" ''
       #!/usr/bin/env bash
       set -e
+      ${node}/bin/npm --scripts-prepend-node-path=true install
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
