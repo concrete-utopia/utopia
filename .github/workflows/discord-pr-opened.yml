@@ -44,5 +44,6 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
           DISCORD_USERNAME: 'GitHub'
           DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
+          SENDER_NAME: ${{ github.event.sender.login }}
         with:
-          args: 'PR opened by ${{ github.event.sender.login }}'
+          args: 'PR opened by ${{ env.SENDER_NAME }}'

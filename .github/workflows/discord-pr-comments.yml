@@ -11,34 +11,51 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request || github.event.issue.pull_request }}
     steps:
-      - name: Capture PR Data From PR Comment
-        if: ${{ github.event.pull_request }}
-        run: echo "PR_DATA=${{ github.event.pull_request }}" >> $GITHUB_ENV
-      - name: Capture PR Data From Issue Comment
-        if: ${{ github.event.issue.pull_request }}
-        run: echo "PR_DATA=${{ github.event.issue.pull_request }}" >> $GITHUB_ENV
       - name: Capture Diff Hunk
         if: ${{ github.event.comment.diff_hunk }}
-        run: echo "DIFF_HUNK=\`\`\`${{ github.event.comment.diff_hunk }}\`\`\`\n" >> $GITHUB_ENV
-      - name: Exclude Diff Hunk If None
-        if: ${{ !github.event.comment.diff_hunk }}
-        run: echo "DIFF_HUNK=" >> $GITHUB_ENV
+        env:
+          BASE_DIFF_HUNK: ${{ github.event.comment.diff_hunk }}
+        run: echo "DIFF_HUNK=\`\`\`$BASE_DIFF_HUNK\`\`\`\n" >> $GITHUB_ENV
+      - name: Build Partial Embeds JSON
+        env:
+          TEMPLATE: >-
+            [{
+              "title": "$review_status #$pull_request_number $title",
+              "color": 2369839,
+              "url": $html_url,
+              "description": $diff_hunk$body,
+              "footer": {
+                "text": "$sender_name | $repo_full_name",
+                "icon_url": $sender_avatar
+              }
+            }]
+          BODY: ${{ github.event.comment.body }}
+          HTML_URL: ${{ github.event.review.html_url }}
+          SENDER_NAME: ${{ github.event.sender.login }}
+          SENDER_AVATAR: ${{ github.event.sender.avatar_url }}
+          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+        run: |
+          echo "PARTIAL_EMBEDS=$(jq -nc --arg html_url "$HTML_URL" --arg diff_hunk "$DIFF_HUNK" --arg body "$BODY" --arg sender_name "$SENDER_NAME" --arg sender_avatar "$SENDER_AVATAR" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
+      - name: Build PR Review Comment Embeds JSON
+        if: ${{ github.event.pull_request }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "DISCORD_EMBEDS=$(jq -nc --arg pull_request_number "$PR_NUMBER" --arg title "$TITLE" "$PARTIAL_EMBEDS")" >> $GITHUB_ENV
+      - name: Build PR Issue Comment Embeds JSON
+        if: ${{ github.event.issue.pull_request }}
+        env:
+          PR_NUMBER: ${{ github.event.issue.number }}
+          TITLE: ${{ github.event.issue.title }}
+        run: |
+          echo "DISCORD_EMBEDS=$(jq -nc --arg pull_request_number "$PR_NUMBER" --arg title "$TITLE" "$PARTIAL_EMBEDS")" >> $GITHUB_ENV
       - name: Send Notification
         uses: Ilshidur/action-discord@0.3.2
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
           DISCORD_USERNAME: 'GitHub'
           DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
-          DISCORD_EMBEDS: >-
-            [{
-              "title": "Comment on #${{ env.PR_DATA.number }} ${{ env.PR_DATA.title }}",
-              "color": 2369839,
-              "url": "${{ github.event.comment.html_url }}",
-              "description": "${{ env.DIFF_HUNK }}${{ github.event.comment.body }}",
-              "footer": {
-                "text": "${{ github.event.sender.login }} | ${{ github.event.repository.full_name }}",
-                "icon_url": "${{ github.event.sender.avatar_url }}",
-              },
-            }]
+          SENDER_NAME: ${{ github.event.sender.login }}
         with:
-          args: 'New comment by ${{ github.event.sender.login }}'
+          args: 'New comment by ${{ env.SENDER_NAME }}'

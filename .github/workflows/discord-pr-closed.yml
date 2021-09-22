@@ -8,39 +8,44 @@ jobs:
     name: Post Notification To Discord
     runs-on: ubuntu-latest
     steps:
-      - name: Send Merged Notification
+      - name: Build Partial Embeds JSON
+        env:
+          TEMPLATE: >-
+            [{
+              "title": "$close_type #$pull_request_number $title",
+              "color": $color,
+              "url": $html_url,
+              "footer": {
+                "text": $repo_full_name,
+                "icon_url": $sender_avatar
+              }
+            }]
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          HTML_URL: ${{ github.event.review.html_url }}
+          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+        run: |
+          echo "PARTIAL_EMBEDS=$(jq -nc --arg pull_request_number "$PR_NUMBER" --arg title "$TITLE" --arg html_url "$HTML_URL" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
+      - name: Build Merged Embeds JSON
+        if: ${{ github.event.pull_request.merged }}
+        env:
+          SENDER_NAME: ${{ github.event.sender.login }}
+        run: |
+          echo "DISCORD_EMBEDS=$(jq -nc --arg close_type "Merged" --arg color "7291585" "$PARTIAL_EMBEDS")" >> $GITHUB_ENV
+          echo "MESSAGE_ARGS='PR merged by $SENDER_NAME'" >> $GITHUB_ENV
+      - name: Build Closed Embeds JSON
+        if: ${{ !github.event.pull_request.merged }}
+        env:
+          SENDER_NAME: ${{ github.event.sender.login }}
+        run: |
+          echo "DISCORD_EMBEDS=$(jq -nc --arg close_type "Closed (Without Merge)" --arg color "13313073" "$PARTIAL_EMBEDS")" >> $GITHUB_ENV
+          echo "MESSAGE_ARGS='PR closed by $SENDER_NAME'" >> $GITHUB_ENV
+      - name: Send Notification
         if: ${{ github.event.pull_request.merged }}
         uses: Ilshidur/action-discord@0.3.2
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
           DISCORD_USERNAME: 'GitHub'
           DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
-          DISCORD_EMBEDS: >-
-            [{
-              "title": "Merged #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}",
-              "color": 7291585,
-              "url": "${{ github.event.pull_request.html_url }}",
-              "footer": {
-                "text": "${{ github.event.repository.full_name }}",
-              },
-            }]
         with:
-          args: 'PR Merged by ${{ github.event.sender.login }}'
-      - name: Send Closed Without Merge Notification
-        if: ${{ !github.event.pull_request.merged }}
-        uses: Ilshidur/action-discord@0.3.2
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
-          DISCORD_USERNAME: 'GitHub'
-          DISCORD_AVATAR: https://octodex.github.com/images/inspectocat.jpg
-          DISCORD_EMBEDS: >-
-            [{
-              "title": "Closed (Without Merge) #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}",
-              "color": 13313073,
-              "url": "${{ github.event.pull_request.html_url }}",
-              "footer": {
-                "text": "${{ github.event.repository.full_name }}",
-              },
-            }]
-        with:
-          args: 'PR closed by ${{ github.event.sender.login }}'
+          args: ${{ env.MESSAGE_ARGS }}

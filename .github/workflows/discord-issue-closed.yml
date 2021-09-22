@@ -8,21 +8,33 @@ jobs:
     name: Post Notification To Discord
     runs-on: ubuntu-latest
     steps:
+      - name: Build Embeds JSON
+        env:
+          TEMPLATE: >-
+            [{
+              "title": "Closed $title",
+              "color": 13313073,
+              "url": $html_url,
+              "description": $description,
+              "footer": {
+                "text": $repo_full_name
+              }
+            }]
+
+          TITLE: '#${{ github.event.issue.number }} ${{ github.event.issue.title }}'
+          HTML_URL: ${{ github.event.issue.html_url }}
+          DESCRIPTION: ${{ github.event.issue.body }}
+          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+        run: |
+          # This provides the env variable used by the next step
+          # We have to do it like this to prevent any of the values screwing up the json
+          echo "DISCORD_EMBEDS=$(jq -nc  --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
       - name: Send Notification
         uses: Ilshidur/action-discord@0.3.2
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_ISSUES_WEBHOOK }}
           DISCORD_USERNAME: 'GitHub'
           DISCORD_AVATAR: https://octodex.github.com/images/original.png
-          DISCORD_EMBEDS: >-
-            [{
-              "title": "Closed #${{ github.event.issue.number }} ${{ github.event.issue.title }}",
-              "color": 13313073,
-              "url": "${{ github.event.issue.html_url }}",
-              "description": "${{ github.event.issue.body }}",
-              "footer": {
-                "text": "${{ github.event.repository.full_name }}",
-              },
-            }]
+          SENDER_NAME: ${{ github.event.sender.login }}
         with:
-          args: 'Issue closed by ${{ github.event.sender.login }}'
+          args: 'Issue closed by ${{ env.SENDER_NAME }}'
