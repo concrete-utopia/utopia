@@ -7,7 +7,7 @@ jobs:
   post-to-discord:
     name: Post Notification To Discord
     runs-on: ubuntu-latest
-    if: ${{ !github.event.pull_request.draft }}
+    if: ${{ github.event.review.state == 'approved' || github.event.review.state == 'changes_requested' }}
     steps:
       - name: Build Approval Args
         if: ${{ github.event.review.state == 'approved' }}
