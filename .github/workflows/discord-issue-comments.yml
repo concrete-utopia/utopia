@@ -31,7 +31,7 @@ jobs:
           AUTHOR_HTML_URL: ${{ github.event.sender.html_url }}
           TITLE: 'Comment on #${{ github.event.issue.number }} ${{ github.event.issue.title }}'
           BODY: ${{ github.event.comment.body }}
-          HTML_URL: ${{ github.event.review.html_url }}
+          HTML_URL: ${{ github.event.issue.html_url }}
           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
         run: |
           echo "DISCORD_EMBEDS=$(jq -nc --arg author_name "$AUTHOR" --arg author_icon_url "$AUTHOR_ICON_URL" --arg author_html_url "$AUTHOR_HTML_URL" --arg title "$TITLE" --arg html_url "$HTML_URL" --arg body "$BODY" --arg repo_full_name "$REPO_FULL_NAME" "$TEMPLATE")" >> $GITHUB_ENV
