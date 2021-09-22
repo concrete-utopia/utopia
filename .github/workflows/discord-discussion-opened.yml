@@ -25,9 +25,9 @@ jobs:
                 "text": $repo_full_name
               }
             }]
-          AUTHOR: ${{ github.event.discussion.user.login }}
-          AUTHOR_ICON_URL: ${{ github.event.discussion.user.avatar_url }}
-          AUTHOR_HTML_URL: ${{ github.event.discussion.user.html_url }}
+          AUTHOR: ${{ github.event.sender.login }}
+          AUTHOR_ICON_URL: ${{ github.event.sender.avatar_url }}
+          AUTHOR_HTML_URL: ${{ github.event.sender.html_url }}
           TITLE: '#${{ github.event.discussion.number }} ${{ github.event.discussion.title }}'
           HTML_URL: ${{ github.event.discussion.html_url }}
           DESCRIPTION: ${{ github.event.discussion.body }}

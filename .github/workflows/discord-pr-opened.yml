@@ -26,9 +26,9 @@ jobs:
                 "text": $repo_full_name
               }
             }]
-          AUTHOR: ${{ github.event.pull_request.user.login }}
-          AUTHOR_ICON_URL: ${{ github.event.pull_request.user.avatar_url }}
-          AUTHOR_HTML_URL: ${{ github.event.pull_request.user.html_url }}
+          AUTHOR: ${{ github.event.sender.login }}
+          AUTHOR_ICON_URL: ${{ github.event.sender.avatar_url }}
+          AUTHOR_HTML_URL: ${{ github.event.sender.html_url }}
           TITLE: '#${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
           HTML_URL: ${{ github.event.pull_request.html_url }}
           DESCRIPTION: ${{ github.event.pull_request.body }}
