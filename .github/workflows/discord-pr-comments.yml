@@ -11,12 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request || github.event.issue.pull_request }}
     steps:
-      - name: Capture Body With Diff
-        if: ${{ github.event.comment.diff_hunk }}
-        env:
-          BASE_DIFF_HUNK: ${{ github.event.comment.diff_hunk }}
-          BODY: ${{ github.event.comment.body }}
-        run: echo "BODY=\`\`\`$BASE_DIFF_HUNK\`\`\`\n$BODY" >> $GITHUB_ENV
       - name: Build PR Review Comment Args
         if: ${{ github.event.pull_request }}
         env:
@@ -51,6 +45,7 @@ jobs:
           AUTHOR: ${{ github.event.sender.login }}
           AUTHOR_ICON_URL: ${{ github.event.sender.avatar_url }}
           AUTHOR_HTML_URL: ${{ github.event.sender.html_url }}
+          BODY: ${{ github.event.comment.body }}
           HTML_URL: ${{ github.event.comment.html_url }}
           REPO_FULL_NAME: ${{ github.event.repository.full_name }}
         run: |
