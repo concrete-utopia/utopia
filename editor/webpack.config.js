@@ -205,7 +205,7 @@ const config = {
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json', '.ttf'],
-    symlinks: false, // We set this to false as we have symlinked some common code from the website project
+    symlinks: true, // We set this to false as we have symlinked some common code from the website project
     alias: {
       uuiui: srcPath('uuiui'),
       'uuiui-deps': srcPath('uuiui-deps'),
@@ -227,6 +227,7 @@ const config = {
     fallback: {
       path: require.resolve('path-browserify'),
       os: false,
+      stream: require.resolve('stream-browserify'), // needed for jszip
     },
   },
 

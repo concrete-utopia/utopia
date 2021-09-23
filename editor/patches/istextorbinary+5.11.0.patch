@@ -2,10 +2,10 @@ diff --git a/node_modules/istextorbinary/package.json b/node_modules/istextorbin
 index 8386188..cdfa9fa 100644
 --- a/node_modules/istextorbinary/package.json
 +++ b/node_modules/istextorbinary/package.json
-@@ -220,16 +224,6 @@
-       "bevry"
-     ]
-   },
+@@ -190,16 +163,6 @@
+   "types": "./compiled-types/",
+   "type": "module",
+   "main": "index.cjs",
 -  "exports": {
 -    "node": {
 -      "import": "./edition-es2019-esm/index.js",
@@ -16,6 +16,6 @@ index 8386188..cdfa9fa 100644
 -      "import": "./edition-browsers/index.js"
 -    }
 -  },
-   "funding": "https://bevry.me/fund",
-   "homepage": "https://github.com/bevry/istextorbinary",
-   "keywords": [
+   "deno": "edition-deno/index.ts",
+   "browser": "edition-browsers/index.js",
+   "module": "edition-browsers/index.js",
