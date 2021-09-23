@@ -11,6 +11,7 @@ let
   pkgs = release.pkgs;
   lib = pkgs.lib;
   node = pkgs.nodejs-14_x;
+  pnpm = pkgs.nodePackages.pnpm;
   stdenv = pkgs.stdenv;
 
   cabal = pkgs.haskellPackages.cabal-install;
@@ -393,7 +394,7 @@ let
 
   pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pnpm pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
