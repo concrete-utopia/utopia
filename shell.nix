@@ -23,6 +23,7 @@ let
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       ${node}/bin/npm --scripts-prepend-node-path=true install
       update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
