@@ -36,11 +36,13 @@
     "preinstall": "npm run install-utopia-api",
     "postinstall": "patch-package",
     "eslint-check": "eslint --quiet --config .eslintrc.js --ext .ts --ext .tsx src ../utopia-api/src ../website/src",
-    "prettier-check": "prettier --check src/**",
+    "prettier-check": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --check src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../performance-test/src/** ../website-next/pages/** ../website-next/components/**",
     "parse-print-analysis": "npx -s sh ts-node --require ignore-styles --transpile-only ./src/scripts/parse-print-analysis.ts",
     "parse-debug": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/parse-debug.ts",
-    "fetch-tailwind-classes": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/fetch-and-parse-tailwind-classes.ts && npx prettier --write ./src/core/third-party/tailwind-defaults.ts"
+    "fetch-tailwind-classes": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/fetch-and-parse-tailwind-classes.ts && npx prettier --write ./src/core/third-party/tailwind-defaults.ts",
+    "lint-editor": "lint-staged"
   },
+  "prepare": "cd .. && husky install editor/.husky",
   "jest": {
     "testEnvironment": "jest-environment-jsdom-global",
     "preset": "ts-jest",
@@ -63,11 +65,6 @@
       "\\.(css)$": "<rootDir>/test/jest/__mocks__/styleMock.js"
     }
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "*.{js,ts,tsx}": [
       "prettier --write",
@@ -78,11 +75,27 @@
       "prettier --write",
       "git add"
     ],
+    "../performance-test/src/**/*.{js,ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ],
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
       "git add"
     ],
     "../utopia-vscode-extension/src/**/*.{js,ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ],
+    "../utopia-vscode-common/src/**/*.{js,ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ],
+    "../website-next/pages/**.{js,ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ],
+    "../website-next/components/**.{js,ts,tsx}": [
       "prettier --write",
       "git add"
     ]
@@ -286,7 +299,7 @@
     "glslCanvas": "0.1.7",
     "got": "11.8.1",
     "html-webpack-plugin": "5.3.2",
-    "husky": "3.1.0",
+    "husky": "^7.0.2",
     "ignore-styles": "5.0.1",
     "immutable": "3.8.1",
     "jStat": "1.5.3",
