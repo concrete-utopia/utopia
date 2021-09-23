@@ -481,11 +481,11 @@ async function createSummaryPng(
 
       var fileStream = await fs.createWriteStream(testFileName)
 
-      const writeStreamPromise = new Promise<void>((resolve, reject) => {
+      const writeStreamPromise = new Promise<void>((streamResolve, streamReject) => {
         imageStream
           .pipe(fileStream)
-          .on('finish', () => resolve())
-          .on('error', (error: any) => reject(error))
+          .on('finish', () => streamResolve())
+          .on('error', (streamError: any) => streamReject(streamError))
       })
 
       await writeStreamPromise

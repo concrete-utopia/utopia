@@ -1,4 +1,5 @@
 import CookieConsent, { Cookies, getCookieConsentValue } from 'react-cookie-consent'
+import React from 'react'
 
 declare function gtag(...args: any): void
 

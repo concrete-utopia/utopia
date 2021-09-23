@@ -46,25 +46,29 @@ class ProjectCard extends React.Component<ProjectCardProps> {
     super(props)
   }
 
+  onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation()
+    if (e.button === 0 && this.props.onSelect != null) {
+      this.props.onSelect()
+    }
+  }
+
+  onDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button === 0) {
+      if (this.props.selected) {
+        window.open(`/project/${this.props.project.id}/`, '_self')
+      }
+    }
+  }
+
   render() {
     const { id: projectId, title, modifiedAt, thumbnail } = this.props.project
     return (
       <Card
         selected={this.props.selected}
         data-label='project card'
-        onMouseDown={(e) => {
-          e.stopPropagation()
-          if (e.button === 0 && this.props.onSelect != null) {
-            this.props.onSelect()
-          }
-        }}
-        onDoubleClick={(e) => {
-          if (e.button === 0) {
-            if (this.props.selected) {
-              window.open(`/project/${projectId}/`, '_self')
-            }
-          }
-        }}
+        onMouseDown={this.onMouseDown}
+        onDoubleClick={this.onDoubleClick}
         key={projectId}
       >
         <div
@@ -127,8 +131,10 @@ interface ProjectsState {
   mode: 'projects' | 'filter' | 'docs'
 }
 
-export class ProjectsPage extends React.Component<{}, ProjectsState> {
-  constructor(props: {}) {
+interface EmptyProps {}
+
+export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
+  constructor(props: EmptyProps) {
     super(props)
     this.state = {
       localProjects: [],
@@ -299,6 +305,11 @@ export class ProjectsPage extends React.Component<{}, ProjectsState> {
     )
   }
 
+  clearSelectedProject = () => this.setState({ selectedProjectId: null })
+
+  setProjectsMode = () => this.setState({ mode: 'projects' })
+  setFilterMode = () => this.setState({ mode: 'filter' })
+
   render() {
     const hasProjects = this.state.filteredProjects.length > 0
     const hasLocalProjects = this.state.filteredLocalProjects.length > 0
@@ -324,7 +335,7 @@ export class ProjectsPage extends React.Component<{}, ProjectsState> {
         />
 
         <FlexColumn
-          onMouseDown={() => this.setState({ selectedProjectId: null })}
+          onMouseDown={this.clearSelectedProject}
           style={{
             alignItems: 'flex-start',
 
@@ -340,16 +351,10 @@ export class ProjectsPage extends React.Component<{}, ProjectsState> {
               cursor: 'pointer',
             }}
           >
-            <FlexNavItem
-              selected={this.state.mode === 'projects'}
-              onClick={() => this.setState({ mode: 'projects' })}
-            >
+            <FlexNavItem selected={this.state.mode === 'projects'} onClick={this.setProjectsMode}>
               Projects
             </FlexNavItem>
-            <FlexNavItem
-              selected={this.state.mode === 'filter'}
-              onClick={() => this.setState({ mode: 'filter' })}
-            >
+            <FlexNavItem selected={this.state.mode === 'filter'} onClick={this.setFilterMode}>
               Search
             </FlexNavItem>
           </FlexRow>
@@ -438,8 +443,8 @@ interface ShowcaseState {
   showcase: Array<ProjectListing>
 }
 
-export class FeaturedPage extends React.PureComponent<{}, ShowcaseState> {
-  constructor(props: {}) {
+export class FeaturedPage extends React.PureComponent<EmptyProps, ShowcaseState> {
+  constructor(props: EmptyProps) {
     super(props)
     this.state = {
       showcase: [],
