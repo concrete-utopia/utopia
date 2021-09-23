@@ -25,48 +25,48 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
-      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${pnpm} install
       update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${pnpm} install
     '')
     (pkgs.writeScriptBin "install-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${pnpm} install
     '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${pnpm} install
     '')
     (pkgs.writeScriptBin "test-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true test
+      ${pnpm} test
     '')
     (pkgs.writeScriptBin "test-editor-move-template-only-ci" ''
       #!/usr/bin/env bash
       set -e
       install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run test-move-template-only-ci
+      ${pnpm} run test-move-template-only-ci
     '')
     (pkgs.writeScriptBin "test-utopia-api" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
-      ${node}/bin/npm --scripts-prepend-node-path=true test
+      ${pnpm} test
     '')
     (pkgs.writeScriptBin "test-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      # ${node}/bin/npm --scripts-prepend-node-path=true test
+      # ${pnpm} test
     '')
     (pkgs.writeScriptBin "test-editor-all" ''
       #!/usr/bin/env bash
@@ -78,13 +78,13 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run check
+      ${pnpm} run check
     '')
     (pkgs.writeScriptBin "check-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run check-ci
+      ${pnpm} run check-ci
     '')
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
@@ -99,22 +99,22 @@ let
       set -e
       install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run staging
+      ${pnpm} run staging
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run build
+      ${pnpm} install
+      ${pnpm} run build
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run build
+      ${pnpm} install
+      ${pnpm} run build
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
@@ -193,32 +193,32 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${node}/bin/npm --scripts-prepend-node-path=true run move-fast-and-break-things
+      RUN_COMPILER=true ${pnpm} run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-no-compile" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=false ${node}/bin/npm --scripts-prepend-node-path=true run move-fast-and-break-things
+      RUN_COMPILER=false ${pnpm} run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-performance" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${node}/bin/npm --scripts-prepend-node-path=true run performance-test
+      RUN_COMPILER=true ${pnpm} run performance-test
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy-danger-hot" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${node}/bin/npm --scripts-prepend-node-path=true run move-fast-and-break-things-hot
+      RUN_COMPILER=true ${pnpm} run move-fast-and-break-things-hot
     '')
     (pkgs.writeScriptBin "watch-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      BROWSER=none ${node}/bin/npm --scripts-prepend-node-path=true run dev
+      ${pnpm} install
+      BROWSER=none ${pnpm} run dev
     '')
   ];
 
@@ -269,15 +269,15 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
+      ${pnpm} install
+      ${pnpm} run watch-dev
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
+      ${pnpm} install
+      ${pnpm} run watch-dev
     '')
     (pkgs.writeScriptBin "pull-extension" ''
       #!/usr/bin/env bash
@@ -341,16 +341,16 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true install --unsafe-perm
-      ${node}/bin/npm --scripts-prepend-node-path=true run production
+      ${pnpm} install --unsafe-perm
+      ${pnpm} run production
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
     (pkgs.writeScriptBin "build-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      CI=false ${node}/bin/npm --scripts-prepend-node-path=true run export
+      ${pnpm} install
+      CI=false ${pnpm} run export
     '')
     (pkgs.writeScriptBin "build-server" ''
       #!/usr/bin/env bash
