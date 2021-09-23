@@ -189,6 +189,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1
         if: ${{ success() || failure() }}
         with:
+          token: ${{ secrets.UTOPIA_ACCESS_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             [Link to test editor](https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }})
