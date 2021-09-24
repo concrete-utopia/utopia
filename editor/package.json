@@ -42,7 +42,6 @@
     "fetch-tailwind-classes": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/fetch-and-parse-tailwind-classes.ts && npx prettier --write ./src/core/third-party/tailwind-defaults.ts",
     "lint-editor": "lint-staged"
   },
-  "prepare": "cd .. && husky install editor/.husky",
   "jest": {
     "testEnvironment": "jest-environment-jsdom-global",
     "preset": "ts-jest",
