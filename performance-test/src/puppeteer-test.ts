@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 require('dotenv').config({ path: 'src/.env' })
 import puppeteer from 'puppeteer'
 import { v4 } from 'uuid'

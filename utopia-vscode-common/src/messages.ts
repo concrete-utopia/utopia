@@ -82,10 +82,10 @@ export interface SelectedElementChanged {
   boundsInFile: BoundsInFile
 }
 
-export function selectedElementChanged(boundsInFile: BoundsInFile): SelectedElementChanged {
+export function selectedElementChanged(bounds: BoundsInFile): SelectedElementChanged {
   return {
     type: 'SELECTED_ELEMENT_CHANGED',
-    boundsInFile: boundsInFile,
+    boundsInFile: bounds,
   }
 }
 
