@@ -155,6 +155,10 @@ jobs:
           webpackStatsFile: editor/lib/staging-stats.json
           key: ${{ secrets.RELATIVE_CI_KEY }}
           debug: false
+      - name: Delete node_modules
+        working-directory: editor/
+        run: |
+          rm -rf ./node_modules
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
