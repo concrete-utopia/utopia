@@ -197,9 +197,11 @@ const config = {
 
     new webpack.ProvidePlugin({ BrowserFS: 'browserfs' }), // weirdly, the browserfs/dist/shims/fs shim assumes a global BrowserFS being available
 
-    new RelativeCiAgentWebpackPlugin({
-      includeCommitMessage: false,
-    }),
+    process.env.RELATIVE_CI_KEY
+      ? new RelativeCiAgentWebpackPlugin({
+          includeCommitMessage: false,
+        })
+      : null,
   ],
 
   resolve: {
