@@ -240,7 +240,7 @@ jobs:
           MASTER_MESSAGE: ${{ steps.run-performance-test.outputs.perf-message-master }}
           MASTER_CHART: ${{ steps.run-performance-test.outputs.perf-chart-master }}
         run: |
-          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg staging_message "STAGING_MESSAGE" --arg master_message "MASTER_MESSAGE" --arg staging_chart "STAGING_CHART" --arg master_chart "MASTER_CHART" "$TEMPLATE")" >> $GITHUB_ENV
+          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg staging_message "$STAGING_MESSAGE" --arg master_message "$MASTER_MESSAGE" --arg staging_chart "$STAGING_CHART" --arg master_chart "$MASTER_CHART" "$TEMPLATE")" >> $GITHUB_ENV
       - name: Send Discord Notification
         uses: Ilshidur/action-discord@0.3.2
         env:
