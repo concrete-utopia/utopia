@@ -84,6 +84,7 @@ describe('Select Mode Selection', () => {
             </div>
           </div>
       `),
+      'await-first-dom-report',
     )
 
     const areaControl = renderResult.renderedDOM.getByTestId('targetdiv')
@@ -178,7 +179,10 @@ describe('Select Mode Advanced Cases', () => {
   beforeAll(setElectronWindow)
 
   it('Can cmd-click to select Button on a Card Scene Root', async () => {
-    const renderResult = await renderTestEditorWithCode(TestProjectAlpineClimb)
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimb,
+      'await-first-dom-report',
+    )
 
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
@@ -211,7 +215,10 @@ describe('Select Mode Advanced Cases', () => {
   })
 
   it('Five double clicks to select Button on a Card Scene Root', async () => {
-    const renderResult = await renderTestEditorWithCode(TestProjectAlpineClimb)
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimb,
+      'await-first-dom-report',
+    )
 
     const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
@@ -264,7 +271,10 @@ describe('Select Mode Advanced Cases', () => {
   })
 
   it('Keep double clicking to select Button inside a focused generated Card', async () => {
-    const renderResult = await renderTestEditorWithCode(TestProjectAlpineClimb)
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimb,
+      'await-first-dom-report',
+    )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

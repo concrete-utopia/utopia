@@ -20,6 +20,7 @@ describe('toggle style prop', () => {
           />
         </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -54,6 +55,7 @@ describe('toggle style prop', () => {
           />
         </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -87,6 +89,7 @@ describe('toggle style prop', () => {
         />
       </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -128,6 +131,7 @@ describe('toggle style prop', () => {
           />
         </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -161,6 +165,7 @@ describe('toggle style prop', () => {
           />
         </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(

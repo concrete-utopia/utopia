@@ -55,6 +55,7 @@ describe('moveTemplate', () => {
         />
       </View>
       `),
+      'await-first-dom-report',
     )
 
     const targets = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
@@ -88,6 +89,7 @@ describe('moveTemplate', () => {
         />
       </View>
       `),
+      'await-first-dom-report',
     )
 
     const targets = [EP.appendNewElementPath(TestScenePath, ['aaa'])]
@@ -121,6 +123,7 @@ describe('moveTemplate', () => {
         />
       </View>
       `),
+      'await-first-dom-report',
     )
 
     const targets = [EP.appendNewElementPath(TestScenePath, ['aaa'])]
@@ -178,6 +181,7 @@ describe('moveTemplate', () => {
         <View data-uid='hhh'/>
       </View>
       `),
+      'await-first-dom-report',
     )
 
     const targets = [
@@ -235,6 +239,7 @@ describe('moveTemplate', () => {
         <View data-uid='eee'/>
       </View>
       `),
+      'await-first-dom-report',
     )
 
     const targets = [
@@ -310,7 +315,10 @@ describe('moveTemplate', () => {
   }`,
       ),
     }
-    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const renderResult = await renderTestEditorWithProjectContent(
+      contentsToTree(projectContents),
+      'await-first-dom-report',
+    )
     const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])
 
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
@@ -391,7 +399,10 @@ describe('moveTemplate', () => {
   }`,
       ),
     }
-    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const renderResult = await renderTestEditorWithProjectContent(
+      contentsToTree(projectContents),
+      'await-first-dom-report',
+    )
     const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-wrapper-view'])
     const selectionAfterUnwrap = EP.appendNewElementPath(TestScenePath, [
       'app-outer-div',
@@ -443,6 +454,7 @@ describe('moveTemplate', () => {
           <View data-uid='hhh'/>
         </View>
       `),
+      'await-first-dom-report',
     )
 
     const targets = [
@@ -491,6 +503,7 @@ describe('moveTemplate', () => {
           <View data-uid='eee'/>
         </View>
       `),
+      'await-first-dom-report',
     )
 
     const targets = [
@@ -535,6 +548,7 @@ describe('moveTemplate', () => {
           <View data-uid='eee'/>
         </View>
       `),
+      'await-first-dom-report',
     )
 
     const targets = [
@@ -578,6 +592,7 @@ describe('moveTemplate', () => {
           <View data-uid='eee' style={{ position: 'absolute', left: 50, top: 175, width: 80, height: 80 }}/>
         </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -626,6 +641,7 @@ describe('moveTemplate', () => {
           <View data-testid='eee' data-uid='eee' style={{ position: 'relative', backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }}/>
         </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -758,6 +774,7 @@ describe('moveTemplate', () => {
       }`,
         PrettierConfig,
       ),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -918,6 +935,7 @@ describe('moveTemplate', () => {
       }`,
         PrettierConfig,
       ),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -1050,6 +1068,7 @@ describe('moveTemplate', () => {
           </div>
         </div>
       `),
+      'await-first-dom-report',
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
     await renderResult.dispatch(
@@ -1175,6 +1194,7 @@ describe('moveTemplate', () => {
       }`,
         PrettierConfig,
       ),
+      'await-first-dom-report',
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
@@ -1301,6 +1321,7 @@ describe('moveTemplate', () => {
           <View data-testid='eee' data-uid='eee' style={{ backgroundColor: '#00ff00', position: 'absolute', left: 150, top: 250, width: 80, height: 80 }}/>
         </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -1416,6 +1437,7 @@ describe('moveTemplate', () => {
           />
         </View>
       `),
+      'await-first-dom-report',
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 

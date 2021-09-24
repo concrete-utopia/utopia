@@ -114,15 +114,25 @@ const FailJestOnCanvasError = () => {
   return null
 }
 
-export async function renderTestEditorWithCode(appUiJsFileCode: string) {
-  return renderTestEditorWithModel(createTestProjectWithCode(appUiJsFileCode))
+export async function renderTestEditorWithCode(
+  appUiJsFileCode: string,
+  awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
+) {
+  return renderTestEditorWithModel(createTestProjectWithCode(appUiJsFileCode), awaitFirstDomReport)
 }
-export async function renderTestEditorWithProjectContent(projectContent: ProjectContentTreeRoot) {
-  return renderTestEditorWithModel(persistentModelForProjectContents(projectContent))
+export async function renderTestEditorWithProjectContent(
+  projectContent: ProjectContentTreeRoot,
+  awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
+) {
+  return renderTestEditorWithModel(
+    persistentModelForProjectContents(projectContent),
+    awaitFirstDomReport,
+  )
 }
 
 export async function renderTestEditorWithModel(
   model: PersistentModel,
+  awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
 ): Promise<{
   dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
   getDomReportDispatched: () => Promise<void>
@@ -254,6 +264,10 @@ export async function renderTestEditorWithModel(
   await act(async () => {
     await asyncTestDispatch([switchEditorMode(EditorModes.selectMode())], undefined, true, false)
   })
+
+  if (awaitFirstDomReport === 'await-first-dom-report') {
+    await domReportDispatched
+  }
 
   return {
     dispatch: async (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => {

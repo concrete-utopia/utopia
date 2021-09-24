@@ -54,6 +54,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -109,6 +110,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -196,6 +198,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -283,6 +286,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -370,6 +374,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     await act(async () => {
@@ -437,6 +442,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -520,6 +526,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -639,6 +646,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     await act(async () => {
@@ -732,6 +740,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     await act(async () => {
@@ -825,6 +834,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     await act(async () => {
@@ -918,6 +928,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     await act(async () => {
@@ -1042,6 +1053,7 @@ describe('inspector tests with real metadata', () => {
       }`,
         PrettierConfig,
       ),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -1144,6 +1156,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -1233,6 +1246,7 @@ describe('inspector tests with real metadata', () => {
           ></div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     await act(async () => {
@@ -1351,6 +1365,7 @@ describe('inspector tests with real metadata', () => {
       }`,
         PrettierConfig,
       ),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -1460,6 +1475,7 @@ describe('inspector tests with real metadata', () => {
       }`,
         PrettierConfig,
       ),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -1565,6 +1581,7 @@ describe('inspector tests with real metadata', () => {
       }`,
         PrettierConfig,
       ),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -1648,6 +1665,7 @@ describe('inspector tests with real metadata', () => {
           <div data-uid={'bbb'}>hello</div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -1684,6 +1702,7 @@ describe('inspector tests with real metadata', () => {
           <div data-uid={'bbb'} style={{flex: '1 0 15px'}}>hello</div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -1743,6 +1762,7 @@ describe('inspector tests with real metadata', () => {
           >hello</div>
         </div>
       `),
+      'await-first-dom-report',
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
@@ -1827,7 +1847,10 @@ describe('inspector tests with real metadata', () => {
       ),
     }
 
-    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const renderResult = await renderTestEditorWithProjectContent(
+      contentsToTree(projectContents),
+      'await-first-dom-report',
+    )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])
 

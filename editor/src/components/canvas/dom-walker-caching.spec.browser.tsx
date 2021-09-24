@@ -14,7 +14,10 @@ describe('Dom-walker Caching', () => {
     const projectContents = createComplexDefaultProjectContents()
     const projectContentsTreeRoot = contentsToTree(projectContents)
 
-    const renderResult = await renderTestEditorWithProjectContent(projectContentsTreeRoot)
+    const renderResult = await renderTestEditorWithProjectContent(
+      projectContentsTreeRoot,
+      'await-first-dom-report',
+    )
     // unfortunately we have to dispatch a non-action to allow the dom-walker to run for a second time.
     // It needs to run for a second time to "settle".
     await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 0, y: 0 }))], true)
