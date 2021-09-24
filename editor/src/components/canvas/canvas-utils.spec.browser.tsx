@@ -189,6 +189,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
         />
       </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinFrameChange(
@@ -256,6 +257,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -287,6 +289,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -318,6 +321,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -349,6 +353,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -380,6 +385,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -411,6 +417,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -506,6 +513,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
         />
       </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -537,6 +545,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
         />
       </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -622,6 +631,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
         />
       </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinMoveChange(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
@@ -656,6 +666,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinSizeChange(
@@ -688,6 +699,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinSizeChange(
@@ -722,6 +734,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
           />
         </View>`,
       ),
+      'await-first-dom-report',
     )
 
     const pinChange = pinSizeChange(
