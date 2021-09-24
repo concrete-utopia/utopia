@@ -158,11 +158,11 @@ jobs:
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
-          tar -czvf ../${{ steps.extract_branch.outputs.branch }}.tar.gz *
+          tar -czvf ./${{ steps.extract_branch.outputs.branch }}.tar.gz *
       - name: Upload Editor Bundle
         uses: jakejarvis/s3-sync-action@v0.5.1
         with:
-          args: --acl private --exclude '*' --include 'editor/${{ steps.extract_branch.outputs.branch }}.tar.gz'
+          args: --acl private --exclude '*' --include 'editor/lib/${{ steps.extract_branch.outputs.branch }}.tar.gz'
         env:
           AWS_S3_BUCKET: ${{ secrets.STAGING_BUNDLE_S3_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY }}
