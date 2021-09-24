@@ -253,10 +253,10 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
       input: (styles): CSSObject => {
         return {
           // ...styles,
-          ...InspectorInputEmotionStyle({
+          ...(InspectorInputEmotionStyle({
             hasLabel: false,
             controlStyles: getControlStyles('simple'),
-          }),
+          }) as CSSObject),
           paddingLeft: 4,
           backgroundColor: colorTheme.bg4.value,
           // color: 'black',
