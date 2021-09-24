@@ -187,7 +187,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npx --scripts-prepend-node-path=true tsc --watch && NODE_OPTIONS=--max_old_space_size=4096
+      ${pnpm}/bin/pnpx tsc --watch && NODE_OPTIONS=--max_old_space_size=4096
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy" ''
       #!/usr/bin/env bash
