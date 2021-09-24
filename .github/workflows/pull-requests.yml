@@ -159,6 +159,10 @@ jobs:
         working-directory: editor/
         run: |
           rm -rf ./node_modules
+          cd ../utopia-api
+          rm -rf ./node_modules
+          cd ../website-next
+          rm -rf ./node_modules
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
