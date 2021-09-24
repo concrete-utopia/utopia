@@ -8,7 +8,9 @@
   "devDependencies": {
     "husky": "^7.0.2"
   },
-  "scripts": {},
+  "scripts": {
+    "prepare": "husky install"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/concrete-utopia/utopia.git"

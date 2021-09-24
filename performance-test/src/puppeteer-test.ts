@@ -211,16 +211,30 @@ function consoleMessageForResult(result: FrameResult): string {
   return `${result.title}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
 
+interface PerformanceResult {
+  message: string
+  summaryImageUrl: string
+}
+
 export const testPerformance = async function () {
   const stagingResult = await testPerformanceInner(STAGING_EDITOR_URL)
   const masterResult = await testPerformanceInner(MASTER_EDITOR_URL)
 
+  const stagingCombined = `${stagingResult.message} | ![(Chart)](${stagingResult.summaryImageUrl})`
+  const masterCombined = `${masterResult.message} | ![(Chart)](${masterResult.summaryImageUrl})`
+
   console.info(
-    `::set-output name=perf-result:: This PR: <br /> ${stagingResult} <br /> Compare with last deployed Master: <br /> ${masterResult}`,
+    `::set-output name=perf-result:: This PR: <br /> ${stagingCombined} <br /> Compare with last deployed Master: <br /> ${masterCombined}`,
   )
+
+  // Output the individual parts for building a discord message
+  console.info(`::set-output name=perf-message-staging:: ${stagingResult.message}`)
+  console.info(`::set-output name=perf-chart-staging:: ${stagingResult.summaryImageUrl}`)
+  console.info(`::set-output name=perf-message-master:: ${masterResult.message}`)
+  console.info(`::set-output name=perf-chart-master:: ${masterResult.summaryImageUrl}`)
 }
 
-export const testPerformanceInner = async function (url: string): Promise<string> {
+export const testPerformanceInner = async function (url: string): Promise<PerformanceResult> {
   let scrollResult = EmptyResult
   let resizeResult = EmptyResult
   let selectionResult = EmptyResult
@@ -247,11 +261,16 @@ export const testPerformanceInner = async function (url: string): Promise<string
     simpleDispatch,
   ])
 
-  return `${consoleMessageForResult(scrollResult)} | ${consoleMessageForResult(
+  const message = `${consoleMessageForResult(scrollResult)} | ${consoleMessageForResult(
     resizeResult,
   )} | ${consoleMessageForResult(selectionResult)} | ${consoleMessageForResult(
     basicCalc,
-  )} | ${consoleMessageForResult(simpleDispatch)} | ![(Chart)](${summaryImage})`
+  )} | ${consoleMessageForResult(simpleDispatch)}`
+
+  return {
+    message: message,
+    summaryImageUrl: summaryImage,
+  }
 }
 
 async function clickOnce(
