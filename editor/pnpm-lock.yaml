@@ -9,7 +9,7 @@ dependencies:
   '@babel/types': 7.15.6
   '@emotion/cache': 10.0.29
   '@emotion/react': 11.1.2_528ffd38e6b0222f9821ad7759a31552
-  '@emotion/serialize': 1.0.0
+  '@emotion/serialize': 1.0.2
   '@emotion/styled': 11.0.0_41f05b26b172d981646f6bbde5d3d883
   '@emotion/styled-base': 11.0.0
   '@popperjs/core': 2.4.4
@@ -69,6 +69,7 @@ dependencies:
   prop-types: 15.6.2
   pubsub-js: 1.9.3
   rc-slider: github.com/momentumworks/slider/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
+  rc-table: 7.8.6_4b57aad7a3acc0ec1c2667d1fea04016
   re-resizable: 6.9.0_4b57aad7a3acc0ec1c2667d1fea04016
   react: /utopia-react/17.0.0-rc.1
   react-contexify: 5.0.0_4b57aad7a3acc0ec1c2667d1fea04016
@@ -18046,7 +18047,7 @@ specifiers:
   '@babel/types': ^7.14.2
   '@emotion/cache': ^10.0.27
   '@emotion/react': 11.1.2
-  '@emotion/serialize': 1.0.0
+  '@emotion/serialize': 1.0.2
   '@emotion/styled': 11.0.0
   '@emotion/styled-base': 11.0.0
   '@hot-loader/react-dom': 16.13.0
@@ -18213,6 +18214,7 @@ specifiers:
   prop-types: 15.6.2
   pubsub-js: ^1.9.2
   rc-slider: 'git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f'
+  rc-table: 7.8.6
   re-resizable: 6.9.0
   react: 'npm:utopia-react@17.0.0-rc.1'
   react-contexify: 5.0.0
