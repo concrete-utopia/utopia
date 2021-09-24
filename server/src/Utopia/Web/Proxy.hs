@@ -2,6 +2,7 @@
 
 module Utopia.Web.Proxy where
 
+import qualified Data.ByteString.Lazy as BL
 import           Control.Exception.Base
 import           Control.Lens
 import           Data.Binary.Builder            (toLazyByteString)
@@ -18,6 +19,8 @@ import qualified Network.WebSockets             as WS
 import qualified Network.Wreq                   as WR
 import           Protolude
 import           Utopia.Web.Exceptions
+import Control.Monad.Fail
+import Prelude(String)
 
 closeConnection :: WS.Connection -> IO ()
 closeConnection connection = void $ forkIO $ do
@@ -40,12 +43,16 @@ filteredHeaderNames =
                     , "Vary"
                     ]
 
+encodedPathSegmentsAsString :: [Text] -> IO String
+encodedPathSegmentsAsString segments = either (fail . show) (pure . toS) $ decodeUtf8' $ BL.toStrict $ toLazyByteString $ encodePathSegments segments
+
 sendProxiedRequest' :: Manager -> Int -> (Response -> IO ResponseReceived) -> Text -> RequestHeaders -> [Text] -> IO ResponseReceived
 sendProxiedRequest' webpackManager port sendResponse method headers segments = do
   let options = WR.defaults & WR.manager .~ Right webpackManager & WR.headers .~ headers
-  let webpackUrl = "http://localhost:" <> show port <> (toLazyByteString $ encodePathSegments segments)
-  responseToClient <- (flip catch) handleClientError $ do
-      responseFromWebpack <- WR.customMethodWith (toS method) options (toS webpackUrl)
+  encodedPathSegments <- encodedPathSegmentsAsString segments
+  let webpackUrl = "http://localhost:" <> show port <> encodedPathSegments
+  responseToClient <- flip catch handleClientError $ do
+      responseFromWebpack <- WR.customMethodWith (toS method) options webpackUrl
       let headersFromServer = responseFromWebpack ^. WR.responseHeaders
       let filteredHeaders = filter (\(h, _) -> elem h filteredHeaderNames) headersFromServer
       return $ responseLBS status200 filteredHeaders (responseFromWebpack ^. WR.responseBody)
@@ -68,7 +75,7 @@ websocketProxy port pendingConnection = do
   let requestPathBytes = WS.requestPath $ WS.pendingRequest pendingConnection
   let headers = WS.requestHeaders $ WS.pendingRequest pendingConnection
   incomingConnection <- WS.acceptRequest pendingConnection
-  let proxiedPath = toS $ toLazyByteString $ encodePathSegments $ decodePathSegments requestPathBytes
+  proxiedPath <- encodedPathSegmentsAsString $ decodePathSegments requestPathBytes
   WS.runClientWith "localhost" port proxiedPath WS.defaultConnectionOptions headers $ \outgoingConnection -> do
     let closeConnections = void (closeConnection incomingConnection >> closeConnection outgoingConnection)
     let forwardMessages fromConn toConn = void $ finally (forever (WS.receive fromConn >>= WS.send toConn)) closeConnections
@@ -84,10 +91,10 @@ websocketProxy port pendingConnection = do
 -}
 proxyHttpApplication :: Manager -> Int -> [Text] -> Application
 proxyHttpApplication webpackManager port urlPrefix request sendResponse = do
-  let method = requestMethod request
+  method <- either (fail . show) (pure . toS) $ decodeUtf8' $ requestMethod request
   let pathSegments = pathInfo request
   let headers = requestHeaders request
-  sendProxiedRequest webpackManager port sendResponse (toS method) headers (urlPrefix <> pathSegments)
+  sendProxiedRequest webpackManager port sendResponse method headers (urlPrefix <> pathSegments)
 
 proxyApplication :: Manager -> Int -> [Text] -> Application
 proxyApplication webpackManager port urlPrefix =

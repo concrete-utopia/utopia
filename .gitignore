@@ -123,3 +123,8 @@ editor/src/components/editor/npm-dependency/utopia-api-typings.ts
 # Cache of projects for scripts.
 .parse-print-analysis
 .github-test-projects
+
+# Database.
+server/pglog.txt
+server/.pglock
+server/utopia-db

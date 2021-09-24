@@ -3,6 +3,7 @@
 
 module Utopia.Web.Utils.Files where
 
+import Control.Monad.Fail
 import qualified Crypto.Hash.SHA256        as SHA256
 import           Data.Aeson
 import qualified Data.ByteString           as BS
@@ -57,9 +58,9 @@ data AssetResultCache = AssetResultCache
 updateHashDetails :: IORef FileHashDetailsMap -> PathAndBuilders -> FilePath -> UTCTime -> IO Any
 updateHashDetails hashCache PathAndBuilders{..} targetFile latestModificationTime = do
   fileContents <- BS.readFile targetFile
-  let newHash = toS $ B16.encode $ SHA256.hash fileContents
+  newHash <- either (fail . show) pure $ decodeUtf8' $ B16.encode $ SHA256.hash fileContents
   let pathKey = _buildFilePath targetFile
-  let fileURL = _buildFileURL targetFile newHash
+  let fileURL = _buildFileURL targetFile $ toS newHash
   let newDetails = FileHashDetails latestModificationTime fileURL targetFile
   atomicModifyIORef' hashCache (\cache -> (M.insert pathKey newDetails cache, ()))
   return $ Any True
@@ -91,7 +92,7 @@ getOrUpdateFileHashDetails hashCache hashDetails pathAndBuilders@PathAndBuilders
 walkDir :: IORef FileHashDetailsMap -> FileHashDetailsMap -> PathAndBuilders -> FilePath -> IO Any
 walkDir hashCache hashDetails pathAndBuilders targetDir = do
   directoryContents <- listDirectory targetDir
-  let fullPaths = fmap (\path -> targetDir </> path) directoryContents
+  let fullPaths = fmap (targetDir </>) directoryContents
   foldMap (walkPath hashCache hashDetails pathAndBuilders) fullPaths
 
 walkPath :: IORef FileHashDetailsMap -> FileHashDetailsMap -> PathAndBuilders -> FilePath -> IO Any
@@ -152,9 +153,9 @@ requestRewriter cacheGetter applicationToWrap originalRequest sendResponse = do
   AssetResultCache{..} <- cacheGetter
   let requestPath = pathInfo originalRequest
   let mappedPath = fromMaybe requestPath $ M.lookup requestPath _withHashToWithoutHash
-  case requestPath == mappedPath of
-    True  -> applicationToWrap originalRequest sendResponse
-    False -> applicationToWrap (originalRequest { pathInfo = mappedPath }) (addHeadersToResponse sendResponse)
+  if requestPath == mappedPath
+     then applicationToWrap originalRequest sendResponse
+     else applicationToWrap (originalRequest { pathInfo = mappedPath }) (addHeadersToResponse sendResponse)
 
 normalizePath' :: [Text] -> [Text] -> [Text]
 normalizePath' [] workingResult = workingResult

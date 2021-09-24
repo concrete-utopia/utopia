@@ -1,5 +1,5 @@
 { 
-  compiler ? "ghc865",
+  compiler ? "ghc8104",
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,
@@ -10,7 +10,8 @@ let
   release = (import ./release.nix {});
   pkgs = release.pkgs;
   lib = pkgs.lib;
-  node = pkgs.nodejs-14_x;
+  node = pkgs.nodejs-16_x;
+  postgres = pkgs.postgresql_13;
   stdenv = pkgs.stdenv;
 
   cabal = pkgs.haskellPackages.cabal-install;
@@ -250,6 +251,25 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
     '')
+    (pkgs.writeScriptBin "start-postgres" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      [ ! -d "utopia-db" ] && ${postgres}/bin/initdb -D utopia-db
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/pg_ctl -D utopia-db -l pglog.txt -o "--unix_socket_directories='$PGLOCK_DIR'" start
+      ${postgres}/bin/psql -o /dev/null -h "$PGLOCK_DIR" -d utopia -tc "SELECT 1 FROM pg_database WHERE datname = 'utopia'" || ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
+      tail -f pglog.txt
+    '')
+    (pkgs.writeScriptBin "stop-postgres" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/pg_ctl -D utopia-db stop 
+    '')
   ];
 
   withServerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
@@ -297,6 +317,7 @@ let
       # Kill nodemon because it just seems to keep running.
       pkill nodemon
       tmux kill-session -t utopia-dev
+      stop-postgres
     '')
     (pkgs.writeScriptBin "start-minimal" ''
       #!/usr/bin/env bash
@@ -318,6 +339,8 @@ let
         send-keys -t :7 watch-utopia-vscode-extension C-m \; \
         new-window -n "VSCode Pull Extension" \; \
         send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        new-window -n "PostgreSQL" \; \
+        send-keys -t :9 start-postgres C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full" ''
@@ -379,7 +402,7 @@ let
     pkgs.cabal2nix
     pkgs.haskellPackages.stylish-haskell
     pkgs.haskellPackages.hpack
-    pkgs.postgresql
+    postgres
   ];
 
   serverRunPackages = [

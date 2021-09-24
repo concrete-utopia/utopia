@@ -9,35 +9,31 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 
 module Utopia.Web.Database where
 
 import           Control.Lens
 import           Control.Monad.Catch
 import           Control.Monad.Fail
-import           Control.Monad.Logger
-import           Control.Monad.Trans.Identity
 import           Data.Aeson
-import           Data.List                            (lookup)
-import           Data.Pool
+import Data.Pool
 import           Data.String
-import qualified Data.Text                            as T
+import qualified Data.Text                    as T
 import           Data.Time
-import           Data.UUID                            hiding (null)
+import           Data.UUID                    hiding (null)
 import           Data.UUID.V4
-import           Database.Persist
-import           Database.Persist.Postgresql
-import           Database.Persist.Sqlite
-import           Database.Persist.TH
-import           Protolude                            hiding (get)
+import           Database.PostgreSQL.Simple
+import           Opaleye
+import           Opaleye.Trans
+import           Protolude                    hiding (get)
 import           System.Environment
-import           System.Metrics                       hiding (Value)
+import           System.Metrics               hiding (Value)
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Metrics
-import qualified Web.ServerSession.Backend.Persistent as SS
-import qualified Web.ServerSession.Core               as SS
-
-mkMigrate "migrateAll" (SS.serverSessionDefs (Proxy :: Proxy SS.SessionMap) ++ entityDefs)
+import qualified Data.ByteString.Lazy as BL
+import System.Posix.User
 
 data DatabaseMetrics = DatabaseMetrics
                      { _generateUniqueIDMetrics         :: InvocationMetric
@@ -92,98 +88,119 @@ instance Exception MissingFieldsException
 getDatabaseConnectionString :: IO (Maybe String)
 getDatabaseConnectionString = lookupEnv "DATABASE_URL"
 
-createLocalDatabasePool :: IO (Pool SqlBackend)
-createLocalDatabasePool = runIdentityT $ runNoLoggingT $ createSqlitePool "utopia-local.db" 1
+createDatabasePoolFromConnection :: IO Connection -> IO DBPool
+createDatabasePoolFromConnection createConnection = do
+  let keepResourceOpenFor = 10
+  createPool createConnection close 3 keepResourceOpenFor 3
 
-createRemoteDatabasePool :: String -> IO (Pool SqlBackend)
-createRemoteDatabasePool connectionString = runIdentityT $ runNoLoggingT $ createPostgresqlPool (toS connectionString) 1
+createLocalDatabasePool :: IO DBPool
+createLocalDatabasePool = do
+  username <- getEffectiveUserName
+  let connectInfo = defaultConnectInfo { connectUser = username, connectDatabase = "utopia" }
+  createDatabasePoolFromConnection $ connect connectInfo
 
-createInMemDatabasePool :: IO (Pool SqlBackend)
-createInMemDatabasePool = runIdentityT $ runNoLoggingT $ createSqlitePool ":memory:" 1
+createRemoteDatabasePool :: String -> IO DBPool
+createRemoteDatabasePool connectionString = createDatabasePoolFromConnection $ connectPostgreSQL $ encodeUtf8 $ toS connectionString
 
-createDatabasePool :: Maybe String -> IO (Pool SqlBackend)
+createDatabasePool :: Maybe String -> IO DBPool
 createDatabasePool (Just connectionString) = createRemoteDatabasePool connectionString
 createDatabasePool Nothing = createLocalDatabasePool
 
-createDatabasePoolFromEnvironment :: IO (Pool SqlBackend)
+createDatabasePoolFromEnvironment :: IO DBPool
 createDatabasePoolFromEnvironment = do
   maybeConnectionString <- getDatabaseConnectionString
   createDatabasePool maybeConnectionString
 
--- Should use the pool to ensure this is unique.
+usePool :: DBPool -> (Connection -> IO a) -> IO a
+usePool = withResource
+
+-- Should use the connection to ensure this is unique.
 generateUniqueID :: DatabaseMetrics -> IO Text
-generateUniqueID metrics = invokeAndMeasure (_generateUniqueIDMetrics metrics) $ do
-  uniqueID <- nextRandom
-  return $ T.take 8 $ toText uniqueID
-
-usePool :: Pool SqlBackend -> ReaderT SqlBackend IO a -> IO a
-usePool pool readerToRun = runSqlPool readerToRun pool
-
-migrateDatabase :: Bool -> Pool SqlBackend -> IO ()
-migrateDatabase silentMigration pool = do
-  let migration = if silentMigration then fmap void runMigrationSilent else runMigration
-  usePool pool $ migration migrateAll
+generateUniqueID metrics = invokeAndMeasure (_generateUniqueIDMetrics metrics) $
+  T.take 8 . toText <$> nextRandom
 
 encodeContent :: Value -> ByteString
-encodeContent contentToEncode = toSL $ encode contentToEncode
+encodeContent content = BL.toStrict $ encode content
 
-projectFromContent :: Text -> Value -> Text -> Text -> UTCTime -> UTCTime -> Project
-projectFromContent pId pContent pOwnerId pTitle pCreatedAt pModifiedAt = Project pId pOwnerId pTitle pCreatedAt pModifiedAt (encodeContent pContent) Nothing
+getProjectContent :: ByteString -> IO Value
+getProjectContent content = either fail pure $ eitherDecodeStrict' content
 
-getProjectContent :: Maybe Project -> Maybe Value
-getProjectContent maybeProject = do
-  project <- maybeProject
-  decode $ toS $ projectContent project
+notDeletedProject :: FieldNullable SqlBool -> Field SqlBool
+notDeletedProject deletedFlag = deletedFlag ./== toFields (Just True)
 
-notDeletedProject :: Filter Project
-notDeletedProject = ProjectDeleted !=. Just True
+loadProject :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe DecodedProject)
+loadProject metrics pool projectID = invokeAndMeasure (_loadProjectMetrics metrics) $ usePool pool $ \connection -> do
+  projects <- runSelect connection $ do
+    project@(projId, _, _, _, _, _, deleted) <- projectSelect
+    where_ $ projId .== toFields projectID
+    where_ $ notDeletedProject deleted
+    pure project
+  traverse projectToDecodedProject $ listToMaybe projects
 
-loadProject :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO (Maybe DecodedProject)
-loadProject metrics pool projectID = invokeAndMeasure (_loadProjectMetrics metrics) $ do
-  project <- usePool pool $ selectFirst [ProjectProjId ==. projectID, notDeletedProject] []
-  return $ projectToDecodedProject (fmap entityVal project) projectID
-
-projectToDecodedProject :: Maybe Project -> Text -> Maybe DecodedProject
-projectToDecodedProject Nothing _ = Nothing
-projectToDecodedProject (Just project) projectID = do
-  projectCont <- getProjectContent (Just project)
-  Just $ DecodedProject { _id=projectID
-                        , _ownerId=(projectOwnerId project)
-                        , _title=(projectTitle project)
-                        , _modifiedAt=(projectModifiedAt project)
-                        , _content=(projectCont)
+projectToDecodedProject :: Project -> IO DecodedProject
+projectToDecodedProject (projectId, ownerId, title, _, modifiedAt, content, _) = do
+  projectCont <- getProjectContent content
+  pure $ DecodedProject { id=projectId
+                        , ownerId=ownerId
+                        , title=title
+                        , modifiedAt=modifiedAt
+                        , content=projectCont
                         }
 
-createProject :: DatabaseMetrics -> Pool SqlBackend -> IO Text
-createProject metrics pool = invokeAndMeasure (_createProjectMetrics metrics) $ do
+createProject :: DatabaseMetrics -> DBPool -> IO Text
+createProject metrics pool = invokeAndMeasure (_createProjectMetrics metrics) $ usePool pool $ \connection -> do
   projectID <- generateUniqueID metrics
-  void $ usePool pool $ insert (ProjectID projectID)
+  void $ runInsert_ connection $ Insert
+                                 { iTable = projectIDTable
+                                 , iRows = [toFields projectID]
+                                 , iReturning = rCount
+                                 , iOnConflict = Nothing
+                                 }
   return projectID
 
-insertProject :: DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> UTCTime -> Maybe Text -> Maybe Value -> IO ()
-insertProject metrics pool userId projectId timestamp (Just pTitle) (Just projectContents) = invokeAndMeasure (_insertProjectMetrics metrics) $ do
-  void $ usePool pool $ insert (projectFromContent projectId projectContents userId pTitle timestamp timestamp)
+insertProject :: DatabaseMetrics -> Connection -> Text -> Text -> UTCTime -> Maybe Text -> Maybe Value -> IO ()
+insertProject metrics connection userId projectId timestamp (Just pTitle) (Just projectContents) = invokeAndMeasure (_insertProjectMetrics metrics) $ do
+  let projectInsert = Insert
+                      { iTable = projectTable
+                      , iRows = [toFields (projectId, userId, pTitle, timestamp, timestamp, encodeContent projectContents, Nothing :: Maybe Bool)]
+                      , iReturning = rCount
+                      , iOnConflict = Nothing
+                      }
+  void $ runInsert_ connection projectInsert
 insertProject _ _ _ _ _ _ _ = throwM MissingFieldsException
 
-saveProject :: DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> UTCTime -> Maybe Text -> Maybe Value -> IO ()
-saveProject metrics pool userId projectId timestamp possibleTitle possibleProjectContents = invokeAndMeasure (_saveProjectMetrics metrics) $ do
-  projectOwner <- getProjectOwner metrics pool projectId
-  saveProjectInner metrics pool userId projectId timestamp possibleTitle possibleProjectContents projectOwner
+saveProject :: DatabaseMetrics -> DBPool -> Text -> Text -> UTCTime -> Maybe Text -> Maybe Value -> IO ()
+saveProject metrics pool userId projectId timestamp possibleTitle possibleProjectContents = invokeAndMeasure (_saveProjectMetrics metrics) $ usePool pool $ \connection -> do
+  projectOwner <- getProjectOwnerWithConnection metrics connection projectId
+  saveProjectInner metrics connection userId projectId timestamp possibleTitle possibleProjectContents projectOwner
 
-saveProjectInner :: DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> UTCTime -> Maybe Text -> Maybe Value -> Maybe Text -> IO ()
-saveProjectInner _ pool userId projectId timestamp possibleTitle possibleProjectContents (Just existingOwner) = do
+saveProjectInner :: DatabaseMetrics -> Connection -> Text -> Text -> UTCTime -> Maybe Text -> Maybe Value -> Maybe Text -> IO ()
+saveProjectInner _ connection userId projectId timestamp possibleTitle possibleProjectContents (Just existingOwner) = do
   let correctUser = existingOwner == userId
-  let projectContentUpdate = maybeToList $ fmap (\projectContents -> ProjectContent =. (encodeContent projectContents)) possibleProjectContents
-  let projectTitleUpdate = maybeToList $ fmap (\t -> ProjectTitle =. t) possibleTitle
-  when correctUser $ usePool pool $ updateWhere [ProjectProjId ==. projectId] ([ProjectModifiedAt =. timestamp] ++ projectContentUpdate ++ projectTitleUpdate)
+  let projectContentUpdate = maybe identity (set _6 . toFields . encodeContent) possibleProjectContents
+  let projectTitleUpdate = maybe identity (set _3 . toFields) possibleTitle
+  let modifiedAtUpdate = set _5 $ toFields timestamp
+  let projectUpdate = Update
+                    { uTable = projectTable
+                    , uUpdateWith = updateEasy (projectContentUpdate . projectTitleUpdate . modifiedAtUpdate)
+                    , uWhere = \(projId, _, _, _, _, _, _) -> projId .== toFields projectId
+                    , uReturning = rCount
+                    }
+  when correctUser $ void $ runUpdate_ connection projectUpdate
   unless correctUser $ throwM UserIDIncorrectException
-saveProjectInner metrics pool userId projectId timestamp possibleTitle possibleProjectContents Nothing = do
-  insertProject metrics pool userId projectId timestamp possibleTitle possibleProjectContents
+saveProjectInner metrics connection userId projectId timestamp possibleTitle possibleProjectContents Nothing =
+  insertProject metrics connection userId projectId timestamp possibleTitle possibleProjectContents
 
-deleteProject :: DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> IO ()
-deleteProject metrics pool userId projectId = invokeAndMeasure (_deleteProjectMetrics metrics) $ do
-  correctUser <- checkIfProjectOwner metrics pool userId projectId
-  when correctUser $ usePool pool $ updateWhere [ProjectProjId ==. projectId] [ProjectDeleted =. Just True]
+deleteProject :: DatabaseMetrics -> DBPool -> Text -> Text -> IO ()
+deleteProject metrics pool userId projectId = invokeAndMeasure (_deleteProjectMetrics metrics) $ usePool pool $ \connection -> do
+  correctUser <- checkIfProjectOwnerWithConnection metrics connection userId projectId
+  let projectUpdate = Update
+                    { uTable = projectTable
+                    , uUpdateWith = updateEasy (set _7 $ toFields $ Just True)
+                    , uWhere = \(projId, _, _, _, _, _, _) -> projId .== toFields projectId
+                    , uReturning = rCount
+                    }
+  when correctUser $ void $ runUpdate_ connection projectUpdate
   unless correctUser $ throwM UserIDIncorrectException
 
 projectMetadataFields :: Text
@@ -199,80 +216,139 @@ projectMetadataSelectByProjectId = projectMetadataSelect "proj_id"
 projectMetadataSelectByOwnerId :: Text
 projectMetadataSelectByOwnerId = projectMetadataSelect "owner_id"
 
-metadataEntityToMetadata :: (Single Text, Single Text, Single (Maybe Text), Single (Maybe Text), Single Text, Single UTCTime, Single UTCTime, Single (Maybe Bool)) -> ProjectMetadata
-metadataEntityToMetadata (pId, pOwnerId, pOwnerName, pOwnerPicture, pTitle, pCreatedAt, pModifiedAt, pDeleted) =
-  ProjectMetadata (unSingle pId) (unSingle pOwnerId) (unSingle pOwnerName) (unSingle pOwnerPicture) (unSingle pTitle) Nothing (unSingle pCreatedAt) (unSingle pModifiedAt) (fromMaybe False $ unSingle pDeleted)
+projectMetataFromColumns :: (Text, Text, Maybe Text, Maybe Text, Text, UTCTime, UTCTime, Maybe Bool) -> ProjectMetadata
+projectMetataFromColumns (id, ownerId, ownerName, ownerPicture, title, createdAt, modifiedAt, Nothing) =
+  let deleted = False
+      description = Nothing
+   in ProjectMetadata{..}
+projectMetataFromColumns (id, ownerId, ownerName, ownerPicture, title, createdAt, modifiedAt, Just deleted) =
+  let description = Nothing
+   in ProjectMetadata{..}
 
-getProjectMetadataWithPool :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO (Maybe ProjectMetadata)
-getProjectMetadataWithPool metrics pool projectId = invokeAndMeasure (_getProjectsForUserMetrics metrics) $ do
-  result <- usePool pool $ rawSql (projectMetadataSelectByProjectId) [PersistText projectId]
-  return $ fmap metadataEntityToMetadata $ listToMaybe result
+lookupProjectMetadata :: Maybe (ProjectFields -> Column PGBool) -> Maybe (UserDetailsFields -> Column PGBool) -> Connection -> IO [ProjectMetadata]
+lookupProjectMetadata projectFilter userDetailsFilter connection = do
+  metadataEntries <- runSelect connection $ do
+    project@(projectId, ownerId, title, createdAt, modifiedAt, _, deleted) <- projectSelect
+    userDetails@(userId, _, name, picture) <- userDetailsSelect
+    -- Join the tables.
+    where_ $ ownerId .== userId
+    -- If there is one, apply the project filter.
+    traverse_ (\rowFilter -> where_ $ rowFilter project) projectFilter
+    -- If there is one, apply the user filter.
+    traverse_ (\rowFilter -> where_ $ rowFilter userDetails) userDetailsFilter
+    pure (projectId, ownerId, name, picture, title, createdAt, modifiedAt, deleted)
+  pure $ fmap projectMetataFromColumns metadataEntries
 
-getProjectsForUser :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO [ProjectMetadata]
-getProjectsForUser metrics pool userId = invokeAndMeasure (_getProjectsForUserMetrics metrics) $ do
-  projects <- usePool pool $ rawSql (projectMetadataSelectByOwnerId) [PersistText userId]
-  return $ fmap metadataEntityToMetadata projects
+getProjectMetadataWithConnection :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe ProjectMetadata)
+getProjectMetadataWithConnection metrics pool projectId = invokeAndMeasure (_getProjectsForUserMetrics metrics) $ usePool pool $ \connection -> do
+  result <- lookupProjectMetadata (Just (\(rowProjectId, _, _, _, _, _, _) -> rowProjectId .== toFields projectId)) Nothing connection
+  pure $ listToMaybe result
 
-getProjectOwner :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO (Maybe Text)
-getProjectOwner metrics pool projectId = invokeAndMeasure (_getProjectOwnerMetrics metrics) $ do
-  result <- usePool pool $ rawSql "select project.owner_id from project where proj_id=?" [PersistText projectId]
-  return $ fmap unSingle $ listToMaybe result
+getProjectsForUser :: DatabaseMetrics -> DBPool -> Text -> IO [ProjectMetadata]
+getProjectsForUser metrics pool userId = invokeAndMeasure (_getProjectsForUserMetrics metrics) $ usePool pool $ \connection -> do
+  lookupProjectMetadata Nothing (Just (\(rowUserId, _, _, _) -> rowUserId .== toFields userId)) connection
 
-checkIfProjectOwner :: DatabaseMetrics -> Pool SqlBackend -> Text -> Text -> IO Bool
-checkIfProjectOwner metrics pool userId projectId = invokeAndMeasure (_checkIfProjectOwnerMetrics metrics) $ do
-  maybeProjectOwner <- getProjectOwner metrics pool projectId
+getProjectOwnerWithConnection :: DatabaseMetrics -> Connection -> Text -> IO (Maybe Text)
+getProjectOwnerWithConnection metrics connection projectId = invokeAndMeasure (_getProjectOwnerMetrics metrics) $ do
+  result <- runSelect connection $ do
+    (rowProjectId, rowOwnerId, _, _, _, _, _) <- projectSelect
+    where_ $ rowProjectId .== toFields projectId
+    pure rowOwnerId
+  pure $ listToMaybe result
+
+getProjectOwner :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe Text)
+getProjectOwner metrics pool projectId = usePool pool $ \connection -> do
+  getProjectOwnerWithConnection metrics connection projectId
+
+checkIfProjectOwner :: DatabaseMetrics -> DBPool -> Text -> Text -> IO Bool
+checkIfProjectOwner metrics pool userId projectId = usePool pool $ \connection -> do
+  checkIfProjectOwnerWithConnection metrics connection userId projectId
+
+checkIfProjectOwnerWithConnection :: DatabaseMetrics -> Connection -> Text -> Text -> IO Bool
+checkIfProjectOwnerWithConnection metrics connection userId projectId = invokeAndMeasure (_checkIfProjectOwnerMetrics metrics) $ do
+  maybeProjectOwner <- getProjectOwnerWithConnection metrics connection projectId
   return (maybeProjectOwner == Just userId)
 
-getShowcaseProjects :: DatabaseMetrics -> Pool SqlBackend -> IO [ProjectMetadata]
-getShowcaseProjects metrics pool = usePool pool $ invokeAndMeasure (_getShowcaseProjectsMetrics metrics) $ do
-  showcase <- selectList ([] :: [Filter Showcase]) []
-  let showcaseEntities = fmap entityVal showcase
-  let showcaseEntityTuples = fmap (\entity -> (showcaseProjId entity, showcaseIndex entity)) showcaseEntities
-  let projectIds = fmap toPersistValue $ fmap fst showcaseEntityTuples
-  projects <- fmap join $ for projectIds $ \projectId -> do
-    projectInList <- rawSql (projectMetadataSelectByProjectId) [projectId]
-    return $ fmap metadataEntityToMetadata projectInList
-  let sortedProjects = sortOn (\project -> lookup (view id project) showcaseEntityTuples) projects
-  return sortedProjects
+getShowcaseProjects :: DatabaseMetrics -> DBPool -> IO [ProjectMetadata]
+getShowcaseProjects metrics pool = invokeAndMeasure (_getShowcaseProjectsMetrics metrics) $ usePool pool $ \connection -> do
+  showcaseElements <- runSelect connection showcaseSelect
+  let projectIds = fmap fst showcaseElements :: [Text]
+  projects <- foldMap (\projectIdToLookup -> lookupProjectMetadata (Just (\(rowProjectId, _, _, _, _, _, _) -> rowProjectId .== toFields projectIdToLookup)) Nothing connection) projectIds
+  let findIndex ProjectMetadata{..} = snd <$> find (\(projId, _) -> projId == id) showcaseElements :: Maybe Int
+  let sortedProjects = sortOn findIndex projects
+  pure sortedProjects
 
-setShowcaseProjects :: DatabaseMetrics -> Pool SqlBackend -> [Text] -> IO ()
-setShowcaseProjects metrics pool projectIds = invokeAndMeasure (_setShowcaseProjectsMetrics metrics) $ do
-  let records = zipWith Showcase projectIds [1..]
-  void $ usePool pool $ insertMany records
+setShowcaseProjects :: DatabaseMetrics -> DBPool -> [Text] -> IO ()
+setShowcaseProjects metrics pool projectIds = invokeAndMeasure (_setShowcaseProjectsMetrics metrics) $ usePool pool $ \connection -> do
+  let records = zip projectIds ([1..] :: [Int])
+  void $ runDelete_ connection $ Delete
+                               { dTable = showcaseTable
+                               , dWhere = const $ toFields True
+                               , dReturning = rCount
+                               }
+  void $ runInsert_ connection $ Insert
+                               { iTable = showcaseTable
+                               , iRows = fmap toFields records
+                               , iReturning = rCount
+                               , iOnConflict = Nothing
+                               }
 
-updateUserDetails :: DatabaseMetrics -> Pool SqlBackend -> UserDetails -> IO ()
-updateUserDetails metrics pool user = invokeAndMeasure (_updateUserDetailsMetrics metrics) $ do
-  usePool pool $ putMany [user]
+updateUserDetails :: DatabaseMetrics -> DBPool -> UserDetails -> IO ()
+updateUserDetails metrics pool UserDetails{..} = invokeAndMeasure (_updateUserDetailsMetrics metrics) $ usePool pool $ \connection -> do
+  let userDetailsEntry = toFields (userId, email, name, picture)
+  void $ runInsert_ connection $ Insert
+                               { iTable = userDetailsTable
+                               , iRows = [userDetailsEntry]
+                               , iReturning = rCount
+                               , iOnConflict = Nothing
+                               }
 
-getUserDetails :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO (Maybe UserDetails)
-getUserDetails metrics pool userId = invokeAndMeasure (_getUserDetailsMetrics metrics) $ do
-  entity <- usePool pool $ selectFirst [UserDetailsUserId ==. userId] []
-  return $ fmap entityVal entity
+userDetailsFromRow :: (Text, Maybe Text, Maybe Text, Maybe Text) -> UserDetails
+userDetailsFromRow (userId, email, name, picture) = UserDetails{..}
+
+getUserDetails :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe UserDetails)
+getUserDetails metrics pool userId = invokeAndMeasure (_getUserDetailsMetrics metrics) $ usePool pool $ \connection -> do
+  userDetails <- runSelect connection $ do
+    userRow@(rowUserId, _, _, _) <- userDetailsSelect
+    where_ $ rowUserId .== toFields userId
+    pure userRow
+  pure $ fmap userDetailsFromRow $ listToMaybe userDetails
 
 userConfigurationToDecodedUserConfiguration :: UserConfiguration -> IO DecodedUserConfiguration
-userConfigurationToDecodedUserConfiguration userConf = do
-  let encodedShortcutConfig = userConfigurationShortcutConfig userConf
-  let decodeShortcutConfig conf = either fail return $ eitherDecode $ toS conf
+userConfigurationToDecodedUserConfiguration (userId, encodedShortcutConfig) = do
+  let decodeShortcutConfig conf = either fail return $ eitherDecodeStrict' $ encodeUtf8 conf
   decodedShortcutConfig <- traverse decodeShortcutConfig encodedShortcutConfig
-  return $ DecodedUserConfiguration { _id = (userConfigurationUserId userConf)
-                               , _shortcutConfig = decodedShortcutConfig
-                               }
+  return $ DecodedUserConfiguration
+              { id = userId
+              , shortcutConfig = decodedShortcutConfig
+              }
 
-getUserConfiguration :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO (Maybe DecodedUserConfiguration)
-getUserConfiguration metrics pool userId = invokeAndMeasure (_getUserConfigurationMetrics metrics) $ do
-  entity <- usePool pool $ selectFirst [UserConfigurationUserId ==. userId] []
-  traverse userConfigurationToDecodedUserConfiguration $ fmap entityVal entity
+getUserConfiguration :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe DecodedUserConfiguration)
+getUserConfiguration metrics pool userId = invokeAndMeasure (_getUserConfigurationMetrics metrics) $ usePool pool $ \connection -> do
+  userConf <- fmap listToMaybe $ runSelect connection $ do
+    configurationRow@(rowUserId, _) <- userConfigurationSelect
+    where_ $ rowUserId .== toFields userId
+    pure configurationRow
+  traverse userConfigurationToDecodedUserConfiguration userConf
 
-saveUserConfiguration :: DatabaseMetrics -> Pool SqlBackend -> Text -> Maybe Value -> IO ()
-saveUserConfiguration metrics pool userId updatedShortcutConfig = invokeAndMeasure (_saveUserConfigurationMetrics metrics) $ do
-  let encodedShortcutConfig = fmap toS $ fmap encode updatedShortcutConfig
-  let newRecord = UserConfiguration { userConfigurationUserId = userId
-                               , userConfigurationShortcutConfig = encodedShortcutConfig
-                               }
-  let recordUnique = UniqueUserConfiguration userId
-  void $ usePool pool $ upsertBy recordUnique newRecord [UserConfigurationShortcutConfig =. encodedShortcutConfig]
+saveUserConfiguration :: DatabaseMetrics -> DBPool -> Text -> Maybe Value -> IO ()
+saveUserConfiguration metrics pool userId updatedShortcutConfig = invokeAndMeasure (_saveUserConfigurationMetrics metrics) $ usePool pool $ \connection -> do
+  encodedShortcutConfig <- do
+    let encoded = fmap encode updatedShortcutConfig
+    either (fail . show) pure $ traverse decodeUtf8' $ fmap BL.toStrict encoded
+  let newRecord = (toFields userId, toFields encodedShortcutConfig)
+  let insertConfig = void $ insert userConfigurationTable newRecord
+  let updateConfig = const $ void $ update userConfigurationTable (\(rowUserId, _) -> (rowUserId, toFields encodedShortcutConfig)) (\(rowUserId, _) -> rowUserId .== toFields userId)
+  runOpaleyeT connection $ transaction $ do
+    userConf <- queryFirst $ do
+      (rowUserId, _) <- userConfigurationSelect
+      where_ $ rowUserId .== toFields userId
+      pure rowUserId
+    maybe insertConfig updateConfig (userConf :: Maybe Text)
 
-checkIfProjectIDReserved :: DatabaseMetrics -> Pool SqlBackend -> Text -> IO Bool
-checkIfProjectIDReserved metrics pool projectID = invokeAndMeasure (_checkIfProjectIDReservedMetrics metrics) $ do
-  projectIDEntry <- usePool pool $ selectFirst [ProjectIDProjId ==. projectID] []
-  return $ isJust projectIDEntry
+checkIfProjectIDReserved :: DatabaseMetrics -> DBPool -> Text -> IO Bool
+checkIfProjectIDReserved metrics pool projectId = invokeAndMeasure (_checkIfProjectIDReservedMetrics metrics) $ usePool pool $ \connection -> do
+  entries <- runSelect connection $ do
+    rowProjectId <- projectIDSelect
+    where_ $ rowProjectId .== toFields projectId
+  pure $ Protolude.not $ Protolude.null entries

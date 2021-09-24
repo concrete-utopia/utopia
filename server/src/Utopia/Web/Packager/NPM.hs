@@ -31,6 +31,7 @@ import           System.IO.Temp
 import           System.Process
 import           Utopia.Web.ClientModel
 import qualified Utopia.Web.Database.Types as DB
+import Data.Text(pack)
 
 type MatchingVersionsCache = IORef (Map.HashMap (Text, (Maybe Text)) (Maybe Value, UTCTime))
 
@@ -81,7 +82,7 @@ findMatchingVersions semaphore matchingVersionsCache jsPackageName maybePackageV
       let versionsProc = proc "npm" ["view", toS packageNameAtPackageVersion, "version", "--json"]
       foundVersions <- (flip catch) handleVersionsLookupError $ do
         versionsResult <- readCreateProcess versionsProc ""
-        return $ decode $ toS versionsResult
+        return $ decode $ BL.fromStrict $ encodeUtf8 $ pack versionsResult
       putText ("Finished NPM Versions Lookup: " <> packageVersionText)
       return foundVersions
 

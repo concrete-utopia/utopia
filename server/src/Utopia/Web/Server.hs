@@ -5,9 +5,9 @@
 
 module Utopia.Web.Server where
 
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8           as S8
 import           Data.IORef
-import qualified Data.Text                       as T
 import qualified Data.Text.IO                    as TIO
 import           GHC.IO.Handle                   (hFlush)
 import           Network.HTTP.Types.Header
@@ -19,7 +19,7 @@ import           Network.Wai.Middleware.ForceSSL
 import           Network.Wai.Middleware.Gzip
 import           Protolude
 import           Servant
-import           Servant.Conduit
+import           Servant.Conduit()
 import           Utopia.Web.Ekg
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Types
@@ -30,10 +30,10 @@ data RequestTooLargeException = RequestTooLargeException
 
 instance Exception RequestTooLargeException
 
-type Redirection = [Text] -> Method -> Text -> Text -> Maybe Text
+type Redirection = [Text] -> Method -> ByteString -> ByteString -> Maybe ByteString
 
-endsWithSlash :: Text -> Bool
-endsWithSlash = T.isSuffixOf "/"
+endsWithSlash :: ByteString -> Bool
+endsWithSlash = B.isSuffixOf "/"
 
 projectPathRedirection :: Redirection
 projectPathRedirection ["p", _] method rawPath rawQuery =
@@ -53,13 +53,13 @@ previewInnerPathRedirection _ _ _ _                            = Nothing
 -}
 redirector :: [Redirection] -> Middleware
 redirector redirections applicationToWrap request sendResponse =
-  let rawPath = toS $ rawPathInfo request
-      rawQuery = toS $ rawQueryString request
+  let rawPath = rawPathInfo request
+      rawQuery = rawQueryString request
       pathParts = pathInfo request
       method = requestMethod request
       possibleRedirection = getFirst $ foldMap (\redirection -> First $ redirection pathParts method rawPath rawQuery) redirections
       passthrough = applicationToWrap request sendResponse
-      redirectTo target = sendResponse $ responseLBS temporaryRedirect307 [("Location", toS target)] mempty
+      redirectTo target = sendResponse $ responseLBS temporaryRedirect307 [("Location", target)] mempty
   in  maybe passthrough redirectTo possibleRedirection
 
 projectToPPath :: [Text] -> [Text]
@@ -129,7 +129,7 @@ noCacheMiddleware applicationToWrap request sendResponse = do
   Given a Servant server definition, produce a Wai 'Application' from it.
 -}
 serverApplication :: Server API -> Application
-serverApplication apiOfServer = serve apiProxy apiOfServer
+serverApplication = serve apiProxy
 
 {-|
   For a given environment, start the HTTP service.
@@ -152,7 +152,7 @@ runServerWithResources EnvironmentRuntime{..} = do
   let shouldForceSSL = _forceSSL resources
   threadId <- forkIO $ Warp.runSettings settings
     $ limitRequestSizeMiddleware (1024 * 1024 * 5) -- 5MB
-    $ ifRequest (\_ -> shouldForceSSL) forceSSL
+    $ ifRequest (const shouldForceSSL) forceSSL
     $ redirector [projectPathRedirection, previewInnerPathRedirection]
     $ projectToPPathMiddleware
     $ requestRewriter assetsCache

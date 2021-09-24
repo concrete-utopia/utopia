@@ -7,6 +7,8 @@
 {-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE TypeApplications         #-}
+{-# LANGUAGE DataKinds         #-}
 
 {-|
   All the endpoints defined in "Utopia.Web.Types" are implemented here.
@@ -26,6 +28,7 @@ import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Wai
 import           Network.Wai.Middleware.Gzip
+import Prelude(String)
 import           Protolude
 import           Servant                         hiding
                                                  (serveDirectoryFileServer,
@@ -51,6 +54,7 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
+import Data.Generics.Product
 
 type TagSoupTags = [Tag Text]
 
@@ -67,13 +71,13 @@ requireUser cookie action = do
 
 renderPageContents :: H.Html -> H.Html
 renderPageContents pageContents = H.docTypeHtml $ do
-  H.head $ do
+  H.head $
     H.title "Utopia"
-  H.body $ do
+  H.body $
     pageContents
 
 failedLoginPage :: ServerMonad (SetSessionCookies H.Html)
-failedLoginPage = do
+failedLoginPage =
   return $ noHeader $ renderPageContents $ H.div $ H.toMarkup ("Login Failed" :: Text)
 
 getOntoPageContents :: Text -> ServerMonad H.Html
@@ -91,7 +95,7 @@ getOntoPageContents _ = badRequest
 
 authenticate :: Maybe Text -> Maybe Text -> ServerMonad (SetSessionCookies H.Html)
 authenticate (Just authCode) (Just onto) = do
-  pageContent <- fmap renderPageContents $ getOntoPageContents onto
+  pageContent <- renderPageContents <$> getOntoPageContents onto
   possibleSetCookie <- checkAuthCode authCode
   maybe failedLoginPage (\cookie -> return $ addHeader cookie pageContent) possibleSetCookie
 authenticate _ _ = badRequest
@@ -102,12 +106,11 @@ logoutSuccessfulContent = renderPageContents $ H.div $ H.script ! HA.type_ "text
 logoutPage :: Maybe Text -> ServerMonad (SetSessionCookies H.Html)
 logoutPage Nothing = return $ noHeader logoutSuccessfulContent
 logoutPage (Just cookie) = do
-  appliedHeader <- logout cookie logoutSuccessfulContent
-  return appliedHeader
+  logout cookie logoutSuccessfulContent
 
 maybeSessionUserToUser :: Maybe SessionUser -> ServerMonad UserResponse
 maybeSessionUserToUser (Just sessionUser) = do
-  maybeUser <- userForId $ view id sessionUser
+  maybeUser <- userForId $ view (field @"_id") sessionUser
   return $ maybe NotLoggedIn LoggedInUser maybeUser
 maybeSessionUserToUser _ = return NotLoggedIn
 
@@ -121,36 +124,36 @@ projectDescription :: Maybe Text -> Text
 projectDescription (Just projectOwner) = "Made by " <> projectOwner <> " with Utopia"
 projectDescription Nothing = "A Utopia project"
 
-isoFormatTime :: FormatTime t => t -> [Char]
+isoFormatTime :: FormatTime t => t -> String
 isoFormatTime = formatTime defaultTimeLocale "%s"
 
 twitterCardMetadata :: ProjectMetadata -> Text -> TagSoupTags
 twitterCardMetadata projectMetadata siteRoot =
   [ TagOpen "meta" [("name", "twitter:card"), ("content", "summary_large_image")], TagClose "meta"
   , TagOpen "meta" [("name", "twitter:site"), ("content", "@UtopiaApp")], TagClose "meta"
-  , TagOpen "meta" [("name", "twitter:title"), ("content", view title projectMetadata)], TagClose "meta"
-  , TagOpen "meta" [("name", "twitter:image"), ("content", thumbnailUrl siteRoot $ view id projectMetadata)], TagClose "meta"
-  , TagOpen "meta" [("name", "twitter:description"), ("content", projectDescription $ view ownerName projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("name", "twitter:title"), ("content", view (field @"title") projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("name", "twitter:image"), ("content", thumbnailUrl siteRoot $ view (field @"id") projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("name", "twitter:description"), ("content", projectDescription $ view (field @"ownerName") projectMetadata)], TagClose "meta"
   ]
 
 facebookCardMetadata :: ProjectMetadata -> Text -> TagSoupTags
 facebookCardMetadata projectMetadata siteRoot =
   [ TagOpen "meta" [("property", "fb:app_id"), ("content", "415342622608327")], TagClose "meta"
-  , TagOpen "meta" [("property", "og:image"), ("content", thumbnailUrl siteRoot $ view id projectMetadata), ("itemprop", "thumbnailUrl")], TagClose "meta"
+  , TagOpen "meta" [("property", "og:image"), ("content", thumbnailUrl siteRoot $ view (field @"id") projectMetadata), ("itemprop", "thumbnailUrl")], TagClose "meta"
   , TagOpen "meta" [("property", "og:image:width"), ("content", "288px")], TagClose "meta"
   , TagOpen "meta" [("property", "og:image:height"), ("content", "180px")], TagClose "meta"
-  , TagOpen "meta" [("property", "og:title"), ("content", view title projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("property", "og:title"), ("content", view (field @"title") projectMetadata)], TagClose "meta"
   , TagOpen "meta" [("property", "og:type"), ("content", "website")], TagClose "meta"
-  , TagOpen "meta" [("property", "og:url"), ("content", projectUrl siteRoot $ view id projectMetadata)], TagClose "meta"
-  , TagOpen "meta" [("property", "og:updated_time"), ("content", toS $ isoFormatTime $ view modifiedAt projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("property", "og:url"), ("content", projectUrl siteRoot $ view (field @"id") projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("property", "og:updated_time"), ("content", toS $ isoFormatTime $ view (field @"modifiedAt") projectMetadata)], TagClose "meta"
   , TagOpen "meta" [("property", "og:site_name"), ("content", "Utopia")], TagClose "meta"
-  , TagOpen "meta" [("property", "og:description"), ("content", projectDescription $ view ownerName projectMetadata)], TagClose "meta"
+  , TagOpen "meta" [("property", "og:description"), ("content", projectDescription $ view (field @"ownerName") projectMetadata)], TagClose "meta"
   ]
 
 projectTitleMetadata :: ProjectMetadata -> TagSoupTags
 projectTitleMetadata projectMetadata =
-  [ TagOpen "title" [], TagText (view title projectMetadata <> " - Utopia"), TagClose "title"
-  , TagOpen "meta" [("title", view title projectMetadata <> " Utopia")], TagClose "meta"
+  [ TagOpen "title" [], TagText (view (field @"title") projectMetadata <> " - Utopia"), TagClose "title"
+  , TagOpen "meta" [("title", view (field @"title") projectMetadata <> " Utopia")], TagClose "meta"
   ]
 
 noProjectTitleMetadata :: TagSoupTags
@@ -186,7 +189,7 @@ dependenciesHtmlFromProject :: Text -> Maybe DB.DecodedProject -> TagSoupTags
 dependenciesHtmlFromProject _ Nothing = mempty
 dependenciesHtmlFromProject cdnRoot (Just decodedProject) = do
   let dependencies = getProjectDependenciesFromPackageJSON decodedProject
-  let withoutProvidedDependencies = filter (\ProjectDependency{..} -> notElem dependencyName providedDependencies) dependencies
+  let withoutProvidedDependencies = filter (\ProjectDependency{..} -> dependencyName `notElem` providedDependencies) dependencies
   foldMap (dependencyPreload cdnRoot) withoutProvidedDependencies
 
 data VSCodePreloadType = VSCodeJS | VSCodeCSS
@@ -283,7 +286,7 @@ innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.Deco
 innerProjectPage (Just _) UnknownProject _ branchName = do
   projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
   return $ H.preEscapedToHtml projectNotFoundHtml
-innerProjectPage possibleProjectID details possibleProject branchName = do
+innerProjectPage possibleProjectID details possibleProject branchName =
   renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "index.html"
 
 projectPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
@@ -293,13 +296,13 @@ projectPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = d
   innerProjectPage (Just projectIDWithSuffix) possibleMetadata possibleProject branchName
 
 emptyProjectPage :: Maybe Text -> ServerMonad H.Html
-emptyProjectPage branchName = innerProjectPage Nothing UnknownProject Nothing branchName
+emptyProjectPage = innerProjectPage Nothing UnknownProject Nothing
 
 innerPreviewPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
 innerPreviewPage (Just _) UnknownProject _ branchName = do
   projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
   return $ H.preEscapedToHtml projectNotFoundHtml
-innerPreviewPage possibleProjectID details possibleProject branchName = do
+innerPreviewPage possibleProjectID details possibleProject branchName =
   renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "preview.html"
 
 previewPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
@@ -309,14 +312,14 @@ previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = d
   innerPreviewPage (Just projectIDWithSuffix) possibleMetadata possibleProject branchName
 
 emptyPreviewPage :: Maybe Text -> ServerMonad H.Html
-emptyPreviewPage branchName = innerPreviewPage Nothing UnknownProject Nothing branchName
+emptyPreviewPage = innerPreviewPage Nothing UnknownProject Nothing
 
 getUserEndpoint :: Maybe Text -> ServerMonad UserResponse
 getUserEndpoint cookie = checkForUser cookie maybeSessionUserToUser
 
 getMyProjectsEndpoint :: Maybe Text -> ServerMonad ProjectListResponse
 getMyProjectsEndpoint cookie = requireUser cookie $ \sessionUser -> do
-  projectsForUser <- getProjectsForUser $ view id sessionUser
+  projectsForUser <- getProjectsForUser $ view (field @"_id") sessionUser
   return $ ProjectListResponse projectsForUser
 
 getProjectMetadataEndpoint :: ProjectIdWithSuffix -> ServerMonad ProjectListing
@@ -328,8 +331,7 @@ getProjectMetadataEndpoint (ProjectIdWithSuffix projectID _) = do
 
 getShowcaseEndpoint :: ServerMonad ProjectListResponse
 getShowcaseEndpoint = do
-  showcaseProjects <- getShowcaseProjects
-  return $ ProjectListResponse showcaseProjects
+  ProjectListResponse <$> getShowcaseProjects
 
 setShowcaseEndpoint :: Text -> ServerMonad NoContent
 setShowcaseEndpoint projectIdsString = do
@@ -343,19 +345,19 @@ projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = checkForUser coo
   case (maybeUser, possibleProject) of
     (_, Nothing) -> notFound
     (Nothing, _) -> notAuthenticated
-    (Just sessionUser, Just project) -> return $ ProjectOwnerResponse $ (view id sessionUser) == (view ownerId project)
+    (Just sessionUser, Just project) -> return $ ProjectOwnerResponse $ view (field @"_id") sessionUser == view (field @"ownerId") project
 
 projectChangedSince :: Text -> UTCTime -> ServerMonad (Maybe Bool)
 projectChangedSince projectID lastChangedDate = do
   possibleMetadata <- getProjectMetadata projectID
   pure $ case possibleMetadata of
-            (ProjectDetailsMetadata ProjectMetadata{..}) -> Just (_modifiedAt > lastChangedDate)
+            (ProjectDetailsMetadata projMeta) -> Just (view (field @"modifiedAt") projMeta > lastChangedDate)
             _ -> Nothing
 
 downloadProjectEndpoint :: ProjectIdWithSuffix -> [Text] -> ServerMonad Value
 downloadProjectEndpoint (ProjectIdWithSuffix projectID _) pathIntoContent = do
   possibleProject <- loadProject projectID
-  let contentLookup = foldl' (\lensSoFar -> \pathPart -> lensSoFar . key pathPart) DB.content pathIntoContent
+  let contentLookup = foldl' (\ lensSoFar pathPart -> lensSoFar . key pathPart) (field @"content") pathIntoContent
   fromMaybe notFound $ do
     project <- possibleProject
     contentFromLookup <- firstOf contentLookup project
@@ -373,25 +375,24 @@ loadProjectEndpoint withSuffix@(ProjectIdWithSuffix projectID _) (Just lastSaved
 actuallyLoadProject :: ProjectIdWithSuffix -> ServerMonad LoadProjectResponse
 actuallyLoadProject (ProjectIdWithSuffix projectID _) = do
   possibleProject <- loadProject projectID
-  maybe notFound (\project -> return $ createLoadProjectResponse project) possibleProject
+  maybe notFound (return . createLoadProjectResponse) possibleProject
 
 getTitle :: Maybe Text -> Text
-getTitle maybeTitle = fromMaybe DB.defaultProjectTitle maybeTitle
+getTitle = fromMaybe DB.defaultProjectTitle
 
 createLoadProjectResponse :: DB.DecodedProject -> LoadProjectResponse
-createLoadProjectResponse project = ProjectLoaded { _id=(view id project)
-                                                  , _ownerId=(view ownerId project)
-                                                  , _title=(view title project)
-                                                  , _modifiedAt=(view modifiedAt project)
-                                                  , _content=(view DB.content project)}
+createLoadProjectResponse project = ProjectLoaded { _id=view (field @"id") project
+                                                  , _ownerId=view (field @"ownerId") project
+                                                  , _title=view (field @"title") project
+                                                  , _modifiedAt=view (field @"modifiedAt") project
+                                                  , _content=view (field @"content") project}
 
 createProjectEndpoint :: ServerMonad CreateProjectResponse
 createProjectEndpoint = do
-  projectID <- createProject
-  return $ CreateProjectResponse projectID
+  CreateProjectResponse <$> createProject
 
 forkProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> Maybe Text -> ServerMonad ForkProjectResponse
-forkProjectEndpoint cookie projectID maybeTitle = requireUser cookie $ \sessionUser -> do
+forkProjectEndpoint cookie projectID maybeTitle = requireUser cookie $ \sessionUser -> 
   forkProjectEndpointInner sessionUser projectID (getTitle maybeTitle)
 
 forkProjectEndpointInner :: SessionUser -> ProjectIdWithSuffix -> Text -> ServerMonad ForkProjectResponse
@@ -402,13 +403,13 @@ forkProjectEndpointInner sessionUser (ProjectIdWithSuffix projectID _) projectTi
 forkProject :: SessionUser -> DB.DecodedProject -> Text -> ServerMonad ForkProjectResponse
 forkProject sessionUser sourceProject projectTitle = do
   newProjectID <- createProject
-  saveProject sessionUser newProjectID (Just projectTitle) (Just (DB._content sourceProject))
+  saveProject sessionUser newProjectID (Just projectTitle) (Just (view (field @"content") sourceProject))
   return $ ForkProjectResponse newProjectID
 
 saveProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> SaveProjectRequest -> ServerMonad SaveProjectResponse
 saveProjectEndpoint cookie (ProjectIdWithSuffix projectID _) saveRequest = requireUser cookie $ \sessionUser -> do
-  saveProject sessionUser projectID (view name saveRequest) (view DB.content saveRequest)
-  return $ SaveProjectResponse projectID (view id sessionUser)
+  saveProject sessionUser projectID (view (field @"_name") saveRequest) (view (field @"_content") saveRequest)
+  return $ SaveProjectResponse projectID (view (field @"_id") sessionUser)
 
 deleteProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> ServerMonad NoContent
 deleteProjectEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser cookie $ \sessionUser -> do
@@ -422,13 +423,13 @@ loadProjectFileContents decodedProject pathsToCheck = do
   pure projectFile
 
 sendProjectFileContentsResponse :: [Text] -> Text -> (Response -> a) -> a
-sendProjectFileContentsResponse filePath contents = \sendResponse ->
+sendProjectFileContentsResponse filePath contents sendResponse =
   let mimeType = getPathMimeType filePath
       builtResponse = responseLBS ok200 [(hContentType, mimeType)] (BL.fromStrict $ encodeUtf8 contents)
   in sendResponse builtResponse
 
 assetCallFold :: Maybe Application -> ServerMonad (Maybe Application) -> ServerMonad (Maybe Application)
-assetCallFold priorResult assetCall = maybe assetCall (\a -> pure $ Just a) priorResult
+assetCallFold priorResult assetCall = maybe assetCall (pure . Just) priorResult
 
 loadProjectFileEndpoint :: ProjectIdWithSuffix -> Maybe Text -> [Text] -> ServerMonad Application
 loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) possibleETag filePath = do
@@ -449,30 +450,26 @@ loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) possibleETag filePath 
     (Right Nothing) -> do
       -- Unable to find the file in the project contents.
       -- Speculatively try loading the various paths in order instead.
-      let assetCalls = fmap (\proj -> loadProjectAsset proj possibleETag) $ fmap (\p -> projectID : p) pathsToCheck
+      let assetCalls = fmap ((\proj -> loadProjectAsset proj possibleETag) . (\p -> projectID : p)) pathsToCheck
       let possibleResult = foldlM assetCallFold Nothing assetCalls
       handleNoAsset possibleResult
-    (Right (Just ((ProjectTextFile (TextFile{..})), _))) -> do
-      -- Found the file in the project contents and it's a text file,
-      -- so return the text file contents from within there.
+    (Right (Just (ProjectTextFile (TextFile{..}), _))) ->
       pure $ const $ sendProjectFileContentsResponse normalizedPath $ code fileContents
-    (Right (Just (_, pathFound))) -> do
-      -- Found the file in the project contents, so
-      -- load the asset from that path.
+    (Right (Just (_, pathFound))) ->
       handleNoAsset $ loadProjectAsset (projectID : pathFound) possibleETag
 
 saveProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad Application
-saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> do
-  saveProjectAsset (view id sessionUser) projectID path
+saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> 
+  saveProjectAsset (view (field @"_id") sessionUser) projectID path
 
 renameProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> Text -> ServerMonad NoContent
 renameProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) newPath oldPath = requireUser cookie $ \sessionUser -> do
-  renameProjectAsset (view id sessionUser) projectID (OldPath $ T.splitOn "/" oldPath) (NewPath newPath)
+  renameProjectAsset (view (field @"_id") sessionUser) projectID (OldPath $ T.splitOn "/" oldPath) (NewPath newPath)
   return NoContent
 
 deleteProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad NoContent
 deleteProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> do
-  deleteProjectAsset (view id sessionUser) projectID path
+  deleteProjectAsset (view (field @"_id") sessionUser) projectID path
   return NoContent
 
 loadProjectThumbnailEndpoint :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad Application
@@ -482,7 +479,7 @@ loadProjectThumbnailEndpoint (ProjectIdWithSuffix projectID _) possibleETag = do
 
 saveProjectThumbnailEndpoint :: Maybe Text -> ProjectIdWithSuffix -> BL.ByteString -> ServerMonad NoContent
 saveProjectThumbnailEndpoint cookie (ProjectIdWithSuffix projectID _) thumbnail = requireUser cookie $ \sessionUser -> do
-  saveProjectThumbnail (view id sessionUser) projectID thumbnail
+  saveProjectThumbnail (view (field @"_id") sessionUser) projectID thumbnail
   return NoContent
 
 servePath' :: FilePath -> (StaticSettings -> StaticSettings) -> Maybe Text -> ServerMonad Application
@@ -495,7 +492,7 @@ servePath' defaultPathToServe settingsChange branchName = do
   return $ gzip gzipConfig appToServeWith
 
 servePath :: FilePath -> Maybe Text -> ServerMonad Application
-servePath pathToServe branchName = do
+servePath pathToServe branchName =
   servePath' pathToServe identity branchName
 
 addMiddlewareHeader :: CI ByteString -> ByteString -> Middleware
@@ -519,11 +516,11 @@ addCDNHeadersCacheRevalidate :: Middleware
 addCDNHeadersCacheRevalidate = addCacheControlRevalidate . addAccessControlAllowOrigin
 
 fallbackOn404 :: Application -> Application -> Application
-fallbackOn404 firstApplication secondApplication request sendResponse = do
+fallbackOn404 firstApplication secondApplication request sendResponse =
   firstApplication request $ \firstAppResponse -> do
-    let shouldFallback = responseStatus firstAppResponse == status404
-    let runWithSecond = secondApplication request sendResponse
-    if shouldFallback then runWithSecond else sendResponse firstAppResponse
+  let shouldFallback = responseStatus firstAppResponse == status404
+  let runWithSecond = secondApplication request sendResponse
+  if shouldFallback then runWithSecond else sendResponse firstAppResponse
 
 branchDownloadsFallbacks :: ServerMonad [Application]
 branchDownloadsFallbacks = do
@@ -558,15 +555,15 @@ clearBranchCacheEndpoint branchName = do
 websiteAssetsEndpoint :: FilePath -> ServerMonad Application
 websiteAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
-  fmap addCDNHeadersCacheRevalidate $ maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
+  addCDNHeadersCacheRevalidate <$> maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 []) possibleProxyManager
 
 vsCodeAssetsEndpoint :: ServerMonad Application
 vsCodeAssetsEndpoint = do
   pathToServeFrom <- getVSCodeAssetRoot
-  fmap addCDNHeadersCacheRevalidate $ servePath pathToServeFrom Nothing
+  addCDNHeadersCacheRevalidate <$> servePath pathToServeFrom Nothing
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
-wrappedWebAppLookup defaultLookup _ = do
+wrappedWebAppLookup defaultLookup _ =
   defaultLookup [unsafeToPiece "index.html"]
 
 getPackageJSONEndpoint :: Text -> ServerMonad Value
@@ -601,7 +598,7 @@ packagePackagerEndpoint versionedPackageName ifModifiedSince possibleOrigin = do
   (packagerContent, lastModified) <- getPackagePackagerContent versionedPackageName
   allowOriginHeader <- accessControlAllowOrigin possibleOrigin
   let applyOriginHeader = maybe noHeader addHeader allowOriginHeader
-  let fullResponse = maybe True (\modifiedSince -> lastModified > (getLastModifiedTime modifiedSince)) ifModifiedSince
+  let fullResponse = maybe True (\modifiedSince -> lastModified > getLastModifiedTime modifiedSince) ifModifiedSince
   -- Handle the case where it shouldn't return the full response.
   unless fullResponse notModified
   -- Return the entire response back to the caller.
@@ -611,16 +608,16 @@ emptyUserConfigurationResponse :: UserConfigurationResponse
 emptyUserConfigurationResponse = UserConfigurationResponse { _shortcutConfig = Nothing }
 
 decodedUserConfigurationToResponse :: DecodedUserConfiguration -> UserConfigurationResponse
-decodedUserConfigurationToResponse DecodedUserConfiguration{..} = UserConfigurationResponse { _shortcutConfig = _shortcutConfig }
+decodedUserConfigurationToResponse userConf = UserConfigurationResponse { _shortcutConfig = view (field @"shortcutConfig") userConf }
 
 getUserConfigurationEndpoint :: Maybe Text -> ServerMonad UserConfigurationResponse
 getUserConfigurationEndpoint cookie = requireUser cookie $ \sessionUser -> do
-  userConfig <- getUserConfiguration (view id sessionUser)
+  userConfig <- getUserConfiguration (view (field @"_id") sessionUser)
   return $ maybe emptyUserConfigurationResponse decodedUserConfigurationToResponse userConfig
 
 saveUserConfigurationEndpoint :: Maybe Text -> UserConfigurationRequest -> ServerMonad NoContent
 saveUserConfigurationEndpoint cookie UserConfigurationRequest{..} = requireUser cookie $ \sessionUser -> do
-  saveUserConfiguration (view id sessionUser) _shortcutConfig
+  saveUserConfiguration (view (field @"_id") sessionUser) _shortcutConfig
   return NoContent
 
 {-|

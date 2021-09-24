@@ -10,6 +10,7 @@
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TemplateHaskell        #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Utopia.Web.ServiceTypes where
 
@@ -21,17 +22,15 @@ import           Data.Aeson
 import           Data.Aeson.TH
 import           Data.Time
 import           Protolude
-
 import qualified Data.ByteString.Lazy      as BL
-
 import           Servant
 import qualified Text.Blaze.Html5          as H
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
 import           Utopia.Web.JSON
-
 import           Network.HTTP.Client       hiding (Cookie)
 import           Web.Cookie
+import Data.Generics.Product
 
 type SessionCookie = Text
 
@@ -39,7 +38,7 @@ type SetSessionCookies = Headers '[ Header "Set-Cookie" SetCookie ]
 
 data SessionUser = SessionUser
                  { _id :: Text
-                 } deriving (Eq, Ord, Show)
+                 } deriving (Eq, Ord, Show, Generic)
 
 $(deriveJSON jsonOptions ''SessionUser)
 $(makeFieldsNoPrefix ''SessionUser)
@@ -52,7 +51,7 @@ data ProjectListing = ProjectListing
                     , _description  :: Maybe Text
                     , _createdAt    :: UTCTime
                     , _modifiedAt   :: UTCTime
-                    } deriving (Eq, Show)
+                    } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''ProjectListing)
 
@@ -61,26 +60,26 @@ data User = User
           , _email   :: Maybe Text
           , _name    :: Maybe Text
           , _picture :: Maybe Text
-          } deriving (Eq, Show)
+          } deriving (Eq, Show, Generic)
 
 $(deriveJSON jsonOptions ''User)
 $(makeFieldsNoPrefix ''User)
 
 listingFromProjectMetadata :: ProjectMetadata -> ProjectListing
 listingFromProjectMetadata project = ProjectListing
-                                   { _id = view id project
-                                   , _ownerName = view ownerName project
-                                   , _ownerPicture = view ownerPicture project
-                                   , _title = view title project
-                                   , _description = view description project
-                                   , _createdAt = view createdAt project
-                                   , _modifiedAt = view modifiedAt project
+                                   { _id = view (field @"id") project
+                                   , _ownerName = view (field @"ownerName") project
+                                   , _ownerPicture = view (field @"ownerPicture") project
+                                   , _title = view (field @"title") project
+                                   , _description = view (field @"description") project
+                                   , _createdAt = view (field @"createdAt") project
+                                   , _modifiedAt = view (field @"modifiedAt") project
                                    }
 
 data ProjectDetails = UnknownProject
                     | ReservedProjectID Text
                     | ProjectDetailsMetadata ProjectMetadata
-                    deriving (Eq, Show)
+                    deriving (Eq, Show, Generic)
 
 {-|
   'ServiceCallsF' defines what can be called from the endpoints, thereby preventing arbitrary
@@ -148,13 +147,13 @@ type ServerMonad = Free ServiceCallsF
 
 data ProjectListResponse = ProjectListResponse
                          { _projects  :: [ProjectListing]
-                         } deriving (Eq, Show)
+                         } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''ProjectListResponse)
 
 data ProjectOwnerResponse = ProjectOwnerResponse
                           { _isOwner :: Bool
-                          } deriving (Eq, Show)
+                          } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''ProjectOwnerResponse)
 
@@ -167,31 +166,31 @@ data LoadProjectResponse = ProjectLoaded
                          }
                          | ProjectUnchanged
                          { _id         :: Text
-                         } deriving (Eq, Show)
+                         } deriving (Eq, Show, Generic)
 
 data CreateProjectResponse = CreateProjectResponse
                            { _id :: Text
-                           } deriving (Eq, Show)
+                           } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''CreateProjectResponse)
 
 data SaveProjectResponse = SaveProjectResponse
                            { _id      :: Text
                            , _ownerId :: Text
-                           } deriving (Eq, Show)
+                           } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''SaveProjectResponse)
 
 data ForkProjectResponse = ForkProjectResponse
                           { _id :: Text
-                          } deriving (Eq, Show)
+                          } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''ForkProjectResponse)
 
 data SaveProjectRequest = SaveProjectRequest
                         { _name    :: Maybe Text
                         , _content :: Maybe Value
-                        } deriving (Eq, Show)
+                        } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''SaveProjectRequest)
 
@@ -211,12 +210,12 @@ instance ToJSON UserResponse where
 
 data UserConfigurationResponse = UserConfigurationResponse
                                { _shortcutConfig :: Maybe Value
-                               } deriving (Eq, Show)
+                               } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationResponse)
 
 data UserConfigurationRequest = UserConfigurationRequest
                               { _shortcutConfig :: Maybe Value
-                              } deriving (Eq, Show)
+                              } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationRequest)

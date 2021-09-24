@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
@@ -13,85 +14,108 @@
 
 module Utopia.Web.Database.Types where
 
-import           Control.Lens
 import           Data.Aeson
+import           Data.Profunctor.Product
 import           Data.Time
-import           Database.Persist.TH
-import           Protolude           hiding (get)
+import           Opaleye
+import           Protolude               hiding (get)
+import Data.Pool
+import Database.PostgreSQL.Simple
 
--- This slightly funky looking definition uses quasi-quotation,
--- an extension of Template Haskell which can support arbitrary embedded syntax.
--- The type definition like thing inside is turned into a real Haskell data definition
--- along with the appropriate support functions and instances so it can be persisted
--- to and from a database.
-share [mkPersist sqlSettings, mkSave "entityDefs"] [persistLowerCase|
-ProjectID
-    projId Text
-    UniqueProjectID projId
-    deriving Show
+type ProjectIDFields = (Field SqlText)
 
-Project
-    projId Text
-    ownerId Text
-    title Text
-    createdAt UTCTime
-    modifiedAt UTCTime
-    content ByteString
-    deleted Bool Maybe
-    UniqueProject projId
-    deriving Show
+projectIDTable :: Table ProjectIDFields ProjectIDFields
+projectIDTable = table "project_i_d" (p1 (tableField "proj_id"))
 
-Showcase
-    projId Text
-    index Int
-    deriving Show
+projectIDSelect :: Select ProjectIDFields
+projectIDSelect = selectTable projectIDTable
 
-UserDetails
-    userId Text
-    email Text Maybe
-    name Text Maybe
-    picture Text Maybe
-    UniqueUserDetails userId
-    deriving Show
+type ProjectFields = (Field SqlText, Field SqlText, Field SqlText, Field SqlTimestamptz, Field SqlTimestamptz, Field SqlBytea, FieldNullable SqlBool)
 
-UserConfiguration
-    userId Text
-    shortcutConfig Text Maybe
-    UniqueUserConfiguration userId
-    deriving Show
-|]
+type Project = (Text, Text, Text, UTCTime, UTCTime, ByteString, Maybe Bool)
+
+projectTable :: Table ProjectFields ProjectFields
+projectTable = table "project" (p7
+                ( tableField "proj_id"
+                , tableField "owner_id"
+                , tableField "title"
+                , tableField "created_at"
+                , tableField "modified_at"
+                , tableField "content"
+                , tableField "deleted"
+                )
+               )
+
+projectSelect :: Select ProjectFields
+projectSelect = selectTable projectTable
+
+type ShowcaseFields = (Field SqlText, Field SqlInt4)
+
+showcaseTable :: Table ShowcaseFields ShowcaseFields
+showcaseTable = table "showcase" (p2 (tableField "proj_id", tableField "index"))
+
+showcaseSelect :: Select ShowcaseFields
+showcaseSelect = selectTable showcaseTable
+
+type UserDetailsFields = (Field SqlText, FieldNullable SqlText, FieldNullable SqlText, FieldNullable SqlText)
+
+userDetailsTable :: Table UserDetailsFields UserDetailsFields
+userDetailsTable = table "user_details" (p4
+                    ( tableField "user_id"
+                    , tableField "email"
+                    , tableField "name"
+                    , tableField "picture"
+                    )
+                   )
+
+userDetailsSelect :: Select UserDetailsFields
+userDetailsSelect = selectTable userDetailsTable
+
+data UserDetails = UserDetails
+                 { userId  :: Text
+                 , email   :: Maybe Text
+                 , name    :: Maybe Text
+                 , picture :: Maybe Text
+                 } deriving (Eq, Show, Generic)
+
+type UserConfigurationFields = (Field SqlText, FieldNullable SqlText)
+
+type UserConfiguration = (Text, Maybe Text)
+
+userConfigurationTable :: Table UserConfigurationFields UserConfigurationFields
+userConfigurationTable = table "user_configuration" (p2 (tableField "user_id", tableField "shortcut_config"))
+
+userConfigurationSelect :: Select UserConfigurationFields
+userConfigurationSelect = selectTable userConfigurationTable
 
 data DecodedProject = DecodedProject
-                    { _id         :: Text
-                    , _ownerId    :: Text
-                    , _title      :: Text
-                    , _modifiedAt :: UTCTime
-                    , _content    :: Value
-                    }
-
-$(makeFieldsNoPrefix ''DecodedProject)
+                    { id         :: Text
+                    , ownerId    :: Text
+                    , title      :: Text
+                    , modifiedAt :: UTCTime
+                    , content    :: Value
+                    } deriving (Eq, Show, Generic)
 
 defaultProjectTitle :: Text
 defaultProjectTitle = "Unnamed"
 
 data ProjectMetadata = ProjectMetadata
-                     { _id           :: Text
-                     , _ownerId      :: Text
-                     , _ownerName    :: Maybe Text
-                     , _ownerPicture :: Maybe Text
-                     , _title        :: Text
-                     , _description  :: Maybe Text
-                     , _createdAt    :: UTCTime
-                     , _modifiedAt   :: UTCTime
-                     , _deleted      :: Bool
-                     } deriving (Eq, Show)
-
-$(makeFieldsNoPrefix ''ProjectMetadata)
+                     { id           :: Text
+                     , ownerId      :: Text
+                     , ownerName    :: Maybe Text
+                     , ownerPicture :: Maybe Text
+                     , title        :: Text
+                     , description  :: Maybe Text
+                     , createdAt    :: UTCTime
+                     , modifiedAt   :: UTCTime
+                     , deleted      :: Bool
+                     } deriving (Eq, Show, Generic)
 
 data DecodedUserConfiguration = DecodedUserConfiguration
-                         { _id             :: Text
-                         , _shortcutConfig :: Maybe Value
-                         } deriving (Eq, Show)
+                         { id             :: Text
+                         , shortcutConfig :: Maybe Value
+                         } deriving (Eq, Show, Generic)
 
-$(makeFieldsNoPrefix ''DecodedUserConfiguration)
+
+type DBPool = Pool Connection
 

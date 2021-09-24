@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.2.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: adf78f12b8a13baf00c23769be7544868d8b3259901648968bebebc54b9941d1
+-- hash: 3badb7aa0a2ea30eee60ca084c5a0ca09b5997a616b45374367551e51b8cb565
 
 name:           utopia-web
 version:        0.1.0.4
@@ -29,6 +29,7 @@ executable utopia-web
       Utopia.Web.Auth.Types
       Utopia.Web.ClientModel
       Utopia.Web.Database
+      Utopia.Web.Database.Migrations
       Utopia.Web.Database.Types
       Utopia.Web.Editor.Branches
       Utopia.Web.Ekg
@@ -51,7 +52,8 @@ executable utopia-web
       Paths_utopia_web
   hs-source-dirs:
       src
-  default-extensions: NoImplicitPrelude
+  default-extensions:
+      NoImplicitPrelude
   ghc-options: -Wall -threaded -rtsopts
   extra-libraries:
       z
@@ -67,6 +69,7 @@ executable utopia-web
     , blaze-html
     , bytestring
     , case-insensitive
+    , cereal
     , concurrent-extra
     , conduit
     , cookie
@@ -92,15 +95,16 @@ executable utopia-web
     , monad-logger
     , mtl
     , network-uri
+    , opaleye
+    , opaleye-trans
     , path
     , path-pieces
     , pathwalk
-    , persistent ==2.9.2
-    , persistent-postgresql ==2.9.1
-    , persistent-sqlite ==2.9.3
-    , persistent-template ==2.6.0
+    , postgresql-simple
+    , postgresql-simple-migration
     , process
-    , protolude ==0.2.4
+    , product-profunctors
+    , protolude ==0.3.0
     , resource-pool
     , rio
     , servant ==0.18.2
@@ -111,8 +115,7 @@ executable utopia-web
     , servant-rawm-server
     , servant-server ==0.18.2
     , servant-websockets ==2.0.0
-    , serversession ==1.0.1
-    , serversession-backend-persistent
+    , serversession ==1.0.2
     , split
     , tagsoup
     , tar
@@ -120,6 +123,7 @@ executable utopia-web
     , text
     , time
     , transformers
+    , unix
     , unordered-containers
     , uuid
     , wai
@@ -147,6 +151,7 @@ test-suite utopia-web-test
       Utopia.Web.Auth.Types
       Utopia.Web.ClientModel
       Utopia.Web.Database
+      Utopia.Web.Database.Migrations
       Utopia.Web.Database.Types
       Utopia.Web.Editor.Branches
       Utopia.Web.Ekg
@@ -170,7 +175,8 @@ test-suite utopia-web-test
   hs-source-dirs:
       test
       src
-  default-extensions: NoImplicitPrelude
+  default-extensions:
+      NoImplicitPrelude
   ghc-options: -Wall -threaded -rtsopts
   extra-libraries:
       z
@@ -186,6 +192,7 @@ test-suite utopia-web-test
     , blaze-html
     , bytestring
     , case-insensitive
+    , cereal
     , concurrent-extra
     , conduit
     , cookie
@@ -213,16 +220,17 @@ test-suite utopia-web-test
     , monad-logger
     , mtl
     , network-uri
+    , opaleye
+    , opaleye-trans
     , path
     , path-pieces
     , pathwalk
-    , persistent ==2.9.2
-    , persistent-postgresql ==2.9.1
-    , persistent-sqlite ==2.9.3
-    , persistent-template ==2.6.0
     , port-utils
+    , postgresql-simple
+    , postgresql-simple-migration
     , process
-    , protolude ==0.2.4
+    , product-profunctors
+    , protolude ==0.3.0
     , resource-pool
     , rio
     , servant ==0.18.2
@@ -234,8 +242,7 @@ test-suite utopia-web-test
     , servant-rawm-server
     , servant-server ==0.18.2
     , servant-websockets ==2.0.0
-    , serversession ==1.0.1
-    , serversession-backend-persistent
+    , serversession ==1.0.2
     , split
     , tagsoup
     , tar
@@ -247,6 +254,7 @@ test-suite utopia-web-test
     , text
     , time
     , transformers
+    , unix
     , unordered-containers
     , uuid
     , wai

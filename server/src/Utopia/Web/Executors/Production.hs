@@ -19,11 +19,9 @@ import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
 import           Data.IORef
-import           Data.Pool
-import           Database.Persist.Sqlite
 import           Network.HTTP.Client         (Manager, newManager)
 import           Network.HTTP.Client.TLS
-import           Protolude
+import           Protolude hiding(Handler)
 import           Servant
 import           System.Environment
 import           System.Metrics              hiding (Value)
@@ -33,6 +31,8 @@ import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
 import qualified Utopia.Web.Database         as DB
+import Utopia.Web.Database.Migrations
+import Utopia.Web.Database.Types
 import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
@@ -48,7 +48,7 @@ import           Utopia.Web.Utils.Files
 -}
 data ProductionServerResources = ProductionServerResources
                                { _commitHash              :: Text
-                               , _projectPool             :: Pool SqlBackend
+                               , _projectPool       :: DBPool 
                                , _auth0Resources          :: Auth0Resources
                                , _awsResources            :: AWSResources
                                , _sessionState            :: SessionState
@@ -96,45 +96,45 @@ innerServerExecutor (ValidateAuth cookie action) = do
 innerServerExecutor (UserForId userIdToGet action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserWithPool metrics pool userIdToGet action
+  getUserWithDBPool metrics pool userIdToGet action
 innerServerExecutor (DebugLog logContent next) = do
   putText logContent
   return next
 innerServerExecutor (GetProjectMetadata projectID action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  metadata <- liftIO $ getProjectDetailsWithPool metrics pool projectID
+  metadata <- liftIO $ getProjectDetailsWithDBPool metrics pool projectID
   return $ action metadata
 innerServerExecutor (LoadProject projectID action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  loadProjectWithPool metrics pool projectID action
+  loadProjectWithDBPool metrics pool projectID action
 innerServerExecutor (CreateProject action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  createProjectWithPool metrics pool action
+  createProjectWithDBPool metrics pool action
 innerServerExecutor (SaveProject sessionUser projectID possibleTitle possibleProjectContents next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveProjectWithPool metrics pool sessionUser projectID possibleTitle possibleProjectContents
+  saveProjectWithDBPool metrics pool sessionUser projectID possibleTitle possibleProjectContents
   return next
 innerServerExecutor (DeleteProject sessionUser projectID next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  deleteProjectWithPool metrics pool sessionUser projectID
+  deleteProjectWithDBPool metrics pool sessionUser projectID
   return next
 innerServerExecutor (GetProjectsForUser user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserProjectsWithPool metrics pool user action
+  getUserProjectsWithDBPool metrics pool user action
 innerServerExecutor (GetShowcaseProjects action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getShowcaseProjectsWithPool metrics pool action
+  getShowcaseProjectsWithDBPool metrics pool action
 innerServerExecutor (SetShowcaseProjects showcaseProjects next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  setShowcaseProjectsWithPool metrics pool showcaseProjects next
+  setShowcaseProjectsWithDBPool metrics pool showcaseProjects next
 innerServerExecutor (LoadProjectAsset path possibleETag action) = do
   awsResource <- fmap _awsResources ask
   application <- loadProjectAssetWithCall (loadProjectAssetFromS3 awsResource) path possibleETag
@@ -223,11 +223,11 @@ innerServerExecutor (GetVSCodeAssetRoot action) = do
 innerServerExecutor (GetUserConfiguration user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserConfigurationWithPool metrics pool user action
+  getUserConfigurationWithDBPool metrics pool user action
 innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveUserConfigurationWithPool metrics pool user possibleShortcutConfig
+  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig
   return action
 innerServerExecutor (ClearBranchCache branchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
@@ -255,7 +255,7 @@ serverExecutor serverResources serviceCalls = do
   Folds over the server monad, computing the full result of an endpoint call.
 -}
 serverMonadToHandler :: ProductionServerResources -> (forall a. ServerMonad a -> Handler a)
-serverMonadToHandler resources serverMonad = foldFree (serverExecutor resources) serverMonad
+serverMonadToHandler resources = foldFree (serverExecutor resources)
 
 {-|
   Glue to pull together the free monad computation and turn it into an HTTP service.
@@ -270,8 +270,8 @@ assetPathsAndBuilders =
 
 initialiseResources :: IO ProductionServerResources
 initialiseResources = do
-  _commitHash <- fmap toS $ getEnv "UTOPIA_SHA"
-  _projectPool <- DB.createDatabasePoolFromEnvironment
+  _commitHash <- toS <$> getEnv "UTOPIA_SHA"
+  _projectPool <- DB.createDatabasePoolFromEnvironment 
   maybeAuth0Resources <- getAuth0Environment
   _auth0Resources <- maybe (panic "No Auth0 environment configured") return maybeAuth0Resources
   maybeAws <- getAmazonResourcesFromEnvironment
@@ -283,8 +283,8 @@ initialiseResources = do
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
-  _siteHost <- fmap toS $ getEnv "SITE_HOST"
-  _cdnHost <- fmap toS $ getEnv "CDN_HOST"
+  _siteHost <- toS <$> getEnv "SITE_HOST"
+  _cdnHost <- toS <$> getEnv "CDN_HOST"
   _branchDownloads <- createBranchDownloads
   _locksRef <- newIORef mempty
   _matchingVersionsCache <- newMatchingVersionsCache
@@ -292,7 +292,7 @@ initialiseResources = do
 
 startup :: ProductionServerResources -> IO Stop
 startup ProductionServerResources{..} = do
-  DB.migrateDatabase False _projectPool
+  migrateDatabase False _projectPool
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread
