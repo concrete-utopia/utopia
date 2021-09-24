@@ -98,6 +98,8 @@ let
       #!/usr/bin/env bash
       set -e
       install-editor-ci
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
+      ${pnpm}/bin/pnpm install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm run staging
     '')
