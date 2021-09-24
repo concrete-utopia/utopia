@@ -205,12 +205,12 @@ jobs:
                 "fields": [
                   {
                     "name": "This PR:",
-                    "value": $staging_message,
+                    "value": $staging_message
                   },
                   {
                     "name": "Current Staging:",
-                    "value": $master_message,
-                  },
+                    "value": $master_message
+                  }
                 ],
                 "footer": {
                   "text": $repo_full_name
