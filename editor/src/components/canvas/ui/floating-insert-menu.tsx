@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import * as React from 'react'
 import { jsx } from '@emotion/react'
+import { CSSObject } from '@emotion/serialize'
 import WindowedSelect, {
   ActionMeta,
   InputActionMeta,
@@ -157,7 +158,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
   // componentSelectorStyles will only be recreated if the theme changes, otherwise we re-use the same object
   return React.useMemo(
     () => ({
-      container: (styles) => ({
+      container: (styles): CSSObject => ({
         // the outermost element. It contains the popup menu,  so don't set a height on it!
         // shouldn't contain any sizing
         // ...styles,
@@ -165,7 +166,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         display: 'flex',
         flexDirection: 'column',
       }),
-      control: (styles) => ({
+      control: (styles): CSSObject => ({
         // need to remove styles here, since that implicitly sets a height of 38
         // ...styles,
         display: 'flex',
@@ -179,7 +180,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           border: 'none',
         },
       }),
-      valueContainer: (styles) => ({
+      valueContainer: (styles): CSSObject => ({
         // the container for added options (tags) and input
         // sibling to indicatorsContainer
         // default styles mess with layout, so ignore them
@@ -196,12 +197,12 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
         paddingTop: 0,
         paddingBottom: 0,
       }),
-      indicatorsContainer: (styles) => ({
+      indicatorsContainer: (styles): CSSObject => ({
         // ...styles,
         display: 'none',
       }),
 
-      multiValue: (styles, { data }) => {
+      multiValue: (styles, { data }): CSSObject => {
         return {
           // ...styles,
           cursor: 'pointer',
@@ -209,12 +210,12 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           alignItems: 'center',
         }
       },
-      multiValueLabel: (styles, { data }) => ({
+      multiValueLabel: (styles, { data }): CSSObject => ({
         // ...styles,
         fontSize: 10,
         padding: '2px 4px',
       }),
-      multiValueRemove: (styles, { data }) => ({
+      multiValueRemove: (styles, { data }): CSSObject => ({
         // ...styles,
         width: 11,
         display: 'flex',
@@ -226,7 +227,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           backgroundColor: styles.color,
         },
       }),
-      menu: (styles) => {
+      menu: (styles): CSSObject => {
         // the outer shell
         return {
           // ...styles,
@@ -237,7 +238,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           flex: 1,
         }
       },
-      menuList: (styles) => {
+      menuList: (styles): CSSObject => {
         // the list wrapper
         return {
           // ...styles,
@@ -249,13 +250,13 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           overflowY: 'scroll',
         }
       },
-      input: (styles) => {
+      input: (styles): CSSObject => {
         return {
           // ...styles,
-          ...InspectorInputEmotionStyle({
+          ...(InspectorInputEmotionStyle({
             hasLabel: false,
             controlStyles: getControlStyles('simple'),
-          }),
+          }) as CSSObject),
           paddingLeft: 4,
           backgroundColor: colorTheme.bg4.value,
           // color: 'black',
@@ -267,10 +268,10 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           alignItems: 'center',
         }
       },
-      placeholder: (styles) => {
+      placeholder: (styles): CSSObject => {
         return { ...styles, marginLeft: 4 }
       },
-      option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+      option: (styles, { data, isDisabled, isFocused, isSelected }): CSSObject => {
         // a single entry in the options list
 
         return {
@@ -286,13 +287,13 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           borderRadius: UtopiaTheme.inputBorderRadius,
         }
       },
-      group: () => {
+      group: (): CSSObject => {
         return {
           // ...styles,
           paddingTop: 6,
         }
       },
-      groupHeading: (styles) => {
+      groupHeading: (styles): CSSObject => {
         return {
           // ...styles,
           color: colorTheme.fg7.value,
