@@ -5,8 +5,11 @@ const rmdir = require('rimraf')
 // FIXME Make sure the extension is built as a pre-build step
 // Copy across the utopia extension so it can be treated as a built in extension
 rmdir.sync('dist/extensions/utopia-vscode-extension', { recursive: true })
-fse.copySync('../utopia-vscode-extension', 'dist/extensions/utopia-vscode-extension')
-rmdir.sync('dist/extensions/utopia-vscode-extension/node_modules', { recursive: true })
+fse.copySync('../utopia-vscode-extension', 'dist/extensions/utopia-vscode-extension', {
+  filter: (src, dest) => {
+    return !src.includes('node_modules')
+  },
+})
 
 // Add built in extensions
 const extensions = []
