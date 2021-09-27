@@ -14,13 +14,6 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Cache editor modules
-        uses: actions/cache@v2
-        with:
-          path: editor/node_modules
-          key: ${{ runner.os }}-node-editor-PRs-${{ hashFiles('editor/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-editor-PRs-
       - name: Cache editor test result
         id: cache-editor-tests
         uses: actions/cache@v2
@@ -28,27 +21,11 @@ jobs:
           # For the tests it doesn't really matter what we cache
           path: editor/lib
           key: ${{ runner.os }}-editor-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
-      - name: Cache utopia-api modules
+      - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: utopia-api/node_modules
-          key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-utopia-api-PRs-
-      - name: Cache utopia-vscode-common modules
-        uses: actions/cache@v2
-        with:
-          path: utopia-vscode-common/node_modules
-          key: ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-${{ hashFiles('utopia-vscode-common/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-
-      - name: Cache website modules
-        uses: actions/cache@v2
-        with:
-          path: website-next/node_modules
-          key: ${{ runner.os }}-node-website-PRs-${{ hashFiles('website-next/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-website-PRs-
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -65,13 +42,11 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Cache editor modules
+      - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: editor/node_modules
-          key: ${{ runner.os }}-node-editor-PRs-${{ hashFiles('editor/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-editor-PRs-
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Cache editor test result
         id: cache-editor-tests-move-template-only
         uses: actions/cache@v2
@@ -79,20 +54,6 @@ jobs:
           # For the tests it doesn't really matter what we cache
           path: editor/lib
           key: ${{ runner.os }}-editor-tests-move-template-only-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
-      - name: Cache utopia-api modules
-        uses: actions/cache@v2
-        with:
-          path: utopia-api/node_modules
-          key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-utopia-api-PRs-
-      - name: Cache utopia-vscode-common modules
-        uses: actions/cache@v2
-        with:
-          path: utopia-vscode-common/node_modules
-          key: ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-${{ hashFiles('utopia-vscode-common/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -120,27 +81,11 @@ jobs:
         id: extract_branch
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Cache editor modules
+      - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
-          path: editor/node_modules
-          key: ${{ runner.os }}-node-editor-PRs-${{ hashFiles('editor/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-editor-PRs-
-      - name: Cache utopia-api modules
-        uses: actions/cache@v2
-        with:
-          path: utopia-api/node_modules
-          key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-utopia-api-PRs-
-      - name: Cache utopia-vscode-common modules
-        uses: actions/cache@v2
-        with:
-          path: utopia-vscode-common/node_modules
-          key: ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-${{ hashFiles('utopia-vscode-common/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
