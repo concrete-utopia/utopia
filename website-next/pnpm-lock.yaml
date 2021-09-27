@@ -6,7 +6,7 @@ dependencies:
   '@tailwindcss/aspect-ratio': 0.2.1_tailwindcss@2.2.15
   '@tailwindcss/typography': 0.4.1_tailwindcss@2.2.15
   facepaint: 1.2.1
-  localforage: 1.10.0
+  localforage: 1.7.3
   next: 10.2.3_bd7797d63db473de6e2318609a63c933
   prettier: 2.4.1
   react: 17.0.2
@@ -1766,12 +1766,12 @@ packages:
       node: '>=4.0.0'
     resolution:
       integrity: sha512-fkpz8ejdnEMG3s37wGL07iSBDg99O9D5yflE9RGNH3hRdx9SOwYfnGYdZOUIZitN8E+E2vkq3MUMYMvPYl5ZZA==
-  /localforage/1.10.0:
+  /localforage/1.7.3:
     dependencies:
       lie: 3.1.1
     dev: false
     resolution:
-      integrity: sha512-14/H1aX7hzBBmmh7sGPd+AOMkkIrHM3Z1PAyGgZigA1H1p5O5ANnMyWzvpAETtG68/dC4pC0ncy3+PPGzXZHPg==
+      integrity: sha512-1TulyYfc4udS7ECSBT2vwJksWbkwwTX8BzeUIiq8Y07Riy7bDAAnxDaPU/tWyOVmQAcWJIEIFP9lPfBGqVoPgQ==
   /locate-path/5.0.0:
     dependencies:
       p-locate: 4.1.0
@@ -3101,7 +3101,7 @@ specifiers:
   '@types/react-select': 3.0.15
   autoprefixer: ^10.2.6
   facepaint: 1.2.1
-  localforage: ^1.9.0
+  localforage: 1.7.3
   next: 10.x
   postcss: ^8.3.0
   prettier: ^2.3.1
@@ -3112,4 +3112,4 @@ specifiers:
   tailwindcss: ^2.1.4
   timeago.js: 4.0.2
   typescript: ^4.3.2
-  url-join: ^4.0.1
+  url-join: 4.0.1
