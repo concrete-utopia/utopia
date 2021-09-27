@@ -28,7 +28,7 @@ const runCompiler = isDev && process.env.RUN_COMPILER !== 'false' // For when yo
 
 // eslint-disable-next-line no-console
 console.log(
-  `Running with options: mode - ${mode}, hot - ${hot}, performance - ${performance}, runCompiler - ${runCompiler}`,
+  `Running with options: mode - ${mode}, hot - ${hot}, performance - ${performance}, runCompiler - ${runCompiler}. CWD is ${process.cwd()}. Dirname is ${__dirname}`,
 )
 
 function srcPath(subdir) {
