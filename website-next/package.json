@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "export": "next build && next export"
+    "export": "next build && next export",
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "@emotion/react": "11.4.0",
