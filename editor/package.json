@@ -33,7 +33,7 @@
     "production": "REACT_APP_ENVIRONMENT_CONFIG=production REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=$UTOPIA_SHA WEBPACK_MODE='production' NODE_OPTIONS=--max_old_space_size=6656 webpack --json=lib/production-stats.json",
     "staging": "REACT_APP_ENVIRONMENT_CONFIG=staging REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=$UTOPIA_SHA WEBPACK_MODE='staging' NODE_OPTIONS=--max_old_space_size=6656 webpack --json=lib/staging-stats.json",
     "install-utopia-api": "cd ../utopia-api && pnpm install && pnpm run build && pnpm run dts-bundle",
-    "preinstall": "pnpm run install-utopia-api",
+    "preinstall": "npx only-allow pnpm && pnpm run install-utopia-api",
     "postinstall": "patch-package",
     "eslint-check": "eslint --quiet --config .eslintrc.js --ext .ts --ext .tsx src ../utopia-api/src ../website/src",
     "prettier-check": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --check src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../performance-test/src/** ../website-next/pages/** ../website-next/components/**",

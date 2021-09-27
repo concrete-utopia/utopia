@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "preinstall": "npx only-allow pnpm"
   },
   "author": "",
   "license": "ISC",
