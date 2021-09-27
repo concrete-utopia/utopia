@@ -107,16 +107,16 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm}/bin/pnpm --scripts-prepend-node-path=true install
-      ${pnpm}/bin/pnpm --scripts-prepend-node-path=true run build
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run build
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pnpm}/bin/pnpm --scripts-prepend-node-path=true install
-      ${pnpm}/bin/pnpm --scripts-prepend-node-path=true run build
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run build
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
