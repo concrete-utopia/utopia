@@ -69,7 +69,7 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-20.09
       - name: Run the tests
-        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        if: steps.cache-editor-tests-move-template-only.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-move-template-only-ci
       - name: Discord Notification
         uses: Ilshidur/action-discord@0.3.2
