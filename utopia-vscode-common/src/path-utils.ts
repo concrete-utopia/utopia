@@ -23,8 +23,8 @@ export function toUtopiaPath(projectID: string, path: string): string {
   return result
 }
 
-export function dirname(path: string): string {
-  path = rtrim(path, '/')
+export function dirname(rawPath: string): string {
+  const path = rtrim(rawPath, '/')
   if (!path) {
     return '/'
   }
@@ -47,6 +47,7 @@ export function rtrim(haystack: string, needle: string): string {
   let offset = haystackLen,
     idx = -1
 
+  /* eslint-disable-next-line no-constant-condition */
   while (true) {
     idx = haystack.lastIndexOf(needle, offset - 1)
     if (idx === -1 || idx + needleLen !== offset) {

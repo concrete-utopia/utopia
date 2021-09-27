@@ -1,18 +1,6 @@
 import { defaultIfNull } from '../utils'
 import { LayoutProps } from './layout'
 
-function propOr<T, O extends {}, K extends keyof O>(
-  defaultValue: T,
-  obj: O | undefined,
-  propName: K,
-): T | O[K] {
-  if (obj == null || obj[propName] == null) {
-    return defaultValue
-  } else {
-    return obj[propName]
-  }
-}
-
 export interface Sides {
   top?: number
   right?: number
