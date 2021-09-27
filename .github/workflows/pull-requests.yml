@@ -163,6 +163,10 @@ jobs:
           rm -rf ./node_modules
           cd ../website-next
           rm -rf ./node_modules
+          cd ../utopia-vscode-extension
+          rm -rf ./node_modules
+          cd ../utopia-vscode-common
+          rm -rf ./node_modules
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
