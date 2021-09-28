@@ -470,7 +470,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export function getDefaultProps(propertyControls: PropertyControls): {
       [prop: string]: unknown;
   };
-  export function expression(value: AllowedEnumType, expression: string, toImport: ImportType): ExpressionEnum;
+  export function expression(value: AllowedEnumType, expressionString: string, toImport: ImportType): ExpressionEnum;
   export function importStar(source: string, name: string): ImportType;
   export function importDefault(source: string, name: string): ImportType;
   export function importNamed(source: string, name: string): ImportType;
