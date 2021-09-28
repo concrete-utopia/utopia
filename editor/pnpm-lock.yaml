@@ -222,6 +222,7 @@ devDependencies:
   null-loader: 4.0.1_webpack@5.52.0
   patch-package: 6.1.2
   pegjs: 0.10.0
+  pretty-format: 26.1.0
   react-dev-utils: 10.2.1
   react-test-renderer: 16.9.0_react@17.0.0-rc.1
   script-ext-html-webpack-plugin: 2.1.4_d0775fc9e9778f8067265599ff567f52
@@ -13395,6 +13396,17 @@ packages:
       node: '>= 8.3'
     resolution:
       integrity: sha512-kbo/kq2LQ/A/is0PQwsEHM7Ca6//bGPPvU6UnsdDRSKTWxT/ru/xb88v4BJf6a69H+uTytOEsTusT9ksd/1iWQ==
+  /pretty-format/26.1.0:
+    dependencies:
+      '@jest/types': 26.6.2
+      ansi-regex: 5.0.1
+      ansi-styles: 4.3.0
+      react-is: 16.13.1
+    dev: true
+    engines:
+      node: '>= 10.14.2'
+    resolution:
+      integrity: sha512-GmeO1PEYdM+non4BKCj+XsPJjFOJIPnsLewqhDVoqY1xo0yNmDas7tC2XwpMrRAHR3MaE2hPo37deX5OisJ2Wg==
   /pretty-format/26.6.2:
     dependencies:
       '@jest/types': 26.6.2
@@ -18211,6 +18223,7 @@ specifiers:
   pegjs: 0.10.0
   platform-detect: 3.0.0
   prettier: 2.0.5
+  pretty-format: 26.1.0
   prop-types: 15.6.2
   pubsub-js: ^1.9.2
   rc-slider: 'git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f'
