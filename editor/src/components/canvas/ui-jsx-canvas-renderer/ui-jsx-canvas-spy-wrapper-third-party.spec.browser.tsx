@@ -1,21 +1,14 @@
 import * as MockReactThreeFiber from '@react-three/fiber'
 import * as mockWithEditorPackageJSON from '../../../../package.json'
 
-jest.mock('../../../core/es-modules/package-manager/built-in-dependencies-list', () => ({
-  BuiltInDependencies: (mode: 'preview' | 'canvas'): Array<any> => [
-    ...(jest.requireActual(
-      '../../../core/es-modules/package-manager/built-in-dependencies-list',
-    ) as any)['BuiltInDependencies']('canvas'),
-    {
-      moduleName: '@react-three/fiber',
-      nodeModule: {
-        ...MockReactThreeFiber,
-        default: MockReactThreeFiber,
-      },
-      version: mockWithEditorPackageJSON.devDependencies['@react-three/fiber'],
-    },
-  ],
-}))
+BuiltInDependencies.push({
+  moduleName: '@react-three/fiber',
+  nodeModule: {
+    ...MockReactThreeFiber,
+    default: MockReactThreeFiber,
+  },
+  version: mockWithEditorPackageJSON.devDependencies['@react-three/fiber'],
+})
 
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
@@ -37,6 +30,7 @@ import {
 import { addFileToProjectContents } from '../../assets'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
+import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 const exampleFiles = {
   [StoryboardFilePath]: `
