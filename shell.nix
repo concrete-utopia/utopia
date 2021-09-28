@@ -101,7 +101,7 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
       ${pnpm}/bin/pnpm install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run staging
+      ${pnpm}/bin/pnpm run staging-print-json
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-common" ''
       #!/usr/bin/env bash
