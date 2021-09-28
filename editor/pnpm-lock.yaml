@@ -19,6 +19,7 @@ dependencies:
   '@tippyjs/react': 4.1.0_4b57aad7a3acc0ec1c2667d1fea04016
   '@types/fontfaceobserver': 0.0.6
   '@types/react-syntax-highlighter': 11.0.4
+  '@types/sinon': 10.0.4
   '@use-it/interval': 0.1.3_react@17.0.0-rc.1
   ajv: 6.4.0
   anser: 1.4.8
@@ -3250,6 +3251,12 @@ packages:
     dev: true
     resolution:
       integrity: sha1-oeENIKQJ9lKJksR5H6hS/7EOaZY=
+  /@types/sinon/10.0.4:
+    dependencies:
+      '@sinonjs/fake-timers': 7.1.2
+    dev: false
+    resolution:
+      integrity: sha512-fOYjrxQv8zJsqOY6V6ecP4eZhQBxtY80X0er1VVnUIAIZo74jHm8e1vguG5Yt4Iv8W2Wr7TgibB8MfRe32k9pA==
   /@types/sizzle/2.3.3:
     dev: true
     resolution:
@@ -13718,7 +13725,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       dom-align: 1.12.2
-      prop-types: 15.6.2
+      prop-types: 15.7.2
       rc-util: 4.21.1
     dev: false
     resolution:
@@ -13744,7 +13751,7 @@ packages:
       babel-runtime: 6.26.0
       classnames: 2.2.6
       css-animation: 1.6.1
-      prop-types: 15.6.2
+      prop-types: 15.7.2
       raf: 3.4.1
       rc-util: 4.21.1
       react-lifecycles-compat: 3.0.4
@@ -14106,7 +14113,7 @@ packages:
   /rc-tooltip/3.7.3:
     dependencies:
       babel-runtime: 6.26.0
-      prop-types: 15.6.2
+      prop-types: 15.7.2
       rc-trigger: 2.6.5
     dev: false
     resolution:
@@ -14174,7 +14181,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       classnames: 2.2.6
-      prop-types: 15.6.2
+      prop-types: 15.7.2
       rc-align: 2.4.5
       rc-animate: 2.11.1
       rc-util: 4.21.1
@@ -14207,7 +14214,7 @@ packages:
   /rc-util/4.21.1:
     dependencies:
       add-dom-event-listener: 1.1.0
-      prop-types: 15.6.2
+      prop-types: 15.7.2
       react-is: 16.13.1
       react-lifecycles-compat: 3.0.4
       shallowequal: 1.1.0
@@ -18167,6 +18174,7 @@ specifiers:
   '@types/scheduler': 0.16.1
   '@types/semver': 7.3.4
   '@types/shuffle-array': 0.0.28
+  '@types/sinon': ^10.0.4
   '@types/tar': 4.0.4
   '@types/url-join': 4.0.0
   '@types/uuid': 2.0.29
