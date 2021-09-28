@@ -28,7 +28,7 @@ const runCompiler = isDev && process.env.RUN_COMPILER !== 'false' // For when yo
 
 // eslint-disable-next-line no-console
 console.log(
-  `Running with options: mode - ${mode}, hot - ${hot}, performance - ${performance}, runCompiler - ${runCompiler}`,
+  `Running with options: mode - ${mode}, hot - ${hot}, performance - ${performance}, runCompiler - ${runCompiler}.`,
 )
 
 function srcPath(subdir) {
@@ -197,13 +197,19 @@ const config = {
 
     new webpack.ProvidePlugin({ BrowserFS: 'browserfs' }), // weirdly, the browserfs/dist/shims/fs shim assumes a global BrowserFS being available
 
-    new RelativeCiAgentWebpackPlugin(),
+    ...(process.env.RELATIVE_CI_KEY
+      ? [
+          new RelativeCiAgentWebpackPlugin({
+            includeCommitMessage: false,
+          }),
+        ]
+      : []),
   ],
 
   resolve: {
     // Add '.ts' and '.tsx' as resolvable extensions.
     extensions: ['.ts', '.tsx', '.js', '.json', '.ttf'],
-    symlinks: false, // We set this to false as we have symlinked some common code from the website project
+    symlinks: true, // We set this to false as we have symlinked some common code from the website project
     alias: {
       uuiui: srcPath('uuiui'),
       'uuiui-deps': srcPath('uuiui-deps'),
@@ -225,6 +231,7 @@ const config = {
     fallback: {
       path: require.resolve('path-browserify'),
       os: false,
+      stream: require.resolve('stream-browserify'), // needed for jszip
     },
   },
 

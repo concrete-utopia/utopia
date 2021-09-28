@@ -24,7 +24,7 @@ function HeroButton({ href, children }) {
         }
         style={{
           color: '#FFFFFF',
-          backgroundImage: `linear-gradient(90deg, rgba(255,255,255,0.00) 0%, #393D4B 18%, #393D4B 84%, rgba(255,255,255,0.00) 100%)`
+          backgroundImage: `linear-gradient(90deg, rgba(255,255,255,0.00) 0%, #393D4B 18%, #393D4B 84%, rgba(255,255,255,0.00) 100%)`,
         }}
       >
         {children}
@@ -56,9 +56,7 @@ function HeroSection() {
                 sm:flex sm:justify-center gap-x-3
                 '
               >
-                <HeroButton href='/project'>
-                  Create a Project
-                </HeroButton>
+                <HeroButton href='/project'>Create a Project</HeroButton>
               </div>
             </div>
           </main>
@@ -73,26 +71,27 @@ function HeroSection() {
   )
 }
 
-const LandingPageSection2 = props => (
-  <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
+const LandingPageSection2 = (props) => (
+  <div className='pt-24 pb-24' style={{ width: '100%', backgroundColor: '#FFFFFF' }}>
     <div className='max-w-7xl mx-auto flex'>
       <div className='text-left w-2/4 pr-4'>
         <MainTitle>Work on the Real Thing</MainTitle>
         <Subtitle>
-          Utopia connects design and code in real time. It’s built for real-world code, including nested components.
+          Utopia connects design and code in real time. It’s built for real-world code, including
+          nested components.
         </Subtitle>
       </div>
-      <div  className='w-2/4 pl-8'>
+      <div className='w-2/4 pl-8'>
         <GhostBrowser>
-            <HostedImage src='/screenshots/screenshot2.png' />
+          <HostedImage src='/screenshots/screenshot2.png' />
         </GhostBrowser>
       </div>
     </div>
   </div>
 )
 
-const LandingPageSection3 = props => (
-  <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
+const LandingPageSection3 = (props) => (
+  <div className='pt-24 pb-24' style={{ width: '100%', backgroundColor: '#FFFFFF' }}>
     <div className='max-w-7xl mx-auto flex'>
       <div className='w-2/4 grid grid-flow-col grid-cols-2 grid-rows-3 gap-4 pr-4'>
         <ImageContainer />
@@ -105,16 +104,16 @@ const LandingPageSection3 = props => (
       <div className='text-right w-2/4 pl-4'>
         <MainTitle>Immediately Familiar</MainTitle>
         <Subtitle>
-          Utopia includes a though-out design tool to inspect, edit and create.
-          It uses your code as a source of truth, and you can see the changes it makes to it in real time.
+          Utopia includes a though-out design tool to inspect, edit and create. It uses your code as
+          a source of truth, and you can see the changes it makes to it in real time.
         </Subtitle>
       </div>
     </div>
   </div>
 )
 
-const LandingPageSection4 = props => (
-  <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#181818'}}>
+const LandingPageSection4 = (props) => (
+  <div className='pt-24 pb-24' style={{ width: '100%', backgroundColor: '#181818' }}>
     <div className='max-w-7xl mx-auto text-center'>
       <MainTitle dark>Designed to Code</MainTitle>
       <Subtitle dark>
@@ -129,13 +128,11 @@ const LandingPageSection4 = props => (
   </div>
 )
 
-const OpenSourceSection = props => (
-  <div className='pt-24 pb-24' style={{width: '100%', backgroundColor: '#FFFFFF'}}>
+const OpenSourceSection = (props) => (
+  <div className='pt-24 pb-24' style={{ width: '100%', backgroundColor: '#FFFFFF' }}>
     <div className='max-w-7xl mx-auto text-center'>
       <MainTitle>Proudly Open Source</MainTitle>
-      <Subtitle>
-        Utopia is an open-source project under the MIT license.
-      </Subtitle>
+      <Subtitle>Utopia is an open-source project under the MIT license.</Subtitle>
     </div>
   </div>
 )
@@ -147,8 +144,8 @@ function LandingPage() {
     <div>
       <Header />
       <div
-        // className='relative bg-blue-100 overflow-hidden bg-no-repeat bg-cover'
-        // style={{ backgroundImage: 'url(/backgrounds/mesh-pinkblue-sky.jpg)' }}
+      // className='relative bg-blue-100 overflow-hidden bg-no-repeat bg-cover'
+      // style={{ backgroundImage: 'url(/backgrounds/mesh-pinkblue-sky.jpg)' }}
       >
         <div
           style={{
@@ -165,9 +162,9 @@ function LandingPage() {
         </div>
 
         <HeroSection />
-        <LandingPageSection2/>
-        <LandingPageSection3/>
-        <LandingPageSection4/>
+        <LandingPageSection2 />
+        <LandingPageSection3 />
+        <LandingPageSection4 />
         <OpenSourceSection />
         <div className='pt-80' />
       </div>

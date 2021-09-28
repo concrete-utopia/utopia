@@ -82,10 +82,10 @@ export interface SelectedElementChanged {
   boundsInFile: BoundsInFile
 }
 
-export function selectedElementChanged(boundsInFile: BoundsInFile): SelectedElementChanged {
+export function selectedElementChanged(bounds: BoundsInFile): SelectedElementChanged {
   return {
     type: 'SELECTED_ELEMENT_CHANGED',
-    boundsInFile: boundsInFile,
+    boundsInFile: bounds,
   }
 }
 
@@ -123,16 +123,16 @@ export interface AccumulatedToVSCodeMessage {
   messages: Array<ToVSCodeMessageNoAccumulated>
 }
 
-export function accumulatedToVSCodeMessage(messages: Array<ToVSCodeMessageNoAccumulated>): AccumulatedToVSCodeMessage {
+export function accumulatedToVSCodeMessage(
+  messages: Array<ToVSCodeMessageNoAccumulated>,
+): AccumulatedToVSCodeMessage {
   return {
     type: 'ACCUMULATED_TO_VSCODE_MESSAGE',
-    messages: messages
+    messages: messages,
   }
 }
 
-export type ToVSCodeMessage =
-  | ToVSCodeMessageNoAccumulated
-  | AccumulatedToVSCodeMessage
+export type ToVSCodeMessage = ToVSCodeMessageNoAccumulated | AccumulatedToVSCodeMessage
 
 export function isOpenFileMessage(message: unknown): message is OpenFileMessage {
   return (
@@ -172,7 +172,9 @@ export function isSetFollowSelectionConfig(message: unknown): message is SetFoll
   )
 }
 
-export function isAccumulatedToVSCodeMessage(message: unknown): message is AccumulatedToVSCodeMessage {
+export function isAccumulatedToVSCodeMessage(
+  message: unknown,
+): message is AccumulatedToVSCodeMessage {
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
@@ -295,7 +297,7 @@ export function parseFromVSCodeMessage(unparsed: string): FromVSCodeMessage {
   if (
     isEditorCursorPositionChanged(message) ||
     isSendInitialData(message) ||
-    isUtopiaVSCodeConfigValues(message) || 
+    isUtopiaVSCodeConfigValues(message) ||
     isFileOpened(message)
   ) {
     return message

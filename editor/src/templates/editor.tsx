@@ -14,16 +14,7 @@ import {
 } from '../common/env-vars'
 import { EditorID } from '../core/shared/utils'
 import CanvasActions from '../components/canvas/canvas-actions'
-import { CodeResultCache, generateCodeResultCache } from '../components/custom-code/code-file'
-import { getAllErrorsFromBuildResult } from '../components/custom-code/custom-code-utils'
-import {
-  DebugDispatch,
-  DispatchPriority,
-  EditorAction,
-  EditorDispatch,
-  isLoggedIn,
-  notLoggedIn,
-} from '../components/editor/action-types'
+import { DispatchPriority, EditorAction, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'

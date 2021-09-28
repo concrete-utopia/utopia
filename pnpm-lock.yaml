@@ -1,0 +1,13 @@
+devDependencies:
+  husky: 7.0.2
+lockfileVersion: 5.2
+packages:
+  /husky/7.0.2:
+    dev: true
+    engines:
+      node: '>=12'
+    hasBin: true
+    resolution:
+      integrity: sha512-8yKEWNX4z2YsofXAMT7KvA1g8p+GxtB1ffV8XtpAEGuXNAbCV5wdNKH+qTpw8SM9fh4aMPDR+yQuKfgnreyZlg==
+specifiers:
+  husky: ^7.0.2

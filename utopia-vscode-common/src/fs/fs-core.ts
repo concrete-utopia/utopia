@@ -46,7 +46,7 @@ export async function removeItem(path: string): Promise<void> {
   return store.removeItem(stripTrailingSlash(path))
 }
 
-const ONE_HOUR = 1000 * 60 * 60 
+const ONE_HOUR = 1000 * 60 * 60
 const ONE_DAY = ONE_HOUR * 24
 
 async function triggerHeartbeat(): Promise<void> {
@@ -57,17 +57,19 @@ async function triggerHeartbeat(): Promise<void> {
 async function dropOldStores(): Promise<void> {
   const now = Date.now()
   const allStores = await dbHeartbeatsStore.keys()
-  const allDBsWithLastHeartbeatTS = await Promise.all(allStores.map(async k => {
-    const ts = await dbHeartbeatsStore.getItem<number>(k)
-    return {
-      dbName: k,
-      ts: ts ?? now
-    }
-  }))
-  const dbsToDrop = allDBsWithLastHeartbeatTS.filter(v => (now - v.ts) > ONE_DAY)
+  const allDBsWithLastHeartbeatTS = await Promise.all(
+    allStores.map(async (k) => {
+      const ts = await dbHeartbeatsStore.getItem<number>(k)
+      return {
+        dbName: k,
+        ts: ts ?? now,
+      }
+    }),
+  )
+  const dbsToDrop = allDBsWithLastHeartbeatTS.filter((v) => now - v.ts > ONE_DAY)
   if (dbsToDrop.length > 0) {
-    const dbNamesToDrop = dbsToDrop.map(v => v.dbName)
-    dbNamesToDrop.forEach(dbName => {
+    const dbNamesToDrop = dbsToDrop.map((v) => v.dbName)
+    dbNamesToDrop.forEach((dbName) => {
       dbHeartbeatsStore.removeItem(dbName)
       localforage.dropInstance({
         name: dbName,

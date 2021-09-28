@@ -221,7 +221,7 @@ export async function createDirectory(path: string): Promise<void> {
 
 function allPathsUpToPath(path: string): string[] {
   const directories = path.split('/')
-  const { paths } = directories.reduce(
+  const { paths: allPaths } = directories.reduce(
     ({ paths, workingPath }, next) => {
       const nextPath = appendToPath(workingPath, next)
       return {
@@ -231,7 +231,7 @@ function allPathsUpToPath(path: string): string[] {
     },
     { paths: ['/'], workingPath: '/' },
   )
-  return paths
+  return allPaths
 }
 
 async function simpleCreateDirectoryIfMissing(path: string): Promise<void> {

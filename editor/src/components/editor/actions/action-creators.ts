@@ -1465,10 +1465,12 @@ export function incrementResizeOptionsSelectedIndex(): IncrementResizeOptionsSel
 
 export function setResizeOptionsTargetOptions(
   propertyTargetOptions: Array<LayoutTargetableProp>,
+  index: number | null,
 ): SetResizeOptionsTargetOptions {
   return {
     action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS',
     propertyTargetOptions: propertyTargetOptions,
+    index: index,
   }
 }
 export function hideVSCodeLoadingScreen(): HideVSCodeLoadingScreen {

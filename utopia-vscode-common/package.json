@@ -17,7 +17,8 @@
     "build": "webpack-cli",
     "production": "webpack-cli --mode production",
     "watch": "webpack-cli --mode production --watch --info-verbosity verbose",
-    "watch-dev": "webpack-cli --watch --info-verbosity verbose"
+    "watch-dev": "webpack-cli --watch --info-verbosity verbose",
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "localforage": "1.9.0",

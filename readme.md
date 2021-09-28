@@ -1,4 +1,4 @@
-![](https://github.com/concrete-utopia/utopia/workflows/Build%20And%20Release%20On%20Push%20To%20Master/badge.svg) <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+![](https://github.com/concrete-utopia/utopia/workflows/Build%20And%20Release%20On%20Push%20To%20Master/badge.svg) [![RelativeCI](https://badges.relative-ci.com/badges/CdA4FG8pCI7TO2sSFLyN?branch=master)](https://app.relative-ci.com/projects/CdA4FG8pCI7TO2sSFLyN) <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->

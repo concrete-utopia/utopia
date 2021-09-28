@@ -1,0 +1,22 @@
+{
+  "name": "utopia",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "The Development Version of Utopia",
+  "main": "./editor",
+  "directories": {},
+  "devDependencies": {
+    "husky": "^7.0.2"
+  },
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/concrete-utopia/utopia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/concrete-utopia/utopia/issues"
+  },
+  "homepage": "https://utopia.app"
+}

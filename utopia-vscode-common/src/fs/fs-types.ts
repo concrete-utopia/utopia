@@ -27,7 +27,14 @@ export interface FSFile extends FSNode, FileContent {
   type: 'FILE'
 }
 
-export function fsFile(content: Uint8Array, unsavedContent: Uint8Array | null, ctime: number, mtime: number, lastSavedTime: number, sourceOfLastChange: FSUser): FSFile {
+export function fsFile(
+  content: Uint8Array,
+  unsavedContent: Uint8Array | null,
+  ctime: number,
+  mtime: number,
+  lastSavedTime: number,
+  sourceOfLastChange: FSUser,
+): FSFile {
   return {
     type: 'FILE',
     ctime: ctime,
