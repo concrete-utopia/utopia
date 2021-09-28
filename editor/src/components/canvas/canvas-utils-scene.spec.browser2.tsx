@@ -14,6 +14,7 @@ import * as EP from '../../core/shared/element-path'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
+import { wait } from '../../utils/utils.test-utils'
 
 describe('moving a scene/rootview on the canvas', () => {
   it('dragging a scene child’s root view sets the root view position', async () => {
@@ -103,7 +104,7 @@ describe('moving a scene/rootview on the canvas', () => {
       await domFinished
       await dispatchDone
     })
-
+    await wait(1000)
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View
