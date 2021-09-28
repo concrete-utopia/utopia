@@ -1,15 +1,6 @@
 import * as MockReactThreeFiber from '@react-three/fiber'
 import * as mockWithEditorPackageJSON from '../../../../package.json'
 
-BuiltInDependencies.push({
-  moduleName: '@react-three/fiber',
-  nodeModule: {
-    ...MockReactThreeFiber,
-    default: MockReactThreeFiber,
-  },
-  version: mockWithEditorPackageJSON.devDependencies['@react-three/fiber'],
-})
-
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   ParsedTextFile,
@@ -31,6 +22,16 @@ import { addFileToProjectContents } from '../../assets'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
+
+BuiltInDependencies.push({
+  moduleName: '@react-three/fiber',
+  nodeModule: {
+    ...MockReactThreeFiber,
+    default: MockReactThreeFiber,
+  },
+  version: mockWithEditorPackageJSON.devDependencies['@react-three/fiber'],
+})
 
 const exampleFiles = {
   [StoryboardFilePath]: `
@@ -134,6 +135,7 @@ function createTestProject() {
   return renderTestEditorWithModel(updatedProject)
 }
 
+// TODO Eni and Balazs fix this test up!
 xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
   it('a simple Canvas element in a scene where spy and jsx metadata has extra elements', async () => {
     // Code kept commented for any future person who needs it.
@@ -147,7 +149,9 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
     const { getEditorState } = await createTestProject()
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "children": Array [
@@ -237,10 +241,13 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
           "rootElements": Array [],
         },
       }
-    `)
+    `,
+    )
     const domMetadata = getEditorState().editor.domMetadata
     const sanitizedDomMetadata = domWalkerMetadataToSimplifiedMetadataMap(domMetadata)
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "children": Array [],
@@ -293,10 +300,13 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
           "rootElements": Array [],
         },
       }
-    `)
+    `,
+    )
     const jsxMetadata = getEditorState().editor.jsxMetadata
     const sanitizedJsxMetadata = simplifiedMetadataMap(jsxMetadata)
-    expect(sanitizedJsxMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedJsxMetadata,
+      `
       Object {
         "storyboard": Object {
           "children": Array [
@@ -390,6 +400,7 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
           "rootElements": Array [],
         },
       }
-    `)
+    `,
+    )
   })
 })
