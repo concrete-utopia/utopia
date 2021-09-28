@@ -34,7 +34,7 @@ let serverProjects: { [key: string]: PersistentModel } = {}
 let localProjects: { [key: string]: LocalProject<PersistentModel> } = {}
 
 const base64Contents = 'data:asset/xyz;base64,SomeBase64'
-const AssetFileWithBase64 = assetFile(base64Contents)
+const mockAssetFileWithBase64 = assetFile(base64Contents)
 const AssetFileWithoutBase64 = assetFile(undefined)
 
 const ProjectName = 'Project Name'
@@ -44,7 +44,7 @@ const SecondRevision = updateModel(FirstRevision)
 const ThirdRevision = updateModel(SecondRevision)
 const FourthRevision = updateModel(ThirdRevision)
 
-function randomProjectID(): string {
+function mockRandomProjectID(): string {
   const newId = generateUID(allProjectIds)
   allProjectIds.push(newId)
   return newId
@@ -103,11 +103,11 @@ jest.mock('../server', () => ({
     mockDownloadedAssetsLog[projectId!] = downloadedAssets
     return allProjectAssets.map((assetWithFile) => ({
       ...assetWithFile,
-      file: AssetFileWithBase64,
+      file: mockAssetFileWithBase64,
     }))
   },
   createNewProjectID: async (): Promise<string> => {
-    return randomProjectID()
+    return mockRandomProjectID()
   },
   assetToSave: (fileType: string, base64: string, fileName: string): AssetToSave => {
     return {
@@ -365,7 +365,7 @@ describe('Loading a project', () => {
   it('Loads a server project', async () => {
     const { capturedData, testMachine } = setupTest()
 
-    const projectId = randomProjectID()
+    const projectId = mockRandomProjectID()
     addServerProject(projectId, BaseModel)
 
     testMachine.load(projectId)
@@ -378,7 +378,7 @@ describe('Loading a project', () => {
   it('Loads a local project', async () => {
     const { capturedData, testMachine } = setupTest()
 
-    const projectId = randomProjectID()
+    const projectId = mockRandomProjectID()
     addLocalProject(projectId, BaseModel)
 
     testMachine.load(projectId)
@@ -393,12 +393,12 @@ describe('Loading a project', () => {
     const serverProject = BaseModel
     const localProject = updateModel(BaseModel)
 
-    const projectId = randomProjectID()
+    const projectId = mockRandomProjectID()
     addServerProject(projectId, serverProject)
     addLocalProject(projectId, localProject)
 
     testMachine.load(projectId)
-    await delay(20)
+    await delay(40)
 
     expect(capturedData.projectNotFound).toBeFalsy()
     expect(capturedData.createdOrLoadedProject).toEqual(localProject)
@@ -420,7 +420,7 @@ describe('Forking a project', () => {
     projectContents: addFileToProjectContents(
       BaseModel.projectContents,
       AssetFileName,
-      AssetFileWithBase64,
+      mockAssetFileWithBase64,
     ),
   }
 
@@ -485,7 +485,7 @@ describe('Forking a project', () => {
         assetFile(base64Contents),
       ),
     })
-    expect(capturedData.updatedFiles[AssetFileName]).toEqual(AssetFileWithBase64)
+    expect(capturedData.updatedFiles[AssetFileName]).toEqual(mockAssetFileWithBase64)
     expect(
       capturedData.dispatchedActions.some(
         (action) => action.action === 'SET_FORKED_FROM_PROJECT_ID' && action.id === startProjectId,
@@ -518,7 +518,7 @@ describe('Forking a project', () => {
     expect(localProjects[localProjectKey(capturedData.newProjectId!)]!.model).toEqual(
       startProjectIncludingBase64,
     )
-    expect(capturedData.updatedFiles[AssetFileName]).toEqual(AssetFileWithBase64)
+    expect(capturedData.updatedFiles[AssetFileName]).toEqual(mockAssetFileWithBase64)
     expect(
       capturedData.dispatchedActions.some(
         (action) => action.action === 'SET_FORKED_FROM_PROJECT_ID' && action.id === startProjectId,
