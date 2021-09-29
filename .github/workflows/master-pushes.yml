@@ -44,42 +44,6 @@ jobs:
         with:
           args: 'Editor Tests Failed: https://github.com/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}'
 
-  test-editor-move-template-only:
-    name: Test Editor Move Template Only
-    runs-on: ubuntu-latest
-    env:
-      UTOPIA_SHA: ${{ github.sha }}
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Cache .pnpm-store
-        uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - name: Cache editor test result
-        id: cache-editor-tests-move-template-only
-        uses: actions/cache@v2
-        with:
-          # For the tests it doesn't really matter what we cache
-          path: editor/lib
-          key: ${{ runner.os }}-editor-tests-move-template-only-master-2-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('utopia-vscode-common/src/**')}}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
-      - name: Install nix
-        uses: cachix/install-nix-action@v12
-        with:
-          nix_path: nixpkgs=channel:nixos-20.09
-      - name: Run the tests
-        if: steps.cache-editor-tests-move-template-only.outputs.cache-hit != 'true'
-        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-editor-move-template-only-ci
-      - name: Discord Notification
-        uses: Ilshidur/action-discord@0.3.2
-        if: failure()
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
-          DISCORD_USERNAME: 'Build Failure'
-        with:
-          args: 'Editor moveTemplate Tests Failed: https://github.com/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}'
-
   test-server:
     name: Test Server
     runs-on: ubuntu-latest
@@ -128,7 +92,7 @@ jobs:
 
   trigger-deploy:
     name: Trigger Deploy
-    needs: [test-editor, test-editor-move-template-only, test-server]
+    needs: [test-editor, test-server]
     runs-on: ubuntu-latest
     steps:
       - name: Use repository dispatch event to trigger deploy
