@@ -105,7 +105,6 @@ describe('moving a scene/rootview on the canvas', () => {
       await domFinished
       await dispatchDone
     })
-    await wait(1000)
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View
