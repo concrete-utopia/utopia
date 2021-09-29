@@ -21,7 +21,10 @@
   },
   "jest": {
     "testEnvironment": "jest-environment-jsdom",
-    "testRegex": "src/.*\\.spec\\.(jsx?|tsx?)$",
+    "transform": {
+      "\\.[jt]sx?$": "babel-jest"
+    },
+    "testRegex": "src/.*\\.spec\\.(tsx?)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
@@ -35,8 +38,8 @@
   "license": "",
   "homepage": "https://utopia.app",
   "peerDependencies": {
-    "react-dom": "17.0.0-rc.1",
-    "react": "17.0.0-rc.1"
+    "react": "17.0.0-rc.1",
+    "react-dom": "17.0.0-rc.1"
   },
   "dependencies": {
     "@emotion/react": "11.1.2",
@@ -55,6 +58,7 @@
     "@types/react": "16.9.49",
     "@types/react-dom": "16.9.8",
     "@types/uuid": "3.4.5",
+    "babel-jest": "^27.2.4",
     "csstype": "3.0.3",
     "jest": "27.2.3",
     "jest-environment-jsdom": "27.2.3",
