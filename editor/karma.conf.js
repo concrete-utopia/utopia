@@ -30,7 +30,7 @@ module.exports = function (config) {
       './karma-setup.js',
       './src/**/*.spec.browser2.+(ts|tsx)',
       {
-        pattern: './resources/editor/icons/**/*.png',
+        pattern: './resources/editor/**/*.png',
         watched: false,
         served: true,
         included: false,
@@ -39,6 +39,9 @@ module.exports = function (config) {
     ],
     proxies: {
       '/editor/icons': '/base/resources/editor/icons',
+      '/editor/cursors': '/base/resources/editor/cursors',
+      '/editor/fills': '/base/resources/editor/fills',
+      '/editor/avatars': '/base/resources/editor/avatars',
     },
 
     browsers: ['ChromeHeadless'],
