@@ -222,6 +222,14 @@ let
   withEditorRunScripts = withServerBaseScripts ++ (lib.optionals includeRunLocallySupport editorRunScripts);
 
   databaseRunScripts = [
+    (pkgs.writeScriptBin "create-db" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      echo "Ignore previous line about database not existing." > pglog.txt
+      ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
+    '')
     (pkgs.writeScriptBin "start-postgres-background" ''
       #!/usr/bin/env bash
       stop-postgres
@@ -289,14 +297,6 @@ let
       cabal-update
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
-    '')
-    (pkgs.writeScriptBin "create-db" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      PGLOCK_DIR="`pwd`/.pglock/"
-      echo "Ignore previous line about database not existing." > pglog.txt
-      ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
     '')
   ];
 
