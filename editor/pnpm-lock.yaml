@@ -19,7 +19,6 @@ dependencies:
   '@tippyjs/react': 4.1.0_4b57aad7a3acc0ec1c2667d1fea04016
   '@types/fontfaceobserver': 0.0.6
   '@types/react-syntax-highlighter': 11.0.4
-  '@types/sinon': 10.0.4
   '@use-it/interval': 0.1.3_react@17.0.0-rc.1
   ajv: 6.4.0
   anser: 1.4.8
@@ -97,7 +96,6 @@ dependencies:
   scheduler: 0.17.0
   semver: 7.3.2
   settle-promise: 1.0.0
-  sinon: 11.1.2
   source-map: 0.5.6
   stream-browserify: 3.0.0
   string-hash: 1.1.3
@@ -2609,6 +2607,7 @@ packages:
   /@sinonjs/commons/1.8.3:
     dependencies:
       type-detect: 4.0.8
+    dev: true
     resolution:
       integrity: sha512-xkNcLAn/wZaX14RPlwizcKicDk9G3F8m2nU3L7Ukm5zBgTwiT0wsoFAHx9Jq56fJA1z/7uKGtCRu16sOUCLIHQ==
   /@sinonjs/fake-timers/6.0.1:
@@ -2617,24 +2616,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-MZPUxrmFubI36XS1DI3qmI0YdN1gks62JtFZvxR67ljjSNCeK6U08Zx4msEWOXuofgqUt6zPHSi1H9fbjR/NRA==
-  /@sinonjs/fake-timers/7.1.2:
-    dependencies:
-      '@sinonjs/commons': 1.8.3
-    dev: false
-    resolution:
-      integrity: sha512-iQADsW4LBMISqZ6Ci1dupJL9pprqwcVFTcOsEmQOEhW+KLCVn/Y4Jrvg2k19fIHCp+iFprriYPTdRcQR8NbUPg==
-  /@sinonjs/samsam/6.0.2:
-    dependencies:
-      '@sinonjs/commons': 1.8.3
-      lodash.get: 4.4.2
-      type-detect: 4.0.8
-    dev: false
-    resolution:
-      integrity: sha512-jxPRPp9n93ci7b8hMfJOFDPRLFYadN6FSpeROFTR4UNF4i5b+EK6m4QXPO46BDhFgRy1JuS87zAnFOzCUwMJcQ==
-  /@sinonjs/text-encoding/0.7.1:
-    dev: false
-    resolution:
-      integrity: sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==
   /@svgr/babel-plugin-add-jsx-attribute/5.4.0:
     dev: false
     engines:
@@ -3263,12 +3244,6 @@ packages:
     dev: true
     resolution:
       integrity: sha1-oeENIKQJ9lKJksR5H6hS/7EOaZY=
-  /@types/sinon/10.0.4:
-    dependencies:
-      '@sinonjs/fake-timers': 7.1.2
-    dev: false
-    resolution:
-      integrity: sha512-fOYjrxQv8zJsqOY6V6ecP4eZhQBxtY80X0er1VVnUIAIZo74jHm8e1vguG5Yt4Iv8W2Wr7TgibB8MfRe32k9pA==
   /@types/sizzle/2.3.3:
     dev: true
     resolution:
@@ -6579,6 +6554,7 @@ packages:
     resolution:
       integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==
   /diff/5.0.0:
+    dev: true
     engines:
       node: '>=0.3.1'
     resolution:
@@ -8671,6 +8647,7 @@ packages:
     resolution:
       integrity: sha1-tdRU3CGZriJWmfNGfloH87lVuv0=
   /has-flag/4.0.0:
+    dev: true
     engines:
       node: '>=8'
     resolution:
@@ -9826,6 +9803,7 @@ packages:
     resolution:
       integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==
   /isarray/0.0.1:
+    dev: true
     resolution:
       integrity: sha1-ihis/Kmo9Bd+Cav8YDiTmwXR7t8=
   /isarray/1.0.0:
@@ -11085,10 +11063,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-WRtu7TPCmYePR1nazfrtuF216cIVon/3GWOvHS9QR5bIwSbnxtdpma6un3jyGGNhHsKCSzn5Ypk+EkDRvTGiFA==
-  /just-extend/4.2.1:
-    dev: false
-    resolution:
-      integrity: sha512-g3UB796vUFIY90VIv/WX3L2c8CS2MdWUww3CNrYmqza1Fg0DURc2K/O4YrnklBdQarSJ/y8JnJYDGc+1iumQjg==
   /karma-chrome-launcher/3.1.0:
     dependencies:
       which: 1.3.1
@@ -11482,10 +11456,6 @@ packages:
     dev: true
     resolution:
       integrity: sha1-+wMJF/hqMTTlvJvsDWngAT3f7bI=
-  /lodash.get/4.4.2:
-    dev: false
-    resolution:
-      integrity: sha1-LRd/ZS+jHpObRDjVNBSZ36OCXpk=
   /lodash.memoize/3.0.4:
     dev: true
     resolution:
@@ -12144,16 +12114,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
-  /nise/5.1.0:
-    dependencies:
-      '@sinonjs/commons': 1.8.3
-      '@sinonjs/fake-timers': 7.1.2
-      '@sinonjs/text-encoding': 0.7.1
-      just-extend: 4.2.1
-      path-to-regexp: 1.8.0
-    dev: false
-    resolution:
-      integrity: sha512-W5WlHu+wvo3PaKLsJJkgPup2LrsXCcm7AWwyNZkUnn5rwPkuPBi3Iwk5SQtN0mv+K65k7nKKjwNQ30wg3wLAQQ==
   /no-case/3.0.4:
     dependencies:
       lower-case: 2.0.2
@@ -12982,12 +12942,6 @@ packages:
     dev: true
     resolution:
       integrity: sha1-32BBeABfUi8V60SQ5yR6G/qmf4w=
-  /path-to-regexp/1.8.0:
-    dependencies:
-      isarray: 0.0.1
-    dev: false
-    resolution:
-      integrity: sha512-n43JRhlUKUAlibEJhPeir1ncUID16QnEjNpwzNdO3Lm4ywrBpBZ5oLD0I6br9evr1Y9JTqwRtAh7JLoOzAQdVA==
   /path-type/1.1.0:
     dependencies:
       graceful-fs: 4.2.8
@@ -15768,17 +15722,6 @@ packages:
     dev: true
     resolution:
       integrity: sha1-wvg/Jzo+GhbtsJlWYdoO1e8DM2Q=
-  /sinon/11.1.2:
-    dependencies:
-      '@sinonjs/commons': 1.8.3
-      '@sinonjs/fake-timers': 7.1.2
-      '@sinonjs/samsam': 6.0.2
-      diff: 5.0.0
-      nise: 5.1.0
-      supports-color: 7.2.0
-    dev: false
-    resolution:
-      integrity: sha512-59237HChms4kg7/sXhiRcUzdSkKuydDeTiamT/jesUVHshBgL8XAmhgFo0GfK6RruMDM/iRSij1EybmMog9cJw==
   /sirv/1.0.17:
     dependencies:
       '@polka/url': 1.0.0-next.20
@@ -16451,6 +16394,7 @@ packages:
   /supports-color/7.2.0:
     dependencies:
       has-flag: 4.0.0
+    dev: true
     engines:
       node: '>=8'
     resolution:
@@ -17061,6 +17005,7 @@ packages:
     resolution:
       integrity: sha1-WITKtRLPHTVeP7eE8wgEsrUg23I=
   /type-detect/4.0.8:
+    dev: true
     engines:
       node: '>=4'
     resolution:
@@ -17346,7 +17291,7 @@ packages:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
-      prop-types: 15.6.2
+      prop-types: 15.7.2
       react: /utopia-react/17.0.0-rc.1
       scheduler: 0.18.0
     dev: false
@@ -18129,7 +18074,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       classnames: 2.2.6
-      prop-types: 15.6.2
+      prop-types: 15.7.2
       rc-tooltip: 3.7.3
       rc-util: 4.21.1
       shallowequal: 1.1.0
@@ -18221,7 +18166,6 @@ specifiers:
   '@types/scheduler': 0.16.1
   '@types/semver': 7.3.4
   '@types/shuffle-array': 0.0.28
-  '@types/sinon': ^10.0.4
   '@types/tar': 4.0.4
   '@types/url-join': 4.0.0
   '@types/uuid': 2.0.29
@@ -18363,7 +18307,6 @@ specifiers:
   semver: 7.3.2
   settle-promise: 1.0.0
   shuffle-array: 1.0.1
-  sinon: ^11.1.2
   source-map: 0.5.6
   source-map-loader: 0.2.3
   stream-browserify: ^3.0.0
