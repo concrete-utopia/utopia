@@ -10,7 +10,7 @@
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TemplateHaskell        #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications       #-}
 
 module Utopia.Web.ServiceTypes where
 
@@ -20,17 +20,17 @@ import           Control.Monad.Free
 import           Control.Monad.Free.TH
 import           Data.Aeson
 import           Data.Aeson.TH
-import           Data.Time
-import           Protolude
 import qualified Data.ByteString.Lazy      as BL
+import           Data.Generics.Product
+import           Data.Time
+import           Network.HTTP.Client       hiding (Cookie)
+import           Protolude
 import           Servant
 import qualified Text.Blaze.Html5          as H
 import           Utopia.Web.Assets
 import           Utopia.Web.Database.Types
 import           Utopia.Web.JSON
-import           Network.HTTP.Client       hiding (Cookie)
 import           Web.Cookie
-import Data.Generics.Product
 
 type SessionCookie = Text
 

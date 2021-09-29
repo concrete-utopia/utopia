@@ -19,20 +19,20 @@ import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
 import           Data.IORef
-import           Network.HTTP.Client         (Manager, newManager)
+import           Network.HTTP.Client            (Manager, newManager)
 import           Network.HTTP.Client.TLS
-import           Protolude hiding(Handler)
+import           Protolude                      hiding (Handler)
 import           Servant
 import           System.Environment
-import           System.Metrics              hiding (Value)
+import           System.Metrics                 hiding (Value)
 import           System.Metrics.Json
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
-import qualified Utopia.Web.Database         as DB
-import Utopia.Web.Database.Migrations
-import Utopia.Web.Database.Types
+import qualified Utopia.Web.Database            as DB
+import           Utopia.Web.Database.Migrations
+import           Utopia.Web.Database.Types
 import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
@@ -48,7 +48,7 @@ import           Utopia.Web.Utils.Files
 -}
 data ProductionServerResources = ProductionServerResources
                                { _commitHash              :: Text
-                               , _projectPool       :: DBPool 
+                               , _projectPool       :: DBPool
                                , _auth0Resources          :: Auth0Resources
                                , _awsResources            :: AWSResources
                                , _sessionState            :: SessionState
@@ -271,7 +271,7 @@ assetPathsAndBuilders =
 initialiseResources :: IO ProductionServerResources
 initialiseResources = do
   _commitHash <- toS <$> getEnv "UTOPIA_SHA"
-  _projectPool <- DB.createDatabasePoolFromEnvironment 
+  _projectPool <- DB.createDatabasePoolFromEnvironment
   maybeAuth0Resources <- getAuth0Environment
   _auth0Resources <- maybe (panic "No Auth0 environment configured") return maybeAuth0Resources
   maybeAws <- getAmazonResourcesFromEnvironment
@@ -292,7 +292,7 @@ initialiseResources = do
 
 startup :: ProductionServerResources -> IO Stop
 startup ProductionServerResources{..} = do
-  migrateDatabase False _projectPool
+  migrateDatabase True False _projectPool
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread

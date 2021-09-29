@@ -16,28 +16,29 @@
 module Utopia.Web.Executors.Development where
 
 import           Control.Lens
-import Data.Text.Lazy.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
 import           Data.IORef
 import           Data.Text
-import qualified Data.Text.Lazy as TL
-import           Network.HTTP.Client         (Manager, defaultManagerSettings,
-                                              newManager)
+import qualified Data.Text.Lazy                 as TL
+import           Data.Text.Lazy.Lens
+import           Network.HTTP.Client            (Manager,
+                                                 defaultManagerSettings,
+                                                 newManager)
 import           Network.HTTP.Client.TLS
-import qualified Network.Wreq                as WR
-import           Protolude hiding (Handler, toUpper)
+import qualified Network.Wreq                   as WR
+import           Protolude                      hiding (Handler, toUpper)
 import           Servant
 import           Servant.Client
 import           System.Environment
-import           System.Metrics              hiding (Value)
+import           System.Metrics                 hiding (Value)
 import           System.Metrics.Json
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
-import qualified Utopia.Web.Database         as DB
-import Utopia.Web.Database.Migrations
+import qualified Utopia.Web.Database            as DB
+import           Utopia.Web.Database.Migrations
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
@@ -55,7 +56,7 @@ import           Web.Cookie
 -}
 data DevServerResources = DevServerResources
                         { _commitHash            :: Text
-                        , _projectPool           :: DBPool 
+                        , _projectPool           :: DBPool
                         , _serverPort            :: Int
                         , _silentMigration       :: Bool
                         , _logOnStartup          :: Bool
@@ -328,7 +329,7 @@ serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) serv
 
 startup :: DevServerResources -> IO Stop
 startup DevServerResources{..} = do
-  migrateDatabase True _projectPool
+  migrateDatabase (not _silentMigration) True _projectPool
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread

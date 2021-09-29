@@ -16,6 +16,7 @@
 -}
 module Utopia.Web.Servant where
 
+import           Control.Monad.Fail
 import           Data.Aeson
 import           Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Lazy     as BL
@@ -27,7 +28,6 @@ import           Prelude                  (String)
 import           Protolude
 import           Servant.API
 import           Servant.HTML.Blaze
-import Control.Monad.Fail
 
 data BMP
 

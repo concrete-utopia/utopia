@@ -6,9 +6,8 @@
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeOperators         #-}
-{-# LANGUAGE TypeApplications         #-}
-{-# LANGUAGE DataKinds         #-}
 
 {-|
   All the endpoints defined in "Utopia.Web.Types" are implemented here.
@@ -21,6 +20,7 @@ import           Data.Aeson
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy            as BL
 import           Data.CaseInsensitive            hiding (traverse)
+import           Data.Generics.Product
 import qualified Data.Text                       as T
 import           Data.Text.Encoding
 import           Data.Time
@@ -28,7 +28,7 @@ import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Status
 import           Network.Wai
 import           Network.Wai.Middleware.Gzip
-import Prelude(String)
+import           Prelude                         (String)
 import           Protolude
 import           Servant                         hiding
                                                  (serveDirectoryFileServer,
@@ -54,7 +54,6 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
-import Data.Generics.Product
 
 type TagSoupTags = [Tag Text]
 
@@ -392,7 +391,7 @@ createProjectEndpoint = do
   CreateProjectResponse <$> createProject
 
 forkProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> Maybe Text -> ServerMonad ForkProjectResponse
-forkProjectEndpoint cookie projectID maybeTitle = requireUser cookie $ \sessionUser -> 
+forkProjectEndpoint cookie projectID maybeTitle = requireUser cookie $ \sessionUser ->
   forkProjectEndpointInner sessionUser projectID (getTitle maybeTitle)
 
 forkProjectEndpointInner :: SessionUser -> ProjectIdWithSuffix -> Text -> ServerMonad ForkProjectResponse
@@ -459,7 +458,7 @@ loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) possibleETag filePath 
       handleNoAsset $ loadProjectAsset (projectID : pathFound) possibleETag
 
 saveProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad Application
-saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser -> 
+saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser ->
   saveProjectAsset (view (field @"_id") sessionUser) projectID path
 
 renameProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> Text -> ServerMonad NoContent

@@ -15,12 +15,12 @@
 module Utopia.Web.Database.Types where
 
 import           Data.Aeson
+import           Data.Pool
 import           Data.Profunctor.Product
 import           Data.Time
+import           Database.PostgreSQL.Simple
 import           Opaleye
-import           Protolude               hiding (get)
-import Data.Pool
-import Database.PostgreSQL.Simple
+import           Protolude                  hiding (get)
 
 type ProjectIDFields = (Field SqlText)
 

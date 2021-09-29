@@ -256,15 +256,24 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
     '')
+    (pkgs.writeScriptBin "create-db" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      echo "Ignore previous line about database not existing." > pglog.txt
+      ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
+    '')
     (pkgs.writeScriptBin "start-postgres" ''
       #!/usr/bin/env bash
+      stop-postgres
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       PGLOCK_DIR="`pwd`/.pglock/"
       [ ! -d "utopia-db" ] && ${postgres}/bin/initdb -D utopia-db
       mkdir -p $PGLOCK_DIR
-      ${postgres}/bin/pg_ctl -D utopia-db -l pglog.txt -o "--unix_socket_directories='$PGLOCK_DIR'" start
-      ${postgres}/bin/psql -o /dev/null -h "$PGLOCK_DIR" -d utopia -tc "SELECT 1 FROM pg_database WHERE datname = 'utopia'" || ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
+      ${postgres}/bin/pg_ctl -D utopia-db -l pglog.txt -o "--unix_socket_directories='$PGLOCK_DIR' -c log_statement=none" start
+      ${postgres}/bin/psql -o /dev/null -h "$PGLOCK_DIR" -d utopia -tc "SELECT 1 FROM pg_database WHERE datname = 'utopia'" || create-db
       tail -f pglog.txt
     '')
     (pkgs.writeScriptBin "stop-postgres" ''
@@ -274,6 +283,14 @@ let
       PGLOCK_DIR="`pwd`/.pglock/"
       mkdir -p $PGLOCK_DIR
       ${postgres}/bin/pg_ctl -D utopia-db stop 
+    '')
+    (pkgs.writeScriptBin "run-psql" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/psql -h "$PGLOCK_DIR" -d utopia
     '')
   ];
 
@@ -321,8 +338,8 @@ let
       #!/usr/bin/env bash
       # Kill nodemon because it just seems to keep running.
       pkill nodemon
-      tmux kill-session -t utopia-dev
       stop-postgres
+      tmux kill-session -t utopia-dev
     '')
     (pkgs.writeScriptBin "start-minimal" ''
       #!/usr/bin/env bash

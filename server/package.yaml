@@ -23,6 +23,7 @@ dependencies:
   - conduit
   - cookie
   - cryptohash-sha256
+  - data-default
   - directory
   - ekg-core
   - ekg-json
@@ -101,6 +102,7 @@ tests:
       - hspec
       - hedgehog
       - port-utils
+      - random
       - tasty
       - tasty-hedgehog
       - tasty-hspec

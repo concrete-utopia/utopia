@@ -26,15 +26,16 @@ import           Data.Profunctor.Product
 import qualified Data.Serialize                  as S
 import qualified Data.Text.Encoding              as TE
 import           Data.Time
+import           Database.PostgreSQL.Simple      hiding (Query)
 import           Opaleye
 import           Opaleye.Trans
 import           Protolude                       hiding (State)
+import           Utopia.Web.Database
+import           Utopia.Web.Database.Types
 import           Web.Cookie
 import           Web.PathPieces                  (fromPathPiece, toPathPiece)
 import           Web.ServerSession.Core          hiding (setCookieName)
 import           Web.ServerSession.Core.Internal (storage, unS)
-import Utopia.Web.Database
-import Utopia.Web.Database.Types
 
 newtype ConnectionStorage sess = ConnectionStorage { pool :: DBPool }
   deriving (Typeable)
@@ -59,12 +60,10 @@ sessionFromTable :: (Text, Maybe ByteString, ByteString, UTCTime, UTCTime) -> IO
 sessionFromTable (key, authId, session, createdAt, accessedAt) = do
   parsedKey <- maybe (fail "Could not parse key.") pure $ fromPathPiece key
   sessionMap <- either fail pure $ S.decode session :: IO SessionMap
-  -- TODO: Sort out the first parameter to decomposeSession.
-  let decomposedSession = decomposeSession "" sessionMap
   pure $ Session
     { sessionKey = parsedKey
     , sessionAuthId = authId
-    , sessionData = dsDecomposed decomposedSession
+    , sessionData = sessionMap
     , sessionCreatedAt = createdAt
     , sessionAccessedAt = accessedAt
     }
@@ -73,9 +72,7 @@ sessionToTable :: Session (SessionData SessionStorage) -> PersistentSessionField
 sessionToTable Session{..} =
   let key = toFields $ unS sessionKey
       authId = toFields sessionAuthId
-      -- TODO: Sort out the first parameter to recomposeSession.
-      recomposedSession = recomposeSession "" sessionAuthId sessionData :: SessionMap
-      session = toFields $ S.encode recomposedSession
+      session = toFields $ S.encode sessionData
       createdAt = toFields sessionCreatedAt
       accessedAt = toFields sessionAccessedAt
   in  (key, authId, session, createdAt, accessedAt)

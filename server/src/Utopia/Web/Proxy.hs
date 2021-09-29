@@ -2,10 +2,11 @@
 
 module Utopia.Web.Proxy where
 
-import qualified Data.ByteString.Lazy as BL
 import           Control.Exception.Base
 import           Control.Lens
+import           Control.Monad.Fail
 import           Data.Binary.Builder            (toLazyByteString)
+import qualified Data.ByteString.Lazy           as BL
 import qualified Data.Text                      as T
 import           Network.HTTP.Client            (HttpException (HttpExceptionRequest),
                                                  HttpExceptionContent (StatusCodeException),
@@ -17,10 +18,9 @@ import           Network.Wai
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Network.Wreq                   as WR
+import           Prelude                        (String)
 import           Protolude
 import           Utopia.Web.Exceptions
-import Control.Monad.Fail
-import Prelude(String)
 
 closeConnection :: WS.Connection -> IO ()
 closeConnection connection = void $ forkIO $ do

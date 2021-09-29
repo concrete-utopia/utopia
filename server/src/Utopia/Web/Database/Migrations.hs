@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
@@ -8,20 +9,19 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeApplications           #-}
 {-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DataKinds #-}
 
 module Utopia.Web.Database.Migrations where
 
 import           Control.Monad.Fail
-import Data.Pool
+import           Data.Pool
 import           Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.Migration
-import           Protolude                    hiding (get)
+import           Database.PostgreSQL.Simple.Migration
+import           Protolude                            hiding (get)
 
-migrateDatabase :: Bool -> Pool Connection -> IO ()
-migrateDatabase includeInitial pool = withResource pool $ \connection -> do
+migrateDatabase :: Bool -> Bool -> Pool Connection -> IO ()
+migrateDatabase verbose includeInitial pool = withResource pool $ \connection -> do
   let mainMigrationCommands = []
   let initialMigrationCommand = if includeInitial
                                    then [MigrationFile "initial.sql" "./migrations/initial.sql"]
@@ -29,11 +29,11 @@ migrateDatabase includeInitial pool = withResource pool $ \connection -> do
   let migrationCommands = [MigrationInitialization] <> initialMigrationCommand <> mainMigrationCommands
   let context = MigrationContext
               { migrationContextCommand = MigrationCommands migrationCommands
-              , migrationContextVerbose = True
+              , migrationContextVerbose = verbose
               , migrationContextConnection = connection
               }
   withTransaction connection $ do
     result <- runMigration context
     case result of
       MigrationError errorMessage -> fail errorMessage
-      MigrationSuccess -> mempty
+      MigrationSuccess            -> mempty

@@ -1,13 +1,13 @@
 {-# LANGUAGE AllowAmbiguousTypes    #-}
+{-# LANGUAGE DataKinds              #-}
 {-# LANGUAGE DuplicateRecordFields  #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
 {-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE RecordWildCards        #-}
-{-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeApplications       #-}
-{-# LANGUAGE DataKinds              #-}
+{-# LANGUAGE TypeFamilies           #-}
 
 module Utopia.Web.Executors.Common where
 
@@ -18,9 +18,10 @@ import           Control.Monad.Catch              hiding (Handler, catch)
 import           Control.Monad.RWS.Strict
 import           Data.Aeson
 import qualified Data.ByteString.Lazy             as BL
-import           Data.Conduit.Combinators         hiding (foldMap, encodeUtf8)
+import           Data.Conduit.Combinators         hiding (encodeUtf8, foldMap)
+import           Data.Generics.Product
 import           Data.IORef
-import Data.Pool
+import           Data.Pool
 import           Data.String                      (String)
 import           Data.Time
 import           Network.HTTP.Client              hiding (Response)
@@ -29,9 +30,9 @@ import           Network.HTTP.Types.Status
 import           Network.Mime
 import           Network.Wai
 import qualified Network.Wreq                     as WR
-import           Protolude                        hiding (concatMap,
-                                                   intersperse, map, 
-                                                   (<.>), Handler, yield)
+import           Protolude                        hiding (Handler, concatMap,
+                                                   intersperse, map, yield,
+                                                   (<.>))
 import           Servant
 import           Servant.Client                   hiding (Response)
 import           System.Directory
@@ -51,7 +52,6 @@ import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           Web.Cookie
-import Data.Generics.Product
 
 {-|
   When running the 'ServerMonad' type this is the type that we will

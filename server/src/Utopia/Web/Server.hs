@@ -5,7 +5,7 @@
 
 module Utopia.Web.Server where
 
-import qualified Data.ByteString as B
+import qualified Data.ByteString                 as B
 import qualified Data.ByteString.Char8           as S8
 import           Data.IORef
 import qualified Data.Text.IO                    as TIO
@@ -19,7 +19,7 @@ import           Network.Wai.Middleware.ForceSSL
 import           Network.Wai.Middleware.Gzip
 import           Protolude
 import           Servant
-import           Servant.Conduit()
+import           Servant.Conduit                 ()
 import           Utopia.Web.Ekg
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Types

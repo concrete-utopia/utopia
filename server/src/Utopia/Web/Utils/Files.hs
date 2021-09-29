@@ -3,7 +3,7 @@
 
 module Utopia.Web.Utils.Files where
 
-import Control.Monad.Fail
+import           Control.Monad.Fail
 import qualified Crypto.Hash.SHA256        as SHA256
 import           Data.Aeson
 import qualified Data.ByteString           as BS

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3badb7aa0a2ea30eee60ca084c5a0ca09b5997a616b45374367551e51b8cb565
+-- hash: 95d26c9bca5c9d192fba1affbbd166ab45f3235ec0a5be2c00823ff65dcc3ef2
 
 name:           utopia-web
 version:        0.1.0.4
@@ -74,6 +74,7 @@ executable utopia-web
     , conduit
     , cookie
     , cryptohash-sha256
+    , data-default
     , directory
     , ekg-core
     , ekg-json
@@ -197,6 +198,7 @@ test-suite utopia-web-test
     , conduit
     , cookie
     , cryptohash-sha256
+    , data-default
     , directory
     , ekg-core
     , ekg-json
@@ -231,6 +233,7 @@ test-suite utopia-web-test
     , process
     , product-profunctors
     , protolude ==0.3.0
+    , random
     , resource-pool
     , rio
     , servant ==0.18.2

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds                  #-}
 {-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
@@ -8,32 +9,32 @@
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeApplications           #-}
 {-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DataKinds #-}
 
 module Utopia.Web.Database where
 
-import           Control.Lens
+import           Control.Lens                    hiding ((.>))
 import           Control.Monad.Catch
 import           Control.Monad.Fail
 import           Data.Aeson
-import Data.Pool
+import qualified Data.ByteString.Lazy            as BL
+import           Data.Pool
+import           Data.Profunctor.Product.Default
 import           Data.String
-import qualified Data.Text                    as T
+import qualified Data.Text                       as T
 import           Data.Time
-import           Data.UUID                    hiding (null)
+import           Data.UUID                       hiding (null)
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple
 import           Opaleye
 import           Opaleye.Trans
-import           Protolude                    hiding (get)
+import           Protolude                       hiding (get)
 import           System.Environment
-import           System.Metrics               hiding (Value)
+import           System.Metrics                  hiding (Value)
+import           System.Posix.User
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Metrics
-import qualified Data.ByteString.Lazy as BL
-import System.Posix.User
 
 data DatabaseMetrics = DatabaseMetrics
                      { _generateUniqueIDMetrics         :: InvocationMetric
@@ -126,15 +127,19 @@ getProjectContent :: ByteString -> IO Value
 getProjectContent content = either fail pure $ eitherDecodeStrict' content
 
 notDeletedProject :: FieldNullable SqlBool -> Field SqlBool
-notDeletedProject deletedFlag = deletedFlag ./== toFields (Just True)
+notDeletedProject deletedFlag = isNull deletedFlag .|| deletedFlag .=== toFields (Just False)
+
+printSql :: Default Unpackspec fields fields => Select fields -> IO ()
+printSql = putStrLn . fromMaybe "Empty select" . showSql
 
 loadProject :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe DecodedProject)
 loadProject metrics pool projectID = invokeAndMeasure (_loadProjectMetrics metrics) $ usePool pool $ \connection -> do
-  projects <- runSelect connection $ do
-    project@(projId, _, _, _, _, _, deleted) <- projectSelect
-    where_ $ projId .== toFields projectID
-    where_ $ notDeletedProject deleted
-    pure project
+  let projectLookupQuery = do
+            project@(projId, _, _, _, _, _, deleted) <- projectSelect
+            where_ $ projId .== toFields projectID
+            where_ $ notDeletedProject deleted
+            pure project
+  projects <- runSelect connection projectLookupQuery
   traverse projectToDecodedProject $ listToMaybe projects
 
 projectToDecodedProject :: Project -> IO DecodedProject
@@ -194,13 +199,19 @@ saveProjectInner metrics connection userId projectId timestamp possibleTitle pos
 deleteProject :: DatabaseMetrics -> DBPool -> Text -> Text -> IO ()
 deleteProject metrics pool userId projectId = invokeAndMeasure (_deleteProjectMetrics metrics) $ usePool pool $ \connection -> do
   correctUser <- checkIfProjectOwnerWithConnection metrics connection userId projectId
+  print ("correctUser" :: Text, correctUser)
   let projectUpdate = Update
                     { uTable = projectTable
                     , uUpdateWith = updateEasy (set _7 $ toFields $ Just True)
-                    , uWhere = \(projId, _, _, _, _, _, _) -> projId .== toFields projectId
+                    , uWhere = \(projId, _, _, _, _, _, _) -> projId .=== toFields projectId
                     , uReturning = rCount
                     }
   when correctUser $ void $ runUpdate_ connection projectUpdate
+  fromDB <- runSelect connection $ do
+    (rowProjectId, _, _, _, _, _, rowDeleted) <- projectSelect
+    where_ $ rowProjectId .=== toFields projectId
+    pure (rowProjectId, rowDeleted)
+  print ("fromDB" :: Text, fromDB :: [(Text, Maybe Bool)])
   unless correctUser $ throwM UserIDIncorrectException
 
 projectMetadataFields :: Text
@@ -246,7 +257,7 @@ getProjectMetadataWithConnection metrics pool projectId = invokeAndMeasure (_get
 
 getProjectsForUser :: DatabaseMetrics -> DBPool -> Text -> IO [ProjectMetadata]
 getProjectsForUser metrics pool userId = invokeAndMeasure (_getProjectsForUserMetrics metrics) $ usePool pool $ \connection -> do
-  lookupProjectMetadata Nothing (Just (\(rowUserId, _, _, _) -> rowUserId .== toFields userId)) connection
+  lookupProjectMetadata (Just (\(_, _, _, _, _, _, rowDeleted) -> notDeletedProject rowDeleted)) (Just (\(rowUserId, _, _, _) -> rowUserId .== toFields userId)) connection
 
 getProjectOwnerWithConnection :: DatabaseMetrics -> Connection -> Text -> IO (Maybe Text)
 getProjectOwnerWithConnection metrics connection projectId = invokeAndMeasure (_getProjectOwnerMetrics metrics) $ do
@@ -293,15 +304,37 @@ setShowcaseProjects metrics pool projectIds = invokeAndMeasure (_setShowcaseProj
                                , iOnConflict = Nothing
                                }
 
+getSingleValue :: a -> IO [a] -> IO a
+getSingleValue defaultValue = fmap (fromMaybe defaultValue . listToMaybe)
+
+getCount :: IO [Int] -> IO Int
+getCount = getSingleValue 0
+
+getBool :: IO [Bool] -> IO Bool
+getBool = getSingleValue False
+
 updateUserDetails :: DatabaseMetrics -> DBPool -> UserDetails -> IO ()
 updateUserDetails metrics pool UserDetails{..} = invokeAndMeasure (_updateUserDetailsMetrics metrics) $ usePool pool $ \connection -> do
   let userDetailsEntry = toFields (userId, email, name, picture)
-  void $ runInsert_ connection $ Insert
-                               { iTable = userDetailsTable
-                               , iRows = [userDetailsEntry]
-                               , iReturning = rCount
-                               , iOnConflict = Nothing
-                               }
+  let insertNew = void $ runInsert_ connection $ Insert
+                                               { iTable = userDetailsTable
+                                               , iRows = [userDetailsEntry]
+                                               , iReturning = rCount
+                                               , iOnConflict = Nothing
+                                               }
+  let updateOld = void $ runUpdate_ connection $ Update
+                                               { uTable = userDetailsTable
+                                               , uUpdateWith = updateEasy (\_ -> toFields (userId, email, name, picture))
+                                               , uWhere = (\(rowUserId, _, _, _) -> rowUserId .=== toFields userId)
+                                               , uReturning = rCount
+                                               }
+  alreadyExists <- getBool $ runSelect connection $ do
+    rowCount <- aggregate count $ do
+      (rowUserId, _, _, _) <- userDetailsSelect
+      where_ $ rowUserId .=== toFields userId
+      pure rowUserId
+    pure (rowCount .> toFields (0 :: Int64))
+  if alreadyExists then updateOld else insertNew
 
 userDetailsFromRow :: (Text, Maybe Text, Maybe Text, Maybe Text) -> UserDetails
 userDetailsFromRow (userId, email, name, picture) = UserDetails{..}
