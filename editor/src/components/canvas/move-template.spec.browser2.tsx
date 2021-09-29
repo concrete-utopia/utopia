@@ -40,7 +40,6 @@ import {
   jsxElement,
   jsxElementName,
 } from '../../core/shared/element-template'
-import sinon from 'sinon'
 
 const NewUID = 'catdog'
 
