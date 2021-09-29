@@ -1,3 +1,4 @@
+/// <reference types="karma-viewport" />
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -8,7 +9,7 @@ import {
   TestSceneUID,
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent, act } from '@testing-library/react'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils'
 import {
   selectComponents,
   unwrapGroupOrView,
@@ -20,8 +21,7 @@ import * as EP from '../../core/shared/element-path'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import * as Prettier from 'prettier'
-import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
+import * as Prettier from 'prettier/standalone'
 import { contentsToTree } from '../assets'
 import { createCodeFile } from '../custom-code/code-file.test-utils'
 import { DefaultPackageJson, StoryboardFilePath } from '../editor/store/editor-state'
@@ -44,7 +44,10 @@ import {
 const NewUID = 'catdog'
 
 describe('moveTemplate', () => {
-  beforeAll(setElectronWindow)
+  before(() => {
+    viewport.set(2200, 1000)
+  })
+
   it('wraps in 1 element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -58,7 +61,7 @@ describe('moveTemplate', () => {
     )
 
     const targets = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
 
     await renderResult.dispatch([wrapInView(targets, 'default-empty-div')], true)
 
@@ -91,7 +94,7 @@ describe('moveTemplate', () => {
     )
 
     const targets = [EP.appendNewElementPath(TestScenePath, ['aaa'])]
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
 
     await renderResult.dispatch([wrapInView(targets, 'default-empty-div')], true)
 
@@ -184,7 +187,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
       EP.appendNewElementPath(TestScenePath, ['aaa', 'fff', 'ggg']),
     ]
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
 
     await renderResult.dispatch([wrapInView(targets, 'default-empty-div')], true)
 
@@ -241,7 +244,7 @@ describe('moveTemplate', () => {
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
     ]
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
 
     await renderResult.dispatch([wrapInView(targets, 'default-empty-div')], true)
 
@@ -313,7 +316,7 @@ describe('moveTemplate', () => {
     const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
     const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])
 
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
 
     await renderResult.dispatch([wrapInView([targetPath], 'default-empty-div')], true)
     expect(getPrintedUiJsCode(renderResult.getEditorState(), appFilePath)).toEqual(
@@ -1051,7 +1054,7 @@ describe('moveTemplate', () => {
         </div>
       `),
     )
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
@@ -1176,7 +1179,7 @@ describe('moveTemplate', () => {
         PrettierConfig,
       ),
     )
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
 
     const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
@@ -1417,7 +1420,7 @@ describe('moveTemplate', () => {
         </View>
       `),
     )
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
 
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],

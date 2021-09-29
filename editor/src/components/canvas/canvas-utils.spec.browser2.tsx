@@ -14,10 +14,8 @@ import {
   singleResizeChange,
   EdgePosition,
 } from './canvas-types'
-import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
 
 describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
-  beforeAll(setElectronWindow)
   it('a simple TLWH pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -239,7 +237,6 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
-  beforeAll(setElectronWindow)
   it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
@@ -636,7 +633,6 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
-  beforeAll(setElectronWindow)
   it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
@@ -737,7 +733,6 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
-  beforeAll(setElectronWindow)
   it('TLWH, but W and H are percentage works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

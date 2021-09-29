@@ -145,6 +145,7 @@ devDependencies:
   '@types/json5': 0.0.29
   '@types/matter-js': 0.10.0
   '@types/mime-types': 2.1.0
+  '@types/mocha': 9.0.0
   '@types/node-fetch': 2.5.11
   '@types/object-hash': 1.3.4
   '@types/object-path': 0.9.29
@@ -212,6 +213,7 @@ devDependencies:
   karma: 6.3.4
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
+  karma-viewport: 1.0.8
   karma-webpack: 5.0.0_webpack@5.52.0
   lint-staged: 8.1.7
   livereloadify: 2.0.0
@@ -222,6 +224,7 @@ devDependencies:
   null-loader: 4.0.1_webpack@5.52.0
   patch-package: 6.1.2
   pegjs: 0.10.0
+  pretty-format: 26.1.0
   react-dev-utils: 10.2.1
   react-test-renderer: 16.9.0_react@17.0.0-rc.1
   script-ext-html-webpack-plugin: 2.1.4_d0775fc9e9778f8067265599ff567f52
@@ -3033,6 +3036,13 @@ packages:
   /@types/json5/0.0.29:
     resolution:
       integrity: sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
+  /@types/karma/5.0.1:
+    dependencies:
+      '@types/node': 16.10.1
+      log4js: 4.5.1
+    dev: true
+    resolution:
+      integrity: sha512-zSaPZ+ABVx/DQ5imAQZUITgLy19H0aAogknHU67JuDi2PvaXGjYBevFakkDtooBvr7dMsq/YD9vtOxMcSHWnxw==
   /@types/keyv/3.1.3:
     dependencies:
       '@types/node': 16.9.6
@@ -3057,6 +3067,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-b2yPKwCrB8x9SB65kcCistMoe3wrYnxxt5rJSZ1kprw0uOXvhuKi9kTQ746Y+Pbqoh+9C0N4zt0ztmTnG9yg7A==
+  /@types/mocha/9.0.0:
+    dev: true
+    resolution:
+      integrity: sha512-scN0hAWyLVAvLR9AyW7HoFF5sJZglyBsbPuHO4fv7JRvfmPBMfp1ozWqOf/e4wwPNxezBZXRfWzMb6iFLgEVRA==
   /@types/node-fetch/2.5.11:
     dependencies:
       '@types/node': 16.9.6
@@ -3068,6 +3082,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-F0KIgDJfy2nA3zMLmWGKxcH2ZVEtCZXHHdOQs2gSaQ27+lNeEfGxzkIw90aXswATX7AZ33tahPbzy6KAfUreVw==
+  /@types/node/16.10.1:
+    dev: true
+    resolution:
+      integrity: sha512-4/Z9DMPKFexZj/Gn3LylFgamNKHm4K3QDi0gz9B26Uk0c8izYf97B5fxfpspMNkWlFupblKM/nV8+NA9Ffvr+w==
   /@types/node/16.9.6:
     resolution:
       integrity: sha512-YHUZhBOMTM3mjFkXVcK+WwAcYmyhe1wL4lfqNtzI0b3qAy7yuSetnM7QJazgE5PFmgVTNGiLOgRFfJMqW7XpSQ==
@@ -11017,6 +11035,10 @@ packages:
       '0': node >= 0.2.0
     resolution:
       integrity: sha1-P02uSpH6wxX3EGL4UhzCOfE2YoA=
+  /jsonschema/1.4.0:
+    dev: true
+    resolution:
+      integrity: sha512-/YgW6pRMr6M7C+4o8kS+B/2myEpHCrxO4PEWnqJNBFMjn7EWXqlQ4tGwL6xTHeRplwuZmcAncdvfOad1nT2yMw==
   /jsprim/1.4.1:
     dependencies:
       assert-plus: 1.0.0
@@ -11058,6 +11080,13 @@ packages:
     dev: true
     resolution:
       integrity: sha512-Tzd5HBjm8his2OA4bouAsATYEpZrp9vC7z5E5j4C5Of5Rrs1jY67RAwXNcVmd/Bnk1wgvQRou0zGVLey44G4tQ==
+  /karma-viewport/1.0.8:
+    dependencies:
+      '@types/karma': 5.0.1
+      jsonschema: 1.4.0
+    dev: true
+    resolution:
+      integrity: sha512-KIN8zteDBmvh5Fvac/jet05cEtT+dag583DlSTMGKNvdib9NM2dMWWA/u1zfnkHxSQEQVE/zyxlqBgmOTqdqQg==
   /karma-webpack/5.0.0_webpack@5.52.0:
     dependencies:
       glob: 7.2.0
@@ -11492,6 +11521,18 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-iDKP19HOeTiykoN0bwsbwSayRwg=
+  /log4js/4.5.1:
+    dependencies:
+      date-format: 2.1.0
+      debug: 4.3.2
+      flatted: 2.0.2
+      rfdc: 1.3.0
+      streamroller: 1.0.6
+    dev: true
+    engines:
+      node: '>=6.0'
+    resolution:
+      integrity: sha512-EEEgFcE9bLgaYUKuozyFfytQM2wDHtXn4tAN41pkaxpNjAykv11GVdeI4tHtmPWW4Xrgh9R/2d7XYghDVjbKKw==
   /log4js/6.3.0:
     dependencies:
       date-format: 3.0.0
@@ -13395,6 +13436,17 @@ packages:
       node: '>= 8.3'
     resolution:
       integrity: sha512-kbo/kq2LQ/A/is0PQwsEHM7Ca6//bGPPvU6UnsdDRSKTWxT/ru/xb88v4BJf6a69H+uTytOEsTusT9ksd/1iWQ==
+  /pretty-format/26.1.0:
+    dependencies:
+      '@jest/types': 26.6.2
+      ansi-regex: 5.0.1
+      ansi-styles: 4.3.0
+      react-is: 16.13.1
+    dev: true
+    engines:
+      node: '>= 10.14.2'
+    resolution:
+      integrity: sha512-GmeO1PEYdM+non4BKCj+XsPJjFOJIPnsLewqhDVoqY1xo0yNmDas7tC2XwpMrRAHR3MaE2hPo37deX5OisJ2Wg==
   /pretty-format/26.6.2:
     dependencies:
       '@jest/types': 26.6.2
@@ -16016,6 +16068,18 @@ packages:
     dev: true
     resolution:
       integrity: sha512-Xizh4/NPuYSyAXyT7g8IvdJ9HJpxIGL9PjyhtywCZvvP0OPIdqyrr4dMikeuvY8xahpdKEBlBTySe583totajg==
+  /streamroller/1.0.6:
+    dependencies:
+      async: 2.6.3
+      date-format: 2.1.0
+      debug: 3.2.7
+      fs-extra: 7.0.1
+      lodash: 4.17.21
+    dev: true
+    engines:
+      node: '>=6.0'
+    resolution:
+      integrity: sha512-3QC47Mhv3/aZNFpDDVO44qQb9gwB9QggMEE0sQmkTAwBVYdBRWISdsywlkfm5II1Q5y/pmrHflti/IgmIzdDBg==
   /streamroller/2.2.4:
     dependencies:
       date-format: 2.1.0
@@ -18085,6 +18149,7 @@ specifiers:
   '@types/json5': 0.0.29
   '@types/matter-js': 0.10.0
   '@types/mime-types': 2.1.0
+  '@types/mocha': ^9.0.0
   '@types/node-fetch': 2.5.11
   '@types/object-hash': 1.3.4
   '@types/object-path': 0.9.29
@@ -18187,6 +18252,7 @@ specifiers:
   karma: 6.3.4
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
+  karma-viewport: ^1.0.8
   karma-webpack: 5.0.0
   lint-staged: 8.1.7
   livereloadify: 2.0.0
@@ -18211,6 +18277,7 @@ specifiers:
   pegjs: 0.10.0
   platform-detect: 3.0.0
   prettier: 2.0.5
+  pretty-format: 26.1.0
   prop-types: 15.6.2
   pubsub-js: ^1.9.2
   rc-slider: 'git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f'
