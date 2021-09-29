@@ -3,7 +3,8 @@
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,
-  includeReleaseSupport ? false
+  includeReleaseSupport ? false,
+  includeDatabaseSupport ? true
 }:
 
 let
@@ -227,6 +228,46 @@ let
 
   withEditorRunScripts = withServerBaseScripts ++ (lib.optionals includeRunLocallySupport editorRunScripts);
 
+  databaseRunScripts = [
+    (pkgs.writeScriptBin "start-postgres-background" ''
+      #!/usr/bin/env bash
+      stop-postgres
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      [ ! -d "utopia-db" ] && ${postgres}/bin/initdb -D utopia-db
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/pg_ctl -D utopia-db -l pglog.txt -o "--unix_socket_directories='$PGLOCK_DIR' -c log_statement=none" start
+      ${postgres}/bin/psql -o /dev/null -h "$PGLOCK_DIR" -d utopia -tc "SELECT 1 FROM pg_database WHERE datname = 'utopia'" || create-db
+    '')
+    (pkgs.writeScriptBin "start-postgres" ''
+      #!/usr/bin/env bash
+      stop-postgres
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      start-postgres-background
+      tail -f pglog.txt
+    '')
+    (pkgs.writeScriptBin "stop-postgres" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/pg_ctl -D utopia-db stop 
+    '')
+    (pkgs.writeScriptBin "run-psql" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/psql -h "$PGLOCK_DIR" -d utopia
+    '')
+  ];
+
+  withDatabaseRunScripts = withEditorRunScripts ++ (lib.optionals (includeDatabaseSupport || includeRunLocallySupport) databaseRunScripts);
+
   serverRunScripts = [
     (pkgs.writeScriptBin "style-project" ''
       #!/usr/bin/env bash
@@ -264,37 +305,9 @@ let
       echo "Ignore previous line about database not existing." > pglog.txt
       ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
     '')
-    (pkgs.writeScriptBin "start-postgres" ''
-      #!/usr/bin/env bash
-      stop-postgres
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      PGLOCK_DIR="`pwd`/.pglock/"
-      [ ! -d "utopia-db" ] && ${postgres}/bin/initdb -D utopia-db
-      mkdir -p $PGLOCK_DIR
-      ${postgres}/bin/pg_ctl -D utopia-db -l pglog.txt -o "--unix_socket_directories='$PGLOCK_DIR' -c log_statement=none" start
-      ${postgres}/bin/psql -o /dev/null -h "$PGLOCK_DIR" -d utopia -tc "SELECT 1 FROM pg_database WHERE datname = 'utopia'" || create-db
-      tail -f pglog.txt
-    '')
-    (pkgs.writeScriptBin "stop-postgres" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      PGLOCK_DIR="`pwd`/.pglock/"
-      mkdir -p $PGLOCK_DIR
-      ${postgres}/bin/pg_ctl -D utopia-db stop 
-    '')
-    (pkgs.writeScriptBin "run-psql" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      PGLOCK_DIR="`pwd`/.pglock/"
-      mkdir -p $PGLOCK_DIR
-      ${postgres}/bin/psql -h "$PGLOCK_DIR" -d utopia
-    '')
   ];
 
-  withServerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
+  withServerRunScripts = withDatabaseRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
 
   vscodeDevScripts = [
     (pkgs.writeScriptBin "update-vscode-patch" ''
