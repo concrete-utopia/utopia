@@ -30,11 +30,7 @@ import {
   isRequestFailure,
   startPollingLoginState,
 } from '../components/editor/server'
-import {
-  DispatchResult,
-  editorDispatch,
-  simpleStringifyActions,
-} from '../components/editor/store/dispatch'
+import { editorDispatch } from '../components/editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
