@@ -145,6 +145,7 @@ devDependencies:
   '@types/json5': 0.0.29
   '@types/matter-js': 0.10.0
   '@types/mime-types': 2.1.0
+  '@types/mocha': 9.0.0
   '@types/node-fetch': 2.5.11
   '@types/object-hash': 1.3.4
   '@types/object-path': 0.9.29
@@ -3066,6 +3067,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-b2yPKwCrB8x9SB65kcCistMoe3wrYnxxt5rJSZ1kprw0uOXvhuKi9kTQ746Y+Pbqoh+9C0N4zt0ztmTnG9yg7A==
+  /@types/mocha/9.0.0:
+    dev: true
+    resolution:
+      integrity: sha512-scN0hAWyLVAvLR9AyW7HoFF5sJZglyBsbPuHO4fv7JRvfmPBMfp1ozWqOf/e4wwPNxezBZXRfWzMb6iFLgEVRA==
   /@types/node-fetch/2.5.11:
     dependencies:
       '@types/node': 16.9.6
@@ -18144,6 +18149,7 @@ specifiers:
   '@types/json5': 0.0.29
   '@types/matter-js': 0.10.0
   '@types/mime-types': 2.1.0
+  '@types/mocha': ^9.0.0
   '@types/node-fetch': 2.5.11
   '@types/object-hash': 1.3.4
   '@types/object-path': 0.9.29

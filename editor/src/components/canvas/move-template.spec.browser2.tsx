@@ -44,8 +44,7 @@ import {
 const NewUID = 'catdog'
 
 describe('moveTemplate', () => {
-  // TODO find types for Mocha `before`
-  ;(global as any).before(() => {
+  before(() => {
     viewport.set(2200, 1000)
   })
 

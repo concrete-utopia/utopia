@@ -14,8 +14,7 @@ import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 
 describe('Select Mode Selection', () => {
-  // TODO find types for Mocha `before`
-  ;(global as any).before(() => {
+  before(() => {
     viewport.set(2200, 1000)
   })
 
@@ -177,8 +176,7 @@ describe('Select Mode Selection', () => {
 })
 
 describe('Select Mode Advanced Cases', () => {
-  // TODO find types for Mocha `before`
-  ;(global as any).before(() => {
+  before(() => {
     viewport.set(2200, 1000)
   })
 
