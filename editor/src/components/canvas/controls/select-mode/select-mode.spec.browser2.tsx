@@ -2,7 +2,6 @@ import { act, fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { setElectronWindow } from '../../../../core/shared/test-setup.test-utils'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -15,7 +14,10 @@ import CanvasActions from '../../canvas-actions'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 
 describe('Select Mode Selection', () => {
-  beforeAll(setElectronWindow)
+  // TODO find types for Mocha `before`
+  ;(global as any).before(() => {
+    viewport.set(2200, 1000)
+  })
 
   it('keep double clicking on a children eventually selects it – even if it is out of bounds of the parents', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -175,7 +177,10 @@ describe('Select Mode Selection', () => {
 })
 
 describe('Select Mode Advanced Cases', () => {
-  beforeAll(setElectronWindow)
+  // TODO find types for Mocha `before`
+  ;(global as any).before(() => {
+    viewport.set(2200, 1000)
+  })
 
   it('Can cmd-click to select Button on a Card Scene Root', async () => {
     const renderResult = await renderTestEditorWithCode(TestProjectAlpineClimb)
