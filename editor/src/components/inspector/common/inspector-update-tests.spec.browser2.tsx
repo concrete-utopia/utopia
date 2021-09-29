@@ -5,13 +5,11 @@ import {
   renderTestEditorWithCode,
   TestScenePath,
 } from '../../canvas/ui-jsx.test-utils'
-import { setElectronWindow } from '../../../core/shared/test-setup.test-utils'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 
 describe('updating style properties keeps the original order', () => {
-  beforeAll(setElectronWindow)
   it('element with different padding props', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

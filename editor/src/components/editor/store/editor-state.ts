@@ -206,11 +206,6 @@ export const DefaultPackagesList: Array<DependencyPackageDetails> = [
     version: '0.4.1',
     status: 'default-package',
   },
-  {
-    name: 'react-spring',
-    version: '8.0.27',
-    status: 'default-package',
-  },
 ]
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'

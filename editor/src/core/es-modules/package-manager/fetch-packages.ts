@@ -222,6 +222,11 @@ async function fetchPackagerResponse(
     return null
   }
 
+  if (window.KarmaTestEnvironment) {
+    // prevent 404s caused by trying to hit a not running packager server in Karma tests
+    return null
+  }
+
   const versionedDependency = toVersionedDependencyString(dependency, resolvedVersion)
 
   const packagesUrl = getPackagerUrl(versionedDependency)

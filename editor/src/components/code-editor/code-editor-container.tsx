@@ -27,18 +27,21 @@ const VSCodeIframeContainer = betterReactMemo(
         }}
       >
         <VSCodeLoadingScreen />
-        <iframe
-          key={'vscode-editor'}
-          id={'vscode-editor'}
-          src={url.toString()}
-          allow='autoplay'
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'transparent',
-            borderWidth: 0,
-          }}
-        />
+        {/* for Karma tests, we skip creating this iframe to avoid hitting a 404 */}
+        {window.KarmaTestEnvironment ? null : (
+          <iframe
+            key={'vscode-editor'}
+            id={'vscode-editor'}
+            src={url.toString()}
+            allow='autoplay'
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'transparent',
+              borderWidth: 0,
+            }}
+          />
+        )}
       </div>
     )
   },
