@@ -94,7 +94,17 @@ function getAllUniqueUidsInner(
 
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 
+let MOCK_NEXT_GENERATED_UID: string | null = null
+export function FOR_TESTS_setNextGeneratedUid(nextUid: string): void {
+  MOCK_NEXT_GENERATED_UID = nextUid
+}
+
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
+  if (MOCK_NEXT_GENERATED_UID != null) {
+    const toReturn = MOCK_NEXT_GENERATED_UID
+    MOCK_NEXT_GENERATED_UID = null
+    return toReturn
+  }
   const existingUIDS = getAllUniqueUids(projectContents)
   return generateUID(existingUIDS)
 }

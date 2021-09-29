@@ -75,7 +75,7 @@ import { printCode, printCodeOptions } from '../../core/workers/parser-printer/p
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
-import { switchEditorMode } from '../editor/actions/action-creators'
+import { setPanelVisibility, switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -252,7 +252,12 @@ export async function renderTestEditorWithModel(
   })
 
   await act(async () => {
-    await asyncTestDispatch([switchEditorMode(EditorModes.selectMode())], undefined, true, false)
+    await asyncTestDispatch(
+      [switchEditorMode(EditorModes.selectMode()), setPanelVisibility('codeEditor', false)],
+      undefined,
+      true,
+      false,
+    )
   })
 
   return {
