@@ -13,7 +13,7 @@ webpackConfig['plugins'].push(
 
 module.exports = function (config) {
   config.set({
-    plugins: ['karma-webpack', 'karma-mocha', 'karma-chrome-launcher'],
+    plugins: ['karma-webpack', 'karma-mocha', 'karma-chrome-launcher', 'karma-viewport'],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
@@ -22,7 +22,7 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha'],
+    frameworks: ['mocha', 'viewport'],
     webpack: webpackConfig,
 
     // list of files / patterns to load in the browser

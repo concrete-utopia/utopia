@@ -1,3 +1,4 @@
+/// <reference types="karma-viewport" />
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -44,6 +45,11 @@ import sinon from 'sinon'
 const NewUID = 'catdog'
 
 describe('moveTemplate', () => {
+  // TODO find types for Mocha `before`
+  ;(global as any).before(() => {
+    viewport.set(2200, 1000)
+  })
+
   it('wraps in 1 element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
