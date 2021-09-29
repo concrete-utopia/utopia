@@ -213,6 +213,7 @@ devDependencies:
   karma: 6.3.4
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
+  karma-mocha-reporter: 2.2.5_karma@6.3.4
   karma-viewport: 1.0.8
   karma-webpack: 5.0.0_webpack@5.52.0
   lint-staged: 8.1.7
@@ -11074,6 +11075,17 @@ packages:
     dev: true
     resolution:
       integrity: sha512-3dPs/n7vgz1rxxtynpzZTvb9y/GIaW8xjAwcIGttLbycqoFtI7yo1NGnQi6oFTherRE+GIhCAHZC4vEqWGhNvg==
+  /karma-mocha-reporter/2.2.5_karma@6.3.4:
+    dependencies:
+      chalk: 2.4.2
+      karma: 6.3.4
+      log-symbols: 2.2.0
+      strip-ansi: 4.0.0
+    dev: true
+    peerDependencies:
+      karma: '>=0.13'
+    resolution:
+      integrity: sha1-FRIAlejtgZGG5HoLAS8810GJVWA=
   /karma-mocha/2.0.1:
     dependencies:
       minimist: 1.2.5
@@ -14107,7 +14119,7 @@ packages:
   /rc-tooltip/3.7.3:
     dependencies:
       babel-runtime: 6.26.0
-      prop-types: 15.7.2
+      prop-types: 15.6.2
       rc-trigger: 2.6.5
     dev: false
     resolution:
@@ -14175,7 +14187,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       classnames: 2.2.6
-      prop-types: 15.7.2
+      prop-types: 15.6.2
       rc-align: 2.4.5
       rc-animate: 2.11.1
       rc-util: 4.21.1
@@ -14208,7 +14220,7 @@ packages:
   /rc-util/4.21.1:
     dependencies:
       add-dom-event-listener: 1.1.0
-      prop-types: 15.7.2
+      prop-types: 15.6.2
       react-is: 16.13.1
       react-lifecycles-compat: 3.0.4
       shallowequal: 1.1.0
@@ -17296,7 +17308,7 @@ packages:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
-      prop-types: 15.7.2
+      prop-types: 15.6.2
       react: /utopia-react/17.0.0-rc.1
       scheduler: 0.18.0
     dev: false
@@ -18079,7 +18091,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       classnames: 2.2.6
-      prop-types: 15.7.2
+      prop-types: 15.6.2
       rc-tooltip: 3.7.3
       rc-util: 4.21.1
       shallowequal: 1.1.0
@@ -18252,6 +18264,7 @@ specifiers:
   karma: 6.3.4
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
+  karma-mocha-reporter: ^2.2.5
   karma-viewport: ^1.0.8
   karma-webpack: 5.0.0
   lint-staged: 8.1.7
