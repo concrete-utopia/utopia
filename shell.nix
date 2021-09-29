@@ -1,16 +1,18 @@
 { 
-  compiler ? "ghc865",
+  compiler ? "ghc8104",
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,
-  includeReleaseSupport ? false
+  includeReleaseSupport ? false,
+  includeDatabaseSupport ? true
 }:
 
 let
   release = (import ./release.nix {});
   pkgs = release.pkgs;
   lib = pkgs.lib;
-  node = pkgs.nodejs-14_x;
+  node = pkgs.nodejs-16_x;
+  postgres = pkgs.postgresql_13;
   pnpm = pkgs.nodePackages.pnpm;
   stdenv = pkgs.stdenv;
 
@@ -219,6 +221,46 @@ let
 
   withEditorRunScripts = withServerBaseScripts ++ (lib.optionals includeRunLocallySupport editorRunScripts);
 
+  databaseRunScripts = [
+    (pkgs.writeScriptBin "start-postgres-background" ''
+      #!/usr/bin/env bash
+      stop-postgres
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      [ ! -d "utopia-db" ] && ${postgres}/bin/initdb -D utopia-db
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/pg_ctl -D utopia-db -l pglog.txt -o "--unix_socket_directories='$PGLOCK_DIR' -c log_statement=none" start
+      ${postgres}/bin/psql -o /dev/null -h "$PGLOCK_DIR" -d utopia -tc "SELECT 1 FROM pg_database WHERE datname = 'utopia'" || create-db
+    '')
+    (pkgs.writeScriptBin "start-postgres" ''
+      #!/usr/bin/env bash
+      stop-postgres
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      start-postgres-background
+      tail -f pglog.txt
+    '')
+    (pkgs.writeScriptBin "stop-postgres" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/pg_ctl -D utopia-db stop 
+    '')
+    (pkgs.writeScriptBin "run-psql" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/psql -h "$PGLOCK_DIR" -d utopia
+    '')
+  ];
+
+  withDatabaseRunScripts = withEditorRunScripts ++ (lib.optionals (includeDatabaseSupport || includeRunLocallySupport) databaseRunScripts);
+
   serverRunScripts = [
     (pkgs.writeScriptBin "style-project" ''
       #!/usr/bin/env bash
@@ -248,9 +290,17 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
     '')
+    (pkgs.writeScriptBin "create-db" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      echo "Ignore previous line about database not existing." > pglog.txt
+      ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
+    '')
   ];
 
-  withServerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
+  withServerRunScripts = withDatabaseRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
 
   vscodeDevScripts = [
     (pkgs.writeScriptBin "update-vscode-patch" ''
@@ -294,6 +344,7 @@ let
       #!/usr/bin/env bash
       # Kill nodemon because it just seems to keep running.
       pkill nodemon
+      stop-postgres
       tmux kill-session -t utopia-dev
     '')
     (pkgs.writeScriptBin "start-minimal" ''
@@ -316,6 +367,8 @@ let
         send-keys -t :7 watch-utopia-vscode-extension C-m \; \
         new-window -n "VSCode Pull Extension" \; \
         send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        new-window -n "PostgreSQL" \; \
+        send-keys -t :9 start-postgres C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full" ''
@@ -377,7 +430,7 @@ let
     pkgs.cabal2nix
     pkgs.haskellPackages.stylish-haskell
     pkgs.haskellPackages.hpack
-    pkgs.postgresql
+    postgres
   ];
 
   serverRunPackages = [

@@ -23,7 +23,6 @@ import qualified Text.Blaze.Html5        as H
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
-import           Web.HttpApiData
 
 {-
   'deriveJSON' as used here creates 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances
@@ -207,7 +206,7 @@ packagerAPI :: Proxy PackagePackagerAPI
 packagerAPI = Proxy
 
 packagerLink :: Text -> Text -> Text
-packagerLink packageName packageVersion =
-  let versionedName = packageName <> "@" <> packageVersion
+packagerLink jsPackageName jsPackageVersion =
+  let versionedName = jsPackageName <> "@" <> jsPackageVersion
    in toUrlPiece $ safeLink apiProxy packagerAPI versionedName
 

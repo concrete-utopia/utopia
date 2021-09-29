@@ -19,24 +19,26 @@ import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
 import           Data.IORef
-import           Data.Pool
 import           Data.Text
-import           Database.Persist.Sqlite
-import           Network.HTTP.Client         (Manager, defaultManagerSettings,
-                                              newManager)
+import qualified Data.Text.Lazy                 as TL
+import           Data.Text.Lazy.Lens
+import           Network.HTTP.Client            (Manager,
+                                                 defaultManagerSettings,
+                                                 newManager)
 import           Network.HTTP.Client.TLS
-import qualified Network.Wreq                as WR
-import           Protolude
+import qualified Network.Wreq                   as WR
+import           Protolude                      hiding (Handler, toUpper)
 import           Servant
 import           Servant.Client
 import           System.Environment
-import           System.Metrics              hiding (Value)
+import           System.Metrics                 hiding (Value)
 import           System.Metrics.Json
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
-import qualified Utopia.Web.Database         as DB
+import qualified Utopia.Web.Database            as DB
+import           Utopia.Web.Database.Migrations
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
@@ -54,7 +56,7 @@ import           Web.Cookie
 -}
 data DevServerResources = DevServerResources
                         { _commitHash            :: Text
-                        , _projectPool           :: Pool SqlBackend
+                        , _projectPool           :: DBPool
                         , _serverPort            :: Int
                         , _silentMigration       :: Bool
                         , _logOnStartup          :: Bool
@@ -92,10 +94,10 @@ localAuthURL :: Text
 localAuthURL = "/authenticate?code=logmein&state=shrugemoji"
 
 dummyUser :: Text -> UserDetails
-dummyUser cdnRoot = UserDetails { userDetailsUserId  = "1"
-                                , userDetailsEmail   = Just "team@utopia.app"
-                                , userDetailsName    = Just "Utopian Worker #296"
-                                , userDetailsPicture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
+dummyUser cdnRoot = UserDetails { userId  = "1"
+                                , email   = Just "team@utopia.app"
+                                , name    = Just "Utopian Worker #296"
+                                , picture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
                                 }
 
 {-|
@@ -124,7 +126,7 @@ simpleWebpackRequest :: Text -> IO Text
 simpleWebpackRequest endpoint = do
   let webpackUrl = "http://localhost:8088/" <> endpoint
   response <- WR.get $ toS webpackUrl
-  return $ toS (response ^. WR.responseBody)
+  return $ TL.toStrict (response ^. (WR.responseBody . utf8))
 
 {-|
   Interpretor for a service call, which converts it into side effecting calls ready to be invoked.
@@ -154,45 +156,45 @@ innerServerExecutor (ValidateAuth cookie action) = do
 innerServerExecutor (UserForId userIdToGet action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserWithPool metrics pool userIdToGet action
+  getUserWithDBPool metrics pool userIdToGet action
 innerServerExecutor (DebugLog logContent next) = do
   putText logContent
   return next
 innerServerExecutor (GetProjectMetadata projectID action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  metadata <- liftIO $ getProjectDetailsWithPool metrics pool projectID
+  metadata <- liftIO $ getProjectDetailsWithDBPool metrics pool projectID
   return $ action metadata
 innerServerExecutor (LoadProject projectID action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  loadProjectWithPool metrics pool projectID action
+  loadProjectWithDBPool metrics pool projectID action
 innerServerExecutor (CreateProject action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  createProjectWithPool metrics pool action
+  createProjectWithDBPool metrics pool action
 innerServerExecutor (SaveProject sessionUser projectID possibleTitle possibleProjectContents next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveProjectWithPool metrics pool sessionUser projectID possibleTitle possibleProjectContents
+  saveProjectWithDBPool metrics pool sessionUser projectID possibleTitle possibleProjectContents
   return next
 innerServerExecutor (DeleteProject sessionUser projectID next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  deleteProjectWithPool metrics pool sessionUser projectID
+  deleteProjectWithDBPool metrics pool sessionUser projectID
   return next
 innerServerExecutor (GetProjectsForUser user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserProjectsWithPool metrics pool user action
+  getUserProjectsWithDBPool metrics pool user action
 innerServerExecutor (GetShowcaseProjects action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getShowcaseProjectsWithPool metrics pool action
+  getShowcaseProjectsWithDBPool metrics pool action
 innerServerExecutor (SetShowcaseProjects showcaseProjects next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  setShowcaseProjectsWithPool metrics pool showcaseProjects next
+  setShowcaseProjectsWithDBPool metrics pool showcaseProjects next
 innerServerExecutor (LoadProjectAsset path possibleETag action) = do
   awsResource <- fmap _awsResources ask
   let loadCall = maybe loadProjectAssetFromDisk loadProjectAssetFromS3 awsResource
@@ -290,11 +292,11 @@ innerServerExecutor (GetVSCodeAssetRoot action) = do
 innerServerExecutor (GetUserConfiguration user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserConfigurationWithPool metrics pool user action
+  getUserConfigurationWithDBPool metrics pool user action
 innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveUserConfigurationWithPool metrics pool user possibleShortcutConfig
+  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig
   return action
 innerServerExecutor (ClearBranchCache branchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
@@ -327,7 +329,7 @@ serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) serv
 
 startup :: DevServerResources -> IO Stop
 startup DevServerResources{..} = do
-  DB.migrateDatabase _silentMigration _projectPool
+  migrateDatabase (not _silentMigration) True _projectPool
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread

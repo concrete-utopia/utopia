@@ -120,12 +120,12 @@ getProjectContentsTreeFile projectContentsTree pathElements =
       fileLens filename = ix filename . _Ctor @"ProjectContentsTreeFile" . field @"content"
       finalPathElement : remainingPathElements = reverse pathElements
       -- Construct the lens from the leaf up to the root.
-      lookupLens = foldl' (\soFar -> \filename -> directoryContentLens filename . soFar) (fileLens finalPathElement) remainingPathElements
+      lookupLens = foldl' (\soFar filename -> directoryContentLens filename . soFar) (fileLens finalPathElement) remainingPathElements
    in firstOf lookupLens projectContentsTree
 
 projectContentsTreeFromDecodedProject :: DecodedProject -> Either Text ProjectContentsTreeRoot
-projectContentsTreeFromDecodedProject DecodedProject{..} = do
-  projectContentsValue <- maybe (Left "No projectContents field in decoded project model.") pure $ firstOf (key "projectContents") _content
+projectContentsTreeFromDecodedProject decodedProject = do
+  projectContentsValue <- maybe (Left "No projectContents field in decoded project model.") pure $ firstOf (field @"content" . key "projectContents") decodedProject
   first pack $ parseEither parseJSON projectContentsValue
 
 

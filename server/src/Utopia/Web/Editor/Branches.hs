@@ -168,7 +168,7 @@ triggerDownloadAsNeeded branchDownloads@BranchDownloads{..} branchName BranchDow
   putText ("Downloading for branch " <> branchName)
   let fixedBranchName = fixBranchName branchName
   branchFolder <- getLocalFolder branchDownloads branchName
-  let wreqOptions = W.defaults & W.auth ?~ W.awsAuth W.AWSv4 (toS branchDownloadsAWSAccessKey) (toS branchDownloadsAWSSecretKey)
+  let wreqOptions = W.defaults & W.auth ?~ W.awsAuth W.AWSv4 (encodeUtf8 branchDownloadsAWSAccessKey) (encodeUtf8 branchDownloadsAWSSecretKey)
   let targetURL = "https://" <> branchDownloadsAWSBucket <> ".s3.amazonaws.com/editor/" <> fixedBranchName <> ".tar.gz"
   -- Warning, this expects to be launched inside a read locked context.
   elevateIntoWriteLockForBranch branchDownloads branchName $ do
