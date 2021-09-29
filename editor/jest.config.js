@@ -94,7 +94,6 @@ module.exports = {
       testEnvironment: './jest-environment',
       testPathIgnorePatterns: ['/lib/', '/node_modules/', '/.github-test-projects/'],
       testRegex: 'src/.*\\.spec\\.(jsx?|tsx?)$',
-      // moduleDirectories: ['src', 'node_modules', '<rootDir>/node_modules'],
       moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
       moduleNameMapper: {
         '^domtoimage$': '<rootDir>/src/utils/stubs/dom-to-image-stub.ts',

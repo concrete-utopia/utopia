@@ -22,10 +22,6 @@
   "jest": {
     "testEnvironment": "jest-environment-jsdom",
     "testRegex": "src/.*\\.spec\\.(jsx?|tsx?)$",
-    "moduleDirectories": [
-      "node_modules",
-      "<rootDir>/node_modules"
-    ],
     "moduleFileExtensions": [
       "ts",
       "tsx",
