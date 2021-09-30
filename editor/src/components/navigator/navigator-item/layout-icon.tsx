@@ -1,5 +1,5 @@
 import { ElementPath } from '../../../core/shared/project-file-types'
-import * as React from 'react'
+import React from 'react'
 import { IcnProps, Icn, useColorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { WarningIcon } from '../../../uuiui/warning-icon'

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import { FlexRow } from '../layout/flex-row'
-import * as React from 'react'
+import React from 'react'
 
 export const ActionSheet = (props: any) => {
   const stopProp = React.useCallback((e: React.SyntheticEvent) => {

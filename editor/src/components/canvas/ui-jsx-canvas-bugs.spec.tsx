@@ -9,7 +9,7 @@ describe('UiJsxCanvas', () => {
     testCanvasRender(
       null,
       `
-import * as React from 'react'
+import React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 const DefaultComments = [
@@ -42,7 +42,7 @@ export var storyboard = (
     const result = testCanvasRenderInline(
       null,
       `
-import * as React from 'react'
+import React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 export const App = () => {
@@ -100,7 +100,7 @@ export var storyboard = (
     const result = testCanvasRenderInlineMultifile(
       null,
       `
-import * as React from 'react'
+import React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 import Appy from './app'
 
@@ -117,7 +117,7 @@ export var storyboard = (
 `,
       {
         'app.js': `
-import * as React from 'react'
+import React from 'react'
 export default function App(props) {
   return <div data-uid='app-outer-div'>
     <div data-uid='inner-div'>hello</div>
@@ -162,7 +162,7 @@ export default function App(props) {
     const result = testCanvasRenderInlineMultifile(
       null,
       `
-import * as React from 'react'
+import React from 'react'
 import { Scene as SC, Storyboard } from 'utopia-api'
 import App from './app'
 
@@ -214,7 +214,7 @@ export var storyboard = (
 `,
       {
         'app.js': `
-import * as React from 'react'
+import React from 'react'
 export default function App(props) {
   return <div data-uid='app-outer-div'>
     <div data-uid='inner-div'>hello</div>

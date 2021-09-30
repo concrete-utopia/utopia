@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { useColorTheme, FlexRow, Icn, UtopiaTheme, SimpleFlexRow } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { MetadataEditorModalPreviewHeight } from '../../../controls/color-picker'

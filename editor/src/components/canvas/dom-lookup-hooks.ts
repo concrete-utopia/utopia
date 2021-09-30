@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { WindowPoint } from '../../core/shared/math-utils'
 import { useRefEditorState } from '../editor/store/store-hook'
 import { CanvasPositions } from './canvas-types'

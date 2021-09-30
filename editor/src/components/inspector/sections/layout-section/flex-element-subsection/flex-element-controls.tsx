@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 
 import { SelectOption, SelectControl } from '../../../controls/select-control'
 import { OptionChainOption, OptionChainControl } from '../../../controls/option-chain-control'

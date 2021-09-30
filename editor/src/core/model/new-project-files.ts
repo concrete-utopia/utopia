@@ -8,7 +8,7 @@ import {
 } from '../shared/project-file-types'
 
 export const sampleAppJSCode = `
-import * as React from 'react'
+import React from 'react'
 export var App = (props) => {
   return (
     <div
@@ -36,7 +36,7 @@ export function getDefaultUIJsFile(): TextFile {
 }
 
 export const sampleCode = `
-import * as React from 'react'
+import React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 export var storyboard = (

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
 import { KeepDeepEqualityCall, keepDeepEqualityResult } from './deep-equality'

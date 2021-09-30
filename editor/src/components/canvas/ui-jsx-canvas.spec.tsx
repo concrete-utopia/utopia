@@ -1390,7 +1390,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `
-import * as React from 'react'
+import React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -1642,7 +1642,7 @@ export var storyboard = (
     testCanvasRender(
       null,
       `
-import * as React from 'react'
+import React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 const AppContext = React.createContext({})
@@ -1684,7 +1684,7 @@ export var storyboard = (
     testCanvasRender(
       null,
       `
-import * as React from 'react'
+import React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 export var App = (props) => {
   return (

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
-import * as React from 'react'
+import React from 'react'
 import {
   fetchProjectMetadata,
   projectEditorURL,

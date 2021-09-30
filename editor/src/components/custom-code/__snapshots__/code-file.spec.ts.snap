@@ -147,7 +147,7 @@ Object {
   "exportsInfo": Array [
     Object {
       "code": "// component library
-import * as React from 'react'
+import React from 'react'
 import { Text, View } from 'utopia-api'
 
 export default (props) => (
@@ -303,7 +303,7 @@ Object {
         ],
         "sourcesContent": Array [
           "
-import * as React from 'react'
+import React from 'react'
 import {
   Ellipse,
   HelperFunctions,
@@ -500,7 +500,7 @@ exports.App = App; //# sourceMappingURL=app.js.map",
         ],
         "sourcesContent": Array [
           "// component library
-import * as React from 'react'
+import React from 'react'
 import { Text, View } from 'utopia-api'
 
 export default (props) => (
@@ -671,7 +671,7 @@ exports.ComponentWithProps.propertyControls = {
   "exportsInfo": Array [
     Object {
       "code": "
-import * as React from 'react'
+import React from 'react'
 import {
   Ellipse,
   HelperFunctions,
@@ -768,7 +768,7 @@ export var App = (props) => {
     },
     Object {
       "code": "// component library
-import * as React from 'react'
+import React from 'react'
 import { Text, View } from 'utopia-api'
 
 export default (props) => (
@@ -870,7 +870,7 @@ ReactDOM.render(<App />, root);
         ],
         "sourcesContent": Array [
           "
-import * as React from 'react'
+import React from 'react'
 import {
   Ellipse,
   HelperFunctions,
@@ -1123,7 +1123,7 @@ if (root != null) {
         ],
         "sourcesContent": Array [
           "// component library
-import * as React from 'react'
+import React from 'react'
 import { Text, View } from 'utopia-api'
 
 export default (props) => (
@@ -1323,7 +1323,7 @@ Object {
         ],
         "sourcesContent": Array [
           "
-import * as React from 'react'
+import React from 'react'
 import {
   Ellipse,
   HelperFunctions,
@@ -1495,7 +1495,7 @@ exports.App = App; //# sourceMappingURL=app.js.map",
   "exportsInfo": Array [
     Object {
       "code": "
-import * as React from 'react'
+import React from 'react'
 import {
   Ellipse,
   HelperFunctions,
@@ -1603,7 +1603,7 @@ export var App = (props) => {
         ],
         "sourcesContent": Array [
           "
-import * as React from 'react'
+import React from 'react'
 import {
   Ellipse,
   HelperFunctions,

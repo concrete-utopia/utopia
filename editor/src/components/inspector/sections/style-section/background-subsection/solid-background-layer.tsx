@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { isRight } from '../../../../../core/shared/either'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { removeRow } from '../../../common/context-menu-items'

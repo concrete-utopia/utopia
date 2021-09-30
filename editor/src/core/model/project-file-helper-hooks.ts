@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { updateFile } from '../../components/editor/actions/action-creators'
 import { getOpenUIJSFile, getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'

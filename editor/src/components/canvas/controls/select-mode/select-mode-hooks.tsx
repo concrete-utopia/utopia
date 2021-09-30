@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { last, uniqBy } from '../../../../core/shared/array-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'

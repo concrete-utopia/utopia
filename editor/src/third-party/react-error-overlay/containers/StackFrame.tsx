@@ -6,7 +6,7 @@
  */
 
 /* @flow */
-import * as React from 'react'
+import React from 'react'
 import { Component } from 'react'
 import CodeBlock from './StackFrameCodeBlock'
 import { getPrettyURL } from '../utils/getPrettyURL'

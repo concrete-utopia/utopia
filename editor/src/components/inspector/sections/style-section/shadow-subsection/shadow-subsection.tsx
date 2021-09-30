@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { animated, SpringValue } from 'react-spring'
 import utils from '../../../../../utils/utils'
 import {

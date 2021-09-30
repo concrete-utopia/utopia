@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 
 import * as PP from '../../../../../core/shared/property-path'
 import { OptionChainControl } from '../../../controls/option-chain-control'

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { checkProjectOwned } from '../editor/persistence/persistence-backend'
 import { reduxDevtoolsLogMessage } from '../../core/shared/redux-devtools'
 import { fetchProjectMetadata } from '../../common/server'

@@ -12,7 +12,7 @@ import { PropertyControls, getDefaultProps, ControlDescription } from 'utopia-ap
 import { isRight, foldEither, left } from '../shared/either'
 import { forEachValue, objectMap } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
-import * as React from 'react'
+import React from 'react'
 import { joinSpecial, pluck } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
 import {

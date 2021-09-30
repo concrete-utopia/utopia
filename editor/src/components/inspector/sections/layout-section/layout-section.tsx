@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
 import { SelfLayoutSubsection } from './self-layout-subsection/self-layout-subsection-old'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'

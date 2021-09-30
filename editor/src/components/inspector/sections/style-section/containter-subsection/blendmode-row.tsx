@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
 import { betterReactMemo, getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'

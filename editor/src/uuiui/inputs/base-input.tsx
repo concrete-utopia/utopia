@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
 import { ControlStyles, betterReactMemo, ControlStatus } from '../../uuiui-deps'
 import { UtopiaTheme } from '../styles/theme'
-import * as React from 'react'
+import React from 'react'
 
 export type ChainedType = 'not-chained' | 'first' | 'last' | 'middle'
 

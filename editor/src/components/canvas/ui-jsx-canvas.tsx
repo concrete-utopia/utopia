@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { MapLike } from 'typescript'
 // Inject the babel helpers into the global scope
 import '../../bundled-dependencies/babelHelpers'

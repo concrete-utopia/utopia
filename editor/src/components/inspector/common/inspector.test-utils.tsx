@@ -1,5 +1,5 @@
 import { produce } from 'immer'
-import * as React from 'react'
+import React from 'react'
 import create from 'zustand'
 import { emptyComments, jsxAttributeValue, JSXElement } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'

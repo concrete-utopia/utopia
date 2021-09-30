@@ -4825,7 +4825,7 @@ describe('lintAndParse', () => {
 describe('Babel transpile', () => {
   it('can transpile jsx fragment', () => {
     const file = `
-import * as React from 'react'
+import React from 'react'
 
 export var App = (props) => {
   return (

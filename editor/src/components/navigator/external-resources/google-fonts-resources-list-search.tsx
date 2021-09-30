@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { FixedSizeTree } from 'react-vtree'
 import { TreeWalker } from 'react-vtree/dist/es/Tree'
 import { googleFontsList } from '../../../../assets/google-fonts-list'

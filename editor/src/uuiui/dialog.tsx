@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import * as React from 'react'
+import React from 'react'
 import { Isolator } from './isolator'
 import { FlexColumn } from './widgets/layout/flex-column'
 import { FlexRow } from './widgets/layout/flex-row'

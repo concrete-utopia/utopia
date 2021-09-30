@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import Utils from '../../../utils/utils'
 import { ControlStatus, ControlStyles, getControlStyles } from '../common/control-status'
 import { FramePoint } from 'utopia-api'

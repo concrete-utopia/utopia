@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import useInterval from '@use-it/interval'
-import * as React from 'react'
+import React from 'react'
 import * as ReactDOM from 'react-dom'
 import Select, {
   components,

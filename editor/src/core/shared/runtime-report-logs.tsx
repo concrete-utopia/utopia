@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import type { ConsoleLog } from '../../components/editor/store/editor-state'
 import {
   atomWithPubSub,

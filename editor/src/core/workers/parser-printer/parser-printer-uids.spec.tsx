@@ -221,7 +221,7 @@ describe('parseCode', () => {
 describe('printCode', () => {
   it('applies changes back into the original code', () => {
     const startingCode = `
-import * as react from 'react'
+import React from 'react'
 import { scene, storyboard, view } from 'utopia-api'
 
 export var app = (props) => {
@@ -324,7 +324,7 @@ export var app = (props) => {
     )
     const expectedResult = applyPrettier(
       `
-import * as react from 'react'
+import React from 'react'
 import { scene, storyboard, view } from 'utopia-api'
 
 export var app = (props) => {

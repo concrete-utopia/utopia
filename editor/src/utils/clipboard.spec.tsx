@@ -39,7 +39,7 @@ describe('copy to clipboard', () => {
       [StoryboardFilePath]: createCodeFile(
         StoryboardFilePath,
         `
-import * as React from 'react'
+import React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 export var storyboard = (
@@ -56,7 +56,7 @@ export var storyboard = (
       [appFilePath]: createCodeFile(
         appFilePath,
         `
-import * as React from 'react'
+import React from 'react'
 export var App = (props) => {
   return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
     <div data-uid='app-inner-div-to-copy'/>

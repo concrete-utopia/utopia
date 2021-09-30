@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
 import { isZeroSizedElement } from './outline-utils'
 import { ZeroSizeOutlineControl } from './zero-sized-element-controls'

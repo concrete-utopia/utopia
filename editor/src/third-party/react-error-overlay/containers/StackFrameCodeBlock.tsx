@@ -6,7 +6,7 @@
  */
 
 /* @flow */
-import * as React from 'react'
+import React from 'react'
 import CodeBlock from '../components/CodeBlock'
 import { applyStyles } from '../utils/dom/css'
 import { absolutifyCaret } from '../utils/dom/absolutifyCaret'

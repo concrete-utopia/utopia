@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Icn, Icons } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 
