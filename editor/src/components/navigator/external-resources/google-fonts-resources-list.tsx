@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { setFocus } from '../../../components/common/actions'
 import { isRight } from '../../../core/shared/either'
 import { useExternalResources } from '../../../printer-parsers/html/external-resources-parser'

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { Interpolation, jsx } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 
 interface ControlledTextAreaProps {
   value: string

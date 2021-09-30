@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { useEditorState } from '../../../components/editor/store/store-hook'
 import {
   betterReactMemo,

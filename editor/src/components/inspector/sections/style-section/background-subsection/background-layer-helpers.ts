@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { ContextMenuItem } from '../../../../context-menu-items'
 import { SelectOption } from '../../../controls/select-control'
 import {

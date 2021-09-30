@@ -1,5 +1,5 @@
 import { ControlProps } from './new-canvas-controls'
-import * as React from 'react'
+import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { useEditorState } from '../../editor/store/store-hook'
 import uuid from 'uuid'

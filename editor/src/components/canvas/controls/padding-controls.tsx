@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Sides } from 'utopia-api'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'

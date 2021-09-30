@@ -1,5 +1,5 @@
 export const MajesticBrokerTestCaseCode = `
-import * as React from 'react'
+import React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
 export var User = (props) => {
   return <span style={{ ...props.style, fontWeight: 600 }}>{props.children}</span>

@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/react'
 import { Console } from 'console-feed'
 import { Resizable, ResizeCallback } from 're-resizable'
-import * as React from 'react'
+import React from 'react'
 import {
   ErrorMessage,
   ErrorMessageSeverity,

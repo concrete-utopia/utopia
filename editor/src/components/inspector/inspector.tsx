@@ -1,5 +1,5 @@
 import * as ObjectPath from 'object-path'
-import * as React from 'react'
+import React from 'react'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
   findElementAtPath,

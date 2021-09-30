@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { VariableSizeList } from 'react-window'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'

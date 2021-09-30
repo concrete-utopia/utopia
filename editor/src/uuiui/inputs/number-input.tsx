@@ -2,7 +2,7 @@
 /** @jsxFrag React.Fragment */
 import { Interpolation, jsx } from '@emotion/react'
 import classNames from 'classnames'
-import * as React from 'react'
+import React from 'react'
 import {
   cssNumber,
   CSSNumber,

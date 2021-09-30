@@ -6,7 +6,7 @@
  */
 
 /* @flow */
-import * as React from 'react'
+import React from 'react'
 import { Component, ReactNode } from 'react'
 import { black } from '../styles'
 

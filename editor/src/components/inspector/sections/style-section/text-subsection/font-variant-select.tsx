@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { OptionsType } from 'react-select'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { identity } from '../../../../../core/shared/utils'

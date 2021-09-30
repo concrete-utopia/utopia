@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { isRight } from '../../../core/shared/either'
 import { ColorPicker } from './color-picker'
 import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../common/css-utils'

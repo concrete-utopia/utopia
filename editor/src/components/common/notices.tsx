@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../editor/actions/action-creators'
-import * as React from 'react'
+import React from 'react'
 import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../../uuiui'
 import { useEditorState } from '../editor/store/store-hook'
 import { Notice, NoticeLevel } from './notice'

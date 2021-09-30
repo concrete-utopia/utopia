@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { MomentumContextMenu } from '../../context-menu-wrapper'
 import { useEditorState } from '../../editor/store/store-hook'
 import { ContextMenuItem, requireDispatch } from '../../context-menu-items'

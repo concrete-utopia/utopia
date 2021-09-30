@@ -1,5 +1,5 @@
 /**@jsx jsx */
-import * as React from 'react'
+import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'

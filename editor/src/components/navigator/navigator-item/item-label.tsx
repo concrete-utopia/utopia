@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Component, CSSProperties } from 'react'
 import { ElementPath, ElementOriginType } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'

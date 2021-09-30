@@ -1,6 +1,6 @@
 import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
-import * as React from 'react'
+import React from 'react'
 import { createContext, useContextSelector } from 'use-context-selector'
 import { PropertyControls } from 'utopia-api'
 import {

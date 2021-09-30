@@ -6,7 +6,7 @@
  */
 
 /* @flow */
-import * as React from 'react'
+import React from 'react'
 import { darkGray } from '../styles'
 
 const footerStyle = {

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { ListChildComponentProps } from 'react-window'
 import { FlexColumn, useColorTheme } from '../../../../../uuiui'
 import { WebFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-utils'

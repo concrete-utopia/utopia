@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import Utils from '../../../utils/utils'
 import * as EP from '../../../core/shared/element-path'

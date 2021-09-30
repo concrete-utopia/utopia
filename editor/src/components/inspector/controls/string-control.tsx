@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import classNames from 'classnames'
-import * as React from 'react'
+import React from 'react'
 import { StringInput } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { usePropControlledState } from '../common/inspector-utils'

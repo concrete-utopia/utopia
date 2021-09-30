@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { NodeComponentProps } from 'react-vtree/dist/es/Tree'
 import { FontFamilyItem } from './font-family-item'
 import { FontVariantItem } from './font-variant-item'

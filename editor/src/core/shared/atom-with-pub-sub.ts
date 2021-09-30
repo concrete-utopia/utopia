@@ -1,5 +1,5 @@
 import * as PubSub from 'pubsub-js'
-import * as React from 'react'
+import React from 'react'
 import { unstable_batchedUpdates } from 'react-dom'
 import { useForceUpdate } from '../../components/editor/hook-utils'
 

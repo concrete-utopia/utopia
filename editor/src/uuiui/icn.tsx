@@ -1,5 +1,5 @@
 import { Placement } from 'tippy.js'
-import * as React from 'react'
+import React from 'react'
 import { betterReactMemo } from '../utils/react-performance'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'

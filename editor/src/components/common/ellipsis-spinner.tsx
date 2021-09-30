@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx, css, keyframes } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import { betterReactMemo } from '../../uuiui-deps'
 
 const ellipsis1Anim = keyframes`{

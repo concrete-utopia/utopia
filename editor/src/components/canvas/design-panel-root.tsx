@@ -1,5 +1,5 @@
 import { Resizable, ResizeCallback, ResizeDirection } from 're-resizable'
-import * as React from 'react'
+import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
