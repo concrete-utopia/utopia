@@ -38,6 +38,7 @@ import           Servant.Client                   hiding (Response)
 import           System.Directory
 import           System.Environment
 import           System.FilePath
+import           System.Log.FastLogger
 import           System.Metrics                   hiding (Value)
 import qualified Text.Blaze.Html5                 as H
 import           Utopia.Web.Assets
@@ -79,6 +80,7 @@ data EnvironmentRuntime r = EnvironmentRuntime
   , _envServerPort       :: r -> Int
   , _serverAPI           :: r -> Server API
   , _startupLogging      :: r -> Bool
+  , _getLogger           :: r -> FastLogger
   , _metricsStore        :: r -> Store
   , _cacheForAssets      :: r -> IO AssetResultCache
   , _forceSSL            :: r -> Bool

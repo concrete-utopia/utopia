@@ -24,6 +24,7 @@ import           Network.HTTP.Client.TLS
 import           Protolude                      hiding (Handler)
 import           Servant
 import           System.Environment
+import           System.Log.FastLogger
 import           System.Metrics                 hiding (Value)
 import           System.Metrics.Json
 import           Utopia.Web.Assets
@@ -37,6 +38,7 @@ import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
+import           Utopia.Web.Logging
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
@@ -48,7 +50,7 @@ import           Utopia.Web.Utils.Files
 -}
 data ProductionServerResources = ProductionServerResources
                                { _commitHash              :: Text
-                               , _projectPool       :: DBPool
+                               , _projectPool             :: DBPool
                                , _auth0Resources          :: Auth0Resources
                                , _awsResources            :: AWSResources
                                , _sessionState            :: SessionState
@@ -63,6 +65,8 @@ data ProductionServerResources = ProductionServerResources
                                , _branchDownloads         :: Maybe BranchDownloads
                                , _matchingVersionsCache   :: MatchingVersionsCache
                                , _cdnHost                 :: Text
+                               , _logger                  :: FastLogger
+                               , _loggerShutdown          :: IO ()
                                }
 
 $(makeFieldsNoPrefix ''ProductionServerResources)
@@ -98,7 +102,8 @@ innerServerExecutor (UserForId userIdToGet action) = do
   metrics <- fmap _databaseMetrics ask
   getUserWithDBPool metrics pool userIdToGet action
 innerServerExecutor (DebugLog logContent next) = do
-  putText logContent
+  loggerToUse <- fmap _logger ask
+  liftIO $ loggerLn loggerToUse $ toLogStr logContent
   return next
 innerServerExecutor (GetProjectMetadata projectID action) = do
   pool <- fmap _projectPool ask
@@ -288,6 +293,7 @@ initialiseResources = do
   _branchDownloads <- createBranchDownloads
   _locksRef <- newIORef mempty
   _matchingVersionsCache <- newMatchingVersionsCache
+  (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop
@@ -307,6 +313,7 @@ productionEnvironmentRuntime = EnvironmentRuntime
   , _envServerPort = serverPortFromResources
   , _serverAPI = serverAPI
   , _startupLogging = const True
+  , _getLogger = _logger
   , _metricsStore = view storeForMetrics
   , _cacheForAssets = (\r -> readIORef $ _assetResultCache $ _assetsCaches r)
   , _forceSSL = const False

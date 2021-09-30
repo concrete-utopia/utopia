@@ -28,6 +28,7 @@ dependencies:
   - ekg-core
   - ekg-json
   - exceptions
+  - fast-logger
   - filepath
   - free
   - zlib
@@ -73,6 +74,7 @@ dependencies:
   - temporary
   - text
   - time
+  - time-manager
   - transformers
   - unix
   - unordered-containers

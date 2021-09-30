@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 95d26c9bca5c9d192fba1affbbd166ab45f3235ec0a5be2c00823ff65dcc3ef2
+-- hash: 894d76fbba980d5a8e577a2b81bebf2dcf7366e6727bc616a75c4bf1d9f2d995
 
 name:           utopia-web
 version:        0.1.0.4
@@ -40,6 +40,7 @@ executable utopia-web
       Utopia.Web.Executors.Production
       Utopia.Web.Github
       Utopia.Web.JSON
+      Utopia.Web.Logging
       Utopia.Web.Metrics
       Utopia.Web.Packager.Locking
       Utopia.Web.Packager.NPM
@@ -79,6 +80,7 @@ executable utopia-web
     , ekg-core
     , ekg-json
     , exceptions
+    , fast-logger
     , filepath
     , free
     , generic-lens
@@ -123,6 +125,7 @@ executable utopia-web
     , temporary
     , text
     , time
+    , time-manager
     , transformers
     , unix
     , unordered-containers
@@ -163,6 +166,7 @@ test-suite utopia-web-test
       Utopia.Web.Executors.Production
       Utopia.Web.Github
       Utopia.Web.JSON
+      Utopia.Web.Logging
       Utopia.Web.Metrics
       Utopia.Web.Packager.Locking
       Utopia.Web.Packager.NPM
@@ -203,6 +207,7 @@ test-suite utopia-web-test
     , ekg-core
     , ekg-json
     , exceptions
+    , fast-logger
     , filepath
     , free
     , generic-lens
@@ -256,6 +261,7 @@ test-suite utopia-web-test
     , temporary
     , text
     , time
+    , time-manager
     , transformers
     , unix
     , unordered-containers
