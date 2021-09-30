@@ -16,6 +16,7 @@
 -}
 module Utopia.Web.Servant where
 
+import           Control.Monad.Fail
 import           Data.Aeson
 import           Data.Aeson.Encode.Pretty
 import qualified Data.ByteString.Lazy     as BL
@@ -87,9 +88,8 @@ instance MimeRender SVG BL.ByteString where
 instance MimeUnrender SVG BL.ByteString where
   mimeUnrender _ bytes = Right bytes
 
-
 instance MimeUnrender HTML Text where
-  mimeUnrender _ bytes = Right $ toS bytes
+  mimeUnrender _ bytes = first (fail . show) $ decodeUtf8' $ BL.toStrict bytes
 
 data ZIP
 
@@ -121,17 +121,17 @@ instance MimeRender ForcedJSON BL.ByteString where
   mimeRender _ bytes = bytes
 
 instance MimeRender ForcedJSON ByteString where
-  mimeRender _ bytes = toS bytes
+  mimeRender _ bytes = BL.fromStrict bytes
 
 
-data LastModifiedTime = LastModifiedTime { getLastModifiedTime :: UTCTime }
-                      deriving (Eq, Ord, Show)
+newtype LastModifiedTime = LastModifiedTime { getLastModifiedTime :: UTCTime }
+                           deriving (Eq, Ord, Show)
 
 lastModifiedFormat :: String
 lastModifiedFormat = "%a, %_d %b %Y %H:%M:%S %Z"
 
 instance FromHttpApiData LastModifiedTime where
-  parseUrlPiece toParse = fmap LastModifiedTime $ parseTimeM True defaultTimeLocale lastModifiedFormat (toS toParse)
+  parseUrlPiece toParse = maybe (Left ("Unable to parse " <> toParse)) (Right . LastModifiedTime) $ parseTimeM True defaultTimeLocale lastModifiedFormat (toS toParse)
 
 instance ToHttpApiData LastModifiedTime where
   toUrlPiece (LastModifiedTime lastModifiedTime) = toS $ formatTime defaultTimeLocale lastModifiedFormat lastModifiedTime
