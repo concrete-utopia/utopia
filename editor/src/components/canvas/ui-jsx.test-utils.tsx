@@ -51,7 +51,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { HotRoot } from '../../templates/editor'
+import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
@@ -222,7 +222,7 @@ export async function renderTestEditorWithModel(
       }}
     >
       <FailJestOnCanvasError />
-      <HotRoot
+      <EditorRoot
         api={storeHook}
         useStore={storeHook}
         spyCollector={spyCollector}
