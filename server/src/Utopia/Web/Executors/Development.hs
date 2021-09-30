@@ -31,6 +31,7 @@ import           Protolude                      hiding (Handler, toUpper)
 import           Servant
 import           Servant.Client
 import           System.Environment
+import           System.Log.FastLogger
 import           System.Metrics                 hiding (Value)
 import           System.Metrics.Json
 import           Utopia.Web.Assets
@@ -44,6 +45,7 @@ import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
+import           Utopia.Web.Logging
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
@@ -72,6 +74,8 @@ data DevServerResources = DevServerResources
                         , _locksRef              :: PackageVersionLocksRef
                         , _branchDownloads       :: Maybe BranchDownloads
                         , _matchingVersionsCache :: MatchingVersionsCache
+                        , _logger                :: FastLogger
+                        , _loggerShutdown        :: IO ()
                         }
 
 $(makeFieldsNoPrefix ''DevServerResources)
@@ -158,7 +162,8 @@ innerServerExecutor (UserForId userIdToGet action) = do
   metrics <- fmap _databaseMetrics ask
   getUserWithDBPool metrics pool userIdToGet action
 innerServerExecutor (DebugLog logContent next) = do
-  putText logContent
+  loggerToUse <- fmap _logger ask
+  liftIO $ loggerLn loggerToUse $ toLogStr logContent
   return next
 innerServerExecutor (GetProjectMetadata projectID action) = do
   pool <- fmap _projectPool ask
@@ -370,6 +375,7 @@ initialiseResources = do
   _locksRef <- newIORef mempty
   let _silentMigration = False
   let _logOnStartup = True
+  (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
   _matchingVersionsCache <- newMatchingVersionsCache
   return $ DevServerResources{..}
 
@@ -380,6 +386,7 @@ devEnvironmentRuntime = EnvironmentRuntime
   , _envServerPort = serverPortFromResources
   , _serverAPI = serverAPI
   , _startupLogging = _logOnStartup
+  , _getLogger = _logger
   , _metricsStore = view storeForMetrics
   , _cacheForAssets = (\r -> readIORef $ _assetResultCache $ _assetsCaches r)
   , _forceSSL = const False

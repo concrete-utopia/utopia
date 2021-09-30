@@ -7,7 +7,6 @@ import           Control.Lens
 import           Control.Monad.Fail
 import           Data.Binary.Builder            (toLazyByteString)
 import qualified Data.ByteString.Lazy           as BL
-import qualified Data.Text                      as T
 import           Network.HTTP.Client            (HttpException (HttpExceptionRequest),
                                                  HttpExceptionContent (StatusCodeException),
                                                  Manager)

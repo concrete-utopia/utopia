@@ -8,8 +8,6 @@ module Utopia.Web.Server where
 import qualified Data.ByteString                 as B
 import qualified Data.ByteString.Char8           as S8
 import           Data.IORef
-import qualified Data.Text.IO                    as TIO
-import           GHC.IO.Handle                   (hFlush)
 import           Network.HTTP.Types.Header
 import           Network.HTTP.Types.Method
 import           Network.HTTP.Types.Status
@@ -20,8 +18,11 @@ import           Network.Wai.Middleware.Gzip
 import           Protolude
 import           Servant
 import           Servant.Conduit                 ()
+import           System.Log.FastLogger
+import           System.TimeManager
 import           Utopia.Web.Ekg
 import           Utopia.Web.Executors.Common
+import           Utopia.Web.Logging
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 
@@ -103,12 +104,12 @@ limitRequestSizeMiddleware maxSize applicationToWrap originalRequest sendRespons
 {-|
    Reimplements defaultOnException from Warp, such that exception logging isn't interleaved.
 -}
-exceptionHandler :: QSem -> Maybe Request -> SomeException -> IO ()
-exceptionHandler exceptionSemaphore _ e = (flip finally) (signalQSem exceptionSemaphore) $ do
-  waitQSem exceptionSemaphore
-  when (Warp.defaultShouldDisplayException e) $ do
-    TIO.hPutStrLn stderr $ show e
-    hFlush stderr
+exceptionHandler :: FastLogger -> Maybe Request -> SomeException -> IO ()
+exceptionHandler logger _ e
+  | Just TimeoutThread <- fromException e = return ()
+  | otherwise = do
+        when (Warp.defaultShouldDisplayException e) $ do
+          logger ("Uncaught exception: " <> toLogStr (displayException e))
 
 addNoCacheHeaderIfNotPresent :: Response -> Response
 addNoCacheHeaderIfNotPresent response =
@@ -138,16 +139,16 @@ runServerWithResources :: EnvironmentRuntime r -> IO Stop
 runServerWithResources EnvironmentRuntime{..} = do
   resources <- _initialiseResources
   let loggingEnabled = _startupLogging resources
-  when loggingEnabled $ putText "Starting"
+  let logger = _getLogger resources
+  when loggingEnabled $ loggerLn logger "Starting"
   shutdown <- _startup resources
-  when loggingEnabled $ putText "Startup Processes Completed"
+  when loggingEnabled $ loggerLn logger "Startup Processes Completed"
   let port = _envServerPort resources
   -- Note: '<>' is used to append text (amongst other things).
-  when loggingEnabled $ putText $ "Running On: http://localhost:" <> show port <> "/"
+  when loggingEnabled $ loggerLn logger ("Running On: http://localhost:" <> toLogStr port <> "/")
   let storeForMetrics = _metricsStore resources
   meterMap <- mkMeterMap apiProxy storeForMetrics
-  exceptionSemaphore <- newQSem 1
-  let settings = Warp.setPort port $ Warp.setOnException (exceptionHandler exceptionSemaphore) Warp.defaultSettings
+  let settings = Warp.setPort port $ Warp.setOnException (exceptionHandler (loggerLn logger)) Warp.defaultSettings
   let assetsCache = _cacheForAssets resources
   let shouldForceSSL = _forceSSL resources
   threadId <- forkIO $ Warp.runSettings settings
