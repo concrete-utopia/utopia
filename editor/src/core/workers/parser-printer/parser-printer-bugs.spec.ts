@@ -308,7 +308,7 @@ export default function () {
 describe('Imports', () => {
   it('side-effects-only imports work', () => {
     const code = `import './style.css'
-import React from 'react'
+import * as React from 'react'
 import { Storyboard, View } from 'utopia-api'
 
 export var App = (props) => {

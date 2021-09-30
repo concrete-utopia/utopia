@@ -31,7 +31,7 @@ Object {
       ],
       "sourcesContent": Array [
         "
-import React from 'react'
+import * as React from 'react'
 import { View, jsx } from 'utopia-api'
 
 export var canvasMetadata = {
@@ -101,7 +101,7 @@ function otherFn(n) {
       ],
       "sourcesContent": Array [
         "import { cake } from 'cake'
-import React from 'react'
+import * as React from 'react'
 import {
   UtopiaUtils,
   Ellipse,
@@ -308,7 +308,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         ],
         "sourcesContent": Array [
           "import { cake } from 'cake'
-import React from 'react'
+import * as React from 'react'
 import {
   UtopiaUtils,
   Ellipse,
@@ -378,7 +378,7 @@ return { cakeFn: cakeFn };",
         ],
         "sourcesContent": Array [
           "import { cake } from 'cake'
-import React from 'react'
+import * as React from 'react'
 import {
   UtopiaUtils,
   Ellipse,
@@ -497,7 +497,7 @@ return { otherFn: otherFn };",
                     ],
                     "sourcesContent": Array [
                       "import { cake } from 'cake'
-import React from 'react'
+import * as React from 'react'
 import {
   UtopiaUtils,
   Ellipse,

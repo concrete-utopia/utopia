@@ -15,7 +15,7 @@ Object {
         ],
         "sourcesContent": Array [
           "
-import React from 'react'
+import * as React from 'react'
 import {
   Ellipse,
   HelperFunctions,
@@ -189,7 +189,7 @@ exports.App = App; //# sourceMappingURL=app.js.map",
         ],
         "sourcesContent": Array [
           "// component library
-import React from 'react'
+import * as React from 'react'
 import { Text, View } from 'utopia-api'
 
 export default (props) => (
@@ -430,7 +430,7 @@ if (root != null) {
   "exportsInfo": Array [
     Object {
       "code": "
-import React from 'react'
+import * as React from 'react'
 import {
   Ellipse,
   HelperFunctions,
@@ -526,7 +526,7 @@ export var App = (props) => {
     },
     Object {
       "code": "// component library
-import React from 'react'
+import * as React from 'react'
 import { Text, View } from 'utopia-api'
 
 export default (props) => (
@@ -635,7 +635,7 @@ Object {
         ],
         "sourcesContent": Array [
           "// component library
-import React from 'react'
+import * as React from 'react'
 import { Text, View } from 'utopia-api'
 
 
@@ -800,7 +800,7 @@ exports.ComponentWithProps.propertyControls = {
   "exportsInfo": Array [
     Object {
       "code": "// component library
-import React from 'react'
+import * as React from 'react'
 import { Text, View } from 'utopia-api'
 
 
@@ -919,7 +919,7 @@ Object {
   "exportsInfo": Array [
     Object {
       "code": "// component library
-import React from 'react'
+import * as React from 'react'
 import { Text, View } from 'utopia-api'
 
 +

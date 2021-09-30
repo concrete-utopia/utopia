@@ -15918,7 +15918,7 @@ Object {
                           ],
                           "sourcesContent": Array [
                             "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -16068,7 +16068,7 @@ export var storyboard = (props) => {
                             ],
                             "sourcesContent": Array [
                               "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -16226,7 +16226,7 @@ export var storyboard = (props) => {
                                 ],
                                 "sourcesContent": Array [
                                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -16381,7 +16381,7 @@ export var storyboard = (props) => {
                             ],
                             "sourcesContent": Array [
                               "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -16520,7 +16520,7 @@ export var storyboard = (props) => {
                   ],
                   "sourcesContent": Array [
                     "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -16702,7 +16702,7 @@ export var storyboard = (props) => {
                       ],
                       "sourcesContent": Array [
                         "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -17105,7 +17105,7 @@ export var storyboard = (props) => {
                       ],
                       "sourcesContent": Array [
                         "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -17255,7 +17255,7 @@ export var storyboard = (props) => {
                         ],
                         "sourcesContent": Array [
                           "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -17413,7 +17413,7 @@ export var storyboard = (props) => {
                             ],
                             "sourcesContent": Array [
                               "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -17568,7 +17568,7 @@ export var storyboard = (props) => {
                         ],
                         "sourcesContent": Array [
                           "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -17707,7 +17707,7 @@ export var storyboard = (props) => {
               ],
               "sourcesContent": Array [
                 "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -17949,7 +17949,7 @@ export var storyboard = (props) => {
               ],
               "sourcesContent": Array [
                 "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -18099,7 +18099,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -18298,7 +18298,7 @@ export var storyboard = (props) => {
               ],
               "sourcesContent": Array [
                 "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -18448,7 +18448,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -18647,7 +18647,7 @@ export var storyboard = (props) => {
               ],
               "sourcesContent": Array [
                 "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -18797,7 +18797,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -19027,7 +19027,7 @@ export var storyboard = (props) => {
                     ],
                     "sourcesContent": Array [
                       "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -19182,7 +19182,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -19414,7 +19414,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -19665,7 +19665,7 @@ export var storyboard = (props) => {
                     ],
                     "sourcesContent": Array [
                       "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -19820,7 +19820,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -20048,7 +20048,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -20295,7 +20295,7 @@ export var storyboard = (props) => {
                     ],
                     "sourcesContent": Array [
                       "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -20450,7 +20450,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -20678,7 +20678,7 @@ export var storyboard = (props) => {
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
@@ -23206,7 +23206,7 @@ Object {
                     ],
                     "sourcesContent": Array [
                       "
-import React from 'react'
+import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 export var App = (props) => {
   return (
@@ -23457,7 +23457,7 @@ export var storyboard = (
                 ],
                 "sourcesContent": Array [
                   "
-import React from 'react'
+import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 export var App = (props) => {
   return (
@@ -36864,7 +36864,7 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "
-import React from 'react'
+import * as React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (

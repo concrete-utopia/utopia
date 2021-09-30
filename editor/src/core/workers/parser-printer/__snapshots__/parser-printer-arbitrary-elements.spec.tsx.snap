@@ -50,7 +50,7 @@ function b(n) {
       ],
       "sourcesContent": Array [
         "
-import React from 'react'
+import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
@@ -249,7 +249,7 @@ return { a: a, b: b };",
         ],
         "sourcesContent": Array [
           "
-import React from 'react'
+import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
@@ -348,7 +348,7 @@ return { a: a };",
               ],
               "sourcesContent": Array [
                 "
-import React from 'react'
+import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
@@ -417,7 +417,7 @@ export var storyboard = (
               ],
               "sourcesContent": Array [
                 "
-import React from 'react'
+import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
@@ -578,7 +578,7 @@ export var storyboard = (
         ],
         "sourcesContent": Array [
           "
-import React from 'react'
+import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
