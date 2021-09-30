@@ -12,7 +12,6 @@ import           Conduit
 import           Control.Lens              hiding ((.=))
 import           Control.Monad.Catch
 import           Data.Aeson
-import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy      as BL
 import           Data.Conduit.Combinators  hiding (encodeUtf8)
 import           Data.Generics.Product
@@ -20,12 +19,11 @@ import           Data.Generics.Sum
 import qualified Data.HashMap.Strict       as Map
 import           Data.IORef
 import           Data.List                 (isSuffixOf, stripPrefix)
+import           Data.Text                 (pack)
 import           Data.Time.Clock
 import           Protolude                 hiding (catch, finally, mapM)
 import           RIO                       (readFileUtf8)
 import           System.Directory
-import           System.Directory.PathWalk
-import           System.FilePath
 import           System.IO.Error
 import           System.IO.Temp
 import           System.Process
@@ -81,7 +79,7 @@ findMatchingVersions semaphore matchingVersionsCache jsPackageName maybePackageV
       let versionsProc = proc "npm" ["view", toS packageNameAtPackageVersion, "version", "--json"]
       foundVersions <- (flip catch) handleVersionsLookupError $ do
         versionsResult <- readCreateProcess versionsProc ""
-        return $ decode $ toS versionsResult
+        return $ decode $ BL.fromStrict $ encodeUtf8 $ pack versionsResult
       putText ("Finished NPM Versions Lookup: " <> packageVersionText)
       return foundVersions
 
