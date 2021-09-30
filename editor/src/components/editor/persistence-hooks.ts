@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { useRefEditorState } from './store/store-hook'
 
 export function useTriggerForkProject(): () => void {

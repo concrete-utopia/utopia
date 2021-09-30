@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import * as React from 'react'
+import React from 'react'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import utils from '../../utils/utils'
 import CompileErrorContainer from './containers/CompileErrorContainer'

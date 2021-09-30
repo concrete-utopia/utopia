@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { InspectorSubsectionHeader } from '../../../../../uuiui'
 import { usePropControlledState, betterReactMemo } from '../../../../../uuiui-deps'
 import { CSSPosition } from '../../../common/css-utils'

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { useReadOnlyConsoleLogs } from '../../core/shared/runtime-report-logs'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'

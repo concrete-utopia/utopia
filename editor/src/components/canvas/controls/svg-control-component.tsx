@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import RU from '../../../utils/react-utils'
 import Utils from '../../../utils/utils'
 import { CanvasPoint } from '../../../core/shared/math-utils'

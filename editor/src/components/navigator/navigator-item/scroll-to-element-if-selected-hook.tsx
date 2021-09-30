@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { cancelIdleCallback, requestIdleCallback } from '../../../utils/request-idle-callback-shim'
 
 // Modified from this: https://stackoverflow.com/a/15203639/305009

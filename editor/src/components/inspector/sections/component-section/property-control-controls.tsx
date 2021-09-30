@@ -1,5 +1,5 @@
 import fastDeepEquals from 'fast-deep-equal'
-import * as React from 'react'
+import React from 'react'
 import { betterReactMemo, SliderControl } from '../../../../uuiui-deps'
 import {
   BaseControlDescription,

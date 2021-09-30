@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { FlexRow, Icons } from '../../../uuiui'
 import { FontFamilyData } from './google-fonts-utils'
 

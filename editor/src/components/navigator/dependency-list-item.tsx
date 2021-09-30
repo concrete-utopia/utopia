@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx, keyframes } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import { NpmDependencyVersionAndStatusIndicator } from './dependecy-version-status-indicator'
 import { ContextMenuItem } from '../context-menu-items'
 import { NO_OP } from '../../core/shared/utils'

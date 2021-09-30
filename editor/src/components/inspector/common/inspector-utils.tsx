@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { ElementPath } from 'src/core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { fastForEach } from '../../../core/shared/utils'

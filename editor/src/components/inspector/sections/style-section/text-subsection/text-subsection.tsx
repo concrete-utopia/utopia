@@ -1,5 +1,5 @@
 import * as OPI from 'object-path-immutable'
-import * as React from 'react'
+import React from 'react'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
   emptyComments,

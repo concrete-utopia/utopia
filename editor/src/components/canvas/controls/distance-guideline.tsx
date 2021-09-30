@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'

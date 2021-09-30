@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import * as ReactDOM from 'react-dom'
 
 import { VSCODE_EDITOR_IFRAME_BASE_URL } from '../common/env-vars'

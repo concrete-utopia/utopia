@@ -6,7 +6,7 @@
  */
 
 /* @flow */
-import * as React from 'react'
+import React from 'react'
 import { redTransparent, yellowTransparent } from '../styles'
 
 const _preStyle = {

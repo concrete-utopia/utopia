@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { PopupList } from '../../../uuiui'
 import { SelectOption } from '../../../uuiui-deps'
 import { NumberOrKeywordControl } from '../../../uuiui/inputs/number-or-keyword-input'

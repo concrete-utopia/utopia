@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import * as ReactDOM from 'react-dom'
 import CanvasActions from '../../components/canvas/canvas-actions'
 import { DebugDispatch } from '../../components/editor/action-types'

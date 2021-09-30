@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { FlexWrap } from 'utopia-api'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'

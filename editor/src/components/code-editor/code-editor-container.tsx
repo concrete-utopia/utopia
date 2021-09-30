@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { betterReactMemo } from '../../uuiui-deps'
 import { useEditorState } from '../editor/store/store-hook'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'

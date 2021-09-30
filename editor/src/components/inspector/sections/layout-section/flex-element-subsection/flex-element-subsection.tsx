@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PositionControl, MarginControl, AlignSelfControl } from './flex-element-controls'

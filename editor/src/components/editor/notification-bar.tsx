@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { LoginState, isLoggedIn } from './action-types'
 import { auth0Url } from '../../common/env-vars'
 import { setRedirectUrl } from '../../common/persistence'

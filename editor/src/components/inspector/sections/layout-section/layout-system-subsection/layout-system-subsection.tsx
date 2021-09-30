@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import * as React from 'react'
+import React from 'react'
 import { jsx, css } from '@emotion/react'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {

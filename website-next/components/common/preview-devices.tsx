@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { components, ValueType } from 'react-select'
 import Select from 'react-select'
 import { DeviceID, deviceInfoList } from './devices'

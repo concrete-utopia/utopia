@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import { BreadcrumbTrail } from '../canvas/controls/breadcrumb-trail'
 import {
   FlexRow,

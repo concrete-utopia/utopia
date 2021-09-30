@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import * as React from 'react'
+import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'

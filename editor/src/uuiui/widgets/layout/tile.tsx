@@ -1,7 +1,7 @@
 import styled from '@emotion/styled'
 import { commonSenseUtopiaLayoutShorthands } from './common-layout-shorthands'
 import { tileStyle } from '../../styles/layout-styles'
-import * as React from 'react'
+import React from 'react'
 
 /**
  * **Tile, Flex container centering content horizontally and vertically**

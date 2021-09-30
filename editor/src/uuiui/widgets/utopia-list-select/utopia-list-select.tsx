@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Keyboard } from '../../../utils/keyboard'
 
 export interface UtopiaListOption {

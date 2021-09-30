@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import type { EditorStore } from './editor-state'
 import { UseStore, StoreApi, EqualityChecker } from 'zustand'
 import { shallowEqual } from '../../../core/shared/equality-utils'

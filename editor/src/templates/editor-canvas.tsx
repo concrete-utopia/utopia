@@ -1,5 +1,5 @@
 import update from 'immutability-helper'
-import * as React from 'react'
+import React from 'react'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'
 import CanvasActions from '../components/canvas/canvas-actions'

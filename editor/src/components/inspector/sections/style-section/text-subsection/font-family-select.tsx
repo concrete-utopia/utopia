@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { usePopper } from 'react-popper'
 import { identity } from '../../../../../core/shared/utils'
 import utils from '../../../../../utils/utils'

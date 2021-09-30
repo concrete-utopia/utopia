@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { FlexStretch, Sides } from 'utopia-api'
 import { FlexLayoutHelpers, LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'

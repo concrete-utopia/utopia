@@ -10,7 +10,7 @@ import {
 } from '../../../utils/deep-equality-instances'
 import { createSelector } from 'reselect'
 import { EditorStore } from '../../editor/store/editor-state'
-import * as React from 'react'
+import React from 'react'
 
 export interface NameAndIconResult {
   path: ElementPath

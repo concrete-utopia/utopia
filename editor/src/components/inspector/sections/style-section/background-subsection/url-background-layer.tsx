@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { CheckboxInput, PopupList } from '../../../../../uuiui'
 import { betterReactMemo, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
 import { removeRow } from '../../../common/context-menu-items'
