@@ -48,7 +48,7 @@ specifiers:
   '@types/hosted-git-info': 3.0.0
   '@types/html-entities': 1.2.16
   '@types/immutability-helper': 2.0.15
-  '@types/jest': 26.0.3
+  '@types/jest': 27.0.2
   '@types/jquery': 3.3.29
   '@types/json-schema': 6.0.0
   '@types/json5': 0.0.29
@@ -88,6 +88,7 @@ specifiers:
   anser: 1.4.8
   antd: 4.3.5
   babel-eslint: 10.0.1
+  babel-jest: ^27.2.4
   babel-loader: ^8.1.0
   babel-plugin-syntax-jsx: 6.18.0
   babel-plugin-transform-react-jsx: 6.24.1
@@ -144,14 +145,13 @@ specifiers:
   immutable: 3.8.1
   istextorbinary: 5.11.0
   jStat: 1.5.3
-  jest: 26.1.0
+  jest: 27.2.2
   jest-clean-console-reporter: 0.2.0
-  jest-environment-jsdom-global: 2.0.4
+  jest-environment-jsdom: ^27.2.2
   jest-fetch-mock: 3.0.1
   jest-matcher-deep-close-to: 2.0.1
   jest-transform-stub: 2.0.0
-  jsdom: 16.1.0
-  jsdom-global: 3.0.2
+  jsdom: 17.0.0
   json5: 0.5.1
   jszip: 3.5.0
   karma: 6.3.4
@@ -230,7 +230,6 @@ specifiers:
   three: 0.129.0
   tippy.js: 6.2.6
   tmp: 0.0.31
-  ts-jest: 26.1.1
   ts-loader: 5.3.3
   tsify: 3.0.1
   twind: 0.16.16
@@ -260,21 +259,21 @@ dependencies:
   '@babel/standalone': 7.15.7
   '@babel/types': 7.15.6
   '@emotion/cache': 10.0.29
-  '@emotion/react': 11.1.2_528ffd38e6b0222f9821ad7759a31552
+  '@emotion/react': 11.1.2_99e561a191e65003b22d8f0510df39a9
   '@emotion/serialize': 1.0.2
-  '@emotion/styled': 11.0.0_41f05b26b172d981646f6bbde5d3d883
+  '@emotion/styled': 11.0.0_0ded4bf226a322a5840dc66c9d820008
   '@emotion/styled-base': 11.0.0
   '@popperjs/core': 2.4.4
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': 1.0.6
   '@svgr/plugin-jsx': 5.5.0
-  '@tippyjs/react': 4.1.0_4b57aad7a3acc0ec1c2667d1fea04016
+  '@tippyjs/react': 4.1.0_d9cccff7df39c9a08a2a815f75fb6cbc
   '@types/fontfaceobserver': 0.0.6
   '@types/react-syntax-highlighter': 11.0.4
-  '@use-it/interval': 0.1.3_react@17.0.0-rc.1
+  '@use-it/interval': 0.1.3_utopia-react@17.0.0-rc.1
   ajv: 6.4.0
   anser: 1.4.8
-  antd: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
+  antd: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
   babel-eslint: 10.0.1_eslint@6.8.0
   babel-plugin-syntax-jsx: 6.18.0
   babel-plugin-transform-react-jsx: 6.24.1
@@ -283,7 +282,7 @@ dependencies:
   chroma-js: 2.1.0
   classnames: 2.2.6
   clipboard-polyfill: 2.4.6
-  console-feed: 2.8.8_3b35bc6cd8f445133e595bd202e3aeca
+  console-feed: 2.8.8_120e34cc879668f8c581a0795dcbac51
   create-react-class: 15.6.3
   css-tree: 1.1.3
   eslint-plugin-import: 2.22.1_eslint@6.8.0
@@ -297,7 +296,7 @@ dependencies:
   graphlib: 2.1.1
   hosted-git-info: 3.0.5
   html-entities: 1.2.1
-  html-react-parser: 0.13.0_react@17.0.0-rc.1
+  html-react-parser: 0.13.0_utopia-react@17.0.0-rc.1
   immer: 3.2.0
   immutability-helper: 2.4.0
   istextorbinary: 5.11.0
@@ -321,28 +320,28 @@ dependencies:
   prop-types: 15.6.2
   pubsub-js: 1.9.3
   rc-slider: github.com/momentumworks/slider/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
-  rc-table: 7.8.6_4b57aad7a3acc0ec1c2667d1fea04016
-  re-resizable: 6.9.0_4b57aad7a3acc0ec1c2667d1fea04016
+  rc-table: 7.8.6_d9cccff7df39c9a08a2a815f75fb6cbc
+  re-resizable: 6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc
   react: /utopia-react/17.0.0-rc.1
-  react-contexify: 5.0.0_4b57aad7a3acc0ec1c2667d1fea04016
-  react-dnd: 10.0.2_4b57aad7a3acc0ec1c2667d1fea04016
+  react-contexify: 5.0.0_d9cccff7df39c9a08a2a815f75fb6cbc
+  react-dnd: 10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
   react-dnd-html5-backend: 10.0.2
-  react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+  react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
   react-error-overlay: github.com/concrete-utopia/react-error-overlay/201980990d653e821f36ab4f921a4f83588a8a42
-  react-helmet: 6.1.0_react@17.0.0-rc.1
-  react-highlight-words: 0.17.0_react@17.0.0-rc.1
-  react-hot-loader: 4.12.12_4b57aad7a3acc0ec1c2667d1fea04016
+  react-helmet: 6.1.0_utopia-react@17.0.0-rc.1
+  react-highlight-words: 0.17.0_utopia-react@17.0.0-rc.1
+  react-hot-loader: 4.12.12_d9cccff7df39c9a08a2a815f75fb6cbc
   react-merge-refs: 1.0.0
-  react-onclickoutside: 6.9.0_4b57aad7a3acc0ec1c2667d1fea04016
-  react-popper: 2.2.3_d1ac8e6685a9b98eee4127b34a333b51
-  react-select: 3.1.0_4b57aad7a3acc0ec1c2667d1fea04016
-  react-spring: 9.0.0-rc.3_e703eacad80e5d6302dc86ea53f42337
-  react-syntax-highlighter: 12.2.1_react@17.0.0-rc.1
-  react-use-gesture: 6.0.2_react@17.0.0-rc.1
-  react-virtualized-auto-sizer: 1.0.2_4b57aad7a3acc0ec1c2667d1fea04016
-  react-vtree: 2.0.0_ac7ffa671023113cf04c5b887f2c1c9c
-  react-window: 1.8.5_4b57aad7a3acc0ec1c2667d1fea04016
-  react-windowed-select: 3.1.2_326e5fd990db4142d2792d97bd42961d
+  react-onclickoutside: 6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc
+  react-popper: 2.2.3_1d5a61f63a74b6fe21fa53c9ee4391e1
+  react-select: 3.1.0_d9cccff7df39c9a08a2a815f75fb6cbc
+  react-spring: 9.0.0-rc.3_fb240f2ddf3ca4b47c2b562802d6427d
+  react-syntax-highlighter: 12.2.1_utopia-react@17.0.0-rc.1
+  react-use-gesture: 6.0.2_utopia-react@17.0.0-rc.1
+  react-virtualized-auto-sizer: 1.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
+  react-vtree: 2.0.0_255ea23c1365d9cdd0d891903b4d6c66
+  react-window: 1.8.5_d9cccff7df39c9a08a2a815f75fb6cbc
+  react-windowed-select: 3.1.2_b9c7432b687c5eca0e0b2d49cc5d18aa
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
   scheduler: 0.17.0
@@ -356,12 +355,12 @@ dependencies:
   twind: 0.16.16_typescript@4.1.3
   typescript: 4.1.3
   url-join: 4.0.1
-  use-context-selector: github.com/dai-shi/use-context-selector/3f1df8f818176db835dc894fff191e9a4d2f8a68_react@17.0.0-rc.1
+  use-context-selector: github.com/dai-shi/use-context-selector/3f1df8f818176db835dc894fff191e9a4d2f8a68_utopia-react@17.0.0-rc.1
   utopia-api: link:../utopia-api
   utopia-vscode-common: link:../utopia-vscode-common
   uuid: 3.0.1
   xstate: 4.23.1
-  zustand: 3.1.3_react@17.0.0-rc.1
+  zustand: 3.1.3_utopia-react@17.0.0-rc.1
 
 optionalDependencies:
   fsevents: 2.1.2
@@ -372,12 +371,12 @@ devDependencies:
   '@babel/preset-env': 7.15.6_@babel+core@7.15.5
   '@babel/preset-react': 7.14.5_@babel+core@7.15.5
   '@babel/preset-typescript': 7.15.0_@babel+core@7.15.5
-  '@hot-loader/react-dom': 16.13.0_react@17.0.0-rc.1
+  '@hot-loader/react-dom': 16.13.0_utopia-react@17.0.0-rc.1
   '@jest-runner/electron': 3.0.0_electron@6.1.12
-  '@react-three/fiber': 7.0.1_e703eacad80e5d6302dc86ea53f42337
+  '@react-three/fiber': 7.0.1_fb240f2ddf3ca4b47c2b562802d6427d
   '@relative-ci/agent': 2.1.0_webpack@5.52.0
-  '@testing-library/react': 9.1.4_4b57aad7a3acc0ec1c2667d1fea04016
-  '@testing-library/react-hooks': 5.1.2_78bb99577566b1f0098b47a03a5ff046
+  '@testing-library/react': 9.1.4_d9cccff7df39c9a08a2a815f75fb6cbc
+  '@testing-library/react-hooks': 5.1.2_dde3fa6c6ce2f58e39e177699e67aa1b
   '@types/chai': 3.5.1
   '@types/chroma-js': 2.0.0
   '@types/classnames': 2.2.4
@@ -395,7 +394,7 @@ devDependencies:
   '@types/hosted-git-info': 3.0.0
   '@types/html-entities': 1.2.16
   '@types/immutability-helper': 2.0.15
-  '@types/jest': 26.0.3
+  '@types/jest': 27.0.2
   '@types/jquery': 3.3.29
   '@types/json-schema': 6.0.0
   '@types/json5': 0.0.29
@@ -412,7 +411,7 @@ devDependencies:
   '@types/ramda': github.com/types/npm-ramda/9529aa3c8ff70ff84afcbc0be83443c00f30ea90
   '@types/rc-slider': 8.2.2
   '@types/react': 16.9.49
-  '@types/react-dnd': 3.0.2_4b57aad7a3acc0ec1c2667d1fea04016
+  '@types/react-dnd': 3.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
   '@types/react-dom': 16.9.8
   '@types/react-helmet': 6.1.0
   '@types/react-highlight-words': 0.16.3
@@ -428,7 +427,8 @@ devDependencies:
   '@types/uuid': 2.0.29
   '@typescript-eslint/eslint-plugin': 4.24.0_d722183cf3439456233a2142a3db9ede
   '@typescript-eslint/parser': 4.24.0_eslint@6.8.0+typescript@4.1.3
-  '@welldone-software/why-did-you-render': 5.0.0-rc.1_react@17.0.0-rc.1
+  '@welldone-software/why-did-you-render': 5.0.0-rc.1_utopia-react@17.0.0-rc.1
+  babel-jest: 27.2.4_@babel+core@7.15.5
   babel-loader: 8.2.2_02ab79faf18a98050fd2cd956ffa58f7
   browserify: 13.1.0
   chai: 4.1.2
@@ -459,13 +459,12 @@ devDependencies:
   ignore-styles: 5.0.1
   immutable: 3.8.1
   jStat: 1.5.3
-  jest: 26.1.0
-  jest-clean-console-reporter: 0.2.0_jest@26.1.0
-  jest-environment-jsdom-global: 2.0.4
+  jest: 27.2.2
+  jest-clean-console-reporter: 0.2.0_jest@27.2.2
+  jest-environment-jsdom: 27.2.4
   jest-matcher-deep-close-to: 2.0.1
   jest-transform-stub: 2.0.0
-  jsdom: 16.1.0
-  jsdom-global: 3.0.2_jsdom@16.1.0
+  jsdom: 17.0.0
   karma: 6.3.4
   karma-chrome-launcher: 3.1.0
   karma-mocha: 2.0.1
@@ -482,7 +481,7 @@ devDependencies:
   pegjs: 0.10.0
   pretty-format: 26.1.0
   react-dev-utils: 10.2.1
-  react-test-renderer: 16.9.0_react@17.0.0-rc.1
+  react-test-renderer: 16.9.0_utopia-react@17.0.0-rc.1
   script-ext-html-webpack-plugin: 2.1.4_d0775fc9e9778f8067265599ff567f52
   selenium-webdriver: 3.0.1
   shuffle-array: 1.0.1
@@ -493,7 +492,6 @@ devDependencies:
   terser-webpack-plugin: 5.2.3_webpack@5.52.0
   three: 0.129.0
   tmp: 0.0.31
-  ts-jest: 26.1.1_jest@26.1.0+typescript@4.1.3
   ts-loader: 5.3.3_typescript@4.1.3
   tsify: 3.0.1_4d1d6c3d4616bac72c1ac1866fa71933
   val-loader: 2.1.0_webpack@5.52.0
@@ -524,7 +522,7 @@ packages:
     resolution: {integrity: sha512-Fi03PfuUqRs76aI3UWYpP864lkrfPo0hluwGqh7NJdLhvH4iRDc3jbJqZIvRDLHKbXrvAfPPV3+zjUccfFvWOQ==}
     dev: false
 
-  /@ant-design/icons/4.6.4_4b57aad7a3acc0ec1c2667d1fea04016:
+  /@ant-design/icons/4.6.4_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-li02J8ym721E24N3bw1oXRzFDV7m2MYQWs+WtJgVVjhNRv4sc6vL2a2M7SS8rWX3Uc/3GJfrokIJnMrmbIMuXQ==}
     engines: {node: '>=8'}
     peerDependencies:
@@ -535,12 +533,12 @@ packages:
       '@ant-design/icons-svg': 4.1.0
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /@ant-design/react-slick/0.26.3_4b57aad7a3acc0ec1c2667d1fea04016:
+  /@ant-design/react-slick/0.26.3_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-FhaFfS+oea0P5WvhaM7BC2/P9r4F0yMoewBpDqVkOq+JxEiKRHJ7iBYJsenv2WEymnWeO3eCuMrz/Eez7pHpGg==}
     peerDependencies:
       react: ^0.14.0 || ^15.0.1 || ^16.0.0
@@ -551,7 +549,7 @@ packages:
       json2mq: 0.2.0
       lodash: 4.17.21
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       resize-observer-polyfill: 1.5.1
     dev: false
 
@@ -1935,7 +1933,7 @@ packages:
       stylis: 4.0.10
     dev: false
 
-  /@emotion/core/10.1.1_react@17.0.0-rc.1:
+  /@emotion/core/10.1.1_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-ZMLG6qpXR8x031NXD8HJqugy/AZSkAuMxxqB46pmAR7ze47MhNJ56cdoX243QPZdGctrdfo+s08yZTiwaUcRKA==}
     peerDependencies:
       react: '>=16.3.0'
@@ -1989,31 +1987,7 @@ packages:
     resolution: {integrity: sha512-igX9a37DR2ZPGYtV6suZ6whr8pTFtyHL3K/oLUotxpSVO2ASaprmAe2Dkq7tBo7CRY7MMDrAa9nuQP9/YG8FxQ==}
     dev: false
 
-  /@emotion/react/11.1.2_458b321372166595a8ccea60d84425ad:
-    resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
-    peerDependencies:
-      '@babel/core': ^7.0.0
-      '@types/react': '*'
-      react: '>=16.8.0'
-    peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-      '@types/react':
-        optional: true
-    dependencies:
-      '@babel/core': 7.15.5
-      '@babel/runtime': 7.15.4
-      '@emotion/cache': 11.4.0
-      '@emotion/serialize': 1.0.0
-      '@emotion/sheet': 1.0.2
-      '@emotion/utils': 1.0.0
-      '@emotion/weak-memoize': 0.2.5
-      '@types/react': 17.0.24
-      hoist-non-react-statics: 3.3.2
-      react: /utopia-react/17.0.0-rc.1
-    dev: false
-
-  /@emotion/react/11.1.2_528ffd38e6b0222f9821ad7759a31552:
+  /@emotion/react/11.1.2_99e561a191e65003b22d8f0510df39a9:
     resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -2033,6 +2007,30 @@ packages:
       '@emotion/utils': 1.0.0
       '@emotion/weak-memoize': 0.2.5
       '@types/react': 16.9.49
+      hoist-non-react-statics: 3.3.2
+      react: /utopia-react/17.0.0-rc.1
+    dev: false
+
+  /@emotion/react/11.1.2_d1e00410a1e76d9a3a154f9b2580510f:
+    resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
+    peerDependencies:
+      '@babel/core': ^7.0.0
+      '@types/react': '*'
+      react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@types/react':
+        optional: true
+    dependencies:
+      '@babel/core': 7.15.5
+      '@babel/runtime': 7.15.4
+      '@emotion/cache': 11.4.0
+      '@emotion/serialize': 1.0.0
+      '@emotion/sheet': 1.0.2
+      '@emotion/utils': 1.0.0
+      '@emotion/weak-memoize': 0.2.5
+      '@types/react': 17.0.24
       hoist-non-react-statics: 3.3.2
       react: /utopia-react/17.0.0-rc.1
     dev: false
@@ -2088,7 +2086,7 @@ packages:
     resolution: {integrity: sha512-/NY/PXrQkl/wI0+0E3QWd+m9kMg7h4THmjbPEe0VVnplNtdJC6db0VHDqmaC2tsEDcda6zvy3b8giM9DHa6BLw==}
     dev: false
 
-  /@emotion/styled/11.0.0_41f05b26b172d981646f6bbde5d3d883:
+  /@emotion/styled/11.0.0_0ded4bf226a322a5840dc66c9d820008:
     resolution: {integrity: sha512-498laccxJlBiJqrr2r/fx9q+Pr55D0URP2UyOkoSGLjevb8LLAFWueqthsQ5XijE66iGo7y3rzzEYdA7CHmZEQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -2105,7 +2103,7 @@ packages:
       '@babel/runtime': 7.15.4
       '@emotion/babel-plugin': 11.3.0_@babel+core@7.15.5
       '@emotion/is-prop-valid': 1.1.0
-      '@emotion/react': 11.1.2_528ffd38e6b0222f9821ad7759a31552
+      '@emotion/react': 11.1.2_99e561a191e65003b22d8f0510df39a9
       '@emotion/serialize': 1.0.0
       '@emotion/utils': 1.0.0
       '@types/react': 16.9.49
@@ -2144,7 +2142,7 @@ packages:
     resolution: {integrity: sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==}
     dev: false
 
-  /@hot-loader/react-dom/16.13.0_react@17.0.0-rc.1:
+  /@hot-loader/react-dom/16.13.0_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-lJZrmkucz2MrQJTQtJobx5MICXcfQvKihszqv655p557HPi0hMOWxrNpiHv3DWD8ugNWjtWcVWqRnFvwsHq1mQ==}
     peerDependencies:
       react: ^16.0.0
@@ -2235,47 +2233,52 @@ packages:
       slash: 3.0.0
     dev: true
 
-  /@jest/console/26.6.2:
-    resolution: {integrity: sha512-IY1R2i2aLsLr7Id3S6p2BA82GNWryt4oSvEXLAKc+L2zdi89dSkE8xC1C+0kpATG4JhBJREnQOH7/zmccM2B0g==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/console/27.2.4:
+    resolution: {integrity: sha512-94znCKynPZpDpYHQ6esRJSc11AmONrVkBOBZiD7S+bSubHhrUfbS95EY5HIOxhm4PQO7cnvZkL3oJcY0oMA+Wg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
       chalk: 4.1.2
-      jest-message-util: 26.6.2
-      jest-util: 26.6.2
+      jest-message-util: 27.2.4
+      jest-util: 27.2.4
       slash: 3.0.0
     dev: true
 
-  /@jest/core/26.6.3:
-    resolution: {integrity: sha512-xvV1kKbhfUqFVuZ8Cyo+JPpipAHHAV3kcDBftiduK8EICXmTFddryy3P7NfZt8Pv37rA9nEJBKCCkglCPt/Xjw==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/core/27.2.4:
+    resolution: {integrity: sha512-UNQLyy+rXoojNm2MGlapgzWhZD1CT1zcHZQYeiD0xE7MtJfC19Q6J5D/Lm2l7i4V97T30usKDoEtjI8vKwWcLg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
     dependencies:
-      '@jest/console': 26.6.2
-      '@jest/reporters': 26.6.2
-      '@jest/test-result': 26.6.2
-      '@jest/transform': 26.6.2
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
+      '@jest/console': 27.2.4
+      '@jest/reporters': 27.2.4
+      '@jest/test-result': 27.2.4
+      '@jest/transform': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
       ansi-escapes: 4.3.2
       chalk: 4.1.2
+      emittery: 0.8.1
       exit: 0.1.2
       graceful-fs: 4.2.8
-      jest-changed-files: 26.6.2
-      jest-config: 26.6.3
-      jest-haste-map: 26.6.2
-      jest-message-util: 26.6.2
-      jest-regex-util: 26.0.0
-      jest-resolve: 26.6.2
-      jest-resolve-dependencies: 26.6.3
-      jest-runner: 26.6.3
-      jest-runtime: 26.6.3
-      jest-snapshot: 26.6.2
-      jest-util: 26.6.2
-      jest-validate: 26.6.2
-      jest-watcher: 26.6.2
+      jest-changed-files: 27.2.4
+      jest-config: 27.2.4
+      jest-haste-map: 27.2.4
+      jest-message-util: 27.2.4
+      jest-regex-util: 27.0.6
+      jest-resolve: 27.2.4
+      jest-resolve-dependencies: 27.2.4
+      jest-runner: 27.2.4
+      jest-runtime: 27.2.4
+      jest-snapshot: 27.2.4
+      jest-util: 27.2.4
+      jest-validate: 27.2.4
+      jest-watcher: 27.2.4
       micromatch: 4.0.4
-      p-each-series: 2.2.0
       rimraf: 3.0.2
       slash: 3.0.0
       strip-ansi: 6.0.0
@@ -2296,14 +2299,14 @@ packages:
       jest-mock: 25.5.0
     dev: true
 
-  /@jest/environment/26.6.2:
-    resolution: {integrity: sha512-nFy+fHl28zUrRsCeMB61VDThV1pVTtlEokBRgqPrcT1JNq4yRNIyTHfyht6PqtUvY9IsuLGTrbG8kPXjSZIZwA==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/environment/27.2.4:
+    resolution: {integrity: sha512-wkuui5yr3SSQW0XD0Qm3TATUbL/WE3LDEM3ulC+RCQhMf2yxhci8x7svGkZ4ivJ6Pc94oOzpZ6cdHBAMSYd1ew==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/fake-timers': 26.6.2
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
-      jest-mock: 26.6.2
+      '@jest/fake-timers': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
+      jest-mock: 27.2.4
     dev: true
 
   /@jest/fake-timers/25.5.0:
@@ -2317,16 +2320,16 @@ packages:
       lolex: 5.1.2
     dev: true
 
-  /@jest/fake-timers/26.6.2:
-    resolution: {integrity: sha512-14Uleatt7jdzefLPYM3KLcnUl1ZNikaKq34enpb5XG9i81JpppDb5muZvonvKyrl7ftEHkKS5L5/eB/kxJ+bvA==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/fake-timers/27.2.4:
+    resolution: {integrity: sha512-cs/TzvwWUM7kAA6Qm/890SK6JJ2pD5RfDNM3SSEom6BmdyV6OiWP1qf/pqo6ts6xwpcM36oN0wSEzcZWc6/B6w==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
-      '@sinonjs/fake-timers': 6.0.1
-      '@types/node': 16.9.6
-      jest-message-util: 26.6.2
-      jest-mock: 26.6.2
-      jest-util: 26.6.2
+      '@jest/types': 27.2.4
+      '@sinonjs/fake-timers': 8.0.1
+      '@types/node': 16.10.1
+      jest-message-util: 27.2.4
+      jest-mock: 27.2.4
+      jest-util: 27.2.4
     dev: true
 
   /@jest/globals/25.5.2:
@@ -2338,24 +2341,29 @@ packages:
       expect: 25.5.0
     dev: true
 
-  /@jest/globals/26.6.2:
-    resolution: {integrity: sha512-85Ltnm7HlB/KesBUuALwQ68YTU72w9H2xW9FjZ1eL1U3lhtefjjl5c2MiUbpXt/i6LaPRvoOFJ22yCBSfQ0JIA==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/globals/27.2.4:
+    resolution: {integrity: sha512-DRsRs5dh0i+fA9mGHylTU19+8fhzNJoEzrgsu+zgJoZth3x8/0juCQ8nVVdW1er4Cqifb/ET7/hACYVPD0dBEA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/environment': 26.6.2
-      '@jest/types': 26.6.2
-      expect: 26.6.2
+      '@jest/environment': 27.2.4
+      '@jest/types': 27.2.4
+      expect: 27.2.4
     dev: true
 
-  /@jest/reporters/26.6.2:
-    resolution: {integrity: sha512-h2bW53APG4HvkOnVMo8q3QXa6pcaNt1HkwVsOPMBV6LD/q9oSpxNSYZQYkAnjdMjrJ86UuYeLo+aEZClV6opnw==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/reporters/27.2.4:
+    resolution: {integrity: sha512-LHeSdDnDZkDnJ8kvnjcqV8P1Yv/32yL4d4XfR5gBiy3xGO0onwll1QEbvtW96fIwhx2nejug0GTaEdNDoyr3fQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
     dependencies:
       '@bcoe/v8-coverage': 0.2.3
-      '@jest/console': 26.6.2
-      '@jest/test-result': 26.6.2
-      '@jest/transform': 26.6.2
-      '@jest/types': 26.6.2
+      '@jest/console': 27.2.4
+      '@jest/test-result': 27.2.4
+      '@jest/transform': 27.2.4
+      '@jest/types': 27.2.4
       chalk: 4.1.2
       collect-v8-coverage: 1.0.1
       exit: 0.1.2
@@ -2366,17 +2374,15 @@ packages:
       istanbul-lib-report: 3.0.0
       istanbul-lib-source-maps: 4.0.0
       istanbul-reports: 3.0.2
-      jest-haste-map: 26.6.2
-      jest-resolve: 26.6.2
-      jest-util: 26.6.2
-      jest-worker: 26.6.2
+      jest-haste-map: 27.2.4
+      jest-resolve: 27.2.4
+      jest-util: 27.2.4
+      jest-worker: 27.2.4
       slash: 3.0.0
       source-map: 0.6.1
       string-length: 4.0.2
       terminal-link: 2.1.1
-      v8-to-istanbul: 7.1.2
-    optionalDependencies:
-      node-notifier: 8.0.2
+      v8-to-istanbul: 8.1.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2399,9 +2405,9 @@ packages:
       source-map: 0.6.1
     dev: true
 
-  /@jest/source-map/26.6.2:
-    resolution: {integrity: sha512-YwYcCwAnNmOVsZ8mr3GfnzdXDAl4LaenZP5z+G0c8bzC9/dugL8zRmxZzdoTl4IaS3CryS1uWnROLPFmb6lVvA==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/source-map/27.0.6:
+    resolution: {integrity: sha512-Fek4mi5KQrqmlY07T23JRi0e7Z9bXTOOD86V/uS0EIW4PClvPDqZOyFlLpNJheS6QI0FNX1CgmPjtJ4EA/2M+g==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
       callsites: 3.1.0
       graceful-fs: 4.2.8
@@ -2427,12 +2433,12 @@ packages:
       collect-v8-coverage: 1.0.1
     dev: true
 
-  /@jest/test-result/26.6.2:
-    resolution: {integrity: sha512-5O7H5c/7YlojphYNrK02LlDIV2GNPYisKwHm2QTKjNZeEzezCbwYs9swJySv2UfPMyZ0VdsmMv7jIlD/IKYQpQ==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/test-result/27.2.4:
+    resolution: {integrity: sha512-eU+PRo0+lIS01b0dTmMdVZ0TtcRSxEaYquZTRFMQz6CvsehGhx9bRzi9Zdw6VROviJyv7rstU+qAMX5pNBmnfQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/console': 26.6.2
-      '@jest/types': 26.6.2
+      '@jest/console': 27.2.4
+      '@jest/types': 27.2.4
       '@types/istanbul-lib-coverage': 2.0.3
       collect-v8-coverage: 1.0.1
     dev: true
@@ -2453,21 +2459,16 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@jest/test-sequencer/26.6.3:
-    resolution: {integrity: sha512-YHlVIjP5nfEyjlrSr8t/YdNfU/1XEt7c5b4OxcXCjyRhjzLYu/rO69/WHPuYcbCWkz8kAeZVZp2N2+IOLLEPGw==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/test-sequencer/27.2.4:
+    resolution: {integrity: sha512-fpk5eknU3/DXE2QCCG1wv/a468+cfPo3Asu6d6yUtM9LOPh709ubZqrhuUOYfM8hXMrIpIdrv1CdCrWWabX0rQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/test-result': 26.6.2
+      '@jest/test-result': 27.2.4
       graceful-fs: 4.2.8
-      jest-haste-map: 26.6.2
-      jest-runner: 26.6.3
-      jest-runtime: 26.6.3
+      jest-haste-map: 27.2.4
+      jest-runtime: 27.2.4
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - ts-node
-      - utf-8-validate
     dev: true
 
   /@jest/transform/25.5.1:
@@ -2494,20 +2495,20 @@ packages:
       - supports-color
     dev: true
 
-  /@jest/transform/26.6.2:
-    resolution: {integrity: sha512-E9JjhUgNzvuQ+vVAL21vlyfy12gP0GhazGgJC4h6qUt1jSdUXGWJ1wfu/X7Sd8etSgxV4ovT1pb9v5D6QW4XgA==}
-    engines: {node: '>= 10.14.2'}
+  /@jest/transform/27.2.4:
+    resolution: {integrity: sha512-n5FlX2TH0oQGwyVDKPxdJ5nI2sO7TJBFe3u3KaAtt7TOiV4yL+Y+rSFDl+Ic5MpbiA/eqXmLAQxjnBmWgS2rEA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
       '@babel/core': 7.15.5
-      '@jest/types': 26.6.2
+      '@jest/types': 27.2.4
       babel-plugin-istanbul: 6.0.0
       chalk: 4.1.2
       convert-source-map: 1.8.0
       fast-json-stable-stringify: 2.1.0
       graceful-fs: 4.2.8
-      jest-haste-map: 26.6.2
-      jest-regex-util: 26.0.0
-      jest-util: 26.6.2
+      jest-haste-map: 27.2.4
+      jest-regex-util: 27.0.6
+      jest-util: 27.2.4
       micromatch: 4.0.4
       pirates: 4.0.1
       slash: 3.0.0
@@ -2544,6 +2545,17 @@ packages:
       '@types/istanbul-reports': 3.0.1
       '@types/node': 16.9.6
       '@types/yargs': 15.0.14
+      chalk: 4.1.2
+    dev: true
+
+  /@jest/types/27.2.4:
+    resolution: {integrity: sha512-IDO2ezTxeMvQAHxzG/ZvEyA47q0aVfzT95rGFl7bZs/Go0aIucvfDbS2rmnoEdXxlLQhcolmoG/wvL/uKx4tKA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    dependencies:
+      '@types/istanbul-lib-coverage': 2.0.3
+      '@types/istanbul-reports': 3.0.1
+      '@types/node': 16.10.1
+      '@types/yargs': 16.0.4
       chalk: 4.1.2
     dev: true
 
@@ -2604,30 +2616,30 @@ packages:
   /@react-dnd/shallowequal/2.0.0:
     resolution: {integrity: sha512-Pc/AFTdwZwEKJxFJvlxrSmGe/di+aAOBn60sremrpLo6VI/6cmiUYNNwlI5KNYttg7uypzA3ILPMPgxB2GYZEg==}
 
-  /@react-spring/animated/9.0.0-rc.3_react@17.0.0-rc.1:
+  /@react-spring/animated/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-dAvgtKhkYpzzr+EkmZ4ZuJ5CujxCW0LaT109DvO/2MQNk3EWIxcgl+ik4tSulSbgau1GN8RlkRKyDp0wISdQ3Q==}
     dependencies:
       '@babel/runtime': 7.15.4
       '@react-spring/shared': 9.0.0-rc.3
-      react-layout-effect: 1.0.5_react@17.0.0-rc.1
+      react-layout-effect: 1.0.5_utopia-react@17.0.0-rc.1
     transitivePeerDependencies:
       - react
     dev: false
 
-  /@react-spring/core/9.0.0-rc.3_react@17.0.0-rc.1:
+  /@react-spring/core/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-3OzsVFxpfMJNkkQj8TwAH3NhUAX76AXu6WkslQF4EgBeEoG5eY3m+VvM9RsAsGWDuBKpscZ/wBpFt5Ih6KdGHA==}
     requiresBuild: true
     dependencies:
       '@babel/runtime': 7.15.4
-      '@react-spring/animated': 9.0.0-rc.3_react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
       '@react-spring/shared': 9.0.0-rc.3
-      react-layout-effect: 1.0.5_react@17.0.0-rc.1
-      use-memo-one: 1.1.2_react@17.0.0-rc.1
+      react-layout-effect: 1.0.5_utopia-react@17.0.0-rc.1
+      use-memo-one: 1.1.2_utopia-react@17.0.0-rc.1
     transitivePeerDependencies:
       - react
     dev: false
 
-  /@react-spring/konva/9.0.0-rc.3_react@17.0.0-rc.1:
+  /@react-spring/konva/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-uampLRgrHIqA3ilnheePUVEUE+fdeipXORI4XZJFsORP01CUJeJCxBwMagaxvsHJAtuNErMI/IebE1T2W8i5qA==}
     peerDependencies:
       konva: '>=2.6'
@@ -2635,21 +2647,21 @@ packages:
       react-konva: '>=16.8'
     dependencies:
       '@babel/runtime': 7.15.4
-      '@react-spring/animated': 9.0.0-rc.3_react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
       '@react-spring/shared': 9.0.0-rc.3
       react: /utopia-react/17.0.0-rc.1
     dev: false
 
-  /@react-spring/native/9.0.0-rc.3_react@17.0.0-rc.1:
+  /@react-spring/native/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-7JSixJLfzg8V0IrgyGS3gGr2v8CGh4Kym15Htp3CJq74GFBJMyaQS0KaMjieXnw5alTpQoeGBESfA3v5dPlPYg==}
     peerDependencies:
       react: '>=16.8'
       react-native: '>=0.58'
     dependencies:
       '@babel/runtime': 7.15.4
-      '@react-spring/animated': 9.0.0-rc.3_react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
       '@react-spring/shared': 9.0.0-rc.3
       react: /utopia-react/17.0.0-rc.1
     dev: false
@@ -2663,7 +2675,7 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /@react-spring/three/9.0.0-rc.3_react@17.0.0-rc.1+three@0.129.0:
+  /@react-spring/three/9.0.0-rc.3_24b06abb525ed3fd7bdb483525615d30:
     resolution: {integrity: sha512-H55T+Dnck+hsJ8WgE+tb89ngX1E1lDOpMBG4mGzNLGok6XgGqN0VBsHRN3QDl+aPfmJI1BPFPR6b6WbhwqRNbw==}
     peerDependencies:
       react: '>=16.11'
@@ -2671,28 +2683,28 @@ packages:
       three: '>=0.115'
     dependencies:
       '@babel/runtime': 7.15.4
-      '@react-spring/animated': 9.0.0-rc.3_react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
       '@react-spring/shared': 9.0.0-rc.3
       react: /utopia-react/17.0.0-rc.1
       three: 0.129.0
     dev: false
 
-  /@react-spring/web/9.0.0-rc.3_4b57aad7a3acc0ec1c2667d1fea04016:
+  /@react-spring/web/9.0.0-rc.3_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-rEvipblmihiz8+Eo01zDp5dqWn6XfYk8q2rlN9c18YIOL4o6nuY/VplDoocUMHYfH4liurpO4o1QudKOO1nAiQ==}
     peerDependencies:
       react: '>=16.8'
       react-dom: '>=16.8'
     dependencies:
       '@babel/runtime': 7.15.4
-      '@react-spring/animated': 9.0.0-rc.3_react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
       '@react-spring/shared': 9.0.0-rc.3
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /@react-spring/zdog/9.0.0-rc.3_4b57aad7a3acc0ec1c2667d1fea04016:
+  /@react-spring/zdog/9.0.0-rc.3_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-fl2JI098sfOJ+BaS9xCrnz8NSimL8yPrVwO0lHSpXLn/q3o3MYmRAeJnZQv8yDtT6isTHua6Tfb9vWuZWEXSmA==}
     peerDependencies:
       react: '>=16.8'
@@ -2701,14 +2713,14 @@ packages:
       zdog: '>=1.0'
     dependencies:
       '@babel/runtime': 7.15.4
-      '@react-spring/animated': 9.0.0-rc.3_react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
       '@react-spring/shared': 9.0.0-rc.3
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /@react-three/fiber/7.0.1_e703eacad80e5d6302dc86ea53f42337:
+  /@react-three/fiber/7.0.1_fb240f2ddf3ca4b47c2b562802d6427d:
     resolution: {integrity: sha512-UrC5wVywYAHIvcfHEreJXqDZJvQTFSuB737MBv1VliI4d1S0MbSLG9hOCDaWWgX9Wq+6jvVxG2JNfGXvZK1ATQ==}
     peerDependencies:
       react: '>=17.0'
@@ -2720,17 +2732,17 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       react-merge-refs: 1.1.0
-      react-reconciler: 0.26.2_react@17.0.0-rc.1
+      react-reconciler: 0.26.2_utopia-react@17.0.0-rc.1
       react-three-fiber: 0.0.0-deprecated
-      react-use-measure: 2.0.4_4b57aad7a3acc0ec1c2667d1fea04016
+      react-use-measure: 2.0.4_d9cccff7df39c9a08a2a815f75fb6cbc
       resize-observer-polyfill: 1.5.1
       scheduler: 0.20.2
       three: 0.129.0
-      use-asset: 1.0.4_react@17.0.0-rc.1
+      use-asset: 1.0.4_utopia-react@17.0.0-rc.1
       utility-types: 3.10.0
-      zustand: 3.5.10_react@17.0.0-rc.1
+      zustand: 3.5.10_utopia-react@17.0.0-rc.1
     dev: true
 
   /@relative-ci/agent/2.1.0_webpack@5.52.0:
@@ -2802,8 +2814,8 @@ packages:
       type-detect: 4.0.8
     dev: true
 
-  /@sinonjs/fake-timers/6.0.1:
-    resolution: {integrity: sha512-MZPUxrmFubI36XS1DI3qmI0YdN1gks62JtFZvxR67ljjSNCeK6U08Zx4msEWOXuofgqUt6zPHSi1H9fbjR/NRA==}
+  /@sinonjs/fake-timers/8.0.1:
+    resolution: {integrity: sha512-AU7kwFxreVd6OAXcAFlKSmZquiRUU0FvYm44k1Y1QbK7Co4m0aqfGMhjykIeQp/H6rcl+nFmj0zfdUcGVs9Dew==}
     dependencies:
       '@sinonjs/commons': 1.8.3
     dev: true
@@ -2901,7 +2913,7 @@ packages:
       wait-for-expect: 3.0.2
     dev: true
 
-  /@testing-library/react-hooks/5.1.2_78bb99577566b1f0098b47a03a5ff046:
+  /@testing-library/react-hooks/5.1.2_dde3fa6c6ce2f58e39e177699e67aa1b:
     resolution: {integrity: sha512-jwhtDYZ5gQUIX8cmVCVdtwNvuF5EiCOWjokRlTV+o/V0GdtRZDykUllL1OXq5PS4+J33wGLNQeeWzEHcWrH7tg==}
     peerDependencies:
       react: '>=16.9.0'
@@ -2919,12 +2931,12 @@ packages:
       '@types/react-test-renderer': 17.0.1
       filter-console: 0.1.1
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
-      react-error-boundary: 3.1.3_react@17.0.0-rc.1
-      react-test-renderer: 16.9.0_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react-error-boundary: 3.1.3_utopia-react@17.0.0-rc.1
+      react-test-renderer: 16.9.0_utopia-react@17.0.0-rc.1
     dev: true
 
-  /@testing-library/react/9.1.4_4b57aad7a3acc0ec1c2667d1fea04016:
+  /@testing-library/react/9.1.4_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-fQ/PXZoLcmnS1W5ZiM3P7XBy2x6Hm9cJAT/ZDuZKzJ1fS1rN3j31p7ReAqUe3N1kJ46sNot0n1oiGbz7FPU+FA==}
     engines: {node: '>=8'}
     peerDependencies:
@@ -2935,17 +2947,17 @@ packages:
       '@testing-library/dom': 6.16.0
       '@types/testing-library__react': 9.1.3
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: true
 
-  /@tippyjs/react/4.1.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /@tippyjs/react/4.1.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-g6Dpm46edr9T9z+BYxd/eJZa6QMFc4T4z5xrztxVlkti7AhNYf7OaE6b3Nh+boUZZ9wn8xkNq9VrQM5K4huwnQ==}
     peerDependencies:
       react: '>=16.8'
       react-dom: '>=16.8'
     dependencies:
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       tippy.js: 6.2.6
     dev: false
 
@@ -3120,7 +3132,7 @@ packages:
   /@types/graceful-fs/4.1.5:
     resolution: {integrity: sha512-anKkLmZZ+xm4p8JWBf4hElkM4XR+EZeA2M9BAkkTldmcyDY4mbdIJnRghDJH3Ov5ooY7/UAoENtmdMSkaAd7Cw==}
     dependencies:
-      '@types/node': 16.9.6
+      '@types/node': 16.10.1
     dev: true
 
   /@types/graphlib/2.1.4:
@@ -3190,11 +3202,11 @@ packages:
       '@types/istanbul-lib-report': 3.0.0
     dev: true
 
-  /@types/jest/26.0.3:
-    resolution: {integrity: sha512-v89ga1clpVL/Y1+YI0eIu1VMW+KU7Xl8PhylVtDKVWaSUHBHYPLXMQGBdrpHewaKoTvlXkksbYqPgz8b4cmRZg==}
+  /@types/jest/27.0.2:
+    resolution: {integrity: sha512-4dRxkS/AFX0c5XW6IPMNOydLn2tEhNhJV7DnYK+0bjoJZ+QTmfucBlihX7aoEsh/ocYtkLC73UbnBXBXIxsULA==}
     dependencies:
-      jest-diff: 25.5.0
-      pretty-format: 25.5.0
+      jest-diff: 27.2.4
+      pretty-format: 27.2.4
     dev: true
 
   /@types/jquery/3.3.29:
@@ -3298,6 +3310,10 @@ packages:
     resolution: {integrity: sha512-boy4xPNEtiw6N3abRhBi/e7hNvy3Tt8E9ZRAQrwAGzoCGZS/1wjo9KY7JHhnfnEsG5wSjDbymCozUM9a3ea7OQ==}
     dev: true
 
+  /@types/prettier/2.4.1:
+    resolution: {integrity: sha512-Fo79ojj3vdEZOHg3wR9ksAMRz4P3S5fDB5e/YWZiFnyFQI1WY2Vftu9XoXVVtJfxB7Bpce/QTqWSSntkz2Znrw==}
+    dev: true
+
   /@types/prop-types/15.5.6:
     resolution: {integrity: sha512-ZBFR7TROLVzCkswA3Fmqq+IIJt62/T7aY/Dmz+QkU7CaW2QFqAitCE8Ups7IzmGhcN1YWMBT4Qcoc07jU9hOJQ==}
 
@@ -3311,11 +3327,11 @@ packages:
       '@types/react': 16.9.49
     dev: true
 
-  /@types/react-dnd/3.0.2_4b57aad7a3acc0ec1c2667d1fea04016:
+  /@types/react-dnd/3.0.2_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-Z1BqHYGFtfSPfWs+kgX4b6wQmwwtqq4/pLo4zdO9xcDUB1ZQP8iWTAYNf3EJ2f0WiVQpSLN8UytP+ILzZHDLYw==}
     deprecated: This is a stub types definition. react-dnd provides its own type definitions, so you don't need this installed.
     dependencies:
-      react-dnd: 10.0.2_4b57aad7a3acc0ec1c2667d1fea04016
+      react-dnd: 10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - react
       - react-dom
@@ -3528,6 +3544,12 @@ packages:
       '@types/yargs-parser': 20.2.1
     dev: true
 
+  /@types/yargs/16.0.4:
+    resolution: {integrity: sha512-T8Yc9wt/5LbJyCaLiHPReJa0kApcIgJ7Bn735GjItUfh08Z1pJvu8QZqb9s+mMvKV6WUQRV7K2R46YbjMXTTJw==}
+    dependencies:
+      '@types/yargs-parser': 20.2.1
+    dev: true
+
   /@typescript-eslint/eslint-plugin/4.24.0_d722183cf3439456233a2142a3db9ede:
     resolution: {integrity: sha512-qbCgkPM7DWTsYQGjx9RTuQGswi+bEt0isqDBeo+CKV0953zqI0Tp7CZ7Fi9ipgFA6mcQqF4NOVNwS/f2r6xShw==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -3638,7 +3660,7 @@ packages:
     resolution: {integrity: sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==}
     dev: true
 
-  /@use-it/interval/0.1.3_react@17.0.0-rc.1:
+  /@use-it/interval/0.1.3_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-chshdtDZTFoWA9aszBz1Cc04Ca9NBD2JTi/GMjdJ+HGm4q7Vy1v71+2mm22r7Kfb2nYW+lTRsPcEHdB/VFVHsQ==}
     peerDependencies:
       react: ^16.8.0
@@ -3784,7 +3806,7 @@ packages:
       webpack-dev-server: 4.1.0_webpack-cli@4.8.0+webpack@5.52.0
     dev: true
 
-  /@welldone-software/why-did-you-render/5.0.0-rc.1_react@17.0.0-rc.1:
+  /@welldone-software/why-did-you-render/5.0.0-rc.1_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-LksaD/9/q11cNn07iorxtBAJk3MPLULV48TTf6sMw/33YpCWNzOvLUEaWb6Ai1ob2BgUAwLkOh69MaE0winLqQ==}
     peerDependencies:
       react: '>=16.13'
@@ -4106,15 +4128,20 @@ packages:
       color-convert: 2.0.1
     dev: true
 
-  /antd/4.3.5_4b57aad7a3acc0ec1c2667d1fea04016:
+  /ansi-styles/5.2.0:
+    resolution: {integrity: sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==}
+    engines: {node: '>=10'}
+    dev: true
+
+  /antd/4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-C1qILCKh+G7q06wtm4uqmyvqzAzAaDKKzuTO0BO+rtUbSATjzbUg2Bp5byDEw0ThUGTWfJEQ0J7HZHh0FgiaJA==}
     peerDependencies:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
       '@ant-design/css-animation': 1.7.3
-      '@ant-design/icons': 4.6.4_4b57aad7a3acc0ec1c2667d1fea04016
-      '@ant-design/react-slick': 0.26.3_4b57aad7a3acc0ec1c2667d1fea04016
+      '@ant-design/icons': 4.6.4_d9cccff7df39c9a08a2a815f75fb6cbc
+      '@ant-design/react-slick': 0.26.3_d9cccff7df39c9a08a2a815f75fb6cbc
       array-tree-filter: 2.1.0
       classnames: 2.2.6
       copy-to-clipboard: 3.3.1
@@ -4123,36 +4150,36 @@ packages:
       omit.js: 1.0.2
       raf: 3.4.1
       rc-animate: 3.1.1
-      rc-cascader: 1.2.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-cascader: 1.2.0_d9cccff7df39c9a08a2a815f75fb6cbc
       rc-checkbox: 2.2.0
-      rc-collapse: 2.0.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-dialog: 8.0.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-drawer: 4.0.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-dropdown: 3.1.3_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-field-form: 1.4.4_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-input-number: 5.0.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-mentions: 1.2.0_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-menu: 8.3.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-notification: 4.4.0_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-pagination: 2.2.5_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-picker: 1.6.4_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-collapse: 2.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-dialog: 8.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-drawer: 4.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-dropdown: 3.1.3_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-field-form: 1.4.4_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-input-number: 5.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-mentions: 1.2.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-menu: 8.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-notification: 4.4.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-pagination: 2.2.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-picker: 1.6.4_d9cccff7df39c9a08a2a815f75fb6cbc
       rc-progress: 3.0.0
-      rc-rate: 2.7.0_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-resize-observer: 0.2.6_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-select: 11.0.13_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-slider: 9.3.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-steps: 4.0.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-switch: 3.2.2_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-table: 7.8.6_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-tabs: 11.4.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-tooltip: 4.2.3_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-tree: 3.3.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-tree-select: 4.0.3_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-rate: 2.7.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-resize-observer: 0.2.6_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-select: 11.0.13_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-slider: 9.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-steps: 4.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-switch: 3.2.2_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-table: 7.8.6_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-tabs: 11.4.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-tooltip: 4.2.3_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-tree: 3.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-tree-select: 4.0.3_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
       rc-upload: 3.2.1
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       scroll-into-view-if-needed: 2.2.28
       warning: 4.0.3
     transitivePeerDependencies:
@@ -4453,18 +4480,18 @@ packages:
       - supports-color
     dev: true
 
-  /babel-jest/26.6.3_@babel+core@7.15.5:
-    resolution: {integrity: sha512-pl4Q+GAVOHwvjrck6jKjvmGhnO3jHX/xuB9d27f+EJZ/6k+6nMuPjorrYp7s++bKKdANwzElBWnLWaObvTnaZA==}
-    engines: {node: '>= 10.14.2'}
+  /babel-jest/27.2.4_@babel+core@7.15.5:
+    resolution: {integrity: sha512-f24OmxyWymk5jfgLdlCMu4fTs4ldxFBIdn5sJdhvGC1m08rSkJ5hYbWkNmfBSvE/DjhCVNSHXepxsI6THGfGsg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     peerDependencies:
-      '@babel/core': ^7.0.0
+      '@babel/core': ^7.8.0
     dependencies:
       '@babel/core': 7.15.5
-      '@jest/transform': 26.6.2
-      '@jest/types': 26.6.2
+      '@jest/transform': 27.2.4
+      '@jest/types': 27.2.4
       '@types/babel__core': 7.1.16
       babel-plugin-istanbul: 6.0.0
-      babel-preset-jest: 26.6.2_@babel+core@7.15.5
+      babel-preset-jest: 27.2.0_@babel+core@7.15.5
       chalk: 4.1.2
       graceful-fs: 4.2.8
       slash: 3.0.0
@@ -4546,9 +4573,9 @@ packages:
       '@types/babel__traverse': 7.14.2
     dev: true
 
-  /babel-plugin-jest-hoist/26.6.2:
-    resolution: {integrity: sha512-PO9t0697lNTmcEHH69mdtYiOIkkOlj9fySqfO3K1eCcdISevLAE0xY59VLLUj0SoiPiTX/JU2CYFpILydUa5Lw==}
-    engines: {node: '>= 10.14.2'}
+  /babel-plugin-jest-hoist/27.2.0:
+    resolution: {integrity: sha512-TOux9khNKdi64mW+0OIhcmbAn75tTlzKhxmiNXevQaPbrBYK7YKjP1jl6NHTJ6XR5UgUrJbCnWlKVnJn29dfjw==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
       '@babel/template': 7.15.4
       '@babel/types': 7.15.6
@@ -4662,14 +4689,14 @@ packages:
       babel-preset-current-node-syntax: 0.1.4_@babel+core@7.15.5
     dev: true
 
-  /babel-preset-jest/26.6.2_@babel+core@7.15.5:
-    resolution: {integrity: sha512-YvdtlVm9t3k777c5NPQIv6cxFFFapys25HiUmuSgHwIZhfifweR5c5Sf5nwE3MAbfu327CYSvps8Yx6ANLyleQ==}
-    engines: {node: '>= 10.14.2'}
+  /babel-preset-jest/27.2.0_@babel+core@7.15.5:
+    resolution: {integrity: sha512-z7MgQ3peBwN5L5aCqBKnF6iqdlvZvFUQynEhu0J+X9nHLU72jO3iY331lcYrg+AssJ8q7xsv5/3AICzVmJ/wvg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     peerDependencies:
       '@babel/core': ^7.0.0
     dependencies:
       '@babel/core': 7.15.5
-      babel-plugin-jest-hoist: 26.6.2
+      babel-plugin-jest-hoist: 27.2.0
       babel-preset-current-node-syntax: 1.0.1_@babel+core@7.15.5
     dev: true
 
@@ -5005,13 +5032,6 @@ packages:
       escalade: 3.1.1
       nanocolors: 0.1.12
       node-releases: 1.1.76
-
-  /bs-logger/0.2.6:
-    resolution: {integrity: sha512-pd8DCoxmbgc7hyPKOvxtqNcjYoOsABPQdcCUjGp3d42VR2CX1ORhk2A87oqqu5R1kk+76nsxZupkmyd+MVtCog==}
-    engines: {node: '>= 6'}
-    dependencies:
-      fast-json-stable-stringify: 2.1.0
-    dev: true
 
   /bser/2.1.1:
     resolution: {integrity: sha512-gQxTNE/GAfIIrmHLUE3oJyp5FO6HRBfhjnw4/wMmA63ZGDJnWBmgY/lyQBpnDUkGmAhbSe39tx2d/iTOAfglwQ==}
@@ -5392,6 +5412,10 @@ packages:
     resolution: {integrity: sha512-5tK7EtrZ0N+OLFMthtqOj4fI2Jeb88C4CAZPu25LDVUgXJ0A3Js4PMGqrn0JU1W0Mh1/Z8wZzYPxqUrXeBboCQ==}
     dev: true
 
+  /ci-info/3.2.0:
+    resolution: {integrity: sha512-dVqRX7fLUm8J6FgHJ418XuIgDLZDkYcDFTeL6TA2gt5WlIZUQrrH6EZrNClwT/H0FateUsZkGIOPRrLbP+PR9A==}
+    dev: true
+
   /cipher-base/1.0.4:
     resolution: {integrity: sha512-Kkht5ye6ZGmwv40uUDZztayT2ThLQGfnj/T71N/XzeZeo3nf8foyW7zGTsPYkEya3m5f3cAypH+qe7YOrM1U2Q==}
     dependencies:
@@ -5399,8 +5423,8 @@ packages:
       safe-buffer: 5.2.1
     dev: true
 
-  /cjs-module-lexer/0.6.0:
-    resolution: {integrity: sha512-uc2Vix1frTfnuzxxu1Hp4ktSvM3QaI4oXl4ZUqL1wjTu/BGki9TrCWoqLTg/drR1KwAEarXuRFCG2Svr1GxPFw==}
+  /cjs-module-lexer/1.2.2:
+    resolution: {integrity: sha512-cOU9usZw8/dXIXKtwa8pM0OTJQuJkxMN6w30csNRUerHfeQ5R6U3kkU/FtJeIf3M202OHfY2U8ccInBG7/xogA==}
     dev: true
 
   /clap/1.2.3:
@@ -5792,17 +5816,17 @@ packages:
     resolution: {integrity: sha512-ZMkYO/LkF17QvCPqM0gxw8yUzigAOZOSWSHg91FH6orS7vcEj5dVZTidN2fQ14yBSdg97RqhSNwLUXInd52OTA==}
     dev: true
 
-  /console-feed/2.8.8_3b35bc6cd8f445133e595bd202e3aeca:
+  /console-feed/2.8.8_120e34cc879668f8c581a0795dcbac51:
     resolution: {integrity: sha512-tqONbPYrolH9Gn8yMc+7sBZG9F9FkNJM68ziG5dInznBOHbHNua+Mq0S70EgvkhEpE9AifvV9d7EX2Jm5yDw2w==}
     peerDependencies:
       react: ^15.x || ^16.x
     dependencies:
       emotion: 9.2.12
-      emotion-theming: 9.2.9_a993dbb6f7bc8a2a6129228b671e4d66
-      linkifyjs: 2.1.9_4b57aad7a3acc0ec1c2667d1fea04016
+      emotion-theming: 9.2.9_1010e16b243af32a19f0cf9a2c1ac6e6
+      linkifyjs: 2.1.9_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-emotion: 9.2.12_0902779c0de1954abcfab31f4a375899
-      react-inspector: 2.3.1_react@17.0.0-rc.1
+      react-emotion: 9.2.12_199862f3a34dd9afef4fd8fbf7ffe670
+      react-inspector: 2.3.1_utopia-react@17.0.0-rc.1
     transitivePeerDependencies:
       - jquery
       - prop-types
@@ -6194,6 +6218,10 @@ packages:
     resolution: {integrity: sha512-p3pvU7r1MyyqbTk+WbNJIgJjG2VmTIaB10rI93LzVPrmDJKkzKYMtxxyAvQXR/NS6otuzveI7+7BBq3SjBS2mw==}
     dev: true
 
+  /cssom/0.5.0:
+    resolution: {integrity: sha512-iKuQcq+NdHqlAcwUY0o/HL69XQrUaQdMjmStJ8JFmUaiiQErlhrmuigkg/CU4E2J0IyUKUrMAgl36TvN67MqTw==}
+    dev: true
+
   /cssstyle/2.3.0:
     resolution: {integrity: sha512-AZL67abkUzIuvcHqk7c09cezpGNcxUxU4Ioi/05xHk4DQeTkWmGYftIE6ctU6AEt+Gn4n1lDStOtj7FKycP71A==}
     engines: {node: '>=8'}
@@ -6252,6 +6280,15 @@ packages:
       abab: 2.0.5
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.7.0
+    dev: true
+
+  /data-urls/3.0.0:
+    resolution: {integrity: sha512-4AefxbTTdFtxDUdh0BuMBs2qJVL25Mow2zlcuuePegQwgD6GEmQao42LLEeksOui8nL4RcNEugIpFP7eRd33xg==}
+    engines: {node: '>=12'}
+    dependencies:
+      abab: 2.0.5
+      whatwg-mimetype: 2.3.0
+      whatwg-url: 9.1.0
     dev: true
 
   /date-fns/1.30.1:
@@ -6565,6 +6602,11 @@ packages:
     engines: {node: '>= 10.14.2'}
     dev: true
 
+  /diff-sequences/27.0.6:
+    resolution: {integrity: sha512-ag6wfpBFyNXZ0p8pcuIDS//D8H062ZQJ3fzYxjpmeKjnz8W4pekL3AI8VohmyZmsWW2PWaHgjsmqR6L13101VQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    dev: true
+
   /diff/4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
     engines: {node: '>=0.3.1'}
@@ -6849,8 +6891,8 @@ packages:
       minimalistic-crypto-utils: 1.0.1
     dev: true
 
-  /emittery/0.7.2:
-    resolution: {integrity: sha512-A8OG5SR/ij3SsJdWDJdkkSYUjQdCUx6APQXem0SaEePBSRg4eymGYwBkKo1Y6DU+af/Jn2dBQqDBvjnr9Vi8nQ==}
+  /emittery/0.8.1:
+    resolution: {integrity: sha512-uDfvUjVrfGJJhymx/kz6prltenw1u7WrCg1oa94zYY8xxVpLLUu045LAT0dhDZdXG58/EpPL/5kA180fQ/qudg==}
     engines: {node: '>=10'}
     dev: true
 
@@ -6875,7 +6917,7 @@ packages:
     resolution: {integrity: sha512-/kyM18EfinwXZbno9FyUGeFh87KC8HRQBQGildHZbEuRyWFOmv1U10o9BBp8XVZDVNNuQKyIGIu5ZYAAXJ0V2Q==}
     engines: {node: '>= 4'}
 
-  /emotion-theming/9.2.9_a993dbb6f7bc8a2a6129228b671e4d66:
+  /emotion-theming/9.2.9_1010e16b243af32a19f0cf9a2c1ac6e6:
     resolution: {integrity: sha512-Ncyr1WocmDDrTbuYAzklIUC5iKiGtHy3e5ymoFXcka6SuvZl/EDMawegk4wVp72Agrcm1xemab3QOHfnOkpoMA==}
     peerDependencies:
       prop-types: 15.x
@@ -7497,16 +7539,16 @@ packages:
       jest-regex-util: 26.0.0
     dev: true
 
-  /expect/26.6.2:
-    resolution: {integrity: sha512-9/hlOBkQl2l/PLHJx6JjoDF6xPKcJEsUlWKb23rKE7KzeDqUZKXKNMW27KIue5JMdBV9HgmoJPcc8HtO85t9IA==}
-    engines: {node: '>= 10.14.2'}
+  /expect/27.2.4:
+    resolution: {integrity: sha512-gOtuonQ8TCnbNNCSw2fhVzRf8EFYDII4nB5NmG4IEV0rbUnW1I5zXvoTntU4iicB/Uh0oZr20NGlOLdJiwsOZA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
-      ansi-styles: 4.3.0
-      jest-get-type: 26.3.0
-      jest-matcher-utils: 26.6.2
-      jest-message-util: 26.6.2
-      jest-regex-util: 26.0.0
+      '@jest/types': 27.2.4
+      ansi-styles: 5.2.0
+      jest-get-type: 27.0.6
+      jest-matcher-utils: 27.2.4
+      jest-message-util: 27.2.4
+      jest-regex-util: 27.0.6
     dev: true
 
   /express/4.17.1:
@@ -7995,6 +8037,15 @@ packages:
       mime-types: 2.1.32
     dev: true
 
+  /form-data/4.0.0:
+    resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
+    engines: {node: '>= 6'}
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      mime-types: 2.1.32
+    dev: true
+
   /format/0.2.2:
     resolution: {integrity: sha1-1hcBB+nv3E7TDJ3DkBbflCtctYs=}
     engines: {node: '>=0.4.x'}
@@ -8433,11 +8484,6 @@ packages:
     engines: {node: '>=4.x'}
     dev: true
 
-  /growly/1.3.0:
-    resolution: {integrity: sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=}
-    dev: true
-    optional: true
-
   /gzip-size/5.1.1:
     resolution: {integrity: sha512-FNHi6mmoHvs1mxZAds4PpdCS6QG8B4C1krxJsMutgxl5t3+GlRTzzI3NEkifXx2pVsOvJdOGSmIgDhQ55FwdPA==}
     engines: {node: '>=6'}
@@ -8699,7 +8745,7 @@ packages:
       terser: 4.8.0
     dev: true
 
-  /html-react-parser/0.13.0_react@17.0.0-rc.1:
+  /html-react-parser/0.13.0_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-hU94hE2p9xhMM61EOoiY3Kr+DfzH/uY7hGeVXQpGFRjgbYRUeyuSKORDNMIaY8IAcuHQ6Ov9pJ3x94Wvso/OmQ==}
     peerDependencies:
       react: ^0.14 || ^15 || ^16
@@ -9225,6 +9271,13 @@ packages:
       ci-info: 2.0.0
     dev: true
 
+  /is-ci/3.0.0:
+    resolution: {integrity: sha512-kDXyttuLeslKAHYL/K28F2YkM3x5jvFPEw3yXbRptXydjD9rpLEz+C5K5iutY9ZiUu6AP41JdvRQwF4Iqs4ZCQ==}
+    hasBin: true
+    dependencies:
+      ci-info: 3.2.0
+    dev: true
+
   /is-core-module/2.6.0:
     resolution: {integrity: sha512-wShG8vs60jKfPWpF2KZRaAtvt3a20OAn7+IJ6hLPECpSABLcKtFKTTI4ZtH5QcBruBHlq+WsdHWyz0BCZW7svQ==}
     dependencies:
@@ -9676,42 +9729,73 @@ packages:
     engines: {node: '>= 0.6.0'}
     dev: true
 
-  /jest-changed-files/26.6.2:
-    resolution: {integrity: sha512-fDS7szLcY9sCtIip8Fjry9oGf3I2ht/QT21bAHm5Dmf0mD4X3ReNUf17y+bO6fR8WgbIZTlbyG1ak/53cbRzKQ==}
-    engines: {node: '>= 10.14.2'}
+  /jest-changed-files/27.2.4:
+    resolution: {integrity: sha512-eeO1C1u4ex7pdTroYXezr+rbr957myyVoKGjcY4R1TJi3A+9v+4fu1Iv9J4eLq1bgFyT3O3iRWU9lZsEE7J72Q==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
-      execa: 4.1.0
-      throat: 5.0.0
+      '@jest/types': 27.2.4
+      execa: 5.1.1
+      throat: 6.0.1
     dev: true
 
-  /jest-clean-console-reporter/0.2.0_jest@26.1.0:
+  /jest-circus/27.2.4:
+    resolution: {integrity: sha512-TtheheTElrGjlsY9VxkzUU1qwIx05ItIusMVKnvNkMt4o/PeegLRcjq3Db2Jz0GGdBalJdbzLZBgeulZAJxJWA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    dependencies:
+      '@jest/environment': 27.2.4
+      '@jest/test-result': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
+      chalk: 4.1.2
+      co: 4.6.0
+      dedent: 0.7.0
+      expect: 27.2.4
+      is-generator-fn: 2.1.0
+      jest-each: 27.2.4
+      jest-matcher-utils: 27.2.4
+      jest-message-util: 27.2.4
+      jest-runtime: 27.2.4
+      jest-snapshot: 27.2.4
+      jest-util: 27.2.4
+      pretty-format: 27.2.4
+      slash: 3.0.0
+      stack-utils: 2.0.5
+      throat: 6.0.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /jest-clean-console-reporter/0.2.0_jest@27.2.2:
     resolution: {integrity: sha512-+crUBrBbGCHU6hI/yTEnpJhDF+bLg7FFwFgyhL+3qx2qkR9ZRaiTXlRw1rhSUud/PZAWs8wBdg3EtgR3AvTuFg==}
     peerDependencies:
       jest: '>=25.1.0'
     dependencies:
       chalk: 4.1.2
-      jest: 26.1.0
+      jest: 27.2.2
     dev: true
 
-  /jest-cli/26.6.3:
-    resolution: {integrity: sha512-GF9noBSa9t08pSyl3CY4frMrqp+aQXFGFkf5hEPbh/pIUFYWMK6ZLTfbmadxJVcJrdRoChlWQsA2VkJcDFK8hg==}
-    engines: {node: '>= 10.14.2'}
+  /jest-cli/27.2.4:
+    resolution: {integrity: sha512-4kpQQkg74HYLaXo3nzwtg4PYxSLgL7puz1LXHj5Tu85KmlIpxQFjRkXlx4V47CYFFIDoyl3rHA/cXOxUWyMpNg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     hasBin: true
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
     dependencies:
-      '@jest/core': 26.6.3
-      '@jest/test-result': 26.6.2
-      '@jest/types': 26.6.2
+      '@jest/core': 27.2.4
+      '@jest/test-result': 27.2.4
+      '@jest/types': 27.2.4
       chalk: 4.1.2
       exit: 0.1.2
       graceful-fs: 4.2.8
       import-local: 3.0.2
-      is-ci: 2.0.0
-      jest-config: 26.6.3
-      jest-util: 26.6.2
-      jest-validate: 26.6.2
+      jest-config: 27.2.4
+      jest-util: 27.2.4
+      jest-validate: 27.2.4
       prompts: 2.4.1
-      yargs: 15.4.1
+      yargs: 16.2.0
     transitivePeerDependencies:
       - bufferutil
       - canvas
@@ -9750,9 +9834,9 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jest-config/26.6.3:
-    resolution: {integrity: sha512-t5qdIj/bCj2j7NFVHb2nFB4aUdfucDn3JRKgrZnplb8nieAirAzRSHP8uDEd+qV6ygzg9Pz4YG7UTJf94LPSyg==}
-    engines: {node: '>= 10.14.2'}
+  /jest-config/27.2.4:
+    resolution: {integrity: sha512-tWy0UxhdzqiKyp4l5Vq4HxLyD+gH5td+GCF3c22/DJ0bYAOsMo+qi2XtbJI6oYMH5JOJQs9nLW/r34nvFCehjA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     peerDependencies:
       ts-node: '>=9.0.0'
     peerDependenciesMeta:
@@ -9760,23 +9844,26 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.15.5
-      '@jest/test-sequencer': 26.6.3
-      '@jest/types': 26.6.2
-      babel-jest: 26.6.3_@babel+core@7.15.5
+      '@jest/test-sequencer': 27.2.4
+      '@jest/types': 27.2.4
+      babel-jest: 27.2.4_@babel+core@7.15.5
       chalk: 4.1.2
       deepmerge: 4.2.2
       glob: 7.2.0
       graceful-fs: 4.2.8
-      jest-environment-jsdom: 26.6.2
-      jest-environment-node: 26.6.2
-      jest-get-type: 26.3.0
-      jest-jasmine2: 26.6.3
-      jest-regex-util: 26.0.0
-      jest-resolve: 26.6.2
-      jest-util: 26.6.2
-      jest-validate: 26.6.2
+      is-ci: 3.0.0
+      jest-circus: 27.2.4
+      jest-environment-jsdom: 27.2.4
+      jest-environment-node: 27.2.4
+      jest-get-type: 27.0.6
+      jest-jasmine2: 27.2.4
+      jest-regex-util: 27.0.6
+      jest-resolve: 27.2.4
+      jest-runner: 27.2.4
+      jest-util: 27.2.4
+      jest-validate: 27.2.4
       micromatch: 4.0.4
-      pretty-format: 26.6.2
+      pretty-format: 27.2.4
     transitivePeerDependencies:
       - bufferutil
       - canvas
@@ -9804,6 +9891,16 @@ packages:
       pretty-format: 26.6.2
     dev: true
 
+  /jest-diff/27.2.4:
+    resolution: {integrity: sha512-bLAVlDSCR3gqUPGv+4nzVpEXGsHh98HjUL7Vb2hVyyuBDoQmja8eJb0imUABsuxBeUVmf47taJSAd9nDrwWKEg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    dependencies:
+      chalk: 4.1.2
+      diff-sequences: 27.0.6
+      jest-get-type: 27.0.6
+      pretty-format: 27.2.4
+    dev: true
+
   /jest-docblock/25.3.0:
     resolution: {integrity: sha512-aktF0kCar8+zxRHxQZwxMy70stc9R1mOmrLsT5VO3pIT0uzGRSDAXxSlz4NqQWpuLjPpuMhPRl7H+5FRsvIQAg==}
     engines: {node: '>= 8.3'}
@@ -9811,9 +9908,9 @@ packages:
       detect-newline: 3.1.0
     dev: true
 
-  /jest-docblock/26.0.0:
-    resolution: {integrity: sha512-RDZ4Iz3QbtRWycd8bUEPxQsTlYazfYn/h5R65Fc6gOfwozFhoImx+affzky/FFBuqISPTqjXomoIGJVKBWoo0w==}
-    engines: {node: '>= 10.14.2'}
+  /jest-docblock/27.0.6:
+    resolution: {integrity: sha512-Fid6dPcjwepTFraz0YxIMCi7dejjJ/KL9FBjPYhBp4Sv1Y9PdhImlKZqYU555BlN4TQKaTc+F2Av1z+anVyGkA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
       detect-newline: 3.1.0
     dev: true
@@ -9829,21 +9926,15 @@ packages:
       pretty-format: 25.5.0
     dev: true
 
-  /jest-each/26.6.2:
-    resolution: {integrity: sha512-Mer/f0KaATbjl8MCJ+0GEpNdqmnVmDYqCTJYTvoo7rqmRiDllmp2AYN+06F93nXcY3ur9ShIjS+CO/uD+BbH4A==}
-    engines: {node: '>= 10.14.2'}
+  /jest-each/27.2.4:
+    resolution: {integrity: sha512-w9XVc+0EDBUTJS4xBNJ7N2JCcWItFd006lFjz77OarAQcQ10eFDBMrfDv2GBJMKlXe9aq0HrIIF51AXcZrRJyg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
+      '@jest/types': 27.2.4
       chalk: 4.1.2
-      jest-get-type: 26.3.0
-      jest-util: 26.6.2
-      pretty-format: 26.6.2
-    dev: true
-
-  /jest-environment-jsdom-global/2.0.4:
-    resolution: {integrity: sha512-1vB8q+PrszXW4Pf7Zgp3eQ4oNVbA7GY6+jmrg1qi6RtYRWDJ60/xdkhjqAbQpX8BRyvqQJYQi66LXER5YNeHXg==}
-    peerDependencies:
-      jest-environment-jsdom: 22.x || 23.x || 24.x || 25.x || 26.x
+      jest-get-type: 27.0.6
+      jest-util: 27.2.4
+      pretty-format: 27.2.4
     dev: true
 
   /jest-environment-jsdom/25.5.0:
@@ -9862,16 +9953,16 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jest-environment-jsdom/26.6.2:
-    resolution: {integrity: sha512-jgPqCruTlt3Kwqg5/WVFyHIOJHsiAvhcp2qiR2QQstuG9yWox5+iHpU3ZrcBxW14T4fe5Z68jAfLRh7joCSP2Q==}
-    engines: {node: '>= 10.14.2'}
+  /jest-environment-jsdom/27.2.4:
+    resolution: {integrity: sha512-X70pTXFSypD7AIzKT1mLnDi5hP9w9mdTRcOGOmoDoBrNyNEg4rYm6d4LQWFLc9ps1VnMuDOkFSG0wjSNYGjkng==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/environment': 26.6.2
-      '@jest/fake-timers': 26.6.2
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
-      jest-mock: 26.6.2
-      jest-util: 26.6.2
+      '@jest/environment': 27.2.4
+      '@jest/fake-timers': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
+      jest-mock: 27.2.4
+      jest-util: 27.2.4
       jsdom: 16.7.0
     transitivePeerDependencies:
       - bufferutil
@@ -9892,16 +9983,16 @@ packages:
       semver: 6.3.0
     dev: true
 
-  /jest-environment-node/26.6.2:
-    resolution: {integrity: sha512-zhtMio3Exty18dy8ee8eJ9kjnRyZC1N4C1Nt/VShN1apyXc8rWGtJ9lI7vqiWcyyXS4BVSEn9lxAM2D+07/Tag==}
-    engines: {node: '>= 10.14.2'}
+  /jest-environment-node/27.2.4:
+    resolution: {integrity: sha512-ZbVbFSnbzTvhLOIkqh5lcLuGCCFvtG4xTXIRPK99rV2KzQT3kNg16KZwfTnLNlIiWCE8do960eToeDfcqmpSAw==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/environment': 26.6.2
-      '@jest/fake-timers': 26.6.2
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
-      jest-mock: 26.6.2
-      jest-util: 26.6.2
+      '@jest/environment': 27.2.4
+      '@jest/fake-timers': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
+      jest-mock: 27.2.4
+      jest-util: 27.2.4
     dev: true
 
   /jest-fetch-mock/3.0.1:
@@ -9919,6 +10010,11 @@ packages:
   /jest-get-type/26.3.0:
     resolution: {integrity: sha512-TpfaviN1R2pQWkIihlfEanwOXK0zcxrKEE4MlU6Tn7keoXdN6/3gK/xl0yEh8DOunn5pOVGKf8hB4R9gVh04ig==}
     engines: {node: '>= 10.14.2'}
+    dev: true
+
+  /jest-get-type/27.0.6:
+    resolution: {integrity: sha512-XTkK5exIeUbbveehcSR8w0bhH+c0yloW/Wpl+9vZrjzztCPWrxhHwkIFpZzCt71oRBsgxmuUfxEqOYoZI2macg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dev: true
 
   /jest-haste-map/25.5.1:
@@ -9941,22 +10037,21 @@ packages:
       fsevents: 2.1.2
     dev: true
 
-  /jest-haste-map/26.6.2:
-    resolution: {integrity: sha512-easWIJXIw71B2RdR8kgqpjQrbMRWQBgiBwXYEhtGUTaX+doCjBheluShdDMeR8IMfJiTqH4+zfhtg29apJf/8w==}
-    engines: {node: '>= 10.14.2'}
+  /jest-haste-map/27.2.4:
+    resolution: {integrity: sha512-bkJ4bT00T2K+1NZXbRcyKnbJ42I6QBvoDNMTAQQDBhaGNnZreiQKUNqax0e6hLTx7E75pKDeltVu3V1HAdu+YA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
+      '@jest/types': 27.2.4
       '@types/graceful-fs': 4.1.5
-      '@types/node': 16.9.6
+      '@types/node': 16.10.1
       anymatch: 3.1.2
       fb-watchman: 2.0.1
       graceful-fs: 4.2.8
-      jest-regex-util: 26.0.0
-      jest-serializer: 26.6.2
-      jest-util: 26.6.2
-      jest-worker: 26.6.2
+      jest-regex-util: 27.0.6
+      jest-serializer: 27.0.6
+      jest-util: 27.2.4
+      jest-worker: 27.2.4
       micromatch: 4.0.4
-      sane: 4.1.0
       walker: 1.0.7
     optionalDependencies:
       fsevents: 2.3.2
@@ -9990,34 +10085,30 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jest-jasmine2/26.6.3:
-    resolution: {integrity: sha512-kPKUrQtc8aYwBV7CqBg5pu+tmYXlvFlSFYn18ev4gPFtrRzB15N2gW/Roew3187q2w2eHuu0MU9TJz6w0/nPEg==}
-    engines: {node: '>= 10.14.2'}
+  /jest-jasmine2/27.2.4:
+    resolution: {integrity: sha512-fcffjO/xLWLVnW2ct3No4EksxM5RyPwHDYu9QU+90cC+/eSMLkFAxS55vkqsxexOO5zSsZ3foVpMQcg/amSeIQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
       '@babel/traverse': 7.15.4
-      '@jest/environment': 26.6.2
-      '@jest/source-map': 26.6.2
-      '@jest/test-result': 26.6.2
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
+      '@jest/environment': 27.2.4
+      '@jest/source-map': 27.0.6
+      '@jest/test-result': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
       chalk: 4.1.2
       co: 4.6.0
-      expect: 26.6.2
+      expect: 27.2.4
       is-generator-fn: 2.1.0
-      jest-each: 26.6.2
-      jest-matcher-utils: 26.6.2
-      jest-message-util: 26.6.2
-      jest-runtime: 26.6.3
-      jest-snapshot: 26.6.2
-      jest-util: 26.6.2
-      pretty-format: 26.6.2
-      throat: 5.0.0
+      jest-each: 27.2.4
+      jest-matcher-utils: 27.2.4
+      jest-message-util: 27.2.4
+      jest-runtime: 27.2.4
+      jest-snapshot: 27.2.4
+      jest-util: 27.2.4
+      pretty-format: 27.2.4
+      throat: 6.0.1
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - ts-node
-      - utf-8-validate
     dev: true
 
   /jest-leak-detector/25.5.0:
@@ -10028,12 +10119,12 @@ packages:
       pretty-format: 25.5.0
     dev: true
 
-  /jest-leak-detector/26.6.2:
-    resolution: {integrity: sha512-i4xlXpsVSMeKvg2cEKdfhh0H39qlJlP5Ex1yQxwF9ubahboQYMgTtz5oML35AVA3B4Eu+YsmwaiKVev9KCvLxg==}
-    engines: {node: '>= 10.14.2'}
+  /jest-leak-detector/27.2.4:
+    resolution: {integrity: sha512-SrcHWbe0EHg/bw2uBjVoHacTo5xosl068x2Q0aWsjr2yYuW2XwqrSkZV4lurUop0jhv1709ymG4or+8E4sH27Q==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      jest-get-type: 26.3.0
-      pretty-format: 26.6.2
+      jest-get-type: 27.0.6
+      pretty-format: 27.2.4
     dev: true
 
   /jest-matcher-deep-close-to/2.0.1:
@@ -10070,6 +10161,16 @@ packages:
       jest-diff: 26.6.2
       jest-get-type: 26.3.0
       pretty-format: 26.6.2
+    dev: true
+
+  /jest-matcher-utils/27.2.4:
+    resolution: {integrity: sha512-nQeLfFAIPPkyhkDfifAPfP/U5wm1x0fLtAzqXZSSKckXDNuk2aaOfQiDYv1Mgf5GY6yOsxfUnvNm3dDjXM+BXw==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    dependencies:
+      chalk: 4.1.2
+      jest-diff: 27.2.4
+      jest-get-type: 27.0.6
+      pretty-format: 27.2.4
     dev: true
 
   /jest-message-util/24.9.0:
@@ -10115,6 +10216,21 @@ packages:
       stack-utils: 2.0.5
     dev: true
 
+  /jest-message-util/27.2.4:
+    resolution: {integrity: sha512-wbKT/BNGnBVB9nzi+IoaLkXt6fbSvqUxx+IYY66YFh96J3goY33BAaNG3uPqaw/Sh/FR9YpXGVDfd5DJdbh4nA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    dependencies:
+      '@babel/code-frame': 7.14.5
+      '@jest/types': 27.2.4
+      '@types/stack-utils': 2.0.1
+      chalk: 4.1.2
+      graceful-fs: 4.2.8
+      micromatch: 4.0.4
+      pretty-format: 27.2.4
+      slash: 3.0.0
+      stack-utils: 2.0.5
+    dev: true
+
   /jest-mock/25.5.0:
     resolution: {integrity: sha512-eXWuTV8mKzp/ovHc5+3USJMYsTBhyQ+5A1Mak35dey/RG8GlM4YWVylZuGgVXinaW6tpvk/RSecmF37FKUlpXA==}
     engines: {node: '>= 8.3'}
@@ -10122,12 +10238,12 @@ packages:
       '@jest/types': 25.5.0
     dev: true
 
-  /jest-mock/26.6.2:
-    resolution: {integrity: sha512-YyFjePHHp1LzpzYcmgqkJ0nm0gg/lJx2aZFzFy1S6eUqNjXsOqTK10zNRff2dNfssgokjkG65OlWNcIlgd3zew==}
-    engines: {node: '>= 10.14.2'}
+  /jest-mock/27.2.4:
+    resolution: {integrity: sha512-iVRU905rutaAoUcrt5Tm1JoHHWi24YabqEGXjPJI4tAyA6wZ7mzDi3GrZ+M7ebgWBqUkZE93GAx1STk7yCMIQA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
     dev: true
 
   /jest-pnp-resolver/1.2.2_jest-resolve@25.5.1:
@@ -10142,7 +10258,7 @@ packages:
       jest-resolve: 25.5.1
     dev: true
 
-  /jest-pnp-resolver/1.2.2_jest-resolve@26.6.2:
+  /jest-pnp-resolver/1.2.2_jest-resolve@27.2.4:
     resolution: {integrity: sha512-olV41bKSMm8BdnuMsewT4jqlZ8+3TCARAXjZGT9jcoSnrfUnRCqnMoF9XEeoWjbzObpqF9dRhHQj0Xb9QdF6/w==}
     engines: {node: '>=6'}
     peerDependencies:
@@ -10151,7 +10267,7 @@ packages:
       jest-resolve:
         optional: true
     dependencies:
-      jest-resolve: 26.6.2
+      jest-resolve: 27.2.4
     dev: true
 
   /jest-regex-util/25.2.6:
@@ -10164,13 +10280,20 @@ packages:
     engines: {node: '>= 10.14.2'}
     dev: true
 
-  /jest-resolve-dependencies/26.6.3:
-    resolution: {integrity: sha512-pVwUjJkxbhe4RY8QEWzN3vns2kqyuldKpxlxJlzEYfKSvY6/bMvxoFrYYzUO1Gx28yKWN37qyV7rIoIp2h8fTg==}
-    engines: {node: '>= 10.14.2'}
+  /jest-regex-util/27.0.6:
+    resolution: {integrity: sha512-SUhPzBsGa1IKm8hx2F4NfTGGp+r7BXJ4CulsZ1k2kI+mGLG+lxGrs76veN2LF/aUdGosJBzKgXmNCw+BzFqBDQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    dev: true
+
+  /jest-resolve-dependencies/27.2.4:
+    resolution: {integrity: sha512-i5s7Uh9B3Q6uwxLpMhNKlgBf6pcemvWaORxsW1zNF/YCY3jd5EftvnGBI+fxVwJ1CBxkVfxqCvm1lpZkbaoGmg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
-      jest-regex-util: 26.0.0
-      jest-snapshot: 26.6.2
+      '@jest/types': 27.2.4
+      jest-regex-util: 27.0.6
+      jest-snapshot: 27.2.4
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /jest-resolve/25.5.1:
@@ -10188,16 +10311,18 @@ packages:
       slash: 3.0.0
     dev: true
 
-  /jest-resolve/26.6.2:
-    resolution: {integrity: sha512-sOxsZOq25mT1wRsfHcbtkInS+Ek7Q8jCHUB0ZUTP0tc/c41QHriU/NunqMfCUWsL4H3MHpvQD4QR9kSYhS7UvQ==}
-    engines: {node: '>= 10.14.2'}
+  /jest-resolve/27.2.4:
+    resolution: {integrity: sha512-IsAO/3+3BZnKjI2I4f3835TBK/90dxR7Otgufn3mnrDFTByOSXclDi3G2XJsawGV4/18IMLARJ+V7Wm7t+J89Q==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
+      '@jest/types': 27.2.4
       chalk: 4.1.2
+      escalade: 3.1.1
       graceful-fs: 4.2.8
-      jest-pnp-resolver: 1.2.2_jest-resolve@26.6.2
-      jest-util: 26.6.2
-      read-pkg-up: 7.0.1
+      jest-haste-map: 27.2.4
+      jest-pnp-resolver: 1.2.2_jest-resolve@27.2.4
+      jest-util: 27.2.4
+      jest-validate: 27.2.4
       resolve: 1.20.0
       slash: 3.0.0
     dev: true
@@ -10232,35 +10357,36 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jest-runner/26.6.3:
-    resolution: {integrity: sha512-atgKpRHnaA2OvByG/HpGA4g6CSPS/1LK0jK3gATJAoptC1ojltpmVlYC3TYgdmGp+GLuhzpH30Gvs36szSL2JQ==}
-    engines: {node: '>= 10.14.2'}
+  /jest-runner/27.2.4:
+    resolution: {integrity: sha512-hIo5PPuNUyVDidZS8EetntuuJbQ+4IHWxmHgYZz9FIDbG2wcZjrP6b52uMDjAEQiHAn8yn8ynNe+TL8UuGFYKg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/console': 26.6.2
-      '@jest/environment': 26.6.2
-      '@jest/test-result': 26.6.2
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
+      '@jest/console': 27.2.4
+      '@jest/environment': 27.2.4
+      '@jest/test-result': 27.2.4
+      '@jest/transform': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
       chalk: 4.1.2
-      emittery: 0.7.2
+      emittery: 0.8.1
       exit: 0.1.2
       graceful-fs: 4.2.8
-      jest-config: 26.6.3
-      jest-docblock: 26.0.0
-      jest-haste-map: 26.6.2
-      jest-leak-detector: 26.6.2
-      jest-message-util: 26.6.2
-      jest-resolve: 26.6.2
-      jest-runtime: 26.6.3
-      jest-util: 26.6.2
-      jest-worker: 26.6.2
+      jest-docblock: 27.0.6
+      jest-environment-jsdom: 27.2.4
+      jest-environment-node: 27.2.4
+      jest-haste-map: 27.2.4
+      jest-leak-detector: 27.2.4
+      jest-message-util: 27.2.4
+      jest-resolve: 27.2.4
+      jest-runtime: 27.2.4
+      jest-util: 27.2.4
+      jest-worker: 27.2.4
       source-map-support: 0.5.20
-      throat: 5.0.0
+      throat: 6.0.1
     transitivePeerDependencies:
       - bufferutil
       - canvas
       - supports-color
-      - ts-node
       - utf-8-validate
     dev: true
 
@@ -10302,44 +10428,39 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jest-runtime/26.6.3:
-    resolution: {integrity: sha512-lrzyR3N8sacTAMeonbqpnSka1dHNux2uk0qqDXVkMv2c/A3wYnvQ4EXuI013Y6+gSKSCxdaczvf4HF0mVXHRdw==}
-    engines: {node: '>= 10.14.2'}
-    hasBin: true
+  /jest-runtime/27.2.4:
+    resolution: {integrity: sha512-ICKzzYdjIi70P17MZsLLIgIQFCQmIjMFf+xYww3aUySiUA/QBPUTdUqo5B2eg4HOn9/KkUsV0z6GVgaqAPBJvg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/console': 26.6.2
-      '@jest/environment': 26.6.2
-      '@jest/fake-timers': 26.6.2
-      '@jest/globals': 26.6.2
-      '@jest/source-map': 26.6.2
-      '@jest/test-result': 26.6.2
-      '@jest/transform': 26.6.2
-      '@jest/types': 26.6.2
-      '@types/yargs': 15.0.14
+      '@jest/console': 27.2.4
+      '@jest/environment': 27.2.4
+      '@jest/fake-timers': 27.2.4
+      '@jest/globals': 27.2.4
+      '@jest/source-map': 27.0.6
+      '@jest/test-result': 27.2.4
+      '@jest/transform': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/yargs': 16.0.4
       chalk: 4.1.2
-      cjs-module-lexer: 0.6.0
+      cjs-module-lexer: 1.2.2
       collect-v8-coverage: 1.0.1
+      execa: 5.1.1
       exit: 0.1.2
       glob: 7.2.0
       graceful-fs: 4.2.8
-      jest-config: 26.6.3
-      jest-haste-map: 26.6.2
-      jest-message-util: 26.6.2
-      jest-mock: 26.6.2
-      jest-regex-util: 26.0.0
-      jest-resolve: 26.6.2
-      jest-snapshot: 26.6.2
-      jest-util: 26.6.2
-      jest-validate: 26.6.2
+      jest-haste-map: 27.2.4
+      jest-message-util: 27.2.4
+      jest-mock: 27.2.4
+      jest-regex-util: 27.0.6
+      jest-resolve: 27.2.4
+      jest-snapshot: 27.2.4
+      jest-util: 27.2.4
+      jest-validate: 27.2.4
       slash: 3.0.0
       strip-bom: 4.0.0
-      yargs: 15.4.1
+      yargs: 16.2.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - ts-node
-      - utf-8-validate
     dev: true
 
   /jest-serializer/25.5.0:
@@ -10349,11 +10470,11 @@ packages:
       graceful-fs: 4.2.8
     dev: true
 
-  /jest-serializer/26.6.2:
-    resolution: {integrity: sha512-S5wqyz0DXnNJPd/xfIzZ5Xnp1HrJWBczg8mMfMpN78OJ5eDxXyf+Ygld9wX1DnUWbIbhM1YDY95NjR4CBXkb2g==}
-    engines: {node: '>= 10.14.2'}
+  /jest-serializer/27.0.6:
+    resolution: {integrity: sha512-PtGdVK9EGC7dsaziskfqaAPib6wTViY3G8E5wz9tLVPhHyiDNTZn/xjZ4khAw+09QkoOVpn7vF5nPSN6dtBexA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@types/node': 16.9.6
+      '@types/node': 16.10.1
       graceful-fs: 4.2.8
     dev: true
 
@@ -10378,26 +10499,36 @@ packages:
       semver: 6.3.0
     dev: true
 
-  /jest-snapshot/26.6.2:
-    resolution: {integrity: sha512-OLhxz05EzUtsAmOMzuupt1lHYXCNib0ECyuZ/PZOx9TrZcC8vL0x+DUG3TL+GLX3yHG45e6YGjIm0XwDc3q3og==}
-    engines: {node: '>= 10.14.2'}
+  /jest-snapshot/27.2.4:
+    resolution: {integrity: sha512-5DFxK31rYS8X8C6WXsFx8XxrxW3PGa6+9IrUcZdTLg1aEyXDGIeiBh4jbwvh655bg/9vTETbEj/njfZicHTZZw==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
+      '@babel/core': 7.15.5
+      '@babel/generator': 7.15.4
+      '@babel/parser': 7.15.7
+      '@babel/plugin-syntax-typescript': 7.14.5_@babel+core@7.15.5
+      '@babel/traverse': 7.15.4
       '@babel/types': 7.15.6
-      '@jest/types': 26.6.2
+      '@jest/transform': 27.2.4
+      '@jest/types': 27.2.4
       '@types/babel__traverse': 7.14.2
-      '@types/prettier': 2.0.1
+      '@types/prettier': 2.4.1
+      babel-preset-current-node-syntax: 1.0.1_@babel+core@7.15.5
       chalk: 4.1.2
-      expect: 26.6.2
+      expect: 27.2.4
       graceful-fs: 4.2.8
-      jest-diff: 26.6.2
-      jest-get-type: 26.3.0
-      jest-haste-map: 26.6.2
-      jest-matcher-utils: 26.6.2
-      jest-message-util: 26.6.2
-      jest-resolve: 26.6.2
+      jest-diff: 27.2.4
+      jest-get-type: 27.0.6
+      jest-haste-map: 27.2.4
+      jest-matcher-utils: 27.2.4
+      jest-message-util: 27.2.4
+      jest-resolve: 27.2.4
+      jest-util: 27.2.4
       natural-compare: 1.4.0
-      pretty-format: 26.6.2
+      pretty-format: 27.2.4
       semver: 7.3.5
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /jest-transform-stub/2.0.0:
@@ -10415,16 +10546,16 @@ packages:
       make-dir: 3.1.0
     dev: true
 
-  /jest-util/26.6.2:
-    resolution: {integrity: sha512-MDW0fKfsn0OI7MS7Euz6h8HNDXVQ0gaM9uW6RjfDmd1DAFcaxX9OqIakHIqhbnmF08Cf2DLDG+ulq8YQQ0Lp0Q==}
-    engines: {node: '>= 10.14.2'}
+  /jest-util/27.2.4:
+    resolution: {integrity: sha512-mW++4u+fSvAt3YBWm5IpbmRAceUqa2B++JlUZTiuEt2AmNYn0Yw5oay4cP17TGsMINRNPSGiJ2zNnX60g+VbFg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
       chalk: 4.1.2
       graceful-fs: 4.2.8
-      is-ci: 2.0.0
-      micromatch: 4.0.4
+      is-ci: 3.0.0
+      picomatch: 2.3.0
     dev: true
 
   /jest-validate/25.5.0:
@@ -10439,28 +10570,28 @@ packages:
       pretty-format: 25.5.0
     dev: true
 
-  /jest-validate/26.6.2:
-    resolution: {integrity: sha512-NEYZ9Aeyj0i5rQqbq+tpIOom0YS1u2MVu6+euBsvpgIme+FOfRmoC4R5p0JiAUpaFvFy24xgrpMknarR/93XjQ==}
-    engines: {node: '>= 10.14.2'}
+  /jest-validate/27.2.4:
+    resolution: {integrity: sha512-VMtbxbkd7LHnIH7PChdDtrluCFRJ4b1YV2YJzNwwsASMWftq/HgqiqjvptBOWyWOtevgO3f14wPxkPcLlVBRog==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/types': 26.6.2
+      '@jest/types': 27.2.4
       camelcase: 6.2.0
       chalk: 4.1.2
-      jest-get-type: 26.3.0
+      jest-get-type: 27.0.6
       leven: 3.1.0
-      pretty-format: 26.6.2
+      pretty-format: 27.2.4
     dev: true
 
-  /jest-watcher/26.6.2:
-    resolution: {integrity: sha512-WKJob0P/Em2csiVthsI68p6aGKTIcsfjH9Gsx1f0A3Italz43e3ho0geSAVsmj09RWOELP1AZ/DXyJgOgDKxXQ==}
-    engines: {node: '>= 10.14.2'}
+  /jest-watcher/27.2.4:
+    resolution: {integrity: sha512-LXC/0+dKxhK7cfF7reflRYlzDIaQE+fL4ynhKhzg8IMILNMuI4xcjXXfUJady7OR4/TZeMg7X8eHx8uan9vqaQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
     dependencies:
-      '@jest/test-result': 26.6.2
-      '@jest/types': 26.6.2
-      '@types/node': 16.9.6
+      '@jest/test-result': 27.2.4
+      '@jest/types': 27.2.4
+      '@types/node': 16.10.1
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest-util: 26.6.2
+      jest-util: 27.2.4
       string-length: 4.0.2
     dev: true
 
@@ -10468,15 +10599,6 @@ packages:
     resolution: {integrity: sha512-/dsSmUkIy5EBGfv/IjjqmFxrNAUpBERfGs1oHROyD7yxjG/w+t0GOJDX8O1k32ySmd7+a5IhnJU2qQFcJ4n1vw==}
     engines: {node: '>= 8.3'}
     dependencies:
-      merge-stream: 2.0.0
-      supports-color: 7.2.0
-    dev: true
-
-  /jest-worker/26.6.2:
-    resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
-    engines: {node: '>= 10.13.0'}
-    dependencies:
-      '@types/node': 16.9.6
       merge-stream: 2.0.0
       supports-color: 7.2.0
     dev: true
@@ -10490,14 +10612,28 @@ packages:
       supports-color: 8.1.1
     dev: true
 
-  /jest/26.1.0:
-    resolution: {integrity: sha512-LIti8jppw5BcQvmNJe4w2g1N/3V68HUfAv9zDVm7v+VAtQulGhH0LnmmiVkbNE4M4I43Bj2fXPiBGKt26k9tHw==}
-    engines: {node: '>= 10.14.2'}
-    hasBin: true
+  /jest-worker/27.2.4:
+    resolution: {integrity: sha512-Zq9A2Pw59KkVjBBKD1i3iE2e22oSjXhUKKuAK1HGX8flGwkm6NMozyEYzKd41hXc64dbd/0eWFeEEuxqXyhM+g==}
+    engines: {node: '>= 10.13.0'}
     dependencies:
-      '@jest/core': 26.6.3
+      '@types/node': 16.10.1
+      merge-stream: 2.0.0
+      supports-color: 8.1.1
+    dev: true
+
+  /jest/27.2.2:
+    resolution: {integrity: sha512-XAB/9akDTe3/V0wPNKWfP9Y/NT1QPiCqyRBYGbC66EA9EvgAzdaFEqhFGLaDJ5UP2yIyXUMtju9a9IMrlYbZTQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    hasBin: true
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      '@jest/core': 27.2.4
       import-local: 3.0.2
-      jest-cli: 26.6.3
+      jest-cli: 27.2.4
     transitivePeerDependencies:
       - bufferutil
       - canvas
@@ -10581,14 +10717,6 @@ packages:
       - supports-color
     dev: true
 
-  /jsdom-global/3.0.2_jsdom@16.1.0:
-    resolution: {integrity: sha1-a9KZwTsMRiay2iwDk81DhdYGrLk=}
-    peerDependencies:
-      jsdom: '>=10.0.0'
-    dependencies:
-      jsdom: 16.1.0
-    dev: true
-
   /jsdom/15.2.1:
     resolution: {integrity: sha512-fAl1W0/7T2G5vURSyxBzrJ1LSdQn6Tr5UX/xD4PXDx/PDgwygedfW6El/KIj3xJ7FU61TTYnc/l/B7P49Eqt6g==}
     engines: {node: '>=8'}
@@ -10622,45 +10750,6 @@ packages:
       whatwg-encoding: 1.0.5
       whatwg-mimetype: 2.3.0
       whatwg-url: 7.1.0
-      ws: 7.5.5
-      xml-name-validator: 3.0.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: true
-
-  /jsdom/16.1.0:
-    resolution: {integrity: sha512-kpIcNAuZYc/L17WADOOHslz/q5+3SipP/iRb3j6zd1zQ6pFJubLi/VCdD3NqBpj/IKKK4YXny1vv44rbEUSGFg==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      canvas: ^2.5.0
-    peerDependenciesMeta:
-      canvas:
-        optional: true
-    dependencies:
-      abab: 2.0.5
-      acorn: 7.4.1
-      acorn-globals: 4.3.4
-      cssom: 0.4.4
-      cssstyle: 2.3.0
-      data-urls: 2.0.0
-      decimal.js: 10.3.1
-      domexception: 2.0.1
-      escodegen: 1.14.3
-      html-encoding-sniffer: 2.0.1
-      nwsapi: 2.2.0
-      parse5: 5.1.1
-      request: 2.88.2
-      request-promise-native: 1.0.9_request@2.88.2
-      saxes: 4.0.2
-      symbol-tree: 3.2.4
-      tough-cookie: 3.0.1
-      w3c-hr-time: 1.0.2
-      w3c-xmlserializer: 2.0.0
-      webidl-conversions: 5.0.0
-      whatwg-encoding: 1.0.5
-      whatwg-mimetype: 2.3.0
-      whatwg-url: 8.7.0
       ws: 7.5.5
       xml-name-validator: 3.0.0
     transitivePeerDependencies:
@@ -10703,6 +10792,48 @@ packages:
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.7.0
       ws: 7.5.5
+      xml-name-validator: 3.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: true
+
+  /jsdom/17.0.0:
+    resolution: {integrity: sha512-MUq4XdqwtNurZDVeKScENMPHnkgmdIvMzZ1r1NSwHkDuaqI6BouPjr+17COo4/19oLNnmdpFDPOHVpgIZmZ+VA==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      canvas: ^2.5.0
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+    dependencies:
+      abab: 2.0.5
+      acorn: 8.5.0
+      acorn-globals: 6.0.0
+      cssom: 0.5.0
+      cssstyle: 2.3.0
+      data-urls: 3.0.0
+      decimal.js: 10.3.1
+      domexception: 2.0.1
+      escodegen: 2.0.0
+      form-data: 4.0.0
+      html-encoding-sniffer: 2.0.1
+      http-proxy-agent: 4.0.1
+      https-proxy-agent: 5.0.0
+      is-potential-custom-element-name: 1.0.1
+      nwsapi: 2.2.0
+      parse5: 6.0.1
+      saxes: 5.0.1
+      symbol-tree: 3.2.4
+      tough-cookie: 4.0.0
+      w3c-hr-time: 1.0.2
+      w3c-xmlserializer: 2.0.0
+      webidl-conversions: 6.1.0
+      whatwg-encoding: 1.0.5
+      whatwg-mimetype: 2.3.0
+      whatwg-url: 9.1.0
+      ws: 8.2.2
       xml-name-validator: 3.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -11000,7 +11131,7 @@ packages:
   /lines-and-columns/1.1.6:
     resolution: {integrity: sha1-HADHQ7QzzQpOgHWPe2SldEDZ/wA=}
 
-  /linkifyjs/2.1.9_4b57aad7a3acc0ec1c2667d1fea04016:
+  /linkifyjs/2.1.9_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-74ivurkK6WHvHFozVaGtQWV38FzBwSTGNmJolEgFp7QgR2bl6ArUWlvT4GcHKbPe1z3nWYi+VUdDZk16zDOVug==}
     peerDependencies:
       jquery: '>= 1.11.0'
@@ -11008,7 +11139,7 @@ packages:
       react-dom: '>= 0.14.0'
     dependencies:
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
   /lint-staged/8.1.7:
@@ -11385,10 +11516,6 @@ packages:
       semver: 6.3.0
     dev: true
 
-  /make-error/1.3.6:
-    resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
-    dev: true
-
   /makeerror/1.0.11:
     resolution: {integrity: sha1-4BpckQnyr3lmDk6LlYd5AYT1qWw=}
     dependencies:
@@ -11606,7 +11733,7 @@ packages:
     dependencies:
       dom-walk: 0.1.2
 
-  /mini-store/3.0.6_4b57aad7a3acc0ec1c2667d1fea04016:
+  /mini-store/3.0.6_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-YzffKHbYsMQGUWQRKdsearR79QsMzzJcDDmZKlJBqt5JNkqpyJHYlK6gP61O36X+sLf76sO9G6mhKBe83gIZIQ==}
     peerDependencies:
       react: '>=16.9.0'
@@ -11614,7 +11741,7 @@ packages:
     dependencies:
       hoist-non-react-statics: 3.3.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       shallowequal: 1.1.0
     dev: false
 
@@ -11885,19 +12012,6 @@ packages:
     resolution: {integrity: sha1-jZ2+KJZKSsVxLpExZCEHxx6Q7EA=}
     engines: {node: '>=0.10.0'}
     dev: true
-
-  /node-notifier/8.0.2:
-    resolution: {integrity: sha512-oJP/9NAdd9+x2Q+rfphB2RJCHjod70RcRLjosiPMMu5gjIfwVnOUGq2nbTjTUbmy0DJ/tFIVT30+Qe3nzl4TJg==}
-    requiresBuild: true
-    dependencies:
-      growly: 1.3.0
-      is-wsl: 2.2.0
-      semver: 7.3.5
-      shellwords: 0.1.1
-      uuid: 8.3.2
-      which: 2.0.2
-    dev: true
-    optional: true
 
   /node-releases/1.1.76:
     resolution: {integrity: sha512-9/IECtNr8dXNmPWmFXepT0/7o5eolGesHUa3mtr0KlgnCvnZxwh2qensKL42JJY2vQKC3nIBXetFAqR+PW1CmA==}
@@ -12287,11 +12401,6 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /p-each-series/2.2.0:
-    resolution: {integrity: sha512-ycIL2+1V32th+8scbpTvyHNaHe02z0sjgh91XXjAk+ZeXoPN4Z46DVUnzdso0aX4KckKw0FNNFHdjZ2UsZvxiA==}
-    engines: {node: '>=8'}
-    dev: true
-
   /p-event/4.2.0:
     resolution: {integrity: sha512-KXatOjCRXXkSePPb1Nbi0p0m+gQAwdlbhi4wQKJPI1HsMQS9g+Sqp2o+QHziPr7eYJyOZet836KoHEVM1mwOrQ==}
     engines: {node: '>=8'}
@@ -12488,10 +12597,6 @@ packages:
 
   /parse5/5.1.0:
     resolution: {integrity: sha512-fxNG2sQjHvlVAYmzBZS9YlDp6PTSSDwa98vkD4QgVDDCAo84z5X1t5XyJQ62ImdLXx5NdIIfihey6xpum9/gRQ==}
-    dev: true
-
-  /parse5/5.1.1:
-    resolution: {integrity: sha512-ugq4DFI0Ptb+WWjAdOK16+u/nHfiIrcE+sh8kZMaM0WllQKLI9rOUq6c2b7cwPkXdzfQESqvoqK6ug7U/Yyzug==}
     dev: true
 
   /parse5/6.0.1:
@@ -13068,6 +13173,16 @@ packages:
       react-is: 17.0.2
     dev: true
 
+  /pretty-format/27.2.4:
+    resolution: {integrity: sha512-NUjw22WJHldzxyps2YjLZkUj6q1HvjqFezkB9Y2cklN8NtVZN/kZEXGZdFw4uny3oENzV5EEMESrkI0YDUH8vg==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    dependencies:
+      '@jest/types': 27.2.4
+      ansi-regex: 5.0.1
+      ansi-styles: 5.2.0
+      react-is: 17.0.2
+    dev: true
+
   /prismjs/1.17.1:
     resolution: {integrity: sha512-PrEDJAFdUGbOP6xK/UsfkC5ghJsPJviKgnQOoxaDbBjwc8op68Quupwt1DeAFoG8GImPhiKXAvvsH7wDSLsu1Q==}
     optionalDependencies:
@@ -13316,7 +13431,7 @@ packages:
       rc-util: 4.21.1
     dev: false
 
-  /rc-align/4.0.11_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-align/4.0.11_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-n9mQfIYQbbNTbefyQnRHZPWuTEwG1rY4a9yKlIWHSTbgwI+XUMGRYd0uJ5pE2UbrNX0WvnMBA1zJ3Lrecpra/A==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13326,9 +13441,9 @@ packages:
       classnames: 2.2.6
       dom-align: 1.12.2
       lodash: 4.17.21
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       resize-observer-polyfill: 1.5.1
     dev: false
 
@@ -13353,12 +13468,12 @@ packages:
       rc-util: 4.21.1
     dev: false
 
-  /rc-cascader/1.2.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-cascader/1.2.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-exJ6qvaZddARXOjxYQzD0oYrOhNS/WC3E0+xUtAA6yP3RA6PRtzTBWCI4Il4y58X3C+wTjkQq5q1vKxHD76QOA==}
     dependencies:
       array-tree-filter: 2.1.0
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       warning: 4.0.3
     transitivePeerDependencies:
       - react
@@ -13372,44 +13487,44 @@ packages:
       classnames: 2.2.6
     dev: false
 
-  /rc-collapse/2.0.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-collapse/2.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-sRNqwQovzQoptTh7dCwj3kfxrdor2oNXrGSBz+QJxSFS7N3Ujgf8X/KlN2ElCkwBKf7nNv36t9dwH0HEku4wJg==}
     dependencies:
       '@ant-design/css-animation': 1.7.3
       classnames: 2.2.6
       rc-animate: 3.1.1
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       shallowequal: 1.1.0
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-dialog/8.0.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-dialog/8.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-ZOO2F8KHN4Dkpf1KiXNPKFWaLZutIuAhQw+YCafcFrigDv50AxGivoMSC//k4yjcJr3XRQTQMlMsmdAff4dEhw==}
     dependencies:
       babel-runtime: 6.26.0
       rc-animate: 3.1.1
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-drawer/4.0.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-drawer/4.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-sQCMV7W5hBjptdHXXKC+YOvZ6sNChDN9Nudd9dA5kJ2ld83yLa54IkEYs4FIb3Ana7yl4kkrgU0B1k2baSsnzw==}
     peerDependencies:
       react: '*'
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
     transitivePeerDependencies:
       - react-dom
     dev: false
 
-  /rc-dropdown/3.1.3_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-dropdown/3.1.3_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-sqVMDZcyV32y2YIEUBfxzgRzOLXqi/v5JB1GPe0CMyGMadPvbi+YIRF8toKdQf26tcHZobZUOyFk8OOV2BRusw==}
     peerDependencies:
       react: '*'
@@ -13417,12 +13532,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-field-form/1.4.4_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-field-form/1.4.4_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-1LwZ/I3fRUDzj2JGyfwur4nZqgwybrHy3kf6aKbGeWfYkpNbZaUNkIPfjBBmCdpN6lVPKI7ftRnYtjdBaXzyaw==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13430,46 +13545,46 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       async-validator: 3.5.2
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
     transitivePeerDependencies:
       - react-dom
     dev: false
 
-  /rc-input-number/5.0.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-input-number/5.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-4GgnJCjllAVNsZ9fPA+3LnoIgwUqM8QAWpyoKiTkPDN1UWapXYsPiKJCXOhnmiR0X8xpEoYHiobUaiquMliWiQ==}
     dependencies:
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-mentions/1.2.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-mentions/1.2.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-9d4AYMuKN4o/ND5r/82rJHMp+R+rn1b+f8ZmWsI/1NlWtMqVn9Q7yxofqbX78zgV6+nppsMvMqtduJhgQkVl0Q==}
     peerDependencies:
       react: '*'
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-menu: 8.3.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-menu: 8.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
     transitivePeerDependencies:
       - react-dom
     dev: false
 
-  /rc-menu/8.3.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-menu/8.3.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-4LNQ0zIL27yayQu9Xi3QOUB2yEqm5qSFwD9MzB1XnTo1JeLTLy3+D8Bm94rykvnhV6z5MYtalUTnM7ETfjExXQ==}
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      mini-store: 3.0.6_4b57aad7a3acc0ec1c2667d1fea04016
+      mini-store: 3.0.6_d9cccff7df39c9a08a2a815f75fb6cbc
       rc-animate: 3.1.1
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       resize-observer-polyfill: 1.5.1
       shallowequal: 1.1.0
     transitivePeerDependencies:
@@ -13477,7 +13592,7 @@ packages:
       - react-dom
     dev: false
 
-  /rc-motion/1.1.2_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-motion/1.1.2_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-YC/E7SSWKBFakYg4PENhSRWD4ZLDqkI7FKmutJcrMewZ91/ZIWfoZSDvPaBdKO0hsFrrzWepFhXQIq0FNnCMWA==}
     peerDependencies:
       react: ^16.0.0
@@ -13486,12 +13601,12 @@ packages:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       raf: 3.4.1
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-motion/2.4.4_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-motion/2.4.4_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-ms7n1+/TZQBS0Ydd2Q5P4+wJTSOrhIrwNxLXCZpR7Fa3/oac7Yi803HDALc2hLAKaCTQtw9LmQeB58zcwOsqlQ==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13499,12 +13614,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-notification/4.4.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-notification/4.4.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-IDeNAFGVeOsy1tv4zNVqMAXB9tianR80ewQbtObaAQfjwAjWfONdqdyjFkEU6nc6UQhSUYA5OcTGb7kwwbnh0g==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13514,12 +13629,12 @@ packages:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       rc-animate: 3.1.1
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-pagination/2.2.5_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-pagination/2.2.5_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-7hMFNi8R7C/4cLKgmSpUb3BfMFdt4DLrjTixSRMpMBR5jwGfwRyoV9g9Tm6gCuCaAlVAX1QNtlM1T2UqEOW5lw==}
     peerDependencies:
       react: ^16.0.0
@@ -13528,10 +13643,10 @@ packages:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-picker/1.6.4_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-picker/1.6.4_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-F3ahAtKEI1DgKIfH7likOOEZeKs21xTXVshtD7hO3StrkGrSeK0+HzAG80nP8AAc6wMJE667d4+Bo093G0mCHA==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13542,10 +13657,10 @@ packages:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       moment: 2.29.1
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       shallowequal: 1.1.0
     dev: false
 
@@ -13555,19 +13670,19 @@ packages:
       classnames: 2.2.6
     dev: false
 
-  /rc-rate/2.7.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-rate/2.7.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-XD+1tnmKa3Ykm6jVX2ZiwIWdv+DG1t7LDK3dojeFoS8GgA7W3oqW5R/UpJ66qrLYpPHw9N4pYJKWySiPKtPsLQ==}
     engines: {node: '>=8.x'}
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-resize-observer/0.2.6_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-resize-observer/0.2.6_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-YX6nYnd6fk7zbuvT6oSDMKiZjyngjHoy+fz+vL3Tez38d/G5iGdaDJa2yE7345G6sc4Mm1IGRUIwclvltddhmA==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13575,13 +13690,13 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       resize-observer-polyfill: 1.5.1
     dev: false
 
-  /rc-resize-observer/1.0.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-resize-observer/1.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-OxO2mJI9e8610CAWBFfm52SPvWib0eNKjaSsRbbKHmLaJIxw944P+D61DlLJ/w2vuOjGNcalJu8VdqyNm/XCRg==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13589,13 +13704,13 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       resize-observer-polyfill: 1.5.1
     dev: false
 
-  /rc-select/11.0.13_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-select/11.0.13_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-4/GDmBkGnDhYre3Dvq5UkIRXQJW8hbGdpdH8SjquSbCktAVitYV+opd/lKI28qMcBxCgjOHgYXwZ18TF+kP2VQ==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13604,16 +13719,16 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-motion: 1.1.2_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-virtual-list: 1.1.6_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-motion: 1.1.2_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-virtual-list: 1.1.6_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       warning: 4.0.3
     dev: false
 
-  /rc-slider/9.3.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-slider/9.3.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-c52PWPyrfJWh28K6dixAm0906L3/4MUIxqrNQA4TLnC/Z+cBNycWJUZoJerpwSOE1HdM3XDwixCsmtFc/7aWlQ==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13622,14 +13737,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-tooltip: 4.2.3_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-tooltip: 4.2.3_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       shallowequal: 1.1.0
     dev: false
 
-  /rc-steps/4.0.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-steps/4.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-6MuqunJDIZexZj7v5EcHiOF6Q7Xg53+mcxELiIROhvXatssfLxDESpRZJ3zLquecxRjq5epYt92X8xBJ653itg==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13638,12 +13753,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-switch/3.2.2_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-switch/3.2.2_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-+gUJClsZZzvAHGy1vZfnwySxj+MjLlGRyXKXScrtCTcmiYNPzxDFOxdQ/3pK1Kt/0POvwJ/6ALOR8gwdXGhs+A==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13651,12 +13766,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-table/7.8.6_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-table/7.8.6_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-rHRStVTO6FYlxs5Bk9S56Vo/Jn7pX3hOtHTHP+Vu++i9SF7DroOReMIi+OJ7RA9n3jVBxyT/9+NESXgTFvPbYA==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13666,25 +13781,25 @@ packages:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       raf: 3.4.1
-      rc-resize-observer: 0.2.6_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-resize-observer: 0.2.6_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       shallowequal: 1.1.0
     dev: false
 
-  /rc-tabs/11.4.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-tabs/11.4.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-gp3VW58VnMypSWV+sSeDPgKcOs1uUjZphf4olsFyPB2DRzRfyXoZ2i6CM3QVWKw4E052CgiPCKHCzK9LuSKKCg==}
     engines: {node: '>=8.x'}
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       raf: 3.4.1
-      rc-dropdown: 3.1.3_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-menu: 8.3.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-resize-observer: 0.2.6_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-dropdown: 3.1.3_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-menu: 8.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-resize-observer: 0.2.6_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - react
       - react-dom
@@ -13698,17 +13813,17 @@ packages:
       rc-trigger: 2.6.5
     dev: false
 
-  /rc-tooltip/4.2.3_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-tooltip/4.2.3_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-7ySkaPGeqLLM4a/QYrKQ280aDthPxyvjJqQMstWX/AWX7/b1p23HIdHXdjBkziuvcnvXkW4lgZdFTVsylDiX1w==}
     dependencies:
       '@babel/runtime': 7.15.4
-      rc-trigger: 4.3.5_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-tree-select/4.0.3_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-tree-select/4.0.3_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-C2me2AgNYTSXtuybzde2QC82P5yJEZ5gb3SglEOizKvOJM8bJ0hAk8VLK55Xi+a0PO3QvcLLDnJGXEEEB8E/tA==}
     peerDependencies:
       react: '*'
@@ -13716,14 +13831,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-select: 11.0.13_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-tree: 3.11.0_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-select: 11.0.13_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-tree: 3.11.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-tree/3.11.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-tree/3.11.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-3RxA6fckbzX7WOk7g4gvO6AOad0znc8QW2nsv1IXSiljQaIMiyx1AK0zhzIEtABgWKbIs9QkhnBvIAHS4Rn9LA==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13732,14 +13847,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
-      rc-motion: 2.4.4_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-virtual-list: 3.4.1_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-motion: 2.4.4_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-virtual-list: 3.4.1_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-tree/3.3.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-tree/3.3.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-DGyVZN4HRSrmFErn68KOISIl3z0R9EjeNyZE0sgAaa5oqpQDAEK78/lYf5k3rot1N/iFAEJKaTRJfM7eIdWGwg==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13749,10 +13864,10 @@ packages:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       rc-animate: 3.1.1
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-virtual-list: 1.1.6_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-virtual-list: 1.1.6_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
   /rc-trigger/2.6.5:
@@ -13767,16 +13882,16 @@ packages:
       react-lifecycles-compat: 3.0.4
     dev: false
 
-  /rc-trigger/4.3.5_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-trigger/4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-OKIrgGVHnpQ16H/nuOjANrnufHx/tw4cvCuiWSM+XflahUlcqJu6UtlQzNTZ2BoNinC/9Eopx5I38jVD+xLvew==}
     engines: {node: '>=8.x'}
     dependencies:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       raf: 3.4.1
-      rc-align: 4.0.11_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-align: 4.0.11_d9cccff7df39c9a08a2a815f75fb6cbc
       rc-animate: 3.1.1
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - react
       - react-dom
@@ -13798,7 +13913,7 @@ packages:
       shallowequal: 1.1.0
     dev: false
 
-  /rc-util/5.14.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-util/5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-2vy6/Z1BJUcwLjm/UEJb/htjUTQPigITUIemCcFEo1fQevAumc9sA32x2z5qyWoa9uhrXbiAjSDpPIUqyg65sA==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13806,12 +13921,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       react-is: 16.13.1
       shallowequal: 1.1.0
     dev: false
 
-  /rc-virtual-list/1.1.6_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-virtual-list/1.1.6_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-u3+izqWL8p8bQy8nYH48qWpiGyxR/ye8D2k0zJlXmfYeL55/xh83YrzHqiDzO78uj0Ewag3nXDA0JTVrYO7ygQ==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13820,12 +13935,12 @@ packages:
     dependencies:
       classnames: 2.2.6
       raf: 3.4.1
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /rc-virtual-list/3.4.1_4b57aad7a3acc0ec1c2667d1fea04016:
+  /rc-virtual-list/3.4.1_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-YexJy+Cx8qjnQdV8+0JBeM65VF2kvO9lnsfrIvHsL3lIH1adMZ85HqmePGUzKkKMZC+CRAJc2K4g2iJS1dOjPw==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13833,10 +13948,10 @@ packages:
       react-dom: '*'
     dependencies:
       classnames: 2.2.6
-      rc-resize-observer: 1.0.1_4b57aad7a3acc0ec1c2667d1fea04016
-      rc-util: 5.14.0_4b57aad7a3acc0ec1c2667d1fea04016
+      rc-resize-observer: 1.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
   /rc/1.2.8:
@@ -13849,7 +13964,7 @@ packages:
       strip-json-comments: 2.0.1
     dev: true
 
-  /re-resizable/6.9.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /re-resizable/6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-3cUDG81ylyqI0Pdgle/RHwwRYq0ORZzsUaySOCO8IbEtNyaRtrIHYm/jMQ5pjcNiKCxR3vsSymIQZHwJq4gg2Q==}
     peerDependencies:
       react: ^16.13.1 || ^17.0.0
@@ -13857,10 +13972,10 @@ packages:
     dependencies:
       fast-memoize: 2.5.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /react-contexify/5.0.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-contexify/5.0.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-2FIp7lxJ6dtfGr8EZ4uVV5p5TQjd0n2h/JU7PrejNIMiCeZWvSVPFh4lj1ZvjXosglBvP7q5JQQ8yUCdSaMSaw==}
     engines: {node: '>=10'}
     peerDependencies:
@@ -13869,7 +13984,7 @@ packages:
     dependencies:
       clsx: 1.1.1
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
   /react-dev-utils/10.2.1:
@@ -13908,7 +14023,7 @@ packages:
       dnd-core: 10.0.2
     dev: false
 
-  /react-dnd/10.0.2_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-dnd/10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-SC2Ymvntynhoqtf5zaFhZscm9xenCoMofilxPdlwUlaelAzmbl9fw82C4ZJ//+lNm3kWAKXjGDZg2/aWjKEAtg==}
     peerDependencies:
       react: '>= 16.8'
@@ -13919,9 +14034,9 @@ packages:
       dnd-core: 10.0.2
       hoist-non-react-statics: 3.3.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
 
-  /react-emotion/9.2.12_0902779c0de1954abcfab31f4a375899:
+  /react-emotion/9.2.12_199862f3a34dd9afef4fd8fbf7ffe670:
     resolution: {integrity: sha512-qt7XbxnEKX5sZ73rERJ92JMbEOoyOwG3BuCRFRkXrsJhEe+rFBRTljRw7yOLHZUCQC4GBObZhjXIduQ8S0ZpYw==}
     peerDependencies:
       emotion: ^9.1.3
@@ -13935,7 +14050,7 @@ packages:
       - prop-types
     dev: false
 
-  /react-error-boundary/3.1.3_react@17.0.0-rc.1:
+  /react-error-boundary/3.1.3_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-A+F9HHy9fvt9t8SNDlonq01prnU8AmkjvGKV4kk8seB9kU3xMEO8J/PQlLVmoOIDODl5U2kufSBs4vrWIqhsAA==}
     engines: {node: '>=10', npm: '>=6'}
     peerDependencies:
@@ -13953,7 +14068,7 @@ packages:
     resolution: {integrity: sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==}
     dev: false
 
-  /react-helmet/6.1.0_react@17.0.0-rc.1:
+  /react-helmet/6.1.0_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-4uMzEY9nlDlgxr61NL3XbKRy1hEkXmKNXhjbAIOVw5vcFrsdYbH2FEwcNyWvWinl103nXgzYNlns9ca+8kFiWw==}
     peerDependencies:
       react: '>=16.3.0'
@@ -13962,10 +14077,10 @@ packages:
       prop-types: 15.7.2
       react: /utopia-react/17.0.0-rc.1
       react-fast-compare: 3.2.0
-      react-side-effect: 2.1.1_react@17.0.0-rc.1
+      react-side-effect: 2.1.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /react-highlight-words/0.17.0_react@17.0.0-rc.1:
+  /react-highlight-words/0.17.0_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-uX1Qh5IGjnLuJT0Zok234QDwRC8h4hcVMnB99Cb7aquB1NlPPDiWKm0XpSZOTdSactvnClCk8LOmVlP+75dgHA==}
     peerDependencies:
       react: ^0.14.0 || ^15.0.0 || ^16.0.0-0 || ^17.0.0-0
@@ -13976,7 +14091,7 @@ packages:
       react: /utopia-react/17.0.0-rc.1
     dev: false
 
-  /react-hot-loader/4.12.12_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-hot-loader/4.12.12_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-Tkd412j5yPKHoTRsJzZb+5UJNFKkPszm7QGKGYvt+jnzTkDS+qK0u3AYPlB0MmBlwzUKVHICqq5KH9Srzda7XA==}
     engines: {node: '>= 6'}
     peerDependencies:
@@ -13989,13 +14104,13 @@ packages:
       loader-utils: 1.4.0
       prop-types: 15.7.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
       react-lifecycles-compat: 3.0.4
       shallowequal: 1.1.0
       source-map: 0.7.3
     dev: false
 
-  /react-input-autosize/2.2.2_react@17.0.0-rc.1:
+  /react-input-autosize/2.2.2_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-jQJgYCA3S0j+cuOwzuCd1OjmBmnZLdqQdiLKRYrsMMzbjUrVDS5RvJUDwJqA7sKuksDuzFtm6hZGKFu7Mjk5aw==}
     peerDependencies:
       react: ^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0
@@ -14004,7 +14119,7 @@ packages:
       react: /utopia-react/17.0.0-rc.1
     dev: false
 
-  /react-input-autosize/3.0.0_react@17.0.0-rc.1:
+  /react-input-autosize/3.0.0_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-nL9uS7jEs/zu8sqwFE5MAPx6pPkNAriACQ2rGLlqmKr2sPGtN7TXTyDdQt4lbNXVx7Uzadb40x8qotIuru6Rhg==}
     peerDependencies:
       react: ^16.3.0 || ^17.0.0
@@ -14013,7 +14128,7 @@ packages:
       react: /utopia-react/17.0.0-rc.1
     dev: false
 
-  /react-inspector/2.3.1_react@17.0.0-rc.1:
+  /react-inspector/2.3.1_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-tUUK7t3KWgZEIUktOYko5Ic/oYwvjEvQUFAGC1UeMeDaQ5za2yZFtItJa2RTwBJB//NxPr000WQK6sEbqC6y0Q==}
     peerDependencies:
       react: ^0.14.0 || ^15.0.0 || ^16.0.0
@@ -14031,7 +14146,7 @@ packages:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
     dev: true
 
-  /react-layout-effect/1.0.5_react@17.0.0-rc.1:
+  /react-layout-effect/1.0.5_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-zdRXHuch+OBHU6bvjTelOGUCM+UDr/iCY+c0wXLEAc+G4/FlcJruD/hUOzlKH5XgO90Y/BUJPNhI/g9kl+VAsA==}
     peerDependencies:
       react: '>=16.8'
@@ -14051,17 +14166,17 @@ packages:
     resolution: {integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==}
     dev: true
 
-  /react-onclickoutside/6.9.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-onclickoutside/6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-8ltIY3bC7oGhj2nPAvWOGi+xGFybPNhJM0V1H8hY/whNcXgmDeaeoCMPPd8VatrpTsUWjb/vGzrmu6SrXVty3A==}
     peerDependencies:
       react: ^15.5.x || ^16.x
       react-dom: ^15.5.x || ^16.x
     dependencies:
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /react-popper/2.2.3_d1ac8e6685a9b98eee4127b34a333b51:
+  /react-popper/2.2.3_1d5a61f63a74b6fe21fa53c9ee4391e1:
     resolution: {integrity: sha512-mOEiMNT1249js0jJvkrOjyHsGvqcJd3aGW/agkiMoZk3bZ1fXN1wQszIQSjHIai48fE67+zwF8Cs+C4fWqlfjw==}
     peerDependencies:
       '@popperjs/core': ^2.0.0
@@ -14077,7 +14192,7 @@ packages:
     resolution: {integrity: sha512-1tKOwxFn3dXVomH6pM9IkLkq2Y8oh+fh/lYW3MJ/B03URswUTqttgckOlbxY2XHF3vPG6uanSc4dVsLW/wk3wQ==}
     dev: false
 
-  /react-reconciler/0.26.2_react@17.0.0-rc.1:
+  /react-reconciler/0.26.2_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-nK6kgY28HwrMNwDnMui3dvm3rCFjZrcGiuwLc5COUipBK5hWHLOxMJhSnSomirqWwjPBJKV1QcbkI0VJr7Gl1Q==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
@@ -14089,7 +14204,7 @@ packages:
       scheduler: 0.20.2
     dev: true
 
-  /react-select/3.1.0_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-select/3.1.0_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}
     peerDependencies:
       react: ^16.8.0
@@ -14097,17 +14212,17 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       '@emotion/cache': 10.0.29
-      '@emotion/core': 10.1.1_react@17.0.0-rc.1
+      '@emotion/core': 10.1.1_utopia-react@17.0.0-rc.1
       '@emotion/css': 10.0.27
       memoize-one: 5.2.1
       prop-types: 15.7.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
-      react-input-autosize: 2.2.2_react@17.0.0-rc.1
-      react-transition-group: 4.4.2_4b57aad7a3acc0ec1c2667d1fea04016
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react-input-autosize: 2.2.2_utopia-react@17.0.0-rc.1
+      react-transition-group: 4.4.2_d9cccff7df39c9a08a2a815f75fb6cbc
     dev: false
 
-  /react-select/4.3.1_868a85a9522015d4900d38a2dc9fe4f5:
+  /react-select/4.3.1_ab832218b8193df05483c3f8e6442ef8:
     resolution: {integrity: sha512-HBBd0dYwkF5aZk1zP81Wx5UsLIIT2lSvAY2JiJo199LjoLHoivjn9//KsmvQMEFGNhe58xyuOITjfxKCcGc62Q==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0
@@ -14115,19 +14230,19 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       '@emotion/cache': 11.4.0
-      '@emotion/react': 11.1.2_458b321372166595a8ccea60d84425ad
+      '@emotion/react': 11.1.2_d1e00410a1e76d9a3a154f9b2580510f
       memoize-one: 5.2.1
       prop-types: 15.7.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
-      react-input-autosize: 3.0.0_react@17.0.0-rc.1
-      react-transition-group: 4.4.2_4b57aad7a3acc0ec1c2667d1fea04016
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react-input-autosize: 3.0.0_utopia-react@17.0.0-rc.1
+      react-transition-group: 4.4.2_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - '@babel/core'
       - '@types/react'
     dev: false
 
-  /react-side-effect/2.1.1_react@17.0.0-rc.1:
+  /react-side-effect/2.1.1_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-2FoTQzRNTncBVtnzxFOk2mCpcfxQpenBMbk5kSVBg5UcPqV9fRbgY2zhb7GTWWOlpFmAxhClBDlIq8Rsubz1yQ==}
     peerDependencies:
       react: ^16.3.0 || ^17.0.0
@@ -14135,16 +14250,16 @@ packages:
       react: /utopia-react/17.0.0-rc.1
     dev: false
 
-  /react-spring/9.0.0-rc.3_e703eacad80e5d6302dc86ea53f42337:
+  /react-spring/9.0.0-rc.3_fb240f2ddf3ca4b47c2b562802d6427d:
     resolution: {integrity: sha512-VX5Gi6svgRzjGvJ7qVRQBhFN+O2IuPvkSWepIg838LNIMqlc42xdIYtoGJYSqYjNO3IocSfkHlh49WVw6hHMUg==}
     dependencies:
       '@babel/runtime': 7.15.4
-      '@react-spring/core': 9.0.0-rc.3_react@17.0.0-rc.1
-      '@react-spring/konva': 9.0.0-rc.3_react@17.0.0-rc.1
-      '@react-spring/native': 9.0.0-rc.3_react@17.0.0-rc.1
-      '@react-spring/three': 9.0.0-rc.3_react@17.0.0-rc.1+three@0.129.0
-      '@react-spring/web': 9.0.0-rc.3_4b57aad7a3acc0ec1c2667d1fea04016
-      '@react-spring/zdog': 9.0.0-rc.3_4b57aad7a3acc0ec1c2667d1fea04016
+      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/konva': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/native': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/three': 9.0.0-rc.3_24b06abb525ed3fd7bdb483525615d30
+      '@react-spring/web': 9.0.0-rc.3_d9cccff7df39c9a08a2a815f75fb6cbc
+      '@react-spring/zdog': 9.0.0-rc.3_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - konva
       - react
@@ -14157,7 +14272,7 @@ packages:
       - zdog
     dev: false
 
-  /react-syntax-highlighter/12.2.1_react@17.0.0-rc.1:
+  /react-syntax-highlighter/12.2.1_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-CTsp0ZWijwKRYFg9xhkWD4DSpQqE4vb2NKVMdPAkomnILSmsNBHE0n5GuI5zB+PU3ySVvXvdt9jo+ViD9XibCA==}
     peerDependencies:
       react: '>= 0.14.0'
@@ -14170,7 +14285,7 @@ packages:
       refractor: 2.10.1
     dev: false
 
-  /react-test-renderer/16.9.0_react@17.0.0-rc.1:
+  /react-test-renderer/16.9.0_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-R62stB73qZyhrJo7wmCW9jgl/07ai+YzvouvCXIJLBkRlRqLx4j9RqcLEAfNfU3OxTGucqR2Whmn3/Aad6L3hQ==}
     peerDependencies:
       react: ^16.0.0
@@ -14186,7 +14301,7 @@ packages:
     resolution: {integrity: sha512-EblIqTAsIpkYeM8bZtC4lcpTE0A2zCEGipFB52RgcQq/q+0oryrk7Sxt+sqhIjUu6xMNEVywV8dr74lz5yWO6A==}
     dev: true
 
-  /react-transition-group/4.4.2_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-transition-group/4.4.2_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}
     peerDependencies:
       react: '>=16.6.0'
@@ -14197,10 +14312,10 @@ packages:
       loose-envify: 1.4.0
       prop-types: 15.7.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /react-use-gesture/6.0.2_react@17.0.0-rc.1:
+  /react-use-gesture/6.0.2_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-zzKWtIjQFzEfwJAxo0JNveXHhehVj6ybfJVlRY5zbfvME6aY8QlZCR7vFF3jnBsJFLRySWYGfjD6WwpyYnS5Cg==}
     peerDependencies:
       react: '>= 16.8.0'
@@ -14208,7 +14323,7 @@ packages:
       react: /utopia-react/17.0.0-rc.1
     dev: false
 
-  /react-use-measure/2.0.4_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-use-measure/2.0.4_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-7K2HIGaPMl3Q9ZQiEVjen3tRXl4UDda8LiTPy/QxP8dP2rl5gPBhf7mMH6MVjjRNv3loU7sNzey/ycPNnHVTxQ==}
     peerDependencies:
       react: '>=16.13'
@@ -14216,10 +14331,10 @@ packages:
     dependencies:
       debounce: 1.2.1
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: true
 
-  /react-virtualized-auto-sizer/1.0.2_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-virtualized-auto-sizer/1.0.2_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-MYXhTY1BZpdJFjUovvYHVBmkq79szK/k7V3MO+36gJkWGkrXKtyr4vCPtpphaTLRAdDNoYEYFZWE8LjN+PIHNg==}
     engines: {node: '>8.0.0'}
     peerDependencies:
@@ -14227,10 +14342,10 @@ packages:
       react-dom: ^15.3.0 || ^16.0.0-alpha
     dependencies:
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /react-vtree/2.0.0_ac7ffa671023113cf04c5b887f2c1c9c:
+  /react-vtree/2.0.0_255ea23c1365d9cdd0d891903b4d6c66:
     resolution: {integrity: sha512-UuPGZMBYoH0E9bklJxtSP2/SeMGNg1yQrfIb+G7YjfXXiilxMUSzgW2tv6agB5TvASS3HqzxnYhUHsFumiwQcQ==}
     peerDependencies:
       '@types/react-window': ^1.8.2
@@ -14241,11 +14356,11 @@ packages:
       '@babel/runtime': 7.15.4
       '@types/react-window': 1.8.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
-      react-window: 1.8.5_4b57aad7a3acc0ec1c2667d1fea04016
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react-window: 1.8.5_d9cccff7df39c9a08a2a815f75fb6cbc
     dev: false
 
-  /react-window/1.8.5_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-window/1.8.5_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-HeTwlNa37AFa8MDZFZOKcNEkuF2YflA0hpGPiTT9vR7OawEt+GZbfM6wqkBahD3D3pUjIabQYzsnY/BSJbgq6Q==}
     engines: {node: '>8.0.0'}
     peerDependencies:
@@ -14255,10 +14370,10 @@ packages:
       '@babel/runtime': 7.15.4
       memoize-one: 5.2.1
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /react-window/1.8.6_4b57aad7a3acc0ec1c2667d1fea04016:
+  /react-window/1.8.6_d9cccff7df39c9a08a2a815f75fb6cbc:
     resolution: {integrity: sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==}
     engines: {node: '>8.0.0'}
     peerDependencies:
@@ -14268,10 +14383,10 @@ packages:
       '@babel/runtime': 7.15.4
       memoize-one: 5.2.1
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
     dev: false
 
-  /react-windowed-select/3.1.2_326e5fd990db4142d2792d97bd42961d:
+  /react-windowed-select/3.1.2_b9c7432b687c5eca0e0b2d49cc5d18aa:
     resolution: {integrity: sha512-XY+ds5y3+Pitz8p/kU2MXArKyMkUGJETE0TTTp9g1fi3F4qfd+rq/zWF5Rtq+6YcuysvXenFGetSmgLixOO2xQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0
@@ -14282,9 +14397,9 @@ packages:
       '@types/react-select': 4.0.18
       '@types/react-window': 1.8.2
       react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1
-      react-select: 4.3.1_868a85a9522015d4900d38a2dc9fe4f5
-      react-window: 1.8.6_4b57aad7a3acc0ec1c2667d1fea04016
+      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react-select: 4.3.1_ab832218b8193df05483c3f8e6442ef8
+      react-window: 1.8.6_d9cccff7df39c9a08a2a815f75fb6cbc
     transitivePeerDependencies:
       - '@babel/core'
     dev: false
@@ -14870,13 +14985,6 @@ packages:
       xmlchars: 2.2.0
     dev: true
 
-  /saxes/4.0.2:
-    resolution: {integrity: sha512-EZOTeQ4bgkOaGCDaTKux+LaRNcLNbdbvMH7R3/yjEEULPEmqvkFbFub6DJhJTub2iGMT93CfpZ5LTdKZmAbVeQ==}
-    engines: {node: '>=8'}
-    dependencies:
-      xmlchars: 2.2.0
-    dev: true
-
   /saxes/5.0.1:
     resolution: {integrity: sha512-5LBh1Tls8c9xgGjw3QrMwETmTMVk0oFgvrFSvWx62llR2hcEInrKNZ2GZCCuuy2lvWrdl5jhbpeqc5hRYKFOcw==}
     engines: {node: '>=10'}
@@ -15201,11 +15309,6 @@ packages:
   /shell-quote/1.7.2:
     resolution: {integrity: sha512-mRz/m/JVscCrkMyPqHc/bczi3OQHkLTqXHEFu0zDhK/qfv3UcOA4SVmRCLmos4bhjr9ekVQubj/R7waKapmiQg==}
     dev: true
-
-  /shellwords/0.1.1:
-    resolution: {integrity: sha512-vFwSUfQvqybiICwZY5+DAWIPLKsWO31Q91JSKl3UYv+K5c2QRPzn0qzec6QPu1Qc9eHYItiP3NdJqNVqetYAww==}
-    dev: true
-    optional: true
 
   /shuffle-array/1.0.1:
     resolution: {integrity: sha1-xP88/nTRb5NzBZIwGyXmV3sSiYs=}
@@ -16063,6 +16166,10 @@ packages:
     resolution: {integrity: sha512-fcwX4mndzpLQKBS1DVYhGAcYaYt7vsHNIvQV+WXMvnow5cgjPphq5CaayLaGsjRdSCKZFNGt7/GYAuXaNOiYCA==}
     dev: true
 
+  /throat/6.0.1:
+    resolution: {integrity: sha512-8hmiGIJMDlwjg7dlJ4yKGLK8EsYqKgPWbG3b4wjJddKNwc7N7Dpn08Df4szr/sZdMVeOstrdYSsqzX6BYbcB+w==}
+    dev: true
+
   /throttleit/0.0.2:
     resolution: {integrity: sha1-z+34jmDADdlpe2H90qg0OptoDq8=}
     dev: true
@@ -16276,28 +16383,6 @@ packages:
   /trim-newlines/1.0.0:
     resolution: {integrity: sha1-WIeWa7WCpFA6QetST301ARgVphM=}
     engines: {node: '>=0.10.0'}
-    dev: true
-
-  /ts-jest/26.1.1_jest@26.1.0+typescript@4.1.3:
-    resolution: {integrity: sha512-Lk/357quLg5jJFyBQLnSbhycnB3FPe+e9i7ahxokyXxAYoB0q1pPmqxxRPYr4smJic1Rjcf7MXDBhZWgxlli0A==}
-    engines: {node: '>= 10'}
-    hasBin: true
-    peerDependencies:
-      jest: '>=26 <27'
-      typescript: '>=3.8 <4.0'
-    dependencies:
-      bs-logger: 0.2.6
-      buffer-from: 1.1.2
-      fast-json-stable-stringify: 2.1.0
-      jest: 26.1.0
-      json5: 2.2.0
-      lodash.memoize: 4.1.2
-      make-error: 1.3.6
-      micromatch: 4.0.4
-      mkdirp: 1.0.4
-      semver: 7.3.2
-      typescript: 4.1.3
-      yargs-parser: 18.1.3
     dev: true
 
   /ts-loader/5.3.3_typescript@4.1.3:
@@ -16649,7 +16734,7 @@ packages:
       querystring: 0.2.0
     dev: true
 
-  /use-asset/1.0.4_react@17.0.0-rc.1:
+  /use-asset/1.0.4_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-7/hqDrWa0iMnCoET9W1T07EmD4Eg/Wmoj/X8TGBc++ECRK4m5yTsjP4O6s0yagbxfqIOuUkIxe2/sA+VR2GxZA==}
     peerDependencies:
       react: '>=17.0'
@@ -16658,7 +16743,7 @@ packages:
       react: /utopia-react/17.0.0-rc.1
     dev: true
 
-  /use-memo-one/1.1.2_react@17.0.0-rc.1:
+  /use-memo-one/1.1.2_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-u2qFKtxLsia/r8qG0ZKkbytbztzRb317XCkT7yP8wxL0tZ/CzK2G+WWie5vWvpyeP7+YoPIwbJoIHJ4Ba4k0oQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0
@@ -16700,7 +16785,7 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: true
 
-  /utopia-react-dom/17.0.0-rc.1_react@17.0.0-rc.1:
+  /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-Ay7N+izSxk4Qvpi8omYpX0bLQ1a2XDTL+TN8npTBXq9mN5TyOcFDuCE+P/oBVChQ0elQVzmHGrJfP3do1nfidg==}
     peerDependencies:
       react: ^17.0.0-rc.1
@@ -16728,19 +16813,13 @@ packages:
     hasBin: true
     dev: true
 
-  /uuid/8.3.2:
-    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
-    hasBin: true
-    dev: true
-    optional: true
-
   /v8-compile-cache/2.3.0:
     resolution: {integrity: sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA==}
     dev: true
 
-  /v8-to-istanbul/7.1.2:
-    resolution: {integrity: sha512-TxNb7YEUwkLXCQYeudi6lgQ/SZrzNO4kMdlqVxaZPUIUjCv6iSSypUQX70kNBSERpQ8fk48+d61FXk+tgqcWow==}
-    engines: {node: '>=10.10.0'}
+  /v8-to-istanbul/8.1.0:
+    resolution: {integrity: sha512-/PRhfd8aTNp9Ggr62HPzXg2XasNFGy5PBt0Rp04du7/8GNNSgxFL6WBTkgMKSL9bFjH+8kKEG3f37FmxiTqUUA==}
+    engines: {node: '>=10.12.0'}
     dependencies:
       '@types/istanbul-lib-coverage': 2.0.3
       convert-source-map: 1.8.0
@@ -17094,6 +17173,14 @@ packages:
       webidl-conversions: 6.1.0
     dev: true
 
+  /whatwg-url/9.1.0:
+    resolution: {integrity: sha512-CQ0UcrPHyomtlOCot1TL77WyMIm/bCwrJ2D6AOKGwEczU9EpyoqAokfqrf/MioU9kHcMsmJZcg1egXix2KYEsA==}
+    engines: {node: '>=12'}
+    dependencies:
+      tr46: 2.1.0
+      webidl-conversions: 6.1.0
+    dev: true
+
   /whet.extend/0.9.9:
     resolution: {integrity: sha1-+HfVv2SMl+WqVC+twW1qJZucEaE=}
     engines: {node: '>=0.6.0'}
@@ -17409,7 +17496,7 @@ packages:
       toposort: 2.0.2
     dev: true
 
-  /zustand/3.1.3_react@17.0.0-rc.1:
+  /zustand/3.1.3_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-Otuzh3r0GsatvsUWeXEwdYjZEw1TItWcAXwDGEHdXE4/k6WbAdVDxC21t/Poq4ZMB+2VaQNKICWu7eCBUJ65tQ==}
     peerDependencies:
       react: '>=16.8'
@@ -17417,7 +17504,7 @@ packages:
       react: /utopia-react/17.0.0-rc.1
     dev: false
 
-  /zustand/3.5.10_react@17.0.0-rc.1:
+  /zustand/3.5.10_utopia-react@17.0.0-rc.1:
     resolution: {integrity: sha512-upluvSRWrlCiExu2UbkuMIPJ9AigyjRFoO7O9eUossIj7rPPq7pcJ0NKk6t2P7KF80tg/UdPX6/pNKOSbs9DEg==}
     peerDependencies:
       react: '>=16.8'
@@ -17434,7 +17521,7 @@ packages:
     version: 6.0.3
     dev: false
 
-  github.com/dai-shi/use-context-selector/3f1df8f818176db835dc894fff191e9a4d2f8a68_react@17.0.0-rc.1:
+  github.com/dai-shi/use-context-selector/3f1df8f818176db835dc894fff191e9a4d2f8a68_utopia-react@17.0.0-rc.1:
     resolution: {tarball: https://codeload.github.com/dai-shi/use-context-selector/tar.gz/3f1df8f818176db835dc894fff191e9a4d2f8a68}
     id: github.com/dai-shi/use-context-selector/3f1df8f818176db835dc894fff191e9a4d2f8a68
     name: use-context-selector
