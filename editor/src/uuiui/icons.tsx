@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Icn, IcnProps } from './icn'
 import { betterReactMemo } from '../utils/react-performance'
 

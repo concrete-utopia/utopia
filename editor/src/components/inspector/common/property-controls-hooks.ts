@@ -1,6 +1,6 @@
 import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
-import * as React from 'react'
+import React from 'react'
 import { useContextSelector } from 'use-context-selector'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import {

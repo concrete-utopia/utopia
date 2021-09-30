@@ -38,7 +38,7 @@ import {
   useRefSelectedViews,
 } from './property-path-hooks'
 
-import * as React from 'react'
+import React from 'react'
 import { CSSNumber, cssNumberToString } from './css-utils'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 

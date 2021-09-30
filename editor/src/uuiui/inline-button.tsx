@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import styled from '@emotion/styled'
 //TODO: refactor components to functional components and use 'useColorTheme()':
 import { colorTheme, UtopiaTheme } from './styles/theme'

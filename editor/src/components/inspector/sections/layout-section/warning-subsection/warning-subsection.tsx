@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 
 import { useInspectorWarningStatus } from '../../../common/property-path-hooks'
 import { WarningIcon } from '../../../../../uuiui/warning-icon'

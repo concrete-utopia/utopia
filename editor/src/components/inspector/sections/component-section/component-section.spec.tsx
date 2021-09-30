@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { render, fireEvent, act } from '@testing-library/react'
 
 import * as EP from '../../../../core/shared/element-path'

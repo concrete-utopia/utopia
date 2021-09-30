@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { CSSURLFunctionBackgroundLayer } from '../common/css-utils'
 import { BackgroundPicker } from '../sections/style-section/background-subsection/background-picker'
 import {

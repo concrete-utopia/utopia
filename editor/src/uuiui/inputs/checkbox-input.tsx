@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import composeRefs from '@seznam/compose-react-refs'
-import * as React from 'react'
+import React from 'react'
 import { jsx } from '@emotion/react'
 import {
   ControlStatus,

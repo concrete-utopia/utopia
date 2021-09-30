@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { setFocus } from '../common/actions'

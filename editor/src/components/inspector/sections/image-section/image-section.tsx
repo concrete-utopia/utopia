@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import * as PP from '../../../../core/shared/property-path'

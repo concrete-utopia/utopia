@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import styled from '@emotion/styled'
 import { FlexRow } from '../layout/flex-row'
 import { FlexColumn } from '../layout/flex-column'

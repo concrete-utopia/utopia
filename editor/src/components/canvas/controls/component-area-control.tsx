@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { Imports, ElementPath } from '../../../core/shared/project-file-types'

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import Select, { components, createFilter, FormatOptionLabelMeta, InputProps } from 'react-select'
 import CreatableSelect, { Props as SelectProps } from 'react-select/creatable'
 import { IndicatorProps } from 'react-select/src/components/indicators'

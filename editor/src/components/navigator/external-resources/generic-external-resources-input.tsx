@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { FlexRow, FunctionIcons, StringInput } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'

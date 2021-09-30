@@ -14,7 +14,7 @@ import { checkerboardBackground } from '../common/inspector-utils'
 import { inspectorEdgePadding } from '../sections/style-section/background-subsection/background-picker'
 import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
-import * as React from 'react'
+import React from 'react'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme, SimpleNumberInput, SimplePercentInput, UtopiaStyles } from '../../../uuiui'
 

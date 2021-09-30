@@ -6,7 +6,7 @@
  */
 
 /* @flow */
-import * as React from 'react'
+import React from 'react'
 import { Component } from 'react'
 import StackFrame from './StackFrame'
 import Collapsible from '../components/Collapsible'

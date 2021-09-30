@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { Global, css } from '@emotion/react'
 import { betterReactMemo } from '../../uuiui-deps'
 import { BaseCanvasOffsetLeftPane } from '../editor/store/editor-state'

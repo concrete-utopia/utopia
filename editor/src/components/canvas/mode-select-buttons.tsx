@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import { useColorTheme, FlexRow, UtopiaStyles } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { switchEditorMode } from '../editor/actions/action-creators'

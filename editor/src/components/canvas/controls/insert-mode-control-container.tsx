@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { FramePoint } from 'utopia-api'
 import { LayoutHelpers, TopLeftWidthHeight } from '../../../core/layout/layout-helpers'
 import {

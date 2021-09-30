@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { CanvasPoint, CanvasRectangle, Vector } from '../../../core/shared/math-utils'
 import { Utils } from '../../../uuiui-deps'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'

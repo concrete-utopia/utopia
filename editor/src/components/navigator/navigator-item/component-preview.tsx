@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { IcnProps, Icn } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'

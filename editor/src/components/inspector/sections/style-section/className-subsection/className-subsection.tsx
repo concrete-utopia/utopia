@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import { components, FormatOptionLabelMeta, InputProps, OptionsType, ValueType } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
