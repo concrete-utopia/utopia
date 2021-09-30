@@ -17,7 +17,7 @@ import {
 import { selectComponents } from '../../editor/actions/action-creators'
 import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier/standalone'
-import { act } from 'react-test-renderer'
+import { act } from '@testing-library/react'
 import { contentsToTree } from '../../assets'
 import {
   ProjectContents,
