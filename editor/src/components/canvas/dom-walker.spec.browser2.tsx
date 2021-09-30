@@ -12,7 +12,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { HotRoot } from '../../templates/editor'
+import { EditorRoot } from '../../templates/editor'
 import { left } from '../../core/shared/either'
 import { EditorDispatch } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
@@ -77,7 +77,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const storeHook = create<EditorStore>((set) => initialEditorStore)
 
   render(
-    <HotRoot
+    <EditorRoot
       api={storeHook}
       useStore={storeHook}
       spyCollector={spyCollector}

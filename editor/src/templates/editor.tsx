@@ -316,13 +316,13 @@ export class Editor {
   }
 }
 
-export const HotRoot: React.FunctionComponent<{
+export const EditorRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   propertyControlsInfoSupported: boolean
   vscodeBridgeReady: boolean
-}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
+}> = ({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
@@ -333,8 +333,28 @@ export const HotRoot: React.FunctionComponent<{
       </UiJsxCanvasCtxAtom.Provider>
     </EditorStateContext.Provider>
   )
+}
+
+EditorRoot.displayName = 'Utopia Editor Root'
+
+export const HotRoot: React.FunctionComponent<{
+  api: UtopiaStoreAPI
+  useStore: UtopiaStoreHook
+  spyCollector: UiJsxCanvasContextData
+  propertyControlsInfoSupported: boolean
+  vscodeBridgeReady: boolean
+}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
+  return (
+    <EditorRoot
+      api={api}
+      useStore={useStore}
+      spyCollector={spyCollector}
+      propertyControlsInfoSupported={propertyControlsInfoSupported}
+      vscodeBridgeReady={vscodeBridgeReady}
+    />
+  )
 })
-HotRoot.displayName = 'Utopia Editor Root'
+HotRoot.displayName = 'Utopia Editor Hot Root'
 
 async function renderRootComponent(
   useStore: UtopiaStoreHook,
@@ -348,16 +368,29 @@ async function renderRootComponent(
     // as subsequent updates will be fed through Zustand
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
-      ReactDOM.render(
-        <HotRoot
-          api={api}
-          useStore={useStore}
-          spyCollector={spyCollector}
-          propertyControlsInfoSupported={propertyControlsInfoSupported}
-          vscodeBridgeReady={vscodeBridgeReady}
-        />,
-        rootElement,
-      )
+      if (process.env.HOT_MODE) {
+        ReactDOM.render(
+          <HotRoot
+            api={api}
+            useStore={useStore}
+            spyCollector={spyCollector}
+            propertyControlsInfoSupported={propertyControlsInfoSupported}
+            vscodeBridgeReady={vscodeBridgeReady}
+          />,
+          rootElement,
+        )
+      } else {
+        ReactDOM.render(
+          <EditorRoot
+            api={api}
+            useStore={useStore}
+            spyCollector={spyCollector}
+            propertyControlsInfoSupported={propertyControlsInfoSupported}
+            vscodeBridgeReady={vscodeBridgeReady}
+          />,
+          rootElement,
+        )
+      }
     }
   })
 }

@@ -180,6 +180,7 @@ const config = {
       'process.platform': 'undefined',
       'process.env.BABEL_TYPES_8_BREAKING': 'undefined',
       'process.env.JEST_WORKER_ID': 'undefined',
+      'process.env.HOT_MODE': hot,
     }),
 
     // setting up the various process.env.VARIABLE replacements
