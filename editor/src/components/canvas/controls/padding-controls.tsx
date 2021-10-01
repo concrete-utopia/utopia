@@ -19,6 +19,7 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
     const leftElement =
       props.padding.left != null && props.padding.left !== 0 ? (
         <div
+          key='padding-left'
           className=' roleFlexPaddingControl'
           style={{
             fontSize: 10,
@@ -41,6 +42,7 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
     const topElement =
       props.padding.top != null && props.padding.top !== 0 ? (
         <div
+          key='padding-top'
           style={{
             fontSize: 10,
             fontWeight: 500,
@@ -62,6 +64,7 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
     const rightElement =
       props.padding.right != null && props.padding.right !== 0 ? (
         <div
+          key='padding-right'
           style={{
             fontSize: 10,
             fontWeight: 500,
@@ -83,6 +86,7 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
     const bottomElement =
       props.padding.bottom != null && props.padding.bottom !== 0 ? (
         <div
+          key='padding-bottom'
           style={{
             fontSize: 10,
             fontWeight: 500,
@@ -107,6 +111,7 @@ export const PaddingControls = betterReactMemo('PaddingControls', (props: Paddin
       rightElement == null &&
       bottomElement == null ? null : (
         <div
+          key='padding-inner-div'
           style={{
             background: 'transparent',
             position: 'absolute',
