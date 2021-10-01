@@ -31,10 +31,9 @@ import           Opaleye
 import           Opaleye.Trans
 import           Protolude                       hiding (get)
 import           System.Environment
-import           System.Metrics                  hiding (Value)
 import           System.Posix.User
 import           Utopia.Web.Database.Types
-import           Utopia.Web.Metrics
+import           Utopia.Web.Metrics              hiding (count)
 
 data DatabaseMetrics = DatabaseMetrics
                      { _generateUniqueIDMetrics         :: InvocationMetric

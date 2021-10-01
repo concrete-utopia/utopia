@@ -25,8 +25,6 @@ dependencies:
   - cryptohash-sha256
   - data-default
   - directory
-  - ekg-core
-  - ekg-json
   - exceptions
   - fast-logger
   - filepath
@@ -79,6 +77,7 @@ dependencies:
   - unix
   - unordered-containers
   - uuid
+  - vector
   - wai
   - wai-app-static
   - wai-extra ==3.0.29.1

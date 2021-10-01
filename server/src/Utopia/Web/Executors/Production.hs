@@ -7,7 +7,6 @@
 {-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE RecordWildCards        #-}
-{-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeOperators          #-}
 
 {-|
@@ -15,7 +14,6 @@
 -}
 module Utopia.Web.Executors.Production where
 
-import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
 import           Data.IORef
@@ -25,8 +23,6 @@ import           Protolude                      hiding (Handler)
 import           Servant
 import           System.Environment
 import           System.Log.FastLogger
-import           System.Metrics                 hiding (Value)
-import           System.Metrics.Json
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
@@ -39,6 +35,7 @@ import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
 import           Utopia.Web.Logging
+import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
@@ -57,6 +54,7 @@ data ProductionServerResources = ProductionServerResources
                                , _serverPort              :: Int
                                , _storeForMetrics         :: Store
                                , _databaseMetrics         :: DB.DatabaseMetrics
+                               , _npmMetrics              :: NPMMetrics
                                , _registryManager         :: Manager
                                , _assetsCaches            :: AssetsCaches
                                , _nodeSemaphore           :: QSem
@@ -68,8 +66,6 @@ data ProductionServerResources = ProductionServerResources
                                , _logger                  :: FastLogger
                                , _loggerShutdown          :: IO ()
                                }
-
-$(makeFieldsNoPrefix ''ProductionServerResources)
 
 type ProductionProcessMonad a = ServerProcessMonad ProductionServerResources a
 
@@ -179,8 +175,8 @@ innerServerExecutor (GetGithubProject owner repo action) = do
   return $ action zipball
 innerServerExecutor (GetMetrics action) = do
   store <- fmap _storeForMetrics ask
-  sample <- liftIO $ sampleAll store
-  return $ action $ sampleToJson sample
+  storeJSON <- liftIO $ sampleAsJSON store
+  return $ action storeJSON
 innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   manager <- fmap _registryManager ask
   let qualifiedPackageName = maybe javascriptPackageName (\v -> javascriptPackageName <> "/" <> v) maybeJavascriptPackageVersion
@@ -189,7 +185,9 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   semaphore <- fmap _nodeSemaphore ask
   versionsCache <- fmap _matchingVersionsCache ask
-  packageMetadata <- liftIO $ findMatchingVersions semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
+  npmMetrics <- fmap _npmMetrics ask
+  appLogger <- fmap _logger ask
+  packageMetadata <- liftIO $ findMatchingVersions appLogger npmMetrics semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -205,7 +203,9 @@ innerServerExecutor (GetHashedAssetPaths action) = do
 innerServerExecutor (GetPackagePackagerContent versionedPackageName action) = do
   semaphore <- fmap _nodeSemaphore ask
   packagerLocksRef <- fmap _locksRef ask
-  packagerContent <- liftIO $ getPackagerContent semaphore packagerLocksRef versionedPackageName
+  npmMetrics <- fmap _npmMetrics ask
+  appLogger <- fmap _logger ask
+  packagerContent <- liftIO $ getPackagerContent appLogger npmMetrics semaphore packagerLocksRef versionedPackageName
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
@@ -220,7 +220,7 @@ innerServerExecutor (GetCDNRoot action) = do
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
   pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
-                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ getBranchBundleFolder downloads branchName
+                   ("./editor", Just branchName, Just downloads)  -> liftIO $ getBranchBundleFolder downloads branchName
                    _                                                  -> return defaultPathToServe
   return $ action pathToServe
 innerServerExecutor (GetVSCodeAssetRoot action) = do
@@ -285,6 +285,7 @@ initialiseResources = do
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore
   _databaseMetrics <- DB.createDatabaseMetrics _storeForMetrics
+  _npmMetrics <- createNPMMetrics _storeForMetrics
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
@@ -304,7 +305,7 @@ startup ProductionServerResources{..} = do
         killThread hashedFilenamesThread
 
 serverPortFromResources :: ProductionServerResources -> Int
-serverPortFromResources = view serverPort
+serverPortFromResources = _serverPort
 
 productionEnvironmentRuntime :: EnvironmentRuntime ProductionServerResources
 productionEnvironmentRuntime = EnvironmentRuntime
@@ -314,7 +315,7 @@ productionEnvironmentRuntime = EnvironmentRuntime
   , _serverAPI = serverAPI
   , _startupLogging = const True
   , _getLogger = _logger
-  , _metricsStore = view storeForMetrics
+  , _metricsStore = _storeForMetrics
   , _cacheForAssets = (\r -> readIORef $ _assetResultCache $ _assetsCaches r)
   , _forceSSL = const False
   }

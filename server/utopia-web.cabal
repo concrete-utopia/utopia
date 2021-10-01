@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 894d76fbba980d5a8e577a2b81bebf2dcf7366e6727bc616a75c4bf1d9f2d995
+-- hash: c9c7076c3b2eb98f67cf0b65b55f118971dfbea085bfee40202accb5ebd99bb8
 
 name:           utopia-web
 version:        0.1.0.4
@@ -32,7 +32,6 @@ executable utopia-web
       Utopia.Web.Database.Migrations
       Utopia.Web.Database.Types
       Utopia.Web.Editor.Branches
-      Utopia.Web.Ekg
       Utopia.Web.Endpoints
       Utopia.Web.Exceptions
       Utopia.Web.Executors.Common
@@ -46,6 +45,7 @@ executable utopia-web
       Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
       Utopia.Web.Servant
+      Utopia.Web.ServantMonitoring
       Utopia.Web.Server
       Utopia.Web.ServiceTypes
       Utopia.Web.Types
@@ -77,8 +77,6 @@ executable utopia-web
     , cryptohash-sha256
     , data-default
     , directory
-    , ekg-core
-    , ekg-json
     , exceptions
     , fast-logger
     , filepath
@@ -130,6 +128,7 @@ executable utopia-web
     , unix
     , unordered-containers
     , uuid
+    , vector
     , wai
     , wai-app-static
     , wai-extra ==3.0.29.1
@@ -158,7 +157,6 @@ test-suite utopia-web-test
       Utopia.Web.Database.Migrations
       Utopia.Web.Database.Types
       Utopia.Web.Editor.Branches
-      Utopia.Web.Ekg
       Utopia.Web.Endpoints
       Utopia.Web.Exceptions
       Utopia.Web.Executors.Common
@@ -172,6 +170,7 @@ test-suite utopia-web-test
       Utopia.Web.Packager.NPM
       Utopia.Web.Proxy
       Utopia.Web.Servant
+      Utopia.Web.ServantMonitoring
       Utopia.Web.Server
       Utopia.Web.ServiceTypes
       Utopia.Web.Types
@@ -204,8 +203,6 @@ test-suite utopia-web-test
     , cryptohash-sha256
     , data-default
     , directory
-    , ekg-core
-    , ekg-json
     , exceptions
     , fast-logger
     , filepath
@@ -266,6 +263,7 @@ test-suite utopia-web-test
     , unix
     , unordered-containers
     , uuid
+    , vector
     , wai
     , wai-app-static
     , wai-extra ==3.0.29.1
