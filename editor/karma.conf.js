@@ -19,8 +19,9 @@ module.exports = function (config) {
       'karma-chrome-launcher',
       'karma-viewport',
       'karma-mocha-reporter',
+      require('./test/karma-custom-reporter/short-console-messages'),
     ],
-    reporters: ['mocha'],
+    reporters: ['mocha', 'utopia'],
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
