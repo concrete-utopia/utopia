@@ -146,7 +146,7 @@ specifiers:
   istextorbinary: 5.11.0
   jStat: 1.5.3
   jest: 27.2.2
-  jest-clean-console-reporter: 0.2.0
+  jest-clean-console-reporter: 0.3.0
   jest-environment-jsdom: ^27.2.2
   jest-fetch-mock: 3.0.1
   jest-matcher-deep-close-to: 2.0.1
@@ -461,7 +461,7 @@ devDependencies:
   immutable: 3.8.1
   jStat: 1.5.3
   jest: 27.2.2
-  jest-clean-console-reporter: 0.2.0_jest@27.2.2
+  jest-clean-console-reporter: 0.3.0_jest@27.2.2
   jest-environment-jsdom: 27.2.4
   jest-matcher-deep-close-to: 2.0.1
   jest-transform-stub: 2.0.0
@@ -9604,8 +9604,8 @@ packages:
       - supports-color
     dev: true
 
-  /jest-clean-console-reporter/0.2.0_jest@27.2.2:
-    resolution: {integrity: sha512-+crUBrBbGCHU6hI/yTEnpJhDF+bLg7FFwFgyhL+3qx2qkR9ZRaiTXlRw1rhSUud/PZAWs8wBdg3EtgR3AvTuFg==}
+  /jest-clean-console-reporter/0.3.0_jest@27.2.2:
+    resolution: {integrity: sha512-n1PN//5+YbL78v2n/O17gfgJBNWSD1/RJomkaPwSr03it+Ipu3hAp7OwLP8+Fc11U9WA5G+6A5BFTFen70iyBA==}
     peerDependencies:
       jest: '>=25.1.0'
     dependencies:
