@@ -3,8 +3,6 @@ cabal-version: 1.12
 -- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: a1db3c01adb75916066235dd5d1ae356282b8e98214a1a94796df6a1d445d4f5
 
 name:           utopia-web
 version:        0.1.0.4
