@@ -9,9 +9,9 @@ ghc-options: -Wall -threaded -rtsopts
 dependencies:
   - aeson
   - aeson-pretty
-  - amazonka
-  - amazonka-core
-  - amazonka-s3
+  - amazonka ==1.6.1
+  - amazonka-core ==1.6.1
+  - amazonka-s3 ==1.6.1
   - base >= 4.7 && < 5
   - base16-bytestring
   - binary
