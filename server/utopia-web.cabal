@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 894d76fbba980d5a8e577a2b81bebf2dcf7366e6727bc616a75c4bf1d9f2d995
+-- hash: a1db3c01adb75916066235dd5d1ae356282b8e98214a1a94796df6a1d445d4f4
 
 name:           utopia-web
 version:        0.1.0.4
@@ -61,9 +61,9 @@ executable utopia-web
   build-depends:
       aeson
     , aeson-pretty
-    , amazonka
-    , amazonka-core
-    , amazonka-s3
+    , amazonka ==1.6.1
+    , amazonka-core ==1.6.1
+    , amazonka-s3 ==1.6.1
     , base >=4.7 && <5
     , base16-bytestring
     , binary
@@ -188,9 +188,9 @@ test-suite utopia-web-test
   build-depends:
       aeson
     , aeson-pretty
-    , amazonka
-    , amazonka-core
-    , amazonka-s3
+    , amazonka ==1.6.1
+    , amazonka-core ==1.6.1
+    , amazonka-s3 ==1.6.1
     , base >=4.7 && <5
     , base16-bytestring
     , binary
