@@ -10,7 +10,6 @@ import           Network.HTTP.Client              (defaultManagerSettings,
                                                    newManager)
 import           Network.HTTP.Client.TLS
 import           Protolude
-import           System.Metrics
 import           System.Posix.User
 import           System.Random
 import           Utopia.Web.Auth.Session
@@ -21,6 +20,8 @@ import qualified Utopia.Web.Executors.Common      as C
 import           Utopia.Web.Executors.Development
 import qualified Utopia.Web.Executors.Development as D
 import           Utopia.Web.Packager.NPM
+import           Utopia.Web.Metrics
+import           System.Log.FastLogger
 
 createRandomDatabaseName :: IO String
 createRandomDatabaseName = do
@@ -56,6 +57,8 @@ initialiseTestResources pool = do
   semaphoreForNode <- newQSem 1
   locksRef <- newIORef mempty
   matchingVersionsCache <- newMatchingVersionsCache
+  _npmMetrics <- createNPMMetrics store
+  (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
   return $ DevServerResources
          { _commitHash = "nocommit"
          , _projectPool = pool
@@ -68,11 +71,14 @@ initialiseTestResources pool = do
          , _sessionState = sessionStore
          , _storeForMetrics = store
          , _databaseMetrics = dbMetrics
+         , _npmMetrics = _npmMetrics
          , _registryManager = npmRegistryManager
          , _assetsCaches = testAssetsCaches
          , _nodeSemaphore = semaphoreForNode
          , _locksRef = locksRef
          , _branchDownloads = Nothing
+         , _logger = _logger
+         , _loggerShutdown = _loggerShutdown
          , _matchingVersionsCache = matchingVersionsCache
          }
 
@@ -83,7 +89,8 @@ testEnvironmentRuntime testPool = EnvironmentRuntime
   , C._envServerPort = serverPortFromResources
   , _serverAPI = serverAPI
   , _startupLogging = _logOnStartup
-  , _metricsStore = view storeForMetrics
+  , _getLogger = _logger
+  , _metricsStore = _storeForMetrics
   , _cacheForAssets = (\r -> readIORef $ _assetResultCache $ _assetsCaches r)
   , _forceSSL = const False
   }

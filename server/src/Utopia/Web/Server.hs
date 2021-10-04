@@ -20,9 +20,9 @@ import           Servant
 import           Servant.Conduit                 ()
 import           System.Log.FastLogger
 import           System.TimeManager
-import           Utopia.Web.Ekg
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Logging
+import           Utopia.Web.ServantMonitoring
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 

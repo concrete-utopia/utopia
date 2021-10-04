@@ -39,7 +39,6 @@ import           System.Directory
 import           System.Environment
 import           System.FilePath
 import           System.Log.FastLogger
-import           System.Metrics                   hiding (Value)
 import qualified Text.Blaze.Html5                 as H
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth                  (getUserDetailsFromCode)
@@ -47,6 +46,7 @@ import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types            (Auth0Resources)
 import qualified Utopia.Web.Database              as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
@@ -302,10 +302,10 @@ filePairsToBytes filePairs =
       withCommas = pairsAsBytes .| intersperse ", "
    in sequence_ [yield "{\"contents\": {", withCommas, yield "}}"]
 
-getPackagerContent :: (MonadResource m, MonadMask m) => QSem -> PackageVersionLocksRef -> Text -> IO (ConduitBytes m, UTCTime)
-getPackagerContent npmSemaphore packageLocksRef versionedPackageName = do
+getPackagerContent :: (MonadResource m, MonadMask m) => FastLogger -> NPMMetrics -> QSem -> PackageVersionLocksRef -> Text -> IO (ConduitBytes m, UTCTime)
+getPackagerContent logger npmMetrics npmSemaphore packageLocksRef versionedPackageName = do
   cachePackagerContent packageLocksRef versionedPackageName $ do
-    withInstalledProject npmSemaphore versionedPackageName (filePairsToBytes . getModuleAndDependenciesFiles)
+    withInstalledProject logger npmMetrics npmSemaphore versionedPackageName (filePairsToBytes . getModuleAndDependenciesFiles)
 
 getUserConfigurationWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
 getUserConfigurationWithDBPool metrics pool userID action = do

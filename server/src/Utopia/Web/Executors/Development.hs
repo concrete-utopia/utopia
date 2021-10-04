@@ -7,7 +7,6 @@
 {-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE RecordWildCards        #-}
-{-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeOperators          #-}
 
 {-|
@@ -32,8 +31,6 @@ import           Servant
 import           Servant.Client
 import           System.Environment
 import           System.Log.FastLogger
-import           System.Metrics                 hiding (Value)
-import           System.Metrics.Json
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
@@ -46,6 +43,7 @@ import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
 import           Utopia.Web.Logging
+import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
@@ -68,6 +66,7 @@ data DevServerResources = DevServerResources
                         , _sessionState          :: SessionState
                         , _storeForMetrics       :: Store
                         , _databaseMetrics       :: DB.DatabaseMetrics
+                        , _npmMetrics            :: NPMMetrics
                         , _registryManager       :: Manager
                         , _assetsCaches          :: AssetsCaches
                         , _nodeSemaphore         :: QSem
@@ -77,8 +76,6 @@ data DevServerResources = DevServerResources
                         , _logger                :: FastLogger
                         , _loggerShutdown        :: IO ()
                         }
-
-$(makeFieldsNoPrefix ''DevServerResources)
 
 type DevProcessMonad a = ServerProcessMonad DevServerResources a
 
@@ -246,8 +243,8 @@ innerServerExecutor (GetGithubProject owner repo action) = do
   return $ action zipball
 innerServerExecutor (GetMetrics action) = do
   store <- fmap _storeForMetrics ask
-  sample <- liftIO $ sampleAll store
-  return $ action $ sampleToJson sample
+  storeJSON <- liftIO $ sampleAsJSON store
+  return $ action storeJSON
 innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   manager <- fmap _registryManager ask
   let qualifiedPackageName = maybe javascriptPackageName (\v -> javascriptPackageName <> "/" <> v) maybeJavascriptPackageVersion
@@ -256,7 +253,9 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   semaphore <- fmap _nodeSemaphore ask
   versionsCache <- fmap _matchingVersionsCache ask
-  packageMetadata <- liftIO $ findMatchingVersions semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
+  npmMetrics <- fmap _npmMetrics ask
+  appLogger <- fmap _logger ask
+  packageMetadata <- liftIO $ findMatchingVersions appLogger npmMetrics semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -274,7 +273,9 @@ innerServerExecutor (GetHashedAssetPaths action) = do
 innerServerExecutor (GetPackagePackagerContent versionedPackageName action) = do
   semaphore <- fmap _nodeSemaphore ask
   packagerLocksRef <- fmap _locksRef ask
-  packagerContent <- liftIO $ getPackagerContent semaphore packagerLocksRef versionedPackageName
+  npmMetrics <- fmap _npmMetrics ask
+  appLogger <- fmap _logger ask
+  packagerContent <- liftIO $ getPackagerContent appLogger npmMetrics semaphore packagerLocksRef versionedPackageName
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
@@ -289,7 +290,7 @@ innerServerExecutor (GetCDNRoot action) = do
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
   pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
-                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ getBranchBundleFolder downloads branchName
+                   ("./editor", Just branchName, Just downloads)  -> liftIO $ getBranchBundleFolder downloads branchName
                    _                                                  -> return defaultPathToServe
   return $ action pathToServe
 innerServerExecutor (GetVSCodeAssetRoot action) = do
@@ -340,7 +341,7 @@ startup DevServerResources{..} = do
         killThread hashedFilenamesThread
 
 serverPortFromResources :: DevServerResources -> Int
-serverPortFromResources = view serverPort
+serverPortFromResources = _serverPort
 
 shouldProxyWebpack :: IO Bool
 shouldProxyWebpack = do
@@ -358,16 +359,17 @@ assetPathsAndBuilders =
 initialiseResources :: IO DevServerResources
 initialiseResources = do
   maybeCommitHash <- lookupEnv "UTOPIA_SHA"
-  let _commitHash = fromMaybe "nocommit" $ fmap toS maybeCommitHash
+  let _commitHash = maybe "nocommit" toS maybeCommitHash
   _projectPool <- DB.createDatabasePoolFromEnvironment
   shouldProxy <- shouldProxyWebpack
-  _proxyManager <- if shouldProxy then (fmap Just $ newManager defaultManagerSettings) else return Nothing
+  _proxyManager <- if shouldProxy then Just <$> newManager defaultManagerSettings else return Nothing
   _auth0Resources <- getAuth0Environment
   _awsResources <- getAmazonResourcesFromEnvironment
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore
   _databaseMetrics <- DB.createDatabaseMetrics _storeForMetrics
+  _npmMetrics <- createNPMMetrics _storeForMetrics
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
@@ -387,7 +389,7 @@ devEnvironmentRuntime = EnvironmentRuntime
   , _serverAPI = serverAPI
   , _startupLogging = _logOnStartup
   , _getLogger = _logger
-  , _metricsStore = view storeForMetrics
+  , _metricsStore = _storeForMetrics
   , _cacheForAssets = (\r -> readIORef $ _assetResultCache $ _assetsCaches r)
   , _forceSSL = const False
   }
