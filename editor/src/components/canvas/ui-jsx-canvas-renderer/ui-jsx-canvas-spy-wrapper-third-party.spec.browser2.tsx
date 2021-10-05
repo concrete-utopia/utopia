@@ -54,7 +54,7 @@ const exampleFiles = {
       </div>
     )
   };
-  
+
   export var storyboard = (
     <Storyboard data-uid="storyboard">
       <Scene
@@ -102,7 +102,7 @@ const exampleFiles = {
   `,
 }
 
-function createTestProject() {
+function renderTestProject() {
   const baseModel = defaultProject()
 
   const updatedProject = Object.keys(exampleFiles).reduce((workingProject, modifiedFilename) => {
@@ -135,8 +135,7 @@ function createTestProject() {
   return renderTestEditorWithModel(updatedProject)
 }
 
-// TODO Eni and Balazs fix this test up!
-xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
+describe('Spy Wrapper Tests For React Three Fiber', () => {
   it('a simple Canvas element in a scene where spy and jsx metadata has extra elements', async () => {
     // Code kept commented for any future person who needs it.
     // const currentWindow = require('electron').remote.getCurrentWindow()
@@ -146,7 +145,10 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
     // currentWindow.openDevTools()
     // await wait(20000)
 
-    const { getEditorState } = await createTestProject()
+    const { getEditorState } = await renderTestProject()
+    // React Three Fiber seems to have some second pass render that appears to run
+    // after the regular React render and this appears to give it a chance to be triggered.
+    await wait(100)
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
     matchInlineSnapshotBrowser(
@@ -154,91 +156,46 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
       `
       Object {
         "storyboard": Object {
-          "children": Array [
-            "storyboard/scene-1",
-            "storyboard/scene-2",
-          ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
-          "children": Array [
-            "storyboard/scene-1/canvas-app",
-          ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app": Object {
-          "children": Array [],
           "name": "CanvasApp",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div": Object {
-          "children": Array [
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh",
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-ambientLight",
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-directionalLight",
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-pointLight",
-          ],
           "name": "Canvas",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-ambientLight": Object {
-          "children": Array [],
           "name": "ambientLight",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-directionalLight": Object {
-          "children": Array [],
           "name": "directionalLight",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh": Object {
-          "children": Array [
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-sphereGeometry",
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial",
-          ],
           "name": "mesh",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial": Object {
-          "children": Array [],
           "name": "meshStandardMaterial",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-sphereGeometry": Object {
-          "children": Array [],
           "name": "sphereGeometry",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-pointLight": Object {
-          "children": Array [],
           "name": "pointLight",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
-          "children": Array [
-            "storyboard/scene-2/app",
-          ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app": Object {
-          "children": Array [],
           "name": "App",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app:app-root": Object {
-          "children": Array [
-            "storyboard/scene-2/app:app-root/app-inner-div",
-          ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app:app-root/app-inner-div": Object {
-          "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `,
@@ -250,54 +207,28 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
       `
       Object {
         "storyboard": Object {
-          "children": Array [],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
-          "children": Array [
-            "storyboard/scene-1/canvas-app",
-          ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app": Object {
-          "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-1/canvas-app:canvas-app-div",
-          ],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div": Object {
-          "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
-          "children": Array [
-            "storyboard/scene-2/app",
-          ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app": Object {
-          "children": Array [],
           "name": "div",
-          "rootElements": Array [
-            "storyboard/scene-2/app:app-root",
-          ],
         },
         "storyboard/scene-2/app:app-root": Object {
-          "children": Array [
-            "storyboard/scene-2/app:app-root/app-inner-div",
-          ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app:app-root/app-inner-div": Object {
-          "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `,
@@ -309,95 +240,46 @@ xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
       `
       Object {
         "storyboard": Object {
-          "children": Array [
-            "storyboard/scene-1",
-            "storyboard/scene-2",
-          ],
           "name": "Storyboard",
-          "rootElements": Array [],
         },
         "storyboard/scene-1": Object {
-          "children": Array [
-            "storyboard/scene-1/canvas-app",
-          ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app": Object {
-          "children": Array [],
           "name": "CanvasApp",
-          "rootElements": Array [
-            "storyboard/scene-1/canvas-app:canvas-app-div",
-          ],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div": Object {
-          "children": Array [
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh",
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-ambientLight",
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-directionalLight",
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-pointLight",
-          ],
           "name": "Canvas",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-ambientLight": Object {
-          "children": Array [],
           "name": "ambientLight",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-directionalLight": Object {
-          "children": Array [],
           "name": "directionalLight",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh": Object {
-          "children": Array [
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-sphereGeometry",
-            "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial",
-          ],
           "name": "mesh",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial": Object {
-          "children": Array [],
           "name": "meshStandardMaterial",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-sphereGeometry": Object {
-          "children": Array [],
           "name": "sphereGeometry",
-          "rootElements": Array [],
         },
         "storyboard/scene-1/canvas-app:canvas-app-div/test-pointLight": Object {
-          "children": Array [],
           "name": "pointLight",
-          "rootElements": Array [],
         },
         "storyboard/scene-2": Object {
-          "children": Array [
-            "storyboard/scene-2/app",
-          ],
           "name": "Scene",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app": Object {
-          "children": Array [],
           "name": "App",
-          "rootElements": Array [
-            "storyboard/scene-2/app:app-root",
-          ],
         },
         "storyboard/scene-2/app:app-root": Object {
-          "children": Array [
-            "storyboard/scene-2/app:app-root/app-inner-div",
-          ],
           "name": "div",
-          "rootElements": Array [],
         },
         "storyboard/scene-2/app:app-root/app-inner-div": Object {
-          "children": Array [],
           "name": "div",
-          "rootElements": Array [],
         },
       }
     `,
