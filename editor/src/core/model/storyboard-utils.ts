@@ -230,7 +230,15 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
                   }
                 }
                 break
-              case 'EXPORT_EXPRESSION':
+              case 'EXPORT_IDENTIFIER':
+                {
+                  const possibleMainComponentName = PossiblyMainComponentNames.includes(
+                    exportDetail.name,
+                  )
+                  updateCandidate(
+                    namedComponentToImport(fullPath, possibleMainComponentName, exportDetail.name),
+                  )
+                }
                 break
               case 'REEXPORT_WILDCARD':
                 break

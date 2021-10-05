@@ -562,8 +562,8 @@ function attemptToResolveParsedComponents(
                 addToFilteredScope('default', exportDetail.name)
               }
               break
-            case 'EXPORT_EXPRESSION':
-              addToFilteredScope('default', 'default')
+            case 'EXPORT_IDENTIFIER':
+              addToFilteredScope('default', exportDetail.name)
               break
             case 'EXPORT_CLASS':
               addToFilteredScope(exportDetail.className, exportDetail.className)
