@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { fireEvent, screen } from '@testing-library/react'
 import {
   BakedInStoryboardUID,
@@ -16,8 +16,8 @@ import {
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { PrettierConfig } from 'utopia-vscode-common'
-import * as Prettier from 'prettier'
-import { act } from 'react-test-renderer'
+import * as Prettier from 'prettier/standalone'
+import { act } from '@testing-library/react'
 import { contentsToTree } from '../../assets'
 import {
   ProjectContents,
@@ -29,6 +29,7 @@ import {
 import { directory } from '../../../core/model/project-file-utils'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
+import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 
 describe('inspector tests with real metadata', () => {
   it('padding controls', async () => {
@@ -77,18 +78,20 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     // Padding top is coming from the shorthand `padding` value.
-    expect(metadata.computedStyle?.['paddingTop']).toMatchInlineSnapshot(`"20px"`)
-    expect(paddingTopControl.value).toMatchInlineSnapshot(`"20"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingTop'], `"20px"`)
+    matchInlineSnapshotBrowser(paddingTopControl.value, `"20"`)
+    matchInlineSnapshotBrowser(
       paddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
     // Padding left is coming from the `paddingLeft` value.
-    expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"15px"`)
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"15"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"15px"`)
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"15"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('TLWH layout controls', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -144,39 +147,45 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedRight-number-input',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['width']).toMatchInlineSnapshot(`"266px"`)
-    expect(widthControl.value).toMatchInlineSnapshot(`"266"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"266"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['height']).toMatchInlineSnapshot(`"124px"`)
-    expect(heightControl.value).toMatchInlineSnapshot(`"124"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"124px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"124"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['top']).toMatchInlineSnapshot(`"98px"`)
-    expect(topControl.value).toMatchInlineSnapshot(`"98"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
+    matchInlineSnapshotBrowser(topControl.value, `"98"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['left']).toMatchInlineSnapshot(`"55px"`)
-    expect(leftControl.value).toMatchInlineSnapshot(`"55"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['left'], `"55px"`)
+    matchInlineSnapshotBrowser(leftControl.value, `"55"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(bottomControl.value).toMatchInlineSnapshot(`"178"`)
-    expect(
+    matchInlineSnapshotBrowser(bottomControl.value, `"178"`)
+    matchInlineSnapshotBrowser(
       bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+      `"detected"`,
+    )
 
-    expect(rightControl.value).toMatchInlineSnapshot(`"79"`)
-    expect(
+    matchInlineSnapshotBrowser(rightControl.value, `"79"`)
+    matchInlineSnapshotBrowser(
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+      `"detected"`,
+    )
   })
   it('TLBR layout controls', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -232,39 +241,45 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedRight-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"335"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"335"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+      `"detected"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"102"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+      `"detected"`,
+    )
 
-    expect(metadata.computedStyle?.['top']).toMatchInlineSnapshot(`"98px"`)
-    expect(topControl.value).toMatchInlineSnapshot(`"98"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
+    matchInlineSnapshotBrowser(topControl.value, `"98"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['left']).toMatchInlineSnapshot(`"55px"`)
-    expect(leftControl.value).toMatchInlineSnapshot(`"55"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['left'], `"55px"`)
+    matchInlineSnapshotBrowser(leftControl.value, `"55"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['bottom']).toMatchInlineSnapshot(`"200px"`)
-    expect(bottomControl.value).toMatchInlineSnapshot(`"200"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['bottom'], `"200px"`)
+    matchInlineSnapshotBrowser(bottomControl.value, `"200"`)
+    matchInlineSnapshotBrowser(
       bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['right']).toMatchInlineSnapshot(`"10px"`)
-    expect(rightControl.value).toMatchInlineSnapshot(`"10"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['right'], `"10px"`)
+    matchInlineSnapshotBrowser(rightControl.value, `"10"`)
+    matchInlineSnapshotBrowser(
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('WHBR layout controls', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -320,39 +335,45 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedRight-number-input',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['width']).toMatchInlineSnapshot(`"203px"`)
-    expect(widthControl.value).toMatchInlineSnapshot(`"203"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"203"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['height']).toMatchInlineSnapshot(`"102px"`)
-    expect(heightControl.value).toMatchInlineSnapshot(`"102"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(topControl.value).toMatchInlineSnapshot(`"98"`)
-    expect(
+    matchInlineSnapshotBrowser(topControl.value, `"98"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+      `"detected"`,
+    )
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"187"`)
-    expect(
+    matchInlineSnapshotBrowser(leftControl.value, `"187"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+      `"detected"`,
+    )
 
-    expect(metadata.computedStyle?.['bottom']).toMatchInlineSnapshot(`"200px"`)
-    expect(bottomControl.value).toMatchInlineSnapshot(`"200"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['bottom'], `"200px"`)
+    matchInlineSnapshotBrowser(bottomControl.value, `"200"`)
+    matchInlineSnapshotBrowser(
       bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['right']).toMatchInlineSnapshot(`"10px"`)
-    expect(rightControl.value).toMatchInlineSnapshot(`"10"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['right'], `"10px"`)
+    matchInlineSnapshotBrowser(rightControl.value, `"10"`)
+    matchInlineSnapshotBrowser(
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('TLWH layout controls non-px values', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -401,25 +422,29 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedLeft-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"10vw"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"10vw"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"124pt"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"124pt"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(topControl.value).toMatchInlineSnapshot(`"1.4cm"`)
-    expect(
+    matchInlineSnapshotBrowser(topControl.value, `"1.4cm"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"2em"`)
-    expect(
+    matchInlineSnapshotBrowser(leftControl.value, `"2em"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('Style props using numbers', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -473,32 +498,37 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-control',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['width']).toMatchInlineSnapshot(`"203px"`)
-    expect(widthControl.value).toMatchInlineSnapshot(`"203"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"203"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['height']).toMatchInlineSnapshot(`"102px"`)
-    expect(heightControl.value).toMatchInlineSnapshot(`"102"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"16"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"12"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"12"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(opacityControl.value).toMatchInlineSnapshot(`"0.5"`)
-    expect(
+    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('Style props default value set inline', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -571,57 +601,67 @@ describe('inspector tests with real metadata', () => {
       'position-maxWidth-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
 
-    expect(topControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(topControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(leftControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(radiusControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
-    expect(
+    matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
+    matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['minWidth']).toMatchInlineSnapshot(`"0px"`)
-    expect(minWidthControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
+    matchInlineSnapshotBrowser(minWidthControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(metadata.computedStyle?.['maxWidth']).toMatchInlineSnapshot(`"none"`)
-    expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['maxWidth'], `"none"`)
+    matchInlineSnapshotBrowser(maxWidthControl.value, `""`)
+    matchInlineSnapshotBrowser(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('Style props strings using px', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -682,40 +722,48 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"203"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"203"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"102"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(topControl.value).toMatchInlineSnapshot(`"25"`)
-    expect(
+    matchInlineSnapshotBrowser(topControl.value, `"25"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"14"`)
-    expect(
+    matchInlineSnapshotBrowser(leftControl.value, `"14"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"4"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"8"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"8"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(radiusControl.value).toMatchInlineSnapshot(`"2"`)
-    expect(
+    matchInlineSnapshotBrowser(radiusControl.value, `"2"`)
+
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('Style props in %', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -776,40 +824,47 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"80%"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"80%"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"65%"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"65%"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(topControl.value).toMatchInlineSnapshot(`"25%"`)
-    expect(
+    matchInlineSnapshotBrowser(topControl.value, `"25%"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"10%"`)
-    expect(
+    matchInlineSnapshotBrowser(leftControl.value, `"10%"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4%"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"4%"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"8%"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"8%"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(radiusControl.value).toMatchInlineSnapshot(`"50%"`)
-    expect(
+    matchInlineSnapshotBrowser(radiusControl.value, `"50%"`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('Style props using css calc()', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -870,40 +925,47 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"150"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"150"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"70"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"70"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
 
-    expect(topControl.value).toMatchInlineSnapshot(`"220"`)
-    expect(
+    matchInlineSnapshotBrowser(topControl.value, `"220"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"100"`)
-    expect(
+    matchInlineSnapshotBrowser(leftControl.value, `"100"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"44"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"44"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"42"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"42"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(radiusControl.value).toMatchInlineSnapshot(`"15%"`)
-    expect(
+    matchInlineSnapshotBrowser(radiusControl.value, `"15%"`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+      `"simple-unknown-css"`,
+    )
   })
   it('Style props using a simple expression', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -964,40 +1026,47 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"150"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"150"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"130"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"130"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(topControl.value).toMatchInlineSnapshot(`"33"`)
-    expect(
+    matchInlineSnapshotBrowser(topControl.value, `"33"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"74"`)
-    expect(
+    matchInlineSnapshotBrowser(leftControl.value, `"74"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"4"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"5"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"5"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(radiusControl.value).toMatchInlineSnapshot(`"7"`)
-    expect(
+    matchInlineSnapshotBrowser(radiusControl.value, `"7"`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
   })
   it('Style using react props', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1005,7 +1074,7 @@ describe('inspector tests with real metadata', () => {
         `
       import * as React from 'react'
       import { Scene, Storyboard, View } from 'utopia-api'
-    
+
       export var App = (props) => {
         return (
           <div
@@ -1030,7 +1099,7 @@ describe('inspector tests with real metadata', () => {
           </div>
         )
       }
-    
+
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid='${BakedInStoryboardUID}'>
@@ -1093,47 +1162,55 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-control',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"100"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"100"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"50"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"50"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(topControl.value).toMatchInlineSnapshot(`"100"`)
-    expect(
+    matchInlineSnapshotBrowser(topControl.value, `"100"`)
+    matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"30"`)
-    expect(
+    matchInlineSnapshotBrowser(leftControl.value, `"30"`)
+    matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"5"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"5"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"10"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"10"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"50%"`)
-    expect(radiusControl.value).toMatchInlineSnapshot(`"50%"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"50%"`)
+    matchInlineSnapshotBrowser(radiusControl.value, `"50%"`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
 
-    expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"0.5"`)
-    expect(opacityControl.value).toMatchInlineSnapshot(`"0.5"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"0.5"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"controlled"`)
+      `"controlled"`,
+    )
   })
   it('CSS props using numbers', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1195,32 +1272,37 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-control',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['width']).toMatchInlineSnapshot(`"203px"`)
-    expect(widthControl.value).toMatchInlineSnapshot(`"203"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"203"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(metadata.computedStyle?.['height']).toMatchInlineSnapshot(`"102px"`)
-    expect(heightControl.value).toMatchInlineSnapshot(`"102"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"16"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"12"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"12"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(opacityControl.value).toMatchInlineSnapshot(`"0.5"`)
-    expect(
+    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('CSS using default values set inline', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1287,35 +1369,41 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-control',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(widthControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(heightControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(paddingRightControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(radiusControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
-    expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
-    expect(
+    matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
+    matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1323,7 +1411,7 @@ describe('inspector tests with real metadata', () => {
         `
       import * as React from 'react'
       import { Scene, Storyboard, View } from 'utopia-api'
-    
+
       export var App = (props) => {
         return (
           <div
@@ -1338,7 +1426,7 @@ describe('inspector tests with real metadata', () => {
           </div>
         )
       }
-    
+
       export var StyleDiv = (props) => {
         const styleContent = ".customClassName {width: 250px; height: 250px; padding: 14px; border-radius: 10px; opacity: 0.3;}"
         return (
@@ -1396,35 +1484,40 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-control',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['width']).toMatchInlineSnapshot(`"250px"`)
-    expect(widthControl.value).toMatchInlineSnapshot(`"250"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"250px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"250"`)
+    matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(metadata.computedStyle?.['height']).toMatchInlineSnapshot(`"250px"`)
-    expect(heightControl.value).toMatchInlineSnapshot(`"250"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"250px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"250"`)
+    matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"14px"`)
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"14"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"14"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"10px"`)
-    expect(radiusControl.value).toMatchInlineSnapshot(`"10"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"10px"`)
+    matchInlineSnapshotBrowser(radiusControl.value, `"10"`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"0.3"`)
-    expect(opacityControl.value).toMatchInlineSnapshot(`"0.3"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"0.3"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"0.3"`)
+    matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
   })
   it('Style is using css className, with default values', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1432,7 +1525,7 @@ describe('inspector tests with real metadata', () => {
         `
       import * as React from 'react'
       import { Scene, Storyboard, View } from 'utopia-api'
-    
+
       export var App = (props) => {
         return (
           <div
@@ -1448,7 +1541,7 @@ describe('inspector tests with real metadata', () => {
           </div>
         )
       }
-    
+
       export var StyleDiv = (props) => {
         const styleContent = ".customClassName {min-width: 0, max-width: 'none', padding: 0px; border-radius: 0; opacity: 1;}"
         return (
@@ -1513,35 +1606,40 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-control',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['minWidth']).toMatchInlineSnapshot(`"0px"`)
-    expect(minWidthControl.value).toMatchInlineSnapshot(`""`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
+    matchInlineSnapshotBrowser(minWidthControl.value, `""`)
+    matchInlineSnapshotBrowser(
       minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`)
+      `"trivial-default"`,
+    )
 
-    expect(metadata.computedStyle?.['maxWidth']).toMatchInlineSnapshot(`"none"`)
-    expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['maxWidth'], `"none"`)
+    matchInlineSnapshotBrowser(maxWidthControl.value, `""`)
+    matchInlineSnapshotBrowser(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`)
+      `"trivial-default"`,
+    )
 
-    expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `""`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`) // this will be `detected-fromcss` once we use the padding shorthand
+      `"trivial-default"`,
+    ) // this will be `detected-fromcss` once we use the padding shorthand
 
-    expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"0px"`)
-    expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"0px"`)
+    matchInlineSnapshotBrowser(radiusControl.value, `"0"`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
 
-    expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"1"`)
-    expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
+    matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected-fromcss"`)
+      `"detected-fromcss"`,
+    )
   })
 
   it('Empty style with lots of trivial defaults', async () => {
@@ -1550,7 +1648,7 @@ describe('inspector tests with real metadata', () => {
         `
       import * as React from 'react'
       import { Scene, Storyboard, View } from 'utopia-api'
-    
+
       export var App = (props) => {
         return (
           <div
@@ -1619,35 +1717,40 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-control',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['minWidth']).toMatchInlineSnapshot(`"0px"`)
-    expect(minWidthControl.value).toMatchInlineSnapshot(`""`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
+    matchInlineSnapshotBrowser(minWidthControl.value, `""`)
+    matchInlineSnapshotBrowser(
       minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`)
+      `"trivial-default"`,
+    )
 
-    expect(metadata.computedStyle?.['maxWidth']).toMatchInlineSnapshot(`"none"`)
-    expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['maxWidth'], `"none"`)
+    matchInlineSnapshotBrowser(maxWidthControl.value, `""`)
+    matchInlineSnapshotBrowser(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`)
+      `"trivial-default"`,
+    )
 
-    expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"0px"`)
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `""`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`) // this will be `detected-fromcss` once we use the padding shorthand
+      `"trivial-default"`,
+    ) // this will be `detected-fromcss` once we use the padding shorthand
 
-    expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"0px"`)
-    expect(radiusControl.value).toMatchInlineSnapshot(`""`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['borderRadius'], `"0px"`)
+    matchInlineSnapshotBrowser(radiusControl.value, `""`)
+    matchInlineSnapshotBrowser(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`)
+      `"trivial-default"`,
+    )
 
-    expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"1"`)
-    expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
+    matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
+    matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+      `"detected"`,
+    )
   })
   it('Style properties inherited from parent', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1684,11 +1787,12 @@ describe('inspector tests with real metadata', () => {
       'fontSize',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['fontSize']).toMatchInlineSnapshot(`"24px"`)
-    expect(fontSizeControl.value).toMatchInlineSnapshot(`"24"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['fontSize'], `"24px"`)
+    matchInlineSnapshotBrowser(fontSizeControl.value, `"24"`)
+    matchInlineSnapshotBrowser(
       fontSizeControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+      `"detected"`,
+    )
   })
   it('Flex shorthand properties', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1727,21 +1831,24 @@ describe('inspector tests with real metadata', () => {
       'position-flexShrink-number-input',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['flexBasis']).toMatchInlineSnapshot(`"15px"`)
-    expect(flexBasis.value).toMatchInlineSnapshot(`"15"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexBasis'], `"15px"`)
+    matchInlineSnapshotBrowser(flexBasis.value, `"15"`)
+    matchInlineSnapshotBrowser(
       flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
-    expect(metadata.computedStyle?.['flexGrow']).toMatchInlineSnapshot(`"1"`)
-    expect(flexGrow.value).toMatchInlineSnapshot(`"1"`)
-    expect(
+      `"simple"`,
+    )
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexGrow'], `"1"`)
+    matchInlineSnapshotBrowser(flexGrow.value, `"1"`)
+    matchInlineSnapshotBrowser(
       flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
-    expect(metadata.computedStyle?.['flexShrink']).toMatchInlineSnapshot(`"0"`)
-    expect(flexShrink.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+      `"simple"`,
+    )
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexShrink'], `"0"`)
+    matchInlineSnapshotBrowser(flexShrink.value, `"0"`)
+    matchInlineSnapshotBrowser(
       flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('Flex longhand properties', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1787,21 +1894,24 @@ describe('inspector tests with real metadata', () => {
       'position-flexShrink-number-input',
     )) as HTMLInputElement
 
-    expect(metadata.computedStyle?.['flexBasis']).toMatchInlineSnapshot(`"15px"`)
-    expect(flexBasis.value).toMatchInlineSnapshot(`"15"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexBasis'], `"15px"`)
+    matchInlineSnapshotBrowser(flexBasis.value, `"15"`)
+    matchInlineSnapshotBrowser(
       flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
-    expect(metadata.computedStyle?.['flexGrow']).toMatchInlineSnapshot(`"1"`)
-    expect(flexGrow.value).toMatchInlineSnapshot(`"1"`)
-    expect(
+      `"simple"`,
+    )
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexGrow'], `"1"`)
+    matchInlineSnapshotBrowser(flexGrow.value, `"1"`)
+    matchInlineSnapshotBrowser(
       flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
-    expect(metadata.computedStyle?.['flexShrink']).toMatchInlineSnapshot(`"0"`)
-    expect(flexShrink.value).toMatchInlineSnapshot(`"0"`)
-    expect(
+      `"simple"`,
+    )
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['flexShrink'], `"0"`)
+    matchInlineSnapshotBrowser(flexShrink.value, `"0"`)
+    matchInlineSnapshotBrowser(
       flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
   it('Shows multifile selected element properties', async () => {
     let projectContents: ProjectContents = {
@@ -1872,17 +1982,19 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     // Padding top is coming from the shorthand `padding` value.
-    expect(metadata.computedStyle?.['paddingTop']).toMatchInlineSnapshot(`"8px"`)
-    expect(paddingTopControl.value).toMatchInlineSnapshot(`"8"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingTop'], `"8px"`)
+    matchInlineSnapshotBrowser(paddingTopControl.value, `"8"`)
+    matchInlineSnapshotBrowser(
       paddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
 
     // Padding left is coming from the `paddingLeft` value.
-    expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"10px"`)
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"10"`)
-    expect(
+    matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"10px"`)
+    matchInlineSnapshotBrowser(paddingLeftControl.value, `"10"`)
+    matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+      `"simple"`,
+    )
   })
 })

@@ -7,7 +7,6 @@
 {-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE RankNTypes             #-}
 {-# LANGUAGE RecordWildCards        #-}
-{-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeOperators          #-}
 
 {-|
@@ -19,29 +18,32 @@ import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
 import           Data.IORef
-import           Data.Pool
 import           Data.Text
-import           Database.Persist.Sqlite
-import           Network.HTTP.Client         (Manager, defaultManagerSettings,
-                                              newManager)
+import qualified Data.Text.Lazy                 as TL
+import           Data.Text.Lazy.Lens
+import           Network.HTTP.Client            (Manager,
+                                                 defaultManagerSettings,
+                                                 newManager)
 import           Network.HTTP.Client.TLS
-import qualified Network.Wreq                as WR
-import           Protolude
+import qualified Network.Wreq                   as WR
+import           Protolude                      hiding (Handler, toUpper)
 import           Servant
 import           Servant.Client
 import           System.Environment
-import           System.Metrics              hiding (Value)
-import           System.Metrics.Json
+import           System.Log.FastLogger
 import           Utopia.Web.Assets
 import           Utopia.Web.Auth
 import           Utopia.Web.Auth.Session
 import           Utopia.Web.Auth.Types
-import qualified Utopia.Web.Database         as DB
+import qualified Utopia.Web.Database            as DB
+import           Utopia.Web.Database.Migrations
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
+import           Utopia.Web.Logging
+import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.ServiceTypes
@@ -54,7 +56,7 @@ import           Web.Cookie
 -}
 data DevServerResources = DevServerResources
                         { _commitHash            :: Text
-                        , _projectPool           :: Pool SqlBackend
+                        , _projectPool           :: DBPool
                         , _serverPort            :: Int
                         , _silentMigration       :: Bool
                         , _logOnStartup          :: Bool
@@ -64,15 +66,16 @@ data DevServerResources = DevServerResources
                         , _sessionState          :: SessionState
                         , _storeForMetrics       :: Store
                         , _databaseMetrics       :: DB.DatabaseMetrics
+                        , _npmMetrics            :: NPMMetrics
                         , _registryManager       :: Manager
                         , _assetsCaches          :: AssetsCaches
                         , _nodeSemaphore         :: QSem
                         , _locksRef              :: PackageVersionLocksRef
                         , _branchDownloads       :: Maybe BranchDownloads
                         , _matchingVersionsCache :: MatchingVersionsCache
+                        , _logger                :: FastLogger
+                        , _loggerShutdown        :: IO ()
                         }
-
-$(makeFieldsNoPrefix ''DevServerResources)
 
 type DevProcessMonad a = ServerProcessMonad DevServerResources a
 
@@ -92,10 +95,10 @@ localAuthURL :: Text
 localAuthURL = "/authenticate?code=logmein&state=shrugemoji"
 
 dummyUser :: Text -> UserDetails
-dummyUser cdnRoot = UserDetails { userDetailsUserId  = "1"
-                                , userDetailsEmail   = Just "team@utopia.app"
-                                , userDetailsName    = Just "Utopian Worker #296"
-                                , userDetailsPicture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
+dummyUser cdnRoot = UserDetails { userId  = "1"
+                                , email   = Just "team@utopia.app"
+                                , name    = Just "Utopian Worker #296"
+                                , picture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
                                 }
 
 {-|
@@ -124,7 +127,7 @@ simpleWebpackRequest :: Text -> IO Text
 simpleWebpackRequest endpoint = do
   let webpackUrl = "http://localhost:8088/" <> endpoint
   response <- WR.get $ toS webpackUrl
-  return $ toS (response ^. WR.responseBody)
+  return $ TL.toStrict (response ^. (WR.responseBody . utf8))
 
 {-|
   Interpretor for a service call, which converts it into side effecting calls ready to be invoked.
@@ -154,45 +157,46 @@ innerServerExecutor (ValidateAuth cookie action) = do
 innerServerExecutor (UserForId userIdToGet action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserWithPool metrics pool userIdToGet action
+  getUserWithDBPool metrics pool userIdToGet action
 innerServerExecutor (DebugLog logContent next) = do
-  putText logContent
+  loggerToUse <- fmap _logger ask
+  liftIO $ loggerLn loggerToUse $ toLogStr logContent
   return next
 innerServerExecutor (GetProjectMetadata projectID action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  metadata <- liftIO $ getProjectDetailsWithPool metrics pool projectID
+  metadata <- liftIO $ getProjectDetailsWithDBPool metrics pool projectID
   return $ action metadata
 innerServerExecutor (LoadProject projectID action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  loadProjectWithPool metrics pool projectID action
+  loadProjectWithDBPool metrics pool projectID action
 innerServerExecutor (CreateProject action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  createProjectWithPool metrics pool action
+  createProjectWithDBPool metrics pool action
 innerServerExecutor (SaveProject sessionUser projectID possibleTitle possibleProjectContents next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveProjectWithPool metrics pool sessionUser projectID possibleTitle possibleProjectContents
+  saveProjectWithDBPool metrics pool sessionUser projectID possibleTitle possibleProjectContents
   return next
 innerServerExecutor (DeleteProject sessionUser projectID next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  deleteProjectWithPool metrics pool sessionUser projectID
+  deleteProjectWithDBPool metrics pool sessionUser projectID
   return next
 innerServerExecutor (GetProjectsForUser user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserProjectsWithPool metrics pool user action
+  getUserProjectsWithDBPool metrics pool user action
 innerServerExecutor (GetShowcaseProjects action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getShowcaseProjectsWithPool metrics pool action
+  getShowcaseProjectsWithDBPool metrics pool action
 innerServerExecutor (SetShowcaseProjects showcaseProjects next) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  setShowcaseProjectsWithPool metrics pool showcaseProjects next
+  setShowcaseProjectsWithDBPool metrics pool showcaseProjects next
 innerServerExecutor (LoadProjectAsset path possibleETag action) = do
   awsResource <- fmap _awsResources ask
   let loadCall = maybe loadProjectAssetFromDisk loadProjectAssetFromS3 awsResource
@@ -239,8 +243,8 @@ innerServerExecutor (GetGithubProject owner repo action) = do
   return $ action zipball
 innerServerExecutor (GetMetrics action) = do
   store <- fmap _storeForMetrics ask
-  sample <- liftIO $ sampleAll store
-  return $ action $ sampleToJson sample
+  storeJSON <- liftIO $ sampleAsJSON store
+  return $ action storeJSON
 innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   manager <- fmap _registryManager ask
   let qualifiedPackageName = maybe javascriptPackageName (\v -> javascriptPackageName <> "/" <> v) maybeJavascriptPackageVersion
@@ -249,7 +253,9 @@ innerServerExecutor (GetPackageJSON javascriptPackageName maybeJavascriptPackage
 innerServerExecutor (GetPackageVersionJSON javascriptPackageName maybeJavascriptPackageVersion action) = do
   semaphore <- fmap _nodeSemaphore ask
   versionsCache <- fmap _matchingVersionsCache ask
-  packageMetadata <- liftIO $ findMatchingVersions semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
+  npmMetrics <- fmap _npmMetrics ask
+  appLogger <- fmap _logger ask
+  packageMetadata <- liftIO $ findMatchingVersions appLogger npmMetrics semaphore versionsCache javascriptPackageName maybeJavascriptPackageVersion
   return $ action packageMetadata
 innerServerExecutor (GetCommitHash action) = do
   hashToUse <- fmap _commitHash ask
@@ -267,7 +273,9 @@ innerServerExecutor (GetHashedAssetPaths action) = do
 innerServerExecutor (GetPackagePackagerContent versionedPackageName action) = do
   semaphore <- fmap _nodeSemaphore ask
   packagerLocksRef <- fmap _locksRef ask
-  packagerContent <- liftIO $ getPackagerContent semaphore packagerLocksRef versionedPackageName
+  npmMetrics <- fmap _npmMetrics ask
+  appLogger <- fmap _logger ask
+  packagerContent <- liftIO $ getPackagerContent appLogger npmMetrics semaphore packagerLocksRef versionedPackageName
   return $ action packagerContent
 innerServerExecutor (AccessControlAllowOrigin _ action) = do
   return $ action $ Just "*"
@@ -282,7 +290,7 @@ innerServerExecutor (GetCDNRoot action) = do
 innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
   pathToServe <- case (defaultPathToServe, possibleBranchName, possibleDownloads) of
-                   ("./editor", (Just branchName), (Just downloads))  -> liftIO $ getBranchBundleFolder downloads branchName
+                   ("./editor", Just branchName, Just downloads)  -> liftIO $ getBranchBundleFolder downloads branchName
                    _                                                  -> return defaultPathToServe
   return $ action pathToServe
 innerServerExecutor (GetVSCodeAssetRoot action) = do
@@ -290,11 +298,11 @@ innerServerExecutor (GetVSCodeAssetRoot action) = do
 innerServerExecutor (GetUserConfiguration user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  getUserConfigurationWithPool metrics pool user action
+  getUserConfigurationWithDBPool metrics pool user action
 innerServerExecutor (SaveUserConfiguration user possibleShortcutConfig action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  saveUserConfigurationWithPool metrics pool user possibleShortcutConfig
+  saveUserConfigurationWithDBPool metrics pool user possibleShortcutConfig
   return action
 innerServerExecutor (ClearBranchCache branchName action) = do
   possibleDownloads <- fmap _branchDownloads ask
@@ -327,13 +335,13 @@ serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) serv
 
 startup :: DevServerResources -> IO Stop
 startup DevServerResources{..} = do
-  DB.migrateDatabase _silentMigration _projectPool
+  migrateDatabase (not _silentMigration) True _projectPool
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread
 
 serverPortFromResources :: DevServerResources -> Int
-serverPortFromResources = view serverPort
+serverPortFromResources = _serverPort
 
 shouldProxyWebpack :: IO Bool
 shouldProxyWebpack = do
@@ -351,16 +359,17 @@ assetPathsAndBuilders =
 initialiseResources :: IO DevServerResources
 initialiseResources = do
   maybeCommitHash <- lookupEnv "UTOPIA_SHA"
-  let _commitHash = fromMaybe "nocommit" $ fmap toS maybeCommitHash
+  let _commitHash = maybe "nocommit" toS maybeCommitHash
   _projectPool <- DB.createDatabasePoolFromEnvironment
   shouldProxy <- shouldProxyWebpack
-  _proxyManager <- if shouldProxy then (fmap Just $ newManager defaultManagerSettings) else return Nothing
+  _proxyManager <- if shouldProxy then Just <$> newManager defaultManagerSettings else return Nothing
   _auth0Resources <- getAuth0Environment
   _awsResources <- getAmazonResourcesFromEnvironment
   _sessionState <- createSessionState _projectPool
   _serverPort <- portFromEnvironment
   _storeForMetrics <- newStore
   _databaseMetrics <- DB.createDatabaseMetrics _storeForMetrics
+  _npmMetrics <- createNPMMetrics _storeForMetrics
   _registryManager <- newManager tlsManagerSettings
   _assetsCaches <- emptyAssetsCaches assetPathsAndBuilders
   _nodeSemaphore <- newQSem 1
@@ -368,6 +377,7 @@ initialiseResources = do
   _locksRef <- newIORef mempty
   let _silentMigration = False
   let _logOnStartup = True
+  (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
   _matchingVersionsCache <- newMatchingVersionsCache
   return $ DevServerResources{..}
 
@@ -378,7 +388,8 @@ devEnvironmentRuntime = EnvironmentRuntime
   , _envServerPort = serverPortFromResources
   , _serverAPI = serverAPI
   , _startupLogging = _logOnStartup
-  , _metricsStore = view storeForMetrics
+  , _getLogger = _logger
+  , _metricsStore = _storeForMetrics
   , _cacheForAssets = (\r -> readIORef $ _assetResultCache $ _assetsCaches r)
   , _forceSSL = const False
   }

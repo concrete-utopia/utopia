@@ -29,7 +29,7 @@ import {
 import { pluck } from '../../../core/shared/array-utils'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { useEditorState } from '../store/store-hook'
-import * as React from 'react'
+import React from 'react'
 import { resolvedDependencyVersions } from '../../../core/third-party/third-party-components'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import * as Semver from 'semver'

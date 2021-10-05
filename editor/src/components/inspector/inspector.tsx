@@ -1,5 +1,5 @@
 import * as ObjectPath from 'object-path'
-import * as React from 'react'
+import React from 'react'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
   findElementAtPath,
@@ -92,7 +92,6 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps extends TargetSelectorSectionProps {
   selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
-  key: string
 }
 
 interface AlignDistributeButtonProps {
@@ -338,7 +337,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         position: 'relative',
         color: colorTheme.neutralForeground.value,
       }}
-      key={props.key}
       onFocus={onFocus}
     >
       {renderInspectorContents()}
@@ -367,7 +365,6 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
 )
 
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
-  key: string
   selectedViews: Array<ElementPath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
@@ -510,7 +507,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
-        key={props.key}
         selectedViews={selectedViews}
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { useEditorState } from '../editor/store/store-hook'
 import {
   UiJsxCanvas,

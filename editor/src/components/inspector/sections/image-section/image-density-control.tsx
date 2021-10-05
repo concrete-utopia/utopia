@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import { showToast, updateFrameDimensions } from '../../../editor/actions/action-creators'

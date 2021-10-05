@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/react'
 import * as Path from 'path'
 import pathParse from 'path-parse'
-import * as React from 'react'
+import React from 'react'
 import {
   ConnectableElement,
   ConnectDragPreview,

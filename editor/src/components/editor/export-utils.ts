@@ -108,7 +108,12 @@ export function getExportedComponentImports(
               )
             }
             break
-          case 'EXPORT_EXPRESSION':
+          case 'EXPORT_IDENTIFIER':
+            addToResult(
+              exportDetail.name,
+              exportDetail.name,
+              importDetails(null, [importAlias(exportDetail.name)], null),
+            )
             break
           case 'REEXPORT_WILDCARD':
             break

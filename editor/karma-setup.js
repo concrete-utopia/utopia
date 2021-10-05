@@ -12,3 +12,4 @@ window.BrowserFS = BrowserFS
 
 window.expect = expect
 window.jest = null
+window.KarmaTestEnvironment = true

@@ -1,4 +1,6 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeApplications  #-}
 
 module Utopia.Web.Assets where
 
@@ -6,8 +8,10 @@ import           Conduit
 import           Control.Lens
 import           Control.Monad.Trans.AWS
 import qualified Data.ByteString.Lazy    as BL
+import           Data.Generics.Sum
 import           Data.String
 import           Data.Text
+import           Data.Text.Strict.Lens
 import qualified Data.UUID               as U
 import           Data.UUID.V4
 import           Network.AWS.Auth
@@ -56,7 +60,7 @@ pathForThumbnail thumbnailID = intermediatePathForThumbnail </> toS thumbnailID
 loadFileFromDisk :: FilePath -> IO LoadAssetResult
 loadFileFromDisk path = do
   exists <- doesFileExist path
-  if exists then fmap (\f -> AssetLoaded f Nothing) $ BL.readFile path else pure AssetNotFound
+  if exists then (`AssetLoaded` Nothing) <$> BL.readFile path else pure AssetNotFound
 
 saveFileToDisk :: FilePath -> BL.ByteString -> IO ()
 saveFileToDisk path contents = do
@@ -97,12 +101,11 @@ saveProjectThumbnailToDisk projectID contents = do
 
 generateUniqueFileID :: IO Text
 generateUniqueFileID = do
-  uuid <- nextRandom
-  return $ U.toText uuid
+  U.toText <$> nextRandom
 
 makeAmazonResources :: String -> String -> String -> IO AWSResources
 makeAmazonResources accessKey secretKey bucketName = do
-  amazonEnv <- newEnv $ FromKeys (AccessKey $ toS accessKey) (SecretKey $ toS secretKey)
+  amazonEnv <- newEnv $ FromKeys (AccessKey $ encodeUtf8 $ pack accessKey) (SecretKey $ encodeUtf8 $ pack secretKey)
   let nameOfBucket = BucketName $ toS bucketName
   return $ AWSResources
            { _awsEnv = amazonEnv
@@ -129,16 +132,16 @@ assetPathToObjectKey assetPath = ObjectKey $ assetPathToS3Path assetPath
 projectIDToThumbnailObjectKey :: Text -> ObjectKey
 projectIDToThumbnailObjectKey projectID = ObjectKey ("thumbnails/" <> projectID)
 
-loadFileFromS3 :: BucketName -> ObjectKey -> (Maybe Text) -> AWST (ResourceT IO) LoadAssetResult
+loadFileFromS3 :: BucketName -> ObjectKey -> Maybe Text -> AWST (ResourceT IO) LoadAssetResult
 loadFileFromS3 bucketName objectKey possibleETag = do
   let getObjectRequest = set goIfNoneMatch possibleETag $ getObject bucketName objectKey
-  response <- trying (_ServiceError . hasStatus 304) (send getObjectRequest)
-  case response of
-    Right getObjectResponse -> do
-      fileContents <- sinkBody (view gorsBody getObjectResponse) sinkLazy
-      let etagFromS3 = fmap (\(ETag etagValue) -> toS etagValue) $ view gorsETag getObjectResponse
+  s3Response <- trying (_ServiceError . hasStatus 304) (send getObjectRequest)
+  case s3Response of
+    Right successfulResponse -> do
+      fileContents <- sinkBody (view gorsBody successfulResponse) sinkLazy
+      let etagFromS3 = firstOf (gorsETag . _Just . _Ctor @"ETag" . utf8) successfulResponse
       pure $ AssetLoaded fileContents etagFromS3
-    Left serviceError -> do
+    Left serviceError ->
       pure AssetUnmodified
 
 checkFileExistsInS3 :: BucketName -> ObjectKey -> AWST (ResourceT IO) Bool
@@ -167,7 +170,7 @@ saveProjectAssetToS3 resources assetPath contents = runInAWS resources $ do
 
 renameProjectAssetOnS3 :: AWSResources -> OldPathText -> NewPathText -> IO ()
 renameProjectAssetOnS3 resources (OldPath oldPath) (NewPath newPath) = runInAWS resources $ do
-  let copySource = "/" <> (toText (_bucket resources)) <> "/" <> assetPathToS3Path oldPath
+  let copySource = "/" <> toText (_bucket resources) <> "/" <> assetPathToS3Path oldPath
   let copyObjectRequest = copyObject (_bucket resources) copySource (assetPathToObjectKey newPath)
   let deleteObjectRequest = deleteObject (_bucket resources) (assetPathToObjectKey oldPath)
   _ <- send copyObjectRequest

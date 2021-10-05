@@ -242,14 +242,17 @@ export function exportDefaultFunctionOrClass(name: string | null): ExportDefault
   }
 }
 
-// export default expression;
-export interface ExportExpression {
-  type: 'EXPORT_EXPRESSION'
+// const App = (…) { … }
+// export default App;
+export interface ExportIdentifier {
+  type: 'EXPORT_IDENTIFIER'
+  name: string
 }
 
-export function exportExpression(): ExportExpression {
+export function exportIdentifier(name: string): ExportIdentifier {
   return {
-    type: 'EXPORT_EXPRESSION',
+    type: 'EXPORT_IDENTIFIER',
+    name: name,
   }
 }
 
@@ -299,7 +302,7 @@ export type ExportDetail =
   | ExportVariables
   | ExportDestructuredAssignment
   | ExportDefaultFunctionOrClass
-  | ExportExpression
+  | ExportIdentifier
   | ReexportWildcard
   | ReexportVariables
 

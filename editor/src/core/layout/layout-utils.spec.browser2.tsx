@@ -19,7 +19,7 @@ import {
   emptySpecialSizeMeasurements,
   emptyComments,
 } from '../shared/element-template'
-import { generateUidWithExistingComponents } from '../model/element-template-utils'
+import { FOR_TESTS_setNextGeneratedUid } from '../model/element-template-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 
@@ -52,7 +52,7 @@ describe('maybeSwitchLayoutProps', () => {
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
-    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+    FOR_TESTS_setNextGeneratedUid(NewUID)
     const elementToPaste = jsxElement(
       'View',
       NewUID,

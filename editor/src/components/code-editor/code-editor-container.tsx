@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { betterReactMemo } from '../../uuiui-deps'
 import { useEditorState } from '../editor/store/store-hook'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
@@ -27,18 +27,21 @@ const VSCodeIframeContainer = betterReactMemo(
         }}
       >
         <VSCodeLoadingScreen />
-        <iframe
-          key={'vscode-editor'}
-          id={'vscode-editor'}
-          src={url.toString()}
-          allow='autoplay'
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'transparent',
-            borderWidth: 0,
-          }}
-        />
+        {/* for Karma tests, we skip creating this iframe to avoid hitting a 404 */}
+        {window.KarmaTestEnvironment ? null : (
+          <iframe
+            key={'vscode-editor'}
+            id={'vscode-editor'}
+            src={url.toString()}
+            allow='autoplay'
+            style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'transparent',
+              borderWidth: 0,
+            }}
+          />
+        )}
       </div>
     )
   },

@@ -89,3 +89,10 @@ declare module 'react/jsx-runtime'
  * the __webpack_public_path__ is a global variable supported by Webpack that can be used to dynamically change the value of import.meta.url
  */
 declare var __webpack_public_path__: string
+
+/**
+ * in karma-setup.js we set window.KarmaTestEnvironment to true. this way our tests and code can figure out if they are inside Karma
+ */
+interface Window {
+  KarmaTestEnvironment: boolean | undefined
+}

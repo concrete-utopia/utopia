@@ -1,7 +1,7 @@
 import styled from '@emotion/styled'
 import { commonSenseUtopiaLayoutShorthands } from './common-layout-shorthands'
 import { flexRowStyle } from '../../styles/layout-styles'
-import * as React from 'react'
+import React from 'react'
 
 /**
  * **Flexbox Row, with vertically centered content**

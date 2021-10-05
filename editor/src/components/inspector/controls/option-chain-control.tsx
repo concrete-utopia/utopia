@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { Interpolation, jsx } from '@emotion/react'
-import * as React from 'react'
+import React from 'react'
 import { IcnProps, UtopiaTheme } from '../../../uuiui'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'

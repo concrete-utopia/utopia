@@ -35,6 +35,7 @@ const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
   const projectID = workspaceRootUri.scheme
+  /* eslint-disable-next-line react-hooks/rules-of-hooks */
   useFileSystemProviderErrors(projectID)
 
   await initFS(projectID)
@@ -574,10 +575,10 @@ function updateDecorations(decorations: Array<DecorationRange>): void {
   for (const visibleEditor of visibleEditors) {
     const filename = visibleEditor.document.uri.path
     // Default in the possible value we have received for a filename.
-    const decorations = decorationsByFilenameAndType[filename] ?? {}
+    const decorationsForFile = decorationsByFilenameAndType[filename] ?? {}
     for (const rangeType of allDecorationRangeTypes) {
       // Default in the possible value we have received for a range type.
-      const decorationsForType = decorations[rangeType] ?? []
+      const decorationsForType = decorationsForFile[rangeType] ?? []
       // Construct the VS Code values and set those against the editor.
       const vsCodeDecorationType = getVSCodeDecorationType(rangeType)
       const vsCodeRanges = decorationsForType.map(getVSCodeRange)

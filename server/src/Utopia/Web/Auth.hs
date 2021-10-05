@@ -73,10 +73,10 @@ auth0UserToUserDetails auth0User = do
   -- Look for user_id first and then sub from the response because their docs don't seem to
   -- line up with their actual API and were only returning sub when I tested it.
   userId <- _userID auth0User <|> _sub auth0User
-  return $ UserDetails { userDetailsUserId  = userId
-                       , userDetailsEmail   = _email auth0User
-                       , userDetailsName    = _name auth0User
-                       , userDetailsPicture = _picture auth0User
+  return $ UserDetails { userId  = userId
+                       , email   = _email auth0User
+                       , name    = _name auth0User
+                       , picture = _picture auth0User
                        }
 
 getUserDetailsFromCode :: Auth0Resources -> Text -> IO (Either ClientError UserDetails)

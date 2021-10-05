@@ -12,7 +12,6 @@ import           Conduit
 import           Control.Lens              hiding ((.=))
 import           Control.Monad.Catch
 import           Data.Aeson
-import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy      as BL
 import           Data.Conduit.Combinators  hiding (encodeUtf8)
 import           Data.Generics.Product
@@ -20,19 +19,31 @@ import           Data.Generics.Sum
 import qualified Data.HashMap.Strict       as Map
 import           Data.IORef
 import           Data.List                 (isSuffixOf, stripPrefix)
+import           Data.Text                 (pack)
 import           Data.Time.Clock
 import           Protolude                 hiding (catch, finally, mapM)
 import           RIO                       (readFileUtf8)
 import           System.Directory
-import           System.Directory.PathWalk
-import           System.FilePath
 import           System.IO.Error
 import           System.IO.Temp
+import           System.Log.FastLogger
 import           System.Process
 import           Utopia.Web.ClientModel
 import qualified Utopia.Web.Database.Types as DB
+import           Utopia.Web.Logging
+import           Utopia.Web.Metrics
 
-type MatchingVersionsCache = IORef (Map.HashMap (Text, (Maybe Text)) (Maybe Value, UTCTime))
+data NPMMetrics = NPMMetrics
+                { npmInstallMetric       :: InvocationMetric
+                , npmVersionLookupMetric :: InvocationMetric
+                }
+
+createNPMMetrics :: Store -> IO NPMMetrics
+createNPMMetrics store = NPMMetrics
+  <$> createInvocationMetric "utopia.npm.install" store
+  <*> createInvocationMetric "utopia.npm.versionlookup" store
+
+type MatchingVersionsCache = IORef (Map.HashMap (Text, Maybe Text) (Maybe Value, UTCTime))
 
 newMatchingVersionsCache :: IO MatchingVersionsCache
 newMatchingVersionsCache = newIORef mempty
@@ -46,7 +57,7 @@ handleVersionsLookupError _ = return Nothing
 fetchVersionWithCache :: MatchingVersionsCache -> Text -> Maybe Text -> IO (Maybe Value) -> IO (Maybe Value)
 fetchVersionWithCache matchingVersionsCache jsPackageName maybePackageVersion fallback = do
   let key = (jsPackageName, maybePackageVersion)
-  fromCache <- fmap (Map.lookup key) $ readIORef matchingVersionsCache
+  fromCache <- Map.lookup key <$> readIORef matchingVersionsCache
   now <- getCurrentTime
   let updateCache = do
         -- Get the result from the fallback.
@@ -54,7 +65,7 @@ fetchVersionWithCache matchingVersionsCache jsPackageName maybePackageVersion fa
         let expiryTime = addUTCTime matchingVersionsCacheTimeLimit now
         let valueToCache = (fallbackResult, expiryTime)
         -- Update the cache map.
-        _ <- atomicModifyIORef' matchingVersionsCache (\map -> (Map.insert key valueToCache map, ()))
+        _ <- atomicModifyIORef' matchingVersionsCache (\cacheMap -> (Map.insert key valueToCache cacheMap, ()))
         pure fallbackResult
   case fromCache of
     -- No value is present in the cache.
@@ -70,23 +81,25 @@ packageAndVersionAsText jsPackageName (Just maybePackageVersion) = jsPackageName
 packageAndVersionAsText jsPackageName Nothing = jsPackageName
 
 -- Find Applicable Versions using `npm view packageName@version version --json
-findMatchingVersions :: QSem -> MatchingVersionsCache -> Text -> Maybe Text -> IO (Maybe Value)
-findMatchingVersions semaphore matchingVersionsCache jsPackageName maybePackageVersion = do
+findMatchingVersions :: FastLogger -> NPMMetrics -> QSem -> MatchingVersionsCache -> Text -> Maybe Text -> IO (Maybe Value)
+findMatchingVersions logger NPMMetrics{..} semaphore matchingVersionsCache jsPackageName maybePackageVersion = do
   fetchVersionWithCache matchingVersionsCache jsPackageName maybePackageVersion $ do
     withSemaphore semaphore $ do
       let packageVersionText = packageAndVersionAsText jsPackageName maybePackageVersion
-      putText ("Starting NPM Versions Lookup: " <> packageVersionText)
+      loggerLn logger ("Starting NPM Versions Lookup: " <> toLogStr packageVersionText)
       let atPackageVersion = maybe "" (\v -> "@" <> toS v) maybePackageVersion
       let packageNameAtPackageVersion = jsPackageName <> atPackageVersion
       let versionsProc = proc "npm" ["view", toS packageNameAtPackageVersion, "version", "--json"]
-      foundVersions <- (flip catch) handleVersionsLookupError $ do
-        versionsResult <- readCreateProcess versionsProc ""
-        return $ decode $ toS versionsResult
-      putText ("Finished NPM Versions Lookup: " <> packageVersionText)
+      foundVersions <- flip catch handleVersionsLookupError $ do
+        versionsResult <- invokeAndMeasure npmVersionLookupMetric $ 
+          addInvocationDescription npmVersionLookupMetric ("NPM versions lookup for " <> packageVersionText) $
+          readCreateProcess versionsProc ""
+        return $ decode $ BL.fromStrict $ encodeUtf8 $ pack versionsResult
+      loggerLn logger ("Finished NPM Versions Lookup: " <> toLogStr packageVersionText)
       return foundVersions
 
 withSemaphore :: QSem -> IO a -> IO a
-withSemaphore semaphore action = (flip finally) (signalQSem semaphore) $ do
+withSemaphore semaphore action = flip finally (signalQSem semaphore) $ do
   waitQSem semaphore
   action
 
@@ -96,8 +109,8 @@ ioErrorCatcher _ = pure ()
 ignoringIOErrors :: MonadCatch m => m () -> m ()
 ignoringIOErrors action = catch action ioErrorCatcher
 
-withInstalledProject :: (MonadIO m, MonadMask m, MonadResource m) => QSem -> Text -> (FilePath -> ConduitT i o m r) -> ConduitT i o m r
-withInstalledProject semaphore versionedPackageName withInstalledPath = do
+withInstalledProject :: (MonadIO m, MonadMask m, MonadResource m) => FastLogger -> NPMMetrics -> QSem -> Text -> (FilePath -> ConduitT i o m r) -> ConduitT i o m r
+withInstalledProject logger NPMMetrics{..} semaphore versionedPackageName withInstalledPath = do
   -- Create temporary folder.
   let createDir = do
         tmpDir <- getCanonicalTemporaryDirectory
@@ -105,12 +118,14 @@ withInstalledProject semaphore versionedPackageName withInstalledPath = do
   let deleteDir = ignoringIOErrors . removeDirectoryRecursive
   bracketP createDir deleteDir $ \tempDir -> do
     -- Run `npm install "packageName@packageVersion"`.
-    let baseProc = proc "npm" ["install", "--silent", "--ignore-scripts", toS versionedPackageName]
-    let procWithCwd = baseProc { cwd = Just tempDir }
+    let baseProc = proc "npm" ["install", "--silent", "--ignore-scripts", "--omit", "peer", toS versionedPackageName]
+    let procWithCwd = baseProc { cwd = Just tempDir, env = Just [("NODE_OPTIONS", "--max_old_space_size=256")] }
     liftIO $ withSemaphore semaphore $ do
-      putText "Starting NPM Install."
-      readCreateProcess procWithCwd ""
-      putText "NPM Install Finished."
+      loggerLn logger ("Starting NPM Install: " <> toLogStr versionedPackageName)
+      _ <- invokeAndMeasure npmInstallMetric $
+          addInvocationDescription npmInstallMetric ("NPM install for " <> versionedPackageName) $
+          readCreateProcess procWithCwd ""
+      loggerLn logger ("NPM Install Finished: " <> toLogStr versionedPackageName)
     -- Invoke action against path.
     withInstalledPath tempDir
 
@@ -128,7 +143,7 @@ getFileContent rootPath path = do
   let relevant = isRelevantFilename path
   let entryFilename = fromMaybe path $ stripPrefix rootPath path
   let placeHolderResult = pure encodedPlaceholder
-  let fileContentResult = fmap (\t -> object ["content" .= t]) $ readFileUtf8 path
+  let fileContentResult = (\t -> object ["content" .= t]) <$> readFileUtf8 path
   content <- if relevant then fileContentResult else placeHolderResult
   pure (entryFilename, content)
 
@@ -166,6 +181,6 @@ getProjectDependenciesFromPackageJSON decodedProject = either (const []) identit
   packageJsonCode <- maybe (Left "package.json not a text file.") pure $ firstOf projectFileToCodeLens packageJsonFile
   MinimalPackageJSON{..} <- eitherDecode' $ BL.fromStrict $ encodeUtf8 packageJsonCode
   let fullDependencies = fromMaybe mempty (dependencies <> devDependencies)
-  pure $ Map.foldMapWithKey (\key -> \value -> [ProjectDependency key value]) fullDependencies
+  pure $ Map.foldMapWithKey (\key value -> [ProjectDependency key value]) fullDependencies
 
 

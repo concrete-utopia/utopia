@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { UtopiaTheme } from '../../../uuiui'
 
 export const PropertyRowHeightDefault = 33

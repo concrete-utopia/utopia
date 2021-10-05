@@ -1,16 +1,19 @@
 { 
-  compiler ? "ghc865",
+  compiler ? "ghc8104",
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,
-  includeReleaseSupport ? false
+  includeReleaseSupport ? false,
+  includeDatabaseSupport ? true
 }:
 
 let
   release = (import ./release.nix {});
   pkgs = release.pkgs;
   lib = pkgs.lib;
-  node = pkgs.nodejs-14_x;
+  node = pkgs.nodejs-16_x;
+  postgres = pkgs.postgresql_13;
+  pnpm = pkgs.nodePackages.pnpm;
   stdenv = pkgs.stdenv;
 
   cabal = pkgs.haskellPackages.cabal-install;
@@ -24,48 +27,41 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
-      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${pnpm}/bin/pnpm install
       update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${pnpm}/bin/pnpm install
     '')
     (pkgs.writeScriptBin "install-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${pnpm}/bin/pnpm install
     '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${pnpm}/bin/pnpm install
     '')
     (pkgs.writeScriptBin "test-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true test
-    '')
-    (pkgs.writeScriptBin "test-editor-move-template-only-ci" ''
-      #!/usr/bin/env bash
-      set -e
-      install-editor-ci
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run test-move-template-only-ci
+      ${pnpm}/bin/pnpm test
     '')
     (pkgs.writeScriptBin "test-utopia-api" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
-      ${node}/bin/npm --scripts-prepend-node-path=true test
+      ${pnpm}/bin/pnpm test
     '')
     (pkgs.writeScriptBin "test-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      # ${node}/bin/npm --scripts-prepend-node-path=true test
+      # ${pnpm}/bin/pnpm test
     '')
     (pkgs.writeScriptBin "test-editor-all" ''
       #!/usr/bin/env bash
@@ -77,13 +73,13 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run check
+      ${pnpm}/bin/pnpm run check
     '')
     (pkgs.writeScriptBin "check-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run check-ci
+      ${pnpm}/bin/pnpm run check-ci
     '')
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
@@ -97,23 +93,25 @@ let
       #!/usr/bin/env bash
       set -e
       install-editor-ci
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
+      ${pnpm}/bin/pnpm install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true run staging
+      ${pnpm}/bin/pnpm run staging-print-json
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run build
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run build
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run build
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run build
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
@@ -186,42 +184,90 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npx --scripts-prepend-node-path=true tsc --watch && NODE_OPTIONS=--max_old_space_size=4096
+      ${pnpm}/bin/pnpx tsc --watch && NODE_OPTIONS=--max_old_space_size=4096
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${node}/bin/npm --scripts-prepend-node-path=true run move-fast-and-break-things
+      RUN_COMPILER=true ${pnpm}/bin/pnpm run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-no-compile" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=false ${node}/bin/npm --scripts-prepend-node-path=true run move-fast-and-break-things
+      RUN_COMPILER=false ${pnpm}/bin/pnpm run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-performance" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${node}/bin/npm --scripts-prepend-node-path=true run performance-test
+      RUN_COMPILER=true ${pnpm}/bin/pnpm run performance-test
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy-danger-hot" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${node}/bin/npm --scripts-prepend-node-path=true run move-fast-and-break-things-hot
+      RUN_COMPILER=true ${pnpm}/bin/pnpm run move-fast-and-break-things-hot
     '')
     (pkgs.writeScriptBin "watch-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      BROWSER=none ${node}/bin/npm --scripts-prepend-node-path=true run dev
+      ${pnpm}/bin/pnpm install
+      BROWSER=none ${pnpm}/bin/pnpm run dev
     '')
   ];
 
   withEditorRunScripts = withServerBaseScripts ++ (lib.optionals includeRunLocallySupport editorRunScripts);
+
+  databaseRunScripts = [
+    (pkgs.writeScriptBin "create-db" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      echo "Ignore previous line about database not existing." > pglog.txt
+      ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
+    '')
+    (pkgs.writeScriptBin "start-postgres-background" ''
+      #!/usr/bin/env bash
+      stop-postgres
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      [ ! -d "utopia-db" ] && ${postgres}/bin/initdb -D utopia-db
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/pg_ctl -D utopia-db -l pglog.txt -o "--unix_socket_directories='$PGLOCK_DIR' -c log_statement=none" start
+      ${postgres}/bin/psql -o /dev/null -h "$PGLOCK_DIR" -d utopia -tc "SELECT 1 FROM pg_database WHERE datname = 'utopia'" || create-db
+    '')
+    (pkgs.writeScriptBin "start-postgres" ''
+      #!/usr/bin/env bash
+      stop-postgres
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      start-postgres-background
+      tail -f pglog.txt
+    '')
+    (pkgs.writeScriptBin "stop-postgres" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/pg_ctl -D utopia-db stop 
+    '')
+    (pkgs.writeScriptBin "run-psql" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      PGLOCK_DIR="`pwd`/.pglock/"
+      mkdir -p $PGLOCK_DIR
+      ${postgres}/bin/psql -h "$PGLOCK_DIR" -d utopia
+    '')
+  ];
+
+  withDatabaseRunScripts = withEditorRunScripts ++ (lib.optionals (includeDatabaseSupport || includeRunLocallySupport) databaseRunScripts);
 
   serverRunScripts = [
     (pkgs.writeScriptBin "style-project" ''
@@ -254,7 +300,7 @@ let
     '')
   ];
 
-  withServerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
+  withServerRunScripts = withDatabaseRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
 
   vscodeDevScripts = [
     (pkgs.writeScriptBin "update-vscode-patch" ''
@@ -268,15 +314,15 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run watch-dev
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run watch-dev
     '')
     (pkgs.writeScriptBin "pull-extension" ''
       #!/usr/bin/env bash
@@ -298,6 +344,7 @@ let
       #!/usr/bin/env bash
       # Kill nodemon because it just seems to keep running.
       pkill nodemon
+      stop-postgres
       tmux kill-session -t utopia-dev
     '')
     (pkgs.writeScriptBin "start-minimal" ''
@@ -320,6 +367,8 @@ let
         send-keys -t :7 watch-utopia-vscode-extension C-m \; \
         new-window -n "VSCode Pull Extension" \; \
         send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        new-window -n "PostgreSQL" \; \
+        send-keys -t :9 start-postgres C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full" ''
@@ -340,16 +389,16 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${node}/bin/npm --scripts-prepend-node-path=true install --unsafe-perm
-      ${node}/bin/npm --scripts-prepend-node-path=true run production
+      ${pnpm}/bin/pnpm install --unsafe-perm
+      ${pnpm}/bin/pnpm run production
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
     (pkgs.writeScriptBin "build-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      CI=false ${node}/bin/npm --scripts-prepend-node-path=true run export
+      ${pnpm}/bin/pnpm install
+      CI=false ${pnpm}/bin/pnpm run export
     '')
     (pkgs.writeScriptBin "build-server" ''
       #!/usr/bin/env bash
@@ -381,7 +430,7 @@ let
     pkgs.cabal2nix
     pkgs.haskellPackages.stylish-haskell
     pkgs.haskellPackages.hpack
-    pkgs.postgresql
+    postgres
   ];
 
   serverRunPackages = [
@@ -393,7 +442,7 @@ let
 
   pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pnpm pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);

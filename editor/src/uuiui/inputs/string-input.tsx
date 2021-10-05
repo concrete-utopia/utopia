@@ -2,14 +2,13 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import composeRefs from '@seznam/compose-react-refs'
-import * as React from 'react'
+import React from 'react'
 import {
   ControlStatus,
   ControlStyles,
   getControlStyles,
 } from '../../components/inspector/common/control-status'
 import { stopPropagation } from '../../components/inspector/common/inspector-utils'
-import { OnSubmitValue } from '../../components/inspector/controls/control'
 import { betterReactMemo } from '../../uuiui-deps'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { InspectorInput, InspectorInputEmotionStyle } from './base-input'

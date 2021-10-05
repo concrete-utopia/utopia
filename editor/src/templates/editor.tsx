@@ -1,7 +1,7 @@
 // import feature switches so they are loaded before anything else can read them
 import '../utils/feature-switches'
 
-import * as React from 'react'
+import React from 'react'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
@@ -14,16 +14,7 @@ import {
 } from '../common/env-vars'
 import { EditorID } from '../core/shared/utils'
 import CanvasActions from '../components/canvas/canvas-actions'
-import { CodeResultCache, generateCodeResultCache } from '../components/custom-code/code-file'
-import { getAllErrorsFromBuildResult } from '../components/custom-code/custom-code-utils'
-import {
-  DebugDispatch,
-  DispatchPriority,
-  EditorAction,
-  EditorDispatch,
-  isLoggedIn,
-  notLoggedIn,
-} from '../components/editor/action-types'
+import { DispatchPriority, EditorAction, isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
@@ -325,13 +316,13 @@ export class Editor {
   }
 }
 
-export const HotRoot: React.FunctionComponent<{
+export const EditorRoot: React.FunctionComponent<{
   api: UtopiaStoreAPI
   useStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   propertyControlsInfoSupported: boolean
   vscodeBridgeReady: boolean
-}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
+}> = ({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
@@ -342,8 +333,28 @@ export const HotRoot: React.FunctionComponent<{
       </UiJsxCanvasCtxAtom.Provider>
     </EditorStateContext.Provider>
   )
+}
+
+EditorRoot.displayName = 'Utopia Editor Root'
+
+export const HotRoot: React.FunctionComponent<{
+  api: UtopiaStoreAPI
+  useStore: UtopiaStoreHook
+  spyCollector: UiJsxCanvasContextData
+  propertyControlsInfoSupported: boolean
+  vscodeBridgeReady: boolean
+}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
+  return (
+    <EditorRoot
+      api={api}
+      useStore={useStore}
+      spyCollector={spyCollector}
+      propertyControlsInfoSupported={propertyControlsInfoSupported}
+      vscodeBridgeReady={vscodeBridgeReady}
+    />
+  )
 })
-HotRoot.displayName = 'Utopia Editor Root'
+HotRoot.displayName = 'Utopia Editor Hot Root'
 
 async function renderRootComponent(
   useStore: UtopiaStoreHook,
@@ -357,16 +368,29 @@ async function renderRootComponent(
     // as subsequent updates will be fed through Zustand
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
-      ReactDOM.render(
-        <HotRoot
-          api={api}
-          useStore={useStore}
-          spyCollector={spyCollector}
-          propertyControlsInfoSupported={propertyControlsInfoSupported}
-          vscodeBridgeReady={vscodeBridgeReady}
-        />,
-        rootElement,
-      )
+      if (process.env.HOT_MODE) {
+        ReactDOM.render(
+          <HotRoot
+            api={api}
+            useStore={useStore}
+            spyCollector={spyCollector}
+            propertyControlsInfoSupported={propertyControlsInfoSupported}
+            vscodeBridgeReady={vscodeBridgeReady}
+          />,
+          rootElement,
+        )
+      } else {
+        ReactDOM.render(
+          <EditorRoot
+            api={api}
+            useStore={useStore}
+            spyCollector={spyCollector}
+            propertyControlsInfoSupported={propertyControlsInfoSupported}
+            vscodeBridgeReady={vscodeBridgeReady}
+          />,
+          rootElement,
+        )
+      }
     }
   })
 }

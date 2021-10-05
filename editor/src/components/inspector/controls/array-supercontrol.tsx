@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { UseSpringProps, useSprings } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 import { move } from '../../../core/shared/array-utils'

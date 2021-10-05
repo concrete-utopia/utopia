@@ -191,9 +191,9 @@ export class UtopiaFSExtension
     const path = fromUtopiaURI(uri)
     const children = await readDirectory(path)
     const result: Promise<[string, FileType]>[] = children.map((childName) =>
-      pathIsDirectory(appendToPath(path, childName)).then((isDirectory) => [
+      pathIsDirectory(appendToPath(path, childName)).then((resultIsDirectory) => [
         childName,
-        isDirectory ? FileType.Directory : FileType.File,
+        resultIsDirectory ? FileType.Directory : FileType.File,
       ]),
     )
     return Promise.all(result)

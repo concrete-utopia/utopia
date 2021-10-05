@@ -51,7 +51,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { HotRoot } from '../../templates/editor'
+import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
@@ -75,7 +75,7 @@ import { printCode, printCodeOptions } from '../../core/workers/parser-printer/p
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
-import { switchEditorMode } from '../editor/actions/action-creators'
+import { setPanelVisibility, switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -232,7 +232,7 @@ export async function renderTestEditorWithModel(
       }}
     >
       <FailJestOnCanvasError />
-      <HotRoot
+      <EditorRoot
         api={storeHook}
         useStore={storeHook}
         spyCollector={spyCollector}
@@ -262,7 +262,12 @@ export async function renderTestEditorWithModel(
   })
 
   await act(async () => {
-    await asyncTestDispatch([switchEditorMode(EditorModes.selectMode())], undefined, true, false)
+    await asyncTestDispatch(
+      [switchEditorMode(EditorModes.selectMode()), setPanelVisibility('codeEditor', false)],
+      undefined,
+      true,
+      false,
+    )
   })
 
   if (awaitFirstDomReport === 'await-first-dom-report') {

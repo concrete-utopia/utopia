@@ -7,7 +7,7 @@ import { setCanvasFrames } from '../editor/actions/action-creators'
 import CanvasActions from './canvas-actions'
 import { pinFrameChange } from './canvas-types'
 import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
-import { act } from 'react-test-renderer'
+import { act } from '@testing-library/react'
 
 describe('Dom-walker Caching', () => {
   async function prepareTestProject() {
@@ -57,7 +57,11 @@ describe('Dom-walker Caching', () => {
 
     renderResult.clearRecordedActions()
 
-    const pinChange = pinFrameChange(
+    const pinChange1 = pinFrameChange(
+      EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
+      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
+    )
+    const pinChange2 = pinFrameChange(
       EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
@@ -65,7 +69,15 @@ describe('Dom-walker Caching', () => {
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+      await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
+
+      await domFinished
+      await dispatchDone
+    })
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
 
       await domFinished
       await dispatchDone
@@ -89,15 +101,28 @@ describe('Dom-walker Caching', () => {
 
     renderResult.clearRecordedActions()
 
-    const pinChange = pinFrameChange(
+    const pinChange1 = pinFrameChange(
       EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
+    )
+    const pinChange2 = pinFrameChange(
+      EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      canvasRectangle({ x: 20, y: 20, width: 100, height: 101 }),
     )
 
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+      await renderResult.dispatch([setCanvasFrames([pinChange1], false)], true)
+
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      await renderResult.dispatch([setCanvasFrames([pinChange2], false)], true)
 
       await domFinished
       await dispatchDone

@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import classNames from 'classnames'
-import * as React from 'react'
+import React from 'react'
 import { Either, isRight, left, right } from '../../../core/shared/either'
 import { StringInput } from '../../../uuiui'
 import { betterReactMemo, getControlStyles } from '../../../uuiui-deps'

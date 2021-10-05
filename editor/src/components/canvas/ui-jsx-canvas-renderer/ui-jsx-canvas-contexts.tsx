@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import type { MapLike } from 'typescript'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 import { Either, left } from '../../../core/shared/either'

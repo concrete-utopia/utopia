@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { forEachRight, isRight } from '../../../../core/shared/either'
 import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { forEachValue } from '../../../../core/shared/object-utils'

@@ -9,7 +9,7 @@ import styled from '@emotion/styled'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { base16AteliersulphurpoolLight as syntaxTheme } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 
-import * as React from 'react'
+import React from 'react'
 import {
   H1,
   H2,

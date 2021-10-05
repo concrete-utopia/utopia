@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { betterReactMemo } from '../../uuiui-deps'
 import type { PackageStatus } from '../../core/shared/npm-dependency-types'
 

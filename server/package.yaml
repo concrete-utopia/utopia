@@ -9,23 +9,24 @@ ghc-options: -Wall -threaded -rtsopts
 dependencies:
   - aeson
   - aeson-pretty
-  - amazonka
-  - amazonka-core
-  - amazonka-s3
+  - amazonka ==1.6.1
+  - amazonka-core ==1.6.1
+  - amazonka-s3 ==1.6.1
   - base >= 4.7 && < 5
   - base16-bytestring
   - binary
   - blaze-html
   - bytestring
   - case-insensitive
+  - cereal
   - concurrent-extra
   - conduit
   - cookie
   - cryptohash-sha256
+  - data-default
   - directory
-  - ekg-core
-  - ekg-json
   - exceptions
+  - fast-logger
   - filepath
   - free
   - zlib
@@ -44,15 +45,16 @@ dependencies:
   - monad-logger
   - mtl
   - network-uri
+  - opaleye
+  - opaleye-trans
   - path
   - path-pieces
   - pathwalk
-  - persistent ==2.9.2
-  - persistent-postgresql ==2.9.1
-  - persistent-sqlite ==2.9.3
-  - persistent-template ==2.6.0
+  - postgresql-simple
+  - postgresql-simple-migration
   - process
-  - protolude ==0.2.4
+  - product-profunctors
+  - protolude ==0.3.0
   - resource-pool
   - rio
   - servant ==0.18.2
@@ -63,17 +65,19 @@ dependencies:
   - servant-rawm-server
   - servant-server ==0.18.2
   - servant-websockets ==2.0.0
-  - serversession ==1.0.1
-  - serversession-backend-persistent
+  - serversession ==1.0.2
   - split
   - tagsoup
   - tar
   - temporary
   - text
   - time
+  - time-manager
   - transformers
+  - unix
   - unordered-containers
   - uuid
+  - vector
   - wai
   - wai-app-static
   - wai-extra ==3.0.29.1
@@ -99,6 +103,7 @@ tests:
       - hspec
       - hedgehog
       - port-utils
+      - random
       - tasty
       - tasty-hedgehog
       - tasty-hspec

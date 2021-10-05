@@ -275,12 +275,12 @@ export function getDefaultProps(propertyControls: PropertyControls): { [prop: st
 
 export function expression(
   value: AllowedEnumType,
-  expression: string,
+  expressionString: string,
   toImport: ImportType,
 ): ExpressionEnum {
   return {
     value: value,
-    expression: expression,
+    expression: expressionString,
     import: toImport,
   }
 }

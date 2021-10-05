@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { Size } from '../../../core/shared/math-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'

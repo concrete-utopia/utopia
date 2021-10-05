@@ -13,8 +13,15 @@ webpackConfig['plugins'].push(
 
 module.exports = function (config) {
   config.set({
-    plugins: ['karma-webpack', 'karma-mocha', 'karma-chrome-launcher'],
-
+    plugins: [
+      'karma-webpack',
+      'karma-mocha',
+      'karma-chrome-launcher',
+      'karma-viewport',
+      'karma-mocha-reporter',
+      require('./test/karma-custom-reporter/short-console-messages'),
+    ],
+    reporters: ['mocha', 'utopia'],
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
@@ -22,7 +29,7 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha'],
+    frameworks: ['mocha', 'viewport'],
     webpack: webpackConfig,
 
     // list of files / patterns to load in the browser
@@ -30,7 +37,7 @@ module.exports = function (config) {
       './karma-setup.js',
       './src/**/*.spec.browser2.+(ts|tsx)',
       {
-        pattern: './resources/editor/icons/**/*.png',
+        pattern: './resources/editor/**/*.png',
         watched: false,
         served: true,
         included: false,
@@ -39,6 +46,9 @@ module.exports = function (config) {
     ],
     proxies: {
       '/editor/icons': '/base/resources/editor/icons',
+      '/editor/cursors': '/base/resources/editor/cursors',
+      '/editor/fills': '/base/resources/editor/fills',
+      '/editor/avatars': '/base/resources/editor/avatars',
     },
 
     browsers: ['ChromeHeadless'],

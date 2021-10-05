@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "export": "next build && next export"
+    "export": "next build && next export",
+    "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
     "@emotion/react": "11.4.0",
@@ -14,7 +15,7 @@
     "@tailwindcss/aspect-ratio": "^0.2.1",
     "@tailwindcss/typography": "^0.4.1",
     "facepaint": "1.2.1",
-    "localforage": "^1.9.0",
+    "localforage": "1.7.3",
     "next": "10.x",
     "prettier": "^2.3.1",
     "react": "17.x",
@@ -22,7 +23,7 @@
     "react-dom": "17.x",
     "react-select": "3.1.0",
     "timeago.js": "4.0.2",
-    "url-join": "^4.0.1"
+    "url-join": "4.0.1"
   },
   "devDependencies": {
     "@types/facepaint": "1.2.1",

@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 import { EditorCanvas } from '../../templates/editor-canvas'
 import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-error-overlay'
 import { setFocus } from '../common/actions'

@@ -44,6 +44,7 @@ import DefaultExpression from '/defaultexpression'
 import DefaultFunction from '/defaultfunction'
 import DefaultClass from '/defaultclass'
 import DefaultNamedFunction from '/defaultnamedfunction'
+import DefinedThenDefaultExported from '/definedthendefaultexported'
 import NamedAsDefault from '/namedasdefault'
 import * as ReexportWildcard from '/reexportwildcard'
 import { assigned } from '/reexportmoduleintonamedexport'
@@ -66,6 +67,7 @@ export var App = (props) => {
       <DefaultFunction />
       <DefaultClass />
       <DefaultNamedFunction />
+      <DefinedThenDefaultExported />
       <NamedAsDefault />
       <ReexportWildcard.OriginallyAssigned1 />
       <assigned.OriginallyAssigned1 />
@@ -99,6 +101,9 @@ export default function() { return <div>Default Function</div> }`,
 export default class DefaultClass extends React.Component { render() { return <div>Export Default Class</div> } }`,
         '/defaultnamedfunction.js': `import * as React from 'react'
 export default function DefaultNamedFunction() { return <div>Default Named Function</div> }`,
+        '/definedthendefaultexported.js': `import * as React from 'react'
+        const DefinedThenDefaultExported = () => <div>Defined Then Default Exported</div>
+        export default DefinedThenDefaultExported`,
         '/namedasdefault.js': `import * as React from 'react'
 const ToBeDefaultExported = () => <div>Named As Default</div>
 export { ToBeDefaultExported as default }`,

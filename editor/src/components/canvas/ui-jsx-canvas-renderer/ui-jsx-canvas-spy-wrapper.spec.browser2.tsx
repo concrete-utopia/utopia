@@ -20,6 +20,7 @@ import { setFocusedElement } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 
 const exampleProject = `
 import * as React from "react";
@@ -154,7 +155,9 @@ describe('Spy Wrapper Template Path Tests', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -187,9 +190,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -222,9 +228,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -257,7 +266,8 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
       }
-    `)
+    `,
+    )
   })
 
   it('a component instance is focused inside the main App component', async () => {
@@ -285,7 +295,9 @@ describe('Spy Wrapper Template Path Tests', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -330,9 +342,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -377,9 +392,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -424,7 +442,8 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
       }
-    `)
+    `,
+    )
   })
 
   it('a component instance is focused inside a component instance inside the main App component', async () => {
@@ -465,7 +484,9 @@ describe('Spy Wrapper Template Path Tests', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -513,9 +534,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -563,9 +587,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -613,7 +640,8 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
       }
-    `)
+    `,
+    )
   })
 
   it('a generated component instance is focused inside a component instance inside the main App component', async () => {
@@ -654,7 +682,9 @@ describe('Spy Wrapper Template Path Tests', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -705,9 +735,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -758,9 +791,12 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -811,7 +847,8 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
       }
-    `)
+    `,
+    )
   })
 })
 
@@ -841,7 +878,9 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -886,9 +925,12 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "HiElement",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -933,9 +975,12 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -980,7 +1025,8 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "HiElement",
         },
       }
-    `)
+    `,
+    )
   })
 
   it('a component instance is focused inside a component instance inside the main App component', async () => {
@@ -1021,7 +1067,9 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1069,9 +1117,12 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1119,9 +1170,12 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1169,7 +1223,8 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
   })
 
   it('a generated component instance is focused inside a component instance inside the main App component', async () => {
@@ -1210,7 +1265,9 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1258,9 +1315,12 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "HiElement",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1308,9 +1368,12 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1358,7 +1421,8 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "HiElement",
         },
       }
-    `)
+    `,
+    )
   })
 })
 
@@ -1429,7 +1493,9 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1477,9 +1543,12 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "HiElement",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1527,9 +1596,12 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1577,7 +1649,8 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "HiElement",
         },
       }
-    `)
+    `,
+    )
   })
 
   it('elements inside cyclic imports can still be focused', async () => {
@@ -1667,7 +1740,9 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
     const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
 
-    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1721,9 +1796,12 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "HiElement",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1777,9 +1855,12 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "div",
         },
       }
-    `)
+    `,
+    )
 
-    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
       Object {
         "storyboard": Object {
           "name": "Storyboard",
@@ -1833,6 +1914,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           "name": "HiElement",
         },
       }
-    `)
+    `,
+    )
   })
 })

@@ -1,1 +1,3 @@
 src/third-party/*
+../website-next/node_modules
+../utopia-vscode-extension/src/vscode-types

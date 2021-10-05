@@ -7,60 +7,57 @@
 {-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
-module Utopia.Web.Ekg where
--- Stolen wholesale from: https://github.com/jkachmar/servant-ekg/blob/test-without-mvar/lib/Servant/Ekg.hs
+module Utopia.Web.ServantMonitoring where
+-- Derived from: https://github.com/jkachmar/servant-ekg/blob/test-without-mvar/lib/Servant/Ekg.hs
 
-import qualified Data.HashMap.Strict         as H
-import           Data.Text                   (Text)
-import qualified Data.Text                   as T
-import qualified Data.Text.Encoding          as T
+import qualified Data.HashMap.Strict   as H
+import           Data.Text             (Text)
+import qualified Data.Text             as T
+import qualified Data.Text.Encoding    as T
 import           Data.Time.Clock
-import           Network.HTTP.Types          (Status (..))
+import           Network.HTTP.Types    (Status (..))
 import           Network.Wai
 import           Protolude
 import           Servant.API
 import           Servant.API.WebSocket
 import           Servant.RawM.Server
 import           Servant.Server
-import           System.Metrics
-import qualified System.Metrics.Counter      as Counter
-import qualified System.Metrics.Distribution as Distribution
-import qualified System.Metrics.Gauge        as Gauge
+import           Utopia.Web.Metrics
 
-gaugeInflight :: Gauge.Gauge -> Middleware
+gaugeInflight :: Gauge -> Middleware
 gaugeInflight inflight application request respond =
-    bracket_ (Gauge.inc inflight)
-             (Gauge.dec inflight)
+    bracket_ (incrementGauge inflight)
+             (decrementGauge inflight)
              (application request respond)
 
 -- | Count responses with 2XX, 4XX, 5XX, and XXX response codes.
-countResponseCodes :: (Counter.Counter, Counter.Counter, Counter.Counter, Counter.Counter) -> Middleware
+countResponseCodes :: (Counter, Counter, Counter, Counter) -> Middleware
 countResponseCodes (c2XX, c4XX, c5XX, cXXX) application request respond =
     application request respond'
   where
     respond' res = count (responseStatus res) >> respond res
     count Status{statusCode = sc }
-        | 200 <= sc && sc < 300 = Counter.inc c2XX
-        | 400 <= sc && sc < 500 = Counter.inc c4XX
-        | 500 <= sc && sc < 600 = Counter.inc c5XX
-        | otherwise             = Counter.inc cXXX
+        | 200 <= sc && sc < 300 = incrementCounter c2XX
+        | 400 <= sc && sc < 500 = incrementCounter c4XX
+        | 500 <= sc && sc < 600 = incrementCounter c5XX
+        | otherwise             = incrementCounter cXXX
 
-responseTimeDistribution :: Distribution.Distribution -> Middleware
+responseTimeDistribution :: Distribution -> Middleware
 responseTimeDistribution dist application request respond =
     bracket getCurrentTime stop $ const $ application request respond
   where
     stop t1 = do
         t2 <- getCurrentTime
         let dt = diffUTCTime t2 t1
-        Distribution.add dist $ fromRational $ (* 1000) $ toRational dt
+        addToDistribution dist $ fromRational $ (* 1000) $ toRational dt
 
 data Meters = Meters
-    { metersInflight :: Gauge.Gauge
-    , metersC2XX     :: Counter.Counter
-    , metersC4XX     :: Counter.Counter
-    , metersC5XX     :: Counter.Counter
-    , metersCXXX     :: Counter.Counter
-    , metersTime     :: Distribution.Distribution
+    { metersInflight :: Gauge
+    , metersC2XX     :: Counter
+    , metersC4XX     :: Counter
+    , metersC5XX     :: Counter
+    , metersCXXX     :: Counter
+    , metersTime     :: Distribution
     }
 
 mkMeterMap :: HasEndpoint api => Proxy api -> Store -> IO (H.HashMap Text Meters)
