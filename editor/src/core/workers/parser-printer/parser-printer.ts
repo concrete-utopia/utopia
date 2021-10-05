@@ -83,7 +83,6 @@ import {
   mergeExportsDetail,
   EmptyExportsDetail,
   TextFile,
-  exportExpression,
   reexportWildcard,
   exportVariable,
   reexportVariables,
@@ -96,6 +95,8 @@ import {
   exportVariablesWithModifier,
   parseFailure,
   parseSuccess,
+  exportIdentifier,
+  ExportDetail,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { fastForEach, NO_OP } from '../../shared/utils'
@@ -535,7 +536,7 @@ function getModifersForComponent(
         break
       case 'EXPORT_VARIABLES':
         break
-      case 'EXPORT_EXPRESSION':
+      case 'EXPORT_IDENTIFIER':
         break
       case 'EXPORT_DESTRUCTURED_ASSIGNMENT':
         break
@@ -1019,11 +1020,11 @@ function getJsxFactoryFunction(sourceFile: TS.SourceFile): string | null {
 function detailsFromExportAssignment(
   sourceFile: TS.SourceFile,
   declaration: TS.ExportAssignment,
-): Either<TS.ExportAssignment, ExportsDetail> {
+): Either<TS.ExportAssignment, ExportDetail> {
   if (TS.isIdentifier(declaration.expression)) {
-    return right([exportExpression()])
+    return right(exportIdentifier(declaration.expression.getText(sourceFile)))
   } else if (TS.isArrowFunction(declaration.expression)) {
-    return right([exportDefaultFunctionOrClass(null)])
+    return right(exportDefaultFunctionOrClass(null))
   } else {
     return left(declaration)
   }
@@ -1242,8 +1243,13 @@ export function parseCode(
         const fromAssignment = detailsFromExportAssignment(sourceFile, topLevelElement)
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromAssignment, (toMerge) => {
-          detailOfExports = mergeExportsDetail(detailOfExports, toMerge)
-          pushArbitraryNode(topLevelElement)
+          detailOfExports = detailOfExports.concat(toMerge)
+
+          if (toMerge.type === 'EXPORT_IDENTIFIER') {
+            pushUnparsedCode(topLevelElement.getText(sourceFile))
+          } else {
+            pushArbitraryNode(topLevelElement)
+          }
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromAssignment, (exportDeclaration) => {

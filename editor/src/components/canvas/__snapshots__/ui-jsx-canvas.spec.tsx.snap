@@ -26254,7 +26254,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute;\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0 utopia-storyboard-uid/scene-aaa/app-entity:b93/59c utopia-storyboard-uid/scene-aaa/app-entity:b93/54b utopia-storyboard-uid/scene-aaa/app-entity:b93/d18 utopia-storyboard-uid/scene-aaa/app-entity:b93/995 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d00 utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0 utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f utopia-storyboard-uid/scene-aaa/app-entity:b93/315 utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9 utopia-storyboard-uid/scene-aaa/app-entity:b93/301 utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce utopia-storyboard-uid/scene-aaa/app-entity:b93/f77 utopia-storyboard-uid/scene-aaa/app-entity:b93/218 utopia-storyboard-uid/scene-aaa/app-entity:b93/a17 utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0 utopia-storyboard-uid/scene-aaa/app-entity:b93/59c utopia-storyboard-uid/scene-aaa/app-entity:b93/54b utopia-storyboard-uid/scene-aaa/app-entity:b93/d18 utopia-storyboard-uid/scene-aaa/app-entity:b93/995 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d00 utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0 utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f utopia-storyboard-uid/scene-aaa/app-entity:b93/315 utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9 utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1 utopia-storyboard-uid/scene-aaa/app-entity:b93/301 utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce utopia-storyboard-uid/scene-aaa/app-entity:b93/f77 utopia-storyboard-uid/scene-aaa/app-entity:b93/218 utopia-storyboard-uid/scene-aaa/app-entity:b93/a17 utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -26346,6 +26346,12 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
           data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9\\"
         >
           Default Named Function
+        </div>
+        <div
+          data-uid=\\"4cf 1a1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1:4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1\\"
+        >
+          Defined Then Default Exported
         </div>
         <div
           data-uid=\\"4cf 301\\"
@@ -26979,6 +26985,7 @@ import DefaultExpression from '/defaultexpression'
 import DefaultFunction from '/defaultfunction'
 import DefaultClass from '/defaultclass'
 import DefaultNamedFunction from '/defaultnamedfunction'
+import DefinedThenDefaultExported from '/definedthendefaultexported'
 import NamedAsDefault from '/namedasdefault'
 import * as ReexportWildcard from '/reexportwildcard'
 import { assigned } from '/reexportmoduleintonamedexport'
@@ -27001,6 +27008,7 @@ export var App = (props) => {
       <DefaultFunction />
       <DefaultClass />
       <DefaultNamedFunction />
+      <DefinedThenDefaultExported />
       <NamedAsDefault />
       <ReexportWildcard.OriginallyAssigned1 />
       <assigned.OriginallyAssigned1 />
@@ -27131,6 +27139,35 @@ export var App = (props) => {
             ],
             "type": "JSX_ELEMENT",
             "uid": "5b9",
+          },
+          Object {
+            "children": Array [],
+            "name": Object {
+              "baseVariable": "DefinedThenDefaultExported",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "type": "JSX_ATTRIBUTES_ENTRY",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "1a1",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+            "uid": "1a1",
           },
           Object {
             "children": Array [],
@@ -27476,6 +27513,123 @@ export var App = (props) => {
           Array [
             "b93",
             "0cf",
+          ],
+        ],
+        "type": "elementpath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "renderedChildrenCount": 0,
+      "usesParentBounds": false,
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "DefinedThenDefaultExported",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "type": "JSX_ATTRIBUTES_ENTRY",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "1a1",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+        "uid": "1a1",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
+        Array [
+          "b93",
+          "1a1",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": null,
+        "path": "/definedthendefaultexported",
+        "variableName": "DefinedThenDefaultExported",
+      },
+    },
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1",
+      "data-uid": "1a1",
+      "data-utopia-instance-path": Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "b93",
+            "1a1",
           ],
         ],
         "type": "elementpath",
@@ -27999,6 +28153,7 @@ import DefaultExpression from '/defaultexpression'
 import DefaultFunction from '/defaultfunction'
 import DefaultClass from '/defaultclass'
 import DefaultNamedFunction from '/defaultnamedfunction'
+import DefinedThenDefaultExported from '/definedthendefaultexported'
 import NamedAsDefault from '/namedasdefault'
 import * as ReexportWildcard from '/reexportwildcard'
 import { assigned } from '/reexportmoduleintonamedexport'
@@ -28021,6 +28176,7 @@ export var App = (props) => {
       <DefaultFunction />
       <DefaultClass />
       <DefaultNamedFunction />
+      <DefinedThenDefaultExported />
       <NamedAsDefault />
       <ReexportWildcard.OriginallyAssigned1 />
       <assigned.OriginallyAssigned1 />
