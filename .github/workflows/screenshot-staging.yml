@@ -44,7 +44,7 @@ jobs:
                 "image": {
                   "url": $screenshot_url
                 }
-              },
+              }
             ]
           SCREENSHOT_URL: ${{ steps.run-screenshot-test.outputs.screenshot }}
         run: |
