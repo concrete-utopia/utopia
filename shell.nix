@@ -283,6 +283,7 @@ let
       set -e
       rebuild-cabal
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      pkill utopia-web || true
       ${cabal}/bin/cabal new-run -j --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N -c
     '')
     (pkgs.writeScriptBin "run-server" ''
@@ -296,7 +297,7 @@ let
       set -e
       cabal-update
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
+      ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch src --watch package.yaml --exec run-server-inner
     '')
   ];
 
@@ -344,6 +345,7 @@ let
       #!/usr/bin/env bash
       # Kill nodemon because it just seems to keep running.
       pkill nodemon
+      pkill utopia-web
       stop-postgres
       tmux kill-session -t utopia-dev
     '')
