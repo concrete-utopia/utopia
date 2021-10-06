@@ -1,0 +1,44 @@
+name: Screenshot Staging
+on:
+  repository_dispatch:
+    types: [trigger-staging-screenshot]
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  take-screenshot:
+    name: Take Screenshot
+    steps:
+      - name: Run Puppeteer
+        id: run-screenshot-test
+        env:
+          AWS_S3_BUCKET: ${{secrets.PERFORMANCE_GRAPHS_BUCKET}}
+          AWS_ACCESS_KEY_ID: ${{ secrets.PERFORMANCE_GRAPHS_ACCESS_KEY}}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
+          AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run screenshot-test"
+      - name: Build Discord Message
+        env:
+          TEMPLATE: >-
+            [
+              {
+                "title": "Staging:",
+                "color": 2369839,
+                "image": {
+                  "url": $screenshot_url
+                }
+              },
+            ]
+          SCREENSHOT_URL: ${{ steps.run-screenshot-test.outputs.screenshot }}
+        run: |
+          echo "DISCORD_EMBEDS=$(jq -nc --arg screenshot_url "$SCREENSHOT_URL" "$TEMPLATE")" >> $GITHUB_ENV
+      - name: Send Discord Notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          DISCORD_USERNAME: 'Puppeteer'
+          DISCORD_AVATAR: https://octodex.github.com/images/puppeteer.png
+          MESSAGE: 'Screenshot of latest Staging deploy'
+        with:
+          args: ${{ env.MESSAGE }}

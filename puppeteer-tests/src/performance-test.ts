@@ -2,12 +2,10 @@
 require('dotenv').config({ path: 'src/.env' })
 import puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
-import { timeLimitPromise } from './utils'
+import { consoleDoneMessage, initialiseTests, setupBrowser, uploadPNGtoAWS } from './utils'
 const fs = require('fs')
 const path = require('path')
-const AWS = require('aws-sdk')
 const moveFile = require('move-file')
-const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
 const PROJECT_ID = '5596ecdd'
@@ -53,56 +51,6 @@ function defer() {
   Object.defineProperty(promise, 'reject', { value: rej })
 
   return promise
-}
-
-function consoleDoneMessage(
-  page: puppeteer.Page,
-  expectedConsoleMessage: string,
-  errorMessage?: string,
-): Promise<void> {
-  const consoleDonePromise = new Promise<void>((resolve, reject) => {
-    page.on('console', (message) => {
-      if (
-        message.text().includes(expectedConsoleMessage) ||
-        (errorMessage != null && message.text().includes(errorMessage))
-      ) {
-        // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
-        // we wait until we see this console log and then we resolve the Promise
-        resolve()
-      }
-    })
-  })
-  return timeLimitPromise(
-    consoleDonePromise,
-    120000,
-    `Missing console message ${expectedConsoleMessage} in test browser.`,
-  )
-}
-
-export const setupBrowser = async (
-  url: string,
-): Promise<{
-  page: puppeteer.Page
-  browser: puppeteer.Browser
-}> => {
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: yn(process.env.HEADLESS),
-    executablePath: process.env.BROWSER,
-  })
-  const page = await browser.newPage()
-  await page.setDefaultNavigationTimeout(120000)
-  await page.setDefaultTimeout(120000)
-  await page.setViewport({ width: 1500, height: 768 })
-  // page.on('console', (message) =>
-  //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
-  // )
-  console.info('loading editor at URL:', url)
-  await page.goto(url)
-  return {
-    browser: browser,
-    page: page,
-  }
 }
 
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
@@ -178,16 +126,9 @@ async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResul
 }
 
 async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselines> {
-  console.log('Initialising the project')
-  await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+  await initialiseTests(page)
 
-  // Select something a resize it to trigger a fork
-  const navigatorElement = await page.$('[class^="item-label-container"]')
-  await navigatorElement!.click()
-
-  // First selection will open the file in VS Code, triggering a bunch of downloads, so we pause briefly
-  await page.waitForTimeout(15000)
-
+  // Resize to trigger a fork
   const [button] = await page.$x(ResizeButtonXPath)
   await button!.click()
   await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
@@ -195,12 +136,13 @@ async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselin
   // This change should have triggered a fork, so pause again
   await page.waitForTimeout(15000)
 
+  console.log('Taking baseline performance measurments')
   // Now take a baseline measurement for general performance of the machine running this test
   // This value should be as close as possible to 1 on a good run on CI
   const basicCalc = timeBasicCalc()
   const simpleDispatch = await testBaselinePerformance(page)
 
-  console.log('Finished initialising')
+  console.log('Finished baseline measurements')
 
   return {
     basicCalc,
@@ -399,7 +341,7 @@ async function uploadSummaryImage(results: Array<FrameResult>): Promise<string> 
 
   if (fileURI != null) {
     const s3FileUrl = await uploadPNGtoAWS(fileURI)
-    return s3FileUrl
+    return s3FileUrl ?? ''
   } else {
     return ''
   }
@@ -517,41 +459,14 @@ async function createSummaryPng(
   })
 }
 
-async function uploadPNGtoAWS(testFile: string): Promise<string> {
-  AWS.config.update({
-    region: process.env.AWS_REGION,
-    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-  })
+testPerformance().catch((e) => {
+  const errorMessage = `"There was an error with Puppeteer: ${e.name} – ${e.message}"`
+  console.info(`::set-output name=perf-result::${errorMessage}`)
 
-  let s3 = new AWS.S3({ apiVersion: '2006-03-01' })
-  const uploadParams = {
-    Bucket: process.env.AWS_S3_BUCKET,
-    Key: testFile,
-    Body: '',
-    ContentType: 'image/png',
-    ACL: 'public-read',
-  }
-
-  return new Promise<string>((resolve, reject) => {
-    const path1 = path.resolve(testFile)
-    let filestream = fs.createReadStream(path1)
-    filestream.on('error', function (err: any) {
-      console.log('File Error', err)
-      reject(err)
-    })
-    uploadParams.Body = filestream
-    uploadParams.Key = path.basename(testFile)
-
-    s3.upload(uploadParams, function (err: any, data: any) {
-      if (err) {
-        console.log('Error', err)
-        reject(err)
-      }
-      if (data) {
-        console.log('Upload Success', data.Location)
-        resolve(data.Location)
-      }
-    })
-  })
-}
+  // Output the individual parts for building a discord message
+  console.info(`::set-output name=perf-message-staging:: ${errorMessage}`)
+  console.info(`::set-output name=perf-chart-staging:: ""`)
+  console.info(`::set-output name=perf-message-master:: ""`)
+  console.info(`::set-output name=perf-chart-master:: ""`)
+  return
+})
