@@ -16,6 +16,11 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Check out the repo
         uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
