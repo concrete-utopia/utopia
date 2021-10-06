@@ -377,10 +377,7 @@ const RowForObjectControl = betterReactMemo(
     return (
       <div
         style={{
-          paddingTop: 8,
-          paddingBottom: 8,
-          paddingLeft: 0,
-          paddingRight: 0,
+          padding: '8px 0',
         }}
       >
         <div>
