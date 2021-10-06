@@ -115,7 +115,7 @@ function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
       projectContents: updatedProjectContents,
     }
   }, baseModel)
-  return renderTestEditorWithModel(updatedProject)
+  return renderTestEditorWithModel(updatedProject, 'await-first-dom-report')
 }
 
 function createExampleProject() {

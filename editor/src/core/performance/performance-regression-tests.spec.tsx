@@ -25,6 +25,7 @@ describe('React Render Count Tests - ', () => {
         />
       </View>
       `),
+      'dont-await-first-dom-report',
     )
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
@@ -80,6 +81,7 @@ describe('React Render Count Tests - ', () => {
         </View>
       )
       `),
+      'dont-await-first-dom-report',
     )
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
@@ -139,6 +141,7 @@ describe('React Render Count Tests - ', () => {
         />
       </View>
       `),
+      'dont-await-first-dom-report',
     )
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
@@ -197,6 +200,7 @@ describe('React Render Count Tests - ', () => {
         </View>
       )
       `),
+      'dont-await-first-dom-report',
     )
     await renderResult.dispatch(
       [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],

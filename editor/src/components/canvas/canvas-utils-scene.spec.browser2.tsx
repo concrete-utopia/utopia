@@ -28,6 +28,7 @@ describe('moving a scene/rootview on the canvas', () => {
           />
         </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
@@ -155,7 +156,7 @@ describe('moving a scene/rootview on the canvas', () => {
         }`,
       PrettierConfig,
     )
-    const renderResult = await renderTestEditorWithCode(testCode)
+    const renderResult = await renderTestEditorWithCode(testCode, 'await-first-dom-report')
 
     const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
@@ -303,7 +304,7 @@ describe('resizing a scene/rootview on the canvas', () => {
         }`,
       PrettierConfig,
     )
-    const renderResult = await renderTestEditorWithCode(testCode)
+    const renderResult = await renderTestEditorWithCode(testCode, 'await-first-dom-report')
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
@@ -431,7 +432,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       }`,
       PrettierConfig,
     )
-    const renderResult = await renderTestEditorWithCode(testCode)
+    const renderResult = await renderTestEditorWithCode(testCode, 'await-first-dom-report')
 
     const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)

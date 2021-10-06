@@ -208,7 +208,10 @@ describe('parseCode', () => {
         } `,
       ),
     }
-    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const renderResult = await renderTestEditorWithProjectContent(
+      contentsToTree(projectContents),
+      'dont-await-first-dom-report',
+    )
 
     const uniqueIDs = getAllUniqueUids(
       renderResult.getEditorState().editor.projectContents,

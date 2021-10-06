@@ -132,7 +132,7 @@ function renderTestProject() {
       projectContents: updatedProjectContents,
     }
   }, baseModel)
-  return renderTestEditorWithModel(updatedProject)
+  return renderTestEditorWithModel(updatedProject, 'await-first-dom-report')
 }
 
 describe('Spy Wrapper Tests For React Three Fiber', () => {

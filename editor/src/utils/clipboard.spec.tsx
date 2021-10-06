@@ -64,7 +64,10 @@ export var App = (props) => {
 }`,
       ),
     }
-    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const renderResult = await renderTestEditorWithProjectContent(
+      contentsToTree(projectContents),
+      'dont-await-first-dom-report',
+    )
     const targetPath1 = EP.appendNewElementPath(TestScenePath, [
       'app-outer-div',
       'app-inner-div-to-copy',

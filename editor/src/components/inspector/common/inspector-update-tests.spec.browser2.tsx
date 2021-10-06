@@ -27,6 +27,7 @@ describe('updating style properties keeps the original order', () => {
         />
       </div>
       `),
+      'await-first-dom-report',
     )
 
     const changePinProps = setProp_UNSAFE(

@@ -45,6 +45,7 @@ describe('maybeSwitchLayoutProps', () => {
         />
       </View>
       `),
+      'await-first-dom-report',
     )
 
     await renderResult.dispatch(
