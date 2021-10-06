@@ -7,6 +7,7 @@ const yn = require('yn')
 
 export const setupBrowser = async (
   url: string,
+  defaultTimeout: number,
 ): Promise<{
   page: puppeteer.Page
   browser: puppeteer.Browser
@@ -18,7 +19,7 @@ export const setupBrowser = async (
   })
   const page = await browser.newPage()
   await page.setDefaultNavigationTimeout(120000)
-  await page.setDefaultTimeout(120000)
+  await page.setDefaultTimeout(defaultTimeout)
   await page.setViewport({ width: 1500, height: 768 })
   console.info('loading editor at URL:', url)
   await page.goto(url)

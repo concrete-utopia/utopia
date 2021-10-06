@@ -8,7 +8,7 @@ const BASE_EDITOR_URL = process.env.BASE_EDITOR_URL ?? `https://utopia.pizza`
 const EDITOR_URL = process.env.EDITOR_URL ?? `${BASE_EDITOR_URL}/project/${PROJECT_ID}`
 
 async function takeScreenshot() {
-  const { page, browser } = await setupBrowser(EDITOR_URL)
+  const { page, browser } = await setupBrowser(EDITOR_URL, 240000)
   try {
     await initialiseTests(page)
 

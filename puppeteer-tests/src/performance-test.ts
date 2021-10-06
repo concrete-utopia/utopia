@@ -183,7 +183,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
   let selectionResult = EmptyResult
   let basicCalc = EmptyResult
   let simpleDispatch = EmptyResult
-  const { page, browser } = await setupBrowser(url)
+  const { page, browser } = await setupBrowser(url, 120000)
   try {
     const baselines = await initialiseTestsReturnScale(page)
     basicCalc = baselines.basicCalc
