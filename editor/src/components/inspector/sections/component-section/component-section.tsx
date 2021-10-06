@@ -374,29 +374,36 @@ const RowForObjectControl = betterReactMemo(
     const title = titleForControl(propPath, controlDescription)
 
     return (
-      <>
-        <InspectorSectionHeader>
+      <div
+        style={{
+          padding: '8px 0',
+        }}
+      >
+        <div>
           <SimpleFlexRow style={{ flexGrow: 1 }}>
             <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
               {title}
             </PropertyLabel>
           </SimpleFlexRow>
-        </InspectorSectionHeader>
+        </div>
         {mapToArray((innerControl: ControlDescription, prop: string) => {
           const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
           return (
-            <>
-              {innerControl.type}
+            <FlexRow
+              style={{
+                margin: '-8px 0 0 8px',
+              }}
+            >
               <RowForControl
                 key={`object-control-row-${PP.toString(innerPropPath)}`}
                 controlDescription={innerControl}
                 isScene={isScene}
                 propPath={innerPropPath}
               />
-            </>
+            </FlexRow>
           )
         }, controlDescription.object)}
-      </>
+      </div>
     )
   },
 )
