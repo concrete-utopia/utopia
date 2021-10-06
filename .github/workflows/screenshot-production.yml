@@ -8,6 +8,7 @@ on:
 jobs:
   take-screenshot:
     name: Take Screenshot
+    runs-on: ubuntu-latest
     steps:
       - name: Run Puppeteer
         id: run-screenshot-test
