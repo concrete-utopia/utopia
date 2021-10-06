@@ -233,16 +233,6 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
   const title = titleForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
 
-  let warningTooltip: string | undefined = undefined
-  const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
-  if (unsetOptionalFields.length > 0) {
-    warningTooltip = `These optional fields are not set: ${joinSpecial(
-      unsetOptionalFields,
-      ', ',
-      ' and ',
-    )}`
-  }
-
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
@@ -303,17 +293,6 @@ const RowForArrayControl = betterReactMemo(
     )
     const [insertingRow, setInsertingRow] = React.useState(false)
 
-    let warningTooltip: string | undefined = undefined
-    const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
-    if (unsetOptionalFields.length > 0) {
-      warningTooltip = `These optional fields are not set: ${joinSpecial(
-        unsetOptionalFields,
-        ', ',
-        ' and ',
-      )}`
-    }
-    const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
-
     const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
 
     React.useEffect(() => setInsertingRow(false), [springs.length])
@@ -323,7 +302,6 @@ const RowForArrayControl = betterReactMemo(
         <InspectorSectionHeader>
           <SimpleFlexRow style={{ flexGrow: 1 }}>
             <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-              {warning}
               {title}
             </PropertyLabel>
             {propertyStatus.overwritable ? (
@@ -395,23 +373,11 @@ const RowForObjectControl = betterReactMemo(
     const { propPath, controlDescription, isScene } = props
     const title = titleForControl(propPath, controlDescription)
 
-    let warningTooltip: string | undefined = undefined
-    const unsetOptionalFields = getDescriptionUnsetOptionalFields(controlDescription)
-    if (unsetOptionalFields.length > 0) {
-      warningTooltip = `These optional fields are not set: ${joinSpecial(
-        unsetOptionalFields,
-        ', ',
-        ' and ',
-      )}`
-    }
-    const warning = warningTooltip == null ? null : <WarningTooltip warning={warningTooltip} />
-
     return (
       <>
         <InspectorSectionHeader>
           <SimpleFlexRow style={{ flexGrow: 1 }}>
             <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-              {warning}
               {title}
             </PropertyLabel>
           </SimpleFlexRow>
