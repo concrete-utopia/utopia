@@ -46,7 +46,6 @@ import {
   Subdued,
   VerySubdued,
   FlexRow,
-  InspectorSubsectionHeader,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
