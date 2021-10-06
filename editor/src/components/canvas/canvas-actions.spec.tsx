@@ -30,7 +30,7 @@ describe('createDragState', () => {
         </div>
       </div>
       `),
-      'dont-await-first-dom-report',
+      'dont-await-first-dom-report'
     )
 
     const selectedViews = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
