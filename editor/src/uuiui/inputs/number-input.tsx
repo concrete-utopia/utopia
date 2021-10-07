@@ -146,6 +146,7 @@ export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
   onSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
   onTransientSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
   onForcedSubmitValue?: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+  setGlobalCursor?: (cursor: CSSCursor | null) => void
 }
 
 const ScrubThreshold = 3
@@ -175,6 +176,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     focusOnMount = false,
     numberType,
     defaultUnitToHide,
+    setGlobalCursor,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
@@ -403,8 +405,9 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           )
         })
         setScrubThresholdPassed(false)
+        setGlobalCursor?.(null)
       },
-      [scrubOnMouseMove, setScrubValue, parsedStateValueUnit, ref],
+      [scrubOnMouseMove, setScrubValue, parsedStateValueUnit, ref, setGlobalCursor],
     )
 
     const rc = roundCorners == null ? 'all' : roundCorners
@@ -571,10 +574,11 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             setValueAtDragOrigin(propsValue.value)
             setDragOriginX(e.screenX)
             setDragOriginY(e.screenY)
+            setGlobalCursor?.(CSSCursor.ResizeEW)
           }
         }
       },
-      [propsValue, scrubOnMouseMove, scrubOnMouseUp],
+      [propsValue, scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor],
     )
 
     let placeholder: string = ''
@@ -803,6 +807,7 @@ interface SimpleNumberInputProps extends Omit<AbstractNumberInputProps<number>, 
   onSubmitValue: OnSubmitValueOrEmpty<number>
   onTransientSubmitValue: OnSubmitValueOrEmpty<number>
   onForcedSubmitValue: OnSubmitValueOrEmpty<number>
+  setGlobalCursor?: (cursor: CSSCursor | null) => void
 }
 
 function wrappedSimpleOnSubmitValue(
@@ -877,11 +882,12 @@ interface ChainedNumberControlProps {
   propsArray: Array<Omit<NumberInputProps, 'chained' | 'id'>>
   idPrefix: string
   style?: React.CSSProperties
+  setGlobalCursor?: (cursor: CSSCursor | null) => void
 }
 
 export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlProps> = betterReactMemo(
   'ChainedNumberInput',
-  ({ propsArray, idPrefix, style }) => {
+  ({ propsArray, idPrefix, style, setGlobalCursor }) => {
     return (
       <FlexRow style={style}>
         {propsArray.map((props, i) => {
@@ -894,6 +900,7 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
                   {...props}
                   chained='first'
                   roundCorners='left'
+                  setGlobalCursor={setGlobalCursor}
                 />
               )
             }
@@ -905,6 +912,7 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
                   {...props}
                   chained='last'
                   roundCorners='right'
+                  setGlobalCursor={setGlobalCursor}
                 />
               )
             }
@@ -916,6 +924,7 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
                   {...props}
                   chained='middle'
                   roundCorners='none'
+                  setGlobalCursor={setGlobalCursor}
                 />
               )
             }

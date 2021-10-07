@@ -1,6 +1,6 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
-import { betterReactMemo, SliderControl } from '../../../../uuiui-deps'
+import { betterReactMemo, CSSCursor, SliderControl } from '../../../../uuiui-deps'
 import {
   BaseControlDescription,
   BooleanControlDescription,
@@ -57,6 +57,7 @@ export interface ControlForPropProps<T extends BaseControlDescription> {
   propName: string
   controlDescription: T
   propMetadata: InspectorInfo<any>
+  setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
 export const ControlForBooleanProp = betterReactMemo(
@@ -480,7 +481,7 @@ export const ControlForStringProp = betterReactMemo(
 export const ControlForVectorProp = betterReactMemo(
   'ControlForVectorProp',
   (props: ControlForPropProps<Vector2ControlDescription | Vector3ControlDescription>) => {
-    const { propPath, propMetadata, controlDescription } = props
+    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const vectorValue =
       (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ?? []
@@ -520,6 +521,12 @@ export const ControlForVectorProp = betterReactMemo(
       },
     )
 
-    return <ChainedNumberInput idPrefix={'vector'} propsArray={propsArray} />
+    return (
+      <ChainedNumberInput
+        idPrefix={'vector'}
+        propsArray={propsArray}
+        setGlobalCursor={setGlobalCursor}
+      />
+    )
   },
 )

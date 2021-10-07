@@ -332,7 +332,7 @@ export const EditorComponentInner = betterReactMemo(
         </SimpleFlexColumn>
         <ModalComponent />
         <ToastRenderer />
-        <CanvasCursorComponent />
+        <EditorCursorComponent />
         {props.propertyControlsInfoSupported && props.vscodeBridgeReady ? (
           <PropertyControlsInfoComponent />
         ) : null}
@@ -364,23 +364,29 @@ export function EditorComponent(props: EditorProps) {
   )
 }
 
-const CanvasCursorComponent = betterReactMemo('CanvasCursorComponent', () => {
+const EditorCursorComponent = betterReactMemo('EditorCursorComponent', () => {
   const cursor = useEditorState((store) => {
     return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
-  }, 'CanvasCursorComponent')
-  return cursor == null ? null : (
-    <div
-      key='cursor-area'
-      style={{
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        width: '100vw',
-        height: '100vh',
-        cursor: cursor,
-      }}
-    />
-  )
+  }, 'EditorCursorComponent cursor')
+
+  const styleProps = React.useMemo(() => {
+    let workingStyleProps: React.CSSProperties = {
+      position: 'fixed',
+      left: 0,
+      top: 0,
+      width: '100vw',
+      height: '100vh',
+      pointerEvents: 'none',
+      zIndex: 9999999,
+    }
+    if (cursor != null) {
+      workingStyleProps.cursor = cursor
+      workingStyleProps.pointerEvents = 'all'
+    }
+    return workingStyleProps
+  }, [cursor])
+
+  return <div key='cursor-area' id='cursor-overlay' style={styleProps} />
 })
 
 const ToastRenderer = betterReactMemo('ToastRenderer', () => {
