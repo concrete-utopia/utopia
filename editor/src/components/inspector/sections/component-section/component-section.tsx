@@ -15,13 +15,7 @@ import {
   getDescriptionUnsetOptionalFields,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
-import {
-  eitherToMaybe,
-  foldEither,
-  isLeft,
-  isRight,
-  maybeEitherToMaybe,
-} from '../../../../core/shared/either'
+import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -107,7 +101,7 @@ import {
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
-import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
+import { HiddenControls, isControlHidden } from './hidden-controls-section'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -782,7 +776,7 @@ export const SectionRow = betterReactMemo(
     )
     if (
       props.hideUnset &&
-      (propMetadata.controlStatus === 'unset' || propMetadata.controlStatus === 'off')
+      (isControlHidden(propMetadata.controlStatus) || propMetadata.controlStatus === 'off')
     ) {
       return null
     } else {
@@ -796,131 +790,6 @@ export const SectionRow = betterReactMemo(
           />
         </UIGridRow>
       )
-    }
-  },
-)
-
-interface HiddenControlsProps {
-  propertyControls: ParseResult<ParsedPropertyControls>
-}
-
-export const HiddenControls = betterReactMemo(
-  'HiddenControls',
-  (props: HiddenControlsProps): JSX.Element | null => {
-    const [visibleEmptyElements, setVisibleEmptyElements] = React.useState<Array<PropertyPath>>([])
-    const showHiddenControl = React.useCallback(
-      (path: PropertyPath) => setVisibleEmptyElements([...visibleEmptyElements, path]),
-      [setVisibleEmptyElements, visibleEmptyElements],
-    )
-
-    const visibleEmptyControls = React.useMemo(
-      () =>
-        visibleEmptyElements.map((path) => {
-          if (isRight(props.propertyControls)) {
-            const propertyControl = props.propertyControls.value[PP.toString(path)]
-            if (propertyControl != null && isRight(propertyControl)) {
-              return (
-                <SectionRow
-                  key={PP.toString(path)}
-                  propPath={path}
-                  controlDescription={propertyControl.value}
-                  isScene={false}
-                  hideUnset={false}
-                />
-              )
-            } else {
-              return null
-            }
-          } else {
-            return null
-          }
-        }),
-      [visibleEmptyElements, props.propertyControls],
-    )
-
-    const propNameList = React.useMemo(() => {
-      if (isRight(props.propertyControls)) {
-        const success = props.propertyControls.value
-        const propNames = filterSpecialProps(Object.keys(success)).filter(
-          (name) => !visibleEmptyElements.find((visible) => PP.toString(visible) === name),
-        )
-        if (propNames.length > 0) {
-          return (
-            <>
-              <div style={{ padding: '4px 8px', fontWeight: 600 }}>
-                Additional Optional Properties
-              </div>
-              <div
-                style={{
-                  padding: '0px 8px',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: '0px 2px',
-                }}
-              >
-                {propNames.map((name, index) => {
-                  const propertyControl = success[name]
-                  if (propertyControl != null && isRight(propertyControl)) {
-                    return (
-                      <>
-                        <HiddenControlLabel
-                          key={name}
-                          propPath={PP.create([name])}
-                          isScene={false}
-                          controlDescription={propertyControl.value}
-                          showHiddenControl={showHiddenControl}
-                          isLast={propNames.length - 1 === index}
-                        />
-                      </>
-                    )
-                  } else {
-                    return null
-                  }
-                })}
-              </div>
-            </>
-          )
-        } else {
-          return null
-        }
-      } else {
-        return null
-      }
-    }, [props.propertyControls, showHiddenControl, visibleEmptyElements])
-
-    return (
-      <>
-        {visibleEmptyControls}
-        {propNameList}
-      </>
-    )
-  },
-)
-
-type HiddenControlLabelProps = Omit<RowForControlProps, 'propMetadata'> & {
-  showHiddenControl: (path: PropertyPath) => void
-  isLast: boolean
-}
-
-const HiddenControlLabel = betterReactMemo(
-  'HiddenControlLabel',
-  (props: HiddenControlLabelProps): JSX.Element | null => {
-    const { propPath, showHiddenControl } = props
-    const propMetadata = useComponentPropsInspectorInfo(propPath, false, props.controlDescription)
-    const labelOnClick = React.useCallback(() => showHiddenControl(propPath), [
-      propPath,
-      showHiddenControl,
-    ])
-    if (propMetadata.controlStatus === 'unset') {
-      return (
-        <span style={{ cursor: 'pointer' }} onClick={labelOnClick}>
-          {PP.toString(propPath)}
-          {props.isLast ? '.' : ', '}
-        </span>
-      )
-    } else {
-      return null
     }
   },
 )
