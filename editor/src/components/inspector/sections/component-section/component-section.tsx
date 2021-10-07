@@ -15,7 +15,12 @@ import {
   getDescriptionUnsetOptionalFields,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
-import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
+import {
+  eitherToMaybe,
+  foldEither,
+  isRight,
+  maybeEitherToMaybe,
+} from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -60,11 +65,13 @@ import { addOnUnsetValues } from '../../common/context-menu-items'
 import { InstanceContextMenu } from '../../common/instance-context-menu'
 import {
   useControlForUnionControl,
+  useControlStatusForPaths,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
   InspectorInfo,
   useGivenPropsWithoutControls,
+  useInspectorInfoSimpleUntyped,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
   useUsedPropsWithoutDefaults,
@@ -101,7 +108,11 @@ import {
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
-import { HiddenControls, isControlHidden } from './hidden-controls-section'
+import {
+  filterNonUnsetAndEmptyControls,
+  HiddenControls,
+  useHiddenElements,
+} from './hidden-controls-section'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -623,6 +634,15 @@ export const ComponentSectionInner = betterReactMemo(
       }
     }, [dispatch, locationOfComponentInstance])
 
+    let propPaths: Array<PropertyPath> = []
+    if (isRight(propertyControls)) {
+      const propNames = filterSpecialProps(Object.keys(propertyControls.value))
+      propPaths = propNames.map((name) => PP.create([name]))
+    }
+
+    const propertyControlsStatus = useControlStatusForPaths(propPaths)
+    const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
+
     return (
       <>
         <InspectorSectionHeader>
@@ -704,7 +724,11 @@ export const ComponentSectionInner = betterReactMemo(
             return <ParseErrorControl parseError={rootParseError} />
           },
           (rootParseSuccess) => {
-            const propNames = filterSpecialProps(Object.keys(rootParseSuccess))
+            const propNames = filterNonUnsetAndEmptyControls(
+              filterSpecialProps(Object.keys(rootParseSuccess)),
+              propertyControlsStatus,
+              visibleEmptyControls,
+            )
             if (propNames.length > 0) {
               return (
                 <>
@@ -731,7 +755,6 @@ export const ComponentSectionInner = betterReactMemo(
                               propPath={PP.create([propName])}
                               controlDescription={controlDescription}
                               isScene={props.isScene}
-                              hideUnset={true}
                             />
                           )
                         },
@@ -747,7 +770,12 @@ export const ComponentSectionInner = betterReactMemo(
           },
           propertyControls,
         )}
-        <HiddenControls key={EP.toString(target)} propertyControls={propertyControls} />
+        <HiddenControls
+          propertyControls={propertyControls}
+          propertyControlsStatus={propertyControlsStatus}
+          visibleEmptyControls={visibleEmptyControls}
+          showHiddenControl={showHiddenControl}
+        />
         {/** props set on the component instance and props used inside the component code */}
         {propsUsedWithoutControls.length > 0 || propsGivenToElement.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
@@ -768,29 +796,22 @@ export const ComponentSectionInner = betterReactMemo(
 
 export const SectionRow = betterReactMemo(
   'SectionRow',
-  (props: Omit<RowForControlProps, 'propMetadata'> & { hideUnset: boolean }) => {
+  (props: Omit<RowForControlProps, 'propMetadata'>) => {
     const propMetadata = useComponentPropsInspectorInfo(
       props.propPath,
       props.isScene,
       props.controlDescription,
     )
-    if (
-      props.hideUnset &&
-      (isControlHidden(propMetadata.controlStatus) || propMetadata.controlStatus === 'off')
-    ) {
-      return null
-    } else {
-      return (
-        <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
-          <RowForControl
-            propPath={props.propPath}
-            controlDescription={props.controlDescription}
-            isScene={props.isScene}
-            propMetadata={propMetadata}
-          />
-        </UIGridRow>
-      )
-    }
+    return (
+      <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
+        <RowForControl
+          propPath={props.propPath}
+          controlDescription={props.controlDescription}
+          isScene={props.isScene}
+          propMetadata={propMetadata}
+        />
+      </UIGridRow>
+    )
   },
 )
 
