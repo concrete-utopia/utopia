@@ -30,7 +30,7 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
-import { getParseErrorDetails, ParseError, ParseResult } from '../../../../utils/value-parser-utils'
+import { getParseErrorDetails, ParseError } from '../../../../utils/value-parser-utils'
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
@@ -69,7 +69,6 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
-  InspectorInfo,
   useGivenPropsWithoutControls,
   useInspectorInfoSimpleUntyped,
   useSelectedPropertyControls,
@@ -239,11 +238,11 @@ function titleForControl(propPath: PropertyPath, control: ControlDescription): s
 interface RowForBaseControlProps extends AbstractRowForControlProps {
   label?: React.ComponentType<any>
   controlDescription: BaseControlDescription
-  propMetadata: InspectorInfo<any>
 }
 
 const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
-  const { propPath, controlDescription, propMetadata } = props
+  const { propPath, controlDescription, isScene } = props
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const title = titleForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
 
@@ -310,12 +309,6 @@ const RowForArrayControl = betterReactMemo(
 
     React.useEffect(() => setInsertingRow(false), [springs.length])
 
-    const propMetadata = useComponentPropsInspectorInfo(
-      props.propPath,
-      props.isScene,
-      props.controlDescription,
-    )
-
     return (
       <>
         <InspectorSectionHeader>
@@ -365,7 +358,6 @@ const RowForArrayControl = betterReactMemo(
                   controlDescription={controlDescription.propertyControl}
                   isScene={isScene}
                   propPath={PP.appendPropertyPathElems(propPath, [index])}
-                  propMetadata={propMetadata}
                 />
               </animated.div>
             )
@@ -376,7 +368,6 @@ const RowForArrayControl = betterReactMemo(
             controlDescription={controlDescription.propertyControl}
             isScene={isScene}
             propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
-            propMetadata={propMetadata}
           />
         ) : null}
       </>
@@ -393,12 +384,6 @@ const RowForObjectControl = betterReactMemo(
   (props: RowForObjectControlProps) => {
     const { propPath, controlDescription, isScene } = props
     const title = titleForControl(propPath, controlDescription)
-
-    const propMetadata = useComponentPropsInspectorInfo(
-      props.propPath,
-      props.isScene,
-      props.controlDescription,
-    )
 
     return (
       <>
@@ -419,7 +404,6 @@ const RowForObjectControl = betterReactMemo(
                 controlDescription={innerControl}
                 isScene={isScene}
                 propPath={innerPropPath}
-                propMetadata={propMetadata}
               />
             </>
           )
@@ -482,26 +466,16 @@ const RowForUnionControl = betterReactMemo(
     )
 
     const labelAsRenderProp = React.useCallback(() => label, [label])
-    const propMetadata = useComponentPropsInspectorInfo(
-      props.propPath,
-      props.isScene,
-      props.controlDescription,
-    )
 
     if (isBaseControlDescription(controlToUse)) {
       return (
-        <RowForBaseControl
-          {...props}
-          propMetadata={propMetadata}
-          label={labelAsRenderProp}
-          controlDescription={controlToUse}
-        />
+        <RowForBaseControl {...props} label={labelAsRenderProp} controlDescription={controlToUse} />
       )
     } else {
       return (
         <>
           {label}
-          <RowForControl {...props} propMetadata={propMetadata} controlDescription={controlToUse} />
+          <RowForControl {...props} controlDescription={controlToUse} />
         </>
       )
     }
@@ -510,7 +484,6 @@ const RowForUnionControl = betterReactMemo(
 
 interface RowForControlProps extends AbstractRowForControlProps {
   controlDescription: ControlDescription
-  propMetadata: InspectorInfo<any>
 }
 
 const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
@@ -797,18 +770,12 @@ export const ComponentSectionInner = betterReactMemo(
 export const SectionRow = betterReactMemo(
   'SectionRow',
   (props: Omit<RowForControlProps, 'propMetadata'>) => {
-    const propMetadata = useComponentPropsInspectorInfo(
-      props.propPath,
-      props.isScene,
-      props.controlDescription,
-    )
     return (
       <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
         <RowForControl
           propPath={props.propPath}
           controlDescription={props.controlDescription}
           isScene={props.isScene}
-          propMetadata={propMetadata}
         />
       </UIGridRow>
     )
