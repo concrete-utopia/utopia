@@ -250,6 +250,11 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       <props.label />
     )
 
+  if (controlDescription.type === 'ignore') {
+    // do not list anything for `ignore` controls
+    return null
+  }
+
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${propName}`}
@@ -744,14 +749,12 @@ export const ComponentSectionInner = betterReactMemo(
             propValue,
           )
           return (
-            <UIGridRow key={propName} padded tall={false} variant='<-------------1fr------------->'>
-              <RowForControl
-                key={propName}
-                propPath={PP.create([propName])}
-                controlDescription={controlDescription}
-                isScene={props.isScene}
-              />
-            </UIGridRow>
+            <RowForControl
+              key={propName}
+              propPath={PP.create([propName])}
+              controlDescription={controlDescription}
+              isScene={props.isScene}
+            />
           )
         })}
         {/** props set on the component instance and props used inside the component code */}
