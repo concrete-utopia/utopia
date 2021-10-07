@@ -779,6 +779,33 @@ function inferControlTypeBasedOnValue(propName: string, propValue: any): Control
         type: 'string',
         title: propName,
       }
+    case 'boolean': {
+      return {
+        type: 'boolean',
+        title: propName,
+      }
+    }
+    case 'object': {
+      // try to find Vectors
+      if (Array.isArray(propValue) && propValue.every((v) => typeof v === 'number')) {
+        if (propValue.length === 2) {
+          return {
+            type: 'vector2',
+            title: propName,
+          }
+        } else if (propValue.length === 3) {
+          return {
+            type: 'vector3',
+            title: propName,
+          }
+        }
+      }
+
+      // the fallback for objects – for now, don't display them
+      return {
+        type: 'ignore',
+      }
+    }
     default:
       return {
         type: 'ignore',
