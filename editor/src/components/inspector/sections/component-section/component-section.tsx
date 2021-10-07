@@ -15,7 +15,12 @@ import {
   getDescriptionUnsetOptionalFields,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
-import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
+import {
+  eitherToMaybe,
+  foldEither,
+  isLeft,
+  maybeEitherToMaybe,
+} from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -25,7 +30,7 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
-import { getParseErrorDetails, ParseError } from '../../../../utils/value-parser-utils'
+import { getParseErrorDetails, ParseError, ParseResult } from '../../../../utils/value-parser-utils'
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
@@ -63,6 +68,7 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
+  InspectorInfo,
   useGivenPropsWithoutControls,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
@@ -100,6 +106,7 @@ import {
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
+import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -226,14 +233,14 @@ function titleForControl(propPath: PropertyPath, control: ControlDescription): s
 interface RowForBaseControlProps extends AbstractRowForControlProps {
   label?: React.ComponentType<any>
   controlDescription: BaseControlDescription
+  propMetadata: InspectorInfo<any>
 }
 
 const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
-  const { propPath, controlDescription, isScene } = props
+  const { propPath, controlDescription, propMetadata } = props
   const title = titleForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
 
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
@@ -297,6 +304,12 @@ const RowForArrayControl = betterReactMemo(
 
     React.useEffect(() => setInsertingRow(false), [springs.length])
 
+    const propMetadata = useComponentPropsInspectorInfo(
+      props.propPath,
+      props.isScene,
+      props.controlDescription,
+    )
+
     return (
       <>
         <InspectorSectionHeader>
@@ -346,6 +359,7 @@ const RowForArrayControl = betterReactMemo(
                   controlDescription={controlDescription.propertyControl}
                   isScene={isScene}
                   propPath={PP.appendPropertyPathElems(propPath, [index])}
+                  propMetadata={propMetadata}
                 />
               </animated.div>
             )
@@ -356,6 +370,7 @@ const RowForArrayControl = betterReactMemo(
             controlDescription={controlDescription.propertyControl}
             isScene={isScene}
             propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
+            propMetadata={propMetadata}
           />
         ) : null}
       </>
@@ -372,6 +387,12 @@ const RowForObjectControl = betterReactMemo(
   (props: RowForObjectControlProps) => {
     const { propPath, controlDescription, isScene } = props
     const title = titleForControl(propPath, controlDescription)
+
+    const propMetadata = useComponentPropsInspectorInfo(
+      props.propPath,
+      props.isScene,
+      props.controlDescription,
+    )
 
     return (
       <>
@@ -392,6 +413,7 @@ const RowForObjectControl = betterReactMemo(
                 controlDescription={innerControl}
                 isScene={isScene}
                 propPath={innerPropPath}
+                propMetadata={propMetadata}
               />
             </>
           )
@@ -454,16 +476,26 @@ const RowForUnionControl = betterReactMemo(
     )
 
     const labelAsRenderProp = React.useCallback(() => label, [label])
+    const propMetadata = useComponentPropsInspectorInfo(
+      props.propPath,
+      props.isScene,
+      props.controlDescription,
+    )
 
     if (isBaseControlDescription(controlToUse)) {
       return (
-        <RowForBaseControl {...props} label={labelAsRenderProp} controlDescription={controlToUse} />
+        <RowForBaseControl
+          {...props}
+          propMetadata={propMetadata}
+          label={labelAsRenderProp}
+          controlDescription={controlToUse}
+        />
       )
     } else {
       return (
         <>
           {label}
-          <RowForControl {...props} controlDescription={controlToUse} />
+          <RowForControl {...props} propMetadata={propMetadata} controlDescription={controlToUse} />
         </>
       )
     }
@@ -472,6 +504,7 @@ const RowForUnionControl = betterReactMemo(
 
 interface RowForControlProps extends AbstractRowForControlProps {
   controlDescription: ControlDescription
+  propMetadata: InspectorInfo<any>
 }
 
 const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
@@ -698,18 +731,12 @@ export const ComponentSectionInner = betterReactMemo(
                         },
                         (controlDescription) => {
                           return (
-                            <UIGridRow
-                              padded
-                              tall={false}
-                              variant='<-------------1fr------------->'
-                            >
-                              <RowForControl
-                                key={propName}
-                                propPath={PP.create([propName])}
-                                controlDescription={controlDescription}
-                                isScene={props.isScene}
-                              />
-                            </UIGridRow>
+                            <SectionRow
+                              key={propName}
+                              propPath={PP.create([propName])}
+                              controlDescription={controlDescription}
+                              isScene={props.isScene}
+                            />
                           )
                         },
                         propertyControl,
@@ -724,6 +751,7 @@ export const ComponentSectionInner = betterReactMemo(
           },
           propertyControls,
         )}
+        <HiddenControls propertyControls={propertyControls} />
         {/** props set on the component instance and props used inside the component code */}
         {propsUsedWithoutControls.length > 0 || propsGivenToElement.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
@@ -741,6 +769,88 @@ export const ComponentSectionInner = betterReactMemo(
     )
   },
 )
+
+export const SectionRow = (props: Omit<RowForControlProps, 'propMetadata'>) => {
+  const propMetadata = useComponentPropsInspectorInfo(
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
+  if (propMetadata.controlStatus === 'unset' || propMetadata.controlStatus === 'off') {
+    return null
+  } else {
+    return (
+      <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
+        <RowForControl
+          propPath={props.propPath}
+          controlDescription={props.controlDescription}
+          isScene={props.isScene}
+          propMetadata={propMetadata}
+        />
+      </UIGridRow>
+    )
+  }
+}
+
+interface HiddenControlsProps {
+  propertyControls: ParseResult<ParsedPropertyControls>
+}
+
+export const HiddenControls = (props: HiddenControlsProps): JSX.Element | null => {
+  return foldEither(
+    (rootParseError) => {
+      return null
+    },
+    (rootParseSuccess) => {
+      const propNames = filterSpecialProps(Object.keys(rootParseSuccess))
+      if (propNames.length > 0) {
+        return (
+          <div
+            style={{
+              padding: '0px 8px',
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: '0px 4px',
+            }}
+          >
+            {propNames.map((name) => {
+              const propertyControl = rootParseSuccess[name]
+              if (propertyControl == null || isLeft(propertyControl)) {
+                return null
+              } else {
+                return (
+                  <EmptyControlLabel
+                    key={name}
+                    propPath={PP.create([name])}
+                    isScene={false}
+                    controlDescription={propertyControl.value}
+                  />
+                )
+              }
+            })}
+          </div>
+        )
+      } else {
+        return null
+      }
+    },
+    props.propertyControls,
+  )
+}
+
+const EmptyControlLabel = (props: Omit<RowForControlProps, 'propMetadata'>): JSX.Element | null => {
+  const propMetadata = useComponentPropsInspectorInfo(
+    props.propPath,
+    false,
+    props.controlDescription,
+  )
+  if (propMetadata.controlStatus === 'unset') {
+    return <span>{PP.toString(props.propPath)},</span>
+  } else {
+    return null
+  }
+}
 
 export interface ComponentSectionState {
   errorOccurred: boolean
