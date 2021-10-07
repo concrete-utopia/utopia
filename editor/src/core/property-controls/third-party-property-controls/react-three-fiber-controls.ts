@@ -264,8 +264,17 @@ const boxGeometryControls: PropertyControls = {
 /* MATERIALS */
 
 const stencilOperations: ControlDescription = {
-  type: 'enum',
-  options: [0, 7680, 7681, 7682, 7683, 34055, 34056, 5386],
+  type: 'expression-enum',
+  options: [
+    expression(0, 'THREE.ZeroStencilOp', importStar('three', 'THREE')),
+    expression(7680, 'THREE.KeepStencilOp', importStar('three', 'THREE')),
+    expression(7681, 'THREE.ReplaceStencilOp', importStar('three', 'THREE')),
+    expression(7682, 'THREE.IncrementStencilOp', importStar('three', 'THREE')),
+    expression(7683, 'THREE.DecrementStencilOp', importStar('three', 'THREE')),
+    expression(34055, 'THREE.IncrementWrapStencilOp', importStar('three', 'THREE')),
+    expression(34056, 'THREE.DecrementWrapStencilOp', importStar('three', 'THREE')),
+    expression(5386, 'THREE.InvertStencilOp', importStar('three', 'THREE')),
+  ],
   optionTitles: [
     'ZeroStencilOp',
     'KeepStencilOp',
@@ -276,7 +285,7 @@ const stencilOperations: ControlDescription = {
     'DecrementWrapStencilOp',
     'InvertStencilOp',
   ],
-  defaultValue: 7680,
+  defaultValue: expression(7680, 'THREE.KeepStencilOp', importStar('three', 'THREE')),
 }
 
 const materialControls: PropertyControls = {
@@ -290,8 +299,19 @@ const materialControls: PropertyControls = {
     defaultValue: 0,
   },
   blendDst: {
-    type: 'enum',
-    options: [200, 201, 202, 203, 204, 205, 206, 207, 208, 209],
+    type: 'expression-enum',
+    options: [
+      expression(200, 'THREE.ZeroFactor', importStar('three', 'THREE')),
+      expression(201, 'THREE.OneFactor', importStar('three', 'THREE')),
+      expression(202, 'THREE.SrcColorFactor', importStar('three', 'THREE')),
+      expression(203, 'THREE.OneMinusSrcColorFactor', importStar('three', 'THREE')),
+      expression(204, 'THREE.SrcAlphaFactor', importStar('three', 'THREE')),
+      expression(205, 'THREE.OneMinusSrcAlphaFactor', importStar('three', 'THREE')),
+      expression(206, 'THREE.DstAlphaFactor', importStar('three', 'THREE')),
+      expression(207, 'THREE.OneMinusDstAlphaFactor', importStar('three', 'THREE')),
+      expression(208, 'THREE.DstColorFactor', importStar('three', 'THREE')),
+      expression(209, 'THREE.OneMinusDstColorFactor', importStar('three', 'THREE')),
+    ],
     optionTitles: [
       'ZeroFactor',
       'OneFactor',
@@ -304,15 +324,21 @@ const materialControls: PropertyControls = {
       'DstColorFactor',
       'OneMinusDstColorFactor',
     ],
-    defaultValue: 205,
+    defaultValue: expression(205, 'THREE.OneMinusSrcAlphaFactor', importStar('three', 'THREE')),
   },
   blendDstAlpha: {
     type: 'number',
     defaultValue: null,
   },
   blendEquation: {
-    type: 'enum',
-    options: [100, 101, 102, 103, 104],
+    type: 'expression-enum',
+    options: [
+      expression(100, 'THREE.AddEquation', importStar('three', 'THREE')),
+      expression(101, 'THREE.SubtractEquation', importStar('three', 'THREE')),
+      expression(102, 'THREE.ReverseSubtractEquation', importStar('three', 'THREE')),
+      expression(103, 'THREE.MinEquation', importStar('three', 'THREE')),
+      expression(104, 'THREE.MaxEquation', importStar('three', 'THREE')),
+    ],
     optionTitles: [
       'AddEquation',
       'SubtractEquation',
@@ -320,7 +346,7 @@ const materialControls: PropertyControls = {
       'MinEquation',
       'MaxEquation',
     ],
-    defaultValue: 100,
+    defaultValue: expression(100, 'THREE.AddEquation', importStar('three', 'THREE')),
   },
   blendEquationAlpha: {
     type: 'number',
@@ -347,8 +373,20 @@ const materialControls: PropertyControls = {
     defaultValue: expression(0, 'THREE.NoBlending', importStar('three', 'THREE')),
   },
   blendSrc: {
-    type: 'enum',
-    options: [200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210],
+    type: 'expression-enum',
+    options: [
+      expression(200, 'THREE.ZeroFactor', importStar('three', 'THREE')),
+      expression(201, 'THREE.OneFactor', importStar('three', 'THREE')),
+      expression(202, 'THREE.SrcColorFactor', importStar('three', 'THREE')),
+      expression(203, 'THREE.OneMinusSrcColorFactor', importStar('three', 'THREE')),
+      expression(204, 'THREE.SrcAlphaFactor', importStar('three', 'THREE')),
+      expression(205, 'THREE.OneMinusSrcAlphaFactor', importStar('three', 'THREE')),
+      expression(206, 'THREE.DstAlphaFactor', importStar('three', 'THREE')),
+      expression(207, 'THREE.OneMinusDstAlphaFactor', importStar('three', 'THREE')),
+      expression(208, 'THREE.DstColorFactor', importStar('three', 'THREE')),
+      expression(209, 'THREE.OneMinusDstColorFactor', importStar('three', 'THREE')),
+      expression(210, 'THREE.SrcAlphaSaturateFactor', importStar('three', 'THREE')),
+    ],
     optionTitles: [
       'ZeroFactor',
       'OneFactor',
@@ -362,7 +400,7 @@ const materialControls: PropertyControls = {
       'OneMinusDstColorFactor',
       'SrcAlphaSaturateFactor',
     ],
-    defaultValue: 205,
+    defaultValue: expression(205, 'THREE.OneMinusSrcAlphaFactor', importStar('three', 'THREE')),
   },
   blendSrcAlpha: {
     type: 'number',
@@ -383,8 +421,17 @@ const materialControls: PropertyControls = {
   },
   // defines,
   depthFunc: {
-    type: 'enum',
-    options: [0, 1, 4, 2, 3, 5, 6, 7],
+    type: 'expression-enum',
+    options: [
+      expression(0, 'THREE.NeverDepth', importStar('three', 'THREE')),
+      expression(1, 'THREE.AlwaysDepth', importStar('three', 'THREE')),
+      expression(4, 'THREE.EqualDepth', importStar('three', 'THREE')),
+      expression(2, 'THREE.LessDepth', importStar('three', 'THREE')),
+      expression(3, 'THREE.LessEqualDepth', importStar('three', 'THREE')),
+      expression(5, 'THREE.GreaterEqualDepth', importStar('three', 'THREE')),
+      expression(6, 'THREE.GreaterDepth', importStar('three', 'THREE')),
+      expression(7, 'THREE.NotEqualDepth', importStar('three', 'THREE')),
+    ],
     optionTitles: [
       'NeverDepth',
       'AlwaysDepth',
@@ -395,7 +442,7 @@ const materialControls: PropertyControls = {
       'GreaterDepth',
       'NotEqualDepth',
     ],
-    defaultValue: 3,
+    defaultValue: expression(3, 'THREE.LessEqualDepth', importStar('three', 'THREE')),
   },
   depthTest: {
     type: 'boolean',
@@ -461,16 +508,24 @@ const materialControls: PropertyControls = {
     defaultValue: false,
   },
   shadowSide: {
-    type: 'enum',
-    options: [0, 1, 2],
+    type: 'expression-enum',
+    options: [
+      expression(0, 'THREE.FrontSide', importStar('three', 'THREE')),
+      expression(1, 'THREE.BackSide', importStar('three', 'THREE')),
+      expression(2, 'THREE.DoubleSide', importStar('three', 'THREE')),
+    ],
     optionTitles: ['FrontSide', 'BackSide', 'DoubleSide'],
-    defaultValue: null,
+    defaultValue: expression(0, 'THREE.FrontSide', importStar('three', 'THREE')),
   },
   side: {
-    type: 'enum',
-    options: [0, 1, 2],
+    type: 'expression-enum',
+    options: [
+      expression(0, 'THREE.FrontSide', importStar('three', 'THREE')),
+      expression(1, 'THREE.BackSide', importStar('three', 'THREE')),
+      expression(2, 'THREE.DoubleSide', importStar('three', 'THREE')),
+    ],
     optionTitles: ['FrontSide', 'BackSide', 'DoubleSide'],
-    defaultValue: 0,
+    defaultValue: expression(0, 'THREE.FrontSide', importStar('three', 'THREE')),
   },
   toneMapped: {
     type: 'boolean',
@@ -502,10 +557,14 @@ const meshBasicMaterialControls: PropertyControls = {
     type: 'color',
   },
   combine: {
-    type: 'enum',
-    options: [0, 1, 2],
+    type: 'expression-enum',
+    options: [
+      expression(0, 'THREE.Multiply', importStar('three', 'THREE')),
+      expression(1, 'THREE.MixOperation', importStar('three', 'THREE')),
+      expression(2, 'THREE.AddOperation', importStar('three', 'THREE')),
+    ],
     optionTitles: ['Multiply', 'MixOperation', 'AddOperation'],
-    defaultValue: 0,
+    defaultValue: expression(0, 'THREE.Multiply', importStar('three', 'THREE')),
   },
   // envMap,
   // lightMap,
