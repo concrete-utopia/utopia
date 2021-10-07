@@ -532,9 +532,11 @@ export const ComponentSectionInner = betterReactMemo(
   (props: ComponentSectionProps) => {
     const colorTheme = useColorTheme()
     const propertyControls = useKeepReferenceEqualityIfPossible(useSelectedPropertyControls(false))
-    const propsGivenToElement = useKeepReferenceEqualityIfPossible(useGivenPropsWithoutControls())
+    const detectedPropsWithoutControls = useKeepReferenceEqualityIfPossible(
+      useGivenPropsWithoutControls(),
+    )
     const detectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutControls(propsGivenToElement),
+      useUsedPropsWithoutControls(detectedPropsWithoutControls),
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
 
@@ -732,10 +734,10 @@ export const ComponentSectionInner = betterReactMemo(
           propertyControls,
         )}
         {/** props set on the component instance and props used inside the component code */}
-        {detectedPropsWithNoValue.length > 0 || propsGivenToElement.length > 0 ? (
+        {detectedPropsWithNoValue.length > 0 || detectedPropsWithoutControls.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
             <div>
-              <Subdued>{`Props: ${propsGivenToElement.join(', ')}${
+              <Subdued>{`Props: ${detectedPropsWithoutControls.join(', ')}${
                 detectedPropsWithNoValue.length > 0 ? ', ' : '.'
               }`}</Subdued>
               <VerySubdued>{`${detectedPropsWithNoValue.join(', ')}${
