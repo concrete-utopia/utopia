@@ -70,7 +70,6 @@ import {
 } from '../../common/property-controls-hooks'
 import {
   useGivenPropsWithoutControls,
-  useInspectorInfoSimpleUntyped,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
   useUsedPropsWithoutDefaults,
@@ -242,10 +241,10 @@ interface RowForBaseControlProps extends AbstractRowForControlProps {
 
 const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
   const { propPath, controlDescription, isScene } = props
-  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const title = titleForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
 
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
