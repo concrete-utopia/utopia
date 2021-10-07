@@ -199,10 +199,10 @@ export async function initVSCodeBridge(
             throw new Error(`Unhandled message type${JSON.stringify(message)}`)
         }
       })
-      sendGetUtopiaVSCodeConfigMessage()
+      await sendGetUtopiaVSCodeConfigMessage()
       watchForChanges(dispatch)
       if (openFilePath != null) {
-        sendOpenFileMessage(openFilePath)
+        await sendOpenFileMessage(openFilePath)
       } else {
         loadingScreenHidden = true
         dispatch([hideVSCodeLoadingScreen()], 'everyone')

@@ -268,6 +268,16 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
     return document.uri.scheme === projectID
   }
 
+  // Capture files that are _already_ open, so that the bridge
+  // becomes aware that they have been opened from something like
+  // a session restore.
+  for (const document of vscode.workspace.textDocuments) {
+    if (isUtopiaDocument(document)) {
+      const path = fromUtopiaURI(document.uri)
+      pendingWork.push(didOpen(path))
+    }
+  }
+
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument((event) => {
       if (isUtopiaDocument(event.document)) {
