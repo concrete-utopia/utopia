@@ -63,6 +63,7 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
+  useGivenPropsAndValuesWithoutControls,
   useGivenPropsWithoutControls,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
@@ -538,6 +539,9 @@ export const ComponentSectionInner = betterReactMemo(
     const detectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
       useUsedPropsWithoutControls(detectedPropsWithoutControls),
     )
+    const detectedPropsAndValuesWithoutControls = useKeepReferenceEqualityIfPossible(
+      useGivenPropsAndValuesWithoutControls(),
+    )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
 
     const selectedViews = useEditorState(
@@ -733,16 +737,28 @@ export const ComponentSectionInner = betterReactMemo(
           },
           propertyControls,
         )}
+        {Object.keys(detectedPropsAndValuesWithoutControls).map((propName) => {
+          const propValue = detectedPropsAndValuesWithoutControls[propName]
+          const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
+            propName,
+            propValue,
+          )
+          return (
+            <UIGridRow key={propName} padded tall={false} variant='<-------------1fr------------->'>
+              <RowForControl
+                key={propName}
+                propPath={PP.create([propName])}
+                controlDescription={controlDescription}
+                isScene={props.isScene}
+              />
+            </UIGridRow>
+          )
+        })}
         {/** props set on the component instance and props used inside the component code */}
-        {detectedPropsWithNoValue.length > 0 || detectedPropsWithoutControls.length > 0 ? (
+        {detectedPropsWithNoValue.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
             <div>
-              <Subdued>{`Props: ${detectedPropsWithoutControls.join(', ')}${
-                detectedPropsWithNoValue.length > 0 ? ', ' : '.'
-              }`}</Subdued>
-              <VerySubdued>{`${detectedPropsWithNoValue.join(', ')}${
-                detectedPropsWithNoValue.length > 0 ? '.' : ''
-              }`}</VerySubdued>
+              <VerySubdued>{`Unused props: ${detectedPropsWithNoValue.join(', ')}.`}</VerySubdued>
             </div>
           </UIGridRow>
         ) : null}
@@ -750,6 +766,25 @@ export const ComponentSectionInner = betterReactMemo(
     )
   },
 )
+
+function inferControlTypeBasedOnValue(propName: string, propValue: any): ControlDescription {
+  switch (typeof propValue) {
+    case 'number':
+      return {
+        type: 'number',
+        title: propName,
+      }
+    case 'string':
+      return {
+        type: 'string',
+        title: propName,
+      }
+    default:
+      return {
+        type: 'ignore',
+      }
+  }
+}
 
 export interface ComponentSectionState {
   errorOccurred: boolean
