@@ -7,12 +7,14 @@ import { betterReactMemo } from '../../../../uuiui-deps'
 import { SectionRow } from './component-section'
 import * as PP from '../../../../core/shared/property-path'
 import { ControlStatus } from '../../common/control-status'
+import { CSSCursor } from '../../../../uuiui-deps'
 
 interface HiddenControlsProps {
   propertyControls: ParseResult<ParsedPropertyControls>
   propertyControlsStatus: { [path: string]: ControlStatus }
   visibleEmptyControls: PropertyPath[]
   showHiddenControl: (path: PropertyPath) => void
+  setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
 export const useHiddenElements = (): [PropertyPath[], (path: PropertyPath) => void] => {
@@ -75,6 +77,7 @@ export const HiddenControls = betterReactMemo(
                   propPath={path}
                   controlDescription={propertyControl.value}
                   isScene={false}
+                  setGlobalCursor={props.setGlobalCursor}
                 />
               )
             } else {
@@ -84,7 +87,7 @@ export const HiddenControls = betterReactMemo(
             return null
           }
         }),
-      [props.visibleEmptyControls, props.propertyControls],
+      [props.visibleEmptyControls, props.propertyControls, props.setGlobalCursor],
     )
 
     const propNameList = React.useMemo(() => {
