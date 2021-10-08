@@ -130,7 +130,6 @@ const directionalLightControls: PropertyControls = {
     type: 'boolean',
     defaultValue: false,
   },
-  position: Vector3,
   target: Vector3,
 }
 

@@ -15,7 +15,13 @@ import {
   getDescriptionUnsetOptionalFields,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
-import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
+import {
+  eitherToMaybe,
+  foldEither,
+  forEachRight,
+  isRight,
+  maybeEitherToMaybe,
+} from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -47,11 +53,12 @@ import {
   VerySubdued,
   FlexRow,
 } from '../../../../uuiui'
-import { getControlStyles } from '../../../../uuiui-deps'
+import { CSSCursor, getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import {
   openCodeEditorFile,
+  setCursorOverlay,
   setFocusedElement,
   showContextMenu,
 } from '../../../editor/actions/action-creators'
@@ -60,6 +67,7 @@ import { addOnUnsetValues } from '../../common/context-menu-items'
 import { InstanceContextMenu } from '../../common/instance-context-menu'
 import {
   useControlForUnionControl,
+  useControlStatusForPaths,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
@@ -101,6 +109,11 @@ import {
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
+import {
+  filterNonUnsetAndEmptyControls,
+  HiddenControls,
+  useHiddenElements,
+} from './hidden-controls-section'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -218,6 +231,7 @@ const RowForInvalidControl = betterReactMemo(
 interface AbstractRowForControlProps {
   propPath: PropertyPath
   isScene: boolean
+  setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
 function titleForControl(propPath: PropertyPath, control: ControlDescription): string {
@@ -268,6 +282,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
           propName={propName}
           controlDescription={controlDescription}
           propMetadata={propMetadata}
+          setGlobalCursor={props.setGlobalCursor}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>
@@ -352,6 +367,7 @@ const RowForArrayControl = betterReactMemo(
                   controlDescription={controlDescription.propertyControl}
                   isScene={isScene}
                   propPath={PP.appendPropertyPathElems(propPath, [index])}
+                  setGlobalCursor={props.setGlobalCursor}
                 />
               </animated.div>
             )
@@ -362,6 +378,7 @@ const RowForArrayControl = betterReactMemo(
             controlDescription={controlDescription.propertyControl}
             isScene={isScene}
             propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
+            setGlobalCursor={props.setGlobalCursor}
           />
         ) : null}
       </>
@@ -405,6 +422,7 @@ const RowForObjectControl = betterReactMemo(
                 controlDescription={innerControl}
                 isScene={isScene}
                 propPath={innerPropPath}
+                setGlobalCursor={props.setGlobalCursor}
               />
             </FlexRow>
           )
@@ -549,6 +567,13 @@ export const ComponentSectionInner = betterReactMemo(
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
 
+    const setGlobalCursor = React.useCallback(
+      (cursor: CSSCursor | null) => {
+        dispatch([setCursorOverlay(cursor)], 'everyone')
+      },
+      [dispatch],
+    )
+
     const selectedViews = useEditorState(
       (store) => store.editor.selectedViews,
       'ComponentSectionInner selectedViews',
@@ -612,6 +637,15 @@ export const ComponentSectionInner = betterReactMemo(
         dispatch([openCodeEditorFile(locationOfComponentInstance, true)])
       }
     }, [dispatch, locationOfComponentInstance])
+
+    let propPaths: Array<PropertyPath> = []
+    forEachRight(propertyControls, (success) => {
+      const propNames = filterSpecialProps(Object.keys(success))
+      propPaths = propNames.map((name) => PP.create([name]))
+    })
+
+    const propertyControlsStatus = useControlStatusForPaths(propPaths)
+    const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
 
     return (
       <>
@@ -694,7 +728,11 @@ export const ComponentSectionInner = betterReactMemo(
             return <ParseErrorControl parseError={rootParseError} />
           },
           (rootParseSuccess) => {
-            const propNames = filterSpecialProps(Object.keys(rootParseSuccess))
+            const propNames = filterNonUnsetAndEmptyControls(
+              filterSpecialProps(Object.keys(rootParseSuccess)),
+              propertyControlsStatus,
+              visibleEmptyControls,
+            )
             if (propNames.length > 0) {
               return (
                 <>
@@ -716,18 +754,13 @@ export const ComponentSectionInner = betterReactMemo(
                         },
                         (controlDescription) => {
                           return (
-                            <UIGridRow
-                              padded
-                              tall={false}
-                              variant='<-------------1fr------------->'
-                            >
-                              <RowForControl
-                                key={propName}
-                                propPath={PP.create([propName])}
-                                controlDescription={controlDescription}
-                                isScene={props.isScene}
-                              />
-                            </UIGridRow>
+                            <SectionRow
+                              key={propName}
+                              propPath={PP.create([propName])}
+                              controlDescription={controlDescription}
+                              isScene={props.isScene}
+                              setGlobalCursor={setGlobalCursor}
+                            />
                           )
                         },
                         propertyControl,
@@ -754,9 +787,17 @@ export const ComponentSectionInner = betterReactMemo(
               propPath={PP.create([propName])}
               controlDescription={controlDescription}
               isScene={props.isScene}
+              setGlobalCursor={setGlobalCursor}
             />
           )
         })}
+        <HiddenControls
+          propertyControls={propertyControls}
+          propertyControlsStatus={propertyControlsStatus}
+          visibleEmptyControls={visibleEmptyControls}
+          showHiddenControl={showHiddenControl}
+          setGlobalCursor={setGlobalCursor}
+        />
         {/** props set on the component instance and props used inside the component code */}
         {detectedPropsWithNoValue.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
@@ -815,6 +856,22 @@ function inferControlTypeBasedOnValue(propName: string, propValue: any): Control
       }
   }
 }
+
+export const SectionRow = betterReactMemo(
+  'SectionRow',
+  (props: Omit<RowForControlProps, 'propMetadata'>) => {
+    return (
+      <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
+        <RowForControl
+          propPath={props.propPath}
+          controlDescription={props.controlDescription}
+          isScene={props.isScene}
+          setGlobalCursor={props.setGlobalCursor}
+        />
+      </UIGridRow>
+    )
+  },
+)
 
 export interface ComponentSectionState {
   errorOccurred: boolean
