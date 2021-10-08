@@ -71,6 +71,7 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
+  useGivenPropsAndValuesWithoutControls,
   useGivenPropsWithoutControls,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
@@ -262,6 +263,11 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
     ) : (
       <props.label />
     )
+
+  if (controlDescription.type === 'ignore') {
+    // do not list anything for `ignore` controls
+    return null
+  }
 
   return (
     <InspectorContextMenuWrapper
@@ -550,9 +556,14 @@ export const ComponentSectionInner = betterReactMemo(
   (props: ComponentSectionProps) => {
     const colorTheme = useColorTheme()
     const propertyControls = useKeepReferenceEqualityIfPossible(useSelectedPropertyControls(false))
-    const propsGivenToElement = useKeepReferenceEqualityIfPossible(useGivenPropsWithoutControls())
-    const propsUsedWithoutControls = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutControls(propsGivenToElement),
+    const detectedPropsWithoutControls = useKeepReferenceEqualityIfPossible(
+      useGivenPropsWithoutControls(),
+    )
+    const detectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
+      useUsedPropsWithoutControls(detectedPropsWithoutControls),
+    )
+    const detectedPropsAndValuesWithoutControls = useKeepReferenceEqualityIfPossible(
+      useGivenPropsAndValuesWithoutControls(),
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
 
@@ -764,6 +775,22 @@ export const ComponentSectionInner = betterReactMemo(
           },
           propertyControls,
         )}
+        {Object.keys(detectedPropsAndValuesWithoutControls).map((propName) => {
+          const propValue = detectedPropsAndValuesWithoutControls[propName]
+          const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
+            propName,
+            propValue,
+          )
+          return (
+            <RowForControl
+              key={propName}
+              propPath={PP.create([propName])}
+              controlDescription={controlDescription}
+              isScene={props.isScene}
+              setGlobalCursor={setGlobalCursor}
+            />
+          )
+        })}
         <HiddenControls
           propertyControls={propertyControls}
           propertyControlsStatus={propertyControlsStatus}
@@ -772,15 +799,10 @@ export const ComponentSectionInner = betterReactMemo(
           setGlobalCursor={setGlobalCursor}
         />
         {/** props set on the component instance and props used inside the component code */}
-        {propsUsedWithoutControls.length > 0 || propsGivenToElement.length > 0 ? (
+        {detectedPropsWithNoValue.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
             <div>
-              <Subdued>{`Props: ${propsGivenToElement.join(', ')}${
-                propsUsedWithoutControls.length > 0 ? ', ' : '.'
-              }`}</Subdued>
-              <VerySubdued>{`${propsUsedWithoutControls.join(', ')}${
-                propsUsedWithoutControls.length > 0 ? '.' : ''
-              }`}</VerySubdued>
+              <VerySubdued>{`Unused props: ${detectedPropsWithNoValue.join(', ')}.`}</VerySubdued>
             </div>
           </UIGridRow>
         ) : null}
@@ -788,6 +810,52 @@ export const ComponentSectionInner = betterReactMemo(
     )
   },
 )
+
+function inferControlTypeBasedOnValue(propName: string, propValue: any): ControlDescription {
+  switch (typeof propValue) {
+    case 'number':
+      return {
+        type: 'number',
+        title: propName,
+      }
+    case 'string':
+      return {
+        type: 'string',
+        title: propName,
+      }
+    case 'boolean': {
+      return {
+        type: 'boolean',
+        title: propName,
+      }
+    }
+    case 'object': {
+      // try to find Vectors
+      if (Array.isArray(propValue) && propValue.every((v) => typeof v === 'number')) {
+        if (propValue.length === 2) {
+          return {
+            type: 'vector2',
+            title: propName,
+          }
+        } else if (propValue.length === 3) {
+          return {
+            type: 'vector3',
+            title: propName,
+          }
+        }
+      }
+
+      // the fallback for objects – for now, don't display them
+      return {
+        type: 'ignore',
+      }
+    }
+    default:
+      return {
+        type: 'ignore',
+      }
+  }
+}
 
 export const SectionRow = betterReactMemo(
   'SectionRow',

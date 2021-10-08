@@ -68,6 +68,7 @@ import {
   isRight,
   left,
   mapEither,
+  unwrapEither,
 } from '../../../core/shared/either'
 import {
   getJSXElementNameLastPart,
@@ -1130,7 +1131,7 @@ export function useGivenPropsWithoutControls(): Array<string> {
   }, 'useGivenPropsWithoutControls')
 
   const propertiesWithControls = filterSpecialProps(
-    Object.keys(eitherToMaybe(parsedPropertyControls) ?? {}),
+    Object.keys(unwrapEither(parsedPropertyControls, {})),
   )
   let givenProps: Array<string> = []
   fastForEach(selectedElements, (element) => {
@@ -1143,6 +1144,36 @@ export function useGivenPropsWithoutControls(): Array<string> {
   })
 
   return givenProps
+}
+
+export function useGivenPropsAndValuesWithoutControls(): Record<string, unknown> {
+  const parsedPropertyControls = useSelectedPropertyControls(true)
+  const selectedViews = useRefSelectedViews()
+
+  const selectedElements = useEditorState((store) => {
+    return mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+      selectedViews.current,
+    )
+  }, 'useGivenPropsWithoutControls')
+
+  const propertiesWithControls = filterSpecialProps(
+    Object.keys(unwrapEither(parsedPropertyControls, {})),
+  )
+  if (selectedElements.length === 1) {
+    let givenProps: Record<string, unknown> = {}
+
+    const element = selectedElements[0] // TODO Multiselect
+    const elementProps = filterUtopiaSpecificProps(element.props)
+    fastForEach(Object.keys(elementProps), (propName) => {
+      if (!propertiesWithControls.includes(propName)) {
+        givenProps[propName] = elementProps[propName]
+      }
+    })
+    return givenProps
+  } else {
+    return {}
+  }
 }
 
 export function useUsedPropsWithoutDefaults(): Array<string> {
