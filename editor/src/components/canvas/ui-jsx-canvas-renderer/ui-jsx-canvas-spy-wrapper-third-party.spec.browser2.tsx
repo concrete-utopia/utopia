@@ -19,6 +19,7 @@ import {
   domWalkerMetadataToSimplifiedMetadataMap,
 } from '../../../utils/utils.test-utils'
 import { addFileToProjectContents } from '../../assets'
+import type { EditorStore } from '../../editor/store/editor-state'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -135,6 +136,22 @@ function renderTestProject() {
   return renderTestEditorWithModel(updatedProject, 'await-first-dom-report')
 }
 
+async function waitForFullMetadata(getEditorState: () => EditorStore): Promise<true> {
+  let foundMetadata = false
+  do {
+    // eslint-disable-next-line no-await-in-loop
+    await wait(50)
+    foundMetadata =
+      getEditorState().editor.spyMetadata[
+        'storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial'
+      ] != null
+    if (foundMetadata) {
+      return Promise.resolve(foundMetadata)
+    }
+  } while (!foundMetadata)
+  throw new Error('heat death of the universe')
+}
+
 describe('Spy Wrapper Tests For React Three Fiber', () => {
   it('a simple Canvas element in a scene where spy and jsx metadata has extra elements', async () => {
     // Code kept commented for any future person who needs it.
@@ -148,7 +165,7 @@ describe('Spy Wrapper Tests For React Three Fiber', () => {
     const { getEditorState } = await renderTestProject()
     // React Three Fiber seems to have some second pass render that appears to run
     // after the regular React render and this appears to give it a chance to be triggered.
-    await wait(100)
+    await waitForFullMetadata(getEditorState)
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
     matchInlineSnapshotBrowser(
