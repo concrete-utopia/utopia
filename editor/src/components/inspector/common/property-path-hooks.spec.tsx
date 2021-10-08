@@ -482,6 +482,13 @@ function getBackgroundColorHookResult(
 }
 
 describe('Integration Test: backgroundColor property', () => {
+  it('parses a off control status', () => {
+    const hookResult = getBackgroundColorHookResult([], ['myStyleOuter', 'myStyleInner'], [])
+
+    const expectedControlStatus: ControlStatus = 'unset'
+    expect(hookResult.controlStatus).toEqual(expectedControlStatus)
+  })
+
   it('parses a simple control status', () => {
     const expectedValue: Array<CSSBackgroundLayers> = [
       [cssSolidBackgroundLayer(cssSolidColor({ ...blackHexCSSColor }))],
@@ -754,6 +761,13 @@ describe('Integration Test: opacity property', () => {
     })
     return result.current
   }
+
+  it('parses a off control status', () => {
+    const hookResult = getOpacityHookResult([], [], [], [])
+
+    const expectedControlStatus: ControlStatus = 'unset'
+    expect(hookResult.controlStatus).toEqual(expectedControlStatus)
+  })
 
   it('parses an unset control status', () => {
     const hookResult = getOpacityHookResult([`{}`], [{}], [], [])
