@@ -18,6 +18,7 @@ import { joinSpecial } from '../../../../core/shared/array-utils'
 import {
   eitherToMaybe,
   foldEither,
+  forEachRight,
   isRight,
   maybeEitherToMaybe,
 } from '../../../../core/shared/either'
@@ -627,10 +628,10 @@ export const ComponentSectionInner = betterReactMemo(
     }, [dispatch, locationOfComponentInstance])
 
     let propPaths: Array<PropertyPath> = []
-    if (isRight(propertyControls)) {
-      const propNames = filterSpecialProps(Object.keys(propertyControls.value))
+    forEachRight(propertyControls, (success) => {
+      const propNames = filterSpecialProps(Object.keys(success))
       propPaths = propNames.map((name) => PP.create([name]))
-    }
+    })
 
     const propertyControlsStatus = useControlStatusForPaths(propPaths)
     const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
