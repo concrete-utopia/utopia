@@ -15,7 +15,13 @@ import {
   getDescriptionUnsetOptionalFields,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
-import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
+import {
+  eitherToMaybe,
+  foldEither,
+  forEachRight,
+  isRight,
+  maybeEitherToMaybe,
+} from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -61,6 +67,7 @@ import { addOnUnsetValues } from '../../common/context-menu-items'
 import { InstanceContextMenu } from '../../common/instance-context-menu'
 import {
   useControlForUnionControl,
+  useControlStatusForPaths,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import {
@@ -101,6 +108,11 @@ import {
   isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
+import {
+  filterNonUnsetAndEmptyControls,
+  HiddenControls,
+  useHiddenElements,
+} from './hidden-controls-section'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -615,6 +627,15 @@ export const ComponentSectionInner = betterReactMemo(
       }
     }, [dispatch, locationOfComponentInstance])
 
+    let propPaths: Array<PropertyPath> = []
+    forEachRight(propertyControls, (success) => {
+      const propNames = filterSpecialProps(Object.keys(success))
+      propPaths = propNames.map((name) => PP.create([name]))
+    })
+
+    const propertyControlsStatus = useControlStatusForPaths(propPaths)
+    const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
+
     return (
       <>
         <InspectorSectionHeader>
@@ -696,7 +717,11 @@ export const ComponentSectionInner = betterReactMemo(
             return <ParseErrorControl parseError={rootParseError} />
           },
           (rootParseSuccess) => {
-            const propNames = filterSpecialProps(Object.keys(rootParseSuccess))
+            const propNames = filterNonUnsetAndEmptyControls(
+              filterSpecialProps(Object.keys(rootParseSuccess)),
+              propertyControlsStatus,
+              visibleEmptyControls,
+            )
             if (propNames.length > 0) {
               return (
                 <>
@@ -718,19 +743,13 @@ export const ComponentSectionInner = betterReactMemo(
                         },
                         (controlDescription) => {
                           return (
-                            <UIGridRow
-                              padded
-                              tall={false}
-                              variant='<-------------1fr------------->'
-                            >
-                              <RowForControl
-                                key={propName}
-                                propPath={PP.create([propName])}
-                                controlDescription={controlDescription}
-                                isScene={props.isScene}
-                                setGlobalCursor={setGlobalCursor}
-                              />
-                            </UIGridRow>
+                            <SectionRow
+                              key={propName}
+                              propPath={PP.create([propName])}
+                              controlDescription={controlDescription}
+                              isScene={props.isScene}
+                              setGlobalCursor={setGlobalCursor}
+                            />
                           )
                         },
                         propertyControl,
@@ -745,6 +764,13 @@ export const ComponentSectionInner = betterReactMemo(
           },
           propertyControls,
         )}
+        <HiddenControls
+          propertyControls={propertyControls}
+          propertyControlsStatus={propertyControlsStatus}
+          visibleEmptyControls={visibleEmptyControls}
+          showHiddenControl={showHiddenControl}
+          setGlobalCursor={setGlobalCursor}
+        />
         {/** props set on the component instance and props used inside the component code */}
         {propsUsedWithoutControls.length > 0 || propsGivenToElement.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
@@ -759,6 +785,22 @@ export const ComponentSectionInner = betterReactMemo(
           </UIGridRow>
         ) : null}
       </>
+    )
+  },
+)
+
+export const SectionRow = betterReactMemo(
+  'SectionRow',
+  (props: Omit<RowForControlProps, 'propMetadata'>) => {
+    return (
+      <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
+        <RowForControl
+          propPath={props.propPath}
+          controlDescription={props.controlDescription}
+          isScene={props.isScene}
+          setGlobalCursor={props.setGlobalCursor}
+        />
+      </UIGridRow>
     )
   },
 )

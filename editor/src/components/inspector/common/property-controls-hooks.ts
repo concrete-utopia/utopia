@@ -29,10 +29,13 @@ import * as PP from '../../../core/shared/property-path'
 import { Either, eitherToMaybe, flatMapEither, unwrapEither } from '../../../core/shared/either'
 import {
   calculatePropertyStatusForSelection,
+  ControlStatus,
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from './control-status'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { JSXAttributes } from '../../../core/shared/element-template'
+import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -114,6 +117,41 @@ export function useInspectorInfoForPropertyControl(
     onUnsetValues,
     useSubmitValueFactory,
   }
+}
+
+export function useControlStatusForPaths(paths: PropertyPath[]): { [path: string]: ControlStatus } {
+  const attributes: readonly JSXAttributes[] = useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => contextData.editedMultiSelectedProps,
+      deepEqual,
+    ),
+  )
+
+  const spiedProps = useKeepReferenceEqualityIfPossible(
+    useContextSelector(InspectorPropsContext, (contextData) => contextData.spiedProps, deepEqual),
+  )
+
+  return mapArrayToDictionary(
+    paths.map((path) => {
+      const rawValues: RawValues = attributes.map((props) => {
+        return getModifiableJSXAttributeAtPath(props, path)
+      })
+      const realValues: RealValues = spiedProps.map((props) => {
+        return ObjectPath.get(props, PP.getElements(path))
+      })
+
+      const propertyStatus = calculatePropertyStatusForSelection(rawValues, realValues)
+      const controlStatus = getControlStatusFromPropertyStatus(propertyStatus)
+
+      return {
+        path: path,
+        controlStatus: controlStatus,
+      }
+    }),
+    (k) => PP.toString(k.path),
+    (v) => v.controlStatus,
+  )
 }
 
 function useFirstRawValue(propertyPath: PropertyPath): Either<string, ModifiableAttribute> {
