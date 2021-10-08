@@ -52,11 +52,12 @@ import {
   VerySubdued,
   FlexRow,
 } from '../../../../uuiui'
-import { getControlStyles } from '../../../../uuiui-deps'
+import { CSSCursor, getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import {
   openCodeEditorFile,
+  setCursorOverlay,
   setFocusedElement,
   showContextMenu,
 } from '../../../editor/actions/action-creators'
@@ -228,6 +229,7 @@ const RowForInvalidControl = betterReactMemo(
 interface AbstractRowForControlProps {
   propPath: PropertyPath
   isScene: boolean
+  setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
 function titleForControl(propPath: PropertyPath, control: ControlDescription): string {
@@ -273,6 +275,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
           propName={propName}
           controlDescription={controlDescription}
           propMetadata={propMetadata}
+          setGlobalCursor={props.setGlobalCursor}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>
@@ -357,6 +360,7 @@ const RowForArrayControl = betterReactMemo(
                   controlDescription={controlDescription.propertyControl}
                   isScene={isScene}
                   propPath={PP.appendPropertyPathElems(propPath, [index])}
+                  setGlobalCursor={props.setGlobalCursor}
                 />
               </animated.div>
             )
@@ -367,6 +371,7 @@ const RowForArrayControl = betterReactMemo(
             controlDescription={controlDescription.propertyControl}
             isScene={isScene}
             propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
+            setGlobalCursor={props.setGlobalCursor}
           />
         ) : null}
       </>
@@ -410,6 +415,7 @@ const RowForObjectControl = betterReactMemo(
                 controlDescription={innerControl}
                 isScene={isScene}
                 propPath={innerPropPath}
+                setGlobalCursor={props.setGlobalCursor}
               />
             </FlexRow>
           )
@@ -548,6 +554,13 @@ export const ComponentSectionInner = betterReactMemo(
       useUsedPropsWithoutControls(propsGivenToElement),
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
+
+    const setGlobalCursor = React.useCallback(
+      (cursor: CSSCursor | null) => {
+        dispatch([setCursorOverlay(cursor)], 'everyone')
+      },
+      [dispatch],
+    )
 
     const selectedViews = useEditorState(
       (store) => store.editor.selectedViews,
@@ -734,6 +747,7 @@ export const ComponentSectionInner = betterReactMemo(
                               propPath={PP.create([propName])}
                               controlDescription={controlDescription}
                               isScene={props.isScene}
+                              setGlobalCursor={setGlobalCursor}
                             />
                           )
                         },
@@ -754,6 +768,7 @@ export const ComponentSectionInner = betterReactMemo(
           propertyControlsStatus={propertyControlsStatus}
           visibleEmptyControls={visibleEmptyControls}
           showHiddenControl={showHiddenControl}
+          setGlobalCursor={setGlobalCursor}
         />
         {/** props set on the component instance and props used inside the component code */}
         {propsUsedWithoutControls.length > 0 || propsGivenToElement.length > 0 ? (
@@ -782,6 +797,7 @@ export const SectionRow = betterReactMemo(
           propPath={props.propPath}
           controlDescription={props.controlDescription}
           isScene={props.isScene}
+          setGlobalCursor={props.setGlobalCursor}
         />
       </UIGridRow>
     )
