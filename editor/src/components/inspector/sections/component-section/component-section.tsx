@@ -70,7 +70,9 @@ import {
   useControlStatusForPaths,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
+import { ControlStyles } from '../../common/control-status'
 import {
+  InspectorInfo,
   useGivenPropsAndValuesWithoutControls,
   useGivenPropsWithoutControls,
   useSelectedPropertyControls,
@@ -238,6 +240,20 @@ function titleForControl(propPath: PropertyPath, control: ControlDescription): s
   return control.title ?? PP.lastPartToString(propPath)
 }
 
+function getLabelControlStyle(
+  controlDescription: ControlDescription,
+  propMetadata: InspectorInfo<any>,
+): ControlStyles {
+  if (
+    controlDescription.type === 'expression-enum' &&
+    propMetadata.controlStatus === 'controlled'
+  ) {
+    return getControlStyles('simple')
+  } else {
+    return propMetadata.controlStyles
+  }
+}
+
 interface RowForBaseControlProps extends AbstractRowForControlProps {
   label?: React.ComponentType<any>
   controlDescription: BaseControlDescription
@@ -253,9 +269,15 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
 
+  const labelControlStyle = getLabelControlStyle(controlDescription, propMetadata)
+
   const propertyLabel =
     props.label == null ? (
-      <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+      <PropertyLabel
+        controlStyles={labelControlStyle}
+        target={[propPath]}
+        style={{ textTransform: 'capitalize' }}
+      >
         <Tooltip title={title}>
           <span>{title}</span>
         </Tooltip>
