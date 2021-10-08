@@ -34,6 +34,7 @@ import {
   printCSSNumber,
   CSSNumber,
   cssNumber,
+  defaultCSSColor,
 } from '../../common/css-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { foldEither } from '../../../../core/shared/either'
@@ -90,9 +91,11 @@ export const ControlForColorProp = betterReactMemo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-color-property-control`
-    const value = propMetadata.propertyStatus.set
+    const rawValue = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
+
+    const value = rawValue ?? defaultCSSColor
 
     return (
       <ColorControl
