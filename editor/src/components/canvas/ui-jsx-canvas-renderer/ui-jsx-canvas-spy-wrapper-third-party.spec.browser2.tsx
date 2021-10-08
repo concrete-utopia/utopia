@@ -138,15 +138,21 @@ function renderTestProject() {
 
 async function waitForFullMetadata(getEditorState: () => EditorStore): Promise<true> {
   let foundMetadata = false
+  let totalWaitTime = 0
   do {
+    const WaitTime = 50
     // eslint-disable-next-line no-await-in-loop
-    await wait(50)
+    await wait(WaitTime)
+    totalWaitTime += WaitTime
     foundMetadata =
       getEditorState().editor.spyMetadata[
         'storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial'
       ] != null
     if (foundMetadata) {
       return Promise.resolve(foundMetadata)
+    }
+    if (totalWaitTime > 5000) {
+      throw new Error('The React Three Fiber test timed out.')
     }
   } while (!foundMetadata)
   throw new Error('heat death of the universe')
