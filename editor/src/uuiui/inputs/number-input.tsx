@@ -178,6 +178,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     defaultUnitToHide,
     setGlobalCursor,
   }) => {
+    const nonNullPropsValue: CSSNumber = propsValue ?? cssNumber(0)
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
     const colorTheme = useColorTheme()
@@ -287,6 +288,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       ],
     )
 
+    const repeatedValueRef = React.useRef(nonNullPropsValue)
     const repeatIncrement = React.useCallback(
       (
         currentValue: CSSNumber,
@@ -295,6 +297,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         transient: boolean,
       ) => {
         const newValue = incrementBy(currentValue, incrementStepSize, shiftKey, transient)
+        repeatedValueRef.current = newValue
         incrementAnimationFrame = window.requestAnimationFrame(() =>
           repeatIncrement(newValue, incrementStepSize, shiftKey, transient),
         )
@@ -426,31 +429,27 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
 
     const onKeyDown = React.useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'ArrowUp' && propsValue != null) {
-          incrementBy(propsValue, stepSize, e.shiftKey, false)
-        } else if (e.key === 'ArrowDown' && propsValue != null) {
-          incrementBy(propsValue, -stepSize, e.shiftKey, false)
+        if (e.key === 'ArrowUp') {
+          incrementBy(nonNullPropsValue, stepSize, e.shiftKey, false)
+        } else if (e.key === 'ArrowDown') {
+          incrementBy(nonNullPropsValue, -stepSize, e.shiftKey, false)
         } else if (e.key === 'Enter' || e.key === 'Escape') {
           e.nativeEvent.stopImmediatePropagation()
           e.preventDefault()
           ref.current?.blur()
         }
       },
-      [incrementBy, propsValue, stepSize, ref],
+      [incrementBy, nonNullPropsValue, stepSize, ref],
     )
 
     const onKeyUp = React.useCallback(
       (e: React.KeyboardEvent<HTMLInputElement>) => {
         // todo make sure this isn't doubling up the value submit
-        if (
-          (e.key === 'ArrowUp' || e.key === 'ArrowDown') &&
-          onForcedSubmitValue != null &&
-          propsValue != null
-        ) {
-          onForcedSubmitValue(propsValue)
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && onForcedSubmitValue != null) {
+          onForcedSubmitValue(nonNullPropsValue)
         }
       },
-      [onForcedSubmitValue, propsValue],
+      [onForcedSubmitValue, nonNullPropsValue],
     )
 
     const onBlur = React.useCallback(
@@ -509,24 +508,29 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         window.cancelAnimationFrame(incrementAnimationFrame ?? 0)
         incrementAnimationFrame = undefined
       }
-    }, [ref])
+
+      // Clear transient state by setting the final value
+      if (onSubmitValue != null) {
+        onSubmitValue(repeatedValueRef.current)
+      }
+
+      updateStateValue(repeatedValueRef.current)
+    }, [ref, onSubmitValue, updateStateValue])
 
     const onIncrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
         if (e.button === 0) {
           e.stopPropagation()
           setIsFauxcused(true)
-          if (propsValue != null) {
-            window.addEventListener('mouseup', onIncrementMouseUp)
-            const shiftKey = e.shiftKey
-            const newValue = incrementBy(propsValue, stepSize, shiftKey, false)
-            incrementTimeout = window.setTimeout(() => {
-              repeatIncrement(newValue, stepSize, shiftKey, true)
-            }, repeatThreshold)
-          }
+          window.addEventListener('mouseup', onIncrementMouseUp)
+          const shiftKey = e.shiftKey
+          const newValue = incrementBy(nonNullPropsValue, stepSize, shiftKey, false)
+          incrementTimeout = window.setTimeout(() => {
+            repeatIncrement(newValue, stepSize, shiftKey, true)
+          }, repeatThreshold)
         }
       },
-      [incrementBy, propsValue, stepSize, repeatIncrement, onIncrementMouseUp],
+      [incrementBy, nonNullPropsValue, stepSize, repeatIncrement, onIncrementMouseUp],
     )
 
     const onDecrementMouseUp = React.useCallback(() => {
@@ -541,44 +545,47 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         window.cancelAnimationFrame(incrementAnimationFrame ?? 0)
         incrementAnimationFrame = undefined
       }
-    }, [ref])
+
+      // Clear transient state by setting the final value
+      if (onSubmitValue != null) {
+        onSubmitValue(repeatedValueRef.current)
+      }
+
+      updateStateValue(repeatedValueRef.current)
+    }, [ref, onSubmitValue, updateStateValue])
 
     const onDecrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
         if (e.button === 0) {
           e.stopPropagation()
           setIsFauxcused(true)
-          if (propsValue != null) {
-            window.addEventListener('mouseup', onDecrementMouseUp)
-            const shiftKey = e.shiftKey
-            const newValue = incrementBy(propsValue, -stepSize, shiftKey, false)
-            incrementTimeout = window.setTimeout(
-              () => repeatIncrement(newValue, -stepSize, shiftKey, true),
-              repeatThreshold,
-            )
-          }
+          window.addEventListener('mouseup', onDecrementMouseUp)
+          const shiftKey = e.shiftKey
+          const newValue = incrementBy(nonNullPropsValue, -stepSize, shiftKey, false)
+          incrementTimeout = window.setTimeout(
+            () => repeatIncrement(newValue, -stepSize, shiftKey, true),
+            repeatThreshold,
+          )
         }
       },
-      [incrementBy, propsValue, stepSize, repeatIncrement, onDecrementMouseUp],
+      [incrementBy, nonNullPropsValue, stepSize, repeatIncrement, onDecrementMouseUp],
     )
 
     const onLabelMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.button === 0) {
           e.stopPropagation()
-          if (propsValue != null) {
-            setIsFauxcused(true)
-            window.addEventListener('mousemove', scrubOnMouseMove)
-            window.addEventListener('mouseup', scrubOnMouseUp)
-            setLabelDragDirection('horizontal')
-            setValueAtDragOrigin(propsValue.value)
-            setDragOriginX(e.screenX)
-            setDragOriginY(e.screenY)
-            setGlobalCursor?.(CSSCursor.ResizeEW)
-          }
+          setIsFauxcused(true)
+          window.addEventListener('mousemove', scrubOnMouseMove)
+          window.addEventListener('mouseup', scrubOnMouseUp)
+          setLabelDragDirection('horizontal')
+          setValueAtDragOrigin(nonNullPropsValue.value)
+          setDragOriginX(e.screenX)
+          setDragOriginY(e.screenY)
+          setGlobalCursor?.(CSSCursor.ResizeEW)
         }
       },
-      [propsValue, scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor],
+      [nonNullPropsValue, scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor],
     )
 
     let placeholder: string = ''
