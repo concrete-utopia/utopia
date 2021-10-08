@@ -68,6 +68,7 @@ import {
   isRight,
   left,
   mapEither,
+  unwrapEither,
 } from '../../../core/shared/either'
 import {
   getJSXElementNameLastPart,
@@ -1130,7 +1131,7 @@ export function useGivenPropsWithoutControls(): Array<string> {
   }, 'useGivenPropsWithoutControls')
 
   const propertiesWithControls = filterSpecialProps(
-    Object.keys(eitherToMaybe(parsedPropertyControls) ?? {}),
+    Object.keys(unwrapEither(parsedPropertyControls, {})),
   )
   let givenProps: Array<string> = []
   fastForEach(selectedElements, (element) => {
@@ -1157,7 +1158,7 @@ export function useGivenPropsAndValuesWithoutControls(): Record<string, unknown>
   }, 'useGivenPropsWithoutControls')
 
   const propertiesWithControls = filterSpecialProps(
-    Object.keys(eitherToMaybe(parsedPropertyControls) ?? {}),
+    Object.keys(unwrapEither(parsedPropertyControls, {})),
   )
   if (selectedElements.length === 1) {
     let givenProps: Record<string, unknown> = {}
