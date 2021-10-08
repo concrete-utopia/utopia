@@ -94,32 +94,17 @@ export const ControlForColorProp = betterReactMemo(
       ? propMetadata.value
       : controlDescription.defaultValue
 
-    const parsedColor = parseColor(value)
-    return foldEither(
-      (failureReason) => {
-        return <div>{failureReason}</div>
-      },
-      (validColor) => {
-        function transientSubmitValue(color: CSSColor): void {
-          propMetadata.onTransientSubmitValue(printColor(color))
-        }
-        function submitValue(color: CSSColor): void {
-          propMetadata.onSubmitValue(printColor(color))
-        }
-        return (
-          <ColorControl
-            key={controlId}
-            id={controlId}
-            testId={controlId}
-            value={validColor}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            onTransientSubmitValue={transientSubmitValue}
-            onSubmitValue={submitValue}
-          />
-        )
-      },
-      parsedColor,
+    return (
+      <ColorControl
+        key={controlId}
+        id={controlId}
+        testId={controlId}
+        value={value}
+        controlStatus={propMetadata.controlStatus}
+        controlStyles={propMetadata.controlStyles}
+        onSubmitValue={propMetadata.onSubmitValue}
+        onTransientSubmitValue={propMetadata.onTransientSubmitValue}
+      />
     )
   },
 )
