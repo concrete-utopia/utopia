@@ -159,7 +159,7 @@ export function objectKeyParser<V>(
         return left(objectFieldNotPresentParseError(key))
       }
     } else {
-      return left(descriptionParseError('Value is not an object.'))
+      return left(descriptionParseError('Not an object.'))
     }
   }
 }
@@ -180,7 +180,7 @@ export function optionalObjectKeyParser<V>(
         return right(undefined)
       }
     } else {
-      return left(descriptionParseError('Value is not an object.'))
+      return left(descriptionParseError('Not an object.'))
     }
   }
 }
@@ -205,7 +205,7 @@ export function parseObject<V>(
         Object.keys(valueAsObject),
       )
     } else {
-      return left(descriptionParseError('Value is not an object.'))
+      return left(descriptionParseError('Not an object.'))
     }
   }
 }
@@ -231,7 +231,7 @@ export function parseArray<V>(
       const withErrorParser = arrayValueParserWithError(arrayValueParser)
       return traverseEither(withErrorParser, valueAsArray)
     } else {
-      return left(descriptionParseError('Value is not an array.'))
+      return left(descriptionParseError('Not an array.'))
     }
   }
 }
@@ -240,7 +240,7 @@ export function parseBoolean(value: unknown): ParseResult<boolean> {
   if (typeof value === 'boolean') {
     return right(value)
   } else {
-    return left(descriptionParseError('Value is not a boolean.'))
+    return left(descriptionParseError('Not a boolean.'))
   }
 }
 
@@ -248,7 +248,7 @@ export function parseNumber(value: unknown): ParseResult<number> {
   if (typeof value === 'number') {
     return right(value)
   } else {
-    return left(descriptionParseError('Value is not a number.'))
+    return left(descriptionParseError('Not a number.'))
   }
 }
 
@@ -256,7 +256,7 @@ export function parseString(value: unknown): ParseResult<string> {
   if (typeof value === 'string') {
     return right(value)
   } else {
-    return left(descriptionParseError('Value is not a string.'))
+    return left(descriptionParseError('Not a string.'))
   }
 }
 
@@ -267,7 +267,7 @@ export function parseEnum<E extends string | number>(possibleValues: Array<E>): 
         return right(possibleValue)
       }
     }
-    return left(descriptionParseError('Value is not a member of an enum.'))
+    return left(descriptionParseError('Not a member of an enum.'))
   }
 }
 
@@ -301,7 +301,7 @@ export function parseFunction<T>(value: unknown): ParseResult<T> {
   if (typeof value === 'function') {
     return right(value as any)
   } else {
-    return left(descriptionParseError('Value is not a function.'))
+    return left(descriptionParseError('Not a function.'))
   }
 }
 

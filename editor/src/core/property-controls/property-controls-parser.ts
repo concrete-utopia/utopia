@@ -92,7 +92,7 @@ type OptionTitles<P> = Array<string> | ((props: P | null) => Array<string>)
 
 const parseOptionTitles: Parser<OptionTitles<any>> = parseAlternative<OptionTitles<any>>(
   [parseArray(parseString), parseFunction],
-  'Value is not an array of strings or a function.',
+  'Not a string array or a function.',
 )
 
 export function parseEnumControlDescription(value: unknown): ParseResult<EnumControlDescription> {
@@ -323,7 +323,7 @@ export function parseOptionsControlDescription(
 }
 
 const invalidColorStringResult: ParseResult<string> = left(
-  descriptionParseError('Value is not a valid color string.'),
+  descriptionParseError('Not a valid color string.'),
 )
 
 // We want to parse the string, but check that it can be parsed as a color.
@@ -584,7 +584,7 @@ export function parseControlDescription(value: unknown): ParseResult<ControlDesc
         )
     }
   } else {
-    return left(descriptionParseError('Value is not an object.'))
+    return left(descriptionParseError('Not an object.'))
   }
 }
 
@@ -597,7 +597,7 @@ export function parsePropertyControls(value: unknown): ParseResult<ParsedPropert
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     return right(objectMap(parseControlDescription, value as any))
   } else {
-    return left(descriptionParseError('Property controls are not an object.'))
+    return left(descriptionParseError('Not an object.'))
   }
 }
 

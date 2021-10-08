@@ -62,7 +62,7 @@ function runBaseTestSuite<T>(
       title: true,
     }
     expect(parseFn(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
+      left(objectFieldParseError('title', descriptionParseError('Not a string.'))),
     )
   })
   it('fails on an invalid type', () => {
@@ -71,9 +71,7 @@ function runBaseTestSuite<T>(
       type: 'ham sandwich',
     }
     expect(parseFn(value)).toEqual(
-      left(
-        objectFieldParseError('type', descriptionParseError('Value is not a member of an enum.')),
-      ),
+      left(objectFieldParseError('type', descriptionParseError('Not a member of an enum.'))),
     )
   })
 
@@ -103,7 +101,7 @@ const validBooleanControlDescriptionValue: BooleanControlDescription = {
   title: 'Boolean Control',
   type: 'boolean',
   defaultValue: true,
-  disabledTitle: 'Value is not set.',
+  disabledTitle: 'Not set.',
   enabledTitle: 'Value is set',
 }
 
@@ -262,7 +260,7 @@ describe('parseOptionsControlDescription', () => {
       left(
         objectFieldParseError(
           'options',
-          arrayIndexParseError(0, descriptionParseError('Value is not an object.')),
+          arrayIndexParseError(0, descriptionParseError('Not an object.')),
         ),
       ),
     )
@@ -297,7 +295,7 @@ describe('parsePopUpListControlDescription', () => {
       left(
         objectFieldParseError(
           'options',
-          arrayIndexParseError(0, descriptionParseError('Value is not an object.')),
+          arrayIndexParseError(0, descriptionParseError('Not an object.')),
         ),
       ),
     )
@@ -410,9 +408,7 @@ describe('parseControlDescription', () => {
     )
   })
   it('fails on a value that is not an object', () => {
-    expect(parseControlDescription('hat')).toEqual(
-      left(descriptionParseError('Value is not an object.')),
-    )
+    expect(parseControlDescription('hat')).toEqual(left(descriptionParseError('Not an object.')))
   })
   it('fails on a value that is an invalid case of one of the descriptions', () => {
     const value = {
@@ -420,7 +416,7 @@ describe('parseControlDescription', () => {
       title: true,
     }
     expect(parseControlDescription(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Value is not a string.'))),
+      left(objectFieldParseError('title', descriptionParseError('Not a string.'))),
     )
   })
 })
@@ -447,16 +443,14 @@ describe('parsePropertyControls', () => {
     }
     const expectedResult: ParseResult<ParsedPropertyControls> = right({
       width: right(validNumberControlDescriptionValue),
-      height: left(
-        objectFieldParseError('defaultValue', descriptionParseError('Value is not a number.')),
-      ),
+      height: left(objectFieldParseError('defaultValue', descriptionParseError('Not a number.'))),
     })
     expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
   })
   it('gives an error if the entire value is invalid', () => {
     const propertyControlsValue = 5
     const expectedResult: ParseResult<ParsedPropertyControls> = left(
-      descriptionParseError('Property controls are not an object.'),
+      descriptionParseError('Not an object.'),
     )
     expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
   })

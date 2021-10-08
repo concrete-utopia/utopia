@@ -2184,7 +2184,7 @@ export function parseColor(color: unknown): Either<string, CSSColor> {
     return left('No color value provided.')
   }
   if (typeof color !== 'string') {
-    return left('Invalid value for color provided.')
+    return left('Value not valid.')
   }
   const trimmed = color.trim()
 
@@ -2271,7 +2271,7 @@ export function parseAlphaFromCSSColor(color: CSSColor): number {
       return color.a
     default:
       const _exhaustiveCheck: never = color
-      throw new Error('Unknown color, cannot parse alpha channel')
+      throw new Error('No valid alpha.')
   }
 }
 
@@ -2319,7 +2319,7 @@ export function giveCSSColorNewAlpha(newAlpha: number, color: CSSColor): CSSColo
       } as CSSColorRGB
     default:
       const _exhaustiveCheck: never = color
-      throw new Error('Unknown color, cannot parse alpha channel')
+      throw new Error('No valid alpha.')
   }
 }
 
