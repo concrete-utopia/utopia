@@ -149,7 +149,7 @@ async function waitForFullMetadata(getEditorState: () => EditorStore): Promise<t
         'storyboard/scene-1/canvas-app:canvas-app-div/test-mesh/test-meshStandardMaterial'
       ] != null
     if (foundMetadata) {
-      return Promise.resolve(foundMetadata)
+      return true
     }
     if (totalWaitTime > 5000) {
       throw new Error('The React Three Fiber test timed out.')
