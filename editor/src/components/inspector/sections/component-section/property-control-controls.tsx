@@ -13,7 +13,6 @@ import {
   NumberControlDescription,
   OptionsControlDescription,
   PopUpListControlDescription,
-  SliderControlDescription,
   StringControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
@@ -51,6 +50,7 @@ import { addImports, setProp_UNSAFE } from '../../../editor/actions/action-creat
 import { jsxAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { EditorAction } from '../../../editor/action-types'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
+import { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -332,23 +332,32 @@ export const ControlForNumberProp = betterReactMemo(
       ? propMetadata.value
       : controlDescription.defaultValue
 
-    return (
-      <SimpleNumberInput
-        id={controlId}
-        testId={controlId}
-        value={value}
-        onSubmitValue={wrappedOnSubmit}
-        onTransientSubmitValue={wrappedOnTransientSubmit}
-        onForcedSubmitValue={wrappedOnSubmit}
-        controlStatus={propMetadata.controlStatus}
-        incrementControls={controlDescription.displayStepper}
-        stepSize={controlDescription.step}
-        minimum={controlDescription.min}
-        maximum={controlDescription.max}
-        labelInner={controlDescription.unit}
-        defaultUnitToHide={'px'}
-      />
-    )
+    if (controlDescription.min != null && controlDescription.max != null) {
+      const controlOptions: DEPRECATEDSliderControlOptions = useKeepReferenceEqualityIfPossible({
+        minimum: controlDescription.min,
+        maximum: controlDescription.max,
+        stepSize: controlDescription.step,
+      })
+      return <NumberWithSliderControl {...props} controlOptions={controlOptions} />
+    } else {
+      return (
+        <SimpleNumberInput
+          id={controlId}
+          testId={controlId}
+          value={value}
+          onSubmitValue={wrappedOnSubmit}
+          onTransientSubmitValue={wrappedOnTransientSubmit}
+          onForcedSubmitValue={wrappedOnSubmit}
+          controlStatus={propMetadata.controlStatus}
+          incrementControls={controlDescription.displayStepper}
+          stepSize={controlDescription.step}
+          minimum={controlDescription.min}
+          maximum={controlDescription.max}
+          labelInner={controlDescription.unit}
+          defaultUnitToHide={'px'}
+        />
+      )
+    }
   },
 )
 
@@ -405,21 +414,19 @@ export const ControlForPopupListProp = betterReactMemo(
   },
 )
 
-export const ControlForSliderProp = betterReactMemo(
-  'ControlForSliderProp',
-  (props: ControlForPropProps<SliderControlDescription>) => {
+export const NumberWithSliderControl = betterReactMemo(
+  'NumberWithSliderControl',
+  (
+    props: ControlForPropProps<NumberControlDescription> & {
+      controlOptions: DEPRECATEDSliderControlOptions
+    },
+  ) => {
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-slider-property-control`
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
-
-    const controlOptions = useKeepReferenceEqualityIfPossible({
-      minimum: controlDescription.min,
-      maximum: controlDescription.max,
-      stepSize: controlDescription.step,
-    })
 
     return (
       <UIGridRow padded={false} variant={'<--------auto-------->|--45px--|'}>
@@ -433,7 +440,7 @@ export const ControlForSliderProp = betterReactMemo(
           onSubmitValue={propMetadata.onSubmitValue}
           controlStatus={propMetadata.controlStatus}
           controlStyles={propMetadata.controlStyles}
-          DEPRECATED_controlOptions={controlOptions}
+          DEPRECATED_controlOptions={props.controlOptions}
         />
         <SimpleNumberInput
           id={`${controlId}-number`}
