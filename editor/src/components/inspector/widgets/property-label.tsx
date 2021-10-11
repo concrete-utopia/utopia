@@ -6,12 +6,14 @@ import * as PP from '../../../core/shared/property-path'
 import { betterReactMemo, InspectorContextMenuWrapper } from '../../../uuiui-deps'
 import { optionalAddOnUnsetValues } from '../common/context-menu-items'
 import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
+import { ControlStyles } from '../common/control-status'
 
 type PropertyLabelProps = {
   target: ReadonlyArray<PropertyPath>
   propNamesToUnset?: string[]
   style?: React.CSSProperties
   children: React.ReactNode
+  controlStyles?: ControlStyles
 }
 
 function useMetadataInfoForDomain(target: ReadonlyArray<PropertyPath>) {
@@ -31,7 +33,7 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
     metadata.onUnsetValues,
   )
 
-  const controlStyles = metadata.controlStyles
+  const controlStyles = props.controlStyles ?? metadata.controlStyles
 
   return (
     <div
