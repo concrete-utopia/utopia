@@ -8,7 +8,6 @@ import {
   ComponentInstanceDescription,
   ArrayControlDescription,
   EventHandlerControlDescription,
-  SliderControlDescription,
   PopUpListControlDescription,
   OptionsControlDescription,
 } from 'utopia-api'
@@ -111,18 +110,6 @@ describe('getDescriptionUnsetOptionalFields', () => {
     }
     checkSameArrayElementsAndLength(getDescriptionUnsetOptionalFields(eventHandlerDescription), [
       'title',
-    ])
-  })
-  it('handles slider descriptions', () => {
-    const sliderDescription: SliderControlDescription = {
-      type: 'slider',
-      min: 1,
-      max: 1,
-      step: 1,
-    }
-    checkSameArrayElementsAndLength(getDescriptionUnsetOptionalFields(sliderDescription), [
-      'title',
-      'defaultValue',
     ])
   })
   it('handles popuplist descriptions', () => {

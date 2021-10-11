@@ -9,7 +9,6 @@ import {
   NumberControlDescription,
   OptionsControlDescription,
   PopUpListControlDescription,
-  SliderControlDescription,
   StringControlDescription,
   ArrayControlDescription,
   ObjectControlDescription,
@@ -224,26 +223,6 @@ describe('PopupListControlDescription', () => {
   const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
 
   runBaseTestSuite(validValue, wrappedValidValue, [], PopupListControlDescriptionValue)
-})
-
-describe('SliderControlDescription', () => {
-  const sliderControlDescriptionValue: SliderControlDescription = {
-    type: 'slider',
-    max: 0,
-    min: 100,
-    step: 1,
-  }
-
-  const validValue = 10
-  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
-  const wrappedInvalidValues = [jsxAttributeValue('hat', emptyComments)]
-
-  runBaseTestSuite(
-    validValue,
-    wrappedValidValue,
-    wrappedInvalidValues,
-    sliderControlDescriptionValue,
-  )
 })
 
 describe('StringControlDescription', () => {

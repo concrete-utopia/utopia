@@ -3,7 +3,6 @@ import {
   EnumControlDescription,
   BooleanControlDescription,
   StringControlDescription,
-  SliderControlDescription,
   PopUpListControlDescription,
   OptionsControlDescription,
   ColorControlDescription,
@@ -18,7 +17,6 @@ import {
   parseEnumControlDescription,
   parseBooleanControlDescription,
   parseStringControlDescription,
-  parseSliderControlDescription,
   parsePopUpListControlDescription,
   parseOptionsControlDescription,
   parseColorControlDescription,
@@ -302,25 +300,6 @@ describe('parsePopUpListControlDescription', () => {
   })
 })
 
-const validSliderControlDescriptionValue: SliderControlDescription = {
-  title: 'Slider Control',
-  type: 'slider',
-  defaultValue: 5,
-  min: 2,
-  max: 10,
-  step: 1,
-}
-
-describe('parseSliderControlDescription', () => {
-  runBaseTestSuite(
-    validSliderControlDescriptionValue,
-    ['type', 'max', 'min', 'step'],
-    ['hat'],
-    true,
-    parseSliderControlDescription,
-  )
-})
-
 const validStringControlDescriptionValue: StringControlDescription = {
   title: 'String Control',
   type: 'string',
@@ -377,11 +356,6 @@ describe('parseControlDescription', () => {
       right(validStringControlDescriptionValue),
     )
   })
-  it('parses a slider description correctly', () => {
-    expect(parseControlDescription(validSliderControlDescriptionValue)).toEqual(
-      right(validSliderControlDescriptionValue),
-    )
-  })
   it('parses a popup list description correctly', () => {
     expect(parseControlDescription(validPopUpListControlDescriptionValue)).toEqual(
       right(validPopUpListControlDescriptionValue),
@@ -425,11 +399,11 @@ describe('parsePropertyControls', () => {
   it('returns the property controls fully parsed when they are all valid', () => {
     const propertyControlsValue = {
       width: validNumberControlDescriptionValue,
-      height: validSliderControlDescriptionValue,
+      height: validNumberControlDescriptionValue,
     }
     const expectedResult: ParseResult<ParsedPropertyControls> = right({
       width: right(validNumberControlDescriptionValue),
-      height: right(validSliderControlDescriptionValue),
+      height: right(validNumberControlDescriptionValue),
     })
     expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
   })
@@ -437,7 +411,7 @@ describe('parsePropertyControls', () => {
     const propertyControlsValue = {
       width: validNumberControlDescriptionValue,
       height: {
-        ...validSliderControlDescriptionValue,
+        ...validNumberControlDescriptionValue,
         defaultValue: 'hat',
       },
     }
