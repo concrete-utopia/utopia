@@ -269,7 +269,10 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
   ])
 
-  const labelControlStyle = getLabelControlStyle(controlDescription, propMetadata)
+  const labelControlStyle = React.useMemo(
+    () => getLabelControlStyle(controlDescription, propMetadata),
+    [controlDescription, propMetadata],
+  )
 
   const propertyLabel =
     props.label == null ? (
