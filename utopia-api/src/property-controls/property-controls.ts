@@ -275,12 +275,17 @@ export function getDefaultProps(propertyControls: PropertyControls): { [prop: st
   const propKeys = Object.keys(propertyControls)
   fastForEach(propKeys, (prop) => {
     const control = propertyControls[prop]
-    if (
-      control != null &&
-      (isBaseControlDescription(control) || isHigherLevelControlDescription(control)) &&
-      control.defaultValue != null
-    ) {
-      defaults[prop] = control.defaultValue
+    if (control != null) {
+      if (isBaseControlDescription(control) || isHigherLevelControlDescription(control)) {
+        if (control.defaultValue != null) {
+          defaults[prop] = control.defaultValue
+        }
+      } else {
+        defaults = {
+          ...defaults,
+          ...getDefaultProps(control.controls),
+        }
+      }
     }
   })
   return defaults
