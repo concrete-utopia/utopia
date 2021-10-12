@@ -21,6 +21,11 @@ import {
   ExpressionEnumControlDescription,
   ExpressionEnum,
   ImportType,
+  BaseControlDescription,
+  HigherLevelControlDescription,
+  FolderControlDescription,
+  PropertyControls,
+  RegularControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -37,6 +42,7 @@ import {
   parseEnum,
   parseFunction,
   parseNull,
+  parseNullable,
   parseNumber,
   parseObject,
   Parser,
@@ -55,6 +61,9 @@ import {
   left,
   right,
   isRight,
+  mapEither,
+  flatMapEither,
+  isLeft,
 } from '../shared/either'
 import { objectMap, setOptionalProp, forEachValue } from '../shared/object-utils'
 import { parseEnumValue } from './property-control-values'
@@ -79,7 +88,7 @@ export function parseNumberControlDescription(
     },
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['number']), 'type')(value),
-    optionalObjectKeyParser(parseNumber, 'defaultValue')(value),
+    optionalObjectKeyParser(parseNullable(parseNumber), 'defaultValue')(value),
     optionalObjectKeyParser(parseNumber, 'max')(value),
     optionalObjectKeyParser(parseNumber, 'min')(value),
     optionalObjectKeyParser(parseString, 'unit')(value),
@@ -454,7 +463,7 @@ export function parseArrayControlDescription(value: unknown): ParseResult<ArrayC
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['array']), 'type')(value),
     optionalObjectKeyParser(parseArray(parseAny), 'defaultValue')(value),
-    objectKeyParser(parseControlDescription, 'propertyControl')(value),
+    objectKeyParser(parseRegularControlDescription, 'propertyControl')(value),
     optionalObjectKeyParser(parseNumber, 'maxCount')(value),
   )
 }
@@ -476,7 +485,7 @@ export function parseObjectControlDescription(
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['object']), 'type')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseObject(parseControlDescription), 'object')(value),
+    objectKeyParser(parseObject(parseRegularControlDescription), 'object')(value),
   )
 }
 
@@ -494,7 +503,7 @@ export function parseUnionControlDescription(value: unknown): ParseResult<UnionC
     optionalObjectKeyParser(parseString, 'title')(value),
     objectKeyParser(parseEnum(['union']), 'type')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseArray(parseControlDescription), 'controls')(value),
+    objectKeyParser(parseArray(parseRegularControlDescription), 'controls')(value),
   )
 }
 
@@ -535,7 +544,44 @@ export function parseVector3ControlDescription(
   )
 }
 
-export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
+export function parseFolderControlDescription(
+  value: unknown,
+): ParseResult<FolderControlDescription> {
+  // Results in parse errors within individual property names.
+  const propertiesResult = objectKeyParser(parsePropertyControls, 'controls')(value)
+  // Flatten out the errors within each property.
+  const parsedControlDescriptions: ParseResult<PropertyControls> = flatMapEither(
+    (parsedControlResults) => {
+      let workingResult: PropertyControls = {}
+      for (const propertyName of Object.keys(parsedControlResults)) {
+        const propertyResult = parsedControlResults[propertyName]
+        if (isLeft(propertyResult)) {
+          return left(
+            objectFieldParseError(
+              'controls',
+              objectFieldParseError(propertyName, propertyResult.value),
+            ),
+          )
+        } else {
+          workingResult[propertyName] = propertyResult.value
+        }
+      }
+      return right(workingResult)
+    },
+    propertiesResult,
+  )
+  // Create the result on a success.
+  return mapEither((properties) => {
+    return {
+      type: 'folder',
+      controls: properties,
+    }
+  }, parsedControlDescriptions)
+}
+
+export function parseRegularControlDescription(
+  value: unknown,
+): ParseResult<RegularControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     switch ((value as any)['type']) {
       case 'boolean':
@@ -582,6 +628,19 @@ export function parseControlDescription(value: unknown): ParseResult<ControlDesc
         return left(
           objectFieldParseError('type', descriptionParseError('Unexpected property control type.')),
         )
+    }
+  } else {
+    return left(descriptionParseError('Not an object.'))
+  }
+}
+
+export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
+  if (typeof value === 'object' && !Array.isArray(value) && value != null) {
+    switch ((value as any)['type']) {
+      case 'folder':
+        return parseFolderControlDescription(value)
+      default:
+        return parseRegularControlDescription(value)
     }
   } else {
     return left(descriptionParseError('Not an object.'))

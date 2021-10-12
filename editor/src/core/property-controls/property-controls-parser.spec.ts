@@ -12,6 +12,7 @@ import {
   EventHandlerControlDescription,
   ImageControlDescription,
   StyleObjectControlDescription,
+  FolderControlDescription,
 } from 'utopia-api'
 import {
   parseNumberControlDescription,
@@ -23,13 +24,14 @@ import {
   parseOptionsControlDescription,
   parseColorControlDescription,
   parseComponentInstanceControlDescription,
-  parseControlDescription,
   ParsedPropertyControls,
   parsePropertyControls,
   parseIgnoreControlDescription,
   parseEventHandlerControlDescription,
   parseImageControlDescription,
   parseStyleObjectControlDescription,
+  parseFolderControlDescription,
+  parseControlDescription,
 } from './property-controls-parser'
 import { right, left, isLeft } from '../shared/either'
 import {
@@ -356,6 +358,14 @@ describe('parseStyleObjectControlDescription', () => {
   )
 })
 
+const validFolderControlDescriptionValue: FolderControlDescription = {
+  type: 'folder',
+  controls: {
+    style: validStyleObjectControlDescriptionValue,
+    someSlider: validSliderControlDescriptionValue,
+  },
+}
+
 describe('parseControlDescription', () => {
   it('parses a number description correctly', () => {
     expect(parseControlDescription(validNumberControlDescriptionValue)).toEqual(
@@ -405,6 +415,11 @@ describe('parseControlDescription', () => {
   it('parses an ignore description correctly', () => {
     expect(parseControlDescription(validIgnoreControlDescriptionValue)).toEqual(
       right(validIgnoreControlDescriptionValue),
+    )
+  })
+  it('parses a folder instance description correctly', () => {
+    expect(parseControlDescription(validFolderControlDescriptionValue)).toEqual(
+      right(validFolderControlDescriptionValue),
     )
   })
   it('fails on a value that is not an object', () => {

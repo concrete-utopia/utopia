@@ -13,6 +13,8 @@ import {
   UnionControlDescription,
   ControlDescription,
   ArrayControlDescription,
+  HigherLevelControlDescription,
+  RegularControlDescription,
 } from 'utopia-api'
 import {
   InspectorInfo,
@@ -42,7 +44,7 @@ type RealValues = unknown[]
 
 export function useInspectorInfoForPropertyControl(
   propertyPath: PropertyPath,
-  control: ControlDescription,
+  control: RegularControlDescription,
 ): InspectorInfo<any> {
   const rawValues: RawValues = useKeepReferenceEqualityIfPossible(
     useContextSelector(
@@ -183,7 +185,7 @@ function useFirstRealValue(propertyPath: PropertyPath): unknown {
 export function useControlForUnionControl(
   propertyPath: PropertyPath,
   control: UnionControlDescription,
-): ControlDescription {
+): ControlDescription | null {
   const firstRawValue = useFirstRawValue(propertyPath)
   const firstRealValue = useFirstRealValue(propertyPath)
 

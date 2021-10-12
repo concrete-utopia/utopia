@@ -159,25 +159,30 @@ export type BaseControlDescription =
 
 export type HigherLevelControlType = 'array' | 'object' | 'union'
 
-export type ControlType = BaseControlType | HigherLevelControlType
+export type ControlType = BaseControlType | HigherLevelControlType | 'folder'
 
 interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType>
   extends AbstractControlDescription<T> {}
 
 export interface ArrayControlDescription extends AbstractHigherLevelControlDescription<'array'> {
   defaultValue?: unknown[]
-  propertyControl: ControlDescription
+  propertyControl: RegularControlDescription
   maxCount?: number
 }
 
 export interface ObjectControlDescription extends AbstractHigherLevelControlDescription<'object'> {
   defaultValue?: unknown
-  object: { [prop: string]: ControlDescription }
+  object: { [prop: string]: RegularControlDescription }
 }
 
 export interface UnionControlDescription extends AbstractHigherLevelControlDescription<'union'> {
   defaultValue?: unknown
-  controls: Array<ControlDescription>
+  controls: Array<RegularControlDescription>
+}
+
+export interface FolderControlDescription {
+  type: 'folder'
+  controls: PropertyControls
 }
 
 export type HigherLevelControlDescription =
@@ -185,9 +190,11 @@ export type HigherLevelControlDescription =
   | ObjectControlDescription
   | UnionControlDescription
 
+export type RegularControlDescription = BaseControlDescription | HigherLevelControlDescription
+
 // Please ensure that `property-controls-utils.ts` is kept up to date
 // with any changes to this or the component types.
-export type ControlDescription = BaseControlDescription | HigherLevelControlDescription
+export type ControlDescription = RegularControlDescription | FolderControlDescription
 
 export function isBaseControlDescription(
   control: ControlDescription,
@@ -213,6 +220,7 @@ export function isBaseControlDescription(
     case 'array':
     case 'object':
     case 'union':
+    case 'folder':
       return false
     default:
       const _exhaustiveCheck: never = control
@@ -240,6 +248,7 @@ export function isHigherLevelControlDescription(
     case 'styleobject':
     case 'vector2':
     case 'vector3':
+    case 'folder':
       return false
     case 'array':
     case 'object':
@@ -251,8 +260,8 @@ export function isHigherLevelControlDescription(
   }
 }
 
-export type PropertyControls<ComponentProps = any> = {
-  [K in keyof ComponentProps]?: ControlDescription
+export type PropertyControls = {
+  [key: string]: ControlDescription
 }
 
 export function addPropertyControls(component: unknown, propertyControls: PropertyControls): void {
@@ -266,7 +275,11 @@ export function getDefaultProps(propertyControls: PropertyControls): { [prop: st
   const propKeys = Object.keys(propertyControls)
   fastForEach(propKeys, (prop) => {
     const control = propertyControls[prop]
-    if (control != null && control.defaultValue != null) {
+    if (
+      control != null &&
+      (isBaseControlDescription(control) || isHigherLevelControlDescription(control)) &&
+      control.defaultValue != null
+    ) {
       defaults[prop] = control.defaultValue
     }
   })

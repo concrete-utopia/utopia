@@ -196,18 +196,25 @@ function makeHTMLDescriptor(
     ...extraPropertyControls,
   }
   let defaultProps: JSXAttributes = []
-  for (const propKey of Object.keys(propertyControls)) {
-    const prop = propertyControls[propKey]
-    if (prop?.defaultValue != null) {
-      defaultProps.push(
-        jsxAttributesEntry(
-          propKey,
-          jsxAttributeValue(prop.defaultValue, emptyComments),
-          emptyComments,
-        ),
-      )
+  function addDefaultProps(targetPropertyControls: PropertyControls): void {
+    for (const propKey of Object.keys(targetPropertyControls)) {
+      const prop = targetPropertyControls[propKey]
+      if (prop.type === 'folder') {
+        addDefaultProps(prop.controls)
+      } else {
+        if (prop?.defaultValue != null) {
+          defaultProps.push(
+            jsxAttributesEntry(
+              propKey,
+              jsxAttributeValue(prop.defaultValue, emptyComments),
+              emptyComments,
+            ),
+          )
+        }
+      }
     }
   }
+  addDefaultProps(propertyControls)
   return componentDescriptor(
     addImport('', 'react', null, [], 'React', emptyImportsValue),
     jsxElementWithoutUID(tag, defaultProps, []),

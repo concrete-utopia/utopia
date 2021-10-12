@@ -1,6 +1,6 @@
 import React from 'react'
 import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
-import { isRight } from '../../../../core/shared/either'
+import { foldEither, isRight } from '../../../../core/shared/either'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 import { ParseResult } from '../../../../utils/value-parser-utils'
 import { betterReactMemo } from '../../../../uuiui-deps'
@@ -35,9 +35,10 @@ function filterVisibleEmptyControls(
   pathNames: string[],
   visibleEmptyControls: PropertyPath[],
 ): string[] {
-  return pathNames.filter(
-    (name) => !visibleEmptyControls.find((visible) => PP.toString(visible) === name),
+  const result = pathNames.filter(
+    (name) => !visibleEmptyControls.some((visible) => PP.toString(visible) === name),
   )
+  return result
 }
 
 export function filterNonUnsetAndEmptyControls(
@@ -65,30 +66,41 @@ function filterUnsetAndEmptyControls(
 export const HiddenControls = betterReactMemo(
   'HiddenControls',
   (props: HiddenControlsProps): JSX.Element | null => {
-    const visibleEmptyControls = React.useMemo(
-      () =>
-        props.visibleEmptyControls.map((path) => {
-          if (isRight(props.propertyControls)) {
-            const propertyControl = props.propertyControls.value[PP.toString(path)]
-            if (propertyControl != null && isRight(propertyControl)) {
-              return (
-                <SectionRow
-                  key={PP.toString(path)}
-                  propPath={path}
-                  controlDescription={propertyControl.value}
-                  isScene={false}
-                  setGlobalCursor={props.setGlobalCursor}
-                />
-              )
-            } else {
-              return null
-            }
-          } else {
-            return null
-          }
-        }),
-      [props.visibleEmptyControls, props.propertyControls, props.setGlobalCursor],
-    )
+    const visibleEmptyControls = React.useMemo(() => {
+      const visibleEmptyControlsSet = new Set(props.visibleEmptyControls.map(PP.toString))
+      return foldEither(
+        () => {
+          return null
+        },
+        (propertyControlsSuccess) => {
+          return (
+            <>
+              {Object.keys(propertyControlsSuccess).map((propName) => {
+                const propertyControl = propertyControlsSuccess[propName]
+                return foldEither(
+                  (propertyError) => {
+                    return null
+                  },
+                  (propertySuccess) => {
+                    return (
+                      <SectionRow
+                        propPath={PP.create([propName])}
+                        isScene={false}
+                        setGlobalCursor={props.setGlobalCursor}
+                        controlDescription={propertySuccess}
+                        propNamesToDisplay={visibleEmptyControlsSet}
+                      />
+                    )
+                  },
+                  propertyControl,
+                )
+              })}
+            </>
+          )
+        },
+        props.propertyControls,
+      )
+    }, [props.visibleEmptyControls, props.propertyControls, props.setGlobalCursor])
 
     const propNameList = React.useMemo(() => {
       const hiddenPropNames = filterUnsetAndEmptyControls(

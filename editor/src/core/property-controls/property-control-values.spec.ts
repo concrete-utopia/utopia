@@ -14,6 +14,9 @@ import {
   ArrayControlDescription,
   ObjectControlDescription,
   UnionControlDescription,
+  BaseControlDescription,
+  HigherLevelControlDescription,
+  RegularControlDescription,
 } from 'utopia-api'
 import {
   JSXAttribute,
@@ -39,7 +42,7 @@ function runBaseTestSuite<T>(
   validValue: T,
   wrappedValidValue: JSXAttribute,
   invalidWrappedValidValues: JSXAttribute[],
-  control: ControlDescription,
+  control: RegularControlDescription,
 ) {
   it('Unwraps and parses a valid wrapped value', () => {
     const unwrapAndParse = unwrapperAndParserForPropertyControl(control)
