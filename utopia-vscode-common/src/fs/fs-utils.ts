@@ -27,6 +27,8 @@ const decoder = new TextDecoder()
 
 let fsUser: FSUser // Used to determine if changes came from this user or another
 
+const SanityCheckFolder = '/SanityCheckFolder'
+
 let handleError: FSErrorHandler = (e: FSError) => {
   return Error(`FS Error: ${JSON.stringify(e)}`)
 }
@@ -399,37 +401,42 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
   const { recursive, onCreated, onModified, onDeleted } = config
 
   try {
-    const node = await getItem(path)
-    if (node == null) {
-      watchedPaths.delete(path)
-      lastModifiedTSs.delete(path)
-      onDeleted(path)
-    } else {
-      const stats = fsStatForNode(node)
+    if (await exists(SanityCheckFolder)) {
+      // sanity check: if the SanityCheckFolder is missing, that means that we probably have an issue with the IndexedDB
+      const node = await getItem(path)
+      if (node == null) {
+        watchedPaths.delete(path)
+        lastModifiedTSs.delete(path)
+        onDeleted(path)
+      } else {
+        const stats = fsStatForNode(node)
 
-      const modifiedTS = stats.mtime
-      const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
-      const modifiedBySelf = stats.sourceOfLastChange === fsUser
+        const modifiedTS = stats.mtime
+        const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
+        const modifiedBySelf = stats.sourceOfLastChange === fsUser
 
-      if (wasModified) {
-        if (isDirectory(node)) {
-          if (recursive) {
-            const children = await childPaths(path)
-            const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
-            unsupervisedChildren.forEach((childPath) => {
-              watchPath(childPath, config)
-              onCreated(childPath)
-            })
-            if (unsupervisedChildren.length > 0) {
-              onModified(path, modifiedBySelf)
+        if (wasModified) {
+          if (isDirectory(node)) {
+            if (recursive) {
+              const children = await childPaths(path)
+              const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
+              unsupervisedChildren.forEach((childPath) => {
+                watchPath(childPath, config)
+                onCreated(childPath)
+              })
+              if (unsupervisedChildren.length > 0) {
+                onModified(path, modifiedBySelf)
+              }
             }
+          } else {
+            onModified(path, modifiedBySelf)
           }
-        } else {
-          onModified(path, modifiedBySelf)
-        }
 
-        lastModifiedTSs.set(path, modifiedTS)
+          lastModifiedTSs.set(path, modifiedTS)
+        }
       }
+    } else {
+      console.error('FS sanity check failed!', path)
     }
   } catch (e) {
     // Something was changed mid-poll, likely the file or its parent was deleted. We'll catch it on the next poll.
@@ -452,6 +459,7 @@ export async function watch(
   onModified: (path: string, modifiedBySelf: boolean) => void,
   onDeleted: (path: string) => void,
 ): Promise<void> {
+  await simpleCreateDirectoryIfMissing(SanityCheckFolder)
   const fileExists = await exists(target)
   if (fileExists) {
     // This has the limitation that calling `watch` on a path will replace any existing subscriber
