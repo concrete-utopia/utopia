@@ -15,12 +15,13 @@ import { foldEither, forEachRight } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import * as EP from '../../../../core/shared/element-path'
 import {
   betterReactMemo,
   useKeepReferenceEqualityIfPossible,
 } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
-import { getParseErrorDetails, ParseError } from '../../../../utils/value-parser-utils'
+import { getParseErrorDetails, ParseError, ParseResult } from '../../../../utils/value-parser-utils'
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
@@ -80,6 +81,7 @@ import {
   useHiddenElements,
 } from './hidden-controls-section'
 import { ComponentInfoBox } from './component-info-box'
+import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -521,16 +523,57 @@ export const ComponentSectionInner = betterReactMemo(
   'ComponentSectionInner',
   (props: ComponentSectionProps) => {
     const colorTheme = useColorTheme()
-    const propertyControls = useKeepReferenceEqualityIfPossible(useSelectedPropertyControls(false))
+
+    const propertyControlsAndTargets = useKeepReferenceEqualityIfPossible(
+      useSelectedPropertyControls(false),
+    )
+
+    return (
+      <>
+        <InspectorSectionHeader>
+          <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
+            <Icons.Component color='primary' />
+            <span>Component </span>
+          </FlexRow>
+        </InspectorSectionHeader>
+
+        {/* Information about the component as a whole */}
+        <ComponentInfoBox />
+        {/* List of component props with controls */}
+        {propertyControlsAndTargets.map((controlsAndTargets) => (
+          <PropertyControlsSection
+            key={EP.toString(controlsAndTargets.targets[0])}
+            propertyControls={controlsAndTargets.controls}
+            targets={controlsAndTargets.targets}
+            isScene={props.isScene}
+          />
+        ))}
+      </>
+    )
+  },
+)
+
+interface PropertyControlsSectionProps {
+  targets: ElementPath[]
+  propertyControls: ParseResult<ParsedPropertyControls>
+  isScene: boolean
+}
+
+const PropertyControlsSection = betterReactMemo(
+  'PropertyControlsSection',
+  (props: PropertyControlsSectionProps) => {
+    const { targets, propertyControls } = props
+
     const detectedPropsWithoutControls = useKeepReferenceEqualityIfPossible(
-      useGivenPropsWithoutControls(),
+      useGivenPropsWithoutControls(targets),
     )
     const detectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutControls(detectedPropsWithoutControls),
+      useUsedPropsWithoutControls(detectedPropsWithoutControls, targets),
     )
     const detectedPropsAndValuesWithoutControls = useKeepReferenceEqualityIfPossible(
-      useGivenPropsAndValuesWithoutControls(),
+      useGivenPropsAndValuesWithoutControls(targets),
     )
+
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
 
     const setGlobalCursor = React.useCallback(
@@ -551,16 +594,6 @@ export const ComponentSectionInner = betterReactMemo(
 
     return (
       <>
-        <InspectorSectionHeader>
-          <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
-            <Icons.Component color='primary' />
-            <span>Component </span>
-          </FlexRow>
-        </InspectorSectionHeader>
-
-        {/* Information about the component as a whole */}
-        <ComponentInfoBox />
-        {/* List of component props with controls */}
         {foldEither(
           (rootParseError) => {
             return <ParseErrorControl parseError={rootParseError} />

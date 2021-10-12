@@ -107,6 +107,7 @@ import { findUnderlyingTargetComponentImplementation } from '../../custom-code/c
 import type { MapLike } from 'typescript'
 import { omitWithPredicate } from '../../../core/shared/object-utils'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
+import fastDeepEquals from 'fast-deep-equal'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -1046,43 +1047,78 @@ const StyleSubSectionForType: { [key: string]: SubSectionAvailable } = {
   transform: subSectionAllowAll,
 }
 
+function areMatchingPropertyControls(
+  a: ParseResult<ParsedPropertyControls>,
+  b: ParseResult<ParsedPropertyControls>,
+): boolean {
+  return fastDeepEquals(a, b)
+}
+
+function findPropertyControlsForTarget(
+  target: ElementPath,
+  parsedPropertyControlsAndTargets: Array<ParsedPropertyControlsAndTargets>,
+): ParseResult<ParsedPropertyControls> {
+  return (
+    parsedPropertyControlsAndTargets.find((parsedPropertyControls) => {
+      return parsedPropertyControls.targets.some((path) => EP.pathsEqual(path, target))
+    })?.controls ?? ({} as ParseResult<ParsedPropertyControls>)
+  )
+}
+
+type ParsedPropertyControlsAndTargets = {
+  controls: ParseResult<ParsedPropertyControls>
+  targets: ElementPath[]
+}
+
 export function useSelectedPropertyControls(
   includeIgnored: boolean,
-): ParseResult<ParsedPropertyControls> {
+): Array<ParsedPropertyControlsAndTargets> {
   const selectedViews = useRefSelectedViews()
 
-  const propertyControls = useEditorState((store) => {
+  return useEditorState((store) => {
     const { codeResultCache } = store.editor
 
-    let selectedPropertyControls: PropertyControls | null = {}
+    let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
     if (codeResultCache != null) {
       Utils.fastForEach(selectedViews.current, (path) => {
-        // TODO multiselect
-        // TODO use getPropertyControlsForTarget and reselect selectors
-        selectedPropertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
+        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
+        const parsed = includeIgnored
+          ? parsePropertyControls(propertyControls)
+          : mapEither(removeIgnored, parsePropertyControls(propertyControls))
+        const foundMatch = parsedPropertyControls.findIndex((existing) =>
+          areMatchingPropertyControls(existing.controls, parsed),
+        )
+        if (foundMatch > -1) {
+          parsedPropertyControls[foundMatch] = {
+            ...parsedPropertyControls[foundMatch],
+            targets: [...parsedPropertyControls[foundMatch].targets, path],
+          }
+        } else {
+          parsedPropertyControls.push({
+            controls: parsed,
+            targets: [path],
+          })
+        }
       })
     }
 
-    return selectedPropertyControls
+    return parsedPropertyControls
   }, 'useSelectedPropertyControls')
-
-  // Strip ignored property controls here.
-  const parsed = parsePropertyControls(propertyControls)
-  if (includeIgnored) {
-    return parsed
-  } else {
-    return mapEither(removeIgnored, parsed)
-  }
 }
 
-export function useUsedPropsWithoutControls(propsGiven: Array<string>): Array<string> {
-  const parsedPropertyControls = useSelectedPropertyControls(true)
-
-  const selectedViews = useRefSelectedViews()
+export function useUsedPropsWithoutControls(
+  propsGiven: Array<string>,
+  targets: Array<ElementPath>,
+): Array<string> {
+  const parsedPropertyControlsAndTargets = useSelectedPropertyControls(true)
+  const parsedPropertyControls = findPropertyControlsForTarget(
+    targets[0],
+    parsedPropertyControlsAndTargets,
+  )
 
   const selectedComponents = useEditorState((store) => {
     let components: Array<UtopiaJSXComponent> = []
-    fastForEach(selectedViews.current, (path) => {
+    fastForEach(targets, (path) => {
       const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
       if (openStoryboardFile != null) {
         const component = findUnderlyingTargetComponentImplementation(
@@ -1099,7 +1135,9 @@ export function useUsedPropsWithoutControls(propsGiven: Array<string>): Array<st
     return components
   }, 'useUsedPropsWithoutControls')
 
-  const propertiesWithControls = Object.keys(eitherToMaybe(parsedPropertyControls) ?? {})
+  const propertiesWithControls: Array<string> = Object.keys(
+    eitherToMaybe(parsedPropertyControls) ?? {},
+  )
   let propertiesWithoutControls: Array<string> = []
   fastForEach(selectedComponents, (component) => {
     if (isJSXElement(component.rootElement)) {
@@ -1119,14 +1157,16 @@ function filterUtopiaSpecificProps(props: MapLike<any>) {
   return omitWithPredicate(props, (key) => typeof key === 'string' && PropsToDiscard.includes(key))
 }
 
-export function useGivenPropsWithoutControls(): Array<string> {
-  const parsedPropertyControls = useSelectedPropertyControls(true)
-  const selectedViews = useRefSelectedViews()
-
+export function useGivenPropsWithoutControls(targets: Array<ElementPath>): Array<string> {
+  const parsedPropertyControlsAndTargets = useSelectedPropertyControls(true)
+  const parsedPropertyControls = findPropertyControlsForTarget(
+    targets[0],
+    parsedPropertyControlsAndTargets,
+  )
   const selectedElements = useEditorState((store) => {
     return mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
-      selectedViews.current,
+      targets,
     )
   }, 'useGivenPropsWithoutControls')
 
@@ -1146,44 +1186,47 @@ export function useGivenPropsWithoutControls(): Array<string> {
   return givenProps
 }
 
-export function useGivenPropsAndValuesWithoutControls(): Record<string, unknown> {
-  const parsedPropertyControls = useSelectedPropertyControls(true)
-  const selectedViews = useRefSelectedViews()
-
+export function useGivenPropsAndValuesWithoutControls(
+  targets: Array<ElementPath>,
+): Record<string, unknown> {
+  const parsedPropertyControlsAndTargets = useSelectedPropertyControls(true)
+  const parsedPropertyControls = findPropertyControlsForTarget(
+    targets[0],
+    parsedPropertyControlsAndTargets,
+  )
   const selectedElements = useEditorState((store) => {
     return mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
-      selectedViews.current,
+      targets,
     )
   }, 'useGivenPropsWithoutControls')
 
   const propertiesWithControls = filterSpecialProps(
     Object.keys(unwrapEither(parsedPropertyControls, {})),
   )
-  if (selectedElements.length === 1) {
-    let givenProps: Record<string, unknown> = {}
 
-    const element = selectedElements[0] // TODO Multiselect
+  let givenProps: Record<string, unknown> = {}
+  fastForEach(selectedElements, (element) => {
     const elementProps = filterUtopiaSpecificProps(element.props)
     fastForEach(Object.keys(elementProps), (propName) => {
       if (!propertiesWithControls.includes(propName)) {
         givenProps[propName] = elementProps[propName]
       }
     })
-    return givenProps
-  } else {
-    return {}
-  }
+  })
+  return givenProps
 }
 
-export function useUsedPropsWithoutDefaults(): Array<string> {
-  const parsedPropertyControls = useSelectedPropertyControls(false)
-
-  const selectedViews = useRefSelectedViews()
+export function useUsedPropsWithoutDefaults(targets: Array<ElementPath>): Array<string> {
+  const parsedPropertyControlsAndTargets = useSelectedPropertyControls(false)
+  const parsedPropertyControls = findPropertyControlsForTarget(
+    targets[0],
+    parsedPropertyControlsAndTargets,
+  )
 
   const selectedComponentProps = useEditorState((store) => {
     let propsUsed: Array<string> = []
-    fastForEach(selectedViews.current, (path) => {
+    fastForEach(targets, (path) => {
       forUnderlyingTargetFromEditorState(
         path,
         store.editor,
