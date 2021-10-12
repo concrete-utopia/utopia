@@ -141,6 +141,19 @@ instance ToJSON ProjectContentsTree where
   toJSON (ProjectContentsTreeDirectory dirEntry) = over _Object (M.insert "type" "PROJECT_CONTENT_DIRECTORY") $ toJSON dirEntry
   toJSON (ProjectContentsTreeFile fileEntry) = over _Object (M.insert "type" "PROJECT_CONTENT_FILE") $ toJSON fileEntry
 
+-- This is currently not a comprehensive definition for the persistent model the
+-- front-end can supply, so round tripping via this type is guaranteed to lose data.
+data PartialPersistentModel = PartialPersistentModel
+                            { projectContents :: ProjectContentsTreeRoot
+                            }
+                            deriving (Eq, Show, Generic)
+
+instance FromJSON PartialPersistentModel where
+  parseJSON = genericParseJSON defaultOptions
+
+instance ToJSON PartialPersistentModel where
+  toJSON = genericToJSON defaultOptions
+
 getProjectContentsTreeFile :: ProjectContentsTreeRoot -> [Text] -> Maybe ProjectFile
 getProjectContentsTreeFile _ [] = Nothing
 getProjectContentsTreeFile projectContentsTree pathElements =
@@ -151,15 +164,19 @@ getProjectContentsTreeFile projectContentsTree pathElements =
       lookupLens = foldl' (\soFar filename -> directoryContentLens filename . soFar) (fileLens finalPathElement) remainingPathElements
    in firstOf lookupLens projectContentsTree
 
+persistentModelFromJSON :: Value -> Either Text PartialPersistentModel
+persistentModelFromJSON value = first pack $ parseEither parseJSON value
+
 projectContentsTreeFromDecodedProject :: DecodedProject -> Either Text ProjectContentsTreeRoot
 projectContentsTreeFromDecodedProject decodedProject = do
-  projectContentsValue <- maybe (Left "No projectContents field in decoded project model.") pure $ firstOf (field @"content" . key "projectContents") decodedProject
-  first pack $ parseEither parseJSON projectContentsValue
+  let contentOfProject = view (field @"content") decodedProject
+  fmap (view (field @"projectContents")) $ persistentModelFromJSON contentOfProject
 
 projectContentsTreeFromSaveProjectRequest :: SaveProjectRequest -> Maybe (Either Text ProjectContentsTreeRoot)
 projectContentsTreeFromSaveProjectRequest saveProjectRequest =
-  let possiblePersistentModel = firstOf (field @"_content" . _Just . key "projectContents") saveProjectRequest
-   in fmap (first pack . parseEither parseJSON) possiblePersistentModel
+  let possiblePersistentModel = firstOf (field @"_content" . _Just) saveProjectRequest
+      possibleParsedPersistentModel = fmap persistentModelFromJSON possiblePersistentModel
+   in over (_Just . _Right) (view (field @"projectContents")) possibleParsedPersistentModel
 
 validateSaveRequest :: SaveProjectRequest -> Bool
 validateSaveRequest saveProjectRequest =
