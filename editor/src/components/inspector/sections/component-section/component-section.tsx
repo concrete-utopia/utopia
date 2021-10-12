@@ -10,22 +10,11 @@ import {
   UnionControlDescription,
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
-import {
-  filterSpecialProps,
-  getDescriptionUnsetOptionalFields,
-} from '../../../../core/property-controls/property-controls-utils'
-import { joinSpecial } from '../../../../core/shared/array-utils'
-import {
-  eitherToMaybe,
-  foldEither,
-  forEachRight,
-  isRight,
-  maybeEitherToMaybe,
-} from '../../../../core/shared/either'
+import { filterSpecialProps } from '../../../../core/property-controls/property-controls-utils'
+import { foldEither, forEachRight } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
-import * as EP from '../../../../core/shared/element-path'
 import {
   betterReactMemo,
   useKeepReferenceEqualityIfPossible,
@@ -42,29 +31,15 @@ import {
   SimpleFlexRow,
   SquareButton,
   PopupList,
-  FunctionIcons,
   Icons,
-  LargerIcons,
-  Section,
-  SectionBodyArea,
-  FlexColumn,
-  paddingTop,
-  Subdued,
   VerySubdued,
   FlexRow,
 } from '../../../../uuiui'
 import { CSSCursor, getControlStyles } from '../../../../uuiui-deps'
-import { InfoBox } from '../../../common/notices'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import {
-  openCodeEditorFile,
-  setCursorOverlay,
-  setFocusedElement,
-  showContextMenu,
-} from '../../../editor/actions/action-creators'
+import { setCursorOverlay } from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../common/context-menu-items'
-import { InstanceContextMenu } from '../../common/instance-context-menu'
 import {
   useControlForUnionControl,
   useControlStatusForPaths,
@@ -77,7 +52,6 @@ import {
   useGivenPropsWithoutControls,
   useSelectedPropertyControls,
   useUsedPropsWithoutControls,
-  useUsedPropsWithoutDefaults,
 } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import { SelectOption } from '../../controls/select-control'
@@ -100,22 +74,12 @@ import {
   ControlForStringProp,
   ControlForVectorProp,
 } from './property-control-controls'
-import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
-import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { getJSXElementNameAsString, isJSXElement } from '../../../../core/shared/element-template'
-import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import { usePackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
-import {
-  getFilePathForImportedComponent,
-  isAnimatedElement,
-  isImportedComponentNPM,
-} from '../../../../core/model/project-file-utils'
 import {
   filterNonUnsetAndEmptyControls,
   HiddenControls,
   useHiddenElements,
 } from './hidden-controls-section'
+import { ComponentInfoBox } from './component-info-box'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -549,29 +513,6 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
   }
 })
 
-function useComponentType(path: ElementPath): string | null {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadata
-    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-    if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
-      return 'Scene'
-    }
-    if (MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {
-      return 'Styled Component'
-    }
-    const isAnimatedComponent = isAnimatedElement(elementMetadata)
-    if (isAnimatedComponent) {
-      return 'Animated Component'
-    }
-    const isImported = isImportedComponentNPM(elementMetadata)
-    if (isImported) {
-      return 'Component'
-    }
-    const isComponent = MetadataUtils.isFocusableComponent(path, metadata)
-    return isComponent ? 'Component' : null
-  }, 'useComponentType')
-}
-
 export interface ComponentSectionProps {
   isScene: boolean
 }
@@ -599,70 +540,6 @@ export const ComponentSectionInner = betterReactMemo(
       [dispatch],
     )
 
-    const selectedViews = useEditorState(
-      (store) => store.editor.selectedViews,
-      'ComponentSectionInner selectedViews',
-    )
-
-    const focusedElementPath = useEditorState(
-      (store) => store.editor.focusedElementPath,
-      'ComponentSectionInner focusedElementPath',
-    )
-
-    const target = selectedViews[0]
-
-    const isFocused = EP.isFocused(focusedElementPath, target)
-
-    const toggleFocusMode = React.useCallback(() => {
-      dispatch([setFocusedElement(isFocused ? null : target)])
-    }, [dispatch, isFocused, target])
-
-    const locationOfComponentInstance = useEditorState((state) => {
-      const element = MetadataUtils.findElementByElementPath(state.editor.jsxMetadata, target)
-      const importResult = getFilePathForImportedComponent(element)
-      if (importResult == null) {
-        const underlyingTarget = normalisePathToUnderlyingTarget(
-          state.editor.projectContents,
-          state.editor.nodeModules.files,
-          state.editor.canvas.openFile?.filename ?? '',
-          selectedViews[0],
-        )
-
-        return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null
-      } else {
-        return importResult
-      }
-    }, 'ComponentSectionInner locationOfComponentInstance')
-
-    const componentPackageName = useEditorState((state) => {
-      const componentMetadata = MetadataUtils.findElementByElementPath(
-        state.editor.jsxMetadata,
-        target,
-      )
-      return maybeEitherToMaybe(componentMetadata?.importInfo)?.path
-    }, 'ComponentSectionInner componentPackageName')
-
-    const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
-
-    const isFocusable = useEditorState((state) => {
-      return MetadataUtils.isFocusableComponent(target, state.editor.jsxMetadata)
-    }, 'ComponentSectionInner isFocusable')
-    const isImportedComponent = useEditorState((state) => {
-      const componentMetadata = MetadataUtils.findElementByElementPath(
-        state.editor.jsxMetadata,
-        target,
-      )
-      return isImportedComponentNPM(componentMetadata)
-    }, 'ComponentSectionInner isImportedComponent')
-
-    const componentType = useComponentType(target)
-
-    const OpenFile = React.useCallback(() => {
-      if (locationOfComponentInstance != null) {
-        dispatch([openCodeEditorFile(locationOfComponentInstance, true)])
-      }
-    }, [dispatch, locationOfComponentInstance])
-
     let propPaths: Array<PropertyPath> = []
     forEachRight(propertyControls, (success) => {
       const propNames = filterSpecialProps(Object.keys(success))
@@ -682,71 +559,7 @@ export const ComponentSectionInner = betterReactMemo(
         </InspectorSectionHeader>
 
         {/* Information about the component as a whole */}
-        {isImportedComponent ? (
-          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <LargerIcons.NpmLogo />
-            </span>
-            <p>
-              {`This ${componentType} is imported from `}
-              <InlineLink href={componentPackageMgrLink}>
-                {`${componentPackageName}`}
-              </InlineLink>{' '}
-              via NPM.
-            </p>
-          </UIGridRow>
-        ) : isFocusable && !isFocused ? (
-          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <IconToggleButton
-                value={false}
-                srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
-                srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
-                onToggle={toggleFocusMode}
-              />
-            </span>
-            <p>
-              {`This ${componentType} is imported from `}
-              <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
-              <InlineButton onClick={toggleFocusMode}>Edit it</InlineButton>
-            </p>
-          </UIGridRow>
-        ) : isFocusable && isFocused ? (
-          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <IconToggleButton
-                value={true}
-                srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
-                srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-                onToggle={toggleFocusMode}
-              />
-            </span>
-            <p>
-              {`This ${componentType} is imported from `}
-              <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
-              <InlineButton onClick={toggleFocusMode}>Exit Editing</InlineButton>
-            </p>
-          </UIGridRow>
-        ) : null}
-
+        <ComponentInfoBox />
         {/* List of component props with controls */}
         {foldEither(
           (rootParseError) => {
