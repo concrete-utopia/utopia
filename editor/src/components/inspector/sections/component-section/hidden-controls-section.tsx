@@ -28,7 +28,7 @@ export const useHiddenElements = (): [PropertyPath[], (path: PropertyPath) => vo
 }
 
 function isControlUnset(controlStatus: ControlStatus): boolean {
-  return controlStatus === 'unset'
+  return controlStatus === 'unset' || controlStatus === 'multiselect-identical-unset'
 }
 
 function filterVisibleEmptyControls(
