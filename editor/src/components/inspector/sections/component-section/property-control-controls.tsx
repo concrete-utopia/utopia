@@ -34,6 +34,7 @@ import {
   printCSSNumber,
   CSSNumber,
   cssNumber,
+  defaultCSSColor,
 } from '../../common/css-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { foldEither } from '../../../../core/shared/either'
@@ -90,36 +91,23 @@ export const ControlForColorProp = betterReactMemo(
     const { propName, propMetadata, controlDescription } = props
 
     const controlId = `${propName}-color-property-control`
-    const value = propMetadata.propertyStatus.set
+    const rawValue = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
 
-    const parsedColor = parseColor(value)
-    return foldEither(
-      (failureReason) => {
-        return <div>{failureReason}</div>
-      },
-      (validColor) => {
-        function transientSubmitValue(color: CSSColor): void {
-          propMetadata.onTransientSubmitValue(printColor(color))
-        }
-        function submitValue(color: CSSColor): void {
-          propMetadata.onSubmitValue(printColor(color))
-        }
-        return (
-          <ColorControl
-            key={controlId}
-            id={controlId}
-            testId={controlId}
-            value={validColor}
-            controlStatus={propMetadata.controlStatus}
-            controlStyles={propMetadata.controlStyles}
-            onTransientSubmitValue={transientSubmitValue}
-            onSubmitValue={submitValue}
-          />
-        )
-      },
-      parsedColor,
+    const value = rawValue ?? defaultCSSColor
+
+    return (
+      <ColorControl
+        key={controlId}
+        id={controlId}
+        testId={controlId}
+        value={value}
+        controlStatus={propMetadata.controlStatus}
+        controlStyles={propMetadata.controlStyles}
+        onSubmitValue={propMetadata.onSubmitValue}
+        onTransientSubmitValue={propMetadata.onTransientSubmitValue}
+      />
     )
   },
 )

@@ -263,9 +263,7 @@ export interface PropertyStatus extends SinglePropertyStatus {
 
 // TODO: this needs tests!!!
 export function getControlStatusFromPropertyStatus(status: PropertyStatus): ControlStatus {
-  if (status.selectionLength === 0) {
-    return 'off'
-  } else if (status.selectionLength === 1) {
+  if (status.selectionLength <= 1) {
     if (status.set) {
       if (status.controlled) {
         if (status.overwritable) {

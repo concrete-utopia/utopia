@@ -485,7 +485,7 @@ describe('Integration Test: backgroundColor property', () => {
   it('parses a off control status', () => {
     const hookResult = getBackgroundColorHookResult([], ['myStyleOuter', 'myStyleInner'], [])
 
-    const expectedControlStatus: ControlStatus = 'off'
+    const expectedControlStatus: ControlStatus = 'unset'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
@@ -765,7 +765,7 @@ describe('Integration Test: opacity property', () => {
   it('parses a off control status', () => {
     const hookResult = getOpacityHookResult([], [], [], [])
 
-    const expectedControlStatus: ControlStatus = 'off'
+    const expectedControlStatus: ControlStatus = 'unset'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
