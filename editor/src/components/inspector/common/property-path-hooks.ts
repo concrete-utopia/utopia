@@ -107,6 +107,7 @@ import { findUnderlyingTargetComponentImplementation } from '../../custom-code/c
 import type { MapLike } from 'typescript'
 import { omitWithPredicate } from '../../../core/shared/object-utils'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
+import { getPropertyControlNames } from '../../../core/property-controls/property-control-values'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -1130,8 +1131,10 @@ export function useGivenPropsWithoutControls(): Array<string> {
     )
   }, 'useGivenPropsWithoutControls')
 
-  const propertiesWithControls = filterSpecialProps(
-    Object.keys(unwrapEither(parsedPropertyControls, {})),
+  const propertiesWithControls = foldEither(
+    () => [],
+    (success) => filterSpecialProps(getPropertyControlNames(success)),
+    parsedPropertyControls,
   )
   let givenProps: Array<string> = []
   fastForEach(selectedElements, (element) => {
@@ -1157,8 +1160,10 @@ export function useGivenPropsAndValuesWithoutControls(): Record<string, unknown>
     )
   }, 'useGivenPropsWithoutControls')
 
-  const propertiesWithControls = filterSpecialProps(
-    Object.keys(unwrapEither(parsedPropertyControls, {})),
+  const propertiesWithControls = foldEither(
+    () => [],
+    (success) => filterSpecialProps(getPropertyControlNames(success)),
+    parsedPropertyControls,
   )
   if (selectedElements.length === 1) {
     let givenProps: Record<string, unknown> = {}
@@ -1176,7 +1181,7 @@ export function useGivenPropsAndValuesWithoutControls(): Record<string, unknown>
   }
 }
 
-export function useUsedPropsWithoutDefaults(): Array<string> {
+export function useUsedPropsWithoutDefaults(): Array<number | string> {
   const parsedPropertyControls = useSelectedPropertyControls(false)
 
   const selectedViews = useRefSelectedViews()

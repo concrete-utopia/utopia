@@ -45,7 +45,7 @@ describe('Parsing and printing code with comments', () => {
     commentAfterAllAttributes: '/* Comment after all attributes */',
   }
 
-  const notYetSupported: Array<keyof typeof comments> = []
+  const notYetSupported: Array<string> = []
 
   const code = applyPrettier(
     `
