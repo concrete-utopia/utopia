@@ -700,13 +700,15 @@ export const ComponentSectionInner = betterReactMemo(
     }, [dispatch, locationOfComponentInstance])
 
     const propPaths = React.useMemo(() => {
-      let workingPropPaths: Array<PropertyPath> = []
-      forEachRight(propertyControls, (success) => {
-        workingPropPaths = filterSpecialProps(getPropertyControlNames(success)).map((name) =>
-          PP.create([name]),
-        )
-      })
-      return workingPropPaths
+      return foldEither(
+        () => [],
+        (success) => {
+          return filterSpecialProps(getPropertyControlNames(success)).map((name) => {
+            return PP.create([name])
+          })
+        },
+        propertyControls,
+      )
     }, [propertyControls])
 
     const propertyControlsStatus = useControlStatusForPaths(propPaths)
