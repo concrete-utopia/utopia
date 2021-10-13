@@ -8,10 +8,10 @@ import           Data.List               (stripPrefix)
 import           Data.Text               (pack)
 import           Protolude
 import           System.FilePath
-import           Test.Hspec
-import           Utopia.Web.Packager.NPM
 import           System.Log.FastLogger
+import           Test.Hspec
 import           Utopia.Web.Metrics
+import           Utopia.Web.Packager.NPM
 
 expectedFilenames :: [Text]
 expectedFilenames = [

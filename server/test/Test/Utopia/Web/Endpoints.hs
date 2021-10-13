@@ -19,7 +19,8 @@ import           Network.HTTP.Client            (CookieJar, cookie_value,
                                                  defaultManagerSettings,
                                                  destroyCookieJar, newManager)
 import           Network.HTTP.Media.MediaType
-import           Network.HTTP.Types             (Status, notFound404)
+import           Network.HTTP.Types             (Status, badRequest400,
+                                                 notFound404)
 import qualified Network.Socket.Wait            as W
 import           Protolude
 import           Servant
@@ -29,6 +30,7 @@ import           Servant.RawM.Client
 import           System.Timeout
 import           Test.Hspec
 import           Test.Utopia.Web.Executors.Test
+import           Utopia.Web.ClientModel
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Servant
@@ -200,14 +202,20 @@ deleteAssetSpec :: Spec
 deleteAssetSpec = around_ withServer $ do
   describe "DELETE v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
     it "should delete the asset" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      let projectContents = object ["projectContents" .= object []]
+      let projectContents = toJSON
+                          $ M.singleton ("storyboard.js" :: Text)
+                          $ ProjectContentsTreeFile
+                          $ ProjectContentFile "/storyboard.js"
+                          $ ProjectTextFile
+                          $ TextFile (TextFileContents "// Valid JS") Nothing 0.0
+      let persistentModel = object ["projectContents" .= projectContents]
       -- Create a project, save an asset, rename it and try to load it from the new path.
       loadedFromPath <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just persistentModel)
         _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
         _ <- deleteProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"]
         loadProjectFileClient projectId Nothing ["assets", "picture.jpg"] identity
@@ -388,6 +396,16 @@ projectsSpec = around_ withServer $ do
         loadProjectClient cookieHeader projectId (Just earlyTime)
       loadedProject <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents loadedProject) `shouldBe` (Just ("My Project", projectContents))
+    it "should fail to save if the projectContents is empty" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      unmodifiedProject <- getSampleProject
+      let modifiedProject = set (key "projectContents") (object []) unmodifiedProject
+      saveResult <- withClientEnv clientEnv $ do
+            _ <- validAuthenticate
+            cookieHeader <- getCookieHeader cookieJarTVar
+            createProjectResult <- createProjectClient
+            let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+            saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just modifiedProject)
+      saveResult `shouldSatisfy` errorWithStatusCode badRequest400
     it "should fork a project if an original project ID was passed in with no request body" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
       projectContents <- getSampleProject
