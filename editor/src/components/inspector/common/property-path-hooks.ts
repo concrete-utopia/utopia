@@ -1076,32 +1076,38 @@ export function useSelectedPropertyControls(
 ): Array<ParsedPropertyControlsAndTargets> {
   const selectedViews = useRefSelectedViews()
 
-  return useEditorState((store) => {
-    const { codeResultCache } = store.editor
+  return useEditorState(
+    (store) => {
+      const { codeResultCache } = store.editor
 
-    let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
-    if (codeResultCache != null) {
-      Utils.fastForEach(selectedViews.current, (path) => {
-        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
-        const parsed = includeIgnored
-          ? parsePropertyControls(propertyControls)
-          : mapEither(removeIgnored, parsePropertyControls(propertyControls))
-        const foundMatch = parsedPropertyControls.findIndex((existing) =>
-          areMatchingPropertyControls(existing.controls, parsed),
-        )
-        if (foundMatch > -1) {
-          parsedPropertyControls[foundMatch].targets.push(path)
-        } else {
-          parsedPropertyControls.push({
-            controls: parsed,
-            targets: [path],
-          })
-        }
-      })
-    }
+      let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
+      if (codeResultCache != null) {
+        Utils.fastForEach(selectedViews.current, (path) => {
+          const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
+          const parsed = includeIgnored
+            ? parsePropertyControls(propertyControls)
+            : mapEither(removeIgnored, parsePropertyControls(propertyControls))
+          const foundMatch = parsedPropertyControls.findIndex((existing) =>
+            areMatchingPropertyControls(existing.controls, parsed),
+          )
+          if (foundMatch > -1) {
+            parsedPropertyControls[foundMatch].targets.push(path)
+          } else {
+            parsedPropertyControls.push({
+              controls: parsed,
+              targets: [path],
+            })
+          }
+        })
+      }
 
-    return parsedPropertyControls
-  }, 'useSelectedPropertyControls')
+      return parsedPropertyControls
+    },
+    'useSelectedPropertyControls',
+    (oldResult, newResult) => {
+      return fastDeepEquals(oldResult, newResult)
+    },
+  )
 }
 
 export function useUsedPropsWithoutControls(
