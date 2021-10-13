@@ -699,16 +699,15 @@ export const ComponentSectionInner = betterReactMemo(
       }
     }, [dispatch, locationOfComponentInstance])
 
-    const propNames = React.useMemo(() => {
-      let workingPropNames: Array<string> = []
-      forEachRight(propertyControls, (success) => {
-        workingPropNames = filterSpecialProps(getPropertyControlNames(success))
-      })
-      return workingPropNames
-    }, [propertyControls])
     const propPaths = React.useMemo(() => {
-      return propNames.map((name) => PP.create([name]))
-    }, [propNames])
+      let workingPropPaths: Array<PropertyPath> = []
+      forEachRight(propertyControls, (success) => {
+        workingPropPaths = filterSpecialProps(getPropertyControlNames(success)).map((name) =>
+          PP.create([name]),
+        )
+      })
+      return workingPropPaths
+    }, [propertyControls])
 
     const propertyControlsStatus = useControlStatusForPaths(propPaths)
     const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
