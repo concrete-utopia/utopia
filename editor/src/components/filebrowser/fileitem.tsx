@@ -291,7 +291,7 @@ class FileBrowserItemInner extends React.PureComponent<
           this.props.collapsed,
           this.props.exportedFunction,
         )}
-        color={this.props.hasErrorMessages ? 'error' : undefined}
+        color={this.props.errorMessages.length > 0 ? 'error' : undefined}
         width={18}
         height={18}
         onDoubleClick={this.toggleCollapse}
@@ -366,7 +366,7 @@ class FileBrowserItemInner extends React.PureComponent<
       )
     } else {
       let labelColor: string = colorTheme.neutralForeground.value
-      if (this.props.hasErrorMessages) {
+      if (this.props.errorMessages.length > 0) {
         labelColor = colorTheme.errorForeground.value
       } else if (this.props.fileType === 'ASSET_FILE') {
         labelColor = colorTheme.primary.value
@@ -717,9 +717,17 @@ class FileBrowserItemInner extends React.PureComponent<
                 </Button>
               ) : null}
 
-              {this.props.hasErrorMessages ? (
+              {this.props.errorMessages.length > 0 ? (
                 <span style={{ margin: '0px 4px' }}>
-                  <WarningIcon color='error' />
+                  <WarningIcon
+                    color='error'
+                    tooltipText={this.props.errorMessages
+                      .map(
+                        (errorMessage) =>
+                          `${errorMessage.startLine}:${errorMessage.startColumn} - ${errorMessage.source}: ${errorMessage.message}`,
+                      )
+                      .join(`,\n`)}
+                  />
                 </span>
               ) : null}
             </SimpleFlexRow>

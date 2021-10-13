@@ -63,16 +63,19 @@ export interface FileBrowserItemInfo {
   typeInformation?: string | null
   originatingPath: string
   modified: boolean
-  hasErrorMessages: boolean
+  errorMessages: ErrorMessage[]
   exportedFunction: boolean
   isUploadedAssetFile: boolean
 }
 
-export function fileHasErrorMessages(path: string, errorMessages: ErrorMessage[] | null): boolean {
+export function filterErrorMessages(
+  path: string,
+  errorMessages: ErrorMessage[] | null,
+): ErrorMessage[] {
   if (errorMessages == null) {
-    return false
+    return []
   } else {
-    return errorMessages.some((m) => m.fileName === path)
+    return errorMessages.filter((m) => m.fileName === path)
   }
 }
 
@@ -86,15 +89,13 @@ function collectFileBrowserItems(
   walkContentsTree(projectContents, (fullPath, element) => {
     const originatingPath = fullPath
 
-    const hasErrorMessages = fileHasErrorMessages(fullPath, errorMessages)
-
     if (collapsedPaths.every((collapsed) => !fullPath.startsWith(collapsed + '/'))) {
       fileBrowserItems.push({
         path: fullPath,
         type: 'file',
         fileType: element.type,
         originatingPath: originatingPath,
-        hasErrorMessages: hasErrorMessages,
+        errorMessages: filterErrorMessages(fullPath, errorMessages),
         modified: isModifiedFile(element),
         exportedFunction: false,
         isUploadedAssetFile:
@@ -117,7 +118,7 @@ function collectFileBrowserItems(
                 fileType: null,
                 typeInformation: typeInformation,
                 originatingPath: originatingPath,
-                hasErrorMessages: false,
+                errorMessages: [],
                 modified: false,
                 exportedFunction: typeInformation.includes('=>'),
                 isUploadedAssetFile: false,
@@ -304,7 +305,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
             expand={Expand}
             setSelected={setSelected}
             collapsed={element.type === 'file' && collapsedPaths.indexOf(element.path) > -1}
-            hasErrorMessages={fileHasErrorMessages(element.path, errorMessages)}
+            errorMessages={filterErrorMessages(element.path, errorMessages)}
             dropTarget={dropTarget}
           />
         </div>
