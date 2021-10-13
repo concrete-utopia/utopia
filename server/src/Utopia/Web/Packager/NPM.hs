@@ -91,7 +91,7 @@ findMatchingVersions logger NPMMetrics{..} semaphore matchingVersionsCache jsPac
       let packageNameAtPackageVersion = jsPackageName <> atPackageVersion
       let versionsProc = proc "npm" ["view", toS packageNameAtPackageVersion, "version", "--json"]
       foundVersions <- flip catch handleVersionsLookupError $ do
-        versionsResult <- invokeAndMeasure npmVersionLookupMetric $ 
+        versionsResult <- invokeAndMeasure npmVersionLookupMetric $
           addInvocationDescription npmVersionLookupMetric ("NPM versions lookup for " <> packageVersionText) $
           readCreateProcess versionsProc ""
         return $ decode $ BL.fromStrict $ encodeUtf8 $ pack versionsResult
