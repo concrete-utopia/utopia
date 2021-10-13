@@ -613,6 +613,8 @@ function toFileSystemProviderError(projectID: string, error: FSError): vscode.Fi
       return vscode.FileSystemError.FileNotADirectory(path)
     case 'EEXIST':
       return vscode.FileSystemError.FileExists(path)
+    case 'FS_UNAVAILABLE':
+      return vscode.FileSystemError.Unavailable(path)
     default:
       const _exhaustiveCheck: never = code
       throw new Error(`Unhandled FS Error ${JSON.stringify(error)}`)

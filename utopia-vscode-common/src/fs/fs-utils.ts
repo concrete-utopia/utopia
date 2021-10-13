@@ -1,6 +1,14 @@
 import { INDEXEDDB } from 'localforage'
+import { isRight } from '../lite-either'
 import { appendToPath, stripLeadingSlash, stripTrailingSlash } from '../path-utils'
-import { getItem, initializeStore, keys, removeItem, setItem } from './fs-core'
+import {
+  AsyncFSResult,
+  getItem as getItemCore,
+  initializeStore,
+  keys as keysCore,
+  removeItem as removeItemCore,
+  setItem as setItemCore,
+} from './fs-core'
 import {
   FSError,
   FSErrorHandler,
@@ -20,6 +28,7 @@ import {
   FileContent,
   FSUser,
   fsDirectory,
+  fsUnavailable,
 } from './fs-types'
 
 const encoder = new TextEncoder()
@@ -30,7 +39,9 @@ let fsUser: FSUser // Used to determine if changes came from this user or anothe
 const SanityCheckFolder = '/SanityCheckFolder'
 
 let handleError: FSErrorHandler = (e: FSError) => {
-  return Error(`FS Error: ${JSON.stringify(e)}`)
+  let error = Error(`FS Error: ${JSON.stringify(e)}`)
+  error.name = e.code
+  return error
 }
 
 export function setErrorHandler(handler: FSErrorHandler): void {
@@ -41,6 +52,7 @@ const missingFileError = (path: string) => handleError(enoent(path))
 const existingFileError = (path: string) => handleError(eexist(path))
 const isDirectoryError = (path: string) => handleError(eisdir(path))
 const isNotDirectoryError = (path: string) => handleError(enotdir(path))
+const isUnavailableError = (path: string) => handleError(fsUnavailable(path))
 
 export async function initializeFS(
   storeName: string,
@@ -51,6 +63,23 @@ export async function initializeFS(
   await initializeStore(storeName, driver)
   await simpleCreateDirectoryIfMissing('/')
 }
+
+async function withAvailableFS<T>(
+  path: string,
+  fn: (path: string) => AsyncFSResult<T>,
+): Promise<T> {
+  const result = await fn(path)
+  if (isRight(result)) {
+    return result.value
+  } else {
+    return Promise.reject(isUnavailableError(path))
+  }
+}
+
+const getItem = (path: string) => withAvailableFS(path, getItemCore)
+const keys = () => withAvailableFS('', (_path: string) => keysCore())
+const removeItem = (path: string) => withAvailableFS(path, removeItemCore)
+const setItem = (path: string, v: FSNode) => withAvailableFS(path, (p) => setItemCore(p, v))
 
 export async function exists(path: string): Promise<boolean> {
   const value = await getItem(path)
@@ -401,44 +430,45 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
   const { recursive, onCreated, onModified, onDeleted } = config
 
   try {
-    if (await exists(SanityCheckFolder)) {
-      // sanity check: if the SanityCheckFolder is missing, that means that we probably have an issue with the IndexedDB
-      const node = await getItem(path)
-      if (node == null) {
-        watchedPaths.delete(path)
-        lastModifiedTSs.delete(path)
-        onDeleted(path)
-      } else {
-        const stats = fsStatForNode(node)
-
-        const modifiedTS = stats.mtime
-        const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
-        const modifiedBySelf = stats.sourceOfLastChange === fsUser
-
-        if (wasModified) {
-          if (isDirectory(node)) {
-            if (recursive) {
-              const children = await childPaths(path)
-              const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
-              unsupervisedChildren.forEach((childPath) => {
-                watchPath(childPath, config)
-                onCreated(childPath)
-              })
-              if (unsupervisedChildren.length > 0) {
-                onModified(path, modifiedBySelf)
-              }
-            }
-          } else {
-            onModified(path, modifiedBySelf)
-          }
-
-          lastModifiedTSs.set(path, modifiedTS)
-        }
-      }
+    const node = await getItem(path)
+    if (node == null) {
+      watchedPaths.delete(path)
+      lastModifiedTSs.delete(path)
+      onDeleted(path)
     } else {
-      console.error('FS sanity check failed!', path)
+      const stats = fsStatForNode(node)
+
+      const modifiedTS = stats.mtime
+      const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
+      const modifiedBySelf = stats.sourceOfLastChange === fsUser
+
+      if (wasModified) {
+        if (isDirectory(node)) {
+          if (recursive) {
+            const children = await childPaths(path)
+            const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
+            unsupervisedChildren.forEach((childPath) => {
+              watchPath(childPath, config)
+              onCreated(childPath)
+            })
+            if (unsupervisedChildren.length > 0) {
+              onModified(path, modifiedBySelf)
+            }
+          }
+        } else {
+          onModified(path, modifiedBySelf)
+        }
+
+        lastModifiedTSs.set(path, modifiedTS)
+      }
     }
   } catch (e) {
+    if (e?.name === 'FS_UNAVAILABLE') {
+      // Explicitly handle unavailable errors here by removing the watchers, then re-throw
+      watchedPaths.delete(path)
+      lastModifiedTSs.delete(path)
+      throw e
+    }
     // Something was changed mid-poll, likely the file or its parent was deleted. We'll catch it on the next poll.
   }
 }

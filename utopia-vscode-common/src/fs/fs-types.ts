@@ -79,7 +79,7 @@ export function isDirectory(node: FSNode): node is FSDirectory {
   return node.type === 'DIRECTORY'
 }
 
-export type FSErrorCode = 'ENOENT' | 'EEXIST' | 'EISDIR' | 'ENOTDIR'
+export type FSErrorCode = 'ENOENT' | 'EEXIST' | 'EISDIR' | 'ENOTDIR' | 'FS_UNAVAILABLE'
 export interface FSError {
   code: FSErrorCode
   path: string
@@ -98,3 +98,4 @@ export const enoent = (path: string) => fsError('ENOENT', path)
 export const eexist = (path: string) => fsError('EEXIST', path)
 export const eisdir = (path: string) => fsError('EISDIR', path)
 export const enotdir = (path: string) => fsError('ENOTDIR', path)
+export const fsUnavailable = (path: string) => fsError('FS_UNAVAILABLE', path)
