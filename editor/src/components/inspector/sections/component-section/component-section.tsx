@@ -5,8 +5,12 @@ import {
   ArrayControlDescription,
   BaseControlDescription,
   ControlDescription,
+  FolderControlDescription,
+  HigherLevelControlDescription,
   isBaseControlDescription,
   ObjectControlDescription,
+  PropertyControls,
+  RegularControlDescription,
   UnionControlDescription,
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
@@ -82,11 +86,12 @@ import {
 } from './hidden-controls-section'
 import { ComponentInfoBox } from './component-info-box'
 import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
+import { getPropertyControlNames } from '../../../../core/property-controls/property-control-values'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
   addPropsToPath: boolean,
-  control: ControlDescription,
+  control: RegularControlDescription,
 ) {
   const propertyPath = addPropsToPath ? PP.append(PathForSceneProps, partialPath) : partialPath
   return useInspectorInfoForPropertyControl(propertyPath, control)
@@ -202,7 +207,7 @@ interface AbstractRowForControlProps {
   setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
-function titleForControl(propPath: PropertyPath, control: ControlDescription): string {
+function titleForControl(propPath: PropertyPath, control: RegularControlDescription): string {
   return control.title ?? PP.lastPartToString(propPath)
 }
 
@@ -477,7 +482,9 @@ const RowForUnionControl = betterReactMemo(
 
     const labelAsRenderProp = React.useCallback(() => label, [label])
 
-    if (isBaseControlDescription(controlToUse)) {
+    if (controlToUse == null) {
+      return null
+    } else if (isBaseControlDescription(controlToUse)) {
       return (
         <RowForBaseControl {...props} label={labelAsRenderProp} controlDescription={controlToUse} />
       )
@@ -489,6 +496,33 @@ const RowForUnionControl = betterReactMemo(
         </>
       )
     }
+  },
+)
+
+interface RowForFolderControlProps extends AbstractRowForControlProps {
+  controlDescription: FolderControlDescription
+}
+
+const RowForFolderControl = betterReactMemo(
+  'RowForFolderControl',
+  (props: RowForFolderControlProps) => {
+    const { controlDescription } = props
+    return (
+      <>
+        {Object.keys(controlDescription.controls).map((propertyName) => {
+          const propertyControl = controlDescription.controls[propertyName]
+          return (
+            <RowForControl
+              key={`folder-control-row-${propertyName}`}
+              controlDescription={propertyControl}
+              isScene={props.isScene}
+              propPath={PP.appendPropertyPathElems(props.propPath, [propertyName])}
+              setGlobalCursor={props.setGlobalCursor}
+            />
+          )
+        })}
+      </>
+    )
   },
 )
 
@@ -508,6 +542,8 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
         return <RowForObjectControl {...props} controlDescription={controlDescription} />
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
+      case 'folder':
+        return <RowForFolderControl {...props} controlDescription={controlDescription} />
       default:
         const _exhaustiveCheck: never = controlDescription
         throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)
@@ -583,11 +619,17 @@ const PropertyControlsSection = betterReactMemo(
       [dispatch],
     )
 
-    let propPaths: Array<PropertyPath> = []
-    forEachRight(propertyControls, (success) => {
-      const propNames = filterSpecialProps(Object.keys(success))
-      propPaths = propNames.map((name) => PP.create([name]))
-    })
+    const propPaths = React.useMemo(() => {
+      return foldEither(
+        () => [],
+        (success) => {
+          return filterSpecialProps(getPropertyControlNames(success)).map((name) => {
+            return PP.create([name])
+          })
+        },
+        propertyControls,
+      )
+    }, [propertyControls])
 
     const propertyControlsStatus = useControlStatusForPaths(propPaths)
     const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
@@ -599,50 +641,45 @@ const PropertyControlsSection = betterReactMemo(
             return <ParseErrorControl parseError={rootParseError} />
           },
           (rootParseSuccess) => {
-            const propNames = filterNonUnsetAndEmptyControls(
-              filterSpecialProps(Object.keys(rootParseSuccess)),
-              propertyControlsStatus,
-              visibleEmptyControls,
+            const propNamesToDisplay = new Set(
+              filterNonUnsetAndEmptyControls(
+                filterSpecialProps(getPropertyControlNames(rootParseSuccess)),
+                propertyControlsStatus,
+                visibleEmptyControls,
+              ),
             )
-            if (propNames.length > 0) {
-              return (
-                <>
-                  {propNames.map((propName) => {
-                    const propertyControl = rootParseSuccess[propName]
-                    if (propertyControl == null) {
-                      return `${propName} has no property control`
-                    } else {
-                      return foldEither(
-                        (propertyError) => {
-                          return (
-                            <RowForInvalidControl
-                              key={propName}
-                              title={propName}
-                              propName={propName}
-                              propertyError={propertyError}
-                            />
-                          )
-                        },
-                        (controlDescription) => {
-                          return (
-                            <SectionRow
-                              key={propName}
-                              propPath={PP.create([propName])}
-                              controlDescription={controlDescription}
-                              isScene={props.isScene}
-                              setGlobalCursor={setGlobalCursor}
-                            />
-                          )
-                        },
-                        propertyControl,
+
+            return (
+              <>
+                {Object.keys(rootParseSuccess).map((propName) => {
+                  const propertyControl = rootParseSuccess[propName]
+                  return foldEither(
+                    (propertyError) => {
+                      return (
+                        <RowForInvalidControl
+                          key={propName}
+                          title={propName}
+                          propName={propName}
+                          propertyError={propertyError}
+                        />
                       )
-                    }
-                  })}
-                </>
-              )
-            } else {
-              return null
-            }
+                    },
+                    (propertySuccess) => {
+                      return (
+                        <SectionRow
+                          propPath={PP.create([propName])}
+                          isScene={props.isScene}
+                          setGlobalCursor={setGlobalCursor}
+                          controlDescription={propertySuccess}
+                          propNamesToDisplay={propNamesToDisplay}
+                        />
+                      )
+                    },
+                    propertyControl,
+                  )
+                })}
+              </>
+            )
           },
           propertyControls,
         )}
@@ -728,21 +765,48 @@ function inferControlTypeBasedOnValue(propName: string, propValue: any): Control
   }
 }
 
-export const SectionRow = betterReactMemo(
-  'SectionRow',
-  (props: Omit<RowForControlProps, 'propMetadata'>) => {
-    return (
-      <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
-        <RowForControl
-          propPath={props.propPath}
-          controlDescription={props.controlDescription}
-          isScene={props.isScene}
-          setGlobalCursor={props.setGlobalCursor}
-        />
-      </UIGridRow>
-    )
-  },
-)
+type SectionRowProps = Omit<RowForControlProps, 'propMetadata'> & {
+  propNamesToDisplay: Set<string>
+}
+
+export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps) => {
+  switch (props.controlDescription.type) {
+    case 'folder':
+      const controls = props.controlDescription.controls
+      return (
+        <>
+          {Object.keys(controls).map((propName) => {
+            const controlDescription = controls[propName]
+            return (
+              <SectionRow
+                key={`section-row-${propName}`}
+                propPath={PP.create([propName])}
+                controlDescription={controlDescription}
+                isScene={props.isScene}
+                setGlobalCursor={props.setGlobalCursor}
+                propNamesToDisplay={props.propNamesToDisplay}
+              />
+            )
+          })}
+        </>
+      )
+    default:
+      if (props.propNamesToDisplay.has(PP.toString(props.propPath))) {
+        return (
+          <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
+            <RowForControl
+              propPath={props.propPath}
+              controlDescription={props.controlDescription}
+              isScene={props.isScene}
+              setGlobalCursor={props.setGlobalCursor}
+            />
+          </UIGridRow>
+        )
+      } else {
+        return null
+      }
+  }
+})
 
 export interface ComponentSectionState {
   errorOccurred: boolean

@@ -8,7 +8,13 @@ import {
   ParsedPropertyControls,
   parsePropertyControls,
 } from './property-controls-parser'
-import { PropertyControls, getDefaultProps, ControlDescription } from 'utopia-api'
+import {
+  PropertyControls,
+  getDefaultProps,
+  ControlDescription,
+  isBaseControlDescription,
+  isHigherLevelControlDescription,
+} from 'utopia-api'
 import { isRight, foldEither, left } from '../shared/either'
 import { forEachValue, objectMap } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
@@ -264,7 +270,12 @@ export function getDescriptionUnsetOptionalFields(
       result.push(fieldName)
     }
   }
-  addIfFieldEmpty(controlDescription, 'title')
+  if (
+    isBaseControlDescription(controlDescription) ||
+    isHigherLevelControlDescription(controlDescription)
+  ) {
+    addIfFieldEmpty(controlDescription, 'title')
+  }
   switch (controlDescription.type) {
     case 'array':
       addIfFieldEmpty(controlDescription, 'defaultValue')
@@ -319,6 +330,14 @@ export function getDescriptionUnsetOptionalFields(
     case 'union':
     case 'vector2':
     case 'vector3':
+      break
+    case 'folder':
+      for (const propertyControlKey of Object.keys(controlDescription.controls)) {
+        const innerControlDescription = controlDescription.controls[propertyControlKey]
+        if (innerControlDescription != null) {
+          result.push(...getDescriptionUnsetOptionalFields(innerControlDescription))
+        }
+      }
       break
     default:
       const _exhaustiveCheck: never = controlDescription
@@ -511,7 +530,7 @@ export function sendPropertyControlsInfoRequest(
   let nodeModulesUpdate: NodeModulesUpdate
   if (onlyProjectFiles) {
     let notNodeModulesFiles: NodeModules = {}
-    forEachValue<NodeModules>((value, key) => {
+    forEachValue((value, key) => {
       if (typeof key === 'string' && !key.startsWith('/node_modules')) {
         notNodeModulesFiles[key] = value
       }

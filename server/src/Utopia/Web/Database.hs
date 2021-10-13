@@ -198,7 +198,6 @@ saveProjectInner metrics connection userId projectId timestamp possibleTitle pos
 deleteProject :: DatabaseMetrics -> DBPool -> Text -> Text -> IO ()
 deleteProject metrics pool userId projectId = invokeAndMeasure (_deleteProjectMetrics metrics) $ usePool pool $ \connection -> do
   correctUser <- checkIfProjectOwnerWithConnection metrics connection userId projectId
-  print ("correctUser" :: Text, correctUser)
   let projectUpdate = Update
                     { uTable = projectTable
                     , uUpdateWith = updateEasy (set _7 $ toFields $ Just True)
@@ -206,11 +205,6 @@ deleteProject metrics pool userId projectId = invokeAndMeasure (_deleteProjectMe
                     , uReturning = rCount
                     }
   when correctUser $ void $ runUpdate_ connection projectUpdate
-  fromDB <- runSelect connection $ do
-    (rowProjectId, _, _, _, _, _, rowDeleted) <- projectSelect
-    where_ $ rowProjectId .=== toFields projectId
-    pure (rowProjectId, rowDeleted)
-  print ("fromDB" :: Text, fromDB :: [(Text, Maybe Bool)])
   unless correctUser $ throwM UserIDIncorrectException
 
 projectMetadataFields :: Text

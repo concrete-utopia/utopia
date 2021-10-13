@@ -486,6 +486,7 @@ export enum RevisionsState {
   BothMatch = 'BOTH_MATCH',
 }
 
+// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
 export interface TextFileContents {
   code: string
   parsed: ParsedTextFile
@@ -504,6 +505,7 @@ export function textFileContents(
   }
 }
 
+// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
 export interface TextFile {
   type: 'TEXT_FILE'
   fileContents: TextFileContents
@@ -601,6 +603,7 @@ export function isEsRemoteDependencyPlaceholder(
   return projectFile != null && projectFile.type === 'ES_REMOTE_DEPENDENCY_PLACEHOLDER'
 }
 
+// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
 export interface ImageFile {
   type: 'IMAGE_FILE'
   imageType?: string
@@ -610,6 +613,7 @@ export interface ImageFile {
   hash: number
 }
 
+// Ensure this is kept up to date with server/src/Utopia/Web/ClientModel.hs.
 export interface AssetFile {
   type: 'ASSET_FILE'
   base64?: string

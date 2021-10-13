@@ -10,6 +10,7 @@ import           Network.HTTP.Client              (defaultManagerSettings,
                                                    newManager)
 import           Network.HTTP.Client.TLS
 import           Protolude
+import           System.Log.FastLogger
 import           System.Posix.User
 import           System.Random
 import           Utopia.Web.Auth.Session
@@ -19,9 +20,8 @@ import           Utopia.Web.Executors.Common
 import qualified Utopia.Web.Executors.Common      as C
 import           Utopia.Web.Executors.Development
 import qualified Utopia.Web.Executors.Development as D
-import           Utopia.Web.Packager.NPM
 import           Utopia.Web.Metrics
-import           System.Log.FastLogger
+import           Utopia.Web.Packager.NPM
 
 createRandomDatabaseName :: IO String
 createRandomDatabaseName = do

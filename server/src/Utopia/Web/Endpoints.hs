@@ -407,6 +407,8 @@ forkProject sessionUser sourceProject projectTitle = do
 
 saveProjectEndpoint :: Maybe Text -> ProjectIdWithSuffix -> SaveProjectRequest -> ServerMonad SaveProjectResponse
 saveProjectEndpoint cookie (ProjectIdWithSuffix projectID _) saveRequest = requireUser cookie $ \sessionUser -> do
+  let projectValid = validateSaveRequest saveRequest
+  unless projectValid badRequest
   saveProject sessionUser projectID (view (field @"_name") saveRequest) (view (field @"_content") saveRequest)
   return $ SaveProjectResponse projectID (view (field @"_id") sessionUser)
 

@@ -441,30 +441,35 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | ExpressionEnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
-  export type ControlType = BaseControlType | HigherLevelControlType;
+  export type ControlType = BaseControlType | HigherLevelControlType | 'folder';
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {
   }
   export interface ArrayControlDescription extends AbstractHigherLevelControlDescription<'array'> {
       defaultValue?: unknown[];
-      propertyControl: ControlDescription;
+      propertyControl: RegularControlDescription;
       maxCount?: number;
   }
   export interface ObjectControlDescription extends AbstractHigherLevelControlDescription<'object'> {
       defaultValue?: unknown;
       object: {
-          [prop: string]: ControlDescription;
+          [prop: string]: RegularControlDescription;
       };
   }
   export interface UnionControlDescription extends AbstractHigherLevelControlDescription<'union'> {
       defaultValue?: unknown;
-      controls: Array<ControlDescription>;
+      controls: Array<RegularControlDescription>;
+  }
+  export interface FolderControlDescription {
+      type: 'folder';
+      controls: PropertyControls;
   }
   export type HigherLevelControlDescription = ArrayControlDescription | ObjectControlDescription | UnionControlDescription;
-  export type ControlDescription = BaseControlDescription | HigherLevelControlDescription;
+  export type RegularControlDescription = BaseControlDescription | HigherLevelControlDescription;
+  export type ControlDescription = RegularControlDescription | FolderControlDescription;
   export function isBaseControlDescription(control: ControlDescription): control is BaseControlDescription;
   export function isHigherLevelControlDescription(control: ControlDescription): control is HigherLevelControlDescription;
-  export type PropertyControls<ComponentProps = any> = {
-      [K in keyof ComponentProps]?: ControlDescription;
+  export type PropertyControls = {
+      [key: string]: ControlDescription;
   };
   export function addPropertyControls(component: unknown, propertyControls: PropertyControls): void;
   export function getDefaultProps(propertyControls: PropertyControls): {

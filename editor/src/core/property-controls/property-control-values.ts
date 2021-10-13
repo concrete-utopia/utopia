@@ -17,6 +17,10 @@ import {
   ControlDescription,
   UnionControlDescription,
   isBaseControlDescription,
+  HigherLevelControlDescription,
+  FolderControlDescription,
+  PropertyControls,
+  RegularControlDescription,
 } from 'utopia-api'
 import {
   parseColor,
@@ -36,6 +40,7 @@ import {
   isLeft,
   reduceWithEither,
   mapEither,
+  forEachRight,
 } from '../shared/either'
 import { compose } from '../shared/function-utils'
 import {
@@ -57,7 +62,8 @@ import {
 import { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { fastForEach } from '../shared/utils'
-import { mapToArray } from '../shared/object-utils'
+import { forEachValue, mapToArray, objectValues } from '../shared/object-utils'
+import { ParsedPropertyControls } from './property-controls-parser'
 
 type Printer<T> = (value: T) => JSXAttribute
 
@@ -105,7 +111,7 @@ function rawAndRealValueAtIndex(
 }
 
 function unwrapAndParseArrayValues(
-  propertyControl: ControlDescription,
+  propertyControl: RegularControlDescription,
 ): UnwrapperAndParser<Array<unknown>> {
   return (rawValue: Either<string, ModifiableAttribute>, realValue: unknown) => {
     const unwrapperAndParser = unwrapperAndParserForPropertyControl(propertyControl)
@@ -149,7 +155,7 @@ function rawAndRealValueAtKey(
 }
 
 function unwrapAndParseObjectValues(objectControls: {
-  [prop: string]: ControlDescription
+  [prop: string]: RegularControlDescription
 }): UnwrapperAndParser<{ [prop: string]: unknown }> {
   return (rawValue: Either<string, ModifiableAttribute>, realValue: unknown) => {
     return reduceWithEither(
@@ -219,7 +225,7 @@ function unwrapAndParseAlternative<T>(
 }
 
 function unwrapAndParseUnionValue(
-  controls: Array<ControlDescription>,
+  controls: Array<RegularControlDescription>,
 ): UnwrapperAndParser<unknown> {
   const unwrappersAndParsers = controls.map(unwrapperAndParserForPropertyControl)
   return unwrapAndParseAlternative(
@@ -270,7 +276,7 @@ export function unwrapperAndParserForBaseControl(
 }
 
 export function unwrapperAndParserForPropertyControl(
-  control: ControlDescription,
+  control: RegularControlDescription,
 ): UnwrapperAndParser<unknown> {
   switch (control.type) {
     case 'boolean':
@@ -304,25 +310,70 @@ export function unwrapperAndParserForPropertyControl(
 }
 
 function findFirstSuitableControl(
-  controls: Array<ControlDescription>,
+  controls: Array<RegularControlDescription>,
   rawValue: Either<string, ModifiableAttribute>,
   realValue: unknown,
-): ControlDescription {
+): RegularControlDescription | null {
   // Find the first control that parses the value
-  const foundControl = controls.find((inner) => {
+  for (const inner of controls) {
     const parser = unwrapperAndParserForPropertyControl(inner)
     const parsed = parser(rawValue, realValue)
-    return isRight(parsed)
-  })
-  return foundControl ?? controls[0]
+    if (isRight(parsed)) {
+      return inner
+    }
+  }
+  return null
 }
 
 export function controlToUseForUnion(
   control: UnionControlDescription,
   rawValue: Either<string, ModifiableAttribute>,
   realValue: unknown,
-): ControlDescription {
+): ControlDescription | null {
   return findFirstSuitableControl(control.controls, rawValue, realValue)
+}
+
+export function walkRegularControlDescriptions(
+  parsedPropertyControls: ParsedPropertyControls,
+  walkWith: (propertyName: string, propertyControl: RegularControlDescription) => void,
+): void {
+  function addPropertyControl(
+    propertyName: number | string,
+    propertyControl: ControlDescription,
+  ): void {
+    switch (propertyControl.type) {
+      case 'folder':
+        addFolder(propertyControl)
+        break
+      default:
+        if (typeof propertyName === 'string') {
+          walkWith(propertyName, propertyControl)
+        }
+        break
+    }
+  }
+
+  function addFolder(folder: FolderControlDescription): void {
+    forEachValue((propertyControl, propertyName) => {
+      addPropertyControl(propertyName, propertyControl)
+    }, folder.controls)
+  }
+
+  forEachValue((parsedPropertyControl, propertyName) => {
+    forEachRight(parsedPropertyControl, (propertyControl) => {
+      addPropertyControl(propertyName, propertyControl)
+    })
+  }, parsedPropertyControls)
+}
+
+export function getPropertyControlNames(
+  parsedPropertyControls: ParsedPropertyControls,
+): Array<string> {
+  let result: Array<string> = []
+  walkRegularControlDescriptions(parsedPropertyControls, (propertyName) => {
+    result.push(propertyName)
+  })
+  return result
 }
 
 function printSimple<T>(value: T): JSXAttribute {
@@ -381,7 +432,7 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
   }
 }
 
-function printerForArray<T>(control: ControlDescription): Printer<Array<T>> {
+function printerForArray<T>(control: RegularControlDescription): Printer<Array<T>> {
   const printContentsValue = printerForPropertyControl(control)
   return (array: Array<T>): JSXAttribute => {
     const printedContents = array.map((value) =>
@@ -392,7 +443,7 @@ function printerForArray<T>(control: ControlDescription): Printer<Array<T>> {
 }
 
 function printerForObject(objectControls: {
-  [prop: string]: ControlDescription
+  [prop: string]: RegularControlDescription
 }): Printer<{ [prop: string]: unknown }> {
   return (objectToPrint: { [prop: string]: unknown }): JSXAttribute => {
     const printedContents = mapToArray((value, key) => {
@@ -406,15 +457,19 @@ function printerForObject(objectControls: {
   }
 }
 
-function printerForUnion<T>(controls: Array<ControlDescription>): Printer<T> {
+function printerForUnion<T>(controls: Array<RegularControlDescription>): Printer<T> {
   return (value: T): JSXAttribute => {
     const controlToUse = findFirstSuitableControl(controls, left('ignore'), value)
-    const printerToUse = printerForPropertyControl(controlToUse)
-    return printerToUse(value)
+    if (controlToUse == null) {
+      return printSimple(value)
+    } else {
+      const printerToUse = printerForPropertyControl(controlToUse)
+      return printerToUse(value)
+    }
   }
 }
 
-export function printerForPropertyControl(control: ControlDescription): Printer<unknown> {
+export function printerForPropertyControl(control: RegularControlDescription): Printer<unknown> {
   switch (control.type) {
     case 'boolean':
     case 'color':

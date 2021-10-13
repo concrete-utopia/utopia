@@ -108,6 +108,7 @@ import type { MapLike } from 'typescript'
 import { omitWithPredicate } from '../../../core/shared/object-utils'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
 import fastDeepEquals from 'fast-deep-equal'
+import { getPropertyControlNames } from '../../../core/property-controls/property-control-values'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -1170,8 +1171,10 @@ export function useGivenPropsWithoutControls(targets: Array<ElementPath>): Array
     )
   }, 'useGivenPropsWithoutControls')
 
-  const propertiesWithControls = filterSpecialProps(
-    Object.keys(unwrapEither(parsedPropertyControls, {})),
+  const propertiesWithControls = foldEither(
+    () => [],
+    (success) => filterSpecialProps(getPropertyControlNames(success)),
+    parsedPropertyControls,
   )
   let givenProps: Array<string> = []
   fastForEach(selectedElements, (element) => {
@@ -1201,8 +1204,10 @@ export function useGivenPropsAndValuesWithoutControls(
     )
   }, 'useGivenPropsWithoutControls')
 
-  const propertiesWithControls = filterSpecialProps(
-    Object.keys(unwrapEither(parsedPropertyControls, {})),
+  const propertiesWithControls = foldEither(
+    () => [],
+    (success) => filterSpecialProps(getPropertyControlNames(success)),
+    parsedPropertyControls,
   )
 
   let givenProps: Record<string, unknown> = {}
@@ -1217,7 +1222,7 @@ export function useGivenPropsAndValuesWithoutControls(
   return givenProps
 }
 
-export function useUsedPropsWithoutDefaults(targets: Array<ElementPath>): Array<string> {
+export function useUsedPropsWithoutDefaults(targets: Array<ElementPath>): Array<number | string> {
   const parsedPropertyControlsAndTargets = useSelectedPropertyControls(false)
   const parsedPropertyControls = findPropertyControlsForTarget(
     targets[0],
