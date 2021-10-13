@@ -472,8 +472,7 @@ function printerForUnion<T>(controls: Array<ControlDescription>): Printer<T> {
   return (value: T): JSXAttribute => {
     const controlToUse = findFirstSuitableControl(controls, left('ignore'), value)
     if (controlToUse == null) {
-      // TODO: Not sure about this.
-      return jsxAttributeValue(null, emptyComments)
+      return printSimple(value)
     } else {
       const printerToUse = printerForPropertyControl(controlToUse)
       return printerToUse(value)
