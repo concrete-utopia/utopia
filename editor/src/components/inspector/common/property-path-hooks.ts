@@ -101,7 +101,7 @@ import {
   useKeepShallowReferenceEquality,
 } from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
-import { ParseResult } from '../../../utils/value-parser-utils'
+import { descriptionParseError, ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
 import { findUnderlyingTargetComponentImplementation } from '../../custom-code/code-file'
 import type { MapLike } from 'typescript'
@@ -1062,7 +1062,7 @@ function findPropertyControlsForTarget(
   return (
     parsedPropertyControlsAndTargets.find((parsedPropertyControls) => {
       return parsedPropertyControls.targets.some((path) => EP.pathsEqual(path, target))
-    })?.controls ?? ({} as ParseResult<ParsedPropertyControls>)
+    })?.controls ?? left(descriptionParseError(`Missing controls for target`))
   )
 }
 
@@ -1090,10 +1090,7 @@ export function useSelectedPropertyControls(
           areMatchingPropertyControls(existing.controls, parsed),
         )
         if (foundMatch > -1) {
-          parsedPropertyControls[foundMatch] = {
-            ...parsedPropertyControls[foundMatch],
-            targets: [...parsedPropertyControls[foundMatch].targets, path],
-          }
+          parsedPropertyControls[foundMatch].targets.push(path)
         } else {
           parsedPropertyControls.push({
             controls: parsed,
