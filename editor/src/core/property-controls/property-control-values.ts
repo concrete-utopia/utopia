@@ -310,27 +310,16 @@ export function unwrapperAndParserForPropertyControl(
 }
 
 function findFirstSuitableControl(
-  controls: Array<ControlDescription>,
+  controls: Array<RegularControlDescription>,
   rawValue: Either<string, ModifiableAttribute>,
   realValue: unknown,
 ): RegularControlDescription | null {
   // Find the first control that parses the value
   for (const inner of controls) {
-    if (inner.type === 'folder') {
-      const groupResult = findFirstSuitableControl(
-        objectValues(inner.controls),
-        rawValue,
-        realValue,
-      )
-      if (groupResult != null) {
-        return groupResult
-      }
-    } else {
-      const parser = unwrapperAndParserForPropertyControl(inner)
-      const parsed = parser(rawValue, realValue)
-      if (isRight(parsed)) {
-        return inner
-      }
+    const parser = unwrapperAndParserForPropertyControl(inner)
+    const parsed = parser(rawValue, realValue)
+    if (isRight(parsed)) {
+      return inner
     }
   }
   return null
@@ -468,7 +457,7 @@ function printerForObject(objectControls: {
   }
 }
 
-function printerForUnion<T>(controls: Array<ControlDescription>): Printer<T> {
+function printerForUnion<T>(controls: Array<RegularControlDescription>): Printer<T> {
   return (value: T): JSXAttribute => {
     const controlToUse = findFirstSuitableControl(controls, left('ignore'), value)
     if (controlToUse == null) {
