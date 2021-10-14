@@ -87,6 +87,8 @@ import {
 import { ComponentInfoBox } from './component-info-box'
 import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
 import { getPropertyControlNames } from '../../../../core/property-controls/property-control-values'
+import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
+import { when } from '../../../../utils/react-conditionals'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -564,6 +566,11 @@ export const ComponentSectionInner = betterReactMemo(
       useSelectedPropertyControls(false),
     )
 
+    const [sectionExpanded, setSectionExpanded] = React.useState(true)
+    const toggleSection = React.useCallback(() => {
+      setSectionExpanded((currentlyExpanded) => !currentlyExpanded)
+    }, [setSectionExpanded])
+
     return (
       <>
         <InspectorSectionHeader>
@@ -571,19 +578,31 @@ export const ComponentSectionInner = betterReactMemo(
             <Icons.Component color='primary' />
             <span>Component </span>
           </FlexRow>
+          <SquareButton highlight onClick={toggleSection}>
+            <ExpandableIndicator
+              testId='component-section-expand'
+              visible
+              collapsed={!sectionExpanded}
+              selected={false}
+            />
+          </SquareButton>
         </InspectorSectionHeader>
-
-        {/* Information about the component as a whole */}
-        <ComponentInfoBox />
-        {/* List of component props with controls */}
-        {propertyControlsAndTargets.map((controlsAndTargets) => (
-          <PropertyControlsSection
-            key={EP.toString(controlsAndTargets.targets[0])}
-            propertyControls={controlsAndTargets.controls}
-            targets={controlsAndTargets.targets}
-            isScene={props.isScene}
-          />
-        ))}
+        {when(
+          sectionExpanded,
+          <>
+            {/* Information about the component as a whole */}
+            <ComponentInfoBox />
+            {/* List of component props with controls */}
+            {propertyControlsAndTargets.map((controlsAndTargets) => (
+              <PropertyControlsSection
+                key={EP.toString(controlsAndTargets.targets[0])}
+                propertyControls={controlsAndTargets.controls}
+                targets={controlsAndTargets.targets}
+                isScene={props.isScene}
+              />
+            ))}
+          </>,
+        )}
       </>
     )
   },
