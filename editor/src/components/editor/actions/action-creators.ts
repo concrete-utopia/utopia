@@ -208,6 +208,7 @@ import type {
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
   HideVSCodeLoadingScreen,
+  SetIndexedDBFailed,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1476,5 +1477,12 @@ export function setResizeOptionsTargetOptions(
 export function hideVSCodeLoadingScreen(): HideVSCodeLoadingScreen {
   return {
     action: 'HIDE_VSCODE_LOADING_SCREEN',
+  }
+}
+
+export function setIndexedDBFailed(indexedDBFailed: boolean): SetIndexedDBFailed {
+  return {
+    action: 'SET_INDEXED_DB_FAILED',
+    indexedDBFailed: indexedDBFailed,
   }
 }

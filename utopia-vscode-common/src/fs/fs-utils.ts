@@ -426,6 +426,10 @@ function watchPath(path: string, config: WatchConfig) {
   lastModifiedTSs.set(path, Date.now())
 }
 
+function isFSUnavailableError(e: unknown): boolean {
+  return (e as any)?.name === 'FS_UNAVAILABLE'
+}
+
 async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
   const { recursive, onCreated, onModified, onDeleted } = config
 
@@ -463,7 +467,7 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
       }
     }
   } catch (e) {
-    if (e?.name === 'FS_UNAVAILABLE') {
+    if (isFSUnavailableError(e)) {
       // Explicitly handle unavailable errors here by removing the watchers, then re-throw
       watchedPaths.delete(path)
       lastModifiedTSs.delete(path)
@@ -488,30 +492,47 @@ export async function watch(
   onCreated: (path: string) => void,
   onModified: (path: string, modifiedBySelf: boolean) => void,
   onDeleted: (path: string) => void,
+  onIndexedDBFailure: () => void,
 ): Promise<void> {
-  await simpleCreateDirectoryIfMissing(SanityCheckFolder)
-  const fileExists = await exists(target)
-  if (fileExists) {
-    // This has the limitation that calling `watch` on a path will replace any existing subscriber
-    const startWatchingPath = (path: string) =>
-      watchPath(path, {
-        recursive: recursive,
-        onCreated: onCreated,
-        onModified: onModified,
-        onDeleted: onDeleted,
-      })
+  try {
+    await simpleCreateDirectoryIfMissing(SanityCheckFolder)
+    const fileExists = await exists(target)
+    if (fileExists) {
+      // This has the limitation that calling `watch` on a path will replace any existing subscriber
+      const startWatchingPath = (path: string) =>
+        watchPath(path, {
+          recursive: recursive,
+          onCreated: onCreated,
+          onModified: onModified,
+          onDeleted: onDeleted,
+        })
 
-    const targets = await targetsForOperation(target, recursive)
-    targets.forEach(startWatchingPath)
+      const targets = await targetsForOperation(target, recursive)
+      targets.forEach(startWatchingPath)
 
-    if (watchTimeout == null) {
-      async function pollThenFireAgain(): Promise<void> {
-        await polledWatch()
+      if (watchTimeout == null) {
+        async function pollThenFireAgain(): Promise<void> {
+          try {
+            await polledWatch()
+          } catch (e) {
+            if (isFSUnavailableError(e)) {
+              onIndexedDBFailure()
+            } else {
+              throw e
+            }
+          }
+
+          watchTimeout = setTimeout(pollThenFireAgain, POLLING_TIMEOUT) as any
+        }
 
         watchTimeout = setTimeout(pollThenFireAgain, POLLING_TIMEOUT) as any
       }
-
-      watchTimeout = setTimeout(pollThenFireAgain, POLLING_TIMEOUT) as any
+    }
+  } catch (e) {
+    if (isFSUnavailableError(e)) {
+      onIndexedDBFailure()
+    } else {
+      throw e
     }
   }
 }
