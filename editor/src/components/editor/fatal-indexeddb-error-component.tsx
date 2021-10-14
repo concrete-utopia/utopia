@@ -34,11 +34,11 @@ export const FatalIndexedDBErrorComponent = betterReactMemo('FatalIndexedDBError
           project.
         </p>
         <p>
-          If this is the first time you've seen this Stop error screen,{' '}
+          If this is the first time you've seen this error screen,{' '}
           <a href='' style={{ textDecoration: 'underline', color: 'white' }}>
             reload Utopia
           </a>
-          . If this screen appears again, follow these steps{' '}
+          . If this screen appears again, follow these steps:
         </p>
         <p>
           Check if your computer is out of disk space. Utopia uses your browser's database to store
