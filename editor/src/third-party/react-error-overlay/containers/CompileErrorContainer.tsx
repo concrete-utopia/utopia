@@ -21,13 +21,13 @@ import { CursorPosition } from '../../../components/code-editor/code-editor-util
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme } from '../../../uuiui'
 
-type Props = {
+interface CompileErrorContainerProps {
   currentBuildErrorRecords: ErrorMessage[]
   editorHandler: (errorLoc: ErrorLocation) => void
   onOpenFile: (path: string, cursorPosition: CursorPosition | null) => void
 }
 
-class CompileErrorContainer extends PureComponent<Props, {}> {
+class CompileErrorContainer extends PureComponent<CompileErrorContainerProps, {}> {
   render() {
     const { currentBuildErrorRecords, editorHandler, onOpenFile } = this.props
 
@@ -35,51 +35,53 @@ class CompileErrorContainer extends PureComponent<Props, {}> {
       <ErrorOverlay>
         <Header headerText={'Errors during build'} />
         {currentBuildErrorRecords != null ? (
-          currentBuildErrorRecords.map((record) => (
-            <div
-              key={`compile-error-${record.source}-${record.startLine}-${record.startColumn}-${record.endLine}-${record.endColumn}`}
-              css={{
-                marginBottom: 24,
-                padding: 8,
-                backgroundColor: colorTheme.neutralBackground.value,
-                '&:hover': {
-                  backgroundColor: colorTheme.emphasizedBackground.value,
-                  borderRadius: 5,
-                },
-              }}
-            >
-              <h3>
-                <span>
-                  <a
-                    onClick={() => {
-                      const cursorPositon =
-                        record.startLine == null || record.startColumn == null
-                          ? null
-                          : {
-                              line: record.startLine,
-                              column: record.startColumn,
-                            }
-                      onOpenFile(record.fileName, cursorPositon)
-                    }}
-                    style={{ opacity: 0.5, cursor: 'pointer' }}
-                  >
-                    {record.fileName} {record.startLine}:{record.startColumn}&nbsp;
-                  </a>
+          currentBuildErrorRecords.map((record, recordIndex) => {
+            return (
+              <div
+                key={`compile-error-${recordIndex}`}
+                css={{
+                  marginBottom: 24,
+                  padding: 8,
+                  backgroundColor: colorTheme.neutralBackground.value,
+                  '&:hover': {
+                    backgroundColor: colorTheme.emphasizedBackground.value,
+                    borderRadius: 5,
+                  },
+                }}
+              >
+                <h3>
                   <span>
-                    {record.source}: {record.message}
+                    <a
+                      onClick={() => {
+                        const cursorPositon =
+                          record.startLine == null || record.startColumn == null
+                            ? null
+                            : {
+                                line: record.startLine,
+                                column: record.startColumn,
+                              }
+                        onOpenFile(record.fileName, cursorPositon)
+                      }}
+                      style={{ opacity: 0.5, cursor: 'pointer' }}
+                    >
+                      {record.fileName} {record.startLine}:{record.startColumn}&nbsp;
+                    </a>
+                    <span>
+                      {record.source}: {record.message}
+                    </span>
                   </span>
-                </span>
-              </h3>
-              <div>
-                <CodeBlock main={true} codeHTML={generateAnsiHTML(record.codeSnippet)} />
-                <Footer
-                  line1={`Error code: ${record.errorCode || 'N/A'} ( ${record.type},  ${
-                    record.severity
-                  })`}
-                />
+                </h3>
+                <div>
+                  <CodeBlock main={true} codeHTML={generateAnsiHTML(record.codeSnippet)} />
+                  <Footer
+                    line1={`Error code: ${record.errorCode || 'N/A'} ( ${record.type},  ${
+                      record.severity
+                    })`}
+                  />
+                </div>
               </div>
-            </div>
-          ))
+            )
+          })
         ) : (
           <span style={{ marginTop: 30 }}>
             There were errors, but we don't have any information about them. It's possible that's
