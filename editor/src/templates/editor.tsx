@@ -123,13 +123,7 @@ export class Editor {
     const watchdogWorker = new RealWatchdogWorker()
 
     const renderRootEditor = () =>
-      renderRootComponent(
-        this.utopiaStoreHook,
-        this.utopiaStoreApi,
-        this.spyCollector,
-        true,
-        this.storedState.editor.vscodeBridgeReady,
-      )
+      renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true)
 
     const onCreatedOrLoadedProject = (
       projectId: string,
@@ -321,15 +315,11 @@ export const EditorRoot: React.FunctionComponent<{
   useStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   propertyControlsInfoSupported: boolean
-  vscodeBridgeReady: boolean
-}> = ({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
+}> = ({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-        <EditorComponent
-          propertyControlsInfoSupported={propertyControlsInfoSupported}
-          vscodeBridgeReady={vscodeBridgeReady}
-        />
+        <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
       </UiJsxCanvasCtxAtom.Provider>
     </EditorStateContext.Provider>
   )
@@ -342,15 +332,13 @@ export const HotRoot: React.FunctionComponent<{
   useStore: UtopiaStoreHook
   spyCollector: UiJsxCanvasContextData
   propertyControlsInfoSupported: boolean
-  vscodeBridgeReady: boolean
-}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported, vscodeBridgeReady }) => {
+}> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
   return (
     <EditorRoot
       api={api}
       useStore={useStore}
       spyCollector={spyCollector}
       propertyControlsInfoSupported={propertyControlsInfoSupported}
-      vscodeBridgeReady={vscodeBridgeReady}
     />
   )
 })
@@ -361,7 +349,6 @@ async function renderRootComponent(
   api: UtopiaStoreAPI,
   spyCollector: UiJsxCanvasContextData,
   propertyControlsInfoSupported: boolean,
-  vscodeBridgeReady: boolean,
 ): Promise<void> {
   return triggerHashedAssetsUpdate().then(() => {
     // NOTE: we only need to call this function once,
@@ -375,7 +362,6 @@ async function renderRootComponent(
             useStore={useStore}
             spyCollector={spyCollector}
             propertyControlsInfoSupported={propertyControlsInfoSupported}
-            vscodeBridgeReady={vscodeBridgeReady}
           />,
           rootElement,
         )
@@ -386,7 +372,6 @@ async function renderRootComponent(
             useStore={useStore}
             spyCollector={spyCollector}
             propertyControlsInfoSupported={propertyControlsInfoSupported}
-            vscodeBridgeReady={vscodeBridgeReady}
           />,
           rootElement,
         )

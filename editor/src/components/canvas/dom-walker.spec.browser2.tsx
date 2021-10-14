@@ -82,7 +82,6 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       useStore={storeHook}
       spyCollector={spyCollector}
       propertyControlsInfoSupported={false}
-      vscodeBridgeReady={false}
     />,
   )
 
