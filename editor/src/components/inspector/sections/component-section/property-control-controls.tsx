@@ -25,6 +25,7 @@ import {
   PopupList,
   NumberInputProps,
   ChainedNumberInput,
+  wrappedEmptyOrUnknownOnSubmitValue,
 } from '../../../../uuiui'
 import {
   parseColor,
@@ -478,22 +479,23 @@ export const ControlForVectorProp = betterReactMemo(
   (props: ControlForPropProps<Vector2ControlDescription | Vector3ControlDescription>) => {
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
-    const vectorValue =
-      (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ?? []
+    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
+      const vectorValue =
+        (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ??
+        []
 
-    const keys = controlDescription.type === 'vector3' ? ['x', 'y', 'z'] : ['x', 'y']
-    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = keys.map(
-      (propName: string, index: number) => {
+      const keys = controlDescription.type === 'vector3' ? ['x', 'y', 'z'] : ['x', 'y']
+      return keys.map((propName: string, index: number) => {
         const innerValue = vectorValue[index]
 
         const innerPropPath = PP.appendPropertyPathElems(propPath, [propName])
-        const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue((rawValue: CSSNumber) => {
+        const wrappedOnSubmit = wrappedEmptyOrUnknownOnSubmitValue((rawValue: CSSNumber) => {
           const newValue = printCSSNumber(rawValue, null)
           let updatedValues = vectorValue.length === 0 ? keys.map((k) => 0) : [...vectorValue]
           updatedValues[index] = newValue
           propMetadata.onSubmitValue(updatedValues)
         }, propMetadata.onUnsetValues)
-        const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+        const wrappedOnTransientSubmit = wrappedEmptyOrUnknownOnSubmitValue(
           (rawValue: CSSNumber) => {
             const newValue = printCSSNumber(rawValue, null)
             let updatedValues = vectorValue.length === 0 ? keys.map((k) => 0) : [...vectorValue]
@@ -513,8 +515,8 @@ export const ControlForVectorProp = betterReactMemo(
           numberType: 'Unitless' as const,
           defaultUnitToHide: null,
         }
-      },
-    )
+      })
+    }, [controlDescription.type, controlDescription.defaultValue, propMetadata, propPath])
 
     return (
       <ChainedNumberInput
