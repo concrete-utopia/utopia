@@ -47,7 +47,7 @@ export const FatalIndexedDBErrorComponent = betterReactMemo('FatalIndexedDBError
         </p>
         <p>Check you've not logged out of Utopia in another tab. </p>
         <p>Technical information:</p>
-        <p>***INDEXEDDB BUGGERED 0xFFFFFFFFF</p>
+        <p>***INDEXEDDB DISCOMBOBULATED 0xFFFFFFFFF</p>
         <p>
           Contact your Utopia administrator and{' '}
           <a
