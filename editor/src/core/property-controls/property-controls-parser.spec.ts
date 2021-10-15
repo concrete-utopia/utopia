@@ -341,7 +341,7 @@ const validFolderControlDescriptionValue: FolderControlDescription = {
   type: 'folder',
   controls: {
     style: validStyleObjectControlDescriptionValue,
-    someSlider: validSliderControlDescriptionValue,
+    someSlider: validNumberControlDescriptionValue,
   },
 }
 
