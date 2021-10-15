@@ -1,11 +1,14 @@
 import * as localforage from 'localforage'
+import { Either, left, mapEither, right } from '../lite-either'
 import { stripTrailingSlash } from '../path-utils'
 import { FSNode } from './fs-types'
 
 let dbHeartbeatsStore: LocalForage // There is no way to request a list of existing stores, so we have to explicitly track them
 
-let store: LocalForage
+let store: LocalForage | null
 let thisDBName: string
+
+const StoreExistsKey = '.store-exists'
 
 export async function initializeStore(
   storeName: string,
@@ -19,6 +22,7 @@ export async function initializeStore(
   })
 
   await store.ready()
+  await store.setItem(StoreExistsKey, true)
 
   dbHeartbeatsStore = localforage.createInstance({
     name: 'utopia-all-store-heartbeats',
@@ -29,21 +33,53 @@ export async function initializeStore(
 
   triggerHeartbeat().then(dropOldStores)
 }
-
-export async function keys(): Promise<string[]> {
-  return store.keys()
+export interface StoreDoesNotExist {
+  type: 'StoreDoesNotExist'
 }
 
-export async function getItem(path: string): Promise<FSNode | null> {
-  return store.getItem<FSNode>(stripTrailingSlash(path))
+const StoreDoesNotExistConst: StoreDoesNotExist = {
+  type: 'StoreDoesNotExist',
 }
 
-export async function setItem(path: string, value: FSNode): Promise<FSNode> {
-  return store.setItem(stripTrailingSlash(path), value)
+export function isStoreDoesNotExist(t: unknown): t is StoreDoesNotExist {
+  return (t as any)?.type === 'StoreDoesNotExist'
 }
 
-export async function removeItem(path: string): Promise<void> {
-  return store.removeItem(stripTrailingSlash(path))
+export type AsyncFSResult<T> = Promise<Either<StoreDoesNotExist, T>>
+
+async function withSanityCheckedStore<T>(
+  withStore: (sanityCheckedStore: LocalForage) => Promise<T>,
+): AsyncFSResult<T> {
+  const storeExists = store != null && (await store.getItem<boolean>(StoreExistsKey))
+  if (store != null && storeExists) {
+    const result = await withStore(store)
+    return right(result)
+  } else {
+    store = null
+    return left(StoreDoesNotExistConst)
+  }
+}
+
+export async function keys(): AsyncFSResult<string[]> {
+  return withSanityCheckedStore((sanityCheckedStore: LocalForage) => sanityCheckedStore.keys())
+}
+
+export async function getItem(path: string): AsyncFSResult<FSNode | null> {
+  return withSanityCheckedStore((sanityCheckedStore: LocalForage) =>
+    sanityCheckedStore.getItem<FSNode>(stripTrailingSlash(path)),
+  )
+}
+
+export async function setItem(path: string, value: FSNode): AsyncFSResult<FSNode> {
+  return withSanityCheckedStore((sanityCheckedStore: LocalForage) =>
+    sanityCheckedStore.setItem(stripTrailingSlash(path), value),
+  )
+}
+
+export async function removeItem(path: string): AsyncFSResult<void> {
+  return withSanityCheckedStore((sanityCheckedStore: LocalForage) =>
+    sanityCheckedStore.removeItem(stripTrailingSlash(path)),
+  )
 }
 
 const ONE_HOUR = 1000 * 60 * 60

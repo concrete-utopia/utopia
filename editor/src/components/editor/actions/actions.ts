@@ -378,6 +378,7 @@ import {
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
   HideVSCodeLoadingScreen,
+  SetIndexedDBFailed,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1076,6 +1077,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     config: defaultConfig(),
     theme: currentEditor.theme,
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
+    indexedDBFailed: currentEditor.indexedDBFailed,
   }
 }
 
@@ -4912,6 +4914,9 @@ export const UPDATE_FNS = {
     editor: EditorModel,
   ): EditorModel => {
     return { ...editor, vscodeLoadingScreenVisible: false }
+  },
+  SET_INDEXED_DB_FAILED: (action: SetIndexedDBFailed, editor: EditorModel): EditorModel => {
+    return { ...editor, indexedDBFailed: action.indexedDBFailed }
   },
 }
 

@@ -17,6 +17,7 @@ import {
   updateConfigFromVSCode,
   sendLinterRequestMessage,
   hideVSCodeLoadingScreen,
+  setIndexedDBFailed,
 } from '../../components/editor/actions/action-creators'
 import {
   getSavedCodeFromTextFile,
@@ -154,7 +155,11 @@ function watchForChanges(dispatch: EditorDispatch): void {
     const action = deleteFile(projectPath)
     dispatch([action], 'everyone')
   }
-  watch(toFSPath('/'), true, onCreated, onModified, onDeleted)
+  function onIndexedDBFailure(): void {
+    dispatch([setIndexedDBFailed(true)], 'everyone')
+  }
+
+  watch(toFSPath('/'), true, onCreated, onModified, onDeleted, onIndexedDBFailure)
 }
 
 let currentInit: Promise<void> = Promise.resolve()

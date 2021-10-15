@@ -54,6 +54,7 @@ import {
 import { betterReactMemo } from '../../uuiui-deps'
 import { createIframeUrl } from '../../core/shared/utils'
 import { setBranchNameFromURL } from '../../utils/branches'
+import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 
 interface NumberSize {
   width: number
@@ -188,18 +189,6 @@ export const EditorComponentInner = betterReactMemo(
 
     const onClosePreview = React.useCallback(
       () => dispatch([EditorActions.setPanelVisibility('preview', false)]),
-      [dispatch],
-    )
-
-    const updateDeltaWidth = React.useCallback(
-      (deltaWidth: number) => {
-        dispatch([resizeLeftPane(deltaWidth)])
-      },
-      [dispatch],
-    )
-
-    const toggleLiveCanvas = React.useCallback(
-      () => dispatch([EditorActions.toggleCanvasIsLive()]),
       [dispatch],
     )
 
@@ -360,7 +349,14 @@ const ModalComponent = betterReactMemo('ModalComponent', (): React.ReactElement<
 })
 
 export function EditorComponent(props: EditorProps) {
-  return (
+  const indexedDBFailed = useEditorState(
+    (store) => store.editor.indexedDBFailed,
+    'EditorComponent indexedDBFailed',
+  )
+
+  return indexedDBFailed ? (
+    <FatalIndexedDBErrorComponent />
+  ) : (
     <DndProvider backend={Backend}>
       <EditorComponentInner {...props} />
     </DndProvider>

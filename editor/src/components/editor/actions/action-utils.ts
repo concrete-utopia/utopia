@@ -105,6 +105,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
     case 'OPEN_CODE_EDITOR_FILE':
     case 'HIDE_VSCODE_LOADING_SCREEN':
+    case 'SET_INDEXED_DB_FAILED':
       return true
 
     case 'NEW':

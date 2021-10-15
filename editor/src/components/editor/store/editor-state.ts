@@ -501,6 +501,7 @@ export interface EditorState {
   config: UtopiaVSCodeConfig
   theme: Theme
   vscodeLoadingScreenVisible: boolean
+  indexedDBFailed: boolean
 }
 
 export interface StoredEditorState {
@@ -1273,6 +1274,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     config: defaultConfig(),
     theme: 'light',
     vscodeLoadingScreenVisible: true,
+    indexedDBFailed: false,
   }
 }
 
@@ -1524,6 +1526,7 @@ export function editorModelFromPersistentModel(
     config: defaultConfig(),
     theme: 'light',
     vscodeLoadingScreenVisible: true,
+    indexedDBFailed: false,
   }
   return editor
 }
