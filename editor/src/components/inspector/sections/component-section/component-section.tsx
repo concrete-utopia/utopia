@@ -686,6 +686,7 @@ const PropertyControlsSection = betterReactMemo(
                     (propertySuccess) => {
                       return (
                         <SectionRow
+                          key={propName}
                           propPath={PP.create([propName])}
                           isScene={props.isScene}
                           setGlobalCursor={setGlobalCursor}

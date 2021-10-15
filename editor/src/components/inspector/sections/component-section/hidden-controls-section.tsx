@@ -84,6 +84,7 @@ export const HiddenControls = betterReactMemo(
                   (propertySuccess) => {
                     return (
                       <SectionRow
+                        key={propName}
                         propPath={PP.create([propName])}
                         isScene={false}
                         setGlobalCursor={props.setGlobalCursor}
