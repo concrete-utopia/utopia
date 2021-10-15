@@ -44,14 +44,6 @@ import {
   ProjectWithFileChanges,
 } from './generic/persistence-types'
 
-export function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
-  // Make sure we don't replace the query params
-  const queryParams = window.top.location.search
-  const projectURL = projectURLForProject(projectId, projectName)
-  const title = `Utopia ${projectName}`
-  window.top.history.pushState({}, title, `${projectURL}${queryParams}`)
-}
-
 export class PersistenceMachine {
   private interpreter: Interpreter<
     PersistenceContext<PersistentModel>,
@@ -136,13 +128,6 @@ export class PersistenceMachine {
 
           if (this.queuedActions.length > 0) {
             const actionsToDispatch = this.queuedActions
-            const projectIdOrNameChanged = actionsToDispatch.some(
-              (action) =>
-                action.action === 'SET_PROJECT_ID' || action.action === 'SET_PROJECT_NAME',
-            )
-            if (projectIdOrNameChanged) {
-              pushProjectURLToBrowserHistory(state.context.projectId!, state.context.project!.name)
-            }
             this.queuedActions = []
             dispatch(actionsToDispatch)
           }

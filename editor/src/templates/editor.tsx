@@ -242,7 +242,7 @@ export class Editor {
               }
             })
           } else {
-            this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
+            this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
           }
         } else {
           this.storedState.persistence.load(projectId)
