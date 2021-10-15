@@ -188,7 +188,7 @@
     "twind": "0.16.16",
     "typescript": "4.1.3",
     "url-join": "4.0.1",
-    "use-context-selector": "git://github.com/dai-shi/use-context-selector.git#3f1df8f818176db835dc894fff191e9a4d2f8a68",
+    "use-context-selector": "1.3.9",
     "utopia-api": "file:../utopia-api",
     "utopia-vscode-common": "file:../utopia-vscode-common",
     "uuid": "3.0.1",
