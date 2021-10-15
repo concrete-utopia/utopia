@@ -324,9 +324,6 @@ export function getDescriptionUnsetOptionalFields(
     case 'popuplist':
       addIfFieldEmpty(controlDescription, 'defaultValue')
       break
-    case 'slider':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      break
     case 'union':
     case 'vector2':
     case 'vector3':

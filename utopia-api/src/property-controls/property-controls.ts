@@ -15,7 +15,6 @@ export type BaseControlType =
   | 'number'
   | 'options'
   | 'popuplist'
-  | 'slider'
   | 'string'
   | 'styleobject'
   | 'vector2'
@@ -111,13 +110,6 @@ export interface PopUpListControlDescription extends AbstractBaseControlDescript
   }>
 }
 
-export interface SliderControlDescription extends AbstractBaseControlDescription<'slider'> {
-  defaultValue?: number
-  max: number
-  min: number
-  step: number
-}
-
 export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
   defaultValue?: string
   placeholder?: string
@@ -149,7 +141,6 @@ export type BaseControlDescription =
   | NumberControlDescription
   | OptionsControlDescription
   | PopUpListControlDescription
-  | SliderControlDescription
   | StringControlDescription
   | StyleObjectControlDescription
   | Vector2ControlDescription
@@ -211,7 +202,6 @@ export function isBaseControlDescription(
     case 'number':
     case 'options':
     case 'popuplist':
-    case 'slider':
     case 'string':
     case 'styleobject':
     case 'vector2':
@@ -243,7 +233,6 @@ export function isHigherLevelControlDescription(
     case 'number':
     case 'options':
     case 'popuplist':
-    case 'slider':
     case 'string':
     case 'styleobject':
     case 'vector2':

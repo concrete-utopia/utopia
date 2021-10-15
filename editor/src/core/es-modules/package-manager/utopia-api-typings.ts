@@ -346,7 +346,7 @@ declare module 'utopia-api/primitives/view' {
 }
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
-  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'expression-enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'slider' | 'string' | 'styleobject' | 'vector2' | 'vector3';
+  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'expression-enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'string' | 'styleobject' | 'vector2' | 'vector3';
   interface AbstractControlDescription<T extends ControlType> {
       title?: string;
       type: T;
@@ -418,12 +418,6 @@ declare module 'utopia-api/property-controls/property-controls' {
           label: string;
       }>;
   }
-  export interface SliderControlDescription extends AbstractBaseControlDescription<'slider'> {
-      defaultValue?: number;
-      max: number;
-      min: number;
-      step: number;
-  }
   export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
       defaultValue?: string;
       placeholder?: string;
@@ -439,7 +433,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface Vector3ControlDescription extends AbstractBaseControlDescription<'vector3'> {
       defaultValue?: [number, number, number];
   }
-  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | ExpressionEnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | SliderControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription;
+  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | ExpressionEnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
   export type ControlType = BaseControlType | HigherLevelControlType | 'folder';
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {

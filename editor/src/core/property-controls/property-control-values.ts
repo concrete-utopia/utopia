@@ -260,8 +260,6 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseAny)
     case 'popuplist':
       return defaultUnwrapFirst(parseAny)
-    case 'slider':
-      return defaultUnwrapFirst(parseNumber)
     case 'string':
       return defaultUnwrapFirst(parseString)
     case 'styleobject':
@@ -290,7 +288,6 @@ export function unwrapperAndParserForPropertyControl(
     case 'number':
     case 'options':
     case 'popuplist':
-    case 'slider':
     case 'string':
     case 'styleobject':
     case 'vector2':
@@ -416,8 +413,6 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'popuplist':
       return printSimple
-    case 'slider':
-      return printSimple
     case 'string':
       return printSimple
     case 'styleobject':
@@ -482,7 +477,6 @@ export function printerForPropertyControl(control: RegularControlDescription): P
     case 'number':
     case 'options':
     case 'popuplist':
-    case 'slider':
     case 'string':
     case 'styleobject':
     case 'vector2':

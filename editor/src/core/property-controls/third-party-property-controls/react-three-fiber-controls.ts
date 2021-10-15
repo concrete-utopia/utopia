@@ -480,7 +480,7 @@ const materialControls: PropertyControls = {
     defaultValue: true,
   },
   opacity: {
-    type: 'slider',
+    type: 'number',
     defaultValue: 1.0,
     min: 0.0,
     max: 1.0,
@@ -578,14 +578,14 @@ const meshBasicMaterialControls: PropertyControls = {
   },
   // map,
   reflectivity: {
-    type: 'slider',
+    type: 'number',
     min: 0,
     max: 1,
     step: 0.05,
     defaultValue: 1,
   },
   refractionRatio: {
-    type: 'slider',
+    type: 'number',
     min: 0,
     max: 1,
     step: 0.05,
@@ -622,7 +622,7 @@ const meshStandardMaterialControls: PropertyControls = {
   },
   // bumpMap,
   bumpScale: {
-    type: 'slider',
+    type: 'number',
     min: 0,
     max: 1,
     step: 0.05,
@@ -664,7 +664,7 @@ const meshStandardMaterialControls: PropertyControls = {
   },
   // map,
   metalness: {
-    type: 'slider',
+    type: 'number',
     min: 0,
     max: 1,
     step: 0.05,
@@ -675,14 +675,14 @@ const meshStandardMaterialControls: PropertyControls = {
   // normalMapType,
   // normalScale,
   refractionRatio: {
-    type: 'slider',
+    type: 'number',
     min: 0,
     max: 1,
     step: 0.05,
     defaultValue: 0.98,
   },
   roughness: {
-    type: 'slider',
+    type: 'number',
     min: 0,
     max: 1,
     step: 0.05,

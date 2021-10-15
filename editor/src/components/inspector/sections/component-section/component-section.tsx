@@ -75,7 +75,6 @@ import {
   ControlForOptionsProp,
   ControlForPopupListProp,
   ControlForPropProps,
-  ControlForSliderProp,
   ControlForStringProp,
   ControlForVectorProp,
 } from './property-control-controls'
@@ -131,8 +130,6 @@ const ControlForProp = betterReactMemo(
           return <ControlForOptionsProp {...props} controlDescription={controlDescription} />
         case 'popuplist':
           return <ControlForPopupListProp {...props} controlDescription={controlDescription} />
-        case 'slider':
-          return <ControlForSliderProp {...props} controlDescription={controlDescription} />
         case 'string':
           return <ControlForStringProp {...props} controlDescription={controlDescription} />
         case 'vector2':

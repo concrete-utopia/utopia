@@ -7,7 +7,6 @@ import {
   NumberControlDescription,
   OptionsControlDescription,
   PopUpListControlDescription,
-  SliderControlDescription,
   StringControlDescription,
   IgnoreControlDescription,
   UnionControlDescription,
@@ -248,31 +247,6 @@ export function parseStringControlDescription(
     optionalObjectKeyParser(parseString, 'defaultValue')(value),
     optionalObjectKeyParser(parseString, 'placeholder')(value),
     optionalObjectKeyParser(parseBoolean, 'obscured')(value),
-  )
-}
-
-export function parseSliderControlDescription(
-  value: unknown,
-): ParseResult<SliderControlDescription> {
-  return applicative6Either(
-    (title, type, defaultValue, min, max, step) => {
-      let sliderControlDescription: SliderControlDescription = {
-        type: type,
-        min: min,
-        max: max,
-        step: step,
-      }
-      setOptionalProp(sliderControlDescription, 'title', title)
-      setOptionalProp(sliderControlDescription, 'defaultValue', defaultValue)
-
-      return sliderControlDescription
-    },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['slider']), 'type')(value),
-    optionalObjectKeyParser(parseNumber, 'defaultValue')(value),
-    objectKeyParser(parseNumber, 'min')(value),
-    objectKeyParser(parseNumber, 'max')(value),
-    objectKeyParser(parseNumber, 'step')(value),
   )
 }
 
@@ -606,8 +580,6 @@ export function parseRegularControlDescription(
         return parseOptionsControlDescription(value)
       case 'popuplist':
         return parsePopUpListControlDescription(value)
-      case 'slider':
-        return parseSliderControlDescription(value)
       case 'string':
         return parseStringControlDescription(value)
       case 'styleobject':
