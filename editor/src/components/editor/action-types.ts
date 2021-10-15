@@ -921,6 +921,11 @@ export interface HideVSCodeLoadingScreen {
   action: 'HIDE_VSCODE_LOADING_SCREEN'
 }
 
+export interface SetIndexedDBFailed {
+  action: 'SET_INDEXED_DB_FAILED'
+  indexedDBFailed: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1074,6 +1079,7 @@ export type EditorAction =
   | IncrementResizeOptionsSelectedIndex
   | SetResizeOptionsTargetOptions
   | HideVSCodeLoadingScreen
+  | SetIndexedDBFailed
 
 export type DispatchPriority =
   | 'everyone'

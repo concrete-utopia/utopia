@@ -162,6 +162,9 @@ export class UtopiaFSExtension
       this.notifyFileCreated.bind(this),
       this.notifyFileChanged.bind(this),
       this.notifyFileDeleted.bind(this),
+      () => {
+        /* no op */
+      },
     )
 
     return new Disposable(() => {
