@@ -15,7 +15,7 @@ import {
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { filterSpecialProps } from '../../../../core/property-controls/property-controls-utils'
-import { foldEither, forEachRight } from '../../../../core/shared/either'
+import { eitherToMaybe, foldEither, forEachRight } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -53,6 +53,8 @@ import {
 import { ControlStyles } from '../../common/control-status'
 import {
   InspectorInfo,
+  InspectorPropsContext,
+  InspectorPropsContextData,
   useGivenPropsAndValuesWithoutControls,
   useGivenPropsWithoutControls,
   useSelectedPropertyControls,
@@ -88,6 +90,10 @@ import { ParsedPropertyControls } from '../../../../core/property-controls/prope
 import { getPropertyControlNames } from '../../../../core/property-controls/property-control-values'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { when } from '../../../../utils/react-conditionals'
+import { useContext } from 'use-context-selector'
+import { getJSXAttribute, jsxAttributeValue } from '../../../../core/shared/element-template'
+import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attributes'
+import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../../../../core/model/utopia-constants'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -605,6 +611,31 @@ export const ComponentSectionInner = betterReactMemo(
   },
 )
 
+function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData {
+  const currentContext = useContext(InspectorPropsContext)
+  const spiedProps = [...currentContext.spiedProps].filter((props) =>
+    paths.some((path) => EP.toString(path) === props[UTOPIA_PATHS_KEY]),
+  )
+  const editedMultiSelectedProps = [...currentContext.editedMultiSelectedProps].filter(
+    (attributes) => {
+      const dataUidAttribute = getJSXAttribute(attributes, UTOPIA_UIDS_KEY)
+      if (dataUidAttribute != null) {
+        const uid = eitherToMaybe(jsxSimpleAttributeToValue(dataUidAttribute))
+        return paths.some((path) => EP.toUid(path) === uid)
+      } else {
+        return false
+      }
+    },
+  )
+
+  return {
+    ...currentContext,
+    spiedProps,
+    editedMultiSelectedProps,
+    selectedViews: paths,
+  }
+}
+
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
   propertyControls: ParseResult<ParsedPropertyControls>
@@ -650,8 +681,10 @@ const PropertyControlsSection = betterReactMemo(
     const propertyControlsStatus = useControlStatusForPaths(propPaths)
     const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
 
+    const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
+
     return (
-      <>
+      <InspectorPropsContext.Provider value={updatedContext}>
         {foldEither(
           (rootParseError) => {
             return <ParseErrorControl parseError={rootParseError} />
@@ -731,7 +764,7 @@ const PropertyControlsSection = betterReactMemo(
             </div>
           </UIGridRow>
         ) : null}
-      </>
+      </InspectorPropsContext.Provider>
     )
   },
 )
