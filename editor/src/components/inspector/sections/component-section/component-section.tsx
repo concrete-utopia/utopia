@@ -15,7 +15,7 @@ import {
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { filterSpecialProps } from '../../../../core/property-controls/property-controls-utils'
-import { eitherToMaybe, foldEither, forEachRight } from '../../../../core/shared/either'
+import { eitherToMaybe, foldEither, forEachRight, isLeft } from '../../../../core/shared/either'
 import { mapToArray, mapValues } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -616,20 +616,18 @@ export const ComponentSectionInner = betterReactMemo(
 
 function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData {
   const currentContext = useContext(InspectorPropsContext)
-  const spiedProps = [...currentContext.spiedProps].filter((props) =>
+  const spiedProps = currentContext.spiedProps.filter((props) =>
     paths.some((path) => EP.toString(path) === props[UTOPIA_PATHS_KEY]),
   )
-  const editedMultiSelectedProps = [...currentContext.editedMultiSelectedProps].filter(
-    (attributes) => {
-      const dataUidAttribute = getJSXAttribute(attributes, UTOPIA_UIDS_KEY)
-      if (dataUidAttribute != null) {
-        const uid = eitherToMaybe(jsxSimpleAttributeToValue(dataUidAttribute))
-        return paths.some((path) => EP.toUid(path) === uid)
-      } else {
-        return false
-      }
-    },
-  )
+  const editedMultiSelectedProps = currentContext.editedMultiSelectedProps.filter((attributes) => {
+    const dataUidAttribute = getJSXAttribute(attributes, UTOPIA_UIDS_KEY)
+    if (dataUidAttribute != null) {
+      const uid = eitherToMaybe(jsxSimpleAttributeToValue(dataUidAttribute))
+      return paths.some((path) => EP.toUid(path) === uid)
+    } else {
+      return false
+    }
+  })
 
   return {
     ...currentContext,
