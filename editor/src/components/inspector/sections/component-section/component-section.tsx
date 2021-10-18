@@ -739,10 +739,18 @@ const PropertyControlsSection = betterReactMemo(
   },
 )
 
-export function inferControlTypeBasedOnValue(
+function inferControlTypeBasedOnValueInner(
+  stackSize: number,
   propValue: any,
   propName?: string,
 ): RegularControlDescription {
+  if (stackSize > 100) {
+    // Prevent this blowing out on recursive structures
+    return {
+      type: 'ignore',
+    }
+  }
+
   switch (typeof propValue) {
     case 'number':
       return {
@@ -764,7 +772,11 @@ export function inferControlTypeBasedOnValue(
       }
     }
     case 'object': {
-      if (Array.isArray(propValue)) {
+      if (propValue == null || React.isValidElement(propValue)) {
+        return {
+          type: 'ignore',
+        }
+      } else if (Array.isArray(propValue)) {
         if (
           (propValue.length === 2 || propValue.length === 3) &&
           propValue.every((v) => typeof v === 'number')
@@ -786,7 +798,7 @@ export function inferControlTypeBasedOnValue(
           return {
             type: 'array',
             title: propName,
-            propertyControl: inferControlTypeBasedOnValue(propValue[0]),
+            propertyControl: inferControlTypeBasedOnValueInner(stackSize + 1, propValue[0]),
           }
         } else {
           // We can't infer the underlying control type for empty arrays, so our hands are tied here
@@ -796,7 +808,7 @@ export function inferControlTypeBasedOnValue(
         }
       } else {
         const controlsForKeys = mapValues(
-          (v: unknown, key: string) => inferControlTypeBasedOnValue(v, key),
+          (v: unknown, key: string) => inferControlTypeBasedOnValueInner(stackSize + 1, v, key),
           propValue,
         )
 
@@ -812,6 +824,13 @@ export function inferControlTypeBasedOnValue(
         type: 'ignore',
       }
   }
+}
+
+export function inferControlTypeBasedOnValue(
+  propValue: any,
+  propName?: string,
+): RegularControlDescription {
+  return inferControlTypeBasedOnValueInner(0, propValue, propName)
 }
 
 type SectionRowProps = Omit<RowForControlProps, 'propMetadata'> & {
