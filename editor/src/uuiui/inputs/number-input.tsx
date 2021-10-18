@@ -942,20 +942,27 @@ export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlPro
   },
 )
 
+export function wrappedEmptyOrUnknownOnSubmitValue<T>(
+  onSubmitValue: OnSubmitValue<T>,
+  onUnsetValue?: OnUnsetValues,
+): OnSubmitValueOrUnknownOrEmpty<T> {
+  return (value) => {
+    if (isEmptyInputValue(value)) {
+      if (onUnsetValue != null) {
+        onUnsetValue()
+      }
+    } else if (!isUnknownInputValue(value)) {
+      onSubmitValue(value)
+    }
+  }
+}
+
 export function useWrappedEmptyOrUnknownOnSubmitValue<T>(
   onSubmitValue: OnSubmitValue<T>,
   onUnsetValue?: OnUnsetValues,
 ): OnSubmitValueOrUnknownOrEmpty<T> {
   return React.useCallback(
-    (value) => {
-      if (isEmptyInputValue(value)) {
-        if (onUnsetValue != null) {
-          onUnsetValue()
-        }
-      } else if (!isUnknownInputValue(value)) {
-        onSubmitValue(value)
-      }
-    },
+    (value) => wrappedEmptyOrUnknownOnSubmitValue(onSubmitValue, onUnsetValue)(value),
     [onSubmitValue, onUnsetValue],
   )
 }

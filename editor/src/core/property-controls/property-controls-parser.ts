@@ -311,7 +311,7 @@ const invalidColorStringResult: ParseResult<string> = left(
 
 // We want to parse the string, but check that it can be parsed as a color.
 // Returning the string, only if it does validate against `parseColor`.
-function parseStringValidateAsColor(value: unknown): ParseResult<string> {
+export function parseStringValidateAsColor(value: unknown): ParseResult<string> {
   const parsed = parseString(value)
   return foldEither(
     (_) => {
