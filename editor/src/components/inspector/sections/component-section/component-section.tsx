@@ -739,7 +739,7 @@ const PropertyControlsSection = betterReactMemo(
   },
 )
 
-function inferControlTypeBasedOnValue(
+export function inferControlTypeBasedOnValue(
   propValue: any,
   propName?: string,
 ): RegularControlDescription {
