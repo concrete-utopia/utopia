@@ -772,7 +772,7 @@ function inferControlTypeBasedOnValueInner(
       }
     }
     case 'object': {
-      if (propValue == null || React.isValidElement(propValue)) {
+      if (propValue == null || React.isValidElement(propValue) || propName === 'style') {
         return {
           type: 'ignore',
         }
