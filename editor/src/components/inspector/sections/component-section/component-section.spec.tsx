@@ -133,6 +133,16 @@ describe('inferControlTypeBasedOnValue', () => {
     expect((result as ObjectControlDescription).object.k.type).toEqual('string')
   })
 
+  it('Ignores the style prop', () => {
+    const styleObjectResult = inferControlTypeBasedOnValue({}, 'style')
+    expect(styleObjectResult.type).toEqual('ignore')
+  })
+
+  it('ignores a React element', () => {
+    const reactComponentResult = inferControlTypeBasedOnValue(<div />)
+    expect(reactComponentResult.type).toEqual('ignore')
+  })
+
   it('Correctly infers nested array / object horror show controls', () => {
     const result = inferControlTypeBasedOnValue({
       arr: [
