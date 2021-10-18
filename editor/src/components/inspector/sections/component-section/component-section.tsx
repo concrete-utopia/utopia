@@ -16,7 +16,7 @@ import {
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { filterSpecialProps } from '../../../../core/property-controls/property-controls-utils'
 import { eitherToMaybe, foldEither, forEachRight } from '../../../../core/shared/either'
-import { mapToArray } from '../../../../core/shared/object-utils'
+import { mapToArray, mapValues } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
@@ -86,7 +86,10 @@ import {
   useHiddenElements,
 } from './hidden-controls-section'
 import { ComponentInfoBox } from './component-info-box'
-import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
+import {
+  ParsedPropertyControls,
+  parseStringValidateAsColor,
+} from '../../../../core/property-controls/property-controls-parser'
 import { getPropertyControlNames } from '../../../../core/property-controls/property-control-values'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { when } from '../../../../utils/react-conditionals'
@@ -736,8 +739,8 @@ const PropertyControlsSection = betterReactMemo(
         {Object.keys(detectedPropsAndValuesWithoutControls).map((propName) => {
           const propValue = detectedPropsAndValuesWithoutControls[propName]
           const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
-            propName,
             propValue,
+            propName,
           )
           return (
             <RowForControl
@@ -769,18 +772,32 @@ const PropertyControlsSection = betterReactMemo(
   },
 )
 
-function inferControlTypeBasedOnValue(propName: string, propValue: any): ControlDescription {
+function inferControlTypeBasedOnValueInner(
+  stackSize: number,
+  propValue: any,
+  propName?: string,
+): RegularControlDescription {
+  if (stackSize > 100) {
+    // Prevent this blowing out on recursive structures
+    return {
+      type: 'ignore',
+    }
+  }
+
   switch (typeof propValue) {
     case 'number':
       return {
         type: 'number',
         title: propName,
       }
-    case 'string':
+    case 'string': {
+      const parsedAsColor = parseStringValidateAsColor(propValue)
+      const controlType = isLeft(parsedAsColor) ? 'string' : 'color'
       return {
-        type: 'string',
+        type: controlType,
         title: propName,
       }
+    }
     case 'boolean': {
       return {
         type: 'boolean',
@@ -788,24 +805,51 @@ function inferControlTypeBasedOnValue(propName: string, propValue: any): Control
       }
     }
     case 'object': {
-      // try to find Vectors
-      if (Array.isArray(propValue) && propValue.every((v) => typeof v === 'number')) {
-        if (propValue.length === 2) {
-          return {
-            type: 'vector2',
-            title: propName,
+      if (propValue == null || React.isValidElement(propValue) || propName === 'style') {
+        return {
+          type: 'ignore',
+        }
+      } else if (Array.isArray(propValue)) {
+        if (
+          (propValue.length === 2 || propValue.length === 3) &&
+          propValue.every((v) => typeof v === 'number')
+        ) {
+          // First we try to find Vectors
+          if (propValue.length === 2) {
+            return {
+              type: 'vector2',
+              title: propName,
+            }
+          } else {
+            return {
+              type: 'vector3',
+              title: propName,
+            }
           }
-        } else if (propValue.length === 3) {
+        } else if (propValue.length > 0) {
+          // Otherwise we go with a regular array control
           return {
-            type: 'vector3',
+            type: 'array',
             title: propName,
+            propertyControl: inferControlTypeBasedOnValueInner(stackSize + 1, propValue[0]),
+          }
+        } else {
+          // We can't infer the underlying control type for empty arrays, so our hands are tied here
+          return {
+            type: 'ignore',
           }
         }
-      }
+      } else {
+        const controlsForKeys = mapValues(
+          (v: unknown, key: string) => inferControlTypeBasedOnValueInner(stackSize + 1, v, key),
+          propValue,
+        )
 
-      // the fallback for objects – for now, don't display them
-      return {
-        type: 'ignore',
+        return {
+          type: 'object',
+          title: propName,
+          object: controlsForKeys,
+        }
       }
     }
     default:
@@ -813,6 +857,13 @@ function inferControlTypeBasedOnValue(propName: string, propValue: any): Control
         type: 'ignore',
       }
   }
+}
+
+export function inferControlTypeBasedOnValue(
+  propValue: any,
+  propName?: string,
+): RegularControlDescription {
+  return inferControlTypeBasedOnValueInner(0, propValue, propName)
 }
 
 type SectionRowProps = Omit<RowForControlProps, 'propMetadata'> & {

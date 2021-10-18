@@ -52,9 +52,17 @@ import {
   FlexColumn,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { createIframeUrl } from '../../core/shared/utils'
+import { createIframeUrl, projectURLForProject } from '../../core/shared/utils'
 import { setBranchNameFromURL } from '../../utils/branches'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
+
+function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
+  // Make sure we don't replace the query params
+  const queryParams = window.top.location.search
+  const projectURL = projectURLForProject(projectId, projectName)
+  const title = `Utopia ${projectName}`
+  window.top.history.pushState({}, title, `${projectURL}${queryParams}`)
+}
 
 interface NumberSize {
   width: number
@@ -172,6 +180,7 @@ export const EditorComponentInner = betterReactMemo(
       (store) => store.editor.projectName,
       'EditorComponentInner projectName',
     )
+    const projectId = useEditorState((store) => store.editor.id, 'EditorComponentInner projectId')
     const previewVisible = useEditorState(
       (store) => store.editor.preview.visible,
       'EditorComponentInner previewVisible',
@@ -186,6 +195,12 @@ export const EditorComponentInner = betterReactMemo(
     React.useEffect(() => {
       document.title = projectName + ' - Utopia'
     }, [projectName])
+
+    React.useEffect(() => {
+      if (projectId) {
+        pushProjectURLToBrowserHistory(projectId, projectName)
+      }
+    }, [projectName, projectId])
 
     const onClosePreview = React.useCallback(
       () => dispatch([EditorActions.setPanelVisibility('preview', false)]),
