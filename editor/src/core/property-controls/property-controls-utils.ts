@@ -327,6 +327,7 @@ export function getDescriptionUnsetOptionalFields(
     case 'union':
     case 'vector2':
     case 'vector3':
+    case 'vector4':
       break
     case 'folder':
       for (const propertyControlKey of Object.keys(controlDescription.controls)) {

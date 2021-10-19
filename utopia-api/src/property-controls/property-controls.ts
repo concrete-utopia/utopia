@@ -19,6 +19,7 @@ export type BaseControlType =
   | 'styleobject'
   | 'vector2'
   | 'vector3'
+  | 'vector4'
 
 interface AbstractControlDescription<T extends ControlType> {
   title?: string
@@ -129,6 +130,10 @@ export interface Vector3ControlDescription extends AbstractBaseControlDescriptio
   defaultValue?: [number, number, number]
 }
 
+export interface Vector4ControlDescription extends AbstractBaseControlDescription<'vector4'> {
+  defaultValue?: [number, number, number, number]
+}
+
 export type BaseControlDescription =
   | BooleanControlDescription
   | ColorControlDescription
@@ -145,6 +150,7 @@ export type BaseControlDescription =
   | StyleObjectControlDescription
   | Vector2ControlDescription
   | Vector3ControlDescription
+  | Vector4ControlDescription
 
 // Higher Level Controls
 
@@ -206,6 +212,7 @@ export function isBaseControlDescription(
     case 'styleobject':
     case 'vector2':
     case 'vector3':
+    case 'vector4':
       return true
     case 'array':
     case 'object':
@@ -237,6 +244,7 @@ export function isHigherLevelControlDescription(
     case 'styleobject':
     case 'vector2':
     case 'vector3':
+    case 'vector4':
     case 'folder':
       return false
     case 'array':

@@ -266,7 +266,8 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseAny)
     case 'vector2':
     case 'vector3':
-      return defaultUnwrapFirst(parseAny)
+    case 'vector4':
+      return defaultUnwrapFirst(parseAny) // FIXME Should be doing array parsing
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled control ${JSON.stringify(control)}`)
@@ -292,7 +293,8 @@ export function unwrapperAndParserForPropertyControl(
     case 'styleobject':
     case 'vector2':
     case 'vector3':
-      return unwrapperAndParserForBaseControl(control)
+    case 'vector4':
+      return unwrapperAndParserForBaseControl(control) // FIXME Should be doing array parsing
 
     case 'array':
       return unwrapAndParseArrayValues(control.propertyControl)
@@ -421,6 +423,8 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'vector3':
       return printSimple
+    case 'vector4':
+      return printSimple
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled controls ${JSON.stringify(control)}`)
@@ -481,6 +485,7 @@ export function printerForPropertyControl(control: RegularControlDescription): P
     case 'styleobject':
     case 'vector2':
     case 'vector3':
+    case 'vector4':
       return printerForBasePropertyControl(control)
 
     case 'array':

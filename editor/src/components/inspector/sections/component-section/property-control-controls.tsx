@@ -16,6 +16,7 @@ import {
   StringControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
+  Vector4ControlDescription,
 } from 'utopia-api'
 import { InspectorInfo } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
@@ -474,9 +475,27 @@ export const ControlForStringProp = betterReactMemo(
   },
 )
 
+function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Array<string> {
+  switch (vectorType) {
+    case 'vector2':
+      return ['x', 'y']
+    case 'vector3':
+      return ['x', 'y', 'z']
+    case 'vector4':
+      return ['x', 'y', 'z', 'w']
+    default:
+      const _exhaustiveCheck: never = vectorType
+      throw new Error(`Unhandled vector type ${vectorType}`)
+  }
+}
+
 export const ControlForVectorProp = betterReactMemo(
   'ControlForVectorProp',
-  (props: ControlForPropProps<Vector2ControlDescription | Vector3ControlDescription>) => {
+  (
+    props: ControlForPropProps<
+      Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription
+    >,
+  ) => {
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
     const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
@@ -484,7 +503,7 @@ export const ControlForVectorProp = betterReactMemo(
         (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ??
         []
 
-      const keys = controlDescription.type === 'vector3' ? ['x', 'y', 'z'] : ['x', 'y']
+      const keys = keysForVectorOfType(controlDescription.type)
       return keys.map((propName: string, index: number) => {
         const innerValue = vectorValue[index]
 
