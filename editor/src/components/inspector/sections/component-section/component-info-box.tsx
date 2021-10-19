@@ -120,15 +120,16 @@ export const ComponentInfoBox = () => {
             <LargerIcons.NpmLogo />
           </span>
           <p>
-            {`This ${componentType} is imported from `}
+            {`This ${componentType} is imported from`}
             {when(
               componentPackageName != null,
               <>
-                <InlineLink href={componentPackageMgrLink}>{`${componentPackageName}`}</InlineLink>{' '}
-                via
+                {' '}
+                <InlineLink href={componentPackageMgrLink}>{`${componentPackageName}`}</InlineLink>
+                {' via'}
               </>,
             )}
-            NPM.
+            {' NPM.'}
           </p>
         </UIGridRow>
       ) : isFocusable && !isFocused ? (
