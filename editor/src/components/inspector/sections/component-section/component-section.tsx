@@ -908,37 +908,12 @@ type SectionRowProps = {
 export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps) => {
   switch (props.controlDescription.type) {
     case 'folder':
-      const controls = props.controlDescription.controls
       const innerProperties = getPropertyControlNames({ folder: right(props.controlDescription) })
       const anyInnerControlsToDisplay = innerProperties.some((controlForFolder) => {
         return props.propNamesToDisplay.has(controlForFolder)
       })
       if (anyInnerControlsToDisplay) {
-        const indentation = props.indentationLevel * 8
-        return (
-          <React.Fragment>
-            {/* TODO BEFORE MERGE make a Folder Component */}
-            {/* TODO BEFORE MERGE use something like the PropertyLabel */}
-            {/* TODO BEFORE MERGE create a mouse over effect like for Objects */}
-            <UIGridRow padded={false} style={{ paddingLeft: 0 }} variant='<--1fr--><--1fr-->'>
-              <div style={{ paddingLeft: indentation }}>▼ {PP.toString(props.propPath)}</div>
-            </UIGridRow>
-            {Object.keys(controls).map((propName) => {
-              const controlDescription = controls[propName]
-              return (
-                <SectionRow
-                  key={`section-row-${propName}`}
-                  propPath={PP.create([propName])}
-                  controlDescription={controlDescription}
-                  isScene={props.isScene}
-                  setGlobalCursor={props.setGlobalCursor}
-                  propNamesToDisplay={props.propNamesToDisplay}
-                  indentationLevel={props.indentationLevel + 1}
-                />
-              )
-            })}
-          </React.Fragment>
-        )
+        return <FolderSection {...props} controlDescription={props.controlDescription} />
       } else {
         return null
       }
@@ -964,6 +939,101 @@ export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps)
         return null
       }
   }
+})
+
+interface ExpansionArrowSVGProps {
+  style: React.CSSProperties
+}
+
+const ExpansionArrowSVG = betterReactMemo('ExpansionArrowSVG', (props: ExpansionArrowSVGProps) => {
+  const colorTheme = useColorTheme()
+  return (
+    <svg width='7px' height='5px' viewBox='0 0 7 5' version='1.1' style={props.style}>
+      <g
+        strokeWidth='1'
+        fillRule='evenodd'
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        id='expansion-triangle-open'
+        transform='translate(-1.000000, 0.000000)'
+        fill={colorTheme.textColor.value}
+        stroke={colorTheme.textColor.value}
+      >
+        <polygon
+          transform='translate(3.828427, 0.828427) rotate(-45.000000) translate(-3.828427, -0.828427) '
+          points='1.82842712 -1.17157288 1.82842712 2.82842712 5.82842712 2.82842712'
+        />
+      </g>
+    </svg>
+  )
+})
+
+interface FolderSectionProps {
+  propPath: PropertyPath
+  isScene: boolean
+  setGlobalCursor: (cursor: CSSCursor | null) => void
+  controlDescription: FolderControlDescription
+  propNamesToDisplay: Set<string>
+  indentationLevel: number
+}
+
+const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProps) => {
+  const [open, setOpen] = React.useState(false)
+  const controls = props.controlDescription.controls
+  const indentation = props.indentationLevel * 8
+  return (
+    <div
+      css={{
+        '&:hover': {
+          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,30%)',
+          background: 'hsl(0,0%,0%,1%)',
+        },
+        '&:focus-within': {
+          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,30%)',
+          background: 'hsl(0,0%,0%,1%)',
+        },
+      }}
+    >
+      {/* TODO BEFORE MERGE use something like the PropertyLabel */}
+      <div
+        style={{
+          paddingLeft: indentation,
+          display: 'flex',
+          alignItems: 'center',
+          height: 34,
+          fontWeight: 500,
+          gap: 4,
+          cursor: 'pointer',
+        }}
+        onClick={() => setOpen(!open)}
+      >
+        <ExpansionArrowSVG
+          style={{
+            transform: open ? 'none' : 'rotate(-90deg)',
+            transition: 'all linear .1s',
+          }}
+        />
+        <span>{PP.toString(props.propPath)}</span>
+      </div>
+      {when(
+        open,
+        Object.keys(controls).map((propName) => {
+          const controlDescription = controls[propName]
+          return (
+            <SectionRow
+              key={`section-row-${propName}`}
+              propPath={PP.create([propName])}
+              controlDescription={controlDescription}
+              isScene={props.isScene}
+              setGlobalCursor={props.setGlobalCursor}
+              propNamesToDisplay={props.propNamesToDisplay}
+              indentationLevel={props.indentationLevel + 1}
+            />
+          )
+        }),
+      )}
+    </div>
+  )
 })
 
 export interface ComponentSectionState {
