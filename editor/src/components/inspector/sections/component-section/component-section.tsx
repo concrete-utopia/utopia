@@ -402,6 +402,29 @@ const RowForArrayControl = betterReactMemo(
   },
 )
 
+interface ObjectIndicatorProps {
+  open: boolean
+}
+
+const ObjectIndicator = (props: ObjectIndicatorProps) => {
+  return (
+    <div
+      style={{
+        border: '1px solid #eee',
+        paddingLeft: 2,
+        paddingRight: 2,
+        borderRadius: 4,
+        lineHeight: 1,
+        fontSize: 9,
+        color: 'hsl(0,0%,60%)',
+        background: props.open ? 'transparent' : '#eee',
+      }}
+    >
+      ⋯
+    </div>
+  )
+}
+
 interface RowForObjectControlProps extends AbstractRowForControlProps {
   controlDescription: ObjectControlDescription
 }
@@ -409,6 +432,7 @@ interface RowForObjectControlProps extends AbstractRowForControlProps {
 const RowForObjectControl = betterReactMemo(
   'RowForObjectControl',
   (props: RowForObjectControlProps) => {
+    const [open, setOpen] = React.useState(true)
     const { propPath, controlDescription, isScene } = props
     const title = titleForControl(propPath, controlDescription)
     const indentation = props.indentationLevel * 8
@@ -416,6 +440,8 @@ const RowForObjectControl = betterReactMemo(
     return (
       <div
         css={{
+          marginTop: 8,
+          marginBottom: 8,
           '&:hover': {
             boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
             background: 'hsl(0,0%,0%,1%)',
@@ -427,29 +453,42 @@ const RowForObjectControl = betterReactMemo(
         }}
       >
         <div>
-          <div>
+          <div onClick={() => setOpen(!open)}>
             <SimpleFlexRow style={{ flexGrow: 1 }}>
               <PropertyLabel
                 target={[propPath]}
-                style={{ textTransform: 'capitalize', paddingLeft: indentation }}
+                style={{
+                  textTransform: 'capitalize',
+                  paddingLeft: indentation,
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: 34,
+                  fontWeight: 500,
+                  gap: 4,
+                  cursor: 'pointer',
+                }}
               >
                 {title}
+                <ObjectIndicator open={open} />
               </PropertyLabel>
             </SimpleFlexRow>
           </div>
-          {mapToArray((innerControl: RegularControlDescription, prop: string) => {
-            const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
-            return (
-              <RowForControl
-                key={`object-control-row-${PP.toString(innerPropPath)}`}
-                controlDescription={innerControl}
-                isScene={isScene}
-                propPath={innerPropPath}
-                setGlobalCursor={props.setGlobalCursor}
-                indentationLevel={props.indentationLevel + 1}
-              />
-            )
-          }, controlDescription.object)}
+          {when(
+            open,
+            mapToArray((innerControl: RegularControlDescription, prop: string) => {
+              const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+              return (
+                <RowForControl
+                  key={`object-control-row-${PP.toString(innerPropPath)}`}
+                  controlDescription={innerControl}
+                  isScene={isScene}
+                  propPath={innerPropPath}
+                  setGlobalCursor={props.setGlobalCursor}
+                  indentationLevel={props.indentationLevel + 1}
+                />
+              )
+            }, controlDescription.object),
+          )}
         </div>
       </div>
     )
