@@ -1013,7 +1013,7 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
             transition: 'all linear .1s',
           }}
         />
-        <span>{PP.toString(props.propPath)}</span>
+        <span>{props.controlDescription.title ?? PP.toString(props.propPath)}</span>
       </div>
       {when(
         open,

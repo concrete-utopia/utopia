@@ -545,12 +545,18 @@ export function parseFolderControlDescription(
     propertiesResult,
   )
   // Create the result on a success.
-  return mapEither((properties) => {
-    return {
-      type: 'folder',
-      controls: properties,
-    }
-  }, parsedControlDescriptions)
+  return applicative2Either(
+    (properties, title) => {
+      let controlDescription: FolderControlDescription = {
+        type: 'folder',
+        controls: properties,
+      }
+      setOptionalProp(controlDescription, 'title', title)
+      return controlDescription
+    },
+    parsedControlDescriptions,
+    optionalObjectKeyParser(parseString, 'title')(value),
+  )
 }
 
 export function parseRegularControlDescription(

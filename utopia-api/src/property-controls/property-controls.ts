@@ -173,6 +173,7 @@ export interface UnionControlDescription extends AbstractHigherLevelControlDescr
 
 export interface FolderControlDescription {
   type: 'folder'
+  title?: string
   controls: PropertyControls
 }
 

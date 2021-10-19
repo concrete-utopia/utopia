@@ -455,6 +455,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export interface FolderControlDescription {
       type: 'folder';
+      title?: string;
       controls: PropertyControls;
   }
   export type HigherLevelControlDescription = ArrayControlDescription | ObjectControlDescription | UnionControlDescription;
