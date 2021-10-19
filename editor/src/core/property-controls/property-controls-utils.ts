@@ -489,7 +489,7 @@ export function getPropertyControlsForTarget(
           ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
           : absolutePath
 
-        const nameLastPart = getJSXElementNameLastPart(element.name)
+        const nameLastPart = getJSXElementNameAsString(element.name)
         if (
           propertyControlsInfo[trimmedPath] != null &&
           propertyControlsInfo[trimmedPath][nameLastPart] != null

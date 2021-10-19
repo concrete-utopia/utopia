@@ -6,7 +6,7 @@ const Button: PropertyControls = {
     title: 'href',
   },
   onClick: {
-    type: 'ignore',
+    type: 'eventhandler',
     title: 'onClick',
   },
   disabled: {
@@ -230,7 +230,10 @@ const Text: PropertyControls = {
 
 const Menu: PropertyControls = {
   defaultOpenKeys: {
-    type: 'ignore',
+    type: 'array',
+    propertyControl: {
+      type: 'string',
+    },
     title: 'defaultOpenKeys',
   },
   defaultSelectedKeys: {
