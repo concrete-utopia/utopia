@@ -243,7 +243,7 @@ function getLabelControlStyle(
 }
 
 interface RowForBaseControlProps extends AbstractRowForControlProps {
-  label?: React.ComponentType<any>
+  label?: React.ComponentType<any> // TODO Before Merge this probably should not be a component
   controlDescription: BaseControlDescription
 }
 
@@ -875,9 +875,15 @@ export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps)
         return props.propNamesToDisplay.has(controlForFolder)
       })
       if (anyInnerControlsToDisplay) {
+        const indentation = props.indentationLevel * 8
         return (
           <React.Fragment>
-            <div>Folder: {PP.toString(props.propPath)}</div>
+            {/* TODO BEFORE MERGE make a Folder Component */}
+            {/* TODO BEFORE MERGE use something like the PropertyLabel */}
+            {/* TODO BEFORE MERGE create a mouse over effect like for Objects */}
+            <UIGridRow padded={false} style={{ paddingLeft: 0 }} variant='<--1fr--><--1fr-->'>
+              <div style={{ paddingLeft: indentation }}>▼ {PP.toString(props.propPath)}</div>
+            </UIGridRow>
             {Object.keys(controls).map((propName) => {
               const controlDescription = controls[propName]
               return (
@@ -911,7 +917,7 @@ export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps)
               controlDescription={props.controlDescription}
               isScene={props.isScene}
               setGlobalCursor={props.setGlobalCursor}
-              indentationLevel={props.indentationLevel + 1}
+              indentationLevel={props.indentationLevel}
             />
           </UIGridRow>
         )
