@@ -407,17 +407,18 @@ interface ObjectIndicatorProps {
 }
 
 const ObjectIndicator = (props: ObjectIndicatorProps) => {
+  const colorTheme = useColorTheme()
   return (
     <div
       style={{
-        border: '1px solid #eee',
+        border: `1px solid ${colorTheme.bg3.value}`,
         paddingLeft: 2,
         paddingRight: 2,
         borderRadius: 4,
         lineHeight: 1,
         fontSize: 9,
-        color: 'hsl(0,0%,60%)',
-        background: props.open ? 'transparent' : '#eee',
+        color: colorTheme.fg6.value,
+        background: props.open ? 'transparent' : colorTheme.bg2.value,
       }}
     >
       ⋯
