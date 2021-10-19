@@ -90,6 +90,7 @@ export const HiddenControls = betterReactMemo(
                         setGlobalCursor={props.setGlobalCursor}
                         controlDescription={propertySuccess}
                         propNamesToDisplay={visibleEmptyControlsSet}
+                        indentationLevel={1}
                       />
                     )
                   },
