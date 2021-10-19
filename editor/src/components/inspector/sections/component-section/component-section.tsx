@@ -978,7 +978,7 @@ interface FolderSectionProps {
 }
 
 const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProps) => {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(true)
   const controls = props.controlDescription.controls
   const indentation = props.indentationLevel * 8
   return (
