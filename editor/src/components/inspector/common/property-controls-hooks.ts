@@ -185,7 +185,7 @@ function useFirstRealValue(propertyPath: PropertyPath): unknown {
 export function useControlForUnionControl(
   propertyPath: PropertyPath,
   control: UnionControlDescription,
-): ControlDescription | null {
+): RegularControlDescription | null {
   const firstRawValue = useFirstRawValue(propertyPath)
   const firstRealValue = useFirstRealValue(propertyPath)
 

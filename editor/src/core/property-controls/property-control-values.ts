@@ -326,7 +326,7 @@ export function controlToUseForUnion(
   control: UnionControlDescription,
   rawValue: Either<string, ModifiableAttribute>,
   realValue: unknown,
-): ControlDescription | null {
+): RegularControlDescription | null {
   return findFirstSuitableControl(control.controls, rawValue, realValue)
 }
 

@@ -15,7 +15,13 @@ import {
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { filterSpecialProps } from '../../../../core/property-controls/property-controls-utils'
-import { eitherToMaybe, foldEither, forEachRight, isLeft } from '../../../../core/shared/either'
+import {
+  eitherToMaybe,
+  foldEither,
+  forEachRight,
+  isLeft,
+  right,
+} from '../../../../core/shared/either'
 import { mapToArray, mapValues } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -413,7 +419,7 @@ const RowForObjectControl = betterReactMemo(
             </PropertyLabel>
           </SimpleFlexRow>
         </div>
-        {mapToArray((innerControl: ControlDescription, prop: string) => {
+        {mapToArray((innerControl: RegularControlDescription, prop: string) => {
           const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
           return (
             <FlexRow
@@ -507,35 +513,8 @@ const RowForUnionControl = betterReactMemo(
   },
 )
 
-interface RowForFolderControlProps extends AbstractRowForControlProps {
-  controlDescription: FolderControlDescription
-}
-
-const RowForFolderControl = betterReactMemo(
-  'RowForFolderControl',
-  (props: RowForFolderControlProps) => {
-    const { controlDescription } = props
-    return (
-      <>
-        {Object.keys(controlDescription.controls).map((propertyName) => {
-          const propertyControl = controlDescription.controls[propertyName]
-          return (
-            <RowForControl
-              key={`folder-control-row-${propertyName}`}
-              controlDescription={propertyControl}
-              isScene={props.isScene}
-              propPath={PP.appendPropertyPathElems(props.propPath, [propertyName])}
-              setGlobalCursor={props.setGlobalCursor}
-            />
-          )
-        })}
-      </>
-    )
-  },
-)
-
 interface RowForControlProps extends AbstractRowForControlProps {
-  controlDescription: ControlDescription
+  controlDescription: RegularControlDescription
 }
 
 const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
@@ -550,8 +529,6 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
         return <RowForObjectControl {...props} controlDescription={controlDescription} />
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
-      case 'folder':
-        return <RowForFolderControl {...props} controlDescription={controlDescription} />
       default:
         const _exhaustiveCheck: never = controlDescription
         throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)
@@ -864,7 +841,11 @@ export function inferControlTypeBasedOnValue(
   return inferControlTypeBasedOnValueInner(0, propValue, propName)
 }
 
-type SectionRowProps = Omit<RowForControlProps, 'propMetadata'> & {
+type SectionRowProps = {
+  propPath: PropertyPath
+  isScene: boolean
+  setGlobalCursor: (cursor: CSSCursor | null) => void
+  controlDescription: ControlDescription
   propNamesToDisplay: Set<string>
 }
 
@@ -872,23 +853,32 @@ export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps)
   switch (props.controlDescription.type) {
     case 'folder':
       const controls = props.controlDescription.controls
-      return (
-        <>
-          {Object.keys(controls).map((propName) => {
-            const controlDescription = controls[propName]
-            return (
-              <SectionRow
-                key={`section-row-${propName}`}
-                propPath={PP.create([propName])}
-                controlDescription={controlDescription}
-                isScene={props.isScene}
-                setGlobalCursor={props.setGlobalCursor}
-                propNamesToDisplay={props.propNamesToDisplay}
-              />
-            )
-          })}
-        </>
-      )
+      const innerProperties = getPropertyControlNames({ folder: right(props.controlDescription) })
+      const anyInnerControlsToDisplay = innerProperties.some((controlForFolder) => {
+        return props.propNamesToDisplay.has(controlForFolder)
+      })
+      if (anyInnerControlsToDisplay) {
+        return (
+          <>
+            <div>Folder: {PP.toString(props.propPath)}</div>
+            {Object.keys(controls).map((propName) => {
+              const controlDescription = controls[propName]
+              return (
+                <SectionRow
+                  key={`section-row-${propName}`}
+                  propPath={PP.create([propName])}
+                  controlDescription={controlDescription}
+                  isScene={props.isScene}
+                  setGlobalCursor={props.setGlobalCursor}
+                  propNamesToDisplay={props.propNamesToDisplay}
+                />
+              )
+            })}
+          </>
+        )
+      } else {
+        return null
+      }
     default:
       if (props.propNamesToDisplay.has(PP.toString(props.propPath))) {
         return (
