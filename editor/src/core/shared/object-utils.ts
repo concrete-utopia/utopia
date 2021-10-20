@@ -218,12 +218,12 @@ export function omit<K extends string | number, T extends Record<K, any>>(
 
 export function omitWithPredicate<T extends MapLike<any>>(
   obj: T,
-  pred: (k: keyof T) => boolean,
+  pred: <K extends keyof T>(k: K, v: T[K]) => boolean,
 ): T {
   var result = {} as T
 
   for (var prop in obj) {
-    if (!pred(prop)) {
+    if (!pred(prop, obj[prop])) {
       result[prop] = obj[prop]
     }
   }

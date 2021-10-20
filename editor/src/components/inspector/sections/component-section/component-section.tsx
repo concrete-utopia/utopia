@@ -22,9 +22,15 @@ import {
   foldEither,
   forEachRight,
   isLeft,
+  mapEither,
   right,
 } from '../../../../core/shared/either'
-import { mapToArray, mapValues } from '../../../../core/shared/object-utils'
+import {
+  mapToArray,
+  mapValues,
+  objectMap,
+  omitWithPredicate,
+} from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
@@ -105,6 +111,7 @@ import { useContext } from 'use-context-selector'
 import { getJSXAttribute, jsxAttributeValue } from '../../../../core/shared/element-template'
 import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attributes'
 import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../../../../core/model/utopia-constants'
+import { difference } from '../../../../core/shared/array-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -712,17 +719,39 @@ const PropertyControlsSection = betterReactMemo(
     const propertyControlsStatus = useControlStatusForPaths(propPaths)
 
     const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
+    const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
+
+    const rootFolder = foldEither(
+      (rootParseError) => {
+        return <ParseErrorControl parseError={rootParseError} />
+      },
+      (rootParseSuccess) => {
+        const propNamesToDisplay = new Set(
+          filterNonUnsetAndEmptyControls(
+            filterSpecialProps(getPropertyControlNames(rootParseSuccess)),
+            propertyControlsStatus,
+            visibleEmptyControls,
+          ),
+        )
+
+        return (
+          <FolderSection
+            isRoot={true}
+            indentationLevel={0}
+            propNamesToDisplay={propNamesToDisplay}
+            parsedPropertyControls={rootParseSuccess}
+            setGlobalCursor={setGlobalCursor}
+            visibleEmptyControls={visibleEmptyControls}
+            showHiddenControl={showHiddenControl}
+          />
+        )
+      },
+      propertyControls,
+    )
 
     return (
       <InspectorPropsContext.Provider value={updatedContext}>
-        <FolderSection
-          isRoot={true}
-          indentationLevel={0}
-          hiddenPropPaths={[]}
-          propNamesToDisplay={{} as Set<string>}
-          propertyControls={{}}
-          setGlobalCursor={setGlobalCursor}
-        />
+        {rootFolder}
         {/** props set on the component instance and props used inside the component code */}
         {detectedPropsWithNoValue.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
@@ -837,6 +866,8 @@ type SectionRowProps = {
   controlDescription: ControlDescription
   propNamesToDisplay: Set<string>
   indentationLevel: number
+  visibleEmptyControls: string[]
+  showHiddenControl: (path: string) => void
 }
 
 export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps) => {
@@ -851,11 +882,15 @@ export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps)
           <FolderSection
             isRoot={false}
             indentationLevel={props.indentationLevel}
-            hiddenPropPaths={[]}
             propNamesToDisplay={props.propNamesToDisplay}
-            propertyControls={props.controlDescription.controls}
+            parsedPropertyControls={objectMap(
+              (c): ParseResult<ControlDescription> => right(c), // this is not the nicest, but the Either type inference is a bit limited
+              props.controlDescription.controls,
+            )}
             setGlobalCursor={props.setGlobalCursor}
             title={props.controlDescription.title ?? PP.toString(props.propPath)}
+            visibleEmptyControls={props.visibleEmptyControls}
+            showHiddenControl={props.showHiddenControl}
           />
         )
       } else {
@@ -947,20 +982,33 @@ const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => 
 
 interface FolderSectionProps {
   isRoot: boolean
-  propertyControls: PropertyControls
+  parsedPropertyControls: ParsedPropertyControls
   propNamesToDisplay: Set<string>
-  hiddenPropPaths: PropertyPath[]
   indentationLevel: number
   setGlobalCursor: (cursor: CSSCursor | null) => void
+  visibleEmptyControls: string[]
+  showHiddenControl: (path: string) => void
   title?: string
 }
 
 const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProps) => {
   const [open, setOpen] = React.useState(true)
-  const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
-  const hiddenPropsList = props.hiddenPropPaths.filter((path) =>
-    visibleEmptyControls.some((empty) => PP.pathsEqual(path, empty)),
+  const folderOwnProperties = Object.keys(
+    omitWithPredicate(
+      props.parsedPropertyControls,
+      (_, v: ParseResult<ControlDescription>) => eitherToMaybe(v)?.type === 'folder',
+    ),
   )
+  const hiddenPropsList = folderOwnProperties
+    .filter((prop) => !props.propNamesToDisplay.has(prop))
+    .filter((prop) => !props.visibleEmptyControls.includes(prop))
+
+  // TODO visibleEmptyControls is not on the bottom of the section
+  const controlsToShow = difference(Object.keys(props.parsedPropertyControls), hiddenPropsList)
+  const propsToShow = new Set([
+    ...Array.from(props.propNamesToDisplay),
+    ...props.visibleEmptyControls,
+  ])
 
   const toggleOpen = React.useCallback(() => {
     setOpen(!open)
@@ -996,22 +1044,42 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
       )}
       {when(
         open,
-        Object.keys(props.propertyControls).map((propName) => {
-          const controlDescription = props.propertyControls[propName]
-          return (
-            <SectionRow
-              key={`section-row-${propName}`}
-              propPath={PP.create([propName])}
-              controlDescription={controlDescription}
-              isScene={false}
-              setGlobalCursor={props.setGlobalCursor}
-              propNamesToDisplay={props.propNamesToDisplay}
-              indentationLevel={props.indentationLevel + 1}
-            />
+        controlsToShow.map((propName) => {
+          const controlDescription = props.parsedPropertyControls[propName]
+          return foldEither(
+            (propertyError) => {
+              return (
+                <RowForInvalidControl
+                  key={propName}
+                  title={propName}
+                  propName={propName}
+                  propertyError={propertyError}
+                />
+              )
+            },
+            (propertySuccess) => {
+              return (
+                <SectionRow
+                  key={`section-row-${propName}`}
+                  propPath={PP.create([propName])}
+                  controlDescription={propertySuccess}
+                  isScene={false}
+                  setGlobalCursor={props.setGlobalCursor}
+                  propNamesToDisplay={propsToShow}
+                  indentationLevel={props.indentationLevel + 1}
+                  visibleEmptyControls={props.visibleEmptyControls}
+                  showHiddenControl={props.showHiddenControl}
+                />
+              )
+            },
+            controlDescription,
           )
         }),
       )}
-      <HiddenControls hiddenPropPaths={hiddenPropsList} showHiddenControl={showHiddenControl} />
+      <HiddenControls
+        hiddenPropNames={hiddenPropsList}
+        showHiddenControl={props.showHiddenControl}
+      />
     </div>
   )
 })
