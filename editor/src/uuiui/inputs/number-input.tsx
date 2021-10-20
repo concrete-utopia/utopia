@@ -252,6 +252,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     const maximum = scaleFactor * unscaledMaximum
     const stepSize = unscaledStepSize == null ? 1 : unscaledStepSize * scaleFactor
 
+    const repeatedValueRef = React.useRef(nonNullPropsValue)
     const incrementBy = React.useCallback(
       (
         currentValue: CSSNumber,
@@ -276,6 +277,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
           }
         }
         updateStateValue(newValue)
+        repeatedValueRef.current = newValue
         return newValue
       },
       [
@@ -288,7 +290,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       ],
     )
 
-    const repeatedValueRef = React.useRef(nonNullPropsValue)
     const repeatIncrement = React.useCallback(
       (
         currentValue: CSSNumber,
@@ -297,7 +298,6 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         transient: boolean,
       ) => {
         const newValue = incrementBy(currentValue, incrementStepSize, shiftKey, transient)
-        repeatedValueRef.current = newValue
         incrementAnimationFrame = window.requestAnimationFrame(() =>
           repeatIncrement(newValue, incrementStepSize, shiftKey, transient),
         )
