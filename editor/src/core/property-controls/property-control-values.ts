@@ -10,6 +10,7 @@ import {
   descriptionParseError,
   parseAny,
   parseObject,
+  parseArray,
 } from '../../utils/value-parser-utils'
 import {
   AllowedEnumType,
@@ -248,18 +249,25 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseAllowedEnum(control.options))
     case 'expression-enum':
       return defaultUnwrapFirst(parseAny)
+    case 'euler':
+      return defaultUnwrapFirst(parseArray(parseAny))
     case 'eventhandler':
       return jsUnwrapFirst(parseAny)
     case 'ignore':
       return defaultUnwrapFirst(parseAny)
     case 'image':
       return defaultUnwrapFirst(parseString)
+    case 'matrix3':
+    case 'matrix4':
+      return defaultUnwrapFirst(parseArray(parseNumber))
     case 'number':
       return defaultUnwrapFirst(parseNumber)
     case 'options':
       return defaultUnwrapFirst(parseAny)
     case 'popuplist':
       return defaultUnwrapFirst(parseAny)
+    case 'quaternion':
+      return defaultUnwrapFirst(parseArray(parseNumber))
     case 'string':
       return defaultUnwrapFirst(parseString)
     case 'styleobject':
@@ -267,7 +275,7 @@ export function unwrapperAndParserForBaseControl(
     case 'vector2':
     case 'vector3':
     case 'vector4':
-      return defaultUnwrapFirst(parseAny) // FIXME Should be doing array parsing
+      return defaultUnwrapFirst(parseArray(parseNumber)) // FIXME Also needs to handle a single number
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled control ${JSON.stringify(control)}`)
@@ -283,18 +291,22 @@ export function unwrapperAndParserForPropertyControl(
     case 'componentinstance':
     case 'enum':
     case 'expression-enum':
+    case 'euler':
     case 'eventhandler':
     case 'ignore':
     case 'image':
+    case 'matrix3':
+    case 'matrix4':
     case 'number':
     case 'options':
     case 'popuplist':
+    case 'quaternion':
     case 'string':
     case 'styleobject':
     case 'vector2':
     case 'vector3':
     case 'vector4':
-      return unwrapperAndParserForBaseControl(control) // FIXME Should be doing array parsing
+      return unwrapperAndParserForBaseControl(control)
 
     case 'array':
       return unwrapAndParseArrayValues(control.propertyControl)
@@ -403,17 +415,24 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'expression-enum':
       return printSimple
+    case 'euler':
+      return printSimple
     case 'eventhandler':
       return printJS
     case 'ignore':
       return printSimple
     case 'image':
       return printSimple
+    case 'matrix3':
+    case 'matrix4':
+      return printSimple
     case 'number':
       return printSimple
     case 'options':
       return printSimple
     case 'popuplist':
+      return printSimple
+    case 'quaternion':
       return printSimple
     case 'string':
       return printSimple
@@ -475,12 +494,16 @@ export function printerForPropertyControl(control: RegularControlDescription): P
     case 'componentinstance':
     case 'enum':
     case 'expression-enum':
+    case 'euler':
     case 'eventhandler':
     case 'ignore':
     case 'image':
+    case 'matrix3':
+    case 'matrix4':
     case 'number':
     case 'options':
     case 'popuplist':
+    case 'quaternion':
     case 'string':
     case 'styleobject':
     case 'vector2':

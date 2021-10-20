@@ -9,12 +9,16 @@ export type BaseControlType =
   | 'componentinstance'
   | 'enum'
   | 'expression-enum'
+  | 'euler'
   | 'eventhandler'
   | 'ignore'
   | 'image'
+  | 'matrix3'
+  | 'matrix4'
   | 'number'
   | 'options'
   | 'popuplist'
+  | 'quaternion'
   | 'string'
   | 'styleobject'
   | 'vector2'
@@ -73,6 +77,10 @@ export interface ExpressionEnumControlDescription
   optionTitles?: string[] | ((props: unknown | null) => string[])
 }
 
+export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
+  defaultValue?: [number, number, number, string]
+}
+
 export interface EventHandlerControlDescription
   extends AbstractBaseControlDescription<'eventhandler'> {
   defaultValue?: never
@@ -84,6 +92,31 @@ export interface IgnoreControlDescription extends AbstractBaseControlDescription
 
 export interface ImageControlDescription extends AbstractBaseControlDescription<'image'> {
   defaultValue?: string
+}
+
+export interface Matrix3ControlDescription extends AbstractBaseControlDescription<'matrix3'> {
+  defaultValue?: [number, number, number, number, number, number, number, number, number]
+}
+
+export interface Matrix4ControlDescription extends AbstractBaseControlDescription<'matrix4'> {
+  defaultValue?: [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ]
 }
 
 export interface NumberControlDescription extends AbstractBaseControlDescription<'number'> {
@@ -109,6 +142,10 @@ export interface PopUpListControlDescription extends AbstractBaseControlDescript
     value: unknown
     label: string
   }>
+}
+
+export interface QuaternionControlDescription extends AbstractBaseControlDescription<'quaternion'> {
+  defaultValue?: [number, number, number, number]
 }
 
 export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
@@ -140,12 +177,16 @@ export type BaseControlDescription =
   | ComponentInstanceDescription
   | EnumControlDescription
   | ExpressionEnumControlDescription
+  | EulerControlDescription
   | EventHandlerControlDescription
   | IgnoreControlDescription
   | ImageControlDescription
+  | Matrix3ControlDescription
+  | Matrix4ControlDescription
   | NumberControlDescription
   | OptionsControlDescription
   | PopUpListControlDescription
+  | QuaternionControlDescription
   | StringControlDescription
   | StyleObjectControlDescription
   | Vector2ControlDescription
@@ -202,12 +243,16 @@ export function isBaseControlDescription(
     case 'componentinstance':
     case 'enum':
     case 'expression-enum':
+    case 'euler':
     case 'eventhandler':
     case 'ignore':
     case 'image':
+    case 'matrix3':
+    case 'matrix4':
     case 'number':
     case 'options':
     case 'popuplist':
+    case 'quaternion':
     case 'string':
     case 'styleobject':
     case 'vector2':
@@ -228,33 +273,7 @@ export function isBaseControlDescription(
 export function isHigherLevelControlDescription(
   control: ControlDescription,
 ): control is HigherLevelControlDescription {
-  switch (control.type) {
-    case 'boolean':
-    case 'color':
-    case 'componentinstance':
-    case 'enum':
-    case 'expression-enum':
-    case 'eventhandler':
-    case 'ignore':
-    case 'image':
-    case 'number':
-    case 'options':
-    case 'popuplist':
-    case 'string':
-    case 'styleobject':
-    case 'vector2':
-    case 'vector3':
-    case 'vector4':
-    case 'folder':
-      return false
-    case 'array':
-    case 'object':
-    case 'union':
-      return true
-    default:
-      const _exhaustiveCheck: never = control
-      throw new Error(`Unhandled controls ${JSON.stringify(control)}`)
-  }
+  return !isBaseControlDescription(control)
 }
 
 export type PropertyControls = {

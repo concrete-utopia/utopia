@@ -346,7 +346,7 @@ declare module 'utopia-api/primitives/view' {
 }
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
-  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'expression-enum' | 'eventhandler' | 'ignore' | 'image' | 'number' | 'options' | 'popuplist' | 'string' | 'styleobject' | 'vector2' | 'vector3' | 'vector4';
+  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'expression-enum' | 'euler' | 'eventhandler' | 'ignore' | 'image' | 'matrix3' | 'matrix4' | 'number' | 'options' | 'popuplist' | 'quaternion' | 'string' | 'styleobject' | 'vector2' | 'vector3' | 'vector4';
   interface AbstractControlDescription<T extends ControlType> {
       title?: string;
       type: T;
@@ -387,6 +387,9 @@ declare module 'utopia-api/property-controls/property-controls' {
       options: ExpressionEnum[];
       optionTitles?: string[] | ((props: unknown | null) => string[]);
   }
+  export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
+      defaultValue?: [number, number, number, string];
+  }
   export interface EventHandlerControlDescription extends AbstractBaseControlDescription<'eventhandler'> {
       defaultValue?: never;
   }
@@ -395,6 +398,29 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export interface ImageControlDescription extends AbstractBaseControlDescription<'image'> {
       defaultValue?: string;
+  }
+  export interface Matrix3ControlDescription extends AbstractBaseControlDescription<'matrix3'> {
+      defaultValue?: [number, number, number, number, number, number, number, number, number];
+  }
+  export interface Matrix4ControlDescription extends AbstractBaseControlDescription<'matrix4'> {
+      defaultValue?: [
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number,
+          number
+      ];
   }
   export interface NumberControlDescription extends AbstractBaseControlDescription<'number'> {
       defaultValue?: number | null;
@@ -418,6 +444,9 @@ declare module 'utopia-api/property-controls/property-controls' {
           label: string;
       }>;
   }
+  export interface QuaternionControlDescription extends AbstractBaseControlDescription<'quaternion'> {
+      defaultValue?: [number, number, number, number];
+  }
   export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
       defaultValue?: string;
       placeholder?: string;
@@ -436,7 +465,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface Vector4ControlDescription extends AbstractBaseControlDescription<'vector4'> {
       defaultValue?: [number, number, number, number];
   }
-  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | ExpressionEnumControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
+  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | ExpressionEnumControlDescription | EulerControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | Matrix3ControlDescription | Matrix4ControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | QuaternionControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
   export type ControlType = BaseControlType | HigherLevelControlType | 'folder';
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {

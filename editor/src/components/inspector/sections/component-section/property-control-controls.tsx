@@ -7,12 +7,16 @@ import {
   ColorControlDescription,
   ComponentInstanceDescription,
   EnumControlDescription,
+  EulerControlDescription,
   EventHandlerControlDescription,
   ExpressionEnumControlDescription,
   ImageControlDescription,
+  Matrix3ControlDescription,
+  Matrix4ControlDescription,
   NumberControlDescription,
   OptionsControlDescription,
   PopUpListControlDescription,
+  QuaternionControlDescription,
   StringControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
@@ -27,6 +31,7 @@ import {
   NumberInputProps,
   ChainedNumberInput,
   wrappedEmptyOrUnknownOnSubmitValue,
+  FlexColumn,
 } from '../../../../uuiui'
 import {
   parseColor,
@@ -489,6 +494,41 @@ function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Arr
   }
 }
 
+function propsArrayForCSSNumberArray(
+  values: Array<string | number>,
+  keys: Array<string>,
+  propPath: PropertyPath,
+  propMetadata: InspectorInfo<any>,
+): Array<Omit<NumberInputProps, 'id' | 'chained'>> {
+  return keys.map((propName: string, index: number) => {
+    const innerValue = values[index]
+
+    const innerPropPath = PP.appendPropertyPathElems(propPath, [propName])
+    const wrappedOnSubmit = wrappedEmptyOrUnknownOnSubmitValue((rawValue: CSSNumber) => {
+      const newValue = printCSSNumber(rawValue, null)
+      let updatedValues = values.length === 0 ? keys.map((k) => 0) : [...values]
+      updatedValues[index] = newValue
+      propMetadata.onSubmitValue(updatedValues)
+    }, propMetadata.onUnsetValues)
+    const wrappedOnTransientSubmit = wrappedEmptyOrUnknownOnSubmitValue((rawValue: CSSNumber) => {
+      const newValue = printCSSNumber(rawValue, null)
+      let updatedValues = values.length === 0 ? keys.map((k) => 0) : [...values]
+      updatedValues[index] = newValue
+      propMetadata.onTransientSubmitValue(updatedValues)
+    }, propMetadata.onUnsetValues)
+    return {
+      value: innerValue == null || typeof innerValue !== 'number' ? null : cssNumber(innerValue),
+      DEPRECATED_labelBelow: propName,
+      testId: `component-section-${PP.toString(innerPropPath)}`,
+      controlStatus: propMetadata.controlStatus,
+      onSubmitValue: wrappedOnSubmit,
+      onTransientSubmitValue: wrappedOnTransientSubmit,
+      numberType: 'Unitless' as const,
+      defaultUnitToHide: null,
+    }
+  })
+}
+
 export const ControlForVectorProp = betterReactMemo(
   'ControlForVectorProp',
   (
@@ -504,37 +544,7 @@ export const ControlForVectorProp = betterReactMemo(
         []
 
       const keys = keysForVectorOfType(controlDescription.type)
-      return keys.map((propName: string, index: number) => {
-        const innerValue = vectorValue[index]
-
-        const innerPropPath = PP.appendPropertyPathElems(propPath, [propName])
-        const wrappedOnSubmit = wrappedEmptyOrUnknownOnSubmitValue((rawValue: CSSNumber) => {
-          const newValue = printCSSNumber(rawValue, null)
-          let updatedValues = vectorValue.length === 0 ? keys.map((k) => 0) : [...vectorValue]
-          updatedValues[index] = newValue
-          propMetadata.onSubmitValue(updatedValues)
-        }, propMetadata.onUnsetValues)
-        const wrappedOnTransientSubmit = wrappedEmptyOrUnknownOnSubmitValue(
-          (rawValue: CSSNumber) => {
-            const newValue = printCSSNumber(rawValue, null)
-            let updatedValues = vectorValue.length === 0 ? keys.map((k) => 0) : [...vectorValue]
-            updatedValues[index] = newValue
-            propMetadata.onTransientSubmitValue(updatedValues)
-          },
-          propMetadata.onUnsetValues,
-        )
-        return {
-          value:
-            innerValue == null || typeof innerValue !== 'number' ? null : cssNumber(innerValue),
-          DEPRECATED_labelBelow: propName,
-          testId: `component-section-${PP.toString(innerPropPath)}`,
-          controlStatus: propMetadata.controlStatus,
-          onSubmitValue: wrappedOnSubmit,
-          onTransientSubmitValue: wrappedOnTransientSubmit,
-          numberType: 'Unitless' as const,
-          defaultUnitToHide: null,
-        }
-      })
+      return propsArrayForCSSNumberArray(vectorValue, keys, propPath, propMetadata)
     }, [controlDescription.type, controlDescription.defaultValue, propMetadata, propPath])
 
     return (
@@ -543,6 +553,166 @@ export const ControlForVectorProp = betterReactMemo(
         propsArray={propsArray}
         setGlobalCursor={setGlobalCursor}
       />
+    )
+  },
+)
+
+export const ControlForEulerProp = betterReactMemo(
+  'ControlForEulerProp',
+  (props: ControlForPropProps<EulerControlDescription>) => {
+    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
+
+    const values = React.useMemo(
+      () =>
+        (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ??
+        [],
+      [propMetadata.propertyStatus.set, propMetadata.value, controlDescription.defaultValue],
+    )
+
+    const numericPropsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
+      return propsArrayForCSSNumberArray(values, ['x', 'y', 'z'], propPath, propMetadata)
+    }, [values, propMetadata, propPath])
+
+    const orderValue = values[3] ?? 'XYZ'
+
+    const orderWrappedOnSubmit = wrappedEmptyOrUnknownOnSubmitValue((newValue: string) => {
+      let updatedValues = values.length === 0 ? [0, 0, 0, 'XYZ'] : [...values]
+      updatedValues[3] = newValue
+      propMetadata.onSubmitValue(updatedValues)
+    }, propMetadata.onUnsetValues)
+    const orderControlId = `euler-order-control`
+
+    return (
+      <FlexColumn>
+        <ChainedNumberInput
+          idPrefix={'euler-xyz'}
+          propsArray={numericPropsArray}
+          setGlobalCursor={setGlobalCursor}
+        />
+        <StringControl
+          key={'euler-order'}
+          id={orderControlId}
+          testId={orderControlId}
+          value={orderValue}
+          onSubmitValue={orderWrappedOnSubmit}
+          controlStatus={propMetadata.controlStatus}
+          controlStyles={propMetadata.controlStyles}
+          DEPRECATED_controlOptions={{
+            DEPRECATED_labelBelow: 'order',
+          }}
+        />
+      </FlexColumn>
+    )
+  },
+)
+
+export const ControlForQuaternionProp = betterReactMemo(
+  'ControlForQuaternionProp',
+  (props: ControlForPropProps<QuaternionControlDescription>) => {
+    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
+
+    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
+      const quaternion =
+        (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ??
+        []
+
+      return propsArrayForCSSNumberArray(quaternion, ['x', 'y', 'z', 'w'], propPath, propMetadata)
+    }, [controlDescription.defaultValue, propMetadata, propPath])
+
+    return (
+      <ChainedNumberInput
+        idPrefix={'quaternion'}
+        propsArray={propsArray}
+        setGlobalCursor={setGlobalCursor}
+      />
+    )
+  },
+)
+
+export const ControlForMatrix3Prop = betterReactMemo(
+  'ControlForMatrix3Prop',
+  (props: ControlForPropProps<Matrix3ControlDescription>) => {
+    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
+
+    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
+      const value =
+        (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ??
+        []
+
+      // prettier-ignore
+      const keys = [
+        'n11', 'n12', 'n13',
+        'n21', 'n22', 'n23',
+        'n31', 'n32', 'n33',
+      ]
+      return propsArrayForCSSNumberArray(value, keys, propPath, propMetadata)
+    }, [controlDescription.defaultValue, propMetadata, propPath])
+
+    return (
+      <FlexColumn>
+        <ChainedNumberInput
+          idPrefix={'matrix3-row1'}
+          propsArray={propsArray.slice(0, 3)}
+          setGlobalCursor={setGlobalCursor}
+        />
+        <ChainedNumberInput
+          idPrefix={'matrix3-row2'}
+          propsArray={propsArray.slice(3, 6)}
+          setGlobalCursor={setGlobalCursor}
+        />
+        <ChainedNumberInput
+          idPrefix={'matrix3-row3'}
+          propsArray={propsArray.slice(6, 9)}
+          setGlobalCursor={setGlobalCursor}
+        />
+      </FlexColumn>
+    )
+  },
+)
+
+export const ControlForMatrix4Prop = betterReactMemo(
+  'ControlForMatrix4Prop',
+  (props: ControlForPropProps<Matrix4ControlDescription>) => {
+    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
+
+    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
+      const value =
+        (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ??
+        []
+
+      // prettier-ignore
+      const keys = [
+        'n11', 'n12', 'n13', 'n14',
+        'n21', 'n22', 'n23', 'n24',
+        'n31', 'n32', 'n33', 'n34',
+        'n41', 'n42', 'n43', 'n44',
+      ]
+      return propsArrayForCSSNumberArray(value, keys, propPath, propMetadata)
+    }, [controlDescription.defaultValue, propMetadata, propPath])
+
+    return (
+      <FlexColumn>
+        <ChainedNumberInput
+          idPrefix={'matrix4-row1'}
+          propsArray={propsArray.slice(0, 4)}
+          setGlobalCursor={setGlobalCursor}
+        />
+        <ChainedNumberInput
+          idPrefix={'matrix4-row2'}
+          propsArray={propsArray.slice(4, 8)}
+          setGlobalCursor={setGlobalCursor}
+        />
+        <ChainedNumberInput
+          idPrefix={'matrix4-row3'}
+          propsArray={propsArray.slice(8, 12)}
+          setGlobalCursor={setGlobalCursor}
+        />
+        <ChainedNumberInput
+          idPrefix={'matrix4-row4'}
+          propsArray={propsArray.slice(12, 16)}
+          setGlobalCursor={setGlobalCursor}
+        />
+      </FlexColumn>
     )
   },
 )
