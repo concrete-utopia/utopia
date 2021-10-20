@@ -58,7 +58,7 @@ import {
   useControlStatusForPaths,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
-import { ControlStyles } from '../../common/control-status'
+import { ControlStyles, ControlStatus } from '../../common/control-status'
 import {
   InspectorInfo,
   InspectorPropsContext,
@@ -690,7 +690,6 @@ const PropertyControlsSection = betterReactMemo(
     )
 
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
-
     const setGlobalCursor = React.useCallback(
       (cursor: CSSCursor | null) => {
         dispatch([setCursorOverlay(cursor)], 'everyone')
@@ -711,83 +710,17 @@ const PropertyControlsSection = betterReactMemo(
     }, [propertyControls])
 
     const propertyControlsStatus = useControlStatusForPaths(propPaths)
-    const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
 
     const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
 
     return (
       <InspectorPropsContext.Provider value={updatedContext}>
-        {foldEither(
-          (rootParseError) => {
-            return <ParseErrorControl parseError={rootParseError} />
-          },
-          (rootParseSuccess) => {
-            const propNamesToDisplay = new Set(
-              filterNonUnsetAndEmptyControls(
-                filterSpecialProps(getPropertyControlNames(rootParseSuccess)),
-                propertyControlsStatus,
-                visibleEmptyControls,
-              ),
-            )
-
-            return (
-              <React.Fragment>
-                {Object.keys(rootParseSuccess).map((propName) => {
-                  const propertyControl = rootParseSuccess[propName]
-                  return foldEither(
-                    (propertyError) => {
-                      return (
-                        <RowForInvalidControl
-                          key={propName}
-                          title={propName}
-                          propName={propName}
-                          propertyError={propertyError}
-                        />
-                      )
-                    },
-                    (propertySuccess) => {
-                      return (
-                        <SectionRow
-                          key={propName}
-                          propPath={PP.create([propName])}
-                          isScene={props.isScene}
-                          setGlobalCursor={setGlobalCursor}
-                          controlDescription={propertySuccess}
-                          propNamesToDisplay={propNamesToDisplay}
-                          indentationLevel={1}
-                        />
-                      )
-                    },
-                    propertyControl,
-                  )
-                })}
-              </React.Fragment>
-            )
-          },
-          propertyControls,
-        )}
-        {Object.keys(detectedPropsAndValuesWithoutControls).map((propName) => {
-          const propValue = detectedPropsAndValuesWithoutControls[propName]
-          const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
-            propValue,
-            propName,
-          )
-          return (
-            <RowForControl
-              key={propName}
-              propPath={PP.create([propName])}
-              controlDescription={controlDescription}
-              isScene={props.isScene}
-              setGlobalCursor={setGlobalCursor}
-              indentationLevel={1}
-            />
-          )
-        })}
-        <HiddenControls
-          propertyControls={propertyControls}
-          propertyControlsStatus={propertyControlsStatus}
-          visibleEmptyControls={visibleEmptyControls}
-          showHiddenControl={showHiddenControl}
+        <FolderSection
+          isRoot={true}
+          indentationLevel={0}
+          hiddenPropPaths={[]}
+          propNamesToDisplay={{} as Set<string>}
+          propertyControls={{}}
           setGlobalCursor={setGlobalCursor}
         />
         {/** props set on the component instance and props used inside the component code */}
@@ -914,7 +847,17 @@ export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps)
         return props.propNamesToDisplay.has(controlForFolder)
       })
       if (anyInnerControlsToDisplay) {
-        return <FolderSection {...props} controlDescription={props.controlDescription} />
+        return (
+          <FolderSection
+            isRoot={false}
+            indentationLevel={props.indentationLevel}
+            hiddenPropPaths={[]}
+            propNamesToDisplay={props.propNamesToDisplay}
+            propertyControls={props.controlDescription.controls}
+            setGlobalCursor={props.setGlobalCursor}
+            title={props.controlDescription.title ?? PP.toString(props.propPath)}
+          />
+        )
       } else {
         return null
       }
@@ -969,63 +912,98 @@ const ExpansionArrowSVG = betterReactMemo('ExpansionArrowSVG', (props: Expansion
   )
 })
 
-interface FolderSectionProps {
-  propPath: PropertyPath
-  isScene: boolean
-  setGlobalCursor: (cursor: CSSCursor | null) => void
-  controlDescription: FolderControlDescription
-  propNamesToDisplay: Set<string>
+interface FolderLabelProps {
   indentationLevel: number
+  open: boolean
+  toggleOpen: () => void
+  title: string
+}
+
+const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => {
+  const indentation = props.indentationLevel * 8
+  return (
+    <div
+      style={{
+        paddingLeft: indentation,
+        display: 'flex',
+        alignItems: 'center',
+        height: 34,
+        fontWeight: 500,
+        gap: 4,
+        cursor: 'pointer',
+      }}
+      onClick={() => props.toggleOpen()}
+    >
+      <ExpansionArrowSVG
+        style={{
+          transform: props.open ? 'none' : 'rotate(-90deg)',
+          transition: 'all linear .1s',
+        }}
+      />
+      <span>{props.title}</span>
+    </div>
+  )
+})
+
+interface FolderSectionProps {
+  isRoot: boolean
+  propertyControls: PropertyControls
+  propNamesToDisplay: Set<string>
+  hiddenPropPaths: PropertyPath[]
+  indentationLevel: number
+  setGlobalCursor: (cursor: CSSCursor | null) => void
+  title?: string
 }
 
 const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProps) => {
   const [open, setOpen] = React.useState(true)
-  const controls = props.controlDescription.controls
-  const indentation = props.indentationLevel * 8
+  const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
+  const hiddenPropsList = props.hiddenPropPaths.filter((path) =>
+    visibleEmptyControls.some((empty) => PP.pathsEqual(path, empty)),
+  )
+
+  const toggleOpen = React.useCallback(() => {
+    setOpen(!open)
+  }, [open, setOpen])
+
+  const cssHoverEffect = React.useMemo(
+    () =>
+      props.isRoot
+        ? {}
+        : {
+            '&:hover': {
+              boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,30%)',
+              background: 'hsl(0,0%,0%,1%)',
+            },
+            '&:focus-within': {
+              boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,30%)',
+              background: 'hsl(0,0%,0%,1%)',
+            },
+          },
+    [props.isRoot],
+  )
+
   return (
-    <div
-      css={{
-        '&:hover': {
-          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,30%)',
-          background: 'hsl(0,0%,0%,1%)',
-        },
-        '&:focus-within': {
-          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,30%)',
-          background: 'hsl(0,0%,0%,1%)',
-        },
-      }}
-    >
-      {/* TODO BEFORE MERGE use something like the PropertyLabel */}
-      <div
-        style={{
-          paddingLeft: indentation,
-          display: 'flex',
-          alignItems: 'center',
-          height: 34,
-          fontWeight: 500,
-          gap: 4,
-          cursor: 'pointer',
-        }}
-        onClick={() => setOpen(!open)}
-      >
-        <ExpansionArrowSVG
-          style={{
-            transform: open ? 'none' : 'rotate(-90deg)',
-            transition: 'all linear .1s',
-          }}
-        />
-        <span>{props.controlDescription.title ?? PP.toString(props.propPath)}</span>
-      </div>
+    <div css={cssHoverEffect}>
+      {when(
+        !props.isRoot,
+        <FolderLabel
+          indentationLevel={props.indentationLevel}
+          open={open}
+          toggleOpen={toggleOpen}
+          title={props.title ?? ''}
+        />,
+      )}
       {when(
         open,
-        Object.keys(controls).map((propName) => {
-          const controlDescription = controls[propName]
+        Object.keys(props.propertyControls).map((propName) => {
+          const controlDescription = props.propertyControls[propName]
           return (
             <SectionRow
               key={`section-row-${propName}`}
               propPath={PP.create([propName])}
               controlDescription={controlDescription}
-              isScene={props.isScene}
+              isScene={false}
               setGlobalCursor={props.setGlobalCursor}
               propNamesToDisplay={props.propNamesToDisplay}
               indentationLevel={props.indentationLevel + 1}
@@ -1033,6 +1011,7 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
           )
         }),
       )}
+      <HiddenControls hiddenPropPaths={hiddenPropsList} showHiddenControl={showHiddenControl} />
     </div>
   )
 })
