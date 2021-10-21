@@ -43,6 +43,41 @@ describe('inferControlTypeBasedOnValue', () => {
     expect(result.type).toEqual('vector3')
   })
 
+  it('Correctly infers vector4 controls', () => {
+    const result = inferControlTypeBasedOnValue([1, 2, 3, 4])
+    expect(result.type).toEqual('vector4')
+  })
+
+  it('Correctly infers euler controls', () => {
+    const result = inferControlTypeBasedOnValue([1, 2, 3, 'XYZ'])
+    expect(result.type).toEqual('euler')
+  })
+
+  it('Correctly infers matrix3 controls', () => {
+    // prettier-ignore
+    const matrix = [
+      1, 2, 3,
+      4, 5, 6,
+      7, 8, 9,
+    ]
+
+    const result = inferControlTypeBasedOnValue(matrix)
+    expect(result.type).toEqual('matrix3')
+  })
+
+  it('Correctly infers matrix4 controls', () => {
+    // prettier-ignore
+    const matrix = [
+       1,  2,  3,  4,
+       5,  6,  7,  8,
+       9, 10, 11, 12,
+      13, 14, 15, 16,
+    ]
+
+    const result = inferControlTypeBasedOnValue(matrix)
+    expect(result.type).toEqual('matrix4')
+  })
+
   it('Correctly infers simple array controls', () => {
     const numericArrayLength1Result = inferControlTypeBasedOnValue([1])
     expect(numericArrayLength1Result.type).toEqual('array')
@@ -50,7 +85,7 @@ describe('inferControlTypeBasedOnValue', () => {
       'number',
     )
 
-    const numericArrayLength4Result = inferControlTypeBasedOnValue([1, 2, 3, 4])
+    const numericArrayLength4Result = inferControlTypeBasedOnValue([1, 2, 3, 4, 5])
     expect(numericArrayLength4Result.type).toEqual('array')
 
     // Ensure non-numeric arrays aren't parsed as vectors
