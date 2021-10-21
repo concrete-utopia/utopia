@@ -998,9 +998,9 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
   const controlsWithValue = React.useMemo(
     () =>
       Object.keys(props.parsedPropertyControls).filter((prop) => {
-        return !props.unsetPropNames.includes(prop)
+        return !props.unsetPropNames.includes(prop) && !props.visibleEmptyControls.includes(prop)
       }),
-    [props.parsedPropertyControls, props.unsetPropNames],
+    [props.parsedPropertyControls, props.unsetPropNames, props.visibleEmptyControls],
   )
   const emptyControls = React.useMemo(
     () =>
@@ -1031,6 +1031,38 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
     [props.isRoot],
   )
 
+  const createRowForControl = (propName: string) => {
+    const controlDescription = props.parsedPropertyControls[propName]
+    return foldEither(
+      (propertyError) => {
+        return (
+          <RowForInvalidControl
+            key={propName}
+            title={propName}
+            propName={propName}
+            propertyError={propertyError}
+          />
+        )
+      },
+      (propertySuccess) => {
+        return (
+          <SectionRow
+            key={`section-row-${propName}`}
+            propPath={PP.create([propName])}
+            controlDescription={propertySuccess}
+            isScene={false}
+            setGlobalCursor={props.setGlobalCursor}
+            indentationLevel={props.indentationLevel + 1}
+            visibleEmptyControls={props.visibleEmptyControls}
+            unsetPropNames={props.unsetPropNames}
+            showHiddenControl={props.showHiddenControl}
+          />
+        )
+      },
+      controlDescription,
+    )
+  }
+
   return (
     <div css={cssHoverEffect}>
       {when(
@@ -1042,40 +1074,7 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
           title={props.title ?? ''}
         />,
       )}
-      {when(
-        open,
-        controlsWithValue.map((propName) => {
-          const controlDescription = props.parsedPropertyControls[propName]
-          return foldEither(
-            (propertyError) => {
-              return (
-                <RowForInvalidControl
-                  key={propName}
-                  title={propName}
-                  propName={propName}
-                  propertyError={propertyError}
-                />
-              )
-            },
-            (propertySuccess) => {
-              return (
-                <SectionRow
-                  key={`section-row-${propName}`}
-                  propPath={PP.create([propName])}
-                  controlDescription={propertySuccess}
-                  isScene={false}
-                  setGlobalCursor={props.setGlobalCursor}
-                  indentationLevel={props.indentationLevel + 1}
-                  visibleEmptyControls={props.visibleEmptyControls}
-                  unsetPropNames={props.unsetPropNames}
-                  showHiddenControl={props.showHiddenControl}
-                />
-              )
-            },
-            controlDescription,
-          )
-        }),
-      )}
+      {when(open, controlsWithValue.map(createRowForControl))}
       {when(
         props.isRoot,
         Object.keys(props.detectedPropsAndValuesWithoutControls).map((propName) => {
@@ -1096,40 +1095,7 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
           )
         }),
       )}
-      {when(
-        open,
-        emptyControls.map((propName) => {
-          const controlDescription = props.parsedPropertyControls[propName]
-          return foldEither(
-            (propertyError) => {
-              return (
-                <RowForInvalidControl
-                  key={propName}
-                  title={propName}
-                  propName={propName}
-                  propertyError={propertyError}
-                />
-              )
-            },
-            (propertySuccess) => {
-              return (
-                <SectionRow
-                  key={`section-row-${propName}`}
-                  propPath={PP.create([propName])}
-                  controlDescription={propertySuccess}
-                  isScene={false}
-                  setGlobalCursor={props.setGlobalCursor}
-                  indentationLevel={props.indentationLevel + 1}
-                  visibleEmptyControls={props.visibleEmptyControls}
-                  unsetPropNames={props.unsetPropNames}
-                  showHiddenControl={props.showHiddenControl}
-                />
-              )
-            },
-            controlDescription,
-          )
-        }),
-      )}
+      {when(open, emptyControls.map(createRowForControl))}
       {when(
         open,
         <HiddenControls
