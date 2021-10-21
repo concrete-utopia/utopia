@@ -450,6 +450,14 @@ describe('setJSXValueAtPath', () => {
       }),
     )
   })
+
+  it('creates an array if the property path part is a number', () => {
+    const updatedAttributes = forceRight(
+      setJSXValueAtPath([], PP.create(['top', 0]), jsxAttributeValue(55, emptyComments)),
+    )
+    const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
+    expect(compiledProps).toEqual({ top: [55] })
+  })
 })
 
 describe('jsxAttributesToProps', () => {
@@ -968,7 +976,7 @@ describe('getAllPathsFromAttributes', () => {
     expect(result).toEqual([
       PP.create(['cica']),
       PP.create(['cica', 'deep']),
-      PP.create(['cica', 'deep', '0']),
+      PP.create(['cica', 'deep', 0]),
     ])
   })
 
