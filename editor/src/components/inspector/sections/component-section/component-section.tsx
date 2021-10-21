@@ -727,7 +727,6 @@ const PropertyControlsSection = betterReactMemo(
         return <ParseErrorControl parseError={rootParseError} />
       },
       (rootParseSuccess) => {
-        // TODO append the visibleEmptyControls to the end of the propNamesToDisplay array
         const unsetPropNames = filterUnsetControls(
           filterSpecialProps(getPropertyControlNames(rootParseSuccess)),
           propertyControlsStatus,
