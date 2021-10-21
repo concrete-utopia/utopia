@@ -874,29 +874,21 @@ type SectionRowProps = {
 export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps) => {
   switch (props.controlDescription.type) {
     case 'folder':
-      const innerProperties = getPropertyControlNames({ folder: right(props.controlDescription) })
-      const anyInnerControlsToDisplay = innerProperties.some((controlForFolder) => {
-        return props.propNamesToDisplay.has(controlForFolder)
-      })
-      if (anyInnerControlsToDisplay) {
-        return (
-          <FolderSection
-            isRoot={false}
-            indentationLevel={props.indentationLevel}
-            propNamesToDisplay={props.propNamesToDisplay}
-            parsedPropertyControls={objectMap(
-              (c): ParseResult<ControlDescription> => right(c), // this is not the nicest, but the Either type inference is a bit limited
-              props.controlDescription.controls,
-            )}
-            setGlobalCursor={props.setGlobalCursor}
-            title={props.controlDescription.title ?? PP.toString(props.propPath)}
-            visibleEmptyControls={props.visibleEmptyControls}
-            showHiddenControl={props.showHiddenControl}
-          />
-        )
-      } else {
-        return null
-      }
+      return (
+        <FolderSection
+          isRoot={false}
+          indentationLevel={props.indentationLevel}
+          propNamesToDisplay={props.propNamesToDisplay}
+          parsedPropertyControls={objectMap(
+            (c): ParseResult<ControlDescription> => right(c), // this is not the nicest, but the Either type inference is a bit limited
+            props.controlDescription.controls,
+          )}
+          setGlobalCursor={props.setGlobalCursor}
+          title={props.controlDescription.title ?? PP.toString(props.propPath)}
+          visibleEmptyControls={props.visibleEmptyControls}
+          showHiddenControl={props.showHiddenControl}
+        />
+      )
     default:
       if (props.propNamesToDisplay.has(PP.toString(props.propPath))) {
         return (
