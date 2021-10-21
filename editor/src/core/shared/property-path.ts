@@ -38,12 +38,15 @@ export function clearPropertyPathCache() {
 function getPathCache(elements: Array<PropertyPathPart>): PropertyPathCache {
   let workingPathCache: PropertyPathCache = globalPathCache
   fastForEach(elements, (pathPart) => {
-    if (workingPathCache.childCaches[pathPart] == null) {
+    // Create a distinction between keys of `0` and `'0'`,
+    // as indexing into an object coerces the key to a string.
+    const childCacheKey = `${typeof pathPart}-${pathPart}`
+    if (workingPathCache.childCaches[childCacheKey] == null) {
       const newCache = emptyPathCache()
-      workingPathCache.childCaches[pathPart] = newCache
+      workingPathCache.childCaches[childCacheKey] = newCache
       workingPathCache = newCache
     } else {
-      workingPathCache = workingPathCache.childCaches[pathPart]
+      workingPathCache = workingPathCache.childCaches[childCacheKey]
     }
   })
   return workingPathCache

@@ -30,6 +30,7 @@ import {
   ElementsWithin,
   isJSXAttributeOtherJavaScript,
   emptyComments,
+  jsxAttributeNestedArraySimple,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
@@ -409,10 +410,16 @@ export function getJSXAttributeAtPathInner(
 export function deeplyCreatedValue(path: PropertyPath, value: JSXAttribute): JSXAttribute {
   const elements = PP.getElements(path)
   return elements.reduceRight((acc: JSXAttribute, propName) => {
-    return jsxAttributeNestedObject(
-      [jsxPropertyAssignment(`${propName}`, acc, emptyComments, emptyComments)],
-      emptyComments,
-    )
+    if (typeof propName === 'number') {
+      let newArray: Array<JSXAttribute> = []
+      newArray[propName] = acc
+      return jsxAttributeNestedArraySimple(newArray)
+    } else {
+      return jsxAttributeNestedObject(
+        [jsxPropertyAssignment(propName, acc, emptyComments, emptyComments)],
+        emptyComments,
+      )
+    }
   }, value)
 }
 
