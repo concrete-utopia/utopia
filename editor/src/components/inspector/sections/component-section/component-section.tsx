@@ -1073,10 +1073,13 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
           )
         }),
       )}
-      <HiddenControls
-        hiddenPropNames={hiddenPropsList}
-        showHiddenControl={props.showHiddenControl}
-      />
+      {when(
+        open,
+        <HiddenControls
+          hiddenPropNames={hiddenPropsList}
+          showHiddenControl={props.showHiddenControl}
+        />,
+      )}
     </div>
   )
 })
