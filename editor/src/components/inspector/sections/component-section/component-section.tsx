@@ -62,6 +62,7 @@ import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
   useControlForUnionControl,
   useControlStatusForPaths,
+  useGetPropertyControlsForSelectedComponents,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import { ControlStyles, ControlStatus } from '../../common/control-status'
@@ -607,7 +608,7 @@ export const ComponentSectionInner = betterReactMemo(
     const colorTheme = useColorTheme()
 
     const propertyControlsAndTargets = useKeepReferenceEqualityIfPossible(
-      useSelectedPropertyControls(false),
+      useGetPropertyControlsForSelectedComponents(),
     )
 
     const [sectionExpanded, setSectionExpanded] = React.useState(true)
@@ -643,6 +644,11 @@ export const ComponentSectionInner = betterReactMemo(
                 propertyControls={controlsAndTargets.controls}
                 targets={controlsAndTargets.targets}
                 isScene={props.isScene}
+                detectedPropsAndValuesWithoutControls={
+                  controlsAndTargets.detectedPropsAndValuesWithoutControls
+                }
+                detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
+                detectedPropsWithoutControls={controlsAndTargets.detectedPropsWithoutControls}
               />
             ))}
           </React.Fragment>,
@@ -678,23 +684,22 @@ function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
   propertyControls: ParseResult<ParsedPropertyControls>
+  detectedPropsWithoutControls: string[]
+  detectedPropsWithNoValue: string[]
+  detectedPropsAndValuesWithoutControls: Record<string, unknown>
   isScene: boolean
 }
 
 const PropertyControlsSection = betterReactMemo(
   'PropertyControlsSection',
   (props: PropertyControlsSectionProps) => {
-    const { targets, propertyControls } = props
-
-    const detectedPropsWithoutControls = useKeepReferenceEqualityIfPossible(
-      useGivenPropsWithoutControls(targets),
-    )
-    const detectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutControls(detectedPropsWithoutControls, targets),
-    )
-    const detectedPropsAndValuesWithoutControls = useKeepReferenceEqualityIfPossible(
-      useGivenPropsAndValuesWithoutControls(targets),
-    )
+    const {
+      targets,
+      propertyControls,
+      detectedPropsWithoutControls,
+      detectedPropsWithNoValue,
+      detectedPropsAndValuesWithoutControls,
+    } = props
 
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
     const setGlobalCursor = React.useCallback(

@@ -2,7 +2,7 @@ import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import React from 'react'
 import { useContextSelector } from 'use-context-selector'
-import { PropertyPath } from '../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import {
   printerForPropertyControl,
   unwrapperAndParserForPropertyControl,
@@ -20,7 +20,11 @@ import {
   InspectorInfo,
   InspectorPropsContext,
   useCallbackFactory,
+  useGivenPropsAndValuesWithoutControls,
+  useGivenPropsWithoutControls,
   useInspectorContext,
+  useSelectedPropertyControls,
+  useUsedPropsWithoutControls,
 } from './property-path-hooks'
 import {
   getModifiableJSXAttributeAtPath,
@@ -38,6 +42,8 @@ import {
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { JSXAttributes } from '../../../core/shared/element-template'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
+import { ParseError, ParseResult } from '../../../utils/value-parser-utils'
+import { ParsedPropertyControls } from '../../../core/property-controls/property-controls-parser'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -190,4 +196,44 @@ export function useControlForUnionControl(
   const firstRealValue = useFirstRealValue(propertyPath)
 
   return controlToUseForUnion(control, firstRawValue, firstRealValue)
+}
+
+// kontrolkent mutatni:
+// 1. van hozza propertyControls es van erteke
+// 2. nincs hozza propertyControls de van erteke
+
+// listan mutatni:
+// 1. van hozza propertyControls de nincs erteke
+// 2. nincs erteke de detektaltuk a kodban hogy a komponens hasznalja (pl props.kisCica)
+
+type PropertyControlsAndTargets = {
+  controls: ParseResult<ParsedPropertyControls>
+  targets: ElementPath[]
+  detectedPropsWithoutControls: string[]
+  detectedPropsWithNoValue: string[]
+  detectedPropsAndValuesWithoutControls: Record<string, unknown>
+}
+
+export function useGetPropertyControlsForSelectedComponents(): Array<PropertyControlsAndTargets> {
+  const selectedPropertyControls = useSelectedPropertyControls(true) // TODO BEFORE MERGE the final version should ignore ignore controls
+  return selectedPropertyControls.map(({ controls, targets }) => {
+    // TODO Fix the rules of hooks!!!!!!!
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const detectedPropsWithoutControls = useGivenPropsWithoutControls(targets)
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const detectedPropsWithNoValue = useUsedPropsWithoutControls(
+      detectedPropsWithoutControls,
+      targets,
+    )
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const detectedPropsAndValuesWithoutControls = useGivenPropsAndValuesWithoutControls(targets)
+
+    return {
+      controls: controls,
+      detectedPropsWithoutControls: detectedPropsWithoutControls,
+      detectedPropsWithNoValue: detectedPropsWithNoValue,
+      detectedPropsAndValuesWithoutControls: detectedPropsAndValuesWithoutControls,
+      targets: targets,
+    }
+  })
 }
