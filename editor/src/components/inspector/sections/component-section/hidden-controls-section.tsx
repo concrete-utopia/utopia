@@ -30,15 +30,11 @@ function filterVisibleEmptyControls(pathNames: string[], visibleEmptyControls: s
   return result
 }
 
-export function filterNonUnsetAndEmptyControls(
+export function filterUnsetControls(
   pathNames: string[],
   propertyControlsStatus: { [path: string]: ControlStatus },
-  visibleEmptyControls: string[],
 ): string[] {
-  return filterVisibleEmptyControls(
-    pathNames.filter((name) => !isControlUnset(propertyControlsStatus[name])),
-    visibleEmptyControls,
-  )
+  return pathNames.filter((name) => isControlUnset(propertyControlsStatus[name]))
 }
 
 export const HiddenControls = betterReactMemo(

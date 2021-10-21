@@ -95,11 +95,7 @@ import {
   ControlForStringProp,
   ControlForVectorProp,
 } from './property-control-controls'
-import {
-  filterNonUnsetAndEmptyControls,
-  HiddenControls,
-  useHiddenElements,
-} from './hidden-controls-section'
+import { filterUnsetControls, HiddenControls, useHiddenElements } from './hidden-controls-section'
 import { ComponentInfoBox } from './component-info-box'
 import {
   ParsedPropertyControls,
@@ -732,22 +728,19 @@ const PropertyControlsSection = betterReactMemo(
       },
       (rootParseSuccess) => {
         // TODO append the visibleEmptyControls to the end of the propNamesToDisplay array
-        const propNamesToDisplay = new Set(
-          filterNonUnsetAndEmptyControls(
-            filterSpecialProps(getPropertyControlNames(rootParseSuccess)),
-            propertyControlsStatus,
-            visibleEmptyControls,
-          ),
+        const unsetPropNames = filterUnsetControls(
+          filterSpecialProps(getPropertyControlNames(rootParseSuccess)),
+          propertyControlsStatus,
         )
 
         return (
           <FolderSection
             isRoot={true}
             indentationLevel={0}
-            propNamesToDisplay={propNamesToDisplay}
             parsedPropertyControls={rootParseSuccess}
             setGlobalCursor={setGlobalCursor}
             visibleEmptyControls={visibleEmptyControls}
+            unsetPropNames={unsetPropNames}
             showHiddenControl={showHiddenControl}
             detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
           />
@@ -871,9 +864,9 @@ type SectionRowProps = {
   isScene: boolean
   setGlobalCursor: (cursor: CSSCursor | null) => void
   controlDescription: ControlDescription
-  propNamesToDisplay: Set<string>
   indentationLevel: number
   visibleEmptyControls: string[]
+  unsetPropNames: string[]
   showHiddenControl: (path: string) => void
 }
 
@@ -884,7 +877,6 @@ export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps)
         <FolderSection
           isRoot={false}
           indentationLevel={props.indentationLevel}
-          propNamesToDisplay={props.propNamesToDisplay}
           parsedPropertyControls={objectMap(
             (c): ParseResult<ControlDescription> => right(c), // this is not the nicest, but the Either type inference is a bit limited
             props.controlDescription.controls,
@@ -892,31 +884,28 @@ export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps)
           setGlobalCursor={props.setGlobalCursor}
           title={props.controlDescription.title ?? PP.toString(props.propPath)}
           visibleEmptyControls={props.visibleEmptyControls}
+          unsetPropNames={props.unsetPropNames}
           showHiddenControl={props.showHiddenControl}
           detectedPropsAndValuesWithoutControls={{}}
         />
       )
     default:
-      if (props.propNamesToDisplay.has(PP.toString(props.propPath))) {
-        return (
-          <UIGridRow
-            padded
-            tall={false}
-            style={{ paddingLeft: 0 }}
-            variant='<-------------1fr------------->'
-          >
-            <RowForControl
-              propPath={props.propPath}
-              controlDescription={props.controlDescription}
-              isScene={props.isScene}
-              setGlobalCursor={props.setGlobalCursor}
-              indentationLevel={props.indentationLevel}
-            />
-          </UIGridRow>
-        )
-      } else {
-        return null
-      }
+      return (
+        <UIGridRow
+          padded
+          tall={false}
+          style={{ paddingLeft: 0 }}
+          variant='<-------------1fr------------->'
+        >
+          <RowForControl
+            propPath={props.propPath}
+            controlDescription={props.controlDescription}
+            isScene={props.isScene}
+            setGlobalCursor={props.setGlobalCursor}
+            indentationLevel={props.indentationLevel}
+          />
+        </UIGridRow>
+      )
   }
 })
 
@@ -983,37 +972,44 @@ const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => 
 interface FolderSectionProps {
   isRoot: boolean
   parsedPropertyControls: ParsedPropertyControls
-  propNamesToDisplay: Set<string>
   indentationLevel: number
-  setGlobalCursor: (cursor: CSSCursor | null) => void
   visibleEmptyControls: string[]
-  showHiddenControl: (path: string) => void
+  unsetPropNames: string[]
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
+  setGlobalCursor: (cursor: CSSCursor | null) => void
+  showHiddenControl: (path: string) => void
   title?: string
 }
 
 const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProps) => {
   const [open, setOpen] = React.useState(true)
-  const folderOwnProperties = Object.keys(
-    omitWithPredicate(
-      props.parsedPropertyControls,
-      (_, v: ParseResult<ControlDescription>) => eitherToMaybe(v)?.type === 'folder',
-    ),
+  const hiddenPropsList = React.useMemo(
+    () =>
+      Object.keys(props.parsedPropertyControls).filter((prop) => {
+        const isNotFolder = eitherToMaybe(props.parsedPropertyControls[prop])?.type !== 'folder'
+        return (
+          isNotFolder &&
+          props.unsetPropNames.includes(prop) &&
+          !props.visibleEmptyControls.includes(prop)
+        )
+      }),
+    [props.unsetPropNames, props.visibleEmptyControls, props.parsedPropertyControls],
   )
-  const hiddenPropsList = folderOwnProperties
-    .filter((prop) => !props.propNamesToDisplay.has(prop))
-    .filter((prop) => !props.visibleEmptyControls.includes(prop))
 
-  const controlsToShow = difference(Object.keys(props.parsedPropertyControls), hiddenPropsList)
-  const propsToShow = new Set([
-    ...Array.from(props.propNamesToDisplay),
-    ...props.visibleEmptyControls,
-  ])
-
-  const controlsWithValues = controlsToShow.filter(
-    (prop) => !props.visibleEmptyControls.includes(prop),
+  const controlsWithValue = React.useMemo(
+    () =>
+      Object.keys(props.parsedPropertyControls).filter((prop) => {
+        return !props.unsetPropNames.includes(prop)
+      }),
+    [props.parsedPropertyControls, props.unsetPropNames],
   )
-  const emptyControls = controlsToShow.filter((prop) => props.visibleEmptyControls.includes(prop))
+  const emptyControls = React.useMemo(
+    () =>
+      props.visibleEmptyControls.filter((prop) => {
+        return Object.keys(props.parsedPropertyControls).includes(prop)
+      }),
+    [props.parsedPropertyControls, props.visibleEmptyControls],
+  )
 
   const toggleOpen = React.useCallback(() => {
     setOpen(!open)
@@ -1049,7 +1045,7 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
       )}
       {when(
         open,
-        controlsWithValues.map((propName) => {
+        controlsWithValue.map((propName) => {
           const controlDescription = props.parsedPropertyControls[propName]
           return foldEither(
             (propertyError) => {
@@ -1070,9 +1066,9 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
                   controlDescription={propertySuccess}
                   isScene={false}
                   setGlobalCursor={props.setGlobalCursor}
-                  propNamesToDisplay={propsToShow}
                   indentationLevel={props.indentationLevel + 1}
                   visibleEmptyControls={props.visibleEmptyControls}
+                  unsetPropNames={props.unsetPropNames}
                   showHiddenControl={props.showHiddenControl}
                 />
               )
@@ -1124,9 +1120,9 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
                   controlDescription={propertySuccess}
                   isScene={false}
                   setGlobalCursor={props.setGlobalCursor}
-                  propNamesToDisplay={propsToShow}
                   indentationLevel={props.indentationLevel + 1}
                   visibleEmptyControls={props.visibleEmptyControls}
+                  unsetPropNames={props.unsetPropNames}
                   showHiddenControl={props.showHiddenControl}
                 />
               )
