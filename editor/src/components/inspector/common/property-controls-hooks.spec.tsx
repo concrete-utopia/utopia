@@ -1,3 +1,0 @@
-describe('useGetPropertyControlsForSelectedComponents', () => {
-  it('uh', () => {})
-})

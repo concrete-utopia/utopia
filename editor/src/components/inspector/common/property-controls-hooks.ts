@@ -7,6 +7,7 @@ import {
   printerForPropertyControl,
   unwrapperAndParserForPropertyControl,
   controlToUseForUnion,
+  getPropertyControlNames,
 } from '../../../core/property-controls/property-control-values'
 import {
   BaseControlDescription,
@@ -17,14 +18,12 @@ import {
   RegularControlDescription,
 } from 'utopia-api'
 import {
+  filterUtopiaSpecificProps,
   InspectorInfo,
   InspectorPropsContext,
   useCallbackFactory,
-  useGivenPropsAndValuesWithoutControls,
-  useGivenPropsWithoutControls,
   useInspectorContext,
   useSelectedPropertyControls,
-  useUsedPropsWithoutControls,
 } from './property-path-hooks'
 import {
   getModifiableJSXAttributeAtPath,
@@ -32,7 +31,13 @@ import {
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attributes'
 import * as PP from '../../../core/shared/property-path'
-import { Either, eitherToMaybe, flatMapEither, unwrapEither } from '../../../core/shared/either'
+import {
+  Either,
+  eitherToMaybe,
+  flatMapEither,
+  foldEither,
+  unwrapEither,
+} from '../../../core/shared/either'
 import {
   calculatePropertyStatusForSelection,
   ControlStatus,
@@ -40,10 +45,19 @@ import {
   getControlStyles,
 } from './control-status'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { JSXAttributes } from '../../../core/shared/element-template'
-import { mapArrayToDictionary } from '../../../core/shared/array-utils'
+import {
+  isJSXElement,
+  JSXAttributes,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
+import { addUniquely, mapArrayToDictionary, mapDropNulls } from '../../../core/shared/array-utils'
 import { ParseError, ParseResult } from '../../../utils/value-parser-utils'
 import { ParsedPropertyControls } from '../../../core/property-controls/property-controls-parser'
+import { useEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { filterSpecialProps } from '../../../core/property-controls/property-controls-utils'
+import { fastForEach } from '../../../core/shared/utils'
+import { findUnderlyingTargetComponentImplementation } from '../../custom-code/code-file'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -216,17 +230,112 @@ type PropertyControlsAndTargets = {
 
 export function useGetPropertyControlsForSelectedComponents(): Array<PropertyControlsAndTargets> {
   const selectedPropertyControls = useSelectedPropertyControls(true) // TODO BEFORE MERGE the final version should ignore ignore controls
-  return selectedPropertyControls.map(({ controls, targets }) => {
-    // TODO Fix the rules of hooks!!!!!!!
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const detectedPropsWithoutControls = useGivenPropsWithoutControls(targets)
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const detectedPropsWithNoValue = useUsedPropsWithoutControls(
-      detectedPropsWithoutControls,
-      targets,
+  const selectedElementsFIXME = useEditorState((store) => {
+    return selectedPropertyControls.map(({ targets }) =>
+      mapDropNulls(
+        (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+        targets,
+      ),
     )
+  }, 'useGetPropertyControlsForSelectedComponents selectedElements')
+
+  const selectedComponentsFIXME = useEditorState((store) => {
+    return selectedPropertyControls.map(({ targets }) => {
+      // TODO mapDropNulls
+      let components: Array<UtopiaJSXComponent> = []
+      fastForEach(targets, (path) => {
+        const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
+        if (openStoryboardFile != null) {
+          const component = findUnderlyingTargetComponentImplementation(
+            store.editor.projectContents,
+            store.editor.nodeModules.files,
+            openStoryboardFile,
+            path,
+          )
+          if (component != null) {
+            components.push(component)
+          }
+        }
+      })
+      return components
+    })
+  }, 'useUsedPropsWithoutControls')
+
+  return selectedPropertyControls.map(({ controls, targets }, index) => {
+    ////////////////////////
+    // useGivenPropsWithoutControls
+    const parsedPropertyControls = controls
+    const selectedElements = selectedElementsFIXME[index]
+
+    const propertiesWithControls_MAYBE_FIXME = foldEither(
+      () => [],
+      (success) =>
+        filterSpecialProps(
+          // TODO fix having to rely on getPropertyControlNames
+          getPropertyControlNames(success),
+        ),
+      parsedPropertyControls,
+    )
+    let givenProps: Array<string> = []
+    fastForEach(selectedElements, (element) => {
+      const elementProps = filterUtopiaSpecificProps(element.props)
+      fastForEach(Object.keys(elementProps), (propName) => {
+        if (!propertiesWithControls_MAYBE_FIXME.includes(propName)) {
+          givenProps = addUniquely(givenProps, propName)
+        }
+      })
+    })
+
+    const detectedPropsWithoutControls = givenProps
+
+    ////////////////////////
+
+    //useUsedPropsWithoutControls
+    const selectedComponents = selectedComponentsFIXME[index]
+
+    const propertiesWithControlsKeys_MAYBE_KILLME: Array<string> = Object.keys(
+      eitherToMaybe(parsedPropertyControls) ?? {},
+    )
+    let propertiesWithoutControls: Array<string> = []
+    fastForEach(selectedComponents, (component) => {
+      if (isJSXElement(component.rootElement)) {
+        fastForEach(component.propsUsed, (propUsed) => {
+          if (
+            !propertiesWithControlsKeys_MAYBE_KILLME.includes(propUsed) &&
+            !detectedPropsWithoutControls.includes(propUsed)
+          ) {
+            propertiesWithoutControls = addUniquely(propertiesWithoutControls, propUsed)
+          }
+        })
+      }
+    })
+
+    const detectedPropsWithNoValue = propertiesWithoutControls
+
+    ////////////////////////
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const detectedPropsAndValuesWithoutControls = useGivenPropsAndValuesWithoutControls(targets)
+
+    //useGivenPropsAndValuesWithoutControls
+
+    const propertiesWithControls = foldEither(
+      () => [],
+      (success) => filterSpecialProps(getPropertyControlNames(success)),
+      parsedPropertyControls,
+    )
+
+    let propsWithValueWithoutControls: Record<string, unknown> = {}
+    fastForEach(selectedElements, (element) => {
+      const elementProps = filterUtopiaSpecificProps(element.props)
+      fastForEach(Object.keys(elementProps), (propName) => {
+        if (!propertiesWithControls.includes(propName)) {
+          propsWithValueWithoutControls[propName] = elementProps[propName]
+        }
+      })
+    })
+
+    const detectedPropsAndValuesWithoutControls = propsWithValueWithoutControls
+
+    ////////////////////////
 
     return {
       controls: controls,

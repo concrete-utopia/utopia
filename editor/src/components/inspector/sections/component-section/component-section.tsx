@@ -70,10 +70,6 @@ import {
   InspectorInfo,
   InspectorPropsContext,
   InspectorPropsContextData,
-  useGivenPropsAndValuesWithoutControls,
-  useGivenPropsWithoutControls,
-  useSelectedPropertyControls,
-  useUsedPropsWithoutControls,
 } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import { SelectOption } from '../../controls/select-control'
