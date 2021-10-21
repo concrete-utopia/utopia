@@ -1078,6 +1078,7 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
         <HiddenControls
           hiddenPropNames={hiddenPropsList}
           showHiddenControl={props.showHiddenControl}
+          indentationLevel={props.indentationLevel + 1}
         />,
       )}
     </div>
