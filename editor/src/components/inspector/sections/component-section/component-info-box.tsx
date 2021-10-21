@@ -15,6 +15,7 @@ import { openCodeEditorFile, setFocusedElement } from '../../../editor/actions/a
 import { useEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import * as EP from '../../../../core/shared/element-path'
+import { when } from '../../../../utils/react-conditionals'
 
 function useComponentType(path: ElementPath): string | null {
   return useEditorState((store) => {
@@ -119,9 +120,16 @@ export const ComponentInfoBox = () => {
             <LargerIcons.NpmLogo />
           </span>
           <p>
-            {`This ${componentType} is imported from `}
-            <InlineLink href={componentPackageMgrLink}>{`${componentPackageName}`}</InlineLink> via
-            NPM.
+            {`This ${componentType} is imported from`}
+            {when(
+              componentPackageName != null,
+              <>
+                {' '}
+                <InlineLink href={componentPackageMgrLink}>{`${componentPackageName}`}</InlineLink>
+                {' via'}
+              </>,
+            )}
+            {' NPM.'}
           </p>
         </UIGridRow>
       ) : isFocusable && !isFocused ? (

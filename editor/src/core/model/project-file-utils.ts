@@ -42,6 +42,10 @@ import {
   createImportedFrom,
   createNotImported,
   ElementInstanceMetadata,
+  isIntrinsicElement,
+  isIntrinsicElementFromString,
+  isIntrinsicHTMLElement,
+  isIntrinsicHTMLElementString,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
@@ -84,10 +88,10 @@ export function isUtopiaAPIComponentFromMetadata(
   elementInstanceMetadata: ElementInstanceMetadata,
 ): boolean {
   const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
-  if (foundImportInfo != null) {
-    return foundImportInfo.path === 'utopia-api'
-  } else {
+  if (foundImportInfo == null) {
     return false
+  } else {
+    return foundImportInfo.path === 'utopia-api'
   }
 }
 
@@ -274,13 +278,48 @@ export function isImportedComponent(
   }
 }
 
+export function isIntrinsicElementMetadata(
+  elementInstanceMetadata: ElementInstanceMetadata,
+): boolean {
+  return foldEither(
+    isIntrinsicElementFromString,
+    (child) => {
+      if (isJSXElement(child)) {
+        return isIntrinsicElement(child.name)
+      } else {
+        return false
+      }
+    },
+    elementInstanceMetadata.element,
+  )
+}
+
+export function isIntrinsicHTMLElementMetadata(
+  elementInstanceMetadata: ElementInstanceMetadata,
+): boolean {
+  return foldEither(
+    isIntrinsicHTMLElementString,
+    (child) => {
+      if (isJSXElement(child)) {
+        return isIntrinsicHTMLElement(child.name)
+      } else {
+        return false
+      }
+    },
+    elementInstanceMetadata.element,
+  )
+}
+
 export function isImportedComponentNPM(
   elementInstanceMetadata: ElementInstanceMetadata | null,
 ): boolean {
   return (
-    isImportedComponent(elementInstanceMetadata) &&
-    elementInstanceMetadata != null &&
-    !isUtopiaAPIComponentFromMetadata(elementInstanceMetadata)
+    (elementInstanceMetadata != null &&
+      isIntrinsicElementMetadata(elementInstanceMetadata) &&
+      !isIntrinsicHTMLElementMetadata(elementInstanceMetadata)) ||
+    (isImportedComponent(elementInstanceMetadata) &&
+      elementInstanceMetadata != null &&
+      !isUtopiaAPIComponentFromMetadata(elementInstanceMetadata))
   )
 }
 

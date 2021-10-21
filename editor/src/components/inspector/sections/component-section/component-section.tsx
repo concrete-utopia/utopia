@@ -81,13 +81,17 @@ import {
   ControlForColorProp,
   ControlForComponentInstanceProp,
   ControlForEnumProp,
+  ControlForEulerProp,
   ControlForEventHandlerProp,
   ControlForExpressionEnumProp,
   ControlForImageProp,
+  ControlForMatrix3Prop,
+  ControlForMatrix4Prop,
   ControlForNumberProp,
   ControlForOptionsProp,
   ControlForPopupListProp,
   ControlForPropProps,
+  ControlForQuaternionProp,
   ControlForStringProp,
   ControlForVectorProp,
 } from './property-control-controls'
@@ -105,6 +109,7 @@ import { getJSXAttribute, jsxAttributeValue } from '../../../../core/shared/elem
 import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attributes'
 import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../../../../core/model/utopia-constants'
 import { difference } from '../../../../core/shared/array-utils'
+import { inferControlTypeBasedOnValue } from './component-section-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -133,24 +138,33 @@ const ControlForProp = betterReactMemo(
           )
         case 'enum':
           return <ControlForEnumProp {...props} controlDescription={controlDescription} />
-        case 'expression-enum':
-          return <ControlForExpressionEnumProp {...props} controlDescription={controlDescription} />
+        case 'euler':
+          return <ControlForEulerProp {...props} controlDescription={controlDescription} />
         case 'eventhandler':
           return <ControlForEventHandlerProp {...props} controlDescription={controlDescription} />
+        case 'expression-enum':
+          return <ControlForExpressionEnumProp {...props} controlDescription={controlDescription} />
         case 'ignore':
           return null
         case 'image':
           return <ControlForImageProp {...props} controlDescription={controlDescription} />
+        case 'matrix3':
+          return <ControlForMatrix3Prop {...props} controlDescription={controlDescription} />
+        case 'matrix4':
+          return <ControlForMatrix4Prop {...props} controlDescription={controlDescription} />
         case 'number':
           return <ControlForNumberProp {...props} controlDescription={controlDescription} />
         case 'options':
           return <ControlForOptionsProp {...props} controlDescription={controlDescription} />
         case 'popuplist':
           return <ControlForPopupListProp {...props} controlDescription={controlDescription} />
+        case 'quaternion':
+          return <ControlForQuaternionProp {...props} controlDescription={controlDescription} />
         case 'string':
           return <ControlForStringProp {...props} controlDescription={controlDescription} />
         case 'vector2':
         case 'vector3':
+        case 'vector4':
           return <ControlForVectorProp {...props} controlDescription={controlDescription} />
         // case 'styleobject':
         default:
@@ -759,100 +773,6 @@ const PropertyControlsSection = betterReactMemo(
     )
   },
 )
-
-function inferControlTypeBasedOnValueInner(
-  stackSize: number,
-  propValue: any,
-  propName?: string,
-): RegularControlDescription {
-  if (stackSize > 100) {
-    // Prevent this blowing out on recursive structures
-    return {
-      type: 'ignore',
-    }
-  }
-
-  switch (typeof propValue) {
-    case 'number':
-      return {
-        type: 'number',
-        title: propName,
-      }
-    case 'string': {
-      const parsedAsColor = parseStringValidateAsColor(propValue)
-      const controlType = isLeft(parsedAsColor) ? 'string' : 'color'
-      return {
-        type: controlType,
-        title: propName,
-      }
-    }
-    case 'boolean': {
-      return {
-        type: 'boolean',
-        title: propName,
-      }
-    }
-    case 'object': {
-      if (propValue == null || React.isValidElement(propValue) || propName === 'style') {
-        return {
-          type: 'ignore',
-        }
-      } else if (Array.isArray(propValue)) {
-        if (
-          (propValue.length === 2 || propValue.length === 3) &&
-          propValue.every((v) => typeof v === 'number')
-        ) {
-          // First we try to find Vectors
-          if (propValue.length === 2) {
-            return {
-              type: 'vector2',
-              title: propName,
-            }
-          } else {
-            return {
-              type: 'vector3',
-              title: propName,
-            }
-          }
-        } else if (propValue.length > 0) {
-          // Otherwise we go with a regular array control
-          return {
-            type: 'array',
-            title: propName,
-            propertyControl: inferControlTypeBasedOnValueInner(stackSize + 1, propValue[0]),
-          }
-        } else {
-          // We can't infer the underlying control type for empty arrays, so our hands are tied here
-          return {
-            type: 'ignore',
-          }
-        }
-      } else {
-        const controlsForKeys = mapValues(
-          (v: unknown, key: string) => inferControlTypeBasedOnValueInner(stackSize + 1, v, key),
-          propValue,
-        )
-
-        return {
-          type: 'object',
-          title: propName,
-          object: controlsForKeys,
-        }
-      }
-    }
-    default:
-      return {
-        type: 'ignore',
-      }
-  }
-}
-
-export function inferControlTypeBasedOnValue(
-  propValue: any,
-  propName?: string,
-): RegularControlDescription {
-  return inferControlTypeBasedOnValueInner(0, propValue, propName)
-}
 
 type SectionRowProps = {
   propPath: PropertyPath
