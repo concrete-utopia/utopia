@@ -1,25 +1,11 @@
-import {
-  CodeResultCache,
-  PropertyControlsInfo,
-  UtopiaRequireFn,
-} from '../../components/custom-code/code-file'
-import {
-  parsePropertyControlsForFile,
-  ParsedPropertyControls,
-  parsePropertyControls,
-} from './property-controls-parser'
-import {
-  PropertyControls,
-  getDefaultProps,
-  ControlDescription,
-  isBaseControlDescription,
-  isHigherLevelControlDescription,
-} from 'utopia-api'
+import { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
+import { PropertyControls, getDefaultProps } from 'utopia-api'
 import { isRight, foldEither, left } from '../shared/either'
-import { forEachValue, objectMap } from '../shared/object-utils'
+import { forEachValue } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
 import React from 'react'
-import { joinSpecial, pluck } from '../shared/array-utils'
+import { joinSpecial } from '../shared/array-utils'
 import { fastForEach } from '../shared/utils'
 import {
   isResolvedNpmDependency,
@@ -29,19 +15,13 @@ import { getThirdPartyComponents } from '../third-party/third-party-components'
 import {
   getJSXElementNameAsString,
   isIntrinsicHTMLElement,
-  ElementInstanceMetadataMap,
-  UtopiaJSXComponent,
   JSXElement,
   getJSXElementNameLastPart,
   isIntrinsicElement,
 } from '../shared/element-template'
 import {
-  esCodeFile,
-  Imports,
-  isEsCodeFile,
   NodeModules,
   ParseSuccess,
-  ProjectContents,
   StaticElementPath,
   ElementPath,
 } from '../shared/project-file-types'
@@ -51,10 +31,8 @@ import {
   withUnderlyingTarget,
   packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
-import { MetadataUtils } from '../model/element-metadata-utils'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
 import { ProjectContentTreeRoot } from '../../components/assets'
-import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
@@ -256,91 +234,6 @@ export function getMissingDefaultsWarning(propsWithoutDefaults: Array<string>): 
       ' & ',
     )}`
   }
-}
-
-export function getDescriptionUnsetOptionalFields(
-  controlDescription: ControlDescription,
-): Array<string> {
-  let result: Array<string> = []
-  function addIfFieldEmpty<T extends ControlDescription, K extends keyof T & string>(
-    description: T,
-    fieldName: K,
-  ): void {
-    if (description[fieldName] == null) {
-      result.push(fieldName)
-    }
-  }
-  if (
-    isBaseControlDescription(controlDescription) ||
-    isHigherLevelControlDescription(controlDescription)
-  ) {
-    addIfFieldEmpty(controlDescription, 'title')
-  }
-  switch (controlDescription.type) {
-    case 'array':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'maxCount')
-      break
-    case 'boolean':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'disabledTitle')
-      addIfFieldEmpty(controlDescription, 'enabledTitle')
-      break
-    case 'color':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      break
-    case 'componentinstance':
-      break
-    case 'enum':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'optionTitles')
-      addIfFieldEmpty(controlDescription, 'displaySegmentedControl')
-      break
-    case 'expression-enum':
-    case 'eventhandler':
-    case 'ignore':
-    case 'image':
-      break
-    case 'number':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'max')
-      addIfFieldEmpty(controlDescription, 'min')
-      addIfFieldEmpty(controlDescription, 'unit')
-      addIfFieldEmpty(controlDescription, 'step')
-      addIfFieldEmpty(controlDescription, 'displayStepper')
-      break
-    case 'object':
-      break
-    case 'options':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      break
-    case 'string':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      addIfFieldEmpty(controlDescription, 'placeholder')
-      addIfFieldEmpty(controlDescription, 'obscured')
-      break
-    case 'styleobject':
-      break
-    case 'popuplist':
-      addIfFieldEmpty(controlDescription, 'defaultValue')
-      break
-    case 'union':
-    case 'vector2':
-    case 'vector3':
-      break
-    case 'folder':
-      for (const propertyControlKey of Object.keys(controlDescription.controls)) {
-        const innerControlDescription = controlDescription.controls[propertyControlKey]
-        if (innerControlDescription != null) {
-          result.push(...getDescriptionUnsetOptionalFields(innerControlDescription))
-        }
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = controlDescription
-      throw new Error(`Unhandled type ${JSON.stringify(controlDescription)}`)
-  }
-  return result
 }
 
 export function removeIgnored(
