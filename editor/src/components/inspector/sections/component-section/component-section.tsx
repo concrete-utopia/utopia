@@ -1004,12 +1004,16 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
     .filter((prop) => !props.propNamesToDisplay.has(prop))
     .filter((prop) => !props.visibleEmptyControls.includes(prop))
 
-  // TODO visibleEmptyControls is not on the bottom of the section
   const controlsToShow = difference(Object.keys(props.parsedPropertyControls), hiddenPropsList)
   const propsToShow = new Set([
     ...Array.from(props.propNamesToDisplay),
     ...props.visibleEmptyControls,
   ])
+
+  const controlsWithEmptyControlsOnTheBottom = [
+    ...controlsToShow.filter((prop) => !props.visibleEmptyControls.includes(prop)),
+    ...controlsToShow.filter((prop) => props.visibleEmptyControls.includes(prop)),
+  ]
 
   const toggleOpen = React.useCallback(() => {
     setOpen(!open)
@@ -1045,7 +1049,7 @@ const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProp
       )}
       {when(
         open,
-        controlsToShow.map((propName) => {
+        controlsWithEmptyControlsOnTheBottom.map((propName) => {
           const controlDescription = props.parsedPropertyControls[propName]
           return foldEither(
             (propertyError) => {
