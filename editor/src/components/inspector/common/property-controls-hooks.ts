@@ -223,7 +223,6 @@ export function useControlForUnionControl(
 type PropertyControlsAndTargets = {
   controls: ParseResult<ParsedPropertyControls>
   targets: ElementPath[]
-  detectedPropsWithoutControls: string[]
   detectedPropsWithNoValue: string[]
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
 }

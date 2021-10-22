@@ -114,20 +114,38 @@ function callPropertyControlsHook() {
 describe('useGetPropertyControlsForSelectedComponents', () => {
   it('uh huh', () => {
     const { result } = callPropertyControlsHook()
-    expect(result[0].controls).toMatchInlineSnapshot(`
-      Object {
-        "type": "RIGHT",
-        "value": Object {
-          "kutya": Object {
+    expect(result).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "controls": Object {
             "type": "RIGHT",
             "value": Object {
-              "defaultValue": "doggie",
-              "title": "Kutya",
-              "type": "string",
+              "kutya": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "defaultValue": "doggie",
+                  "title": "Kutya",
+                  "type": "string",
+                },
+              },
             },
           },
+          "detectedPropsAndValuesWithoutControls": Object {},
+          "detectedPropsWithNoValue": Array [],
+          "targets": Array [
+            Object {
+              "parts": Array [
+                Array [
+                  "utopia-storyboard-uid",
+                  "scene-aaa",
+                  "app-entity",
+                ],
+              ],
+              "type": "elementpath",
+            },
+          ],
         },
-      }
+      ]
     `)
   })
 })

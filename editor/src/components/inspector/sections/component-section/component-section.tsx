@@ -654,7 +654,6 @@ export const ComponentSectionInner = betterReactMemo(
                   controlsAndTargets.detectedPropsAndValuesWithoutControls
                 }
                 detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
-                detectedPropsWithoutControls={controlsAndTargets.detectedPropsWithoutControls}
               />
             ))}
           </React.Fragment>,
@@ -690,7 +689,6 @@ function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
   propertyControls: ParseResult<ParsedPropertyControls>
-  detectedPropsWithoutControls: string[]
   detectedPropsWithNoValue: string[]
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
   isScene: boolean
@@ -702,7 +700,6 @@ const PropertyControlsSection = betterReactMemo(
     const {
       targets,
       propertyControls,
-      detectedPropsWithoutControls,
       detectedPropsWithNoValue,
       detectedPropsAndValuesWithoutControls,
     } = props
