@@ -61,7 +61,6 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
   useControlForUnionControl,
-  useControlStatusForPaths,
   useGetPropertyControlsForSelectedComponents,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
@@ -654,6 +653,7 @@ export const ComponentSectionInner = betterReactMemo(
                   controlsAndTargets.detectedPropsAndValuesWithoutControls
                 }
                 detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
+                propsWithControlsButNoValue={controlsAndTargets.propsWithControlsButNoValue}
               />
             ))}
           </React.Fragment>,
@@ -691,6 +691,7 @@ interface PropertyControlsSectionProps {
   propertyControls: ParseResult<ParsedPropertyControls>
   detectedPropsWithNoValue: string[]
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
+  propsWithControlsButNoValue: string[]
   isScene: boolean
 }
 
@@ -702,6 +703,7 @@ const PropertyControlsSection = betterReactMemo(
       propertyControls,
       detectedPropsWithNoValue,
       detectedPropsAndValuesWithoutControls,
+      propsWithControlsButNoValue,
     } = props
 
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
@@ -712,20 +714,6 @@ const PropertyControlsSection = betterReactMemo(
       [dispatch],
     )
 
-    const propPaths = React.useMemo(() => {
-      return foldEither(
-        () => [],
-        (success) => {
-          return filterSpecialProps(getPropertyControlNames(success)).map((name) => {
-            return PP.create([name])
-          })
-        },
-        propertyControls,
-      )
-    }, [propertyControls])
-
-    const propertyControlsStatus = useControlStatusForPaths(propPaths)
-
     const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
     const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
 
@@ -734,11 +722,6 @@ const PropertyControlsSection = betterReactMemo(
         return <ParseErrorControl parseError={rootParseError} />
       },
       (rootParseSuccess) => {
-        const unsetPropNames = filterUnsetControls(
-          filterSpecialProps(getPropertyControlNames(rootParseSuccess)),
-          propertyControlsStatus,
-        )
-
         return (
           <FolderSection
             isRoot={true}
@@ -746,7 +729,7 @@ const PropertyControlsSection = betterReactMemo(
             parsedPropertyControls={rootParseSuccess}
             setGlobalCursor={setGlobalCursor}
             visibleEmptyControls={visibleEmptyControls}
-            unsetPropNames={unsetPropNames}
+            unsetPropNames={propsWithControlsButNoValue}
             showHiddenControl={showHiddenControl}
             detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
           />

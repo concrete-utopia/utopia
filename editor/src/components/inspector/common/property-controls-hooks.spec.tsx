@@ -130,7 +130,7 @@ function callPropertyControlsHook() {
 }
 
 describe('useGetPropertyControlsForSelectedComponents', () => {
-  it('uh huh', () => {
+  it('single select', () => {
     const { result } = callPropertyControlsHook()
     expect(result).toMatchInlineSnapshot(`
       Array [
@@ -153,6 +153,9 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
           },
           "detectedPropsWithNoValue": Array [
             "testDetectedPropertyWithNoValue",
+          ],
+          "propsWithControlsButNoValue": Array [
+            "propWithControlButNoValue",
           ],
           "targets": Array [
             Object {

@@ -141,41 +141,6 @@ export function useInspectorInfoForPropertyControl(
   }
 }
 
-export function useControlStatusForPaths(paths: PropertyPath[]): { [path: string]: ControlStatus } {
-  const attributes: readonly JSXAttributes[] = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => contextData.editedMultiSelectedProps,
-      deepEqual,
-    ),
-  )
-
-  const spiedProps = useKeepReferenceEqualityIfPossible(
-    useContextSelector(InspectorPropsContext, (contextData) => contextData.spiedProps, deepEqual),
-  )
-
-  return mapArrayToDictionary(
-    paths.map((path) => {
-      const rawValues: RawValues = attributes.map((props) => {
-        return getModifiableJSXAttributeAtPath(props, path)
-      })
-      const realValues: RealValues = spiedProps.map((props) => {
-        return ObjectPath.get(props, PP.getElements(path))
-      })
-
-      const propertyStatus = calculatePropertyStatusForSelection(rawValues, realValues)
-      const controlStatus = getControlStatusFromPropertyStatus(propertyStatus)
-
-      return {
-        path: path,
-        controlStatus: controlStatus,
-      }
-    }),
-    (k) => PP.toString(k.path),
-    (v) => v.controlStatus,
-  )
-}
-
 function useFirstRawValue(propertyPath: PropertyPath): Either<string, ModifiableAttribute> {
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
@@ -223,6 +188,7 @@ export function useControlForUnionControl(
 type PropertyControlsAndTargets = {
   controls: ParseResult<ParsedPropertyControls>
   targets: ElementPath[]
+  propsWithControlsButNoValue: string[]
   detectedPropsWithNoValue: string[]
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
 }
@@ -276,11 +242,17 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
       parsedPropertyControls,
     )
     let givenProps: Array<string> = []
+    let definedControlsWithoutValues: Set<string> = new Set(propertiesWithControls_MAYBE_FIXME)
     fastForEach(selectedElements, (element) => {
-      const elementProps = filterUtopiaSpecificProps(element.props)
-      fastForEach(Object.keys(elementProps), (propName) => {
+      const elementProps = Object.keys(filterUtopiaSpecificProps(element.props))
+      fastForEach(elementProps, (propName) => {
         if (!propertiesWithControls_MAYBE_FIXME.includes(propName)) {
           givenProps = addUniquely(givenProps, propName)
+        }
+      })
+      fastForEach(propertiesWithControls_MAYBE_FIXME, (definedControlProperty) => {
+        if (elementProps.includes(definedControlProperty)) {
+          definedControlsWithoutValues.delete(definedControlProperty)
         }
       })
     })
@@ -338,6 +310,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
 
     return {
       controls: controls,
+      propsWithControlsButNoValue: Array.from(definedControlsWithoutValues),
       detectedPropsWithNoValue: detectedPropsWithNoValue,
       detectedPropsAndValuesWithoutControls: detectedPropsAndValuesWithoutControls,
       targets: targets,
