@@ -63,8 +63,8 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(460) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(470)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(685) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(695)
   })
 
   it('Clicking on opacity slider with a less simple project', async () => {
@@ -123,8 +123,8 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(460) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(470)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(670) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(690)
   })
 
   it('Changing the selected view with a simple project', async () => {
@@ -177,8 +177,8 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2465) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(2475)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2615) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(2625)
   })
 
   it('Changing the selected view with a less simple project', async () => {
@@ -241,7 +241,7 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2520) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(2530)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2670) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(2680)
   })
 })
