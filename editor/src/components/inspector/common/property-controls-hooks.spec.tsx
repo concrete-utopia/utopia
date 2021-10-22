@@ -186,4 +186,7 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
     expect(result[0].propsWithControlsButNoValue).toEqual([])
     expect(result[0].targets).toEqual(selectedViews)
   })
+
+  // TODO for next week
+  xit('TODO: a test with multiple _different_ results')
 })
