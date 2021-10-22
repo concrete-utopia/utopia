@@ -188,5 +188,5 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
   })
 
   // TODO for next week
-  xit('TODO: a test with multiple _different_ results')
+  xit('TODO: a test with multiple _different_ results', () => {})
 })
