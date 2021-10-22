@@ -338,7 +338,6 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
 
     return {
       controls: controls,
-      detectedPropsWithoutControls: detectedPropsWithoutControls,
       detectedPropsWithNoValue: detectedPropsWithNoValue,
       detectedPropsAndValuesWithoutControls: detectedPropsAndValuesWithoutControls,
       targets: targets,

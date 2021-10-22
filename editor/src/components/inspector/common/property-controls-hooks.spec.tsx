@@ -23,12 +23,13 @@ import { createTestProjectWithCode } from '../../../sample-projects/sample-proje
 import { TestAppUID, TestSceneUID } from '../../canvas/ui-jsx.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { PropertyControls } from 'utopia-api'
+import { elementInstanceMetadata } from '../../../core/shared/element-template'
 
 function callPropertyControlsHook() {
   const propertyControlsForTest: PropertyControls = {
-    kutya: {
+    propWithControlButNoValue: {
       type: 'string',
-      title: 'Kutya',
+      title: 'No Value',
       defaultValue: 'doggie',
     },
   }
@@ -41,13 +42,13 @@ function callPropertyControlsHook() {
     Storyboard,
   } from 'utopia-api'
   export var App = (props) => {
+    const propToDetect = props.testDetectedPropertyWithNoValue
     return (
       <div data-uid={'aaa'}/>
     )
   }
-  // Note: for this test, we are not running the property controls parser. I'm only including the code here for posterity
-  App.propertyControls = ${JSON.stringify(propertyControlsForTest)}
-
+  // Note: for this test, we are not running the property controls parser. Otherwise this is where App.propertyControls would come
+ 
 
   export var storyboard = (props) => {
     return (
@@ -59,6 +60,7 @@ function callPropertyControlsHook() {
           <App
             data-uid='${TestAppUID}' 
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+            testPropWithoutControl='yes'
           />
         </Scene>
       </Storyboard>
@@ -75,6 +77,22 @@ function callPropertyControlsHook() {
     propertyControlsInfo: {
       ...initialEditorState.propertyControlsInfo,
       '/utopia/storyboard': { App: propertyControlsForTest },
+    },
+    jsxMetadata: {
+      [EP.toString(selectedViews[0])]: elementInstanceMetadata(
+        selectedViews[0],
+        null as any,
+        { testPropWithoutControl: 'yes' },
+        null,
+        null,
+        true,
+        false,
+        null as any,
+        null,
+        null,
+        null,
+        null,
+      ),
     },
   }
 
@@ -120,18 +138,22 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
           "controls": Object {
             "type": "RIGHT",
             "value": Object {
-              "kutya": Object {
+              "propWithControlButNoValue": Object {
                 "type": "RIGHT",
                 "value": Object {
                   "defaultValue": "doggie",
-                  "title": "Kutya",
+                  "title": "No Value",
                   "type": "string",
                 },
               },
             },
           },
-          "detectedPropsAndValuesWithoutControls": Object {},
-          "detectedPropsWithNoValue": Array [],
+          "detectedPropsAndValuesWithoutControls": Object {
+            "testPropWithoutControl": "yes",
+          },
+          "detectedPropsWithNoValue": Array [
+            "testDetectedPropertyWithNoValue",
+          ],
           "targets": Array [
             Object {
               "parts": Array [
