@@ -260,8 +260,8 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
     const detectedPropsWithoutControls = givenProps
 
     ////////////////////////
+    // useUsedPropsWithoutControls
 
-    //useUsedPropsWithoutControls
     const selectedComponents = selectedComponentsFIXME[index]
 
     const propertiesWithControlsKeys_MAYBE_KILLME: Array<string> = Object.keys(
@@ -284,9 +284,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
     const detectedPropsWithNoValue = propertiesWithoutControls
 
     ////////////////////////
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-
-    //useGivenPropsAndValuesWithoutControls
+    // useGivenPropsAndValuesWithoutControls
 
     const propertiesWithControls = foldEither(
       () => [],
