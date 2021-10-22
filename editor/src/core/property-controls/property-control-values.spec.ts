@@ -119,13 +119,7 @@ describe('ComponentInstanceControlDescription', () => {
   }
 
   const validValue = 'Cake'
-  const wrappedValidValue = jsxAttributeOtherJavaScript(
-    validValue,
-    `return ${validValue}`,
-    [],
-    null,
-    {},
-  )
+  const wrappedValidValue = jsxAttributeOtherJavaScript(validValue, ``, [], null, {})
 
   runBaseTestSuite(validValue, wrappedValidValue, [], componentInstanceControlDescriptionValue)
 })
@@ -153,13 +147,7 @@ describe('EventHandlerControlDescription', () => {
   }
 
   const validValue = 'Cake'
-  const wrappedValidValue = jsxAttributeOtherJavaScript(
-    validValue,
-    `return ${validValue}`,
-    [],
-    null,
-    {},
-  )
+  const wrappedValidValue = jsxAttributeOtherJavaScript(validValue, ``, [], null, {})
 
   runBaseTestSuite(validValue, wrappedValidValue, [], eventHandlerControlDescriptionValue)
 })
