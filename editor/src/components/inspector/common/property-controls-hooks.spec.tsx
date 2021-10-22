@@ -27,18 +27,19 @@ import {
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
+import { right } from '../../../core/shared/either'
+import { objectMap } from '../../../core/shared/object-utils'
 
 const TestAppUID2 = 'app-entity-2'
 
+const propertyControlsForTest: PropertyControls = {
+  propWithControlButNoValue: {
+    type: 'string',
+    title: 'No Value',
+    defaultValue: 'doggie',
+  },
+}
 function callPropertyControlsHook(selectedViews: ElementPath[]) {
-  const propertyControlsForTest: PropertyControls = {
-    propWithControlButNoValue: {
-      type: 'string',
-      title: 'No Value',
-      defaultValue: 'doggie',
-    },
-  }
-
   const persistentModel = createTestProjectWithCode(`
   import * as React from 'react'
   import {
@@ -160,46 +161,14 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
   it('single select', () => {
     const selectedViews = [EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]])]
     const { result } = callPropertyControlsHook(selectedViews)
-    expect(result).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "controls": Object {
-            "type": "RIGHT",
-            "value": Object {
-              "propWithControlButNoValue": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "defaultValue": "doggie",
-                  "title": "No Value",
-                  "type": "string",
-                },
-              },
-            },
-          },
-          "detectedPropsAndValuesWithoutControls": Object {
-            "testPropWithoutControl": "yes",
-          },
-          "detectedPropsWithNoValue": Array [
-            "testDetectedPropertyWithNoValue",
-          ],
-          "propsWithControlsButNoValue": Array [
-            "propWithControlButNoValue",
-          ],
-          "targets": Array [
-            Object {
-              "parts": Array [
-                Array [
-                  "utopia-storyboard-uid",
-                  "scene-aaa",
-                  "app-entity",
-                ],
-              ],
-              "type": "elementpath",
-            },
-          ],
-        },
-      ]
-    `)
+
+    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForTest)))
+    expect(result[0].detectedPropsAndValuesWithoutControls).toEqual({
+      testPropWithoutControl: 'yes',
+    })
+    expect(result[0].detectedPropsWithNoValue).toEqual(['testDetectedPropertyWithNoValue'])
+    expect(result[0].propsWithControlsButNoValue).toEqual(['propWithControlButNoValue'])
+    expect(result[0].targets).toEqual(selectedViews)
   })
 
   it('multiselect', () => {
@@ -208,53 +177,13 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID2]]),
     ]
     const { result } = callPropertyControlsHook(selectedViews)
-    expect(result).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "controls": Object {
-            "type": "RIGHT",
-            "value": Object {
-              "propWithControlButNoValue": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "defaultValue": "doggie",
-                  "title": "No Value",
-                  "type": "string",
-                },
-              },
-            },
-          },
-          "detectedPropsAndValuesWithoutControls": Object {
-            "testPropWithoutControl": "yes",
-          },
-          "detectedPropsWithNoValue": Array [
-            "testDetectedPropertyWithNoValue",
-          ],
-          "propsWithControlsButNoValue": Array [],
-          "targets": Array [
-            Object {
-              "parts": Array [
-                Array [
-                  "utopia-storyboard-uid",
-                  "scene-aaa",
-                  "app-entity",
-                ],
-              ],
-              "type": "elementpath",
-            },
-            Object {
-              "parts": Array [
-                Array [
-                  "utopia-storyboard-uid",
-                  "scene-aaa",
-                  "app-entity-2",
-                ],
-              ],
-              "type": "elementpath",
-            },
-          ],
-        },
-      ]
-    `)
+
+    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForTest)))
+    expect(result[0].detectedPropsAndValuesWithoutControls).toEqual({
+      testPropWithoutControl: 'yes',
+    })
+    expect(result[0].detectedPropsWithNoValue).toEqual(['testDetectedPropertyWithNoValue'])
+    expect(result[0].propsWithControlsButNoValue).toEqual([])
+    expect(result[0].targets).toEqual(selectedViews)
   })
 })
