@@ -10,7 +10,7 @@ import {
   UiJsxCanvasProps,
   UiJsxCanvasPropsWithErrorCallback,
 } from './ui-jsx-canvas'
-import { saveDOMReport } from '../editor/actions/action-creators'
+import { resetCanvas, saveDOMReport } from '../editor/actions/action-creators'
 import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { CurriedUtopiaRequireFn, UtopiaRequireFn } from '../custom-code/code-file'
@@ -21,10 +21,11 @@ import {
   useWriteOnlyRuntimeErrors,
 } from '../../core/shared/runtime-report-logs'
 import { ProjectContentTreeRoot } from '../assets'
-import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
+import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { DomWalkerProps, useDomWalker } from './dom-walker'
 import { ResolvingRemoteDependencyErrorName } from '../../core/es-modules/package-manager/package-manager'
 import { CanvasLoadingScreen } from './canvas-loading-screen'
+import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
 
 interface CanvasComponentEntryProps {}
 
@@ -41,7 +42,7 @@ export const CanvasComponentEntry = betterReactMemo(
       },
       [dispatch],
     )
-    const { onRuntimeError, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
+    const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
     const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
     const canvasProps = useEditorState((store) => {
@@ -54,6 +55,22 @@ export const CanvasComponentEntry = betterReactMemo(
         addToConsoleLogs,
       )
     }, 'CanvasComponentEntry canvasProps')
+
+    const canvasEditOrSelect = React.useMemo(() => {
+      // Explicitly target the case where the canvas is not live, needs to handle `undefined`.
+      return canvasProps?.canvasIsLive === false
+    }, [canvasProps?.canvasIsLive])
+
+    const onRuntimeError = React.useCallback(
+      (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
+        addToRuntimeErrors(editedFile, error, errorInfo)
+        // Reset the canvas if we get a hooks error while the canvas is in edit/select modes.
+        if (canvasEditOrSelect && isHooksErrorMessage(error.message)) {
+          dispatch([resetCanvas()], 'everyone')
+        }
+      },
+      [addToRuntimeErrors, canvasEditOrSelect, dispatch],
+    )
 
     if (canvasProps == null) {
       return <CanvasLoadingScreen />
