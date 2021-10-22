@@ -333,6 +333,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.HIDE_VSCODE_LOADING_SCREEN(action, state)
     case 'SET_INDEXED_DB_FAILED':
       return UPDATE_FNS.SET_INDEXED_DB_FAILED(action, state)
+    case 'FORCE_PARSE_FILE':
+      return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     default:
       return state
   }

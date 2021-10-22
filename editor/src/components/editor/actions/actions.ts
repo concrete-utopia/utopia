@@ -379,6 +379,7 @@ import {
   SetResizeOptionsTargetOptions,
   HideVSCodeLoadingScreen,
   SetIndexedDBFailed,
+  ForceParseFile,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1078,6 +1079,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     theme: currentEditor.theme,
     vscodeLoadingScreenVisible: currentEditor.vscodeLoadingScreenVisible,
     indexedDBFailed: currentEditor.indexedDBFailed,
+    forceParseFiles: currentEditor.forceParseFiles,
   }
 }
 
@@ -3718,34 +3720,24 @@ export const UPDATE_FNS = {
           let code: string
           switch (fileUpdate.type) {
             case 'WORKER_CODE_UPDATE': {
-              // The worker should only ever cause one side to catch up to the other
-              if (!codeNeedsPrinting(existing.fileContents.revisionsState)) {
-                continue
-              } else {
-                // we use the new highlightBounds coming from the action
-                code = fileUpdate.code
-                updatedContents = updateParsedTextFileHighlightBounds(
-                  existing.fileContents.parsed,
-                  fileUpdate.highlightBounds,
-                )
-              }
+              // we use the new highlightBounds coming from the action
+              code = fileUpdate.code
+              updatedContents = updateParsedTextFileHighlightBounds(
+                existing.fileContents.parsed,
+                fileUpdate.highlightBounds,
+              )
               break
             }
             case 'WORKER_PARSED_UPDATE': {
-              // The worker should only ever cause one side to catch up to the other
-              if (!codeNeedsParsing(existing.fileContents.revisionsState)) {
-                continue
-              } else {
-                anyParsedUpdates = true
+              anyParsedUpdates = true
 
-                // we use the new highlightBounds coming from the action
-                code = existing.fileContents.code
-                const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
-                updatedContents = updateParsedTextFileHighlightBounds(
-                  fileUpdate.parsed,
-                  highlightBounds,
-                )
-              }
+              // we use the new highlightBounds coming from the action
+              code = existing.fileContents.code
+              const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
+              updatedContents = updateParsedTextFileHighlightBounds(
+                fileUpdate.parsed,
+                highlightBounds,
+              )
               break
             }
             default:
@@ -4917,6 +4909,12 @@ export const UPDATE_FNS = {
   },
   SET_INDEXED_DB_FAILED: (action: SetIndexedDBFailed, editor: EditorModel): EditorModel => {
     return { ...editor, indexedDBFailed: action.indexedDBFailed }
+  },
+  FORCE_PARSE_FILE: (action: ForceParseFile, editor: EditorModel) => {
+    return {
+      ...editor,
+      forceParseFiles: editor.forceParseFiles.concat(action.filePath),
+    }
   },
 }
 
