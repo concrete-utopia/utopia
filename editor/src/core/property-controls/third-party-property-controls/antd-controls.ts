@@ -6,7 +6,7 @@ const Button: PropertyControls = {
     title: 'href',
   },
   onClick: {
-    type: 'eventhandler',
+    type: 'rawjs',
     title: 'onClick',
   },
   disabled: {
@@ -32,7 +32,7 @@ const Button: PropertyControls = {
     defaultValue: 'default',
   },
   icon: {
-    type: 'componentinstance',
+    type: 'rawjs',
     title: 'icon',
   },
   ghost: {
@@ -316,7 +316,7 @@ const Menu: PropertyControls = {
     title: 'onClick',
   },
   overflowedIndicator: {
-    type: 'componentinstance',
+    type: 'rawjs',
     title: 'overflowedIndicator',
   },
 }
@@ -336,7 +336,7 @@ const MenuItem: PropertyControls = {
     title: 'title',
   },
   icon: {
-    type: 'componentinstance',
+    type: 'rawjs',
     title: 'icon',
   },
   danger: {
@@ -365,7 +365,7 @@ const MenuSubMenu: PropertyControls = {
     title: 'title',
   },
   icon: {
-    type: 'componentinstance',
+    type: 'rawjs',
     title: 'icon',
   },
   onTitleClick: {
