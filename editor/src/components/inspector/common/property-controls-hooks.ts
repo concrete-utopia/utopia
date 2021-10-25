@@ -177,14 +177,6 @@ export function useControlForUnionControl(
   return controlToUseForUnion(control, firstRawValue, firstRealValue)
 }
 
-// kontrolkent mutatni:
-// 1. van hozza propertyControls es van erteke
-// 2. nincs hozza propertyControls de van erteke
-
-// listan mutatni:
-// 1. van hozza propertyControls de nincs erteke
-// 2. nincs erteke de detektaltuk a kodban hogy a komponens hasznalja (pl props.kisCica)
-
 type PropertyControlsAndTargets = {
   controls: ParseResult<ParsedPropertyControls>
   targets: ElementPath[]
