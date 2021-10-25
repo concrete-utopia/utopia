@@ -31,12 +31,20 @@ import { right } from '../../../core/shared/either'
 import { objectMap } from '../../../core/shared/object-utils'
 
 const TestAppUID2 = 'app-entity-2'
+const TestOtherComponentUID = 'other-component-entity-1'
 
-const propertyControlsForTest: PropertyControls = {
+const propertyControlsForApp: PropertyControls = {
   propWithControlButNoValue: {
     type: 'string',
     title: 'No Value',
     defaultValue: 'doggie',
+  },
+}
+const propertyControlsForOtherComponent: PropertyControls = {
+  propWithOtherKey: {
+    type: 'number',
+    title: 'Katz',
+    defaultValue: 5,
   },
 }
 function callPropertyControlsHook(selectedViews: ElementPath[]) {
@@ -49,6 +57,13 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
   } from 'utopia-api'
   export var App = (props) => {
     const propToDetect = props.testDetectedPropertyWithNoValue
+    return (
+      <div data-uid={'aaa'}/>
+    )
+  }
+  // Note: for this test, we are not running the property controls parser. Otherwise this is where App.propertyControls would come
+
+  export var OtherComponent = (props) => {
     return (
       <div data-uid={'aaa'}/>
     )
@@ -73,12 +88,18 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
             propWithControlButNoValue='but there is a value!'
           />
+          <OtherComponent
+            data-uid='${TestOtherComponentUID}' 
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+            propWithOtherKey={10}
+          />
         </Scene>
       </Storyboard>
     )
   }
   `)
 
+  // We manually have to create these ElementInstanceMetadatas because we are not running the canvas/spy/dom-walker for this test
   let metadata: ElementInstanceMetadataMap = {
     [EP.toString(selectedViews[0])]: elementInstanceMetadata(
       selectedViews[0],
@@ -112,6 +133,22 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       null,
     )
   }
+  if (selectedViews.length > 2) {
+    metadata[EP.toString(selectedViews[2])] = elementInstanceMetadata(
+      selectedViews[1],
+      null as any,
+      { propWithOtherKey: 10 },
+      null,
+      null,
+      true,
+      false,
+      null as any,
+      null,
+      null,
+      null,
+      null,
+    )
+  }
 
   const initialEditorState = editorModelFromPersistentModel(persistentModel, NO_OP)
   const editorState: EditorState = {
@@ -119,7 +156,10 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     selectedViews: selectedViews,
     propertyControlsInfo: {
       ...initialEditorState.propertyControlsInfo,
-      '/utopia/storyboard': { App: propertyControlsForTest },
+      '/utopia/storyboard': {
+        App: propertyControlsForApp,
+        OtherComponent: propertyControlsForOtherComponent,
+      },
     },
     jsxMetadata: metadata,
   }
@@ -162,7 +202,9 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
     const selectedViews = [EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]])]
     const { result } = callPropertyControlsHook(selectedViews)
 
-    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForTest)))
+    expect(result.length).toBe(1)
+
+    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForApp)))
     expect(result[0].detectedPropsAndValuesWithoutControls).toEqual({
       testPropWithoutControl: 'yes',
     })
@@ -178,7 +220,9 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
     ]
     const { result } = callPropertyControlsHook(selectedViews)
 
-    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForTest)))
+    expect(result.length).toBe(1)
+
+    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForApp)))
     expect(result[0].detectedPropsAndValuesWithoutControls).toEqual({
       testPropWithoutControl: 'yes',
     })
@@ -187,6 +231,34 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
     expect(result[0].targets).toEqual(selectedViews)
   })
 
-  // TODO for next week
-  xit('TODO: a test with multiple _different_ results', () => {})
+  it('TODO: a test with multiselect of different components', () => {
+    const selectedViews = [
+      EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
+      EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID2]]),
+      EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestOtherComponentUID]]),
+    ]
+    const { result } = callPropertyControlsHook(selectedViews)
+
+    expect(result.length).toBe(2)
+
+    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForApp)))
+    expect(result[0].detectedPropsAndValuesWithoutControls).toEqual({
+      testPropWithoutControl: 'yes',
+    })
+    expect(result[0].detectedPropsWithNoValue).toEqual(['testDetectedPropertyWithNoValue'])
+    expect(result[0].propsWithControlsButNoValue).toEqual([])
+    expect(result[0].targets).toEqual([
+      EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
+      EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID2]]),
+    ])
+
+    expect(result[1].targets).toEqual([
+      EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestOtherComponentUID]]),
+    ])
+
+    expect(result[1].controls).toEqual(right(objectMap(right, propertyControlsForOtherComponent)))
+    expect(result[1].detectedPropsAndValuesWithoutControls).toEqual({})
+    expect(result[1].detectedPropsWithNoValue).toEqual([])
+    expect(result[1].propsWithControlsButNoValue).toEqual([])
+  })
 })
