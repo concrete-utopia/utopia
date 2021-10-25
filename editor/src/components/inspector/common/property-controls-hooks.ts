@@ -223,8 +223,9 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
     // useGivenPropsWithoutControls
     const parsedPropertyControls = controls
     const selectedElements = selectedElementsFIXME[index]
+    const selectedComponents = selectedComponentsFIXME[index]
 
-    const propertiesWithControls_MAYBE_FIXME = foldEither(
+    const propertiesWithControls = foldEither(
       () => [],
       (success) =>
         filterSpecialProps(
@@ -233,33 +234,29 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
         ),
       parsedPropertyControls,
     )
-    let givenProps: Array<string> = []
-    let definedControlsWithoutValues: Set<string> = new Set(propertiesWithControls_MAYBE_FIXME)
+    let detectedPropsWithoutControls: Array<string> = []
+    let definedControlsWithoutValues: Set<string> = new Set(propertiesWithControls)
     fastForEach(selectedElements, (element) => {
       const elementProps = Object.keys(filterUtopiaSpecificProps(element.props))
       fastForEach(elementProps, (propName) => {
-        if (!propertiesWithControls_MAYBE_FIXME.includes(propName)) {
-          givenProps = addUniquely(givenProps, propName)
+        if (!propertiesWithControls.includes(propName)) {
+          detectedPropsWithoutControls = addUniquely(detectedPropsWithoutControls, propName)
         }
       })
-      fastForEach(propertiesWithControls_MAYBE_FIXME, (definedControlProperty) => {
+      fastForEach(propertiesWithControls, (definedControlProperty) => {
         if (elementProps.includes(definedControlProperty)) {
           definedControlsWithoutValues.delete(definedControlProperty)
         }
       })
     })
 
-    const detectedPropsWithoutControls = givenProps
-
     ////////////////////////
     // useUsedPropsWithoutControls
-
-    const selectedComponents = selectedComponentsFIXME[index]
 
     const propertiesWithControlsKeys_MAYBE_KILLME: Array<string> = Object.keys(
       eitherToMaybe(parsedPropertyControls) ?? {},
     )
-    let propertiesWithoutControls: Array<string> = []
+    let detectedPropsWithNoValue: Array<string> = []
     fastForEach(selectedComponents, (component) => {
       if (isJSXElement(component.rootElement)) {
         fastForEach(component.propsUsed, (propUsed) => {
@@ -267,34 +264,24 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
             !propertiesWithControlsKeys_MAYBE_KILLME.includes(propUsed) &&
             !detectedPropsWithoutControls.includes(propUsed)
           ) {
-            propertiesWithoutControls = addUniquely(propertiesWithoutControls, propUsed)
+            detectedPropsWithNoValue = addUniquely(detectedPropsWithNoValue, propUsed)
           }
         })
       }
     })
 
-    const detectedPropsWithNoValue = propertiesWithoutControls
-
     ////////////////////////
     // useGivenPropsAndValuesWithoutControls
 
-    const propertiesWithControls = foldEither(
-      () => [],
-      (success) => filterSpecialProps(getPropertyControlNames(success)),
-      parsedPropertyControls,
-    )
-
-    let propsWithValueWithoutControls: Record<string, unknown> = {}
+    let detectedPropsAndValuesWithoutControls: Record<string, unknown> = {}
     fastForEach(selectedElements, (element) => {
       const elementProps = filterUtopiaSpecificProps(element.props)
       fastForEach(Object.keys(elementProps), (propName) => {
         if (!propertiesWithControls.includes(propName)) {
-          propsWithValueWithoutControls[propName] = elementProps[propName]
+          detectedPropsAndValuesWithoutControls[propName] = elementProps[propName]
         }
       })
     })
-
-    const detectedPropsAndValuesWithoutControls = propsWithValueWithoutControls
 
     ////////////////////////
 
