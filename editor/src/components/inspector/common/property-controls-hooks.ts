@@ -194,7 +194,7 @@ type PropertyControlsAndTargets = {
 }
 
 export function useGetPropertyControlsForSelectedComponents(): Array<PropertyControlsAndTargets> {
-  const selectedPropertyControls = useSelectedPropertyControls(true) // TODO BEFORE MERGE the final version should ignore ignore controls
+  const selectedPropertyControls = useSelectedPropertyControls(false)
   const selectedElementsFIXME = useEditorState((store) => {
     return selectedPropertyControls.map(({ targets }) =>
       mapDropNulls(
