@@ -23,7 +23,7 @@ import {
   InspectorPropsContext,
   useCallbackFactory,
   useInspectorContext,
-  useSelectedPropertyControls,
+  useRefSelectedViews,
 } from './property-path-hooks'
 import {
   getModifiableJSXAttributeAtPath,
@@ -46,18 +46,30 @@ import {
 } from './control-status'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import {
+  ElementInstanceMetadata,
   isJSXElement,
   JSXAttributes,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import { addUniquely, mapArrayToDictionary, mapDropNulls } from '../../../core/shared/array-utils'
 import { ParseError, ParseResult } from '../../../utils/value-parser-utils'
-import { ParsedPropertyControls } from '../../../core/property-controls/property-controls-parser'
+import {
+  ParsedPropertyControls,
+  parsePropertyControls,
+} from '../../../core/property-controls/property-controls-parser'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { filterSpecialProps } from '../../../core/property-controls/property-controls-utils'
+import {
+  filterSpecialProps,
+  getPropertyControlsForTargetFromEditor,
+} from '../../../core/property-controls/property-controls-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { findUnderlyingTargetComponentImplementation } from '../../custom-code/code-file'
+import {
+  ElementInstanceMetadataKeepDeepEquality,
+  UtopiaJSXComponentKeepDeepEquality,
+} from '../../editor/store/store-deep-equality-instances'
+import { arrayDeepEquality } from '../../../utils/deep-equality'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -177,6 +189,11 @@ export function useControlForUnionControl(
   return controlToUseForUnion(control, firstRawValue, firstRealValue)
 }
 
+type ParsedPropertyControlsAndTargets = {
+  controls: ParseResult<ParsedPropertyControls>
+  targets: ElementPath[]
+}
+
 type PropertyControlsAndTargets = {
   controls: ParseResult<ParsedPropertyControls>
   targets: ElementPath[]
@@ -186,37 +203,80 @@ type PropertyControlsAndTargets = {
 }
 
 export function useGetPropertyControlsForSelectedComponents(): Array<PropertyControlsAndTargets> {
-  const selectedPropertyControls = useSelectedPropertyControls(false)
-  const selectedElementsFIXME = useEditorState((store) => {
-    return selectedPropertyControls.map(({ targets }) =>
-      mapDropNulls(
-        (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
-        targets,
-      ),
-    )
-  }, 'useGetPropertyControlsForSelectedComponents selectedElements')
+  const selectedViews = useRefSelectedViews()
 
-  const selectedComponentsFIXME = useEditorState((store) => {
-    return selectedPropertyControls.map(({ targets }) => {
-      // TODO mapDropNulls
-      let components: Array<UtopiaJSXComponent> = []
-      fastForEach(targets, (path) => {
-        const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
-        if (openStoryboardFile != null) {
-          const component = findUnderlyingTargetComponentImplementation(
-            store.editor.projectContents,
-            store.editor.nodeModules.files,
-            openStoryboardFile,
-            path,
+  const selectedPropertyControls = useEditorState(
+    (store) => {
+      const { codeResultCache } = store.editor
+
+      let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
+      if (codeResultCache != null) {
+        fastForEach(selectedViews.current, (path) => {
+          const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
+          const parsed = parsePropertyControls(propertyControls)
+          const foundMatch = parsedPropertyControls.findIndex((existing) =>
+            areMatchingPropertyControls(existing.controls, parsed),
           )
-          if (component != null) {
-            components.push(component)
+          if (foundMatch > -1) {
+            parsedPropertyControls[foundMatch].targets.push(path)
+          } else {
+            parsedPropertyControls.push({
+              controls: parsed,
+              targets: [path],
+            })
           }
-        }
+        })
+      }
+
+      return parsedPropertyControls
+    },
+    'useSelectedPropertyControls',
+    (oldResult, newResult) => {
+      return deepEqual(oldResult, newResult) // TODO better equality
+    },
+  )
+
+  const selectedElementsFIXME = useEditorState(
+    (store) => {
+      return selectedPropertyControls.map(({ targets }) =>
+        mapDropNulls(
+          (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+          targets,
+        ),
+      )
+    },
+    'useGetPropertyControlsForSelectedComponents selectedElements',
+    (a, b) =>
+      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality()))(a, b)
+        .areEqual,
+  )
+
+  const selectedComponentsFIXME = useEditorState(
+    (store) => {
+      return selectedPropertyControls.map(({ targets }) => {
+        // TODO mapDropNulls
+        let components: Array<UtopiaJSXComponent> = []
+        fastForEach(targets, (path) => {
+          const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
+          if (openStoryboardFile != null) {
+            const component = findUnderlyingTargetComponentImplementation(
+              store.editor.projectContents,
+              store.editor.nodeModules.files,
+              openStoryboardFile,
+              path,
+            )
+            if (component != null) {
+              components.push(component)
+            }
+          }
+        })
+        return components
       })
-      return components
-    })
-  }, 'useUsedPropsWithoutControls')
+    },
+    'useUsedPropsWithoutControls',
+    (a, b) =>
+      arrayDeepEquality(arrayDeepEquality(UtopiaJSXComponentKeepDeepEquality))(a, b).areEqual,
+  )
 
   return selectedPropertyControls.map(({ controls, targets }, index) => {
     ////////////////////////
@@ -293,4 +353,12 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
       targets: targets,
     }
   })
+}
+
+function areMatchingPropertyControls(
+  a: ParseResult<ParsedPropertyControls>,
+  b: ParseResult<ParsedPropertyControls>,
+): boolean {
+  // TODO create equality call
+  return deepEqual(a, b)
 }

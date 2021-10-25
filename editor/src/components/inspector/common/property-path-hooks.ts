@@ -1048,68 +1048,6 @@ const StyleSubSectionForType: { [key: string]: SubSectionAvailable } = {
   transform: subSectionAllowAll,
 }
 
-function areMatchingPropertyControls(
-  a: ParseResult<ParsedPropertyControls>,
-  b: ParseResult<ParsedPropertyControls>,
-): boolean {
-  return fastDeepEquals(a, b)
-}
-
-function findPropertyControlsForTarget(
-  target: ElementPath,
-  parsedPropertyControlsAndTargets: Array<ParsedPropertyControlsAndTargets>,
-): ParseResult<ParsedPropertyControls> {
-  return (
-    parsedPropertyControlsAndTargets.find((parsedPropertyControls) => {
-      return parsedPropertyControls.targets.some((path) => EP.pathsEqual(path, target))
-    })?.controls ?? left(descriptionParseError(`Missing controls for target`))
-  )
-}
-
-type ParsedPropertyControlsAndTargets = {
-  controls: ParseResult<ParsedPropertyControls>
-  targets: ElementPath[]
-}
-
-export function useSelectedPropertyControls(
-  includeIgnored: boolean,
-): Array<ParsedPropertyControlsAndTargets> {
-  const selectedViews = useRefSelectedViews()
-
-  return useEditorState(
-    (store) => {
-      const { codeResultCache } = store.editor
-
-      let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
-      if (codeResultCache != null) {
-        Utils.fastForEach(selectedViews.current, (path) => {
-          const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
-          const parsed = includeIgnored
-            ? parsePropertyControls(propertyControls)
-            : mapEither(removeIgnored, parsePropertyControls(propertyControls))
-          const foundMatch = parsedPropertyControls.findIndex((existing) =>
-            areMatchingPropertyControls(existing.controls, parsed),
-          )
-          if (foundMatch > -1) {
-            parsedPropertyControls[foundMatch].targets.push(path)
-          } else {
-            parsedPropertyControls.push({
-              controls: parsed,
-              targets: [path],
-            })
-          }
-        })
-      }
-
-      return parsedPropertyControls
-    },
-    'useSelectedPropertyControls',
-    (oldResult, newResult) => {
-      return fastDeepEquals(oldResult, newResult)
-    },
-  )
-}
-
 const PropsToDiscard = [...UtopiaKeys, 'skipDeepFreeze', 'data-utopia-instance-path']
 export function filterUtopiaSpecificProps(props: MapLike<any>) {
   return omitWithPredicate(props, (key) => typeof key === 'string' && PropsToDiscard.includes(key))
