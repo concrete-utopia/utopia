@@ -502,6 +502,7 @@ export interface EditorState {
   theme: Theme
   vscodeLoadingScreenVisible: boolean
   indexedDBFailed: boolean
+  forceParseFiles: Array<string>
 }
 
 export interface StoredEditorState {
@@ -1275,6 +1276,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     theme: 'light',
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
+    forceParseFiles: [],
   }
 }
 
@@ -1527,6 +1529,7 @@ export function editorModelFromPersistentModel(
     theme: 'light',
     vscodeLoadingScreenVisible: true,
     indexedDBFailed: false,
+    forceParseFiles: [],
   }
   return editor
 }

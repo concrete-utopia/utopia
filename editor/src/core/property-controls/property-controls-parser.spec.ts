@@ -6,12 +6,11 @@ import {
   PopUpListControlDescription,
   OptionsControlDescription,
   ColorControlDescription,
-  ComponentInstanceDescription,
   IgnoreControlDescription,
-  EventHandlerControlDescription,
   ImageControlDescription,
   StyleObjectControlDescription,
   FolderControlDescription,
+  RawJSControlDescription,
 } from 'utopia-api'
 import {
   parseNumberControlDescription,
@@ -21,15 +20,14 @@ import {
   parsePopUpListControlDescription,
   parseOptionsControlDescription,
   parseColorControlDescription,
-  parseComponentInstanceControlDescription,
   ParsedPropertyControls,
   parsePropertyControls,
   parseIgnoreControlDescription,
-  parseEventHandlerControlDescription,
   parseImageControlDescription,
   parseStyleObjectControlDescription,
   parseFolderControlDescription,
   parseControlDescription,
+  parseRawJSControlDescription,
 } from './property-controls-parser'
 import { right, left, isLeft } from '../shared/either'
 import {
@@ -131,18 +129,18 @@ describe('parseColorControlDescription', () => {
   )
 })
 
-const validComponentInstanceControlDescriptionValue: ComponentInstanceDescription = {
-  title: 'Component Instance Control',
-  type: 'componentinstance',
+const validRawJSControlDescriptionValue: RawJSControlDescription = {
+  title: 'Raw JS Control',
+  type: 'rawjs',
 }
 
-describe('parseComponentInstanceControlDescription', () => {
+describe('parseRawJSControlDescription', () => {
   runBaseTestSuite(
-    validComponentInstanceControlDescriptionValue,
+    validRawJSControlDescriptionValue,
     ['type'],
     [],
     false,
-    parseComponentInstanceControlDescription,
+    parseRawJSControlDescription,
   )
 })
 
@@ -162,21 +160,6 @@ describe('parseEnumControlDescription', () => {
     [['hat']],
     true,
     parseEnumControlDescription,
-  )
-})
-
-const validEventHandlerControlDescriptionValue: EventHandlerControlDescription = {
-  title: 'Event Handler Control',
-  type: 'eventhandler',
-}
-
-describe('parseEventHandlerControlDescription', () => {
-  runBaseTestSuite(
-    validEventHandlerControlDescriptionValue,
-    ['type'],
-    [],
-    false,
-    parseEventHandlerControlDescription,
   )
 })
 
@@ -409,14 +392,14 @@ describe('parseControlDescription', () => {
       ),
     ).toEqual(right(validColorControlDescriptionValue))
   })
-  it('parses a component instance description correctly', () => {
+  it('parses a raw js control description correctly', () => {
     expect(
       parseControlDescription(
-        validComponentInstanceControlDescriptionValue,
+        validRawJSControlDescriptionValue,
         'testPropName',
         'includeSpecialProps',
       ),
-    ).toEqual(right(validComponentInstanceControlDescriptionValue))
+    ).toEqual(right(validRawJSControlDescriptionValue))
   })
   it('parses an ignore description correctly', () => {
     expect(

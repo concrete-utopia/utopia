@@ -926,6 +926,11 @@ export interface SetIndexedDBFailed {
   indexedDBFailed: boolean
 }
 
+export interface ForceParseFile {
+  action: 'FORCE_PARSE_FILE'
+  filePath: string
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -1080,6 +1085,7 @@ export type EditorAction =
   | SetResizeOptionsTargetOptions
   | HideVSCodeLoadingScreen
   | SetIndexedDBFailed
+  | ForceParseFile
 
 export type DispatchPriority =
   | 'everyone'

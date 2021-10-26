@@ -209,6 +209,7 @@ import type {
   SetResizeOptionsTargetOptions,
   HideVSCodeLoadingScreen,
   SetIndexedDBFailed,
+  ForceParseFile,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1484,5 +1485,12 @@ export function setIndexedDBFailed(indexedDBFailed: boolean): SetIndexedDBFailed
   return {
     action: 'SET_INDEXED_DB_FAILED',
     indexedDBFailed: indexedDBFailed,
+  }
+}
+
+export function forceParseFile(filePath: string): ForceParseFile {
+  return {
+    action: 'FORCE_PARSE_FILE',
+    filePath: filePath,
   }
 }

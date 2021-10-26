@@ -105,13 +105,18 @@ describe('inferControlTypeBasedOnValue', () => {
   })
 
   it('Ignores the style prop', () => {
-    const styleObjectResult = inferControlTypeBasedOnValue({}, 'style')
-    expect(styleObjectResult.type).toEqual('ignore')
+    const result = inferControlTypeBasedOnValue({}, 'style')
+    expect(result.type).toEqual('ignore')
   })
 
-  it('ignores a React element', () => {
-    const reactComponentResult = inferControlTypeBasedOnValue(<div />)
-    expect(reactComponentResult.type).toEqual('ignore')
+  it('Treats a React element as rawjs', () => {
+    const result = inferControlTypeBasedOnValue(<div />)
+    expect(result.type).toEqual('rawjs')
+  })
+
+  it('treats a function as rawjs', () => {
+    const result = inferControlTypeBasedOnValue(() => {})
+    expect(result.type).toEqual('rawjs')
   })
 
   it('Correctly infers nested array / object horror show controls', () => {

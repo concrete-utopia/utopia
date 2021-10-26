@@ -243,16 +243,12 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseBoolean)
     case 'color':
       return defaultUnwrapFirst(parseColorValue)
-    case 'componentinstance':
-      return jsUnwrapFirst(parseAny)
     case 'enum':
       return defaultUnwrapFirst(parseAllowedEnum(control.options))
     case 'expression-enum':
       return defaultUnwrapFirst(parseAny)
     case 'euler':
       return defaultUnwrapFirst(parseArray(parseAny))
-    case 'eventhandler':
-      return jsUnwrapFirst(parseAny)
     case 'ignore':
       return defaultUnwrapFirst(parseAny)
     case 'image':
@@ -268,6 +264,8 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseAny)
     case 'quaternion':
       return defaultUnwrapFirst(parseArray(parseNumber))
+    case 'rawjs':
+      return jsUnwrapFirst(parseAny)
     case 'string':
       return defaultUnwrapFirst(parseString)
     case 'styleobject':
@@ -288,11 +286,9 @@ export function unwrapperAndParserForPropertyControl(
   switch (control.type) {
     case 'boolean':
     case 'color':
-    case 'componentinstance':
     case 'enum':
     case 'expression-enum':
     case 'euler':
-    case 'eventhandler':
     case 'ignore':
     case 'image':
     case 'matrix3':
@@ -301,6 +297,7 @@ export function unwrapperAndParserForPropertyControl(
     case 'options':
     case 'popuplist':
     case 'quaternion':
+    case 'rawjs':
     case 'string':
     case 'styleobject':
     case 'vector2':
@@ -400,7 +397,7 @@ function printColor(value: unknown): JSXAttribute {
 }
 
 function printJS<T>(value: T): JSXAttribute {
-  return jsxAttributeOtherJavaScript(`${value}`, `return ${value}`, [], null, {})
+  return jsxAttributeOtherJavaScript(`${value}`, ``, [], null, {})
 }
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {
@@ -409,16 +406,12 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'color':
       return printColor
-    case 'componentinstance':
-      return printJS
     case 'enum':
       return printSimple
     case 'expression-enum':
       return printSimple
     case 'euler':
       return printSimple
-    case 'eventhandler':
-      return printJS
     case 'ignore':
       return printSimple
     case 'image':
@@ -434,6 +427,8 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'quaternion':
       return printSimple
+    case 'rawjs':
+      return printJS
     case 'string':
       return printSimple
     case 'styleobject':
@@ -491,11 +486,9 @@ export function printerForPropertyControl(control: RegularControlDescription): P
   switch (control.type) {
     case 'boolean':
     case 'color':
-    case 'componentinstance':
     case 'enum':
     case 'expression-enum':
     case 'euler':
-    case 'eventhandler':
     case 'ignore':
     case 'image':
     case 'matrix3':
@@ -504,6 +497,7 @@ export function printerForPropertyControl(control: RegularControlDescription): P
     case 'options':
     case 'popuplist':
     case 'quaternion':
+    case 'rawjs':
     case 'string':
     case 'styleobject':
     case 'vector2':

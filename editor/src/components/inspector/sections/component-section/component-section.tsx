@@ -58,10 +58,8 @@ import { PropertyRow } from '../../widgets/property-row'
 import {
   ControlForBooleanProp,
   ControlForColorProp,
-  ControlForComponentInstanceProp,
   ControlForEnumProp,
   ControlForEulerProp,
-  ControlForEventHandlerProp,
   ControlForExpressionEnumProp,
   ControlForImageProp,
   ControlForMatrix3Prop,
@@ -71,6 +69,7 @@ import {
   ControlForPopupListProp,
   ControlForPropProps,
   ControlForQuaternionProp,
+  ControlForRawJSProp,
   ControlForStringProp,
   ControlForVectorProp,
 } from './property-control-controls'
@@ -100,16 +99,10 @@ const ControlForProp = betterReactMemo(
           return <ControlForBooleanProp {...props} controlDescription={controlDescription} />
         case 'color':
           return <ControlForColorProp {...props} controlDescription={controlDescription} />
-        case 'componentinstance':
-          return (
-            <ControlForComponentInstanceProp {...props} controlDescription={controlDescription} />
-          )
         case 'enum':
           return <ControlForEnumProp {...props} controlDescription={controlDescription} />
         case 'euler':
           return <ControlForEulerProp {...props} controlDescription={controlDescription} />
-        case 'eventhandler':
-          return <ControlForEventHandlerProp {...props} controlDescription={controlDescription} />
         case 'expression-enum':
           return <ControlForExpressionEnumProp {...props} controlDescription={controlDescription} />
         case 'ignore':
@@ -128,6 +121,8 @@ const ControlForProp = betterReactMemo(
           return <ControlForPopupListProp {...props} controlDescription={controlDescription} />
         case 'quaternion':
           return <ControlForQuaternionProp {...props} controlDescription={controlDescription} />
+        case 'rawjs':
+          return <ControlForRawJSProp {...props} controlDescription={controlDescription} />
         case 'string':
           return <ControlForStringProp {...props} controlDescription={controlDescription} />
         case 'vector2':
