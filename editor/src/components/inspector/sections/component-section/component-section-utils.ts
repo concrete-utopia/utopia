@@ -40,10 +40,27 @@ function inferControlTypeBasedOnValueInner(
         title: propName,
       }
     }
+    case 'function': {
+      return {
+        type: 'rawjs',
+        title: propName,
+      }
+    }
     case 'object': {
-      if (propValue == null || React.isValidElement(propValue) || propName === 'style') {
+      if (propValue == null || propName === 'style') {
         return {
           type: 'ignore',
+        }
+      } else if (React.isValidElement(propValue)) {
+        if (propName === 'children') {
+          return {
+            type: 'ignore',
+          }
+        } else {
+          return {
+            type: 'rawjs',
+            title: propName,
+          }
         }
       } else if (Array.isArray(propValue)) {
         if (propValue.length === 2 && isNumberArray(propValue)) {

@@ -1,7 +1,6 @@
 import {
   BooleanControlDescription,
   ColorControlDescription,
-  ComponentInstanceDescription,
   ControlDescription,
   EnumControlDescription,
   NumberControlDescription,
@@ -11,7 +10,6 @@ import {
   IgnoreControlDescription,
   UnionControlDescription,
   ImageControlDescription,
-  EventHandlerControlDescription,
   ArrayControlDescription,
   ObjectControlDescription,
   StyleObjectControlDescription,
@@ -20,11 +18,10 @@ import {
   ExpressionEnumControlDescription,
   ExpressionEnum,
   ImportType,
-  BaseControlDescription,
-  HigherLevelControlDescription,
   FolderControlDescription,
   PropertyControls,
   RegularControlDescription,
+  RawJSControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -187,23 +184,6 @@ export function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum>
   )
 }
 
-export function parseEventHandlerControlDescription(
-  value: unknown,
-): ParseResult<EventHandlerControlDescription> {
-  return applicative2Either(
-    (title, type) => {
-      let eventHandlerControlDescription: EventHandlerControlDescription = {
-        type: type,
-      }
-      setOptionalProp(eventHandlerControlDescription, 'title', title)
-
-      return eventHandlerControlDescription
-    },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['eventhandler']), 'type')(value),
-  )
-}
-
 export function parseBooleanControlDescription(
   value: unknown,
 ): ParseResult<BooleanControlDescription> {
@@ -350,20 +330,18 @@ export function parseColorControlDescription(value: unknown): ParseResult<ColorC
   )
 }
 
-export function parseComponentInstanceControlDescription(
-  value: unknown,
-): ParseResult<ComponentInstanceDescription> {
+export function parseRawJSControlDescription(value: unknown): ParseResult<RawJSControlDescription> {
   return applicative2Either(
     (title, type) => {
-      let componentInstanceDescription: ComponentInstanceDescription = {
+      let rawJSControlDescription: RawJSControlDescription = {
         type: type,
       }
-      setOptionalProp(componentInstanceDescription, 'title', title)
+      setOptionalProp(rawJSControlDescription, 'title', title)
 
-      return componentInstanceDescription
+      return rawJSControlDescription
     },
     optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['componentinstance']), 'type')(value),
+    objectKeyParser(parseEnum(['rawjs']), 'type')(value),
   )
 }
 
@@ -562,14 +540,10 @@ export function parseRegularControlDescription(
         return parseBooleanControlDescription(value)
       case 'color':
         return parseColorControlDescription(value)
-      case 'componentinstance':
-        return parseComponentInstanceControlDescription(value)
       case 'enum':
         return parseEnumControlDescription(value)
       case 'expression-enum':
         return parseExpressionEnumControlDescription(value)
-      case 'eventhandler':
-        return parseEventHandlerControlDescription(value)
       case 'ignore':
         return parseIgnoreControlDescription(value)
       case 'image':
@@ -580,6 +554,8 @@ export function parseRegularControlDescription(
         return parseOptionsControlDescription(value)
       case 'popuplist':
         return parsePopUpListControlDescription(value)
+      case 'rawjs':
+        return parseRawJSControlDescription(value)
       case 'string':
         return parseStringControlDescription(value)
       case 'styleobject':

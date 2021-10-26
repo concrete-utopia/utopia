@@ -2,9 +2,7 @@ import {
   ControlDescription,
   BooleanControlDescription,
   ColorControlDescription,
-  ComponentInstanceDescription,
   EnumControlDescription,
-  EventHandlerControlDescription,
   IgnoreControlDescription,
   NumberControlDescription,
   OptionsControlDescription,
@@ -13,9 +11,8 @@ import {
   ArrayControlDescription,
   ObjectControlDescription,
   UnionControlDescription,
-  BaseControlDescription,
-  HigherLevelControlDescription,
   RegularControlDescription,
+  RawJSControlDescription,
 } from 'utopia-api'
 import {
   JSXAttribute,
@@ -113,15 +110,15 @@ describe('ColorControlDescription', () => {
   )
 })
 
-describe('ComponentInstanceControlDescription', () => {
-  const componentInstanceControlDescriptionValue: ComponentInstanceDescription = {
-    type: 'componentinstance',
+describe('RawJSControlDescription', () => {
+  const rawJSControlDescriptionValue: RawJSControlDescription = {
+    type: 'rawjs',
   }
 
   const validValue = 'Cake'
   const wrappedValidValue = jsxAttributeOtherJavaScript(validValue, ``, [], null, {})
 
-  runBaseTestSuite(validValue, wrappedValidValue, [], componentInstanceControlDescriptionValue)
+  runBaseTestSuite(validValue, wrappedValidValue, [], rawJSControlDescriptionValue)
 })
 
 describe('EnumControlDescription', () => {
@@ -139,17 +136,6 @@ describe('EnumControlDescription', () => {
   ]
 
   runBaseTestSuite(validValue, wrappedValidValue, wrappedInvalidValues, enumControlDescriptionValue)
-})
-
-describe('EventHandlerControlDescription', () => {
-  const eventHandlerControlDescriptionValue: EventHandlerControlDescription = {
-    type: 'eventhandler',
-  }
-
-  const validValue = 'Cake'
-  const wrappedValidValue = jsxAttributeOtherJavaScript(validValue, ``, [], null, {})
-
-  runBaseTestSuite(validValue, wrappedValidValue, [], eventHandlerControlDescriptionValue)
 })
 
 describe('IgnoreControlDescription', () => {
