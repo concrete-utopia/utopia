@@ -1,7 +1,12 @@
 import React from 'react'
 import { isRight } from '../../../core/shared/either'
 import { ColorPicker } from './color-picker'
-import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../common/css-utils'
+import {
+  CSSColor,
+  parseColor,
+  cssColorToChromaColorOrDefault,
+  printColor,
+} from '../common/css-utils'
 import { StringControl } from './string-control'
 import { ControlStatus, ControlStyles } from '../common/control-status'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'
@@ -58,14 +63,11 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
       id={`string-${props.id}`}
       key={'color-string'}
       testId={'color-control-string-control'}
-      value={cssColorToChromaColorOrDefault(props.value).hex('rgba').toUpperCase()}
+      value={printColor(props.value)}
       readOnly={props.controlStyles.interactive}
       onSubmitValue={props.onSubmitSolidStringValue ?? onSubmitStringValue}
       controlStatus={props.controlStatus}
       controlStyles={props.controlStyles}
-      DEPRECATED_controlOptions={{
-        labelBelow: 'hex',
-      }}
       style={{
         marginLeft: 8,
       }}
