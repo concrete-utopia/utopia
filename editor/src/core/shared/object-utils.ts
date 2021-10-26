@@ -123,6 +123,25 @@ export function objectMap<T, K extends keyof T, U>(
   })
   return mappedObj
 }
+export function objectMapDropNulls<T, K extends keyof T, U>(
+  transform: (t: ValueOf<T>, key: K) => U | null,
+  obj: T,
+): {
+  [key in K]: U
+} {
+  const keys = Object.keys(obj) as Array<K>
+  const mappedObj = {} as {
+    [key in K]: U
+  }
+  fastForEach(keys, (key) => {
+    const value = obj[key]
+    const transformResult = transform(value, key)
+    if (transformResult != null) {
+      mappedObj[key] = transformResult
+    }
+  })
+  return mappedObj
+}
 
 export function forEachValue<T>(fn: (val: ValueOf<T>, key: keyof T) => void, obj: T): void {
   const keys = Object.keys(obj) as Array<keyof T>

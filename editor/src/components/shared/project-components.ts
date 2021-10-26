@@ -1,10 +1,6 @@
 import { PropertyControls } from 'utopia-api'
 import { URL_HASH } from '../../common/env-vars'
-import {
-  defaultPropertiesForComponent,
-  defaultPropertiesForComponentInFile,
-  parsedPropertyControlsForComponentInFile,
-} from '../../core/property-controls/property-controls-utils'
+import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
 import { flatMapEither, foldEither, right } from '../../core/shared/either'
 import {
   emptyComments,

@@ -347,64 +347,106 @@ const validFolderControlDescriptionValue: FolderControlDescription = {
 
 describe('parseControlDescription', () => {
   it('parses a number description correctly', () => {
-    expect(parseControlDescription(validNumberControlDescriptionValue)).toEqual(
-      right(validNumberControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validNumberControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validNumberControlDescriptionValue))
   })
   it('parses an enum description correctly', () => {
-    expect(parseControlDescription(validEnumControlDescriptionValue)).toEqual(
-      right(validEnumControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validEnumControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validEnumControlDescriptionValue))
   })
   it('parses a boolean description correctly', () => {
-    expect(parseControlDescription(validBooleanControlDescriptionValue)).toEqual(
-      right(validBooleanControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validBooleanControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validBooleanControlDescriptionValue))
   })
   it('parses a string description correctly', () => {
-    expect(parseControlDescription(validStringControlDescriptionValue)).toEqual(
-      right(validStringControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validStringControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validStringControlDescriptionValue))
   })
   it('parses a popup list description correctly', () => {
-    expect(parseControlDescription(validPopUpListControlDescriptionValue)).toEqual(
-      right(validPopUpListControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validPopUpListControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validPopUpListControlDescriptionValue))
   })
   it('parses a options list description correctly', () => {
-    expect(parseControlDescription(validOptionsControlDescriptionValue)).toEqual(
-      right(validOptionsControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validOptionsControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validOptionsControlDescriptionValue))
   })
   it('parses a color description correctly', () => {
-    expect(parseControlDescription(validColorControlDescriptionValue)).toEqual(
-      right(validColorControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validColorControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validColorControlDescriptionValue))
   })
   it('parses a component instance description correctly', () => {
-    expect(parseControlDescription(validComponentInstanceControlDescriptionValue)).toEqual(
-      right(validComponentInstanceControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validComponentInstanceControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validComponentInstanceControlDescriptionValue))
   })
   it('parses an ignore description correctly', () => {
-    expect(parseControlDescription(validIgnoreControlDescriptionValue)).toEqual(
-      right(validIgnoreControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validIgnoreControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validIgnoreControlDescriptionValue))
   })
   it('parses a folder instance description correctly', () => {
-    expect(parseControlDescription(validFolderControlDescriptionValue)).toEqual(
-      right(validFolderControlDescriptionValue),
-    )
+    expect(
+      parseControlDescription(
+        validFolderControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validFolderControlDescriptionValue))
   })
   it('fails on a value that is not an object', () => {
-    expect(parseControlDescription('hat')).toEqual(left(descriptionParseError('Not an object.')))
+    expect(parseControlDescription('hat', 'testPropName', 'includeSpecialProps')).toEqual(
+      left(descriptionParseError('Not an object.')),
+    )
   })
   it('fails on a value that is an invalid case of one of the descriptions', () => {
     const value = {
       ...validOptionsControlDescriptionValue,
       title: true,
     }
-    expect(parseControlDescription(value)).toEqual(
+    expect(parseControlDescription(value, 'testPropName', 'includeSpecialProps')).toEqual(
       left(objectFieldParseError('title', descriptionParseError('Not a string.'))),
     )
   })
@@ -420,7 +462,9 @@ describe('parsePropertyControls', () => {
       width: right(validNumberControlDescriptionValue),
       height: right(validNumberControlDescriptionValue),
     })
-    expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
+    expect(parsePropertyControls(propertyControlsValue, 'includeSpecialProps')).toEqual(
+      expectedResult,
+    )
   })
   it('returns the property controls fully parsed when some are invalid', () => {
     const propertyControlsValue = {
@@ -434,13 +478,17 @@ describe('parsePropertyControls', () => {
       width: right(validNumberControlDescriptionValue),
       height: left(objectFieldParseError('defaultValue', descriptionParseError('Not a number.'))),
     })
-    expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
+    expect(parsePropertyControls(propertyControlsValue, 'includeSpecialProps')).toEqual(
+      expectedResult,
+    )
   })
   it('gives an error if the entire value is invalid', () => {
     const propertyControlsValue = 5
     const expectedResult: ParseResult<ParsedPropertyControls> = left(
       descriptionParseError('Not an object.'),
     )
-    expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
+    expect(parsePropertyControls(propertyControlsValue, 'includeSpecialProps')).toEqual(
+      expectedResult,
+    )
   })
 })

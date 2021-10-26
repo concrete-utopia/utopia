@@ -213,7 +213,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
       if (codeResultCache != null) {
         fastForEach(selectedViews.current, (path) => {
           const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
-          const parsed = parsePropertyControls(propertyControls)
+          const parsed = parsePropertyControls(propertyControls, 'filterSpecialProps')
           const foundMatch = parsedPropertyControls.findIndex((existing) =>
             areMatchingPropertyControls(existing.controls, parsed),
           )
