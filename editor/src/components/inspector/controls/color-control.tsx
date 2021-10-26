@@ -39,28 +39,38 @@ export function updateStringCSSColor(newValue: string, oldValue: CSSColor) {
 }
 
 export const ColorControl = betterReactMemo('ColorControl', (props: ColorControlProps) => {
+  const { onSubmitValue } = props
   const [popupOpen, setPopupOpen] = React.useState(false)
   const colorTheme = useColorTheme()
 
-  const stringInput =
-    props.showString && props.onSubmitSolidStringValue != null ? (
-      <StringControl
-        id={`string-${props.id}`}
-        key={'color-string'}
-        testId={'color-control-string-control'}
-        value={cssColorToChromaColorOrDefault(props.value).hex('rgba').toUpperCase()}
-        readOnly={props.controlStyles.interactive}
-        onSubmitValue={props.onSubmitSolidStringValue}
-        controlStatus={props.controlStatus}
-        controlStyles={props.controlStyles}
-        DEPRECATED_controlOptions={{
-          labelBelow: 'hex',
-        }}
-        style={{
-          marginLeft: 8,
-        }}
-      />
-    ) : null
+  const onSubmitStringValue = React.useCallback(
+    (newValue: string) => {
+      const parsed = parseColor(newValue)
+      if (isRight(parsed)) {
+        onSubmitValue(parsed.value)
+      }
+    },
+    [onSubmitValue],
+  )
+
+  const stringInput = props.showString ? (
+    <StringControl
+      id={`string-${props.id}`}
+      key={'color-string'}
+      testId={'color-control-string-control'}
+      value={cssColorToChromaColorOrDefault(props.value).hex('rgba').toUpperCase()}
+      readOnly={props.controlStyles.interactive}
+      onSubmitValue={props.onSubmitSolidStringValue ?? onSubmitStringValue}
+      controlStatus={props.controlStatus}
+      controlStyles={props.controlStyles}
+      DEPRECATED_controlOptions={{
+        labelBelow: 'hex',
+      }}
+      style={{
+        marginLeft: 8,
+      }}
+    />
+  ) : null
 
   let backgroundLayer: { backgroundImage?: string } = {}
   const [r, g, b, a] = cssColorToChromaColorOrDefault(props.value).rgba()
@@ -94,7 +104,11 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
       style={props.style}
     >
       {picker}
-      <div className={`widget-color-control relative`} key={`${props.id}-surround`}>
+      <div
+        className={`widget-color-control`}
+        key={`${props.id}-surround`}
+        style={{ display: 'flex' }}
+      >
         <div
           key={`${props.id}-color`}
           className={'color-control'}
