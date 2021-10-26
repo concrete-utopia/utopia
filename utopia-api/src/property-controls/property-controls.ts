@@ -6,11 +6,9 @@ import { fastForEach } from '../utils'
 export type BaseControlType =
   | 'boolean'
   | 'color'
-  | 'componentinstance'
   | 'enum'
   | 'expression-enum'
   | 'euler'
-  | 'eventhandler'
   | 'ignore'
   | 'image'
   | 'matrix3'
@@ -19,6 +17,7 @@ export type BaseControlType =
   | 'options'
   | 'popuplist'
   | 'quaternion'
+  | 'rawjs'
   | 'string'
   | 'styleobject'
   | 'vector2'
@@ -42,11 +41,6 @@ export interface BooleanControlDescription extends AbstractBaseControlDescriptio
 
 export interface ColorControlDescription extends AbstractBaseControlDescription<'color'> {
   defaultValue?: string
-}
-
-export interface ComponentInstanceDescription
-  extends AbstractBaseControlDescription<'componentinstance'> {
-  defaultValue?: never
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
@@ -79,11 +73,6 @@ export interface ExpressionEnumControlDescription
 
 export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
   defaultValue?: [number, number, number, string]
-}
-
-export interface EventHandlerControlDescription
-  extends AbstractBaseControlDescription<'eventhandler'> {
-  defaultValue?: never
 }
 
 export interface IgnoreControlDescription extends AbstractBaseControlDescription<'ignore'> {
@@ -148,6 +137,10 @@ export interface QuaternionControlDescription extends AbstractBaseControlDescrip
   defaultValue?: [number, number, number, number]
 }
 
+export interface RawJSControlDescription extends AbstractBaseControlDescription<'rawjs'> {
+  defaultValue?: unknown
+}
+
 export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
   defaultValue?: string
   placeholder?: string
@@ -174,11 +167,9 @@ export interface Vector4ControlDescription extends AbstractBaseControlDescriptio
 export type BaseControlDescription =
   | BooleanControlDescription
   | ColorControlDescription
-  | ComponentInstanceDescription
   | EnumControlDescription
   | ExpressionEnumControlDescription
   | EulerControlDescription
-  | EventHandlerControlDescription
   | IgnoreControlDescription
   | ImageControlDescription
   | Matrix3ControlDescription
@@ -187,6 +178,7 @@ export type BaseControlDescription =
   | OptionsControlDescription
   | PopUpListControlDescription
   | QuaternionControlDescription
+  | RawJSControlDescription
   | StringControlDescription
   | StyleObjectControlDescription
   | Vector2ControlDescription
@@ -240,11 +232,9 @@ export function isBaseControlDescription(
   switch (control.type) {
     case 'boolean':
     case 'color':
-    case 'componentinstance':
     case 'enum':
     case 'expression-enum':
     case 'euler':
-    case 'eventhandler':
     case 'ignore':
     case 'image':
     case 'matrix3':
@@ -253,6 +243,7 @@ export function isBaseControlDescription(
     case 'options':
     case 'popuplist':
     case 'quaternion':
+    case 'rawjs':
     case 'string':
     case 'styleobject':
     case 'vector2':

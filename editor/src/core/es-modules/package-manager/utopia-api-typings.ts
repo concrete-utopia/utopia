@@ -346,7 +346,7 @@ declare module 'utopia-api/primitives/view' {
 }
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
-  export type BaseControlType = 'boolean' | 'color' | 'componentinstance' | 'enum' | 'expression-enum' | 'euler' | 'eventhandler' | 'ignore' | 'image' | 'matrix3' | 'matrix4' | 'number' | 'options' | 'popuplist' | 'quaternion' | 'string' | 'styleobject' | 'vector2' | 'vector3' | 'vector4';
+  export type BaseControlType = 'boolean' | 'color' | 'enum' | 'expression-enum' | 'euler' | 'ignore' | 'image' | 'matrix3' | 'matrix4' | 'number' | 'options' | 'popuplist' | 'quaternion' | 'rawjs' | 'string' | 'styleobject' | 'vector2' | 'vector3' | 'vector4';
   interface AbstractControlDescription<T extends ControlType> {
       title?: string;
       type: T;
@@ -361,9 +361,6 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export interface ColorControlDescription extends AbstractBaseControlDescription<'color'> {
       defaultValue?: string;
-  }
-  export interface ComponentInstanceDescription extends AbstractBaseControlDescription<'componentinstance'> {
-      defaultValue?: never;
   }
   export type AllowedEnumType = string | boolean | number | undefined | null;
   export interface EnumControlDescription extends AbstractBaseControlDescription<'enum'> {
@@ -389,9 +386,6 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
       defaultValue?: [number, number, number, string];
-  }
-  export interface EventHandlerControlDescription extends AbstractBaseControlDescription<'eventhandler'> {
-      defaultValue?: never;
   }
   export interface IgnoreControlDescription extends AbstractBaseControlDescription<'ignore'> {
       defaultValue?: never;
@@ -447,6 +441,9 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface QuaternionControlDescription extends AbstractBaseControlDescription<'quaternion'> {
       defaultValue?: [number, number, number, number];
   }
+  export interface RawJSControlDescription extends AbstractBaseControlDescription<'rawjs'> {
+      defaultValue?: unknown;
+  }
   export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
       defaultValue?: string;
       placeholder?: string;
@@ -465,7 +462,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface Vector4ControlDescription extends AbstractBaseControlDescription<'vector4'> {
       defaultValue?: [number, number, number, number];
   }
-  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | ComponentInstanceDescription | EnumControlDescription | ExpressionEnumControlDescription | EulerControlDescription | EventHandlerControlDescription | IgnoreControlDescription | ImageControlDescription | Matrix3ControlDescription | Matrix4ControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | QuaternionControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
+  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | EnumControlDescription | ExpressionEnumControlDescription | EulerControlDescription | IgnoreControlDescription | ImageControlDescription | Matrix3ControlDescription | Matrix4ControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | QuaternionControlDescription | RawJSControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
   export type ControlType = BaseControlType | HigherLevelControlType | 'folder';
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {
@@ -501,7 +498,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export function getDefaultProps(propertyControls: PropertyControls): {
       [prop: string]: unknown;
   };
-  export function expression(value: AllowedEnumType, expressionString: string, toImport: ImportType): ExpressionEnum;
+  export function expression(value: AllowedEnumType, expressionString: string, toImport?: ImportType): ExpressionEnum;
   export function importStar(source: string, name: string): ImportType;
   export function importDefault(source: string, name: string): ImportType;
   export function importNamed(source: string, name: string): ImportType;

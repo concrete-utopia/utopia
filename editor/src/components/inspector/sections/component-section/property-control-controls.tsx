@@ -5,10 +5,8 @@ import {
   BaseControlDescription,
   BooleanControlDescription,
   ColorControlDescription,
-  ComponentInstanceDescription,
   EnumControlDescription,
   EulerControlDescription,
-  EventHandlerControlDescription,
   ExpressionEnumControlDescription,
   ImageControlDescription,
   Matrix3ControlDescription,
@@ -17,6 +15,7 @@ import {
   OptionsControlDescription,
   PopUpListControlDescription,
   QuaternionControlDescription,
+  RawJSControlDescription,
   StringControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
@@ -54,11 +53,15 @@ import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-perf
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { importDetails, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { addImports, setProp_UNSAFE } from '../../../editor/actions/action-creators'
+import { addImports, forceParseFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { jsxAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { EditorAction } from '../../../editor/action-types'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
+import {
+  normalisePathSuccessOrThrowError,
+  normalisePathToUnderlyingTarget,
+} from '../../../custom-code/code-file'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -119,12 +122,29 @@ export const ControlForColorProp = betterReactMemo(
   },
 )
 
-export const ControlForComponentInstanceProp = betterReactMemo(
-  'ControlForComponentInstanceProp',
-  (props: ControlForPropProps<ComponentInstanceDescription>) => {
+export const ControlForRawJSProp = betterReactMemo(
+  'ControlForRawJSProp',
+  (props: ControlForPropProps<RawJSControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
+    const dispatch = useEditorState((store) => store.dispatch, 'ControlForRawJSProp dispatch')
 
-    const controlId = `${propName}-componentinstance-property-control`
+    const targetFilePaths = useEditorState((store) => {
+      const currentFilePath = forceNotNull(
+        'Missing open file',
+        store.editor.canvas.openFile?.filename,
+      )
+      return store.editor.selectedViews.map((selectedView) => {
+        const normalisedPath = normalisePathToUnderlyingTarget(
+          store.editor.projectContents,
+          store.editor.nodeModules.files,
+          currentFilePath,
+          selectedView,
+        )
+        return normalisePathSuccessOrThrowError(normalisedPath).filePath
+      })
+    }, 'ControlForRawJSProp targetFilePaths')
+
+    const controlId = `${propName}-rawjs-property-control`
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
@@ -133,15 +153,24 @@ export const ControlForComponentInstanceProp = betterReactMemo(
       showContent: true,
     })
 
+    const baseOnSubmit = propMetadata.onSubmitValue
+
+    const submitValue = React.useCallback(
+      (newValue: string): void => {
+        baseOnSubmit(newValue)
+        const actions = targetFilePaths.map((filePath) => forceParseFile(filePath))
+        dispatch(actions, 'everyone')
+      },
+      [dispatch, baseOnSubmit, targetFilePaths],
+    )
+
     return (
       <StringControl
         key={controlId}
         id={controlId}
         testId={controlId}
         value={value ?? ''}
-        onSubmitValue={
-          propMetadata.controlStatus === 'controlled' ? NO_OP : propMetadata.onSubmitValue
-        }
+        onSubmitValue={submitValue}
         controlStatus={propMetadata.controlStatus}
         controlStyles={controlStyles}
       />
@@ -262,19 +291,6 @@ export const ControlForExpressionEnumProp = betterReactMemo(
         containerMode={'default'}
       />
     )
-  },
-)
-
-export const ControlForEventHandlerProp = betterReactMemo(
-  'ControlForEventHandlerProp',
-  (props: ControlForPropProps<EventHandlerControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
-
-    const value = propMetadata.propertyStatus.set
-      ? propMetadata.value
-      : controlDescription.defaultValue
-
-    return <EventHandlerControl handlerName={propName} value={value ?? ''} />
   },
 )
 

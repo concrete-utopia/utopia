@@ -234,10 +234,16 @@ export function updateEmbeddedPreview(
 function maybeRequestModelUpdate(
   projectContents: ProjectContentTreeRoot,
   workers: UtopiaTsWorkers,
+  forceParseFiles: Array<string>,
   dispatch: EditorDispatch,
-): { modelUpdateRequested: boolean; parseOrPrintFinished: Promise<boolean> } {
+): {
+  modelUpdateRequested: boolean
+  parseOrPrintFinished: Promise<boolean>
+  forciblyParsedFiles: Array<string>
+} {
   // Walk the project contents to see if anything needs to be sent across.
   let filesToUpdate: Array<ParseOrPrint> = []
+  let forciblyParsedFiles: Array<string> = []
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (codeNeedsParsing(file.fileContents.revisionsState)) {
@@ -253,6 +259,14 @@ function maybeRequestModelUpdate(
       ) {
         filesToUpdate.push(
           createPrintCode(fullPath, file.fileContents.parsed, PRODUCTION_ENV, file.lastRevisedTime),
+        )
+      } else if (forceParseFiles.includes(fullPath)) {
+        forciblyParsedFiles.push(fullPath)
+        const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
+          ? file.fileContents.parsed
+          : file.lastParseSuccess
+        filesToUpdate.push(
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
         )
       }
     }
@@ -291,9 +305,17 @@ function maybeRequestModelUpdate(
         dispatch([EditorActions.clearParseOrPrintInFlight()])
         return true
       })
-    return { modelUpdateRequested: true, parseOrPrintFinished: parseFinished }
+    return {
+      modelUpdateRequested: true,
+      parseOrPrintFinished: parseFinished,
+      forciblyParsedFiles: forciblyParsedFiles,
+    }
   } else {
-    return { modelUpdateRequested: false, parseOrPrintFinished: Promise.resolve(true) }
+    return {
+      modelUpdateRequested: false,
+      parseOrPrintFinished: Promise.resolve(true),
+      forciblyParsedFiles: forciblyParsedFiles,
+    }
   }
 }
 
@@ -306,11 +328,20 @@ function maybeRequestModelUpdateOnEditor(
     // Prevent repeated requests
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   } else {
-    const modelUpdateRequested = maybeRequestModelUpdate(editor.projectContents, workers, dispatch)
+    const modelUpdateRequested = maybeRequestModelUpdate(
+      editor.projectContents,
+      workers,
+      editor.forceParseFiles,
+      dispatch,
+    )
+    const remainingForceParseFiles = editor.forceParseFiles.filter(
+      (filePath) => !modelUpdateRequested.forciblyParsedFiles.includes(filePath),
+    )
     return {
       editorState: {
         ...editor,
         parseOrPrintInFlight: modelUpdateRequested.modelUpdateRequested,
+        forceParseFiles: remainingForceParseFiles,
       },
       modelUpdateFinished: modelUpdateRequested.parseOrPrintFinished,
     }
