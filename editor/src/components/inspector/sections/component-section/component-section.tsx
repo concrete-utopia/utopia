@@ -410,6 +410,7 @@ const RowForObjectControl = betterReactMemo(
   'RowForObjectControl',
   (props: RowForObjectControlProps) => {
     const [open, setOpen] = React.useState(true)
+    const handleOnClick = React.useCallback(() => setOpen(!open), [setOpen, open])
     const { propPath, controlDescription, isScene } = props
     const title = titleForControl(propPath, controlDescription)
     const indentation = props.indentationLevel * 8
@@ -430,7 +431,7 @@ const RowForObjectControl = betterReactMemo(
         }}
       >
         <div>
-          <div onClick={() => setOpen(!open)}>
+          <div onClick={handleOnClick}>
             <SimpleFlexRow style={{ flexGrow: 1 }}>
               <PropertyLabel
                 target={[propPath]}

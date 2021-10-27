@@ -164,7 +164,9 @@ interface FolderLabelProps {
 }
 
 const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => {
+  const { toggleOpen } = props
   const indentation = props.indentationLevel * 8
+  const handleOnClick = React.useCallback(() => toggleOpen(), [toggleOpen])
   return (
     <div
       style={{
@@ -176,7 +178,7 @@ const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => 
         gap: 4,
         cursor: 'pointer',
       }}
-      onClick={() => props.toggleOpen()}
+      onClick={handleOnClick}
     >
       <ExpansionArrowSVG
         style={{
