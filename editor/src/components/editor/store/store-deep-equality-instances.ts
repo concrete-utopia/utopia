@@ -671,7 +671,7 @@ export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXC
   (component) => component.blockOrExpression,
   createCallWithTripleEquals(),
   (component) => component.param,
-  nullableDeepEquality(ParamKeepDeepEquality()), // TODO FIXME
+  nullableDeepEquality(ParamKeepDeepEquality()),
   (component) => component.propsUsed,
   arrayDeepEquality(createCallWithTripleEquals()),
   (component) => component.rootElement,
