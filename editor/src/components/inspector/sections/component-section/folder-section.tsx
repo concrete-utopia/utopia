@@ -29,6 +29,7 @@ interface FolderSectionProps {
 
 export const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProps) => {
   const [open, setOpen] = React.useState(true)
+  const colorTheme = useColorTheme()
   const hiddenPropsList = React.useMemo(
     () =>
       Object.keys(props.parsedPropertyControls).filter((prop) => {
@@ -67,15 +68,15 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
         ? {}
         : {
             '&:hover': {
-              boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,30%)',
+              boxShadow: `inset 1px 0px 0px 0px ${colorTheme.fg7.value}`,
               background: 'hsl(0,0%,0%,1%)',
             },
             '&:focus-within': {
-              boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,30%)',
+              boxShadow: `inset 1px 0px 0px 0px ${colorTheme.fg7.value}`,
               background: 'hsl(0,0%,0%,1%)',
             },
           },
-    [props.isRoot],
+    [props.isRoot, colorTheme],
   )
 
   const createRowForControl = (propName: string) => {
