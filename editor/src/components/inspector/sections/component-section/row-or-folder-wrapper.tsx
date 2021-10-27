@@ -25,7 +25,7 @@ type RowOrFolderWrapperProps = {
 export const RowOrFolderWrapper = betterReactMemo(
   'RowOrFolderWrapper',
   (props: RowOrFolderWrapperProps) => {
-    switch (props.controlDescription.type) {
+    switch (props.controlDescription.control) {
       case 'folder':
         return (
           <FolderSection
@@ -36,7 +36,7 @@ export const RowOrFolderWrapper = betterReactMemo(
               props.controlDescription.controls,
             )}
             setGlobalCursor={props.setGlobalCursor}
-            title={props.controlDescription.title ?? PP.toString(props.propPath)}
+            title={props.controlDescription.label ?? PP.toString(props.propPath)}
             visibleEmptyControls={props.visibleEmptyControls}
             unsetPropNames={props.unsetPropNames}
             showHiddenControl={props.showHiddenControl}

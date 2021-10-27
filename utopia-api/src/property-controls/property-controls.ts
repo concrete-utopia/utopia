@@ -25,9 +25,10 @@ export type BaseControlType =
   | 'vector4'
 
 interface AbstractControlDescription<T extends ControlType> {
-  title?: string
-  type: T
+  label?: string
+  control: T
   defaultValue?: unknown
+  visibleByDefault?: boolean
 }
 
 interface AbstractBaseControlDescription<T extends BaseControlType>
@@ -211,8 +212,8 @@ export interface UnionControlDescription extends AbstractHigherLevelControlDescr
 }
 
 export interface FolderControlDescription {
-  type: 'folder'
-  title?: string
+  control: 'folder'
+  label?: string
   controls: PropertyControls
 }
 
@@ -230,7 +231,7 @@ export type ControlDescription = RegularControlDescription | FolderControlDescri
 export function isBaseControlDescription(
   control: ControlDescription,
 ): control is BaseControlDescription {
-  switch (control.type) {
+  switch (control.control) {
     case 'boolean':
     case 'color':
     case 'enum':

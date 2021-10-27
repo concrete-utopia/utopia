@@ -33,7 +33,7 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
   const hiddenPropsList = React.useMemo(
     () =>
       Object.keys(props.parsedPropertyControls).filter((prop) => {
-        const isNotFolder = eitherToMaybe(props.parsedPropertyControls[prop])?.type !== 'folder'
+        const isNotFolder = eitherToMaybe(props.parsedPropertyControls[prop])?.control !== 'folder'
         return (
           isNotFolder &&
           props.unsetPropNames.includes(prop) &&

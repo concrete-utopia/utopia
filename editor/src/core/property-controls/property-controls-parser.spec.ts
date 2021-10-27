@@ -54,22 +54,22 @@ function runBaseTestSuite<T>(
     const value = pick(requiredFields, validObject)
     expect(parseFn(value)).toEqual(right(value))
   })
-  it('fails on an invalid title', () => {
+  it('fails on an invalid label', () => {
     const value = {
       ...validObject,
-      title: true,
+      label: true,
     }
     expect(parseFn(value)).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Not a string.'))),
+      left(objectFieldParseError('label', descriptionParseError('Not a string.'))),
     )
   })
   it('fails on an invalid type', () => {
     const value = {
       ...validObject,
-      type: 'ham sandwich',
+      control: 'ham sandwich',
     }
     expect(parseFn(value)).toEqual(
-      left(objectFieldParseError('type', descriptionParseError('Not a member of an enum.'))),
+      left(objectFieldParseError('control', descriptionParseError('Not a member of an enum.'))),
     )
   })
 
@@ -96,8 +96,8 @@ function runBaseTestSuite<T>(
 }
 
 const validBooleanControlDescriptionValue: BooleanControlDescription = {
-  title: 'Boolean Control',
-  type: 'boolean',
+  label: 'Boolean Control',
+  control: 'boolean',
   defaultValue: true,
   disabledTitle: 'Not set.',
   enabledTitle: 'Value is set',
@@ -106,7 +106,7 @@ const validBooleanControlDescriptionValue: BooleanControlDescription = {
 describe('parseBooleanControlDescription', () => {
   runBaseTestSuite(
     validBooleanControlDescriptionValue,
-    ['type'],
+    ['control'],
     ['hat'],
     true,
     parseBooleanControlDescription,
@@ -114,15 +114,15 @@ describe('parseBooleanControlDescription', () => {
 })
 
 const validColorControlDescriptionValue: ColorControlDescription = {
-  title: 'Slider Control',
-  type: 'color',
+  label: 'Slider Control',
+  control: 'color',
   defaultValue: '#FFFFFF',
 }
 
 describe('parseColorControlDescription', () => {
   runBaseTestSuite(
     validColorControlDescriptionValue,
-    ['type'],
+    ['control'],
     ['hat', 9],
     true,
     parseColorControlDescription,
@@ -130,14 +130,14 @@ describe('parseColorControlDescription', () => {
 })
 
 const validRawJSControlDescriptionValue: RawJSControlDescription = {
-  title: 'Raw JS Control',
-  type: 'rawjs',
+  label: 'Raw JS Control',
+  control: 'rawjs',
 }
 
 describe('parseRawJSControlDescription', () => {
   runBaseTestSuite(
     validRawJSControlDescriptionValue,
-    ['type'],
+    ['control'],
     [],
     false,
     parseRawJSControlDescription,
@@ -145,8 +145,8 @@ describe('parseRawJSControlDescription', () => {
 })
 
 const validEnumControlDescriptionValue: EnumControlDescription = {
-  title: 'Enum Control',
-  type: 'enum',
+  label: 'Enum Control',
+  control: 'enum',
   defaultValue: 5,
   options: ['hat', 5, true, undefined, null],
   optionTitles: ['first title', 'second title'],
@@ -156,7 +156,7 @@ const validEnumControlDescriptionValue: EnumControlDescription = {
 describe('parseEnumControlDescription', () => {
   runBaseTestSuite(
     validEnumControlDescriptionValue,
-    ['type', 'options'],
+    ['control', 'options'],
     [['hat']],
     true,
     parseEnumControlDescription,
@@ -164,14 +164,14 @@ describe('parseEnumControlDescription', () => {
 })
 
 const validIgnoreControlDescriptionValue: IgnoreControlDescription = {
-  title: 'Ignore Description',
-  type: 'ignore',
+  label: 'Ignore Description',
+  control: 'ignore',
 }
 
 describe('parseIgnoreControlDescription', () => {
   runBaseTestSuite(
     validIgnoreControlDescriptionValue,
-    ['type'],
+    ['control'],
     [],
     false,
     parseIgnoreControlDescription,
@@ -179,15 +179,15 @@ describe('parseIgnoreControlDescription', () => {
 })
 
 const validImageControlDescriptionValue: ImageControlDescription = {
-  title: 'Image Control',
-  type: 'image',
+  label: 'Image Control',
+  control: 'image',
   defaultValue: 'www.somewebsite.com/iamanimage.jpg',
 }
 
 describe('parseImageControlDescription', () => {
   runBaseTestSuite(
     validImageControlDescriptionValue,
-    ['type'],
+    ['control'],
     [0],
     true,
     parseImageControlDescription,
@@ -195,8 +195,8 @@ describe('parseImageControlDescription', () => {
 })
 
 const validNumberControlDescriptionValue: NumberControlDescription = {
-  title: 'Number Title',
-  type: 'number',
+  label: 'Number Title',
+  control: 'number',
   defaultValue: 5,
   max: 10,
   min: 2,
@@ -208,7 +208,7 @@ const validNumberControlDescriptionValue: NumberControlDescription = {
 describe('parseNumberControlDescription', () => {
   runBaseTestSuite(
     validNumberControlDescriptionValue,
-    ['type'],
+    ['control'],
     ['hat'],
     true,
     parseNumberControlDescription,
@@ -216,8 +216,8 @@ describe('parseNumberControlDescription', () => {
 })
 
 const validOptionsControlDescriptionValue: OptionsControlDescription = {
-  title: 'Pop Up List Control',
-  type: 'options',
+  label: 'Pop Up List Control',
+  control: 'options',
   defaultValue: 5,
   options: [
     { value: 5, label: 'Five' },
@@ -228,7 +228,7 @@ const validOptionsControlDescriptionValue: OptionsControlDescription = {
 describe('parseOptionsControlDescription', () => {
   runBaseTestSuite(
     validOptionsControlDescriptionValue,
-    ['type', 'options'],
+    ['control', 'options'],
     [],
     true,
     parseOptionsControlDescription,
@@ -251,8 +251,8 @@ describe('parseOptionsControlDescription', () => {
 })
 
 const validPopUpListControlDescriptionValue: PopUpListControlDescription = {
-  title: 'Pop Up List Control',
-  type: 'popuplist',
+  label: 'Pop Up List Control',
+  control: 'popuplist',
   defaultValue: 5,
   options: [
     { value: 5, label: 'Five' },
@@ -263,7 +263,7 @@ const validPopUpListControlDescriptionValue: PopUpListControlDescription = {
 describe('parsePopUpListControlDescription', () => {
   runBaseTestSuite(
     validPopUpListControlDescriptionValue,
-    ['type', 'options'],
+    ['control', 'options'],
     [],
     true,
     parsePopUpListControlDescription,
@@ -286,8 +286,8 @@ describe('parsePopUpListControlDescription', () => {
 })
 
 const validStringControlDescriptionValue: StringControlDescription = {
-  title: 'String Control',
-  type: 'string',
+  label: 'String Control',
+  control: 'string',
   defaultValue: 'Some text',
   placeholder: 'Enter text',
   obscured: true,
@@ -296,7 +296,7 @@ const validStringControlDescriptionValue: StringControlDescription = {
 describe('parseStringControlDescription', () => {
   runBaseTestSuite(
     validStringControlDescriptionValue,
-    ['type'],
+    ['control'],
     [9],
     true,
     parseStringControlDescription,
@@ -304,8 +304,8 @@ describe('parseStringControlDescription', () => {
 })
 
 const validStyleObjectControlDescriptionValue: StyleObjectControlDescription = {
-  title: 'Style Object Control',
-  type: 'styleobject',
+  label: 'Style Object Control',
+  control: 'styleobject',
   defaultValue: { width: 100 },
   placeholder: { height: 100 },
 }
@@ -313,7 +313,7 @@ const validStyleObjectControlDescriptionValue: StyleObjectControlDescription = {
 describe('parseStyleObjectControlDescription', () => {
   runBaseTestSuite(
     validStyleObjectControlDescriptionValue,
-    ['type'],
+    ['control'],
     ['hat', 9],
     true,
     parseStyleObjectControlDescription,
@@ -321,7 +321,7 @@ describe('parseStyleObjectControlDescription', () => {
 })
 
 const validFolderControlDescriptionValue: FolderControlDescription = {
-  type: 'folder',
+  control: 'folder',
   controls: {
     style: validStyleObjectControlDescriptionValue,
     someSlider: validNumberControlDescriptionValue,
@@ -427,10 +427,10 @@ describe('parseControlDescription', () => {
   it('fails on a value that is an invalid case of one of the descriptions', () => {
     const value = {
       ...validOptionsControlDescriptionValue,
-      title: true,
+      label: true,
     }
     expect(parseControlDescription(value, 'testPropName', 'includeSpecialProps')).toEqual(
-      left(objectFieldParseError('title', descriptionParseError('Not a string.'))),
+      left(objectFieldParseError('label', descriptionParseError('Not a string.'))),
     )
   })
 })

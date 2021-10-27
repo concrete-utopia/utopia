@@ -94,7 +94,7 @@ const ControlForProp = betterReactMemo(
     if (controlDescription == null) {
       return null
     } else {
-      switch (controlDescription.type) {
+      switch (controlDescription.control) {
         case 'boolean':
           return <ControlForBooleanProp {...props} controlDescription={controlDescription} />
         case 'color':
@@ -200,8 +200,8 @@ interface AbstractRowForControlProps {
   indentationLevel: number
 }
 
-function titleForControl(propPath: PropertyPath, control: RegularControlDescription): string {
-  return control.title ?? PP.lastPartToString(propPath)
+function labelForControl(propPath: PropertyPath, control: RegularControlDescription): string {
+  return control.label ?? PP.lastPartToString(propPath)
 }
 
 function getLabelControlStyle(
@@ -209,7 +209,7 @@ function getLabelControlStyle(
   propMetadata: InspectorInfo<any>,
 ): ControlStyles {
   if (
-    controlDescription.type === 'expression-enum' &&
+    controlDescription.control === 'expression-enum' &&
     propMetadata.controlStatus === 'controlled'
   ) {
     return getControlStyles('simple')
@@ -225,7 +225,7 @@ interface RowForBaseControlProps extends AbstractRowForControlProps {
 
 const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
   const { propPath, controlDescription, isScene } = props
-  const title = titleForControl(propPath, controlDescription)
+  const title = labelForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
   const indentation = props.indentationLevel * 8
 
@@ -254,7 +254,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       <props.label />
     )
 
-  if (controlDescription.type === 'ignore') {
+  if (controlDescription.control === 'ignore') {
     // do not list anything for `ignore` controls
     return null
   }
@@ -287,7 +287,7 @@ const RowForArrayControl = betterReactMemo(
   'RowForArrayControl',
   (props: RowForArrayControlProps) => {
     const { propPath, controlDescription, isScene } = props
-    const title = titleForControl(propPath, controlDescription)
+    const title = labelForControl(propPath, controlDescription)
     const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
       propPath,
       isScene,
@@ -412,7 +412,7 @@ const RowForObjectControl = betterReactMemo(
     const [open, setOpen] = React.useState(true)
     const handleOnClick = React.useCallback(() => setOpen(!open), [setOpen, open])
     const { propPath, controlDescription, isScene } = props
-    const title = titleForControl(propPath, controlDescription)
+    const title = labelForControl(propPath, controlDescription)
     const indentation = props.indentationLevel * 8
 
     return (
@@ -481,13 +481,13 @@ const RowForUnionControl = betterReactMemo(
   'RowForUnionControl',
   (props: RowForUnionControlProps) => {
     const { propPath, controlDescription } = props
-    const title = titleForControl(propPath, controlDescription)
+    const title = labelForControl(propPath, controlDescription)
 
     const suitableControl = useControlForUnionControl(propPath, controlDescription)
     const [controlToUse, setControlToUse] = React.useState(suitableControl)
 
     const labelOptions: OptionsType<SelectOption> = controlDescription.controls.map((control) => {
-      const label = control.title ?? control.type
+      const label = control.label ?? control.control
       return {
         value: control,
         label: label,
@@ -553,7 +553,7 @@ export const RowForControl = betterReactMemo('RowForControl', (props: RowForCont
   if (isBaseControlDescription(controlDescription)) {
     return <RowForBaseControl {...props} controlDescription={controlDescription} />
   } else {
-    switch (controlDescription.type) {
+    switch (controlDescription.control) {
       case 'array':
         return <RowForArrayControl {...props} controlDescription={controlDescription} />
       case 'object':

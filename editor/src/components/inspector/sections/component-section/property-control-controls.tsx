@@ -559,9 +559,9 @@ export const ControlForVectorProp = betterReactMemo(
         (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ??
         []
 
-      const keys = keysForVectorOfType(controlDescription.type)
+      const keys = keysForVectorOfType(controlDescription.control)
       return propsArrayForCSSNumberArray(vectorValue, keys, propPath, propMetadata)
-    }, [controlDescription.type, controlDescription.defaultValue, propMetadata, propPath])
+    }, [controlDescription.control, controlDescription.defaultValue, propMetadata, propPath])
 
     return (
       <ChainedNumberInput

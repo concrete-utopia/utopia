@@ -71,7 +71,7 @@ function runBaseTestSuite<T>(
 
 describe('BooleanControlDescription', () => {
   const booleanControlDescriptionValue: BooleanControlDescription = {
-    type: 'boolean',
+    control: 'boolean',
   }
 
   const validValue = true
@@ -91,7 +91,7 @@ describe('BooleanControlDescription', () => {
 
 describe('ColorControlDescription', () => {
   const colorControlDescriptionValue: ColorControlDescription = {
-    type: 'color',
+    control: 'color',
   }
 
   const validValueAsString = '#FFFFFFFF'
@@ -112,7 +112,7 @@ describe('ColorControlDescription', () => {
 
 describe('RawJSControlDescription', () => {
   const rawJSControlDescriptionValue: RawJSControlDescription = {
-    type: 'rawjs',
+    control: 'rawjs',
   }
 
   const validValue = 'Cake'
@@ -125,7 +125,7 @@ describe('EnumControlDescription', () => {
   const validValue = 'Cake'
 
   const enumControlDescriptionValue: EnumControlDescription = {
-    type: 'enum',
+    control: 'enum',
     options: [validValue],
   }
 
@@ -140,7 +140,7 @@ describe('EnumControlDescription', () => {
 
 describe('IgnoreControlDescription', () => {
   const IgnoreControlDescriptionValue: IgnoreControlDescription = {
-    type: 'ignore',
+    control: 'ignore',
   }
 
   const validValue = 'Cake'
@@ -151,7 +151,7 @@ describe('IgnoreControlDescription', () => {
 
 describe('NumberControlDescription', () => {
   const numberControlDescriptionValue: NumberControlDescription = {
-    type: 'number',
+    control: 'number',
   }
 
   const validValue = 0
@@ -170,7 +170,7 @@ describe('OptionsControlDescription', () => {
   const validValue = 'selected'
 
   const optionsControlDescriptionValue: OptionsControlDescription = {
-    type: 'options',
+    control: 'options',
     options: [
       {
         value: validValue,
@@ -188,7 +188,7 @@ describe('PopupListControlDescription', () => {
   const validValue = 'selected'
 
   const PopupListControlDescriptionValue: PopUpListControlDescription = {
-    type: 'popuplist',
+    control: 'popuplist',
     options: [
       {
         value: validValue,
@@ -204,7 +204,7 @@ describe('PopupListControlDescription', () => {
 
 describe('StringControlDescription', () => {
   const stringControlDescriptionValue: StringControlDescription = {
-    type: 'string',
+    control: 'string',
   }
 
   const validValue = 'hat'
@@ -221,7 +221,7 @@ describe('StringControlDescription', () => {
 
 describe('StringControlDescription', () => {
   const stringControlDescriptionValue: StringControlDescription = {
-    type: 'string',
+    control: 'string',
   }
 
   const validValue = 'hat'
@@ -238,9 +238,9 @@ describe('StringControlDescription', () => {
 
 describe('ArrayControlDescription', () => {
   const simpleArrayControlDescriptionValue: ArrayControlDescription = {
-    type: 'array',
+    control: 'array',
     propertyControl: {
-      type: 'string',
+      control: 'string',
     },
   }
 
@@ -265,11 +265,11 @@ describe('ArrayControlDescription', () => {
   )
 
   const complexArrayControlDescriptionValue: ArrayControlDescription = {
-    type: 'array',
+    control: 'array',
     propertyControl: {
-      type: 'array',
+      control: 'array',
       propertyControl: {
-        type: 'string',
+        control: 'string',
       },
     },
   }
@@ -314,10 +314,10 @@ describe('ArrayControlDescription', () => {
 describe('ObjectControlDescription', () => {
   const simpleValidKey = 'simple'
   const simpleObjectControlDescriptionValue: ObjectControlDescription = {
-    type: 'object',
+    control: 'object',
     object: {
       [simpleValidKey]: {
-        type: 'string',
+        control: 'string',
       },
     },
   }
@@ -358,13 +358,13 @@ describe('ObjectControlDescription', () => {
 
   const complexValidKey = 'complexValidKey'
   const complexObjectControlDescriptionValue: ObjectControlDescription = {
-    type: 'object',
+    control: 'object',
     object: {
       [complexValidKey]: {
-        type: 'object',
+        control: 'object',
         object: {
           [simpleValidKey]: {
-            type: 'string',
+            control: 'string',
           },
         },
       },
@@ -427,13 +427,13 @@ describe('ObjectControlDescription', () => {
 
 describe('UnionControlDescription', () => {
   const simpleUnionControlDescriptionValue: UnionControlDescription = {
-    type: 'union',
+    control: 'union',
     controls: [
       {
-        type: 'string',
+        control: 'string',
       },
       {
-        type: 'number',
+        control: 'number',
       },
     ],
   }
@@ -450,15 +450,15 @@ describe('UnionControlDescription', () => {
   )
 
   const complexUnionControlDescriptionValue: UnionControlDescription = {
-    type: 'union',
+    control: 'union',
     controls: [
       {
-        type: 'string',
+        control: 'string',
       },
       {
-        type: 'array',
+        control: 'array',
         propertyControl: {
-          type: 'string',
+          control: 'string',
         },
       },
     ],

@@ -5,52 +5,52 @@ import { inferControlTypeBasedOnValue } from './component-section-utils'
 describe('inferControlTypeBasedOnValue', () => {
   it('Correctly infers simple number controls', () => {
     const result = inferControlTypeBasedOnValue(1)
-    expect(result.type).toEqual('number')
+    expect(result.control).toEqual('number')
   })
 
   it('Correctly infers simple string controls', () => {
     const result = inferControlTypeBasedOnValue('one')
-    expect(result.type).toEqual('string')
+    expect(result.control).toEqual('string')
   })
 
   it('Correctly infers color string controls', () => {
     // We could test more colors here, but those tests already exist in the actual function for parsing css colors
     const hexResult = inferControlTypeBasedOnValue('#00112233')
-    expect(hexResult.type).toEqual('color')
+    expect(hexResult.control).toEqual('color')
 
     const rgbResult = inferControlTypeBasedOnValue('rgb(10,20,30)')
-    expect(rgbResult.type).toEqual('color')
+    expect(rgbResult.control).toEqual('color')
 
     const hslResult = inferControlTypeBasedOnValue('hsl(10,20%,30%)')
-    expect(hslResult.type).toEqual('color')
+    expect(hslResult.control).toEqual('color')
 
     const keywordResult = inferControlTypeBasedOnValue('blue')
-    expect(keywordResult.type).toEqual('color')
+    expect(keywordResult.control).toEqual('color')
   })
 
   it('Correctly infers simple boolean controls', () => {
     const result = inferControlTypeBasedOnValue(true)
-    expect(result.type).toEqual('boolean')
+    expect(result.control).toEqual('boolean')
   })
 
   it('Correctly infers vector2 controls', () => {
     const result = inferControlTypeBasedOnValue([1, 2])
-    expect(result.type).toEqual('vector2')
+    expect(result.control).toEqual('vector2')
   })
 
   it('Correctly infers vector3 controls', () => {
     const result = inferControlTypeBasedOnValue([1, 2, 3])
-    expect(result.type).toEqual('vector3')
+    expect(result.control).toEqual('vector3')
   })
 
   it('Correctly infers vector4 controls', () => {
     const result = inferControlTypeBasedOnValue([1, 2, 3, 4])
-    expect(result.type).toEqual('vector4')
+    expect(result.control).toEqual('vector4')
   })
 
   it('Correctly infers euler controls', () => {
     const result = inferControlTypeBasedOnValue([1, 2, 3, 'XYZ'])
-    expect(result.type).toEqual('euler')
+    expect(result.control).toEqual('euler')
   })
 
   it('Correctly infers matrix3 controls', () => {
@@ -62,7 +62,7 @@ describe('inferControlTypeBasedOnValue', () => {
     ]
 
     const result = inferControlTypeBasedOnValue(matrix)
-    expect(result.type).toEqual('matrix3')
+    expect(result.control).toEqual('matrix3')
   })
 
   it('Correctly infers matrix4 controls', () => {
@@ -75,48 +75,48 @@ describe('inferControlTypeBasedOnValue', () => {
     ]
 
     const result = inferControlTypeBasedOnValue(matrix)
-    expect(result.type).toEqual('matrix4')
+    expect(result.control).toEqual('matrix4')
   })
 
   it('Correctly infers simple array controls', () => {
     const numericArrayLength1Result = inferControlTypeBasedOnValue([1])
-    expect(numericArrayLength1Result.type).toEqual('array')
-    expect((numericArrayLength1Result as ArrayControlDescription).propertyControl.type).toEqual(
+    expect(numericArrayLength1Result.control).toEqual('array')
+    expect((numericArrayLength1Result as ArrayControlDescription).propertyControl.control).toEqual(
       'number',
     )
 
     const numericArrayLength4Result = inferControlTypeBasedOnValue([1, 2, 3, 4, 5])
-    expect(numericArrayLength4Result.type).toEqual('array')
+    expect(numericArrayLength4Result.control).toEqual('array')
 
     // Ensure non-numeric arrays aren't parsed as vectors
     const nonNumericArrayLength2Result = inferControlTypeBasedOnValue(['one', 'two'])
-    expect(nonNumericArrayLength2Result.type).toEqual('array')
+    expect(nonNumericArrayLength2Result.control).toEqual('array')
     const nonNumericArrayLength3Result = inferControlTypeBasedOnValue(['one', 'two', 'three'])
-    expect(nonNumericArrayLength3Result.type).toEqual('array')
+    expect(nonNumericArrayLength3Result.control).toEqual('array')
   })
 
   it('Correctly infers simple object controls', () => {
     const emptyObjectResult = inferControlTypeBasedOnValue({})
-    expect(emptyObjectResult.type).toEqual('object')
+    expect(emptyObjectResult.control).toEqual('object')
 
     const result = inferControlTypeBasedOnValue({ k: 'value' })
-    expect(result.type).toEqual('object')
-    expect((result as ObjectControlDescription).object.k.type).toEqual('string')
+    expect(result.control).toEqual('object')
+    expect((result as ObjectControlDescription).object.k.control).toEqual('string')
   })
 
   it('Ignores the style prop', () => {
     const result = inferControlTypeBasedOnValue({}, 'style')
-    expect(result.type).toEqual('ignore')
+    expect(result.control).toEqual('ignore')
   })
 
   it('Treats a React element as rawjs', () => {
     const result = inferControlTypeBasedOnValue(<div />)
-    expect(result.type).toEqual('rawjs')
+    expect(result.control).toEqual('rawjs')
   })
 
   it('treats a function as rawjs', () => {
     const result = inferControlTypeBasedOnValue(() => {})
-    expect(result.type).toEqual('rawjs')
+    expect(result.control).toEqual('rawjs')
   })
 
   it('Correctly infers nested array / object horror show controls', () => {
@@ -128,12 +128,12 @@ describe('inferControlTypeBasedOnValue', () => {
       ],
     })
 
-    expect(result.type).toEqual('object')
+    expect(result.control).toEqual('object')
     const outerObject = (result as ObjectControlDescription).object
-    expect(outerObject.arr.type).toEqual('array')
+    expect(outerObject.arr.control).toEqual('array')
     const arr = outerObject.arr as ArrayControlDescription
-    expect(arr.propertyControl.type).toEqual('object')
+    expect(arr.propertyControl.control).toEqual('object')
     const innerObject = (arr.propertyControl as ObjectControlDescription).object
-    expect(innerObject.k.type).toEqual('string')
+    expect(innerObject.k.control).toEqual('string')
   })
 })

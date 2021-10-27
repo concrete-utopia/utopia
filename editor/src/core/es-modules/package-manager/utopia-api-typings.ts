@@ -348,9 +348,10 @@ declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
   export type BaseControlType = 'boolean' | 'color' | 'enum' | 'expression-enum' | 'euler' | 'ignore' | 'image' | 'matrix3' | 'matrix4' | 'number' | 'options' | 'popuplist' | 'quaternion' | 'rawjs' | 'string' | 'styleobject' | 'vector2' | 'vector3' | 'vector4';
   interface AbstractControlDescription<T extends ControlType> {
-      title?: string;
-      type: T;
+      label?: string;
+      control: T;
       defaultValue?: unknown;
+      visibleByDefault?: boolean;
   }
   interface AbstractBaseControlDescription<T extends BaseControlType> extends AbstractControlDescription<T> {
   }
@@ -483,8 +484,8 @@ declare module 'utopia-api/property-controls/property-controls' {
       controls: Array<RegularControlDescription>;
   }
   export interface FolderControlDescription {
-      type: 'folder';
-      title?: string;
+      control: 'folder';
+      label?: string;
       controls: PropertyControls;
   }
   export type HigherLevelControlDescription = ArrayControlDescription | ObjectControlDescription | UnionControlDescription;

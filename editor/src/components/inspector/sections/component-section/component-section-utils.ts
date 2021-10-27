@@ -16,68 +16,68 @@ function inferControlTypeBasedOnValueInner(
   if (stackSize > 100) {
     // Prevent this blowing out on recursive structures
     return {
-      type: 'ignore',
+      control: 'ignore',
     }
   }
 
   switch (typeof propValue) {
     case 'number':
       return {
-        type: 'number',
-        title: propName,
+        control: 'number',
+        label: propName,
       }
     case 'string': {
       const parsedAsColor = parseStringValidateAsColor(propValue)
       const controlType = isLeft(parsedAsColor) ? 'string' : 'color'
       return {
-        type: controlType,
-        title: propName,
+        control: controlType,
+        label: propName,
       }
     }
     case 'boolean': {
       return {
-        type: 'boolean',
-        title: propName,
+        control: 'boolean',
+        label: propName,
       }
     }
     case 'function': {
       return {
-        type: 'rawjs',
-        title: propName,
+        control: 'rawjs',
+        label: propName,
       }
     }
     case 'object': {
       if (propValue == null || propName === 'style') {
         return {
-          type: 'ignore',
+          control: 'ignore',
         }
       } else if (React.isValidElement(propValue)) {
         if (propName === 'children') {
           return {
-            type: 'ignore',
+            control: 'ignore',
           }
         } else {
           return {
-            type: 'rawjs',
-            title: propName,
+            control: 'rawjs',
+            label: propName,
           }
         }
       } else if (Array.isArray(propValue)) {
         if (propValue.length === 2 && isNumberArray(propValue)) {
           // First check for vectors or matrices
           return {
-            type: 'vector2',
-            title: propName,
+            control: 'vector2',
+            label: propName,
           }
         } else if (propValue.length === 3 && isNumberArray(propValue)) {
           return {
-            type: 'vector3',
-            title: propName,
+            control: 'vector3',
+            label: propName,
           }
         } else if (propValue.length === 4 && isNumberArray(propValue)) {
           return {
-            type: 'vector4',
-            title: propName,
+            control: 'vector4',
+            label: propName,
           }
         } else if (
           propValue.length === 4 &&
@@ -85,30 +85,30 @@ function inferControlTypeBasedOnValueInner(
           typeof propValue[3] === 'string'
         ) {
           return {
-            type: 'euler',
-            title: propName,
+            control: 'euler',
+            label: propName,
           }
         } else if (propValue.length === 9 && isNumberArray(propValue)) {
           return {
-            type: 'matrix3',
-            title: propName,
+            control: 'matrix3',
+            label: propName,
           }
         } else if (propValue.length === 16 && isNumberArray(propValue)) {
           return {
-            type: 'matrix4',
-            title: propName,
+            control: 'matrix4',
+            label: propName,
           }
         } else if (propValue.length > 0) {
           // Otherwise we go with a regular array control
           return {
-            type: 'array',
-            title: propName,
+            control: 'array',
+            label: propName,
             propertyControl: inferControlTypeBasedOnValueInner(stackSize + 1, propValue[0]),
           }
         } else {
           // We can't infer the underlying control type for empty arrays, so our hands are tied here
           return {
-            type: 'ignore',
+            control: 'ignore',
           }
         }
       } else {
@@ -118,15 +118,15 @@ function inferControlTypeBasedOnValueInner(
         )
 
         return {
-          type: 'object',
-          title: propName,
+          control: 'object',
+          label: propName,
           object: controlsForKeys,
         }
       }
     }
     default:
       return {
-        type: 'ignore',
+        control: 'ignore',
       }
   }
 }

@@ -179,7 +179,7 @@ const addSizeAndNotStyleProp: Array<StylePropOption> = ['do-not-add', 'add-size'
 
 const stockHTMLPropertyControls: PropertyControls = {
   style: {
-    type: 'styleobject',
+    control: 'styleobject',
   },
 }
 
@@ -195,7 +195,7 @@ function makeHTMLDescriptor(
   function addDefaultProps(targetPropertyControls: PropertyControls): void {
     for (const propKey of Object.keys(targetPropertyControls)) {
       const prop = targetPropertyControls[propKey]
-      if (prop.type === 'folder') {
+      if (prop.control === 'folder') {
         addDefaultProps(prop.controls)
       } else {
         if (prop?.defaultValue != null) {
@@ -231,23 +231,23 @@ const basicHTMLElementsDescriptor: DependencyDescriptor = {
     makeHTMLDescriptor('input', {}),
     makeHTMLDescriptor('video', {
       controls: {
-        type: 'boolean',
+        control: 'boolean',
         defaultValue: true,
       },
       autoPlay: {
-        type: 'boolean',
+        control: 'boolean',
         defaultValue: true,
       },
       loop: {
-        type: 'boolean',
+        control: 'boolean',
         defaultValue: true,
       },
       src: {
-        type: 'string',
+        control: 'string',
         defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
       },
       style: {
-        type: 'styleobject',
+        control: 'styleobject',
         defaultValue: {
           width: '250px',
           height: '120px',
@@ -256,11 +256,11 @@ const basicHTMLElementsDescriptor: DependencyDescriptor = {
     }),
     makeHTMLDescriptor('img', {
       src: {
-        type: 'string',
+        control: 'string',
         defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
       },
       style: {
-        type: 'styleobject',
+        control: 'styleobject',
         defaultValue: {
           width: '64px',
           height: '64px',
@@ -317,7 +317,7 @@ export function getComponentGroups(
                     return doNotAddStyleProp
                   },
                   (controlDescription) => {
-                    switch (controlDescription.type) {
+                    switch (controlDescription.control) {
                       case 'styleobject':
                         return addSizeAndNotStyleProp
                       default:
@@ -370,7 +370,7 @@ export function getComponentGroups(
       if (component.propertyControls != null) {
         if ('style' in component.propertyControls) {
           const styleControls = component.propertyControls['style']
-          if (styleControls?.type === 'styleobject') {
+          if (styleControls?.control === 'styleobject') {
             stylePropOptions = addSizeAndNotStyleProp
           }
         }

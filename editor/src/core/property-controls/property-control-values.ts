@@ -238,7 +238,7 @@ function unwrapAndParseUnionValue(
 export function unwrapperAndParserForBaseControl(
   control: BaseControlDescription,
 ): UnwrapperAndParser<unknown> {
-  switch (control.type) {
+  switch (control.control) {
     case 'boolean':
       return defaultUnwrapFirst(parseBoolean)
     case 'color':
@@ -283,7 +283,7 @@ export function unwrapperAndParserForBaseControl(
 export function unwrapperAndParserForPropertyControl(
   control: RegularControlDescription,
 ): UnwrapperAndParser<unknown> {
-  switch (control.type) {
+  switch (control.control) {
     case 'boolean':
     case 'color':
     case 'enum':
@@ -349,7 +349,7 @@ export function walkRegularControlDescriptions(
     propertyName: number | string,
     propertyControl: ControlDescription,
   ): void {
-    switch (propertyControl.type) {
+    switch (propertyControl.control) {
       case 'folder':
         addFolder(propertyControl)
         break
@@ -401,7 +401,7 @@ function printJS<T>(value: T): JSXAttribute {
 }
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {
-  switch (control.type) {
+  switch (control.control) {
     case 'boolean':
       return printSimple
     case 'color':
@@ -483,7 +483,7 @@ function printerForUnion<T>(controls: Array<RegularControlDescription>): Printer
 }
 
 export function printerForPropertyControl(control: RegularControlDescription): Printer<unknown> {
-  switch (control.type) {
+  switch (control.control) {
     case 'boolean':
     case 'color':
     case 'enum':
