@@ -405,7 +405,13 @@ const ResizableInspectorPane = betterReactMemo<ResizableInspectorPaneProps>(
             paddingBottom: 100,
           }}
         >
-          {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
+          {props.isInsertMenuSelected ? (
+            <InsertMenuPane />
+          ) : (
+            <InspectorEntryPoint
+              showIndentation={changingWidth > UtopiaTheme.layout.inspectorSmallWidth}
+            />
+          )}
         </SimpleFlexRow>
       </Resizable>
     )

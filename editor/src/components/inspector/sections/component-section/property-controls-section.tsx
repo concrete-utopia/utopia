@@ -50,6 +50,7 @@ interface PropertyControlsSectionProps {
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
   propsWithControlsButNoValue: string[]
   isScene: boolean
+  showIndentation: boolean
 }
 
 export const PropertyControlsSection = betterReactMemo(
@@ -83,6 +84,7 @@ export const PropertyControlsSection = betterReactMemo(
           <FolderSection
             isRoot={true}
             indentationLevel={0}
+            showIndentation={props.showIndentation}
             parsedPropertyControls={rootParseSuccess}
             setGlobalCursor={setGlobalCursor}
             visibleEmptyControls={visibleEmptyControls}

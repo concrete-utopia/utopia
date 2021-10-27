@@ -92,6 +92,7 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps extends TargetSelectorSectionProps {
   selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
+  showIndentation: boolean
 }
 
 interface AlignDistributeButtonProps {
@@ -306,7 +307,9 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         <React.Fragment>
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
-          {anyComponents ? <ComponentSection isScene={false} /> : null}
+          {anyComponents ? (
+            <ComponentSection isScene={false} showIndentation={props.showIndentation} />
+          ) : null}
           <LayoutSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
             aspectRatioLocked={aspectRatioLocked}
@@ -347,9 +350,12 @@ Inspector.displayName = 'Inspector'
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
-export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
+interface InspectorEntryPointProps {
+  showIndentation: boolean
+}
+export const InspectorEntryPoint = betterReactMemo<InspectorEntryPointProps>(
   'InspectorEntryPoint',
-  () => {
+  (props) => {
     const selectedViews = useEditorState(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
@@ -359,6 +365,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       <SingleInspectorEntryPoint
         key={'inspector-entry-selected-views'}
         selectedViews={selectedViews}
+        showIndentation={props.showIndentation}
       />
     )
   },
@@ -366,6 +373,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
 
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<ElementPath>
+  showIndentation: boolean
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
   const { dispatch, jsxMetadata, isUIJSFile } = useEditorState((store) => {
@@ -515,6 +523,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         onStyleSelectorRename={onStyleSelectorRename}
         onStyleSelectorDelete={onStyleSelectorDelete}
         onStyleSelectorInsert={onStyleSelectorInsert}
+        showIndentation={props.showIndentation}
       />
     </InspectorContextProvider>
   ) : null
