@@ -499,7 +499,7 @@ export const FontFamilySelectPopup = betterReactMemo(
           style={{
             ...style,
             backgroundColor: colorTheme.inspectorBackground.value,
-            width: UtopiaTheme.layout.inspectorPaddedWidth,
+            width: UtopiaTheme.layout.inspectorSmallPaddedWidth, // TODO should this be resize-aware
             boxShadow: '#0002 0px 0px 0px 1px, #0002 0px 4px 11px',
             zIndex: 1,
             borderRadius: UtopiaTheme.inputBorderRadius,

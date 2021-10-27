@@ -185,7 +185,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
               left: 0,
               top: 30,
               zIndex: 1,
-              width: UtopiaTheme.layout.inspectorWidth,
+              width: UtopiaTheme.layout.inspectorSmallWidth, // TODO should this be resize-aware
               height: 100,
               ...UtopiaStyles.popup,
               display: 'flex',

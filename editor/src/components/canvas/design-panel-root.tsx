@@ -341,21 +341,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', () => {
       {isCanvasVisible ? (
         <>
           {isRightMenuExpanded ? (
-            <SimpleFlexRow
-              className='Inspector-entrypoint'
-              style={{
-                alignItems: 'stretch',
-                flexDirection: 'column',
-                width: UtopiaTheme.layout.inspectorWidth,
-                backgroundColor: colorTheme.inspectorBackground.value,
-                flexGrow: 0,
-                flexShrink: 0,
-                overflowY: 'scroll',
-                paddingBottom: 100,
-              }}
-            >
-              {isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
-            </SimpleFlexRow>
+            <ResizableInspectorPane isInsertMenuSelected={isInsertMenuSelected} />
           ) : null}
         </>
       ) : null}
@@ -363,3 +349,65 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', () => {
   )
 })
 DesignPanelRoot.displayName = 'DesignPanelRoot'
+
+interface ResizableInspectorPaneProps {
+  isInsertMenuSelected: boolean
+}
+const ResizableInspectorPane = betterReactMemo<ResizableInspectorPaneProps>(
+  'ResizableInspectorPane',
+  (props) => {
+    const colorTheme = useColorTheme()
+    const [width, setWidth] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
+    const [changingWidth, setChangingWidth] = React.useState<number>(
+      UtopiaTheme.layout.inspectorSmallWidth,
+    )
+
+    const onResize = React.useCallback<ResizeCallback>(
+      (e, direction, ref, d) => {
+        setChangingWidth(width + d.width)
+      },
+      [width],
+    )
+    const onResizeStop = React.useCallback<ResizeCallback>(
+      (e, direction, ref, d) => {
+        setWidth(width + d.width)
+      },
+      [width],
+    )
+
+    return (
+      <Resizable
+        defaultSize={{
+          width: UtopiaTheme.layout.inspectorSmallWidth,
+          height: '100%', // TODO is this goode
+        }}
+        size={{
+          width: width,
+          height: '100%', // TODO is this goode
+        }}
+        style={{ transition: 'width 100ms ease-in-out' }}
+        snap={{
+          x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
+        }}
+        onResize={onResize}
+        onResizeStop={onResizeStop}
+      >
+        <SimpleFlexRow
+          className='Inspector-entrypoint'
+          style={{
+            alignItems: 'stretch',
+            flexDirection: 'column',
+            width: '100%',
+            backgroundColor: colorTheme.inspectorBackground.value,
+            flexGrow: 0,
+            flexShrink: 0,
+            overflowY: 'scroll',
+            paddingBottom: 100,
+          }}
+        >
+          {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
+        </SimpleFlexRow>
+      </Resizable>
+    )
+  },
+)
