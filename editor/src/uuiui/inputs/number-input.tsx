@@ -624,7 +624,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             borderRadius: 2,
             ...chainedStyles,
             '&:hover': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,
             },
             '&:focus-within': {
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
