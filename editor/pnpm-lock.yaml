@@ -188,7 +188,7 @@ specifiers:
   pubsub-js: ^1.9.2
   rc-slider: git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
   rc-table: 7.8.6
-  re-resizable: 6.9.0
+  re-resizable: 6.9.1
   react: npm:utopia-react@17.0.0-rc.1
   react-contexify: 5.0.0
   react-dev-utils: 10.2.1
@@ -322,7 +322,7 @@ dependencies:
   pubsub-js: 1.9.3
   rc-slider: github.com/momentumworks/slider/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
   rc-table: 7.8.6_d9cccff7df39c9a08a2a815f75fb6cbc
-  re-resizable: 6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc
+  re-resizable: 6.9.1_d9cccff7df39c9a08a2a815f75fb6cbc
   react: /utopia-react/17.0.0-rc.1
   react-contexify: 5.0.0_d9cccff7df39c9a08a2a815f75fb6cbc
   react-dnd: 10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
@@ -13745,8 +13745,8 @@ packages:
       strip-json-comments: 2.0.1
     dev: true
 
-  /re-resizable/6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc:
-    resolution: {integrity: sha512-3cUDG81ylyqI0Pdgle/RHwwRYq0ORZzsUaySOCO8IbEtNyaRtrIHYm/jMQ5pjcNiKCxR3vsSymIQZHwJq4gg2Q==}
+  /re-resizable/6.9.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+    resolution: {integrity: sha512-KRYAgr9/j1PJ3K+t+MBhlQ+qkkoLDJ1rs0z1heIWvYbCW/9Vq4djDU+QumJ3hQbwwtzXF6OInla6rOx6hhgRhQ==}
     peerDependencies:
       react: ^16.13.1 || ^17.0.0
       react-dom: ^16.13.1 || ^17.0.0

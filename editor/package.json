@@ -154,7 +154,7 @@
     "pubsub-js": "^1.9.2",
     "rc-slider": "git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f",
     "rc-table": "7.8.6",
-    "re-resizable": "6.9.0",
+    "re-resizable": "6.9.1",
     "react": "npm:utopia-react@17.0.0-rc.1",
     "react-contexify": "5.0.0",
     "react-dnd": "10.0.2",
