@@ -41,7 +41,9 @@ interface NumberSize {
   height: number
 }
 
-const TopMenuHeight = 34
+const TopMenuHeight = 35
+// height so that the bottom border on the top menu aligns
+// with the top border of the first inspector section
 
 const NothingOpenCard = betterReactMemo('NothingOpen', () => {
   const colorTheme = useColorTheme()

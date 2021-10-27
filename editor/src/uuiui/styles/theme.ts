@@ -31,7 +31,7 @@ const lightBase = {
   brandNeonPink: base.neonpink,
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
-  bg1: createUtopiColor('#FAFAFA'),
+  bg1: createUtopiColor('#FDFDFD'),
   bg2: createUtopiColor('hsl(0,0%,96%)'),
   bg3: createUtopiColor('hsl(0,0%,94%)'),
   bg4: createUtopiColor('hsl(0,0%,92%)'),
