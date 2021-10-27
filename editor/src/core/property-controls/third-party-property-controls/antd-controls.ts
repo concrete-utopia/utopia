@@ -2,65 +2,65 @@ import { PropertyControls } from 'utopia-api'
 
 const Button: PropertyControls = {
   href: {
-    control: 'string',
+    control: 'stringinput',
     label: 'href',
   },
   onClick: {
-    control: 'rawjs',
+    control: 'expressioninput',
     label: 'onClick',
   },
   disabled: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'disabled',
     defaultValue: false,
   },
   size: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'size',
     options: ['large', 'medium', 'small'],
   },
   type: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'type',
     options: ['primary', 'ghost', 'dashed', 'danger', 'link', 'text', 'default'],
     defaultValue: 'default',
   },
   shape: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'shape',
     options: ['circle', 'round', 'default'],
     defaultValue: 'default',
   },
   icon: {
-    control: 'rawjs',
+    control: 'expressioninput',
     label: 'icon',
   },
   ghost: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'ghost',
     defaultValue: false,
   },
   block: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'block',
     defaultValue: false,
   },
   danger: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'danger',
     defaultValue: false,
   },
   loading: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'loading',
     defaultValue: false,
   },
   htmlType: {
-    control: 'string',
+    control: 'stringinput',
     label: 'htmlType',
   },
   target: {
-    control: 'string',
+    control: 'stringinput',
     label: 'target',
     defaultValue: 'button',
   },
@@ -68,19 +68,19 @@ const Button: PropertyControls = {
 
 const Space: PropertyControls = {
   align: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'align',
     options: ['start', 'end', 'center', 'baseline'],
     defaultValue: 'center',
   },
   direction: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'direction',
     options: ['vertical', 'horizontal'],
     defaultValue: 'vertical',
   },
   size: {
-    control: 'enum', // or a number
+    control: 'popuplist', // or a number
     label: 'size',
     options: ['small', 'middle', 'large'],
     defaultValue: 'middle',
@@ -89,19 +89,19 @@ const Space: PropertyControls = {
 
 const Row: PropertyControls = {
   align: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'align',
     options: ['top', 'middle', 'bottom'],
     defaultValue: 'top',
   },
   gutter: {
     //spacing between grids, could be a number or a object like { xs: 8, sm: 16, md: 24}. or you can use array to make horizontal and vertical spacing work at the same time [horizontal, vertical]
-    control: 'number',
+    control: 'numberinput',
     label: 'gutter',
     defaultValue: 0,
   },
   justify: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'justify',
     options: ['start', 'end', 'center', 'space-around', 'space-between'],
     defaultValue: 'center',
@@ -110,61 +110,61 @@ const Row: PropertyControls = {
 
 const Col: PropertyControls = {
   flex: {
-    control: 'number', // or string
+    control: 'numberinput', // or string
     label: 'flex',
     defaultValue: 1,
   },
   offset: {
-    control: 'number',
+    control: 'numberinput',
     label: 'offset',
     defaultValue: 0,
   },
   order: {
-    control: 'number',
+    control: 'numberinput',
     label: 'order',
     defaultValue: 0,
   },
   pull: {
-    control: 'number',
+    control: 'numberinput',
     label: 'pull',
     defaultValue: 0,
   },
   push: {
-    control: 'number',
+    control: 'numberinput',
     label: 'push',
     defaultValue: 0,
   },
   span: {
-    control: 'number',
+    control: 'numberinput',
     label: 'span',
   },
   xs: {
-    control: 'number', // or an object containing above props
+    control: 'numberinput', // or an object containing above props
     label: 'xs',
     defaultValue: 0,
   },
   sm: {
-    control: 'number', // or an object containing above props
+    control: 'numberinput', // or an object containing above props
     label: 'sm',
     defaultValue: 0,
   },
   md: {
-    control: 'number', // or an object containing above props
+    control: 'numberinput', // or an object containing above props
     label: 'md',
     defaultValue: 0,
   },
   lg: {
-    control: 'number', // or an object containing above props
+    control: 'numberinput', // or an object containing above props
     label: 'lg',
     defaultValue: 0,
   },
   xl: {
-    control: 'number', // or an object containing above props
+    control: 'numberinput', // or an object containing above props
     label: 'xl',
     defaultValue: 0,
   },
   xxl: {
-    control: 'number', // or an object containing above props
+    control: 'numberinput', // or an object containing above props
     label: 'xxl',
     defaultValue: 0,
   },
@@ -172,57 +172,57 @@ const Col: PropertyControls = {
 
 const Text: PropertyControls = {
   code: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'code',
     defaultValue: false,
   },
   copyable: {
-    control: 'boolean', // or { text: string, onCopy: Function }
+    control: 'checkbox', // or { text: string, onCopy: Function }
     label: 'copyable',
     defaultValue: false,
   },
   delete: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'delete',
     defaultValue: false,
   },
   disabled: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'disabled',
     defaultValue: false,
   },
   editable: {
-    control: 'boolean', // or { editing: boolean, onStart: Function, onChange: Function(string) }
+    control: 'checkbox', // or { editing: boolean, onStart: Function, onChange: Function(string) }
     label: 'editable',
     defaultValue: false,
   },
   ellipsis: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'ellipsis',
     defaultValue: false,
   },
   mark: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'mark',
     defaultValue: false,
   },
   keyboard: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'keyboard',
     defaultValue: false,
   },
   underline: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'underline',
     defaultValue: false,
   },
   strong: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'strong',
     defaultValue: false,
   },
   type: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'type',
     options: ['secondary', 'warning', 'danger'],
   },
@@ -232,115 +232,115 @@ const Menu: PropertyControls = {
   defaultOpenKeys: {
     control: 'array',
     propertyControl: {
-      control: 'string',
+      control: 'stringinput',
     },
     label: 'defaultOpenKeys',
   },
   defaultSelectedKeys: {
-    control: 'ignore',
+    control: 'none',
     label: 'defaultSelectedKeys',
   },
   forceSubMenuRender: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'forceSubMenuRender',
     defaultValue: false,
   },
   inlineCollapsed: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'inlineCollapsed',
     defaultValue: false,
   },
   inlineIndent: {
-    control: 'number',
+    control: 'numberinput',
     label: 'inlineIndent',
     defaultValue: 24,
   },
   mode: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'mode',
     options: ['vertical', 'horizontal', 'inline'],
     defaultValue: 'inline',
   },
   multiple: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'multiple',
     defaultValue: false,
   },
   openKeys: {
-    control: 'ignore',
+    control: 'none',
     label: 'openKeys',
   },
   selectable: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'selectable',
     defaultValue: true,
   },
   selectedKeys: {
-    control: 'ignore',
+    control: 'none',
     label: 'selectedKeys',
   },
   subMenuCloseDelay: {
-    control: 'number',
+    control: 'numberinput',
     label: 'subMenuCloseDelay',
     defaultValue: 0.1,
   },
   subMenuOpenDelay: {
-    control: 'number',
+    control: 'numberinput',
     label: 'subMenuOpenDelay',
     defaultValue: 0,
   },
   theme: {
-    control: 'enum',
+    control: 'popuplist',
     label: 'theme',
     options: ['light', 'dark'],
     defaultValue: 'light',
   },
   onClick: {
     // function({ item, key, keyPath, domEvent })
-    control: 'ignore',
+    control: 'none',
     label: 'onClick',
   },
   onDeselect: {
     // function({ item, key, keyPath, selectedKeys, domEvent })
-    control: 'ignore',
+    control: 'none',
     label: 'onClick',
   },
   onOpenChange: {
     // function(openKeys: string[])
-    control: 'ignore',
+    control: 'none',
     label: 'onClick',
   },
   onSelect: {
     // function({ item, key, keyPath, selectedKeys, domEvent })
-    control: 'ignore',
+    control: 'none',
     label: 'onClick',
   },
   overflowedIndicator: {
-    control: 'rawjs',
+    control: 'expressioninput',
     label: 'overflowedIndicator',
   },
 }
 
 const MenuItem: PropertyControls = {
   disabled: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'disabled',
     defaultValue: false,
   },
   key: {
-    control: 'string',
+    control: 'stringinput',
     label: 'key',
   },
   label: {
-    control: 'string',
+    control: 'stringinput',
     label: 'title',
   },
   icon: {
-    control: 'rawjs',
+    control: 'expressioninput',
     label: 'icon',
   },
   danger: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'danger',
     defaultValue: false,
   },
@@ -348,36 +348,36 @@ const MenuItem: PropertyControls = {
 
 const MenuSubMenu: PropertyControls = {
   popupClassName: {
-    control: 'string',
+    control: 'stringinput',
     label: 'popupClassName',
   },
   disabled: {
-    control: 'boolean',
+    control: 'checkbox',
     label: 'disabled',
     defaultValue: false,
   },
   key: {
-    control: 'string',
+    control: 'stringinput',
     label: 'key',
   },
   title: {
-    control: 'string',
+    control: 'stringinput',
     label: 'title',
   },
   icon: {
-    control: 'rawjs',
+    control: 'expressioninput',
     label: 'icon',
   },
   onTitleClick: {
     // function({ key, domEvent })
-    control: 'ignore',
+    control: 'none',
     label: 'onTitleClick',
   },
 }
 
 const MenuItemGroup: PropertyControls = {
   title: {
-    control: 'string',
+    control: 'stringinput',
     label: 'title',
   },
 }

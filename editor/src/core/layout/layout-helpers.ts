@@ -63,7 +63,7 @@ export function targetRespectsLayout(
     projectContents,
     nodeModules,
   )
-  return propControls?.style?.control === 'styleobject'
+  return propControls?.style?.control === 'stylecontrols'
 }
 
 export const PinLayoutHelpers = {

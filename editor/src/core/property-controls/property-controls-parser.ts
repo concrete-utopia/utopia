@@ -1,27 +1,26 @@
 import {
-  BooleanControlDescription,
+  CheckboxControlDescription,
   ColorControlDescription,
   ControlDescription,
-  EnumControlDescription,
-  NumberControlDescription,
-  OptionsControlDescription,
+  NumberInputControlDescription,
+  RadioControlDescription,
   PopUpListControlDescription,
-  StringControlDescription,
-  IgnoreControlDescription,
+  StringInputControlDescription,
+  NoneControlDescription,
   UnionControlDescription,
-  ImageControlDescription,
   ArrayControlDescription,
   ObjectControlDescription,
-  StyleObjectControlDescription,
+  StyleControlsControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
-  ExpressionEnumControlDescription,
+  ExpressionPopUpListControlDescription,
   ExpressionEnum,
   ImportType,
   FolderControlDescription,
   PropertyControls,
   RegularControlDescription,
-  RawJSControlDescription,
+  ExpressionInputControlDescription,
+  ControlType,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -70,26 +69,26 @@ import {
 import { parseEnumValue } from './property-control-values'
 import { filterSpecialProp, filterSpecialProps } from './property-controls-utils'
 
-export function parseNumberControlDescription(
+export function parseNumberInputControlDescription(
   value: unknown,
-): ParseResult<NumberControlDescription> {
+): ParseResult<NumberInputControlDescription> {
   return applicative8Either(
     (label, control, defaultValue, max, min, unit, step, displayStepper) => {
-      let numberControlDescription: NumberControlDescription = {
+      let numberInputControlDescription: NumberInputControlDescription = {
         control: control,
       }
-      setOptionalProp(numberControlDescription, 'label', label)
-      setOptionalProp(numberControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(numberControlDescription, 'max', max)
-      setOptionalProp(numberControlDescription, 'min', min)
-      setOptionalProp(numberControlDescription, 'unit', unit)
-      setOptionalProp(numberControlDescription, 'step', step)
-      setOptionalProp(numberControlDescription, 'displayStepper', displayStepper)
+      setOptionalProp(numberInputControlDescription, 'label', label)
+      setOptionalProp(numberInputControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(numberInputControlDescription, 'max', max)
+      setOptionalProp(numberInputControlDescription, 'min', min)
+      setOptionalProp(numberInputControlDescription, 'unit', unit)
+      setOptionalProp(numberInputControlDescription, 'step', step)
+      setOptionalProp(numberInputControlDescription, 'displayStepper', displayStepper)
 
-      return numberControlDescription
+      return numberInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['number']), 'control')(value),
+    objectKeyParser(parseEnum(['numberinput']), 'control')(value),
     optionalObjectKeyParser(parseNullable(parseNumber), 'defaultValue')(value),
     optionalObjectKeyParser(parseNumber, 'max')(value),
     optionalObjectKeyParser(parseNumber, 'min')(value),
@@ -106,22 +105,28 @@ const parseOptionTitles: Parser<OptionTitles<any>> = parseAlternative<OptionTitl
   'Not a string array or a function.',
 )
 
-export function parseEnumControlDescription(value: unknown): ParseResult<EnumControlDescription> {
+export function parsePopUpListControlDescription(
+  value: unknown,
+): ParseResult<PopUpListControlDescription> {
   return applicative6Either(
     (label, control, defaultValue, options, optionTitles, displaySegmentedControl) => {
-      let enumControlDescription: EnumControlDescription = {
+      let popupListControlDescription: PopUpListControlDescription = {
         control: control,
         options: options,
       }
-      setOptionalProp(enumControlDescription, 'label', label)
-      setOptionalProp(enumControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(enumControlDescription, 'optionTitles', optionTitles)
-      setOptionalProp(enumControlDescription, 'displaySegmentedControl', displaySegmentedControl)
+      setOptionalProp(popupListControlDescription, 'label', label)
+      setOptionalProp(popupListControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(popupListControlDescription, 'optionTitles', optionTitles)
+      setOptionalProp(
+        popupListControlDescription,
+        'displaySegmentedControl',
+        displaySegmentedControl,
+      )
 
-      return enumControlDescription
+      return popupListControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['enum']), 'control')(value),
+    objectKeyParser(parseEnum(['popuplist']), 'control')(value),
     optionalObjectKeyParser(parseEnumValue, 'defaultValue')(value),
     objectKeyParser(parseArray(parseEnumValue), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
@@ -129,12 +134,12 @@ export function parseEnumControlDescription(value: unknown): ParseResult<EnumCon
   )
 }
 
-export function parseExpressionEnumControlDescription(
+export function parseExpressionPopUpListControlDescription(
   value: unknown,
-): ParseResult<ExpressionEnumControlDescription> {
+): ParseResult<ExpressionPopUpListControlDescription> {
   return applicative5Either(
     (label, control, defaultValue, options, optionTitles) => {
-      let enumControlDescription: ExpressionEnumControlDescription = {
+      let enumControlDescription: ExpressionPopUpListControlDescription = {
         control: control,
         options: options,
       }
@@ -145,7 +150,7 @@ export function parseExpressionEnumControlDescription(
       return enumControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['expression-enum']), 'control')(value),
+    objectKeyParser(parseEnum(['expressionpopuplist']), 'control')(value),
     optionalObjectKeyParser(parseExpressionEnum, 'defaultValue')(value),
     objectKeyParser(parseArray(parseExpressionEnum), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
@@ -174,7 +179,7 @@ const parseImportType: Parser<ImportType> = (value: unknown) => {
   )
 }
 
-export function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum> {
+function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum> {
   return applicative3Either(
     (enumValue, expression, importType) => {
       let expressionEnum: ExpressionEnum = {
@@ -190,46 +195,46 @@ export function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum>
   )
 }
 
-export function parseBooleanControlDescription(
+export function parseCheckboxControlDescription(
   value: unknown,
-): ParseResult<BooleanControlDescription> {
+): ParseResult<CheckboxControlDescription> {
   return applicative5Either(
     (label, control, defaultValue, disabledTitle, enabledTitle) => {
-      let booleanControlDescription: BooleanControlDescription = {
+      let checkboxControlDescription: CheckboxControlDescription = {
         control: control,
       }
-      setOptionalProp(booleanControlDescription, 'label', label)
-      setOptionalProp(booleanControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(booleanControlDescription, 'disabledTitle', disabledTitle)
-      setOptionalProp(booleanControlDescription, 'enabledTitle', enabledTitle)
+      setOptionalProp(checkboxControlDescription, 'label', label)
+      setOptionalProp(checkboxControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(checkboxControlDescription, 'disabledTitle', disabledTitle)
+      setOptionalProp(checkboxControlDescription, 'enabledTitle', enabledTitle)
 
-      return booleanControlDescription
+      return checkboxControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['boolean']), 'control')(value),
+    objectKeyParser(parseEnum(['checkbox']), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'defaultValue')(value),
     optionalObjectKeyParser(parseString, 'disabledTitle')(value),
     optionalObjectKeyParser(parseString, 'enabledTitle')(value),
   )
 }
 
-export function parseStringControlDescription(
+export function parseStringInputControlDescription(
   value: unknown,
-): ParseResult<StringControlDescription> {
+): ParseResult<StringInputControlDescription> {
   return applicative5Either(
     (label, control, defaultValue, placeholder, obscured) => {
-      let stringControlDescription: StringControlDescription = {
+      let stringInputControlDescription: StringInputControlDescription = {
         control: control,
       }
-      setOptionalProp(stringControlDescription, 'label', label)
-      setOptionalProp(stringControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(stringControlDescription, 'placeholder', placeholder)
-      setOptionalProp(stringControlDescription, 'obscured', obscured)
+      setOptionalProp(stringInputControlDescription, 'label', label)
+      setOptionalProp(stringInputControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(stringInputControlDescription, 'placeholder', placeholder)
+      setOptionalProp(stringInputControlDescription, 'obscured', obscured)
 
-      return stringControlDescription
+      return stringInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['string']), 'control')(value),
+    objectKeyParser(parseEnum(['stringinput']), 'control')(value),
     optionalObjectKeyParser(parseString, 'defaultValue')(value),
     optionalObjectKeyParser(parseString, 'placeholder')(value),
     optionalObjectKeyParser(parseBoolean, 'obscured')(value),
@@ -249,43 +254,20 @@ export function parsePropertyOption(value: unknown): ParseResult<{ value: any; l
   )
 }
 
-export function parsePopUpListControlDescription(
-  value: unknown,
-): ParseResult<PopUpListControlDescription> {
+export function parseRadioControlDescription(value: unknown): ParseResult<RadioControlDescription> {
   return applicative4Either(
     (label, control, defaultValue, options) => {
-      let popUpListControlDescription: PopUpListControlDescription = {
+      let radioControlDescription: RadioControlDescription = {
         control: control,
         options: options,
       }
-      setOptionalProp(popUpListControlDescription, 'label', label)
-      setOptionalProp(popUpListControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(radioControlDescription, 'label', label)
+      setOptionalProp(radioControlDescription, 'defaultValue', defaultValue)
 
-      return popUpListControlDescription
+      return radioControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['popuplist']), 'control')(value),
-    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseArray(parsePropertyOption), 'options')(value),
-  )
-}
-
-export function parseOptionsControlDescription(
-  value: unknown,
-): ParseResult<OptionsControlDescription> {
-  return applicative4Either(
-    (label, control, defaultValue, options) => {
-      let optionsControlDescription: OptionsControlDescription = {
-        control: control,
-        options: options,
-      }
-      setOptionalProp(optionsControlDescription, 'label', label)
-      setOptionalProp(optionsControlDescription, 'defaultValue', defaultValue)
-
-      return optionsControlDescription
-    },
-    optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['options']), 'control')(value),
+    objectKeyParser(parseEnum(['radio']), 'control')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
     objectKeyParser(parseArray(parsePropertyOption), 'options')(value),
   )
@@ -336,70 +318,53 @@ export function parseColorControlDescription(value: unknown): ParseResult<ColorC
   )
 }
 
-export function parseRawJSControlDescription(value: unknown): ParseResult<RawJSControlDescription> {
+export function parseExpressionInputControlDescription(
+  value: unknown,
+): ParseResult<ExpressionInputControlDescription> {
   return applicative2Either(
     (label, control) => {
-      let rawJSControlDescription: RawJSControlDescription = {
+      let expressionInputControlDescription: ExpressionInputControlDescription = {
         control: control,
       }
-      setOptionalProp(rawJSControlDescription, 'label', label)
+      setOptionalProp(expressionInputControlDescription, 'label', label)
 
-      return rawJSControlDescription
+      return expressionInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['rawjs']), 'control')(value),
+    objectKeyParser(parseEnum(['expressioninput']), 'control')(value),
   )
 }
 
-export function parseIgnoreControlDescription(
-  value: unknown,
-): ParseResult<IgnoreControlDescription> {
+export function parseNoneControlDescription(value: unknown): ParseResult<NoneControlDescription> {
   return applicative2Either(
     (label, control) => {
-      let ignoreControlDescription: IgnoreControlDescription = {
+      let noneControlDescription: NoneControlDescription = {
         control: control,
       }
-      setOptionalProp(ignoreControlDescription, 'label', label)
-      return ignoreControlDescription
+      setOptionalProp(noneControlDescription, 'label', label)
+      return noneControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['ignore']), 'control')(value),
+    objectKeyParser(parseEnum(['none']), 'control')(value),
   )
 }
 
-export function parseImageControlDescription(value: unknown): ParseResult<ImageControlDescription> {
-  return applicative3Either(
-    (label, control, defaultValue) => {
-      let imageControlDescription: ImageControlDescription = {
-        control: control,
-      }
-      setOptionalProp(imageControlDescription, 'label', label)
-      setOptionalProp(imageControlDescription, 'defaultValue', defaultValue)
-
-      return imageControlDescription
-    },
-    optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['image']), 'control')(value),
-    optionalObjectKeyParser(parseString, 'defaultValue')(value),
-  )
-}
-
-export function parseStyleObjectControlDescription(
+export function parseStyleControlsControlDescription(
   value: unknown,
-): ParseResult<StyleObjectControlDescription> {
+): ParseResult<StyleControlsControlDescription> {
   return applicative4Either(
     (label, control, defaultValue, placeholder) => {
-      let styleObjectControlDescription: StyleObjectControlDescription = {
+      let styleControlsControlDescription: StyleControlsControlDescription = {
         control: control,
       }
-      setOptionalProp(styleObjectControlDescription, 'label', label)
-      setOptionalProp(styleObjectControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(styleObjectControlDescription, 'placeholder', placeholder)
+      setOptionalProp(styleControlsControlDescription, 'label', label)
+      setOptionalProp(styleControlsControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(styleControlsControlDescription, 'placeholder', placeholder)
 
-      return styleObjectControlDescription
+      return styleControlsControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['styleobject']), 'control')(value),
+    objectKeyParser(parseEnum(['stylecontrols']), 'control')(value),
     optionalObjectKeyParser(parseObject(parseAny), 'defaultValue')(value), // FIXME
     optionalObjectKeyParser(parseObject(parseAny), 'placeholder')(value), // FIXME
   )
@@ -551,31 +516,28 @@ export function parseRegularControlDescription(
   value: unknown,
 ): ParseResult<RegularControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-    switch ((value as any)['control']) {
-      case 'boolean':
-        return parseBooleanControlDescription(value)
+    const controlType = (value as any)['control'] as ControlType
+    switch (controlType) {
+      case 'checkbox':
+        return parseCheckboxControlDescription(value)
       case 'color':
         return parseColorControlDescription(value)
-      case 'enum':
-        return parseEnumControlDescription(value)
-      case 'expression-enum':
-        return parseExpressionEnumControlDescription(value)
-      case 'ignore':
-        return parseIgnoreControlDescription(value)
-      case 'image':
-        return parseImageControlDescription(value)
-      case 'number':
-        return parseNumberControlDescription(value)
-      case 'options':
-        return parseOptionsControlDescription(value)
+      case 'expressioninput':
+        return parseExpressionInputControlDescription(value)
+      case 'expressionpopuplist':
+        return parseExpressionPopUpListControlDescription(value)
+      case 'none':
+        return parseNoneControlDescription(value)
+      case 'numberinput':
+        return parseNumberInputControlDescription(value)
+      case 'radio':
+        return parseRadioControlDescription(value)
       case 'popuplist':
         return parsePopUpListControlDescription(value)
-      case 'rawjs':
-        return parseRawJSControlDescription(value)
-      case 'string':
-        return parseStringControlDescription(value)
-      case 'styleobject':
-        return parseStyleObjectControlDescription(value)
+      case 'stringinput':
+        return parseStringInputControlDescription(value)
+      case 'stylecontrols':
+        return parseStyleControlsControlDescription(value)
       case 'array':
         return parseArrayControlDescription(value)
       case 'object':

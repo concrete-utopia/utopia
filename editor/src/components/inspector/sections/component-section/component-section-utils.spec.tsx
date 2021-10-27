@@ -5,12 +5,12 @@ import { inferControlTypeBasedOnValue } from './component-section-utils'
 describe('inferControlTypeBasedOnValue', () => {
   it('Correctly infers simple number controls', () => {
     const result = inferControlTypeBasedOnValue(1)
-    expect(result.control).toEqual('number')
+    expect(result.control).toEqual('numberinput')
   })
 
   it('Correctly infers simple string controls', () => {
     const result = inferControlTypeBasedOnValue('one')
-    expect(result.control).toEqual('string')
+    expect(result.control).toEqual('stringinput')
   })
 
   it('Correctly infers color string controls', () => {
@@ -30,7 +30,7 @@ describe('inferControlTypeBasedOnValue', () => {
 
   it('Correctly infers simple boolean controls', () => {
     const result = inferControlTypeBasedOnValue(true)
-    expect(result.control).toEqual('boolean')
+    expect(result.control).toEqual('checkbox')
   })
 
   it('Correctly infers vector2 controls', () => {
@@ -82,7 +82,7 @@ describe('inferControlTypeBasedOnValue', () => {
     const numericArrayLength1Result = inferControlTypeBasedOnValue([1])
     expect(numericArrayLength1Result.control).toEqual('array')
     expect((numericArrayLength1Result as ArrayControlDescription).propertyControl.control).toEqual(
-      'number',
+      'numberinput',
     )
 
     const numericArrayLength4Result = inferControlTypeBasedOnValue([1, 2, 3, 4, 5])
@@ -101,22 +101,22 @@ describe('inferControlTypeBasedOnValue', () => {
 
     const result = inferControlTypeBasedOnValue({ k: 'value' })
     expect(result.control).toEqual('object')
-    expect((result as ObjectControlDescription).object.k.control).toEqual('string')
+    expect((result as ObjectControlDescription).object.k.control).toEqual('stringinput')
   })
 
   it('Ignores the style prop', () => {
     const result = inferControlTypeBasedOnValue({}, 'style')
-    expect(result.control).toEqual('ignore')
+    expect(result.control).toEqual('none')
   })
 
-  it('Treats a React element as rawjs', () => {
+  it('Treats a React element as expressioninput', () => {
     const result = inferControlTypeBasedOnValue(<div />)
-    expect(result.control).toEqual('rawjs')
+    expect(result.control).toEqual('expressioninput')
   })
 
-  it('treats a function as rawjs', () => {
+  it('treats a function as expressioninput', () => {
     const result = inferControlTypeBasedOnValue(() => {})
-    expect(result.control).toEqual('rawjs')
+    expect(result.control).toEqual('expressioninput')
   })
 
   it('Correctly infers nested array / object horror show controls', () => {
@@ -134,6 +134,6 @@ describe('inferControlTypeBasedOnValue', () => {
     const arr = outerObject.arr as ArrayControlDescription
     expect(arr.propertyControl.control).toEqual('object')
     const innerObject = (arr.propertyControl as ObjectControlDescription).object
-    expect(innerObject.k.control).toEqual('string')
+    expect(innerObject.k.control).toEqual('stringinput')
   })
 })

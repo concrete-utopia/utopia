@@ -56,22 +56,19 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { PropertyRow } from '../../widgets/property-row'
 import {
-  ControlForBooleanProp,
-  ControlForColorProp,
-  ControlForEnumProp,
-  ControlForEulerProp,
-  ControlForExpressionEnumProp,
-  ControlForImageProp,
-  ControlForMatrix3Prop,
-  ControlForMatrix4Prop,
-  ControlForNumberProp,
-  ControlForOptionsProp,
-  ControlForPopupListProp,
+  CheckboxPropertyControl,
+  ColorPropertyControl,
+  PopUpListPropertyControl,
+  EulerPropertyControl,
+  ExpressionPopUpListPropertyControl,
+  Matrix3PropertyControl,
+  Matrix4PropertyControl,
+  NumberInputPropertyControl,
+  RadioPropertyControl,
   ControlForPropProps,
-  ControlForQuaternionProp,
-  ControlForRawJSProp,
-  ControlForStringProp,
-  ControlForVectorProp,
+  ExpressionInputPropertyControl,
+  StringInputPropertyControl,
+  VectorPropertyControl,
 } from './property-control-controls'
 import { ComponentInfoBox } from './component-info-box'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
@@ -95,41 +92,43 @@ const ControlForProp = betterReactMemo(
       return null
     } else {
       switch (controlDescription.control) {
-        case 'boolean':
-          return <ControlForBooleanProp {...props} controlDescription={controlDescription} />
+        case 'checkbox':
+          return <CheckboxPropertyControl {...props} controlDescription={controlDescription} />
         case 'color':
-          return <ControlForColorProp {...props} controlDescription={controlDescription} />
-        case 'enum':
-          return <ControlForEnumProp {...props} controlDescription={controlDescription} />
+          return <ColorPropertyControl {...props} controlDescription={controlDescription} />
         case 'euler':
-          return <ControlForEulerProp {...props} controlDescription={controlDescription} />
-        case 'expression-enum':
-          return <ControlForExpressionEnumProp {...props} controlDescription={controlDescription} />
-        case 'ignore':
+          return <EulerPropertyControl {...props} controlDescription={controlDescription} />
+        case 'expressioninput':
+          return (
+            <ExpressionInputPropertyControl {...props} controlDescription={controlDescription} />
+          )
+        case 'expressionpopuplist':
+          return (
+            <ExpressionPopUpListPropertyControl
+              {...props}
+              controlDescription={controlDescription}
+            />
+          )
+        case 'none':
           return null
-        case 'image':
-          return <ControlForImageProp {...props} controlDescription={controlDescription} />
         case 'matrix3':
-          return <ControlForMatrix3Prop {...props} controlDescription={controlDescription} />
+          return <Matrix3PropertyControl {...props} controlDescription={controlDescription} />
         case 'matrix4':
-          return <ControlForMatrix4Prop {...props} controlDescription={controlDescription} />
-        case 'number':
-          return <ControlForNumberProp {...props} controlDescription={controlDescription} />
-        case 'options':
-          return <ControlForOptionsProp {...props} controlDescription={controlDescription} />
+          return <Matrix4PropertyControl {...props} controlDescription={controlDescription} />
+        case 'numberinput':
+          return <NumberInputPropertyControl {...props} controlDescription={controlDescription} />
         case 'popuplist':
-          return <ControlForPopupListProp {...props} controlDescription={controlDescription} />
-        case 'quaternion':
-          return <ControlForQuaternionProp {...props} controlDescription={controlDescription} />
-        case 'rawjs':
-          return <ControlForRawJSProp {...props} controlDescription={controlDescription} />
-        case 'string':
-          return <ControlForStringProp {...props} controlDescription={controlDescription} />
+          return <PopUpListPropertyControl {...props} controlDescription={controlDescription} />
+        case 'radio':
+          return <RadioPropertyControl {...props} controlDescription={controlDescription} />
+        case 'stringinput':
+          return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
+        case 'stylecontrols':
+          return null
         case 'vector2':
         case 'vector3':
         case 'vector4':
-          return <ControlForVectorProp {...props} controlDescription={controlDescription} />
-        // case 'styleobject':
+          return <VectorPropertyControl {...props} controlDescription={controlDescription} />
         default:
           return null
       }
@@ -209,7 +208,7 @@ function getLabelControlStyle(
   propMetadata: InspectorInfo<any>,
 ): ControlStyles {
   if (
-    controlDescription.control === 'expression-enum' &&
+    controlDescription.control === 'expressionpopuplist' &&
     propMetadata.controlStatus === 'controlled'
   ) {
     return getControlStyles('simple')
@@ -254,8 +253,8 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       <props.label />
     )
 
-  if (controlDescription.control === 'ignore') {
-    // do not list anything for `ignore` controls
+  if (controlDescription.control === 'none') {
+    // do not list anything for `none` controls
     return null
   }
 

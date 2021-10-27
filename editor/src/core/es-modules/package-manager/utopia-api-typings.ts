@@ -346,7 +346,7 @@ declare module 'utopia-api/primitives/view' {
 }
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
-  export type BaseControlType = 'boolean' | 'color' | 'enum' | 'expression-enum' | 'euler' | 'ignore' | 'image' | 'matrix3' | 'matrix4' | 'number' | 'options' | 'popuplist' | 'quaternion' | 'rawjs' | 'string' | 'styleobject' | 'vector2' | 'vector3' | 'vector4';
+  export type BaseControlType = 'checkbox' | 'color' | 'euler' | 'expressioninput' | 'expressionpopuplist' | 'matrix3' | 'matrix4' | 'none' | 'numberinput' | 'popuplist' | 'radio' | 'stringinput' | 'stylecontrols' | 'vector2' | 'vector3' | 'vector4';
   interface AbstractControlDescription<T extends ControlType> {
       label?: string;
       control: T;
@@ -355,7 +355,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   interface AbstractBaseControlDescription<T extends BaseControlType> extends AbstractControlDescription<T> {
   }
-  export interface BooleanControlDescription extends AbstractBaseControlDescription<'boolean'> {
+  export interface CheckboxControlDescription extends AbstractBaseControlDescription<'checkbox'> {
       defaultValue?: boolean;
       disabledTitle?: string;
       enabledTitle?: string;
@@ -364,7 +364,7 @@ declare module 'utopia-api/property-controls/property-controls' {
       defaultValue?: string;
   }
   export type AllowedEnumType = string | boolean | number | undefined | null;
-  export interface EnumControlDescription extends AbstractBaseControlDescription<'enum'> {
+  export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
       defaultValue?: AllowedEnumType;
       options: AllowedEnumType[];
       optionTitles?: string[] | ((props: unknown | null) => string[]);
@@ -380,7 +380,7 @@ declare module 'utopia-api/property-controls/property-controls' {
       expression: string;
       import?: ImportType;
   }
-  export interface ExpressionEnumControlDescription extends AbstractBaseControlDescription<'expression-enum'> {
+  export interface ExpressionPopUpListControlDescription extends AbstractBaseControlDescription<'expressionpopuplist'> {
       defaultValue?: ExpressionEnum;
       options: ExpressionEnum[];
       optionTitles?: string[] | ((props: unknown | null) => string[]);
@@ -388,11 +388,8 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
       defaultValue?: [number, number, number, string];
   }
-  export interface IgnoreControlDescription extends AbstractBaseControlDescription<'ignore'> {
+  export interface NoneControlDescription extends AbstractBaseControlDescription<'none'> {
       defaultValue?: never;
-  }
-  export interface ImageControlDescription extends AbstractBaseControlDescription<'image'> {
-      defaultValue?: string;
   }
   export interface Matrix3ControlDescription extends AbstractBaseControlDescription<'matrix3'> {
       defaultValue?: [number, number, number, number, number, number, number, number, number];
@@ -417,7 +414,7 @@ declare module 'utopia-api/property-controls/property-controls' {
           number
       ];
   }
-  export interface NumberControlDescription extends AbstractBaseControlDescription<'number'> {
+  export interface NumberInputControlDescription extends AbstractBaseControlDescription<'numberinput'> {
       defaultValue?: number | null;
       max?: number;
       min?: number;
@@ -425,32 +422,22 @@ declare module 'utopia-api/property-controls/property-controls' {
       step?: number;
       displayStepper?: boolean;
   }
-  export interface OptionsControlDescription extends AbstractBaseControlDescription<'options'> {
+  export interface RadioControlDescription extends AbstractBaseControlDescription<'radio'> {
       defaultValue?: unknown;
       options: Array<{
           value: unknown;
           label: string;
       }>;
   }
-  export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
-      defaultValue?: unknown;
-      options: Array<{
-          value: unknown;
-          label: string;
-      }>;
-  }
-  export interface QuaternionControlDescription extends AbstractBaseControlDescription<'quaternion'> {
-      defaultValue?: [number, number, number, number];
-  }
-  export interface RawJSControlDescription extends AbstractBaseControlDescription<'rawjs'> {
+  export interface ExpressionInputControlDescription extends AbstractBaseControlDescription<'expressioninput'> {
       defaultValue?: unknown;
   }
-  export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
+  export interface StringInputControlDescription extends AbstractBaseControlDescription<'stringinput'> {
       defaultValue?: string;
       placeholder?: string;
       obscured?: boolean;
   }
-  export interface StyleObjectControlDescription extends AbstractBaseControlDescription<'styleobject'> {
+  export interface StyleControlsControlDescription extends AbstractBaseControlDescription<'stylecontrols'> {
       defaultValue?: CSSProperties;
       placeholder?: CSSProperties;
   }
@@ -463,7 +450,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface Vector4ControlDescription extends AbstractBaseControlDescription<'vector4'> {
       defaultValue?: [number, number, number, number];
   }
-  export type BaseControlDescription = BooleanControlDescription | ColorControlDescription | EnumControlDescription | ExpressionEnumControlDescription | EulerControlDescription | IgnoreControlDescription | ImageControlDescription | Matrix3ControlDescription | Matrix4ControlDescription | NumberControlDescription | OptionsControlDescription | PopUpListControlDescription | QuaternionControlDescription | RawJSControlDescription | StringControlDescription | StyleObjectControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
+  export type BaseControlDescription = CheckboxControlDescription | ColorControlDescription | ExpressionInputControlDescription | ExpressionPopUpListControlDescription | EulerControlDescription | NoneControlDescription | Matrix3ControlDescription | Matrix4ControlDescription | NumberInputControlDescription | RadioControlDescription | PopUpListControlDescription | StringInputControlDescription | StyleControlsControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
   export type ControlType = BaseControlType | HigherLevelControlType | 'folder';
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {

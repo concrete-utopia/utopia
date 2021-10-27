@@ -16,19 +16,19 @@ function inferControlTypeBasedOnValueInner(
   if (stackSize > 100) {
     // Prevent this blowing out on recursive structures
     return {
-      control: 'ignore',
+      control: 'none',
     }
   }
 
   switch (typeof propValue) {
     case 'number':
       return {
-        control: 'number',
+        control: 'numberinput',
         label: propName,
       }
     case 'string': {
       const parsedAsColor = parseStringValidateAsColor(propValue)
-      const controlType = isLeft(parsedAsColor) ? 'string' : 'color'
+      const controlType = isLeft(parsedAsColor) ? 'stringinput' : 'color'
       return {
         control: controlType,
         label: propName,
@@ -36,29 +36,29 @@ function inferControlTypeBasedOnValueInner(
     }
     case 'boolean': {
       return {
-        control: 'boolean',
+        control: 'checkbox',
         label: propName,
       }
     }
     case 'function': {
       return {
-        control: 'rawjs',
+        control: 'expressioninput',
         label: propName,
       }
     }
     case 'object': {
       if (propValue == null || propName === 'style') {
         return {
-          control: 'ignore',
+          control: 'none',
         }
       } else if (React.isValidElement(propValue)) {
         if (propName === 'children') {
           return {
-            control: 'ignore',
+            control: 'none',
           }
         } else {
           return {
-            control: 'rawjs',
+            control: 'expressioninput',
             label: propName,
           }
         }
@@ -108,7 +108,7 @@ function inferControlTypeBasedOnValueInner(
         } else {
           // We can't infer the underlying control type for empty arrays, so our hands are tied here
           return {
-            control: 'ignore',
+            control: 'none',
           }
         }
       } else {
@@ -126,7 +126,7 @@ function inferControlTypeBasedOnValueInner(
     }
     default:
       return {
-        control: 'ignore',
+        control: 'none',
       }
   }
 }

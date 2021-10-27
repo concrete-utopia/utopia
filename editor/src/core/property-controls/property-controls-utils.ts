@@ -238,7 +238,7 @@ export function removeIgnored(
     const shouldCopy = foldEither(
       (_) => true,
       (controlDescription) => {
-        return controlDescription.control !== 'ignore'
+        return controlDescription.control !== 'none'
       },
       value,
     )

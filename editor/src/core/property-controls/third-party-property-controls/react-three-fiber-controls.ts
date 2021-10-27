@@ -21,19 +21,19 @@ const Euler: ObjectControlDescription = {
   control: 'object',
   object: {
     x: {
-      control: 'number',
+      control: 'numberinput',
       label: 'x',
     },
     y: {
-      control: 'number',
+      control: 'numberinput',
       label: 'y',
     },
     z: {
-      control: 'number',
+      control: 'numberinput',
       label: 'z',
     },
     order: {
-      control: 'string',
+      control: 'stringinput',
       label: 'order',
     },
   },
@@ -41,11 +41,11 @@ const Euler: ObjectControlDescription = {
 
 const nodePropsControls: PropertyControls = {
   attach: {
-    control: 'string',
+    control: 'stringinput',
     label: 'attach',
   },
   attachArray: {
-    control: 'string',
+    control: 'stringinput',
     label: 'attachArray',
   },
 }
@@ -67,7 +67,7 @@ const colorControls: PropertyControls = {
     control: 'color',
   },
   attach: {
-    control: 'string',
+    control: 'stringinput',
     label: 'attach',
     defaultValue: 'background',
   },
@@ -79,11 +79,11 @@ const fogControls: PropertyControls = {
     control: 'color',
   },
   near: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   far: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1000,
   },
 }
@@ -93,11 +93,11 @@ const fogControls: PropertyControls = {
 const lightControls: PropertyControls = {
   ...object3DNodePropsControls,
   color: {
-    control: 'string',
+    control: 'stringinput',
     label: 'color',
   },
   intensity: {
-    control: 'number',
+    control: 'numberinput',
     label: 'intensity',
     defaultValue: 1,
   },
@@ -106,15 +106,15 @@ const lightControls: PropertyControls = {
 const pointLightControls: PropertyControls = {
   ...lightControls,
   decay: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   distance: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   power: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 4 * Math.PI,
   },
   // shadow,
@@ -127,7 +127,7 @@ const ambientLightControls: PropertyControls = {
 const directionalLightControls: PropertyControls = {
   ...lightControls,
   castShadow: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   target: Vector3,
@@ -136,27 +136,27 @@ const directionalLightControls: PropertyControls = {
 const spotLightControls: PropertyControls = {
   ...lightControls,
   angle: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: Math.PI / 3,
   },
   castShadow: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   decay: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   distance: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   penumbra: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   power: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 4 * Math.PI,
   },
   // shadow,
@@ -176,11 +176,11 @@ const bufferGeometryControls: PropertyControls = {
   // index,
   // morphAttributes,
   morphTargetsRelative: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   name: {
-    control: 'string',
+    control: 'stringinput',
   },
   // userData,
   // uuid
@@ -192,19 +192,19 @@ const planeGeometryControls: PropertyControls = {
     control: 'object',
     object: {
       0: {
-        control: 'number',
+        control: 'numberinput',
         label: 'width',
       },
       1: {
-        control: 'number',
+        control: 'numberinput',
         label: 'height',
       },
       2: {
-        control: 'number',
+        control: 'numberinput',
         label: 'widthSegments',
       },
       3: {
-        control: 'number',
+        control: 'numberinput',
         label: 'heightSegments',
       },
     },
@@ -217,37 +217,37 @@ const sphereGeometryControls: PropertyControls = {
     control: 'object',
     object: {
       0: {
-        control: 'number',
+        control: 'numberinput',
         label: 'radius',
         defaultValue: 1,
       },
       1: {
-        control: 'number',
+        control: 'numberinput',
         label: 'widthSegments',
         defaultValue: 32,
       },
       2: {
-        control: 'number',
+        control: 'numberinput',
         label: 'heightSegments',
         defaultValue: 16,
       },
       3: {
-        control: 'number',
+        control: 'numberinput',
         label: 'phiStart',
         defaultValue: 0,
       },
       4: {
-        control: 'number',
+        control: 'numberinput',
         label: 'phiLength',
         defaultValue: 2 * Math.PI,
       },
       5: {
-        control: 'number',
+        control: 'numberinput',
         label: 'thetaStart',
         defaultValue: 0,
       },
       6: {
-        control: 'number',
+        control: 'numberinput',
         label: 'thetaLength',
         defaultValue: Math.PI,
       },
@@ -263,7 +263,7 @@ const boxGeometryControls: PropertyControls = {
 /* MATERIALS */
 
 const stencilOperations: ControlDescription = {
-  control: 'expression-enum',
+  control: 'expressionpopuplist',
   options: [
     expression(0, 'THREE.ZeroStencilOp', importStar('three', 'THREE')),
     expression(7680, 'THREE.KeepStencilOp', importStar('three', 'THREE')),
@@ -290,18 +290,18 @@ const stencilOperations: ControlDescription = {
 const materialControls: PropertyControls = {
   ...nodePropsControls,
   alphaTest: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   alphaToCoverage: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   Blending: {
     control: 'folder',
     controls: {
       blendDst: {
-        control: 'expression-enum',
+        control: 'expressionpopuplist',
         options: [
           expression(200, 'THREE.ZeroFactor', importStar('three', 'THREE')),
           expression(201, 'THREE.OneFactor', importStar('three', 'THREE')),
@@ -329,11 +329,11 @@ const materialControls: PropertyControls = {
         defaultValue: expression(205, 'THREE.OneMinusSrcAlphaFactor', importStar('three', 'THREE')),
       },
       blendDstAlpha: {
-        control: 'number',
+        control: 'numberinput',
         defaultValue: null,
       },
       blendEquation: {
-        control: 'expression-enum',
+        control: 'expressionpopuplist',
         options: [
           expression(100, 'THREE.AddEquation', importStar('three', 'THREE')),
           expression(101, 'THREE.SubtractEquation', importStar('three', 'THREE')),
@@ -351,11 +351,11 @@ const materialControls: PropertyControls = {
         defaultValue: expression(100, 'THREE.AddEquation', importStar('three', 'THREE')),
       },
       blendEquationAlpha: {
-        control: 'number',
+        control: 'numberinput',
         defaultValue: null,
       },
       blending: {
-        control: 'expression-enum',
+        control: 'expressionpopuplist',
         optionTitles: [
           'NoBlending',
           'NormalBlending',
@@ -375,7 +375,7 @@ const materialControls: PropertyControls = {
         defaultValue: expression(0, 'THREE.NoBlending', importStar('three', 'THREE')),
       },
       blendSrc: {
-        control: 'expression-enum',
+        control: 'expressionpopuplist',
         options: [
           expression(200, 'THREE.ZeroFactor', importStar('three', 'THREE')),
           expression(201, 'THREE.OneFactor', importStar('three', 'THREE')),
@@ -405,27 +405,27 @@ const materialControls: PropertyControls = {
         defaultValue: expression(205, 'THREE.OneMinusSrcAlphaFactor', importStar('three', 'THREE')),
       },
       blendSrcAlpha: {
-        control: 'number',
+        control: 'numberinput',
         defaultValue: null,
       },
     },
   },
   clipIntersection: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   // clippingPlanes,
   clipShadows: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   colorWrite: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: true,
   },
   // defines,
   depthFunc: {
-    control: 'expression-enum',
+    control: 'expressionpopuplist',
     options: [
       expression(0, 'THREE.NeverDepth', importStar('three', 'THREE')),
       expression(1, 'THREE.AlwaysDepth', importStar('three', 'THREE')),
@@ -449,70 +449,70 @@ const materialControls: PropertyControls = {
     defaultValue: expression(3, 'THREE.LessEqualDepth', importStar('three', 'THREE')),
   },
   depthTest: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: true,
   },
   depthWrite: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: true,
   },
   stencilWrite: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   stencilWriteMask: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0xff,
   },
   stencilRef: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   stencilFuncMask: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0xff,
   },
   stencilFail: stencilOperations,
   stencilZFail: stencilOperations,
   stencilZPass: stencilOperations,
   fog: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: true,
   },
   opacity: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1.0,
     min: 0.0,
     max: 1.0,
     step: 0.1,
   },
   polygonOffset: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   polygonOffsetFactor: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   polygonOffsetUnits: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   precision: {
-    control: 'enum',
+    control: 'popuplist',
     options: ['highp', 'mediump', 'lowp'],
     defaultValue: null,
   },
   preMultipliedAlpha: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   dithering: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   shadowSide: {
-    control: 'expression-enum',
+    control: 'expressionpopuplist',
     options: [
       expression(0, 'THREE.FrontSide', importStar('three', 'THREE')),
       expression(1, 'THREE.BackSide', importStar('three', 'THREE')),
@@ -522,7 +522,7 @@ const materialControls: PropertyControls = {
     defaultValue: expression(0, 'THREE.FrontSide', importStar('three', 'THREE')),
   },
   side: {
-    control: 'expression-enum',
+    control: 'expressionpopuplist',
     options: [
       expression(0, 'THREE.FrontSide', importStar('three', 'THREE')),
       expression(1, 'THREE.BackSide', importStar('three', 'THREE')),
@@ -532,19 +532,19 @@ const materialControls: PropertyControls = {
     defaultValue: expression(0, 'THREE.FrontSide', importStar('three', 'THREE')),
   },
   toneMapped: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: true,
   },
   transparent: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   vertexColors: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   visible: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: true,
   },
 }
@@ -554,14 +554,14 @@ const meshBasicMaterialControls: PropertyControls = {
   // alphaMap,
   // aoMap,
   aoMapIntensity: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   color: {
     control: 'color',
   },
   combine: {
-    control: 'expression-enum',
+    control: 'expressionpopuplist',
     options: [
       expression(0, 'THREE.Multiply', importStar('three', 'THREE')),
       expression(1, 'THREE.MixOperation', importStar('three', 'THREE')),
@@ -573,19 +573,19 @@ const meshBasicMaterialControls: PropertyControls = {
   // envMap,
   // lightMap,
   lightMapIntensity: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   // map,
   reflectivity: {
-    control: 'number',
+    control: 'numberinput',
     min: 0,
     max: 1,
     step: 0.05,
     defaultValue: 1,
   },
   refractionRatio: {
-    control: 'number',
+    control: 'numberinput',
     min: 0,
     max: 1,
     step: 0.05,
@@ -593,21 +593,21 @@ const meshBasicMaterialControls: PropertyControls = {
   },
   // specularMap,
   wireframe: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   wireframeLinecap: {
-    control: 'enum',
+    control: 'popuplist',
     options: ['butt', 'round', 'square'],
     defaultValue: 'round',
   },
   wireframeLinejoin: {
-    control: 'enum',
+    control: 'popuplist',
     options: ['round', 'bevel', 'miter'],
     defaultValue: 'round',
   },
   wireframeLinewidth: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
 }
@@ -617,12 +617,12 @@ const meshStandardMaterialControls: PropertyControls = {
   // alphaMap,
   // aoMap,
   aoMapIntensity: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   // bumpMap,
   bumpScale: {
-    control: 'number',
+    control: 'numberinput',
     min: 0,
     max: 1,
     step: 0.05,
@@ -634,11 +634,11 @@ const meshStandardMaterialControls: PropertyControls = {
   // defines,
   // displacementMap,
   displacementScale: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   displacementBias: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 0,
   },
   emissive: {
@@ -646,25 +646,25 @@ const meshStandardMaterialControls: PropertyControls = {
   },
   // emissiveMap,
   emissiveIntensity: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   // envMap,
   envMapIntensity: {
-    control: 'number',
+    control: 'numberinput',
   },
   flatShading: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   // lightMap,
   lightMapIntensity: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
   // map,
   metalness: {
-    control: 'number',
+    control: 'numberinput',
     min: 0,
     max: 1,
     step: 0.05,
@@ -675,14 +675,14 @@ const meshStandardMaterialControls: PropertyControls = {
   // normalMapType,
   // normalScale,
   refractionRatio: {
-    control: 'number',
+    control: 'numberinput',
     min: 0,
     max: 1,
     step: 0.05,
     defaultValue: 0.98,
   },
   roughness: {
-    control: 'number',
+    control: 'numberinput',
     min: 0,
     max: 1,
     step: 0.05,
@@ -690,21 +690,21 @@ const meshStandardMaterialControls: PropertyControls = {
   },
   // roughnessMap,
   wireframe: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: false,
   },
   wireframeLinecap: {
-    control: 'enum',
+    control: 'popuplist',
     options: ['butt', 'round', 'square'],
     defaultValue: 'round',
   },
   wireframeLinejoin: {
-    control: 'enum',
+    control: 'popuplist',
     options: ['round', 'bevel', 'miter'],
     defaultValue: 'round',
   },
   wireframeLinewidth: {
-    control: 'number',
+    control: 'numberinput',
     defaultValue: 1,
   },
 }
@@ -712,7 +712,7 @@ const meshStandardMaterialControls: PropertyControls = {
 const shadowMaterialControls: PropertyControls = {
   ...materialControls,
   transparent: {
-    control: 'boolean',
+    control: 'checkbox',
     defaultValue: true,
   },
 }

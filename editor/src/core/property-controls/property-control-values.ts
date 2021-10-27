@@ -239,36 +239,30 @@ export function unwrapperAndParserForBaseControl(
   control: BaseControlDescription,
 ): UnwrapperAndParser<unknown> {
   switch (control.control) {
-    case 'boolean':
+    case 'checkbox':
       return defaultUnwrapFirst(parseBoolean)
     case 'color':
       return defaultUnwrapFirst(parseColorValue)
-    case 'enum':
-      return defaultUnwrapFirst(parseAllowedEnum(control.options))
-    case 'expression-enum':
+    case 'expressioninput':
+      return jsUnwrapFirst(parseAny)
+    case 'expressionpopuplist':
       return defaultUnwrapFirst(parseAny)
     case 'euler':
       return defaultUnwrapFirst(parseArray(parseAny))
-    case 'ignore':
-      return defaultUnwrapFirst(parseAny)
-    case 'image':
-      return defaultUnwrapFirst(parseString)
     case 'matrix3':
     case 'matrix4':
       return defaultUnwrapFirst(parseArray(parseNumber))
-    case 'number':
+    case 'none':
+      return defaultUnwrapFirst(parseAny)
+    case 'numberinput':
       return defaultUnwrapFirst(parseNumber)
-    case 'options':
-      return defaultUnwrapFirst(parseAny)
     case 'popuplist':
+      return defaultUnwrapFirst(parseAllowedEnum(control.options))
+    case 'radio':
       return defaultUnwrapFirst(parseAny)
-    case 'quaternion':
-      return defaultUnwrapFirst(parseArray(parseNumber))
-    case 'rawjs':
-      return jsUnwrapFirst(parseAny)
-    case 'string':
+    case 'stringinput':
       return defaultUnwrapFirst(parseString)
-    case 'styleobject':
+    case 'stylecontrols':
       return defaultUnwrapFirst(parseAny)
     case 'vector2':
     case 'vector3':
@@ -284,22 +278,19 @@ export function unwrapperAndParserForPropertyControl(
   control: RegularControlDescription,
 ): UnwrapperAndParser<unknown> {
   switch (control.control) {
-    case 'boolean':
+    case 'checkbox':
     case 'color':
-    case 'enum':
-    case 'expression-enum':
+    case 'expressioninput':
+    case 'expressionpopuplist':
     case 'euler':
-    case 'ignore':
-    case 'image':
     case 'matrix3':
     case 'matrix4':
-    case 'number':
-    case 'options':
+    case 'none':
+    case 'numberinput':
     case 'popuplist':
-    case 'quaternion':
-    case 'rawjs':
-    case 'string':
-    case 'styleobject':
+    case 'radio':
+    case 'stringinput':
+    case 'stylecontrols':
     case 'vector2':
     case 'vector3':
     case 'vector4':
@@ -402,36 +393,30 @@ function printJS<T>(value: T): JSXAttribute {
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {
   switch (control.control) {
-    case 'boolean':
+    case 'checkbox':
       return printSimple
     case 'color':
       return printColor
-    case 'enum':
-      return printSimple
-    case 'expression-enum':
+    case 'expressioninput':
+      return printJS
+    case 'expressionpopuplist':
       return printSimple
     case 'euler':
-      return printSimple
-    case 'ignore':
-      return printSimple
-    case 'image':
       return printSimple
     case 'matrix3':
     case 'matrix4':
       return printSimple
-    case 'number':
+    case 'none':
       return printSimple
-    case 'options':
+    case 'numberinput':
       return printSimple
     case 'popuplist':
       return printSimple
-    case 'quaternion':
+    case 'radio':
       return printSimple
-    case 'rawjs':
-      return printJS
-    case 'string':
+    case 'stringinput':
       return printSimple
-    case 'styleobject':
+    case 'stylecontrols':
       return printSimple
     case 'vector2':
       return printSimple
@@ -484,22 +469,19 @@ function printerForUnion<T>(controls: Array<RegularControlDescription>): Printer
 
 export function printerForPropertyControl(control: RegularControlDescription): Printer<unknown> {
   switch (control.control) {
-    case 'boolean':
+    case 'checkbox':
     case 'color':
-    case 'enum':
-    case 'expression-enum':
+    case 'expressioninput':
+    case 'expressionpopuplist':
     case 'euler':
-    case 'ignore':
-    case 'image':
     case 'matrix3':
     case 'matrix4':
-    case 'number':
-    case 'options':
+    case 'none':
+    case 'numberinput':
     case 'popuplist':
-    case 'quaternion':
-    case 'rawjs':
-    case 'string':
-    case 'styleobject':
+    case 'radio':
+    case 'stringinput':
+    case 'stylecontrols':
     case 'vector2':
     case 'vector3':
     case 'vector4':

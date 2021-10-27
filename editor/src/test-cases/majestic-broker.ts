@@ -6,7 +6,7 @@ export var User = (props) => {
 }
 User.propertyControls = {
   style: {
-    type: 'styleobject',
+    type: 'stylecontrols',
   },
 }
 export var Comment = (props) => {
@@ -18,7 +18,7 @@ export var Comment = (props) => {
 }
 Comment.propertyControls = {
   style: {
-    type: 'styleobject',
+    type: 'stylecontrols',
   },
 }
 export var Card = (props) => {
@@ -151,7 +151,7 @@ export var Photo = (props) => {
 }
 Photo.propertyControls = {
   style: {
-    type: 'styleobject',
+    type: 'stylecontrols',
   },
 }
 export var ScrollablePhotoGrid = (props) => {
@@ -244,7 +244,7 @@ export var ScrollablePhotoGrid = (props) => {
 }
 ScrollablePhotoGrid.propertyControls = {
   style: {
-    type: 'styleobject',
+    type: 'stylecontrols',
   },
 }
 export var Content = (props) => {
@@ -265,7 +265,7 @@ export var Content = (props) => {
 }
 Content.propertyControls = {
   style: {
-    type: 'styleobject',
+    type: 'stylecontrols',
   },
 }
 export var BottomMenu = (props) => {
@@ -284,7 +284,7 @@ export var BottomMenu = (props) => {
 }
 BottomMenu.propertyControls = {
   style: {
-    type: 'styleobject',
+    type: 'stylecontrols',
   },
 }
 export var App = () => {

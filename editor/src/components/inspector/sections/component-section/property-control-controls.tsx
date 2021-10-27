@@ -3,20 +3,17 @@ import React from 'react'
 import { betterReactMemo, CSSCursor, SliderControl } from '../../../../uuiui-deps'
 import {
   BaseControlDescription,
-  BooleanControlDescription,
+  CheckboxControlDescription,
   ColorControlDescription,
-  EnumControlDescription,
   EulerControlDescription,
-  ExpressionEnumControlDescription,
-  ImageControlDescription,
+  ExpressionInputControlDescription,
+  ExpressionPopUpListControlDescription,
   Matrix3ControlDescription,
   Matrix4ControlDescription,
-  NumberControlDescription,
-  OptionsControlDescription,
+  NumberInputControlDescription,
   PopUpListControlDescription,
-  QuaternionControlDescription,
-  RawJSControlDescription,
-  StringControlDescription,
+  RadioControlDescription,
+  StringInputControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
   Vector4ControlDescription,
@@ -71,12 +68,12 @@ export interface ControlForPropProps<T extends BaseControlDescription> {
   setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
-export const ControlForBooleanProp = betterReactMemo(
-  'ControlForBooleanProp',
-  (props: ControlForPropProps<BooleanControlDescription>) => {
+export const CheckboxPropertyControl = betterReactMemo(
+  'CheckboxPropertyControl',
+  (props: ControlForPropProps<CheckboxControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
-    const controlId = `${propName}-boolean-property-control`
+    const controlId = `${propName}-checkbox-property-control`
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
@@ -95,8 +92,8 @@ export const ControlForBooleanProp = betterReactMemo(
   },
 )
 
-export const ControlForColorProp = betterReactMemo(
-  'ControlForColorProp',
+export const ColorPropertyControl = betterReactMemo(
+  'ColorPropertyControl',
   (props: ControlForPropProps<ColorControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
@@ -122,11 +119,14 @@ export const ControlForColorProp = betterReactMemo(
   },
 )
 
-export const ControlForRawJSProp = betterReactMemo(
-  'ControlForRawJSProp',
-  (props: ControlForPropProps<RawJSControlDescription>) => {
+export const ExpressionInputPropertyControl = betterReactMemo(
+  'ExpressionInputPropertyControl',
+  (props: ControlForPropProps<ExpressionInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
-    const dispatch = useEditorState((store) => store.dispatch, 'ControlForRawJSProp dispatch')
+    const dispatch = useEditorState(
+      (store) => store.dispatch,
+      'ExpressionInputPropertyControl dispatch',
+    )
 
     const targetFilePaths = useEditorState((store) => {
       const currentFilePath = forceNotNull(
@@ -142,9 +142,9 @@ export const ControlForRawJSProp = betterReactMemo(
         )
         return normalisePathSuccessOrThrowError(normalisedPath).filePath
       })
-    }, 'ControlForRawJSProp targetFilePaths')
+    }, 'ExpressionInputPropertyControl targetFilePaths')
 
-    const controlId = `${propName}-rawjs-property-control`
+    const controlId = `${propName}-expression-input-property-control`
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
@@ -178,10 +178,10 @@ export const ControlForRawJSProp = betterReactMemo(
   },
 )
 
-export const ControlForEnumProp = betterReactMemo(
-  'ControlForEnumProp',
-  (props: ControlForPropProps<EnumControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
+export const PopUpListPropertyControl = betterReactMemo(
+  'PopUpListPropertyControl',
+  (props: ControlForPropProps<PopUpListControlDescription>) => {
+    const { propMetadata, controlDescription } = props
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
@@ -218,16 +218,16 @@ export const ControlForEnumProp = betterReactMemo(
   },
 )
 
-export const ControlForExpressionEnumProp = betterReactMemo(
-  'ControlForEnumProp',
-  (props: ControlForPropProps<ExpressionEnumControlDescription>) => {
+export const ExpressionPopUpListPropertyControl = betterReactMemo(
+  'ExpressionPopUpListPropertyControl',
+  (props: ControlForPropProps<ExpressionPopUpListControlDescription>) => {
     const dispatch = useEditorState(
       (store) => store.dispatch,
-      'ControlForExpressionEnumProp dispatch',
+      'ExpressionPopUpListPropertyControl dispatch',
     )
     const selectedViews = useEditorState(
       (store) => store.editor.selectedViews,
-      'ControlForExpressionEnumProp selectedViews',
+      'ExpressionPopUpListPropertyControl selectedViews',
     )
     const target = forceNotNull('Inspector control without selected element', selectedViews[0])
     const { propMetadata, controlDescription } = props
@@ -294,39 +294,9 @@ export const ControlForExpressionEnumProp = betterReactMemo(
   },
 )
 
-export const ControlForImageProp = betterReactMemo(
-  'ControlForImageProp',
-  (props: ControlForPropProps<ImageControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
-
-    const controlId = `${propName}-image-property-control`
-    const value = propMetadata.propertyStatus.set
-      ? propMetadata.value
-      : controlDescription.defaultValue
-    const controlStyles = useKeepReferenceEqualityIfPossible({
-      ...propMetadata.controlStyles,
-      showContent: true,
-    })
-
-    return (
-      <StringControl
-        key={controlId}
-        id={controlId}
-        testId={controlId}
-        value={value ?? ''}
-        onSubmitValue={
-          propMetadata.controlStatus === 'controlled' ? NO_OP : propMetadata.onSubmitValue
-        }
-        controlStatus={propMetadata.controlStatus}
-        controlStyles={controlStyles}
-      />
-    )
-  },
-)
-
-export const ControlForNumberProp = betterReactMemo(
-  'ControlForNumberProp',
-  (props: ControlForPropProps<NumberControlDescription>) => {
+export const NumberInputPropertyControl = betterReactMemo(
+  'NumberInputPropertyControl',
+  (props: ControlForPropProps<NumberInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
     const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
@@ -338,7 +308,7 @@ export const ControlForNumberProp = betterReactMemo(
       propMetadata.onUnsetValues,
     )
 
-    const controlId = `${propName}-number-property-control`
+    const controlId = `${propName}-number-input-property-control`
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
@@ -372,12 +342,12 @@ export const ControlForNumberProp = betterReactMemo(
   },
 )
 
-export const ControlForOptionsProp = betterReactMemo(
-  'ControlForOptionsProp',
-  (props: ControlForPropProps<OptionsControlDescription>) => {
+export const RadioPropertyControl = betterReactMemo(
+  'RadioPropertyControl',
+  (props: ControlForPropProps<RadioControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
-    const controlId = `${propName}-options-property-control`
+    const controlId = `${propName}-radio-property-control`
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
@@ -397,38 +367,10 @@ export const ControlForOptionsProp = betterReactMemo(
   },
 )
 
-export const ControlForPopupListProp = betterReactMemo(
-  'ControlForPopupListProp',
-  (props: ControlForPropProps<PopUpListControlDescription>) => {
-    const { propMetadata, controlDescription } = props
-
-    const value = propMetadata.propertyStatus.set
-      ? propMetadata.value
-      : controlDescription.defaultValue
-
-    function submitValue(option: SelectOption): void {
-      propMetadata.onSubmitValue(option.value)
-    }
-    const currentValue = controlDescription.options.find((option) => {
-      return fastDeepEquals(option.value, value)
-    })
-
-    return (
-      <PopupList
-        disabled={!propMetadata.controlStyles.interactive}
-        value={currentValue}
-        onSubmitValue={submitValue}
-        options={controlDescription.options}
-        containerMode={'default'}
-      />
-    )
-  },
-)
-
-export const NumberWithSliderControl = betterReactMemo(
+const NumberWithSliderControl = betterReactMemo(
   'NumberWithSliderControl',
   (
-    props: ControlForPropProps<NumberControlDescription> & {
+    props: ControlForPropProps<NumberInputControlDescription> & {
       controlOptions: DEPRECATEDSliderControlOptions
     },
   ) => {
@@ -472,12 +414,12 @@ export const NumberWithSliderControl = betterReactMemo(
   },
 )
 
-export const ControlForStringProp = betterReactMemo(
-  'ControlForStringProp',
-  (props: ControlForPropProps<StringControlDescription>) => {
+export const StringInputPropertyControl = betterReactMemo(
+  'StringInputPropertyControl',
+  (props: ControlForPropProps<StringInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
-    const controlId = `${propName}-string-property-control`
+    const controlId = `${propName}-string-input-property-control`
     const value = propMetadata.propertyStatus.set
       ? propMetadata.value
       : controlDescription.defaultValue
@@ -545,8 +487,8 @@ function propsArrayForCSSNumberArray(
   })
 }
 
-export const ControlForVectorProp = betterReactMemo(
-  'ControlForVectorProp',
+export const VectorPropertyControl = betterReactMemo(
+  'VectorPropertyControl',
   (
     props: ControlForPropProps<
       Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription
@@ -573,8 +515,8 @@ export const ControlForVectorProp = betterReactMemo(
   },
 )
 
-export const ControlForEulerProp = betterReactMemo(
-  'ControlForEulerProp',
+export const EulerPropertyControl = betterReactMemo(
+  'EulerPropertyControl',
   (props: ControlForPropProps<EulerControlDescription>) => {
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
@@ -622,31 +564,8 @@ export const ControlForEulerProp = betterReactMemo(
   },
 )
 
-export const ControlForQuaternionProp = betterReactMemo(
-  'ControlForQuaternionProp',
-  (props: ControlForPropProps<QuaternionControlDescription>) => {
-    const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
-
-    const propsArray: Array<Omit<NumberInputProps, 'id' | 'chained'>> = React.useMemo(() => {
-      const quaternion =
-        (propMetadata.propertyStatus.set ? propMetadata.value : controlDescription.defaultValue) ??
-        []
-
-      return propsArrayForCSSNumberArray(quaternion, ['x', 'y', 'z', 'w'], propPath, propMetadata)
-    }, [controlDescription.defaultValue, propMetadata, propPath])
-
-    return (
-      <ChainedNumberInput
-        idPrefix={'quaternion'}
-        propsArray={propsArray}
-        setGlobalCursor={setGlobalCursor}
-      />
-    )
-  },
-)
-
-export const ControlForMatrix3Prop = betterReactMemo(
-  'ControlForMatrix3Prop',
+export const Matrix3PropertyControl = betterReactMemo(
+  'Matrix3PropertyControl',
   (props: ControlForPropProps<Matrix3ControlDescription>) => {
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
@@ -686,8 +605,8 @@ export const ControlForMatrix3Prop = betterReactMemo(
   },
 )
 
-export const ControlForMatrix4Prop = betterReactMemo(
-  'ControlForMatrix4Prop',
+export const Matrix4PropertyControl = betterReactMemo(
+  'Matrix4PropertyControl',
   (props: ControlForPropProps<Matrix4ControlDescription>) => {
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 

@@ -1,18 +1,17 @@
 import {
   ControlDescription,
-  BooleanControlDescription,
+  CheckboxControlDescription,
   ColorControlDescription,
-  EnumControlDescription,
-  IgnoreControlDescription,
-  NumberControlDescription,
-  OptionsControlDescription,
+  NoneControlDescription,
+  NumberInputControlDescription,
+  RadioControlDescription,
   PopUpListControlDescription,
-  StringControlDescription,
+  StringInputControlDescription,
   ArrayControlDescription,
   ObjectControlDescription,
   UnionControlDescription,
   RegularControlDescription,
-  RawJSControlDescription,
+  ExpressionInputControlDescription,
 } from 'utopia-api'
 import {
   JSXAttribute,
@@ -69,9 +68,9 @@ function runBaseTestSuite<T>(
   })
 }
 
-describe('BooleanControlDescription', () => {
-  const booleanControlDescriptionValue: BooleanControlDescription = {
-    control: 'boolean',
+describe('CheckboxControlDescription', () => {
+  const checkboxControlDescriptionValue: CheckboxControlDescription = {
+    control: 'checkbox',
   }
 
   const validValue = true
@@ -85,7 +84,7 @@ describe('BooleanControlDescription', () => {
     validValue,
     wrappedValidValue,
     wrappedInvalidValues,
-    booleanControlDescriptionValue,
+    checkboxControlDescriptionValue,
   )
 })
 
@@ -110,22 +109,22 @@ describe('ColorControlDescription', () => {
   )
 })
 
-describe('RawJSControlDescription', () => {
-  const rawJSControlDescriptionValue: RawJSControlDescription = {
-    control: 'rawjs',
+describe('ExpressionInputControlDescription', () => {
+  const expressionInputControlDescriptionValue: ExpressionInputControlDescription = {
+    control: 'expressioninput',
   }
 
   const validValue = 'Cake'
   const wrappedValidValue = jsxAttributeOtherJavaScript(validValue, ``, [], null, {})
 
-  runBaseTestSuite(validValue, wrappedValidValue, [], rawJSControlDescriptionValue)
+  runBaseTestSuite(validValue, wrappedValidValue, [], expressionInputControlDescriptionValue)
 })
 
-describe('EnumControlDescription', () => {
+describe('PopUpListControlDescription', () => {
   const validValue = 'Cake'
 
-  const enumControlDescriptionValue: EnumControlDescription = {
-    control: 'enum',
+  const popUpListControlDescriptionValue: PopUpListControlDescription = {
+    control: 'popuplist',
     options: [validValue],
   }
 
@@ -135,23 +134,28 @@ describe('EnumControlDescription', () => {
     jsxAttributeValue(0, emptyComments),
   ]
 
-  runBaseTestSuite(validValue, wrappedValidValue, wrappedInvalidValues, enumControlDescriptionValue)
+  runBaseTestSuite(
+    validValue,
+    wrappedValidValue,
+    wrappedInvalidValues,
+    popUpListControlDescriptionValue,
+  )
 })
 
-describe('IgnoreControlDescription', () => {
-  const IgnoreControlDescriptionValue: IgnoreControlDescription = {
-    control: 'ignore',
+describe('NoneControlDescription', () => {
+  const noneControlDescriptionValue: NoneControlDescription = {
+    control: 'none',
   }
 
   const validValue = 'Cake'
   const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
 
-  runBaseTestSuite(validValue, wrappedValidValue, [], IgnoreControlDescriptionValue)
+  runBaseTestSuite(validValue, wrappedValidValue, [], noneControlDescriptionValue)
 })
 
-describe('NumberControlDescription', () => {
-  const numberControlDescriptionValue: NumberControlDescription = {
-    control: 'number',
+describe('NumberInputControlDescription', () => {
+  const numberInputControlDescriptionValue: NumberInputControlDescription = {
+    control: 'numberinput',
   }
 
   const validValue = 0
@@ -162,15 +166,15 @@ describe('NumberControlDescription', () => {
     validValue,
     wrappedValidValue,
     wrappedInvalidValues,
-    numberControlDescriptionValue,
+    numberInputControlDescriptionValue,
   )
 })
 
-describe('OptionsControlDescription', () => {
+describe('RadioControlDescription', () => {
   const validValue = 'selected'
 
-  const optionsControlDescriptionValue: OptionsControlDescription = {
-    control: 'options',
+  const radioControlDescriptionValue: RadioControlDescription = {
+    control: 'radio',
     options: [
       {
         value: validValue,
@@ -181,30 +185,12 @@ describe('OptionsControlDescription', () => {
 
   const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
 
-  runBaseTestSuite(validValue, wrappedValidValue, [], optionsControlDescriptionValue)
+  runBaseTestSuite(validValue, wrappedValidValue, [], radioControlDescriptionValue)
 })
 
-describe('PopupListControlDescription', () => {
-  const validValue = 'selected'
-
-  const PopupListControlDescriptionValue: PopUpListControlDescription = {
-    control: 'popuplist',
-    options: [
-      {
-        value: validValue,
-        label: 'Label',
-      },
-    ],
-  }
-
-  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
-
-  runBaseTestSuite(validValue, wrappedValidValue, [], PopupListControlDescriptionValue)
-})
-
-describe('StringControlDescription', () => {
-  const stringControlDescriptionValue: StringControlDescription = {
-    control: 'string',
+describe('StringInputControlDescription', () => {
+  const stringInputControlDescriptionValue: StringInputControlDescription = {
+    control: 'stringinput',
   }
 
   const validValue = 'hat'
@@ -215,24 +201,7 @@ describe('StringControlDescription', () => {
     validValue,
     wrappedValidValue,
     wrappedInvalidValues,
-    stringControlDescriptionValue,
-  )
-})
-
-describe('StringControlDescription', () => {
-  const stringControlDescriptionValue: StringControlDescription = {
-    control: 'string',
-  }
-
-  const validValue = 'hat'
-  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
-  const wrappedInvalidValues = [jsxAttributeValue(0, emptyComments)]
-
-  runBaseTestSuite(
-    validValue,
-    wrappedValidValue,
-    wrappedInvalidValues,
-    stringControlDescriptionValue,
+    stringInputControlDescriptionValue,
   )
 })
 
@@ -240,7 +209,7 @@ describe('ArrayControlDescription', () => {
   const simpleArrayControlDescriptionValue: ArrayControlDescription = {
     control: 'array',
     propertyControl: {
-      control: 'string',
+      control: 'stringinput',
     },
   }
 
@@ -269,7 +238,7 @@ describe('ArrayControlDescription', () => {
     propertyControl: {
       control: 'array',
       propertyControl: {
-        control: 'string',
+        control: 'stringinput',
       },
     },
   }
@@ -317,7 +286,7 @@ describe('ObjectControlDescription', () => {
     control: 'object',
     object: {
       [simpleValidKey]: {
-        control: 'string',
+        control: 'stringinput',
       },
     },
   }
@@ -364,7 +333,7 @@ describe('ObjectControlDescription', () => {
         control: 'object',
         object: {
           [simpleValidKey]: {
-            control: 'string',
+            control: 'stringinput',
           },
         },
       },
@@ -430,10 +399,10 @@ describe('UnionControlDescription', () => {
     control: 'union',
     controls: [
       {
-        control: 'string',
+        control: 'stringinput',
       },
       {
-        control: 'number',
+        control: 'numberinput',
       },
     ],
   }
@@ -453,12 +422,12 @@ describe('UnionControlDescription', () => {
     control: 'union',
     controls: [
       {
-        control: 'string',
+        control: 'stringinput',
       },
       {
         control: 'array',
         propertyControl: {
-          control: 'string',
+          control: 'stringinput',
         },
       },
     ],
