@@ -68,6 +68,7 @@ export const StringControl = betterReactMemo(
           className={inputClassName}
           placeholder={mixed ? 'mixed' : undefined}
           onFocus={props.onFocus}
+          focusOnMount={props.focus}
           onBlur={inputOnBlur}
           onChange={inputOnChange}
           value={getDisplayValue()}
