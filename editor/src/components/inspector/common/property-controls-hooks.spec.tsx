@@ -35,14 +35,14 @@ const TestOtherComponentUID = 'other-component-entity-1'
 
 const propertyControlsForApp: PropertyControls = {
   propWithControlButNoValue: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'No Value',
     defaultValue: 'doggie',
   },
 }
 const propertyControlsForOtherComponent: PropertyControls = {
   propWithOtherKey: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'Katz',
     defaultValue: 5,
   },

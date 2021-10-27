@@ -111,7 +111,7 @@ describe('ColorControlDescription', () => {
 
 describe('ExpressionInputControlDescription', () => {
   const expressionInputControlDescriptionValue: ExpressionInputControlDescription = {
-    control: 'expressioninput',
+    control: 'expression-input',
   }
 
   const validValue = 'Cake'
@@ -155,7 +155,7 @@ describe('NoneControlDescription', () => {
 
 describe('NumberInputControlDescription', () => {
   const numberInputControlDescriptionValue: NumberInputControlDescription = {
-    control: 'numberinput',
+    control: 'number-input',
   }
 
   const validValue = 0
@@ -190,7 +190,7 @@ describe('RadioControlDescription', () => {
 
 describe('StringInputControlDescription', () => {
   const stringInputControlDescriptionValue: StringInputControlDescription = {
-    control: 'stringinput',
+    control: 'string-input',
   }
 
   const validValue = 'hat'
@@ -209,7 +209,7 @@ describe('ArrayControlDescription', () => {
   const simpleArrayControlDescriptionValue: ArrayControlDescription = {
     control: 'array',
     propertyControl: {
-      control: 'stringinput',
+      control: 'string-input',
     },
   }
 
@@ -238,7 +238,7 @@ describe('ArrayControlDescription', () => {
     propertyControl: {
       control: 'array',
       propertyControl: {
-        control: 'stringinput',
+        control: 'string-input',
       },
     },
   }
@@ -286,7 +286,7 @@ describe('ObjectControlDescription', () => {
     control: 'object',
     object: {
       [simpleValidKey]: {
-        control: 'stringinput',
+        control: 'string-input',
       },
     },
   }
@@ -333,7 +333,7 @@ describe('ObjectControlDescription', () => {
         control: 'object',
         object: {
           [simpleValidKey]: {
-            control: 'stringinput',
+            control: 'string-input',
           },
         },
       },
@@ -399,10 +399,10 @@ describe('UnionControlDescription', () => {
     control: 'union',
     controls: [
       {
-        control: 'stringinput',
+        control: 'string-input',
       },
       {
-        control: 'numberinput',
+        control: 'number-input',
       },
     ],
   }
@@ -422,12 +422,12 @@ describe('UnionControlDescription', () => {
     control: 'union',
     controls: [
       {
-        control: 'stringinput',
+        control: 'string-input',
       },
       {
         control: 'array',
         propertyControl: {
-          control: 'stringinput',
+          control: 'string-input',
         },
       },
     ],

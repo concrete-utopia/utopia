@@ -88,7 +88,7 @@ export function parseNumberInputControlDescription(
       return numberInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['numberinput']), 'control')(value),
+    objectKeyParser(parseEnum(['number-input']), 'control')(value),
     optionalObjectKeyParser(parseNullable(parseNumber), 'defaultValue')(value),
     optionalObjectKeyParser(parseNumber, 'max')(value),
     optionalObjectKeyParser(parseNumber, 'min')(value),
@@ -150,7 +150,7 @@ export function parseExpressionPopUpListControlDescription(
       return enumControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['expressionpopuplist']), 'control')(value),
+    objectKeyParser(parseEnum(['expression-popuplist']), 'control')(value),
     optionalObjectKeyParser(parseExpressionEnum, 'defaultValue')(value),
     objectKeyParser(parseArray(parseExpressionEnum), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
@@ -234,7 +234,7 @@ export function parseStringInputControlDescription(
       return stringInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['stringinput']), 'control')(value),
+    objectKeyParser(parseEnum(['string-input']), 'control')(value),
     optionalObjectKeyParser(parseString, 'defaultValue')(value),
     optionalObjectKeyParser(parseString, 'placeholder')(value),
     optionalObjectKeyParser(parseBoolean, 'obscured')(value),
@@ -331,7 +331,7 @@ export function parseExpressionInputControlDescription(
       return expressionInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['expressioninput']), 'control')(value),
+    objectKeyParser(parseEnum(['expression-input']), 'control')(value),
   )
 }
 
@@ -364,7 +364,7 @@ export function parseStyleControlsControlDescription(
       return styleControlsControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['stylecontrols']), 'control')(value),
+    objectKeyParser(parseEnum(['style-controls']), 'control')(value),
     optionalObjectKeyParser(parseObject(parseAny), 'defaultValue')(value), // FIXME
     optionalObjectKeyParser(parseObject(parseAny), 'placeholder')(value), // FIXME
   )
@@ -522,21 +522,21 @@ export function parseRegularControlDescription(
         return parseCheckboxControlDescription(value)
       case 'color':
         return parseColorControlDescription(value)
-      case 'expressioninput':
+      case 'expression-input':
         return parseExpressionInputControlDescription(value)
-      case 'expressionpopuplist':
+      case 'expression-popuplist':
         return parseExpressionPopUpListControlDescription(value)
       case 'none':
         return parseNoneControlDescription(value)
-      case 'numberinput':
+      case 'number-input':
         return parseNumberInputControlDescription(value)
       case 'radio':
         return parseRadioControlDescription(value)
       case 'popuplist':
         return parsePopUpListControlDescription(value)
-      case 'stringinput':
+      case 'string-input':
         return parseStringInputControlDescription(value)
-      case 'stylecontrols':
+      case 'style-controls':
         return parseStyleControlsControlDescription(value)
       case 'array':
         return parseArrayControlDescription(value)

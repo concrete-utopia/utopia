@@ -32,7 +32,7 @@ function createBasicUtopiaComponent(
 
 const StyleObjectProps: PropertyControls = {
   style: {
-    control: 'stylecontrols',
+    control: 'style-controls',
   },
 }
 

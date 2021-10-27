@@ -7,16 +7,16 @@ export type BaseControlType =
   | 'checkbox'
   | 'color'
   | 'euler'
-  | 'expressioninput'
-  | 'expressionpopuplist'
+  | 'expression-input'
+  | 'expression-popuplist'
   | 'matrix3'
   | 'matrix4'
   | 'none'
-  | 'numberinput'
+  | 'number-input'
   | 'popuplist'
   | 'radio'
-  | 'stringinput'
-  | 'stylecontrols'
+  | 'string-input'
+  | 'style-controls'
   | 'vector2'
   | 'vector3'
   | 'vector4'
@@ -63,7 +63,7 @@ export interface ExpressionEnum {
 }
 
 export interface ExpressionPopUpListControlDescription
-  extends AbstractBaseControlDescription<'expressionpopuplist'> {
+  extends AbstractBaseControlDescription<'expression-popuplist'> {
   defaultValue?: ExpressionEnum
   options: ExpressionEnum[]
   optionTitles?: string[] | ((props: unknown | null) => string[])
@@ -103,7 +103,7 @@ export interface Matrix4ControlDescription extends AbstractBaseControlDescriptio
 }
 
 export interface NumberInputControlDescription
-  extends AbstractBaseControlDescription<'numberinput'> {
+  extends AbstractBaseControlDescription<'number-input'> {
   defaultValue?: number | null
   max?: number
   min?: number
@@ -121,19 +121,19 @@ export interface RadioControlDescription extends AbstractBaseControlDescription<
 }
 
 export interface ExpressionInputControlDescription
-  extends AbstractBaseControlDescription<'expressioninput'> {
+  extends AbstractBaseControlDescription<'expression-input'> {
   defaultValue?: unknown
 }
 
 export interface StringInputControlDescription
-  extends AbstractBaseControlDescription<'stringinput'> {
+  extends AbstractBaseControlDescription<'string-input'> {
   defaultValue?: string
   placeholder?: string
   obscured?: boolean
 }
 
 export interface StyleControlsControlDescription
-  extends AbstractBaseControlDescription<'stylecontrols'> {
+  extends AbstractBaseControlDescription<'style-controls'> {
   defaultValue?: CSSProperties
   placeholder?: CSSProperties
 }
@@ -216,16 +216,16 @@ export function isBaseControlDescription(
     case 'checkbox':
     case 'color':
     case 'euler':
-    case 'expressioninput':
-    case 'expressionpopuplist':
+    case 'expression-input':
+    case 'expression-popuplist':
     case 'matrix3':
     case 'matrix4':
     case 'none':
-    case 'numberinput':
+    case 'number-input':
     case 'popuplist':
     case 'radio':
-    case 'stringinput':
-    case 'stylecontrols':
+    case 'string-input':
+    case 'style-controls':
     case 'vector2':
     case 'vector3':
     case 'vector4':

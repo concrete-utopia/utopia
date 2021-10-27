@@ -2,6 +2,6 @@ import { PropertyControls } from 'utopia-api'
 
 export const HtmlElementStyleObjectProps: PropertyControls = {
   style: {
-    control: 'stylecontrols',
+    control: 'style-controls',
   },
 }

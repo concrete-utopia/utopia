@@ -23,12 +23,12 @@ function inferControlTypeBasedOnValueInner(
   switch (typeof propValue) {
     case 'number':
       return {
-        control: 'numberinput',
+        control: 'number-input',
         label: propName,
       }
     case 'string': {
       const parsedAsColor = parseStringValidateAsColor(propValue)
-      const controlType = isLeft(parsedAsColor) ? 'stringinput' : 'color'
+      const controlType = isLeft(parsedAsColor) ? 'string-input' : 'color'
       return {
         control: controlType,
         label: propName,
@@ -42,7 +42,7 @@ function inferControlTypeBasedOnValueInner(
     }
     case 'function': {
       return {
-        control: 'expressioninput',
+        control: 'expression-input',
         label: propName,
       }
     }
@@ -58,7 +58,7 @@ function inferControlTypeBasedOnValueInner(
           }
         } else {
           return {
-            control: 'expressioninput',
+            control: 'expression-input',
             label: propName,
           }
         }

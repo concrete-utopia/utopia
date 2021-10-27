@@ -2,11 +2,11 @@ import { PropertyControls } from 'utopia-api'
 
 const Button: PropertyControls = {
   href: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'href',
   },
   onClick: {
-    control: 'expressioninput',
+    control: 'expression-input',
     label: 'onClick',
   },
   disabled: {
@@ -32,7 +32,7 @@ const Button: PropertyControls = {
     defaultValue: 'default',
   },
   icon: {
-    control: 'expressioninput',
+    control: 'expression-input',
     label: 'icon',
   },
   ghost: {
@@ -56,11 +56,11 @@ const Button: PropertyControls = {
     defaultValue: false,
   },
   htmlType: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'htmlType',
   },
   target: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'target',
     defaultValue: 'button',
   },
@@ -96,7 +96,7 @@ const Row: PropertyControls = {
   },
   gutter: {
     //spacing between grids, could be a number or a object like { xs: 8, sm: 16, md: 24}. or you can use array to make horizontal and vertical spacing work at the same time [horizontal, vertical]
-    control: 'numberinput',
+    control: 'number-input',
     label: 'gutter',
     defaultValue: 0,
   },
@@ -110,61 +110,61 @@ const Row: PropertyControls = {
 
 const Col: PropertyControls = {
   flex: {
-    control: 'numberinput', // or string
+    control: 'number-input', // or string
     label: 'flex',
     defaultValue: 1,
   },
   offset: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'offset',
     defaultValue: 0,
   },
   order: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'order',
     defaultValue: 0,
   },
   pull: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'pull',
     defaultValue: 0,
   },
   push: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'push',
     defaultValue: 0,
   },
   span: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'span',
   },
   xs: {
-    control: 'numberinput', // or an object containing above props
+    control: 'number-input', // or an object containing above props
     label: 'xs',
     defaultValue: 0,
   },
   sm: {
-    control: 'numberinput', // or an object containing above props
+    control: 'number-input', // or an object containing above props
     label: 'sm',
     defaultValue: 0,
   },
   md: {
-    control: 'numberinput', // or an object containing above props
+    control: 'number-input', // or an object containing above props
     label: 'md',
     defaultValue: 0,
   },
   lg: {
-    control: 'numberinput', // or an object containing above props
+    control: 'number-input', // or an object containing above props
     label: 'lg',
     defaultValue: 0,
   },
   xl: {
-    control: 'numberinput', // or an object containing above props
+    control: 'number-input', // or an object containing above props
     label: 'xl',
     defaultValue: 0,
   },
   xxl: {
-    control: 'numberinput', // or an object containing above props
+    control: 'number-input', // or an object containing above props
     label: 'xxl',
     defaultValue: 0,
   },
@@ -232,7 +232,7 @@ const Menu: PropertyControls = {
   defaultOpenKeys: {
     control: 'array',
     propertyControl: {
-      control: 'stringinput',
+      control: 'string-input',
     },
     label: 'defaultOpenKeys',
   },
@@ -251,7 +251,7 @@ const Menu: PropertyControls = {
     defaultValue: false,
   },
   inlineIndent: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'inlineIndent',
     defaultValue: 24,
   },
@@ -280,12 +280,12 @@ const Menu: PropertyControls = {
     label: 'selectedKeys',
   },
   subMenuCloseDelay: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'subMenuCloseDelay',
     defaultValue: 0.1,
   },
   subMenuOpenDelay: {
-    control: 'numberinput',
+    control: 'number-input',
     label: 'subMenuOpenDelay',
     defaultValue: 0,
   },
@@ -316,7 +316,7 @@ const Menu: PropertyControls = {
     label: 'onClick',
   },
   overflowedIndicator: {
-    control: 'expressioninput',
+    control: 'expression-input',
     label: 'overflowedIndicator',
   },
 }
@@ -328,15 +328,15 @@ const MenuItem: PropertyControls = {
     defaultValue: false,
   },
   key: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'key',
   },
   label: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'title',
   },
   icon: {
-    control: 'expressioninput',
+    control: 'expression-input',
     label: 'icon',
   },
   danger: {
@@ -348,7 +348,7 @@ const MenuItem: PropertyControls = {
 
 const MenuSubMenu: PropertyControls = {
   popupClassName: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'popupClassName',
   },
   disabled: {
@@ -357,15 +357,15 @@ const MenuSubMenu: PropertyControls = {
     defaultValue: false,
   },
   key: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'key',
   },
   title: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'title',
   },
   icon: {
-    control: 'expressioninput',
+    control: 'expression-input',
     label: 'icon',
   },
   onTitleClick: {
@@ -377,7 +377,7 @@ const MenuSubMenu: PropertyControls = {
 
 const MenuItemGroup: PropertyControls = {
   title: {
-    control: 'stringinput',
+    control: 'string-input',
     label: 'title',
   },
 }

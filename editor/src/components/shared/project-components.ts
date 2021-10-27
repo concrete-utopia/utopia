@@ -179,7 +179,7 @@ const addSizeAndNotStyleProp: Array<StylePropOption> = ['do-not-add', 'add-size'
 
 const stockHTMLPropertyControls: PropertyControls = {
   style: {
-    control: 'stylecontrols',
+    control: 'style-controls',
   },
 }
 
@@ -243,11 +243,11 @@ const basicHTMLElementsDescriptor: DependencyDescriptor = {
         defaultValue: true,
       },
       src: {
-        control: 'stringinput',
+        control: 'string-input',
         defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
       },
       style: {
-        control: 'stylecontrols',
+        control: 'style-controls',
         defaultValue: {
           width: '250px',
           height: '120px',
@@ -256,11 +256,11 @@ const basicHTMLElementsDescriptor: DependencyDescriptor = {
     }),
     makeHTMLDescriptor('img', {
       src: {
-        control: 'stringinput',
+        control: 'string-input',
         defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
       },
       style: {
-        control: 'stylecontrols',
+        control: 'style-controls',
         defaultValue: {
           width: '64px',
           height: '64px',
@@ -318,7 +318,7 @@ export function getComponentGroups(
                   },
                   (controlDescription) => {
                     switch (controlDescription.control) {
-                      case 'stylecontrols':
+                      case 'style-controls':
                         return addSizeAndNotStyleProp
                       default:
                         return doNotAddStyleProp
@@ -370,7 +370,7 @@ export function getComponentGroups(
       if (component.propertyControls != null) {
         if ('style' in component.propertyControls) {
           const styleControls = component.propertyControls['style']
-          if (styleControls?.control === 'stylecontrols') {
+          if (styleControls?.control === 'style-controls') {
             stylePropOptions = addSizeAndNotStyleProp
           }
         }

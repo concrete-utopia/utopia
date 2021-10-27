@@ -127,7 +127,7 @@ describe('parseColorControlDescription', () => {
 
 const validExpressionInputControlDescriptionValue: ExpressionInputControlDescription = {
   label: 'Expression Input Control',
-  control: 'expressioninput',
+  control: 'expression-input',
 }
 
 describe('parseExpressionInputControlDescription', () => {
@@ -176,7 +176,7 @@ describe('parseNoneControlDescription', () => {
 
 const validNumberInputControlDescriptionValue: NumberInputControlDescription = {
   label: 'NumberInput Control',
-  control: 'numberinput',
+  control: 'number-input',
   defaultValue: 5,
   max: 10,
   min: 2,
@@ -232,7 +232,7 @@ describe('parseRadioControlDescription', () => {
 
 const validStringInputControlDescriptionValue: StringInputControlDescription = {
   label: 'String Input Control',
-  control: 'stringinput',
+  control: 'string-input',
   defaultValue: 'Some text',
   placeholder: 'Enter text',
   obscured: true,
@@ -250,7 +250,7 @@ describe('parseStringInputControlDescription', () => {
 
 const validStyleControlsControlDescriptionValue: StyleControlsControlDescription = {
   label: 'Style Controls Control',
-  control: 'stylecontrols',
+  control: 'style-controls',
   defaultValue: { width: 100 },
   placeholder: { height: 100 },
 }

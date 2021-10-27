@@ -98,11 +98,11 @@ const ControlForProp = betterReactMemo(
           return <ColorPropertyControl {...props} controlDescription={controlDescription} />
         case 'euler':
           return <EulerPropertyControl {...props} controlDescription={controlDescription} />
-        case 'expressioninput':
+        case 'expression-input':
           return (
             <ExpressionInputPropertyControl {...props} controlDescription={controlDescription} />
           )
-        case 'expressionpopuplist':
+        case 'expression-popuplist':
           return (
             <ExpressionPopUpListPropertyControl
               {...props}
@@ -115,15 +115,15 @@ const ControlForProp = betterReactMemo(
           return <Matrix3PropertyControl {...props} controlDescription={controlDescription} />
         case 'matrix4':
           return <Matrix4PropertyControl {...props} controlDescription={controlDescription} />
-        case 'numberinput':
+        case 'number-input':
           return <NumberInputPropertyControl {...props} controlDescription={controlDescription} />
         case 'popuplist':
           return <PopUpListPropertyControl {...props} controlDescription={controlDescription} />
         case 'radio':
           return <RadioPropertyControl {...props} controlDescription={controlDescription} />
-        case 'stringinput':
+        case 'string-input':
           return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
-        case 'stylecontrols':
+        case 'style-controls':
           return null
         case 'vector2':
         case 'vector3':
@@ -208,7 +208,7 @@ function getLabelControlStyle(
   propMetadata: InspectorInfo<any>,
 ): ControlStyles {
   if (
-    controlDescription.control === 'expressionpopuplist' &&
+    controlDescription.control === 'expression-popuplist' &&
     propMetadata.controlStatus === 'controlled'
   ) {
     return getControlStyles('simple')

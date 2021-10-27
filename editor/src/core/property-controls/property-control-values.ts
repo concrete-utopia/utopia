@@ -243,9 +243,9 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseBoolean)
     case 'color':
       return defaultUnwrapFirst(parseColorValue)
-    case 'expressioninput':
+    case 'expression-input':
       return jsUnwrapFirst(parseAny)
-    case 'expressionpopuplist':
+    case 'expression-popuplist':
       return defaultUnwrapFirst(parseAny)
     case 'euler':
       return defaultUnwrapFirst(parseArray(parseAny))
@@ -254,15 +254,15 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseArray(parseNumber))
     case 'none':
       return defaultUnwrapFirst(parseAny)
-    case 'numberinput':
+    case 'number-input':
       return defaultUnwrapFirst(parseNumber)
     case 'popuplist':
       return defaultUnwrapFirst(parseAllowedEnum(control.options))
     case 'radio':
       return defaultUnwrapFirst(parseAny)
-    case 'stringinput':
+    case 'string-input':
       return defaultUnwrapFirst(parseString)
-    case 'stylecontrols':
+    case 'style-controls':
       return defaultUnwrapFirst(parseAny)
     case 'vector2':
     case 'vector3':
@@ -280,17 +280,17 @@ export function unwrapperAndParserForPropertyControl(
   switch (control.control) {
     case 'checkbox':
     case 'color':
-    case 'expressioninput':
-    case 'expressionpopuplist':
+    case 'expression-input':
+    case 'expression-popuplist':
     case 'euler':
     case 'matrix3':
     case 'matrix4':
     case 'none':
-    case 'numberinput':
+    case 'number-input':
     case 'popuplist':
     case 'radio':
-    case 'stringinput':
-    case 'stylecontrols':
+    case 'string-input':
+    case 'style-controls':
     case 'vector2':
     case 'vector3':
     case 'vector4':
@@ -397,9 +397,9 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'color':
       return printColor
-    case 'expressioninput':
+    case 'expression-input':
       return printJS
-    case 'expressionpopuplist':
+    case 'expression-popuplist':
       return printSimple
     case 'euler':
       return printSimple
@@ -408,15 +408,15 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'none':
       return printSimple
-    case 'numberinput':
+    case 'number-input':
       return printSimple
     case 'popuplist':
       return printSimple
     case 'radio':
       return printSimple
-    case 'stringinput':
+    case 'string-input':
       return printSimple
-    case 'stylecontrols':
+    case 'style-controls':
       return printSimple
     case 'vector2':
       return printSimple
@@ -471,17 +471,17 @@ export function printerForPropertyControl(control: RegularControlDescription): P
   switch (control.control) {
     case 'checkbox':
     case 'color':
-    case 'expressioninput':
-    case 'expressionpopuplist':
+    case 'expression-input':
+    case 'expression-popuplist':
     case 'euler':
     case 'matrix3':
     case 'matrix4':
     case 'none':
-    case 'numberinput':
+    case 'number-input':
     case 'popuplist':
     case 'radio':
-    case 'stringinput':
-    case 'stylecontrols':
+    case 'string-input':
+    case 'style-controls':
     case 'vector2':
     case 'vector3':
     case 'vector4':

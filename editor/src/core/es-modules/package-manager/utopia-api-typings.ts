@@ -346,7 +346,7 @@ declare module 'utopia-api/primitives/view' {
 }
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
-  export type BaseControlType = 'checkbox' | 'color' | 'euler' | 'expressioninput' | 'expressionpopuplist' | 'matrix3' | 'matrix4' | 'none' | 'numberinput' | 'popuplist' | 'radio' | 'stringinput' | 'stylecontrols' | 'vector2' | 'vector3' | 'vector4';
+  export type BaseControlType = 'checkbox' | 'color' | 'euler' | 'expression-input' | 'expression-popuplist' | 'matrix3' | 'matrix4' | 'none' | 'number-input' | 'popuplist' | 'radio' | 'string-input' | 'style-controls' | 'vector2' | 'vector3' | 'vector4';
   interface AbstractControlDescription<T extends ControlType> {
       label?: string;
       control: T;
@@ -380,7 +380,7 @@ declare module 'utopia-api/property-controls/property-controls' {
       expression: string;
       import?: ImportType;
   }
-  export interface ExpressionPopUpListControlDescription extends AbstractBaseControlDescription<'expressionpopuplist'> {
+  export interface ExpressionPopUpListControlDescription extends AbstractBaseControlDescription<'expression-popuplist'> {
       defaultValue?: ExpressionEnum;
       options: ExpressionEnum[];
       optionTitles?: string[] | ((props: unknown | null) => string[]);
@@ -414,7 +414,7 @@ declare module 'utopia-api/property-controls/property-controls' {
           number
       ];
   }
-  export interface NumberInputControlDescription extends AbstractBaseControlDescription<'numberinput'> {
+  export interface NumberInputControlDescription extends AbstractBaseControlDescription<'number-input'> {
       defaultValue?: number | null;
       max?: number;
       min?: number;
@@ -429,15 +429,15 @@ declare module 'utopia-api/property-controls/property-controls' {
           label: string;
       }>;
   }
-  export interface ExpressionInputControlDescription extends AbstractBaseControlDescription<'expressioninput'> {
+  export interface ExpressionInputControlDescription extends AbstractBaseControlDescription<'expression-input'> {
       defaultValue?: unknown;
   }
-  export interface StringInputControlDescription extends AbstractBaseControlDescription<'stringinput'> {
+  export interface StringInputControlDescription extends AbstractBaseControlDescription<'string-input'> {
       defaultValue?: string;
       placeholder?: string;
       obscured?: boolean;
   }
-  export interface StyleControlsControlDescription extends AbstractBaseControlDescription<'stylecontrols'> {
+  export interface StyleControlsControlDescription extends AbstractBaseControlDescription<'style-controls'> {
       defaultValue?: CSSProperties;
       placeholder?: CSSProperties;
   }
