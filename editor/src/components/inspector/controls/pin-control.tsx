@@ -4,7 +4,7 @@ import { ControlStatus, ControlStyles, getControlStyles } from '../common/contro
 import { FramePoint } from 'utopia-api'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { FramePinsInfo } from '../common/layout-property-path-hooks'
-import { UtopiaTheme, SquareButton } from '../../../uuiui'
+import { UtopiaTheme, SquareButton, width } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 
 interface PinControlProps {
@@ -18,7 +18,7 @@ interface PinControlProps {
 
 const Margin = 3
 const Width = 66
-const Height = 52
+const Height = 57
 
 const HorizontalLength = (Width - Margin * 6) / 4
 const HorizontalStart = Margin
@@ -76,7 +76,7 @@ export const PinControl = (props: PinControlProps) => {
   return (
     <div id='pin-control' className={props.className} style={props.style}>
       <svg
-        width='100%'
+        width={Width}
         viewBox={`0 0 ${Width} ${Height}`}
         version='1.1'
         xmlns='http://www.w3.org/2000/svg'
@@ -86,11 +86,11 @@ export const PinControl = (props: PinControlProps) => {
           id='positioncontrols-box'
           fill={controlStyles.backgroundColor}
           stroke={controlStyles.borderColor}
-          strokeWidth='1'
+          strokeWidth='0'
           x='0.5'
           y='0.5'
           width={Width - 1}
-          height={Height - 2}
+          height={Height - 1}
           rx={UtopiaTheme.inputBorderRadius}
         />
         <rect
