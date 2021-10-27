@@ -294,7 +294,7 @@ const RowForArrayControl = betterReactMemo(
       controlDescription,
     )
 
-    const rowHeight = UtopiaTheme.layout.rowHeight.max
+    const rowHeight = UtopiaTheme.layout.rowHeight.normal
     const transformedValue = Array.isArray(value) ? value : [value]
     const { springs, bind } = useArraySuperControl(
       transformedValue,
@@ -303,7 +303,7 @@ const RowForArrayControl = betterReactMemo(
       false,
     )
     const [insertingRow, setInsertingRow] = React.useState(false)
-
+    const colorTheme = useColorTheme()
     const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
 
     React.useEffect(() => setInsertingRow(false), [springs.length])
@@ -352,6 +352,14 @@ const RowForArrayControl = betterReactMemo(
                   position: 'absolute',
                   height: rowHeight,
                 }}
+                css={{
+                  '& > .handle': {
+                    opacity: 0,
+                  },
+                  '&:hover > .handle': {
+                    opacity: 1,
+                  },
+                }}
               >
                 <RowForControl
                   controlDescription={controlDescription.propertyControl}
@@ -360,6 +368,29 @@ const RowForArrayControl = betterReactMemo(
                   setGlobalCursor={props.setGlobalCursor}
                   indentationLevel={1}
                 />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                  className='handle'
+                >
+                  <svg width='5px' height='23px' viewBox='0 0 4 23'>
+                    <g
+                      stroke={colorTheme.border3.value}
+                      strokeWidth='1'
+                      fill='none'
+                      fillRule='evenodd'
+                      strokeLinecap='round'
+                    >
+                      <line x1='1' y1='1.5' x2='1' y2='21'></line>
+                      <line x1='4' y1='1.5' x2='4' y2='21'></line>
+                    </g>
+                  </svg>
+                </div>
               </animated.div>
             )
           })}
