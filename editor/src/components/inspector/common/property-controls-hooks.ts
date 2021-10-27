@@ -207,26 +207,22 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
 
   const selectedPropertyControls = useEditorState(
     (store) => {
-      const { codeResultCache } = store.editor
-
       let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
-      if (codeResultCache != null) {
-        fastForEach(selectedViews.current, (path) => {
-          const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
-          const parsed = parsePropertyControls(propertyControls, 'filterSpecialProps')
-          const foundMatch = parsedPropertyControls.findIndex((existing) =>
-            areMatchingPropertyControls(existing.controls, parsed),
-          )
-          if (foundMatch > -1) {
-            parsedPropertyControls[foundMatch].targets.push(path)
-          } else {
-            parsedPropertyControls.push({
-              controls: parsed,
-              targets: [path],
-            })
-          }
-        })
-      }
+      fastForEach(selectedViews.current, (path) => {
+        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
+        const parsed = parsePropertyControls(propertyControls, 'filterSpecialProps')
+        const foundMatch = parsedPropertyControls.findIndex((existing) =>
+          areMatchingPropertyControls(existing.controls, parsed),
+        )
+        if (foundMatch > -1) {
+          parsedPropertyControls[foundMatch].targets.push(path)
+        } else {
+          parsedPropertyControls.push({
+            controls: parsed,
+            targets: [path],
+          })
+        }
+      })
 
       return parsedPropertyControls
     },
