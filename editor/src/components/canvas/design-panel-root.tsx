@@ -357,40 +357,35 @@ const ResizableInspectorPane = betterReactMemo<ResizableInspectorPaneProps>(
   'ResizableInspectorPane',
   (props) => {
     const colorTheme = useColorTheme()
-    const [width, setWidth] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
-    const [changingWidth, setChangingWidth] = React.useState<number>(
-      UtopiaTheme.layout.inspectorSmallWidth,
-    )
 
-    const onResize = React.useCallback<ResizeCallback>(
-      (e, direction, ref, d) => {
-        setChangingWidth(width + d.width)
-      },
-      [width],
-    )
-    const onResizeStop = React.useCallback<ResizeCallback>(
-      (e, direction, ref, d) => {
-        setWidth(width + d.width)
-      },
-      [width],
-    )
+    const resizableRef = React.useRef<Resizable>(null)
+    const [width, setWidth] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
+
+    const onResize = React.useCallback(() => {
+      if (resizableRef.current?.size.width != null) {
+        // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
+        setWidth(resizableRef.current?.size.width)
+      }
+    }, [])
 
     return (
       <Resizable
+        ref={resizableRef}
         defaultSize={{
           width: UtopiaTheme.layout.inspectorSmallWidth,
-          height: '100%', // TODO is this goode
+          height: '100%',
         }}
         size={{
           width: width,
-          height: '100%', // TODO is this goode
+          height: '100%',
         }}
         style={{ transition: 'width 100ms ease-in-out' }}
         snap={{
           x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
         }}
+        onResizeStart={onResize}
         onResize={onResize}
-        onResizeStop={onResizeStop}
+        onResizeStop={onResize}
       >
         <SimpleFlexRow
           className='Inspector-entrypoint'
@@ -408,9 +403,7 @@ const ResizableInspectorPane = betterReactMemo<ResizableInspectorPaneProps>(
           {props.isInsertMenuSelected ? (
             <InsertMenuPane />
           ) : (
-            <InspectorEntryPoint
-              showIndentation={changingWidth > UtopiaTheme.layout.inspectorSmallWidth}
-            />
+            <InspectorEntryPoint showIndentation={width > UtopiaTheme.layout.inspectorSmallWidth} />
           )}
         </SimpleFlexRow>
       </Resizable>
