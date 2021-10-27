@@ -345,7 +345,7 @@ const RowForArrayControl = betterReactMemo(
             return (
               <animated.div
                 {...bind(index)}
-                key={index}
+                key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
                 style={{
                   ...springStyle,
                   width: '100%',
