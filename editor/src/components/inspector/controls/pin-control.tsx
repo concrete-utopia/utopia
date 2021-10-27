@@ -76,7 +76,7 @@ export const PinControl = (props: PinControlProps) => {
   return (
     <div id='pin-control' className={props.className} style={props.style}>
       <svg
-        width={`${Width}`}
+        width={Width}
         viewBox={`0 0 ${Width} ${Height}`}
         version='1.1'
         xmlns='http://www.w3.org/2000/svg'
