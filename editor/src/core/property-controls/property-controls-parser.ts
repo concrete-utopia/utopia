@@ -61,8 +61,14 @@ import {
   flatMapEither,
   isLeft,
 } from '../shared/either'
-import { objectMap, setOptionalProp, forEachValue } from '../shared/object-utils'
+import {
+  objectMap,
+  setOptionalProp,
+  forEachValue,
+  objectMapDropNulls,
+} from '../shared/object-utils'
 import { parseEnumValue } from './property-control-values'
+import { filterSpecialProp, filterSpecialProps } from './property-controls-utils'
 
 export function parseNumberControlDescription(
   value: unknown,
@@ -498,9 +504,13 @@ export function parseVector3ControlDescription(
 
 export function parseFolderControlDescription(
   value: unknown,
+  filterSpecialPropsFromResult: 'includeSpecialProps' | 'filterSpecialProps',
 ): ParseResult<FolderControlDescription> {
   // Results in parse errors within individual property names.
-  const propertiesResult = objectKeyParser(parsePropertyControls, 'controls')(value)
+  const propertiesResult = objectKeyParser(
+    (v) => parsePropertyControls(v, filterSpecialPropsFromResult),
+    'controls',
+  )(value)
   // Flatten out the errors within each property.
   const parsedControlDescriptions: ParseResult<PropertyControls> = flatMapEither(
     (parsedControlResults) => {
@@ -523,12 +533,18 @@ export function parseFolderControlDescription(
     propertiesResult,
   )
   // Create the result on a success.
-  return mapEither((properties) => {
-    return {
-      type: 'folder',
-      controls: properties,
-    }
-  }, parsedControlDescriptions)
+  return applicative2Either(
+    (properties, title) => {
+      let controlDescription: FolderControlDescription = {
+        type: 'folder',
+        controls: properties,
+      }
+      setOptionalProp(controlDescription, 'title', title)
+      return controlDescription
+    },
+    parsedControlDescriptions,
+    optionalObjectKeyParser(parseString, 'title')(value),
+  )
 }
 
 export function parseRegularControlDescription(
@@ -582,13 +598,21 @@ export function parseRegularControlDescription(
   }
 }
 
-export function parseControlDescription(value: unknown): ParseResult<ControlDescription> {
+export function parseControlDescription(
+  value: unknown,
+  key: string | number,
+  filterSpecialPropsFromResult: 'includeSpecialProps' | 'filterSpecialProps',
+): ParseResult<ControlDescription> | null {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     switch ((value as any)['type']) {
       case 'folder':
-        return parseFolderControlDescription(value)
+        return parseFolderControlDescription(value, filterSpecialPropsFromResult)
       default:
-        return parseRegularControlDescription(value)
+        if (filterSpecialPropsFromResult === 'includeSpecialProps' || filterSpecialProp(key)) {
+          return parseRegularControlDescription(value)
+        } else {
+          return null
+        }
     }
   } else {
     return left(descriptionParseError('Not an object.'))
@@ -600,16 +624,27 @@ export type ParsedPropertyControlsForFile = {
   [componentName: string]: ParseResult<ParsedPropertyControls>
 }
 
-export function parsePropertyControls(value: unknown): ParseResult<ParsedPropertyControls> {
+export function parsePropertyControls(
+  value: unknown,
+  filterSpecialPropsFromResult: 'includeSpecialProps' | 'filterSpecialProps',
+): ParseResult<ParsedPropertyControls> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-    return right(objectMap(parseControlDescription, value as any))
+    return right(
+      objectMapDropNulls(
+        (v, k) => parseControlDescription(v, k, filterSpecialPropsFromResult),
+        value as any,
+      ),
+    )
   } else {
     return left(descriptionParseError('Not an object.'))
   }
 }
 
-export function parsePropertyControlsForFile(allControls: {
-  [componentName: string]: unknown
-}): ParsedPropertyControlsForFile {
-  return objectMap(parsePropertyControls, allControls)
+export function parsePropertyControlsForFile(
+  allControls: {
+    [componentName: string]: unknown
+  },
+  filterSpecialPropsFromResult: 'includeSpecialProps' | 'filterSpecialProps',
+): ParsedPropertyControlsForFile {
+  return objectMap((v) => parsePropertyControls(v, filterSpecialPropsFromResult), allControls)
 }

@@ -38,6 +38,7 @@ export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLa
   return (
     <div
       css={{
+        ...props.style,
         display: 'flex',
         alignItems: 'center',
         overflowX: 'scroll',

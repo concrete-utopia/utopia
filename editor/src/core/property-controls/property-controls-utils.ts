@@ -129,14 +129,14 @@ export function createGetPropertyControlsInfoMessage(
   }
 }
 
-export function parsedPropertyControlsForComponentInFile(
+function parsedPropertyControlsForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
   propertyControlsInfo: PropertyControlsInfo,
 ): ParseResult<ParsedPropertyControls> {
   const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
   if (componentName in propertyControlsForFile) {
-    return parsePropertyControls(propertyControlsForFile[componentName])
+    return parsePropertyControls(propertyControlsForFile[componentName], 'includeSpecialProps')
   } else {
     return left(descriptionParseError(`No property controls for ${componentName}.`))
   }
@@ -161,14 +161,6 @@ export function defaultPropertiesForComponentInFile(
     defaultProps: getDefaultPropsFromParsedControls(parsedPropertyControls),
     parsedControls: parsedPropertyControls,
   }
-}
-
-export function defaultPropertiesForComponent(
-  component: React.ComponentType<any> & { propertyControls?: PropertyControls },
-): { [prop: string]: unknown } {
-  const propertyControls = component.propertyControls == null ? {} : component.propertyControls
-  const parsedPropertyControls = parsePropertyControls(propertyControls)
-  return getDefaultPropsFromParsedControls(parsedPropertyControls)
 }
 
 export function getDefaultPropsFromParsedControls(
@@ -216,10 +208,11 @@ export function findMissingDefaults(
   return filteredKnownProps.filter((propKey) => !defaultPropKeys.includes(propKey))
 }
 
+export function filterSpecialProp(propKey: string | number): boolean {
+  return propKey !== 'style' && propKey !== 'css' && propKey !== 'className'
+}
 export function filterSpecialProps(props: Array<string>): Array<string> {
-  return props.filter(
-    (propKey) => propKey !== 'style' && propKey !== 'css' && propKey !== 'className',
-  )
+  return props.filter(filterSpecialProp)
 }
 
 export function getMissingDefaultsWarning(propsWithoutDefaults: Array<string>): string | undefined {

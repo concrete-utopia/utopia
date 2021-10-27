@@ -65,8 +65,29 @@ import {
   isJSXAttributesSpread,
   ParsedComments,
   parsedComments,
+  UtopiaJSXComponent,
+  utopiaJSXComponent,
+  ArbitraryJSBlock,
+  BoundParam,
+  isRegularParam,
+  isDestructuredObject,
+  isDestructuredArray,
+  regularParam,
+  isOmittedParam,
+  isParam,
+  RegularParam,
+  DestructuredObject,
+  destructuredObject,
+  DestructuredParamPart,
+  destructuredParamPart,
+  Param,
+  destructuredArray,
+  DestructuredArray,
+  DestructuredArrayPart,
+  functionParam,
 } from '../../../core/shared/element-template'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
+import { RawSourceMap } from '../../../core/workers/ts/ts-typings/RawSourceMap'
 import {
   KeepDeepEqualityResult,
   keepDeepEqualityResult,
@@ -88,6 +109,7 @@ import {
   combine1EqualityCall,
   combine14EqualityCalls,
   createCallWithShallowEquals,
+  combine10EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -476,6 +498,45 @@ export function JSXArbitraryBlockKeepDeepEquality(): KeepDeepEqualityCall<JSXArb
   )
 }
 
+export function ArbitraryJsBlockKeepDeepEquality(): KeepDeepEqualityCall<ArbitraryJSBlock> {
+  return combine7EqualityCalls(
+    (block) => block.javascript,
+    createCallWithTripleEquals(),
+    (block) => block.transpiledJavascript,
+    createCallWithTripleEquals(),
+    (block) => block.definedWithin,
+    arrayDeepEquality(createCallWithTripleEquals()),
+    (block) => block.definedElsewhere,
+    arrayDeepEquality(createCallWithTripleEquals()),
+    (block) => block.sourceMap,
+    createCallFromIntrospectiveKeepDeep(),
+    (block) => block.uniqueID,
+    createCallWithTripleEquals(),
+    (block) => block.elementsWithin,
+    ElementsWithinKeepDeepEqualityCall(),
+    (
+      javascript: string,
+      transpiledJavascript: string,
+      definedWithin: Array<string>,
+      definedElsewhere: Array<string>,
+      sourceMap: RawSourceMap | null,
+      uniqueID: string,
+      elementsWithin: ElementsWithin,
+    ) => {
+      return {
+        type: 'ARBITRARY_JS_BLOCK',
+        javascript: javascript,
+        transpiledJavascript: transpiledJavascript,
+        definedWithin: definedWithin,
+        definedElsewhere: definedElsewhere,
+        sourceMap: sourceMap,
+        uniqueID: uniqueID,
+        elementsWithin: elementsWithin,
+      }
+    },
+  )
+}
+
 export function JSXTextBlockKeepDeepEquality(): KeepDeepEqualityCall<JSXTextBlock> {
   return combine2EqualityCalls(
     (block) => block.text,
@@ -532,6 +593,97 @@ export function JSXElementChildArrayKeepDeepEquality(): KeepDeepEqualityCall<
 > {
   return arrayDeepEquality(JSXElementChildKeepDeepEquality())
 }
+
+const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> = combine2EqualityCalls(
+  (param) => param.paramName,
+  createCallWithTripleEquals(),
+  (param) => param.defaultExpression,
+  nullableDeepEquality(JSXAttributeOtherJavaScriptKeepDeepEqualityCall()),
+  regularParam,
+)
+
+const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredParamPart> = combine3EqualityCalls(
+  (paramPart) => paramPart.propertyName,
+  createCallWithTripleEquals(),
+  (paramPart) => paramPart.param,
+  ParamKeepDeepEquality(),
+  (paramPart) => paramPart.defaultExpression,
+  nullableDeepEquality(JSXAttributeOtherJavaScriptKeepDeepEqualityCall()),
+  destructuredParamPart,
+)
+
+const DestructuredObjectParamKeepDeepEquality: KeepDeepEqualityCall<DestructuredObject> = combine1EqualityCall(
+  (paramPart) => paramPart.parts,
+  arrayDeepEquality(DestructuredParamPartKeepDeepEquality),
+  destructuredObject,
+)
+
+const DestructuredArrayPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredArrayPart> = (
+  oldValue,
+  newValue,
+) => {
+  if (isOmittedParam(oldValue) && isOmittedParam(newValue)) {
+    return keepDeepEqualityResult(oldValue, true)
+  } else if (isParam(oldValue) && isParam(newValue)) {
+    return ParamKeepDeepEquality()(oldValue, newValue)
+  } else {
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
+const DestructuredArrayKeepDeepEquality: KeepDeepEqualityCall<DestructuredArray> = combine1EqualityCall(
+  (param) => param.parts,
+  arrayDeepEquality(DestructuredArrayPartKeepDeepEquality),
+  destructuredArray,
+)
+
+function BoundParamKeepDeepEquality(): KeepDeepEqualityCall<BoundParam> {
+  return (oldValue, newValue) => {
+    if (isRegularParam(oldValue) && isRegularParam(newValue)) {
+      return RegularParamKeepDeepEquality(oldValue, newValue)
+    } else if (isDestructuredObject(oldValue) && isDestructuredObject(newValue)) {
+      return DestructuredObjectParamKeepDeepEquality(oldValue, newValue)
+    } else if (isDestructuredArray(oldValue) && isDestructuredArray(newValue)) {
+      return DestructuredArrayKeepDeepEquality(oldValue, newValue)
+    } else {
+      return keepDeepEqualityResult(newValue, false)
+    }
+  }
+}
+
+function ParamKeepDeepEquality(): KeepDeepEqualityCall<Param> {
+  return combine2EqualityCalls(
+    (param) => param.dotDotDotToken,
+    createCallWithTripleEquals(),
+    (param) => param.boundParam,
+    BoundParamKeepDeepEquality(),
+    functionParam,
+  )
+}
+
+export const UtopiaJSXComponentKeepDeepEquality: KeepDeepEqualityCall<UtopiaJSXComponent> = combine10EqualityCalls(
+  (component) => component.name,
+  createCallWithTripleEquals(),
+  (component) => component.isFunction,
+  createCallWithTripleEquals(),
+  (component) => component.declarationSyntax,
+  createCallWithTripleEquals(),
+  (component) => component.blockOrExpression,
+  createCallWithTripleEquals(),
+  (component) => component.param,
+  nullableDeepEquality(ParamKeepDeepEquality()),
+  (component) => component.propsUsed,
+  arrayDeepEquality(createCallWithTripleEquals()),
+  (component) => component.rootElement,
+  JSXElementChildKeepDeepEquality(),
+  (component) => component.arbitraryJSBlock,
+  nullableDeepEquality(ArbitraryJsBlockKeepDeepEquality()),
+  (component) => component.usedInReactDOMRender,
+  createCallWithTripleEquals(),
+  (component) => component.returnStatementComments,
+  ParsedCommentsKeepDeepEqualityCall(),
+  utopiaJSXComponent,
+)
 
 export function CanvasRectangleKeepDeepEquality(
   oldRect: CanvasRectangle,

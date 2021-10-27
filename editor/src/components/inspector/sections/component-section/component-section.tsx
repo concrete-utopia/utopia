@@ -1,4 +1,6 @@
+/**@jsx jsx */
 import React from 'react'
+import { css, jsx } from '@emotion/react'
 import { OptionsType } from 'react-select'
 import { animated } from 'react-spring'
 import {
@@ -14,9 +16,7 @@ import {
   UnionControlDescription,
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
-import { filterSpecialProps } from '../../../../core/property-controls/property-controls-utils'
-import { eitherToMaybe, foldEither, forEachRight, isLeft } from '../../../../core/shared/either'
-import { mapToArray, mapValues } from '../../../../core/shared/object-utils'
+import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
@@ -42,24 +42,14 @@ import {
 } from '../../../../uuiui'
 import { CSSCursor, getControlStyles } from '../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import { setCursorOverlay } from '../../../editor/actions/action-creators'
-import { useEditorState } from '../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
   useControlForUnionControl,
-  useControlStatusForPaths,
+  useGetPropertyControlsForSelectedComponents,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
-import { ControlStyles } from '../../common/control-status'
-import {
-  InspectorInfo,
-  InspectorPropsContext,
-  InspectorPropsContextData,
-  useGivenPropsAndValuesWithoutControls,
-  useGivenPropsWithoutControls,
-  useSelectedPropertyControls,
-  useUsedPropsWithoutControls,
-} from '../../common/property-path-hooks'
+import { ControlStyles, ControlStatus } from '../../common/control-status'
+import { InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import { SelectOption } from '../../controls/select-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -83,24 +73,10 @@ import {
   ControlForStringProp,
   ControlForVectorProp,
 } from './property-control-controls'
-import {
-  filterNonUnsetAndEmptyControls,
-  HiddenControls,
-  useHiddenElements,
-} from './hidden-controls-section'
 import { ComponentInfoBox } from './component-info-box'
-import {
-  ParsedPropertyControls,
-  parseStringValidateAsColor,
-} from '../../../../core/property-controls/property-controls-parser'
-import { getPropertyControlNames } from '../../../../core/property-controls/property-control-values'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { when } from '../../../../utils/react-conditionals'
-import { useContext } from 'use-context-selector'
-import { getJSXAttribute, jsxAttributeValue } from '../../../../core/shared/element-template'
-import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attributes'
-import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../../../../core/model/utopia-constants'
-import { inferControlTypeBasedOnValue } from './component-section-utils'
+import { PropertyControlsSection } from './property-controls-section'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -160,7 +136,6 @@ const ControlForProp = betterReactMemo(
     }
   },
 )
-
 interface ParseErrorProps {
   parseError: ParseError
 }
@@ -200,7 +175,7 @@ interface RowForInvalidControlProps {
   warningTooltip?: string
 }
 
-const RowForInvalidControl = betterReactMemo(
+export const RowForInvalidControl = betterReactMemo(
   'RowForInvalidControl',
   (props: RowForInvalidControlProps) => {
     const propPath = [PP.create([props.propName])]
@@ -222,6 +197,7 @@ interface AbstractRowForControlProps {
   propPath: PropertyPath
   isScene: boolean
   setGlobalCursor: (cursor: CSSCursor | null) => void
+  indentationLevel: number
 }
 
 function titleForControl(propPath: PropertyPath, control: RegularControlDescription): string {
@@ -243,7 +219,7 @@ function getLabelControlStyle(
 }
 
 interface RowForBaseControlProps extends AbstractRowForControlProps {
-  label?: React.ComponentType<any>
+  label?: React.ComponentType<any> // TODO Before Merge this probably should not be a component
   controlDescription: BaseControlDescription
 }
 
@@ -251,6 +227,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
   const { propPath, controlDescription, isScene } = props
   const title = titleForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
+  const indentation = props.indentationLevel * 8
 
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
@@ -267,7 +244,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       <PropertyLabel
         controlStyles={labelControlStyle}
         target={[propPath]}
-        style={{ textTransform: 'capitalize' }}
+        style={{ textTransform: 'capitalize', paddingLeft: indentation }}
       >
         <Tooltip title={title}>
           <span>{title}</span>
@@ -288,7 +265,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+      <UIGridRow padded={false} style={{ paddingLeft: 0 }} variant='<--1fr--><--1fr-->'>
         {propertyLabel}
         <ControlForProp
           propPath={propPath}
@@ -332,7 +309,7 @@ const RowForArrayControl = betterReactMemo(
     React.useEffect(() => setInsertingRow(false), [springs.length])
 
     return (
-      <>
+      <React.Fragment>
         <InspectorSectionHeader>
           <SimpleFlexRow style={{ flexGrow: 1 }}>
             <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
@@ -381,6 +358,7 @@ const RowForArrayControl = betterReactMemo(
                   isScene={isScene}
                   propPath={PP.appendPropertyPathElems(propPath, [index])}
                   setGlobalCursor={props.setGlobalCursor}
+                  indentationLevel={1}
                 />
               </animated.div>
             )
@@ -392,12 +370,37 @@ const RowForArrayControl = betterReactMemo(
             isScene={isScene}
             propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
             setGlobalCursor={props.setGlobalCursor}
+            indentationLevel={1}
           />
         ) : null}
-      </>
+      </React.Fragment>
     )
   },
 )
+
+interface ObjectIndicatorProps {
+  open: boolean
+}
+
+const ObjectIndicator = (props: ObjectIndicatorProps) => {
+  const colorTheme = useColorTheme()
+  return (
+    <div
+      style={{
+        border: `1px solid ${colorTheme.bg3.value}`,
+        paddingLeft: 2,
+        paddingRight: 2,
+        borderRadius: 4,
+        lineHeight: 1,
+        fontSize: 9,
+        color: colorTheme.fg6.value,
+        background: props.open ? 'transparent' : colorTheme.bg2.value,
+      }}
+    >
+      ⋯
+    </div>
+  )
+}
 
 interface RowForObjectControlProps extends AbstractRowForControlProps {
   controlDescription: ObjectControlDescription
@@ -406,40 +409,65 @@ interface RowForObjectControlProps extends AbstractRowForControlProps {
 const RowForObjectControl = betterReactMemo(
   'RowForObjectControl',
   (props: RowForObjectControlProps) => {
+    const [open, setOpen] = React.useState(true)
+    const handleOnClick = React.useCallback(() => setOpen(!open), [setOpen, open])
     const { propPath, controlDescription, isScene } = props
     const title = titleForControl(propPath, controlDescription)
+    const indentation = props.indentationLevel * 8
 
     return (
       <div
-        style={{
-          padding: '8px 0',
+        css={{
+          marginTop: 8,
+          marginBottom: 8,
+          '&:hover': {
+            boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+            background: 'hsl(0,0%,0%,1%)',
+          },
+          '&:focus-within': {
+            boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+            background: 'hsl(0,0%,0%,1%)',
+          },
         }}
       >
         <div>
-          <SimpleFlexRow style={{ flexGrow: 1 }}>
-            <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-              {title}
-            </PropertyLabel>
-          </SimpleFlexRow>
+          <div onClick={handleOnClick}>
+            <SimpleFlexRow style={{ flexGrow: 1 }}>
+              <PropertyLabel
+                target={[propPath]}
+                style={{
+                  textTransform: 'capitalize',
+                  paddingLeft: indentation,
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: 34,
+                  fontWeight: 500,
+                  gap: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                {title}
+                <ObjectIndicator open={open} />
+              </PropertyLabel>
+            </SimpleFlexRow>
+          </div>
+          {when(
+            open,
+            mapToArray((innerControl: RegularControlDescription, prop: string) => {
+              const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+              return (
+                <RowForControl
+                  key={`object-control-row-${PP.toString(innerPropPath)}`}
+                  controlDescription={innerControl}
+                  isScene={isScene}
+                  propPath={innerPropPath}
+                  setGlobalCursor={props.setGlobalCursor}
+                  indentationLevel={props.indentationLevel + 1}
+                />
+              )
+            }, controlDescription.object),
+          )}
         </div>
-        {mapToArray((innerControl: ControlDescription, prop: string) => {
-          const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
-          return (
-            <FlexRow
-              style={{
-                margin: '-8px 0 0 8px',
-              }}
-            >
-              <RowForControl
-                key={`object-control-row-${PP.toString(innerPropPath)}`}
-                controlDescription={innerControl}
-                isScene={isScene}
-                propPath={innerPropPath}
-                setGlobalCursor={props.setGlobalCursor}
-              />
-            </FlexRow>
-          )
-        }, controlDescription.object)}
       </div>
     )
   },
@@ -507,47 +535,20 @@ const RowForUnionControl = betterReactMemo(
       )
     } else {
       return (
-        <>
+        <React.Fragment>
           {label}
           <RowForControl {...props} controlDescription={controlToUse} />
-        </>
+        </React.Fragment>
       )
     }
   },
 )
 
-interface RowForFolderControlProps extends AbstractRowForControlProps {
-  controlDescription: FolderControlDescription
-}
-
-const RowForFolderControl = betterReactMemo(
-  'RowForFolderControl',
-  (props: RowForFolderControlProps) => {
-    const { controlDescription } = props
-    return (
-      <>
-        {Object.keys(controlDescription.controls).map((propertyName) => {
-          const propertyControl = controlDescription.controls[propertyName]
-          return (
-            <RowForControl
-              key={`folder-control-row-${propertyName}`}
-              controlDescription={propertyControl}
-              isScene={props.isScene}
-              propPath={PP.appendPropertyPathElems(props.propPath, [propertyName])}
-              setGlobalCursor={props.setGlobalCursor}
-            />
-          )
-        })}
-      </>
-    )
-  },
-)
-
 interface RowForControlProps extends AbstractRowForControlProps {
-  controlDescription: ControlDescription
+  controlDescription: RegularControlDescription
 }
 
-const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
+export const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
   const { controlDescription } = props
   if (isBaseControlDescription(controlDescription)) {
     return <RowForBaseControl {...props} controlDescription={controlDescription} />
@@ -559,8 +560,6 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
         return <RowForObjectControl {...props} controlDescription={controlDescription} />
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
-      case 'folder':
-        return <RowForFolderControl {...props} controlDescription={controlDescription} />
       default:
         const _exhaustiveCheck: never = controlDescription
         throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)
@@ -578,7 +577,7 @@ export const ComponentSectionInner = betterReactMemo(
     const colorTheme = useColorTheme()
 
     const propertyControlsAndTargets = useKeepReferenceEqualityIfPossible(
-      useSelectedPropertyControls(false),
+      useGetPropertyControlsForSelectedComponents(),
     )
 
     const [sectionExpanded, setSectionExpanded] = React.useState(true)
@@ -587,7 +586,7 @@ export const ComponentSectionInner = betterReactMemo(
     }, [setSectionExpanded])
 
     return (
-      <>
+      <React.Fragment>
         <InspectorSectionHeader>
           <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
             <Icons.Component color='primary' />
@@ -604,7 +603,7 @@ export const ComponentSectionInner = betterReactMemo(
         </InspectorSectionHeader>
         {when(
           sectionExpanded,
-          <>
+          <React.Fragment>
             {/* Information about the component as a whole */}
             <ComponentInfoBox />
             {/* List of component props with controls */}
@@ -614,213 +613,19 @@ export const ComponentSectionInner = betterReactMemo(
                 propertyControls={controlsAndTargets.controls}
                 targets={controlsAndTargets.targets}
                 isScene={props.isScene}
+                detectedPropsAndValuesWithoutControls={
+                  controlsAndTargets.detectedPropsAndValuesWithoutControls
+                }
+                detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
+                propsWithControlsButNoValue={controlsAndTargets.propsWithControlsButNoValue}
               />
             ))}
-          </>,
+          </React.Fragment>,
         )}
-      </>
+      </React.Fragment>
     )
   },
 )
-
-function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData {
-  const currentContext = useContext(InspectorPropsContext)
-  const spiedProps = currentContext.spiedProps.filter((props) =>
-    paths.some((path) => EP.toString(path) === props[UTOPIA_PATHS_KEY]),
-  )
-  const editedMultiSelectedProps = currentContext.editedMultiSelectedProps.filter((attributes) => {
-    const dataUidAttribute = getJSXAttribute(attributes, UTOPIA_UIDS_KEY)
-    if (dataUidAttribute != null) {
-      const uid = eitherToMaybe(jsxSimpleAttributeToValue(dataUidAttribute))
-      return paths.some((path) => EP.toUid(path) === uid)
-    } else {
-      return false
-    }
-  })
-
-  return {
-    ...currentContext,
-    spiedProps,
-    editedMultiSelectedProps,
-    selectedViews: paths,
-  }
-}
-
-interface PropertyControlsSectionProps {
-  targets: ElementPath[]
-  propertyControls: ParseResult<ParsedPropertyControls>
-  isScene: boolean
-}
-
-const PropertyControlsSection = betterReactMemo(
-  'PropertyControlsSection',
-  (props: PropertyControlsSectionProps) => {
-    const { targets, propertyControls } = props
-
-    const detectedPropsWithoutControls = useKeepReferenceEqualityIfPossible(
-      useGivenPropsWithoutControls(targets),
-    )
-    const detectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
-      useUsedPropsWithoutControls(detectedPropsWithoutControls, targets),
-    )
-    const detectedPropsAndValuesWithoutControls = useKeepReferenceEqualityIfPossible(
-      useGivenPropsAndValuesWithoutControls(targets),
-    )
-
-    const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
-
-    const setGlobalCursor = React.useCallback(
-      (cursor: CSSCursor | null) => {
-        dispatch([setCursorOverlay(cursor)], 'everyone')
-      },
-      [dispatch],
-    )
-
-    const propPaths = React.useMemo(() => {
-      return foldEither(
-        () => [],
-        (success) => {
-          return filterSpecialProps(getPropertyControlNames(success)).map((name) => {
-            return PP.create([name])
-          })
-        },
-        propertyControls,
-      )
-    }, [propertyControls])
-
-    const propertyControlsStatus = useControlStatusForPaths(propPaths)
-    const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
-
-    const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
-
-    return (
-      <InspectorPropsContext.Provider value={updatedContext}>
-        {foldEither(
-          (rootParseError) => {
-            return <ParseErrorControl parseError={rootParseError} />
-          },
-          (rootParseSuccess) => {
-            const propNamesToDisplay = new Set(
-              filterNonUnsetAndEmptyControls(
-                filterSpecialProps(getPropertyControlNames(rootParseSuccess)),
-                propertyControlsStatus,
-                visibleEmptyControls,
-              ),
-            )
-
-            return (
-              <>
-                {Object.keys(rootParseSuccess).map((propName) => {
-                  const propertyControl = rootParseSuccess[propName]
-                  return foldEither(
-                    (propertyError) => {
-                      return (
-                        <RowForInvalidControl
-                          key={propName}
-                          title={propName}
-                          propName={propName}
-                          propertyError={propertyError}
-                        />
-                      )
-                    },
-                    (propertySuccess) => {
-                      return (
-                        <SectionRow
-                          key={propName}
-                          propPath={PP.create([propName])}
-                          isScene={props.isScene}
-                          setGlobalCursor={setGlobalCursor}
-                          controlDescription={propertySuccess}
-                          propNamesToDisplay={propNamesToDisplay}
-                        />
-                      )
-                    },
-                    propertyControl,
-                  )
-                })}
-              </>
-            )
-          },
-          propertyControls,
-        )}
-        {Object.keys(detectedPropsAndValuesWithoutControls).map((propName) => {
-          const propValue = detectedPropsAndValuesWithoutControls[propName]
-          const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
-            propValue,
-            propName,
-          )
-          return (
-            <RowForControl
-              key={propName}
-              propPath={PP.create([propName])}
-              controlDescription={controlDescription}
-              isScene={props.isScene}
-              setGlobalCursor={setGlobalCursor}
-            />
-          )
-        })}
-        <HiddenControls
-          propertyControls={propertyControls}
-          propertyControlsStatus={propertyControlsStatus}
-          visibleEmptyControls={visibleEmptyControls}
-          showHiddenControl={showHiddenControl}
-          setGlobalCursor={setGlobalCursor}
-        />
-        {/** props set on the component instance and props used inside the component code */}
-        {detectedPropsWithNoValue.length > 0 ? (
-          <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
-            <div>
-              <VerySubdued>{`Unused props: ${detectedPropsWithNoValue.join(', ')}.`}</VerySubdued>
-            </div>
-          </UIGridRow>
-        ) : null}
-      </InspectorPropsContext.Provider>
-    )
-  },
-)
-
-type SectionRowProps = Omit<RowForControlProps, 'propMetadata'> & {
-  propNamesToDisplay: Set<string>
-}
-
-export const SectionRow = betterReactMemo('SectionRow', (props: SectionRowProps) => {
-  switch (props.controlDescription.type) {
-    case 'folder':
-      const controls = props.controlDescription.controls
-      return (
-        <>
-          {Object.keys(controls).map((propName) => {
-            const controlDescription = controls[propName]
-            return (
-              <SectionRow
-                key={`section-row-${propName}`}
-                propPath={PP.create([propName])}
-                controlDescription={controlDescription}
-                isScene={props.isScene}
-                setGlobalCursor={props.setGlobalCursor}
-                propNamesToDisplay={props.propNamesToDisplay}
-              />
-            )
-          })}
-        </>
-      )
-    default:
-      if (props.propNamesToDisplay.has(PP.toString(props.propPath))) {
-        return (
-          <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
-            <RowForControl
-              propPath={props.propPath}
-              controlDescription={props.controlDescription}
-              isScene={props.isScene}
-              setGlobalCursor={props.setGlobalCursor}
-            />
-          </UIGridRow>
-        )
-      } else {
-        return null
-      }
-  }
-})
 
 export interface ComponentSectionState {
   errorOccurred: boolean
@@ -848,7 +653,7 @@ export class ComponentSection extends React.Component<
   render() {
     if (this.state.errorOccurred) {
       return (
-        <>
+        <React.Fragment>
           <InspectorSectionHeader>Component props</InspectorSectionHeader>
 
           <PropertyRow
@@ -860,7 +665,7 @@ export class ComponentSection extends React.Component<
               Invalid propertyControls value
             </span>
           </PropertyRow>
-        </>
+        </React.Fragment>
       )
     } else {
       return <ComponentSectionInner {...this.props} />

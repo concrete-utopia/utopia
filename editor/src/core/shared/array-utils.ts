@@ -334,6 +334,28 @@ export function intersection<T>(
   return result
 }
 
+export function difference<T>(
+  first: Array<T>,
+  second: Array<T>,
+  eqFn: (l: T, r: T) => boolean = is,
+): Array<T> {
+  let result: Array<T> = []
+  for (const valueFromFirst of first) {
+    let foundInSecondArray: boolean = false
+    for (const valueFromSecond of second) {
+      foundInSecondArray = eqFn(valueFromFirst, valueFromSecond)
+      if (foundInSecondArray) {
+        break
+      }
+    }
+    if (!foundInSecondArray) {
+      result.push(valueFromFirst)
+    }
+  }
+
+  return result
+}
+
 export function insert<T>(index: number, element: T, array: Array<T>): Array<T> {
   const clampedIndex = clamp(0, array.length, index)
   return [...array.slice(0, clampedIndex), element, ...array.slice(clampedIndex, array.length)]

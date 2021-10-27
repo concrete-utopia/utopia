@@ -1154,7 +1154,7 @@ export function unparsedCode(rawCode: string): UnparsedCode {
   }
 }
 
-interface RegularParam {
+export interface RegularParam {
   type: 'REGULAR_PARAM'
   paramName: string
   defaultExpression: JSXAttributeOtherJavaScript | null
@@ -1189,7 +1189,7 @@ export function destructuredParamPart(
   }
 }
 
-interface DestructuredObject {
+export interface DestructuredObject {
   type: 'DESTRUCTURED_OBJECT'
   parts: Array<DestructuredParamPart>
 }
@@ -1217,7 +1217,7 @@ export function isOmittedParam(param: DestructuredArrayPart): param is OmittedPa
   return (param as any).type === 'OMITTED_PARAM'
 }
 
-interface DestructuredArray {
+export interface DestructuredArray {
   type: 'DESTRUCTURED_ARRAY'
   parts: Array<DestructuredArrayPart>
 }
@@ -1247,6 +1247,15 @@ export type Param = {
   type: 'PARAM'
   dotDotDotToken: boolean
   boundParam: BoundParam
+}
+
+export function isParam(maybeParam: unknown): maybeParam is Param {
+  return (
+    typeof maybeParam === 'object' &&
+    maybeParam != null &&
+    'type' in maybeParam &&
+    (maybeParam as any)['type'] === 'PARAM'
+  )
 }
 
 export function functionParam(dotDotDotToken: boolean, boundParam: BoundParam): Param {

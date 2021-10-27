@@ -2,11 +2,12 @@ import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import React from 'react'
 import { useContextSelector } from 'use-context-selector'
-import { PropertyPath } from '../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import {
   printerForPropertyControl,
   unwrapperAndParserForPropertyControl,
   controlToUseForUnion,
+  getPropertyControlNames,
 } from '../../../core/property-controls/property-control-values'
 import {
   BaseControlDescription,
@@ -17,10 +18,12 @@ import {
   RegularControlDescription,
 } from 'utopia-api'
 import {
+  filterUtopiaSpecificProps,
   InspectorInfo,
   InspectorPropsContext,
   useCallbackFactory,
   useInspectorContext,
+  useRefSelectedViews,
 } from './property-path-hooks'
 import {
   getModifiableJSXAttributeAtPath,
@@ -28,7 +31,13 @@ import {
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attributes'
 import * as PP from '../../../core/shared/property-path'
-import { Either, eitherToMaybe, flatMapEither, unwrapEither } from '../../../core/shared/either'
+import {
+  Either,
+  eitherToMaybe,
+  flatMapEither,
+  foldEither,
+  unwrapEither,
+} from '../../../core/shared/either'
 import {
   calculatePropertyStatusForSelection,
   ControlStatus,
@@ -36,8 +45,31 @@ import {
   getControlStyles,
 } from './control-status'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { JSXAttributes } from '../../../core/shared/element-template'
-import { mapArrayToDictionary } from '../../../core/shared/array-utils'
+import {
+  ElementInstanceMetadata,
+  isJSXElement,
+  JSXAttributes,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
+import { addUniquely, mapArrayToDictionary, mapDropNulls } from '../../../core/shared/array-utils'
+import { ParseError, ParseResult } from '../../../utils/value-parser-utils'
+import {
+  ParsedPropertyControls,
+  parsePropertyControls,
+} from '../../../core/property-controls/property-controls-parser'
+import { useEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import {
+  filterSpecialProps,
+  getPropertyControlsForTargetFromEditor,
+} from '../../../core/property-controls/property-controls-utils'
+import { fastForEach } from '../../../core/shared/utils'
+import { findUnderlyingTargetComponentImplementation } from '../../custom-code/code-file'
+import {
+  ElementInstanceMetadataKeepDeepEquality,
+  UtopiaJSXComponentKeepDeepEquality,
+} from '../../editor/store/store-deep-equality-instances'
+import { arrayDeepEquality } from '../../../utils/deep-equality'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -121,41 +153,6 @@ export function useInspectorInfoForPropertyControl(
   }
 }
 
-export function useControlStatusForPaths(paths: PropertyPath[]): { [path: string]: ControlStatus } {
-  const attributes: readonly JSXAttributes[] = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => contextData.editedMultiSelectedProps,
-      deepEqual,
-    ),
-  )
-
-  const spiedProps = useKeepReferenceEqualityIfPossible(
-    useContextSelector(InspectorPropsContext, (contextData) => contextData.spiedProps, deepEqual),
-  )
-
-  return mapArrayToDictionary(
-    paths.map((path) => {
-      const rawValues: RawValues = attributes.map((props) => {
-        return getModifiableJSXAttributeAtPath(props, path)
-      })
-      const realValues: RealValues = spiedProps.map((props) => {
-        return ObjectPath.get(props, PP.getElements(path))
-      })
-
-      const propertyStatus = calculatePropertyStatusForSelection(rawValues, realValues)
-      const controlStatus = getControlStatusFromPropertyStatus(propertyStatus)
-
-      return {
-        path: path,
-        controlStatus: controlStatus,
-      }
-    }),
-    (k) => PP.toString(k.path),
-    (v) => v.controlStatus,
-  )
-}
-
 function useFirstRawValue(propertyPath: PropertyPath): Either<string, ModifiableAttribute> {
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
@@ -185,9 +182,179 @@ function useFirstRealValue(propertyPath: PropertyPath): unknown {
 export function useControlForUnionControl(
   propertyPath: PropertyPath,
   control: UnionControlDescription,
-): ControlDescription | null {
+): RegularControlDescription | null {
   const firstRawValue = useFirstRawValue(propertyPath)
   const firstRealValue = useFirstRealValue(propertyPath)
 
   return controlToUseForUnion(control, firstRawValue, firstRealValue)
+}
+
+type ParsedPropertyControlsAndTargets = {
+  controls: ParseResult<ParsedPropertyControls>
+  targets: ElementPath[]
+}
+
+type PropertyControlsAndTargets = {
+  controls: ParseResult<ParsedPropertyControls>
+  targets: ElementPath[]
+  propsWithControlsButNoValue: string[]
+  detectedPropsWithNoValue: string[]
+  detectedPropsAndValuesWithoutControls: Record<string, unknown>
+}
+
+export function useGetPropertyControlsForSelectedComponents(): Array<PropertyControlsAndTargets> {
+  const selectedViews = useRefSelectedViews()
+
+  const selectedPropertyControls = useEditorState(
+    (store) => {
+      let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
+      fastForEach(selectedViews.current, (path) => {
+        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
+        const parsed = parsePropertyControls(propertyControls, 'filterSpecialProps')
+        const foundMatch = parsedPropertyControls.findIndex((existing) =>
+          areMatchingPropertyControls(existing.controls, parsed),
+        )
+        if (foundMatch > -1) {
+          parsedPropertyControls[foundMatch].targets.push(path)
+        } else {
+          parsedPropertyControls.push({
+            controls: parsed,
+            targets: [path],
+          })
+        }
+      })
+
+      return parsedPropertyControls
+    },
+    'useSelectedPropertyControls',
+    (oldResult, newResult) => {
+      return deepEqual(oldResult, newResult) // TODO better equality
+    },
+  )
+
+  const selectedElementsFIXME = useEditorState(
+    (store) => {
+      return selectedPropertyControls.map(({ targets }) =>
+        mapDropNulls(
+          (path) => MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path),
+          targets,
+        ),
+      )
+    },
+    'useGetPropertyControlsForSelectedComponents selectedElements',
+    (a, b) =>
+      arrayDeepEquality(arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality()))(a, b)
+        .areEqual,
+  )
+
+  const selectedComponentsFIXME = useEditorState(
+    (store) => {
+      return selectedPropertyControls.map(({ targets }) => {
+        // TODO mapDropNulls
+        let components: Array<UtopiaJSXComponent> = []
+        fastForEach(targets, (path) => {
+          const openStoryboardFile = store.editor.canvas.openFile?.filename ?? null
+          if (openStoryboardFile != null) {
+            const component = findUnderlyingTargetComponentImplementation(
+              store.editor.projectContents,
+              store.editor.nodeModules.files,
+              openStoryboardFile,
+              path,
+            )
+            if (component != null) {
+              components.push(component)
+            }
+          }
+        })
+        return components
+      })
+    },
+    'useUsedPropsWithoutControls',
+    (a, b) =>
+      arrayDeepEquality(arrayDeepEquality(UtopiaJSXComponentKeepDeepEquality))(a, b).areEqual,
+  )
+
+  return selectedPropertyControls.map(({ controls, targets }, index) => {
+    ////////////////////////
+    // useGivenPropsWithoutControls
+    const parsedPropertyControls = controls
+    const selectedElements = selectedElementsFIXME[index]
+    const selectedComponents = selectedComponentsFIXME[index]
+
+    const propertiesWithControls = foldEither(
+      () => [],
+      (success) =>
+        filterSpecialProps(
+          // TODO fix having to rely on getPropertyControlNames
+          getPropertyControlNames(success),
+        ),
+      parsedPropertyControls,
+    )
+    let detectedPropsWithoutControls: Array<string> = []
+    let definedControlsWithoutValues: Set<string> = new Set(propertiesWithControls)
+    fastForEach(selectedElements, (element) => {
+      const elementProps = Object.keys(filterUtopiaSpecificProps(element.props))
+      fastForEach(elementProps, (propName) => {
+        if (!propertiesWithControls.includes(propName)) {
+          detectedPropsWithoutControls = addUniquely(detectedPropsWithoutControls, propName)
+        }
+      })
+      fastForEach(propertiesWithControls, (definedControlProperty) => {
+        if (elementProps.includes(definedControlProperty)) {
+          definedControlsWithoutValues.delete(definedControlProperty)
+        }
+      })
+    })
+
+    ////////////////////////
+    // useUsedPropsWithoutControls
+
+    const propertiesWithControlsKeys_MAYBE_KILLME: Array<string> = Object.keys(
+      eitherToMaybe(parsedPropertyControls) ?? {},
+    )
+    let detectedPropsWithNoValue: Array<string> = []
+    fastForEach(selectedComponents, (component) => {
+      if (isJSXElement(component.rootElement)) {
+        fastForEach(component.propsUsed, (propUsed) => {
+          if (
+            !propertiesWithControlsKeys_MAYBE_KILLME.includes(propUsed) &&
+            !detectedPropsWithoutControls.includes(propUsed)
+          ) {
+            detectedPropsWithNoValue = addUniquely(detectedPropsWithNoValue, propUsed)
+          }
+        })
+      }
+    })
+
+    ////////////////////////
+    // useGivenPropsAndValuesWithoutControls
+
+    let detectedPropsAndValuesWithoutControls: Record<string, unknown> = {}
+    fastForEach(selectedElements, (element) => {
+      const elementProps = filterUtopiaSpecificProps(element.props)
+      fastForEach(Object.keys(elementProps), (propName) => {
+        if (!propertiesWithControls.includes(propName)) {
+          detectedPropsAndValuesWithoutControls[propName] = elementProps[propName]
+        }
+      })
+    })
+
+    ////////////////////////
+
+    return {
+      controls: controls,
+      propsWithControlsButNoValue: Array.from(definedControlsWithoutValues),
+      detectedPropsWithNoValue: detectedPropsWithNoValue,
+      detectedPropsAndValuesWithoutControls: detectedPropsAndValuesWithoutControls,
+      targets: targets,
+    }
+  })
+}
+
+function areMatchingPropertyControls(
+  a: ParseResult<ParsedPropertyControls>,
+  b: ParseResult<ParsedPropertyControls>,
+): boolean {
+  // TODO create equality call
+  return deepEqual(a, b)
 }
