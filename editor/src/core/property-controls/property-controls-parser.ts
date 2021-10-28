@@ -25,6 +25,8 @@ import {
   EulerControlDescription,
   Matrix3ControlDescription,
   Matrix4ControlDescription,
+  BasicControlOption,
+  AllowedEnumType,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -103,41 +105,55 @@ export function parseNumberInputControlDescription(
   )
 }
 
-type OptionTitles<P> = Array<string> | ((props: P | null) => Array<string>)
+function parseBasicControlOption<V>(valueParser: Parser<V>): Parser<BasicControlOption<V>> {
+  return (value: unknown) => {
+    return applicative2Either(
+      (label, optionValue) => {
+        return {
+          value: optionValue,
+          label: label,
+        }
+      },
+      objectKeyParser(parseString, 'label')(value),
+      objectKeyParser(valueParser, 'value')(value),
+    )
+  }
+}
 
-const parseOptionTitles: Parser<OptionTitles<any>> = parseAlternative<OptionTitles<any>>(
-  [parseArray(parseString), parseFunction],
-  'Not a string array or a function.',
+type PopUpListOptions = AllowedEnumType[] | BasicControlOption<unknown>[]
+
+const parsePopUpListOptions: Parser<PopUpListOptions> = parseAlternative<PopUpListOptions>(
+  [parseArray(parseEnumValue), parseArray(parseBasicControlOption<unknown>(parseAny))],
+  'Not a valid array of options',
 )
 
 export function parsePopUpListControlDescription(
   value: unknown,
 ): ParseResult<PopUpListControlDescription> {
-  return applicative6Either(
-    (label, control, defaultValue, options, optionTitles, displaySegmentedControl) => {
+  return applicative4Either(
+    (label, control, defaultValue, options) => {
       let popupListControlDescription: PopUpListControlDescription = {
         control: control,
         options: options,
       }
       setOptionalProp(popupListControlDescription, 'label', label)
       setOptionalProp(popupListControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(popupListControlDescription, 'optionTitles', optionTitles)
-      setOptionalProp(
-        popupListControlDescription,
-        'displaySegmentedControl',
-        displaySegmentedControl,
-      )
 
       return popupListControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseEnum(['popuplist']), 'control')(value),
-    optionalObjectKeyParser(parseEnumValue, 'defaultValue')(value),
-    objectKeyParser(parseArray(parseEnumValue), 'options')(value),
-    optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
-    optionalObjectKeyParser(parseBoolean, 'displaySegmentedControl')(value),
+    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    objectKeyParser(parsePopUpListOptions, 'options')(value),
   )
 }
+
+type OptionTitles<P> = Array<string> | ((props: P | null) => Array<string>)
+
+const parseOptionTitles: Parser<OptionTitles<any>> = parseAlternative<OptionTitles<any>>(
+  [parseArray(parseString), parseFunction],
+  'Not a string array or a function.',
+)
 
 export function parseExpressionPopUpListControlDescription(
   value: unknown,

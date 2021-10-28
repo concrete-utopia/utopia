@@ -156,16 +156,35 @@ const validPopUpListControlDescriptionValue: PopUpListControlDescription = {
   label: 'PopUpList Control',
   control: 'popuplist',
   defaultValue: 5,
-  options: ['hat', 5, true, undefined, null],
-  optionTitles: ['first title', 'second title'],
-  displaySegmentedControl: true,
+  options: [
+    {
+      value: 'hat',
+      label: 'Hat',
+    },
+    {
+      value: 5,
+      label: 'Five',
+    },
+    {
+      value: true,
+      label: 'True',
+    },
+    {
+      value: undefined,
+      label: 'Undefined',
+    },
+    {
+      value: null,
+      label: 'Null',
+    },
+  ],
 }
 
 describe('parsePopUpListControlDescription', () => {
   runBaseTestSuite(
     validPopUpListControlDescriptionValue,
     ['control', 'options'],
-    [['hat']],
+    [],
     true,
     parsePopUpListControlDescription,
   )

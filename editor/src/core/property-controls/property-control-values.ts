@@ -257,7 +257,7 @@ export function unwrapperAndParserForBaseControl(
     case 'number-input':
       return defaultUnwrapFirst(parseNumber)
     case 'popuplist':
-      return defaultUnwrapFirst(parseAllowedEnum(control.options))
+      return defaultUnwrapFirst(parseAny)
     case 'radio':
       return defaultUnwrapFirst(parseAny)
     case 'string-input':

@@ -2,7 +2,9 @@ import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
 import { betterReactMemo, CSSCursor, SliderControl } from '../../../../uuiui-deps'
 import {
+  AllowedEnumType,
   BaseControlDescription,
+  BasicControlOption,
   CheckboxControlDescription,
   ColorControlDescription,
   EulerControlDescription,
@@ -182,6 +184,24 @@ export const ExpressionInputPropertyControl = betterReactMemo(
   },
 )
 
+type PopUpListOption = AllowedEnumType | BasicControlOption<unknown>
+
+function valueForPopUpListOption(option: PopUpListOption): unknown {
+  if (typeof option === 'object' && option != null) {
+    return option.value
+  } else {
+    return option
+  }
+}
+
+function labelForPopUpListOption(option: PopUpListOption): string {
+  if (typeof option === 'object' && option != null) {
+    return option.label
+  } else {
+    return `${option}`
+  }
+}
+
 export const PopUpListPropertyControl = betterReactMemo(
   'PopUpListPropertyControl',
   (props: ControlForPropProps<PopUpListControlDescription>) => {
@@ -190,15 +210,14 @@ export const PopUpListPropertyControl = betterReactMemo(
       ? propMetadata.value
       : controlDescription.defaultValue
 
+    // TS baulks at the map below for some reason if we don't first do this
+    const controlOptions: Array<PopUpListOption> = controlDescription.options
+
     const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
-      controlDescription.options.map((option, index) => {
+      controlOptions.map((option) => {
         return {
-          value: option as string, // TODO cheating with type
-          label:
-            controlDescription.optionTitles == null ||
-            typeof controlDescription.optionTitles === 'function'
-              ? (option as string)
-              : (controlDescription.optionTitles[index] as string),
+          value: valueForPopUpListOption(option),
+          label: labelForPopUpListOption(option),
         }
       }),
     )

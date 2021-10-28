@@ -42,12 +42,14 @@ export interface ColorControlDescription extends AbstractBaseControlDescription<
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
+export interface BasicControlOption<T> {
+  value: T
+  label: string
+}
 
 export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
-  defaultValue?: AllowedEnumType
-  options: AllowedEnumType[]
-  optionTitles?: string[] | ((props: unknown | null) => string[])
-  displaySegmentedControl?: boolean
+  defaultValue?: unknown
+  options: AllowedEnumType[] | BasicControlOption<unknown>[]
 }
 
 export interface ImportType {
@@ -114,10 +116,7 @@ export interface NumberInputControlDescription
 
 export interface RadioControlDescription extends AbstractBaseControlDescription<'radio'> {
   defaultValue?: unknown
-  options: Array<{
-    value: unknown
-    label: string
-  }>
+  options: BasicControlOption<unknown>[]
 }
 
 export interface ExpressionInputControlDescription
