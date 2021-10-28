@@ -26,7 +26,7 @@ import {
   Matrix3ControlDescription,
   Matrix4ControlDescription,
   BasicControlOption,
-  AllowedEnumType,
+  BasicControlOptions,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -120,9 +120,9 @@ function parseBasicControlOption<V>(valueParser: Parser<V>): Parser<BasicControl
   }
 }
 
-type PopUpListOptions = AllowedEnumType[] | BasicControlOption<unknown>[]
-
-const parsePopUpListOptions: Parser<PopUpListOptions> = parseAlternative<PopUpListOptions>(
+const parseBasicControlOptions: Parser<BasicControlOptions<unknown>> = parseAlternative<
+  BasicControlOptions<unknown>
+>(
   [parseArray(parseEnumValue), parseArray(parseBasicControlOption<unknown>(parseAny))],
   'Not a valid array of options',
 )
@@ -144,7 +144,7 @@ export function parsePopUpListControlDescription(
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseEnum(['popuplist']), 'control')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parsePopUpListOptions, 'options')(value),
+    objectKeyParser(parseBasicControlOptions, 'options')(value),
   )
 }
 
@@ -262,19 +262,6 @@ export function parseStringInputControlDescription(
   )
 }
 
-export function parsePropertyOption(value: unknown): ParseResult<{ value: any; label: string }> {
-  return applicative2Either(
-    (valueValue, label) => {
-      return {
-        value: valueValue,
-        label: label,
-      }
-    },
-    objectKeyParser(parseAny, 'value')(value),
-    objectKeyParser(parseString, 'label')(value),
-  )
-}
-
 export function parseRadioControlDescription(value: unknown): ParseResult<RadioControlDescription> {
   return applicative4Either(
     (label, control, defaultValue, options) => {
@@ -290,7 +277,7 @@ export function parseRadioControlDescription(value: unknown): ParseResult<RadioC
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseEnum(['radio']), 'control')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseArray(parsePropertyOption), 'options')(value),
+    objectKeyParser(parseBasicControlOptions, 'options')(value),
   )
 }
 

@@ -47,9 +47,11 @@ export interface BasicControlOption<T> {
   label: string
 }
 
+export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
+
 export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
   defaultValue?: unknown
-  options: AllowedEnumType[] | BasicControlOption<unknown>[]
+  options: BasicControlOptions<unknown>
 }
 
 export interface ImportType {
@@ -116,7 +118,7 @@ export interface NumberInputControlDescription
 
 export interface RadioControlDescription extends AbstractBaseControlDescription<'radio'> {
   defaultValue?: unknown
-  options: BasicControlOption<unknown>[]
+  options: BasicControlOptions<unknown>
 }
 
 export interface ExpressionInputControlDescription

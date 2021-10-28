@@ -244,21 +244,6 @@ describe('parseRadioControlDescription', () => {
     true,
     parseRadioControlDescription,
   )
-
-  it('fails on an invalid option', () => {
-    const value = {
-      ...validRadioControlDescriptionValue,
-      options: ['error'],
-    }
-    expect(parseRadioControlDescription(value)).toEqual(
-      left(
-        objectFieldParseError(
-          'options',
-          arrayIndexParseError(0, descriptionParseError('Not an object.')),
-        ),
-      ),
-    )
-  })
 })
 
 const validStringInputControlDescriptionValue: StringInputControlDescription = {

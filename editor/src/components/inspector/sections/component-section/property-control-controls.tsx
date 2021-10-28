@@ -184,9 +184,9 @@ export const ExpressionInputPropertyControl = betterReactMemo(
   },
 )
 
-type PopUpListOption = AllowedEnumType | BasicControlOption<unknown>
+type IndividualOption = AllowedEnumType | BasicControlOption<unknown>
 
-function valueForPopUpListOption(option: PopUpListOption): unknown {
+function valueForIndividualOption(option: IndividualOption): unknown {
   if (typeof option === 'object' && option != null) {
     return option.value
   } else {
@@ -194,7 +194,7 @@ function valueForPopUpListOption(option: PopUpListOption): unknown {
   }
 }
 
-function labelForPopUpListOption(option: PopUpListOption): string {
+function labelForIndividualOption(option: IndividualOption): string {
   if (typeof option === 'object' && option != null) {
     return option.label
   } else {
@@ -211,13 +211,13 @@ export const PopUpListPropertyControl = betterReactMemo(
       : controlDescription.defaultValue
 
     // TS baulks at the map below for some reason if we don't first do this
-    const controlOptions: Array<PopUpListOption> = controlDescription.options
+    const controlOptions: Array<IndividualOption> = controlDescription.options
 
     const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
       controlOptions.map((option) => {
         return {
-          value: valueForPopUpListOption(option),
-          label: labelForPopUpListOption(option),
+          value: valueForIndividualOption(option),
+          label: labelForIndividualOption(option),
         }
       }),
     )
@@ -378,16 +378,35 @@ export const RadioPropertyControl = betterReactMemo(
       ? propMetadata.value
       : controlDescription.defaultValue
 
+    // TS baulks at the map below for some reason if we don't first do this
+    const controlOptions: Array<IndividualOption> = controlDescription.options
+
+    const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
+      controlOptions.map((option) => {
+        return {
+          value: valueForIndividualOption(option),
+          label: labelForIndividualOption(option),
+        }
+      }),
+    )
+    const currentValue = options.find((option) => {
+      return fastDeepEquals(option.value, value)
+    })
+
+    function submitValue(option: SelectOption): void {
+      propMetadata.onSubmitValue(option.value)
+    }
+
     return (
       <OptionChainControl
         key={controlId}
         id={controlId}
         testId={controlId}
-        value={value}
+        value={currentValue}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
-        onSubmitValue={propMetadata.onSubmitValue}
-        options={controlDescription.options}
+        onSubmitValue={submitValue}
+        options={options}
       />
     )
   },

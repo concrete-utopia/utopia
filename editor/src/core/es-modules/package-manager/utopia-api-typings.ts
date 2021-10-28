@@ -368,9 +368,10 @@ declare module 'utopia-api/property-controls/property-controls' {
       value: T;
       label: string;
   }
+  export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[];
   export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
       defaultValue?: unknown;
-      options: AllowedEnumType[] | BasicControlOption<unknown>[];
+      options: BasicControlOptions<unknown>;
   }
   export interface ImportType {
       source: string;
@@ -426,7 +427,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export interface RadioControlDescription extends AbstractBaseControlDescription<'radio'> {
       defaultValue?: unknown;
-      options: BasicControlOption<unknown>[];
+      options: BasicControlOptions<unknown>;
   }
   export interface ExpressionInputControlDescription extends AbstractBaseControlDescription<'expression-input'> {
       defaultValue?: unknown;
