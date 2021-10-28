@@ -197,6 +197,7 @@ interface AbstractRowForControlProps {
   isScene: boolean
   setGlobalCursor: (cursor: CSSCursor | null) => void
   indentationLevel: number
+  focusOnMount: boolean
 }
 
 function labelForControl(propPath: PropertyPath, control: RegularControlDescription): string {
@@ -272,6 +273,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
           controlDescription={controlDescription}
           propMetadata={propMetadata}
           setGlobalCursor={props.setGlobalCursor}
+          focusOnMount={props.focusOnMount}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>
@@ -358,6 +360,7 @@ const RowForArrayControl = betterReactMemo(
                   propPath={PP.appendPropertyPathElems(propPath, [index])}
                   setGlobalCursor={props.setGlobalCursor}
                   indentationLevel={1}
+                  focusOnMount={props.focusOnMount && index === 0}
                 />
               </animated.div>
             )
@@ -370,6 +373,7 @@ const RowForArrayControl = betterReactMemo(
             propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
             setGlobalCursor={props.setGlobalCursor}
             indentationLevel={1}
+            focusOnMount={false}
           />
         ) : null}
       </React.Fragment>
@@ -452,7 +456,7 @@ const RowForObjectControl = betterReactMemo(
           </div>
           {when(
             open,
-            mapToArray((innerControl: RegularControlDescription, prop: string) => {
+            mapToArray((innerControl: RegularControlDescription, prop: string, index: number) => {
               const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
               return (
                 <RowForControl
@@ -462,6 +466,7 @@ const RowForObjectControl = betterReactMemo(
                   propPath={innerPropPath}
                   setGlobalCursor={props.setGlobalCursor}
                   indentationLevel={props.indentationLevel + 1}
+                  focusOnMount={props.focusOnMount && index === 0}
                 />
               )
             }, controlDescription.object),
@@ -530,13 +535,18 @@ const RowForUnionControl = betterReactMemo(
       return null
     } else if (isBaseControlDescription(controlToUse)) {
       return (
-        <RowForBaseControl {...props} label={labelAsRenderProp} controlDescription={controlToUse} />
+        <RowForBaseControl
+          {...props}
+          label={labelAsRenderProp}
+          controlDescription={controlToUse}
+          focusOnMount={false}
+        />
       )
     } else {
       return (
         <React.Fragment>
           {label}
-          <RowForControl {...props} controlDescription={controlToUse} />
+          <RowForControl {...props} controlDescription={controlToUse} focusOnMount={false} />
         </React.Fragment>
       )
     }

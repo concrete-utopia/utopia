@@ -66,6 +66,7 @@ export interface ControlForPropProps<T extends BaseControlDescription> {
   controlDescription: T
   propMetadata: InspectorInfo<any>
   setGlobalCursor: (cursor: CSSCursor | null) => void
+  focusOnMount: boolean
 }
 
 export const CheckboxPropertyControl = betterReactMemo(
@@ -87,6 +88,7 @@ export const CheckboxPropertyControl = betterReactMemo(
         onSubmitValue={propMetadata.onSubmitValue}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
+        focusOnMount={props.focusOnMount}
       />
     )
   },
@@ -110,6 +112,7 @@ export const ColorPropertyControl = betterReactMemo(
         id={controlId}
         testId={controlId}
         value={value}
+        showString={true}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
         onSubmitValue={propMetadata.onSubmitValue}
@@ -173,6 +176,7 @@ export const ExpressionInputPropertyControl = betterReactMemo(
         onSubmitValue={submitValue}
         controlStatus={propMetadata.controlStatus}
         controlStyles={controlStyles}
+        focus={props.focusOnMount}
       />
     )
   },
@@ -213,6 +217,7 @@ export const PopUpListPropertyControl = betterReactMemo(
         onSubmitValue={submitValue}
         options={options}
         containerMode={'default'}
+        autoFocus={props.focusOnMount}
       />
     )
   },
@@ -289,6 +294,7 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
         onSubmitValue={submitValue}
         options={options}
         containerMode={'default'}
+        autoFocus={props.focusOnMount}
       />
     )
   },
@@ -336,6 +342,7 @@ export const NumberInputPropertyControl = betterReactMemo(
           maximum={controlDescription.max}
           labelInner={controlDescription.unit}
           defaultUnitToHide={'px'}
+          focusOnMount={props.focusOnMount}
         />
       )
     }
@@ -408,6 +415,7 @@ const NumberWithSliderControl = betterReactMemo(
           minimum={controlDescription.min}
           maximum={controlDescription.max}
           defaultUnitToHide={'px'}
+          focusOnMount={props.focusOnMount}
         />
       </UIGridRow>
     )
@@ -433,6 +441,7 @@ export const StringInputPropertyControl = betterReactMemo(
         onSubmitValue={propMetadata.onSubmitValue}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
+        focus={props.focusOnMount}
       />
     )
   },

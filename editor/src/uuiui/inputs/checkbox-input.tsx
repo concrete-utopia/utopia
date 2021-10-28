@@ -30,6 +30,12 @@ export const CheckboxInput = betterReactMemo(
         }
       })
 
+      React.useEffect(() => {
+        if (focusOnMount && ref.current != null) {
+          ref.current.focus()
+        }
+      }, [focusOnMount, ref])
+
       const colorTheme = useColorTheme()
       const checked =
         props.checked != null && (controlStyles.interactive || controlStyles.showContent)

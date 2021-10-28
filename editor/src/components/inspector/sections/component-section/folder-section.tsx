@@ -79,7 +79,7 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
     [props.isRoot, colorTheme],
   )
 
-  const createRowForControl = (propName: string) => {
+  const createRowForControl = (propName: string, focusOnMount: boolean) => {
     const controlDescription = props.parsedPropertyControls[propName]
     return foldEither(
       (propertyError) => {
@@ -104,6 +104,7 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
             visibleEmptyControls={props.visibleEmptyControls}
             unsetPropNames={props.unsetPropNames}
             showHiddenControl={props.showHiddenControl}
+            focusOnMount={focusOnMount}
           />
         )
       },
@@ -122,7 +123,10 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
           title={props.title ?? ''}
         />,
       )}
-      {when(open, controlsWithValue.map(createRowForControl))}
+      {when(
+        open,
+        controlsWithValue.map((control) => createRowForControl(control, false)),
+      )}
       {when(
         props.isRoot,
         Object.keys(props.detectedPropsAndValuesWithoutControls).map((propName) => {
@@ -139,11 +143,15 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
               isScene={false}
               setGlobalCursor={props.setGlobalCursor}
               indentationLevel={props.indentationLevel + 1}
+              focusOnMount={false}
             />
           )
         }),
       )}
-      {when(open, emptyControls.map(createRowForControl))}
+      {when(
+        open,
+        emptyControls.map((control) => createRowForControl(control, true)),
+      )}
       {when(
         open,
         <HiddenControls

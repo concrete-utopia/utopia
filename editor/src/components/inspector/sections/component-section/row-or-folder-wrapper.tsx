@@ -20,6 +20,7 @@ type RowOrFolderWrapperProps = {
   visibleEmptyControls: string[]
   unsetPropNames: string[]
   showHiddenControl: (path: string) => void
+  focusOnMount?: boolean
 }
 
 export const RowOrFolderWrapper = betterReactMemo(
@@ -57,6 +58,7 @@ export const RowOrFolderWrapper = betterReactMemo(
               isScene={props.isScene}
               setGlobalCursor={props.setGlobalCursor}
               indentationLevel={props.indentationLevel}
+              focusOnMount={props.focusOnMount ?? false}
             />
           </UIGridRow>
         )
