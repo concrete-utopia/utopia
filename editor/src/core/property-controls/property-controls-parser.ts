@@ -20,7 +20,11 @@ import {
   PropertyControls,
   RegularControlDescription,
   ExpressionInputControlDescription,
-  ControlType,
+  RegularControlType,
+  Vector4ControlDescription,
+  EulerControlDescription,
+  Matrix3ControlDescription,
+  Matrix4ControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -43,6 +47,7 @@ import {
   Parser,
   ParseResult,
   parseString,
+  parseTuple,
   parseUndefined,
 } from '../../utils/value-parser-utils'
 import {
@@ -445,9 +450,10 @@ export function parseVector2ControlDescription(
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseEnum(['vector2']), 'control')(value),
-    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    optionalObjectKeyParser(parseTuple<[number, number]>(parseNumber, 2), 'defaultValue')(value),
   )
 }
+
 export function parseVector3ControlDescription(
   value: unknown,
 ): ParseResult<Vector3ControlDescription> {
@@ -463,7 +469,108 @@ export function parseVector3ControlDescription(
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseEnum(['vector3']), 'control')(value),
-    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    optionalObjectKeyParser(
+      parseTuple<[number, number, number]>(parseNumber, 3),
+      'defaultValue',
+    )(value),
+  )
+}
+
+export function parseVector4ControlDescription(
+  value: unknown,
+): ParseResult<Vector4ControlDescription> {
+  return applicative3Either(
+    (label, control, defaultValue) => {
+      let controlDescription: Vector4ControlDescription = {
+        control: control,
+      }
+      setOptionalProp(controlDescription, 'label', label)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['vector4']), 'control')(value),
+    optionalObjectKeyParser(
+      parseTuple<[number, number, number, number]>(parseNumber, 4),
+      'defaultValue',
+    )(value),
+  )
+}
+
+export function parseEulerControlDescription(value: unknown): ParseResult<EulerControlDescription> {
+  return applicative3Either(
+    (label, control, defaultValue) => {
+      let controlDescription: EulerControlDescription = {
+        control: control,
+      }
+      setOptionalProp(controlDescription, 'label', label)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['euler']), 'control')(value),
+    optionalObjectKeyParser(
+      parseTuple<[number, number, number, string]>(
+        (v, i) => (i === 3 ? parseString(v) : parseNumber(v)),
+        4,
+      ),
+      'defaultValue',
+    )(value),
+  )
+}
+
+// prettier-ignore
+type Matrix3 = [
+  number, number, number,
+  number, number, number,
+  number, number, number,
+]
+
+export function parseMatrix3ControlDescription(
+  value: unknown,
+): ParseResult<Matrix3ControlDescription> {
+  return applicative3Either(
+    (label, control, defaultValue) => {
+      let controlDescription: Matrix3ControlDescription = {
+        control: control,
+      }
+      setOptionalProp(controlDescription, 'label', label)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['matrix3']), 'control')(value),
+    optionalObjectKeyParser(parseTuple<Matrix3>(parseNumber, 9), 'defaultValue')(value),
+  )
+}
+
+// prettier-ignore
+type Matrix4 = [
+  number, number, number, number,
+  number, number, number, number,
+  number, number, number, number,
+  number, number, number, number,
+]
+
+export function parseMatrix4ControlDescription(
+  value: unknown,
+): ParseResult<Matrix4ControlDescription> {
+  return applicative3Either(
+    (label, control, defaultValue) => {
+      let controlDescription: Matrix4ControlDescription = {
+        control: control,
+      }
+      setOptionalProp(controlDescription, 'label', label)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['matrix4']), 'control')(value),
+    optionalObjectKeyParser(parseTuple<Matrix4>(parseNumber, 16), 'defaultValue')(value),
   )
 }
 
@@ -516,20 +623,30 @@ export function parseRegularControlDescription(
   value: unknown,
 ): ParseResult<RegularControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-    const controlType = (value as any)['control'] as ControlType
+    const controlType = (value as any)['control'] as RegularControlType
     switch (controlType) {
+      case 'array':
+        return parseArrayControlDescription(value)
       case 'checkbox':
         return parseCheckboxControlDescription(value)
       case 'color':
         return parseColorControlDescription(value)
+      case 'euler':
+        return parseEulerControlDescription(value)
       case 'expression-input':
         return parseExpressionInputControlDescription(value)
       case 'expression-popuplist':
         return parseExpressionPopUpListControlDescription(value)
+      case 'matrix3':
+        return parseMatrix3ControlDescription(value)
+      case 'matrix4':
+        return parseMatrix4ControlDescription(value)
       case 'none':
         return parseNoneControlDescription(value)
       case 'number-input':
         return parseNumberInputControlDescription(value)
+      case 'object':
+        return parseObjectControlDescription(value)
       case 'radio':
         return parseRadioControlDescription(value)
       case 'popuplist':
@@ -538,19 +655,18 @@ export function parseRegularControlDescription(
         return parseStringInputControlDescription(value)
       case 'style-controls':
         return parseStyleControlsControlDescription(value)
-      case 'array':
-        return parseArrayControlDescription(value)
-      case 'object':
-        return parseObjectControlDescription(value)
       case 'vector2':
         return parseVector2ControlDescription(value)
       case 'vector3':
         return parseVector3ControlDescription(value)
+      case 'vector4':
+        return parseVector4ControlDescription(value)
       case 'union':
         return parseUnionControlDescription(value)
       case undefined:
         return left(objectFieldNotPresentParseError('control'))
       default:
+        const _exhaustiveCheck: never = controlType
         return left(
           objectFieldParseError(
             'control',
