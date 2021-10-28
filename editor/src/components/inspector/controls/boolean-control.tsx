@@ -6,6 +6,7 @@ import { CheckboxInput } from '../../../uuiui'
 
 export interface BooleanControlProps extends DEPRECATEDControlProps<boolean> {
   onMouseDown?: (e: React.MouseEvent<HTMLInputElement>) => void
+  focusOnMount?: boolean
 }
 
 export const BooleanControl: React.FunctionComponent<BooleanControlProps> = ({
@@ -27,6 +28,7 @@ export const BooleanControl: React.FunctionComponent<BooleanControlProps> = ({
       id={props.id}
       onChange={onSubmitValue}
       onMouseDown={props.onMouseDown}
+      focusOnMount={props.focusOnMount}
     />
   )
 }

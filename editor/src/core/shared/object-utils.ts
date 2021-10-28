@@ -152,14 +152,14 @@ export function forEachValue<T>(fn: (val: ValueOf<T>, key: keyof T) => void, obj
 }
 
 export function mapToArray<T, U>(
-  fn: (val: T, key: string) => U,
+  fn: (val: T, key: string, index: number) => U,
   obj: { [key: string]: T },
 ): Array<U> {
   const keys = Object.keys(obj)
   let result: Array<U> = []
-  fastForEach(keys, (key) => {
+  fastForEach(keys, (key, index) => {
     const value = obj[key]
-    result.push(fn(value, key))
+    result.push(fn(value, key, index))
   })
 
   return result
