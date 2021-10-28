@@ -1,6 +1,7 @@
 import { MapLike } from 'typescript'
 import {
   Either,
+  flatMapEither,
   isRight,
   left,
   leftMapEither,
@@ -232,6 +233,28 @@ export function parseArray<V>(
       return traverseEither(withErrorParser, valueAsArray)
     } else {
       return left(descriptionParseError('Not an array.'))
+    }
+  }
+}
+
+export function parseTuple<T extends Array<unknown>>(
+  arrayValueParser: (v: unknown, index: number) => ParseResult<unknown>,
+  length: number,
+): Parser<T> {
+  return (value: unknown) => {
+    if (typeof value === 'object' && Array.isArray(value) && value != null) {
+      const valueAsArray: Array<unknown> = value
+      const withErrorParser = arrayValueParserWithError(arrayValueParser)
+      const parsedArray = traverseEither(withErrorParser, valueAsArray)
+      return flatMapEither(
+        (arr) =>
+          arr.length === length
+            ? right(arr as T)
+            : left(descriptionParseError('Tuple has incorrect length.')),
+        parsedArray,
+      )
+    } else {
+      return left(descriptionParseError('Not a tuple.'))
     }
   }
 }

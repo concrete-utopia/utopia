@@ -9,6 +9,12 @@ import {
   StyleControlsControlDescription,
   FolderControlDescription,
   ExpressionInputControlDescription,
+  Vector2ControlDescription,
+  Vector3ControlDescription,
+  Vector4ControlDescription,
+  EulerControlDescription,
+  Matrix3ControlDescription,
+  Matrix4ControlDescription,
 } from 'utopia-api'
 import {
   parseNumberInputControlDescription,
@@ -24,6 +30,12 @@ import {
   parseFolderControlDescription,
   parseControlDescription,
   parseExpressionInputControlDescription,
+  parseVector2ControlDescription,
+  parseVector3ControlDescription,
+  parseVector4ControlDescription,
+  parseEulerControlDescription,
+  parseMatrix3ControlDescription,
+  parseMatrix4ControlDescription,
 } from './property-controls-parser'
 import { right, left, isLeft } from '../shared/either'
 import {
@@ -265,6 +277,113 @@ describe('parseStyleControlsControlDescription', () => {
   )
 })
 
+const validVector2ControlDescriptionValue: Vector2ControlDescription = {
+  label: 'Vector2 Control',
+  control: 'vector2',
+  defaultValue: [10, 20],
+}
+
+describe('parseVector2ControlDescription', () => {
+  runBaseTestSuite(
+    validVector2ControlDescriptionValue,
+    ['control'],
+    ['hat', 9],
+    true,
+    parseVector2ControlDescription,
+  )
+})
+
+const validVector3ControlDescriptionValue: Vector3ControlDescription = {
+  label: 'Vector3 Control',
+  control: 'vector3',
+  defaultValue: [10, 20, 30],
+}
+
+describe('parseVector3ControlDescription', () => {
+  runBaseTestSuite(
+    validVector3ControlDescriptionValue,
+    ['control'],
+    ['hat', 9, true],
+    true,
+    parseVector3ControlDescription,
+  )
+})
+
+const validVector4ControlDescriptionValue: Vector4ControlDescription = {
+  label: 'Vector4 Control',
+  control: 'vector4',
+  defaultValue: [10, 20, 30, 40],
+}
+
+describe('parseVector4ControlDescription', () => {
+  runBaseTestSuite(
+    validVector4ControlDescriptionValue,
+    ['control'],
+    ['hat', 9, true, 'bananas'],
+    true,
+    parseVector4ControlDescription,
+  )
+})
+
+const validEulerControlDescriptionValue: EulerControlDescription = {
+  label: 'Euler Control',
+  control: 'euler',
+  defaultValue: [10, 20, 30, 'XYZ'],
+}
+
+describe('parseEulerControlDescription', () => {
+  runBaseTestSuite(
+    validEulerControlDescriptionValue,
+    ['control'],
+    ['hat', 9, true, 'bananas'],
+    true,
+    parseEulerControlDescription,
+  )
+})
+
+const validMatrix3ControlDescriptionValue: Matrix3ControlDescription = {
+  label: 'Matrix3 Control',
+  control: 'matrix3',
+  // prettier-ignore
+  defaultValue: [
+    10, 20, 30,
+    40, 50, 60,
+    70, 80, 90,
+  ]
+}
+
+describe('parseMatrix3ControlDescription', () => {
+  runBaseTestSuite(
+    validMatrix3ControlDescriptionValue,
+    ['control'],
+    ['hat', 9, true, 'bananas'],
+    true,
+    parseMatrix3ControlDescription,
+  )
+})
+
+const validMatrix4ControlDescriptionValue: Matrix4ControlDescription = {
+  label: 'Matrix4 Control',
+  control: 'matrix4',
+  // prettier-ignore
+  defaultValue: [
+    10, 20, 30, 40,
+    50, 60, 70, 80,
+    11, 21, 31, 41,
+    51, 61, 71, 81,
+  ]
+}
+
+describe('parseMatrix4ControlDescription', () => {
+  runBaseTestSuite(
+    validMatrix4ControlDescriptionValue,
+    ['control'],
+    ['hat', 9, true, 'bananas'],
+    true,
+    parseMatrix4ControlDescription,
+  )
+})
+
 const validFolderControlDescriptionValue: FolderControlDescription = {
   control: 'folder',
   controls: {
@@ -354,6 +473,60 @@ describe('parseControlDescription', () => {
         'includeSpecialProps',
       ),
     ).toEqual(right(validFolderControlDescriptionValue))
+  })
+  it('parses a vector2 description correctly', () => {
+    expect(
+      parseControlDescription(
+        validVector2ControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validVector2ControlDescriptionValue))
+  })
+  it('parses a vector3 description correctly', () => {
+    expect(
+      parseControlDescription(
+        validVector3ControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validVector3ControlDescriptionValue))
+  })
+  it('parses a vector4 description correctly', () => {
+    expect(
+      parseControlDescription(
+        validVector4ControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validVector4ControlDescriptionValue))
+  })
+  it('parses a euler description correctly', () => {
+    expect(
+      parseControlDescription(
+        validEulerControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validEulerControlDescriptionValue))
+  })
+  it('parses a matrix3 description correctly', () => {
+    expect(
+      parseControlDescription(
+        validMatrix3ControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validMatrix3ControlDescriptionValue))
+  })
+  it('parses a matrix4 description correctly', () => {
+    expect(
+      parseControlDescription(
+        validMatrix4ControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validMatrix4ControlDescriptionValue))
   })
   it('fails on a value that is not an object', () => {
     expect(parseControlDescription('hat', 'testPropName', 'includeSpecialProps')).toEqual(

@@ -170,8 +170,8 @@ export type BaseControlDescription =
 // Higher Level Controls
 
 export type HigherLevelControlType = 'array' | 'object' | 'union'
-
-export type ControlType = BaseControlType | HigherLevelControlType | 'folder'
+export type RegularControlType = BaseControlType | HigherLevelControlType
+export type ControlType = RegularControlType | 'folder'
 
 interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType>
   extends AbstractControlDescription<T> {}

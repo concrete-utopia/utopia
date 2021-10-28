@@ -452,7 +452,8 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export type BaseControlDescription = CheckboxControlDescription | ColorControlDescription | ExpressionInputControlDescription | ExpressionPopUpListControlDescription | EulerControlDescription | NoneControlDescription | Matrix3ControlDescription | Matrix4ControlDescription | NumberInputControlDescription | RadioControlDescription | PopUpListControlDescription | StringInputControlDescription | StyleControlsControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
   export type HigherLevelControlType = 'array' | 'object' | 'union';
-  export type ControlType = BaseControlType | HigherLevelControlType | 'folder';
+  export type RegularControlType = BaseControlType | HigherLevelControlType;
+  export type ControlType = RegularControlType | 'folder';
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {
   }
   export interface ArrayControlDescription extends AbstractHigherLevelControlDescription<'array'> {
