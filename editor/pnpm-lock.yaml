@@ -151,6 +151,7 @@ specifiers:
   jest-fetch-mock: 3.0.1
   jest-matcher-deep-close-to: 2.0.1
   jest-transform-stub: 2.0.0
+  jotai: ^1.4.2
   jsdom: 17.0.0
   json5: 0.5.1
   jszip: 3.5.0
@@ -302,6 +303,7 @@ dependencies:
   immutability-helper: 2.4.0
   istextorbinary: 5.11.0
   jest-fetch-mock: 3.0.1
+  jotai: 1.4.2_505e9a4a4bca713d56f1d49dedb15ff7
   json5: 0.5.1
   jszip: 3.5.0
   localforage: 1.7.3
@@ -10471,6 +10473,46 @@ packages:
       - ts-node
       - utf-8-validate
     dev: true
+
+  /jotai/1.4.2_505e9a4a4bca713d56f1d49dedb15ff7:
+    resolution: {integrity: sha512-/NcK8DGvfGcVCqoOvjWIo8/KaUYtadXEl+6uxLiQJUxbyiqCtXkhAdrugk5jmpAFXXD2y6fNDw2Ln7h0EuY+ng==}
+    engines: {node: '>=12.7.0'}
+    peerDependencies:
+      '@babel/core': '*'
+      '@babel/template': '*'
+      '@urql/core': '*'
+      immer: '*'
+      optics-ts: '*'
+      react: '>=16.8'
+      react-query: '*'
+      valtio: '*'
+      wonka: '*'
+      xstate: '*'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@babel/template':
+        optional: true
+      '@urql/core':
+        optional: true
+      immer:
+        optional: true
+      optics-ts:
+        optional: true
+      react-query:
+        optional: true
+      valtio:
+        optional: true
+      wonka:
+        optional: true
+      xstate:
+        optional: true
+    dependencies:
+      '@babel/core': 7.15.5
+      immer: 3.2.0
+      react: /utopia-react/17.0.0-rc.1
+      xstate: 4.23.1
+    dev: false
 
   /js-base64/2.6.4:
     resolution: {integrity: sha512-pZe//GGmwJndub7ZghVHz7vjb2LgC1m8B07Au3eYqeqv9emhESByMXxaEgkUkEqJe87oBbSniGYoQNIBklc7IQ==}

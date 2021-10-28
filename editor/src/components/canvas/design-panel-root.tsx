@@ -35,6 +35,8 @@ import { FloatingInsertMenu } from './ui/floating-insert-menu'
 import { usePubSubAtom } from '../../core/shared/atom-with-pub-sub'
 import CanvasActions from './canvas-actions'
 import { canvasPoint } from '../../core/shared/math-utils'
+import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
+import { useAtom } from 'jotai'
 
 interface NumberSize {
   width: number
@@ -357,16 +359,19 @@ const ResizableInspectorPane = betterReactMemo<ResizableInspectorPaneProps>(
   'ResizableInspectorPane',
   (props) => {
     const colorTheme = useColorTheme()
+    const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
     const resizableRef = React.useRef<Resizable>(null)
     const [width, setWidth] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
 
     const onResize = React.useCallback(() => {
-      if (resizableRef.current?.size.width != null) {
+      const newWidth = resizableRef.current?.size.width
+      if (newWidth != null) {
         // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
-        setWidth(resizableRef.current?.size.width)
+        setWidth(newWidth)
+        updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
       }
-    }, [])
+    }, [updateInspectorWidth])
 
     return (
       <Resizable

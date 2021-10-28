@@ -134,6 +134,7 @@
     "immutability-helper": "2.4.0",
     "istextorbinary": "5.11.0",
     "jest-fetch-mock": "3.0.1",
+    "jotai": "^1.4.2",
     "json5": "0.5.1",
     "jszip": "3.5.0",
     "localforage": "1.7.3",
