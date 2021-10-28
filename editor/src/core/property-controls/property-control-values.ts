@@ -238,37 +238,31 @@ function unwrapAndParseUnionValue(
 export function unwrapperAndParserForBaseControl(
   control: BaseControlDescription,
 ): UnwrapperAndParser<unknown> {
-  switch (control.type) {
-    case 'boolean':
+  switch (control.control) {
+    case 'checkbox':
       return defaultUnwrapFirst(parseBoolean)
     case 'color':
       return defaultUnwrapFirst(parseColorValue)
-    case 'enum':
-      return defaultUnwrapFirst(parseAllowedEnum(control.options))
-    case 'expression-enum':
+    case 'expression-input':
+      return jsUnwrapFirst(parseAny)
+    case 'expression-popuplist':
       return defaultUnwrapFirst(parseAny)
     case 'euler':
       return defaultUnwrapFirst(parseArray(parseAny))
-    case 'ignore':
-      return defaultUnwrapFirst(parseAny)
-    case 'image':
-      return defaultUnwrapFirst(parseString)
     case 'matrix3':
     case 'matrix4':
       return defaultUnwrapFirst(parseArray(parseNumber))
-    case 'number':
+    case 'none':
+      return defaultUnwrapFirst(parseAny)
+    case 'number-input':
       return defaultUnwrapFirst(parseNumber)
-    case 'options':
-      return defaultUnwrapFirst(parseAny)
     case 'popuplist':
+      return defaultUnwrapFirst(parseAllowedEnum(control.options))
+    case 'radio':
       return defaultUnwrapFirst(parseAny)
-    case 'quaternion':
-      return defaultUnwrapFirst(parseArray(parseNumber))
-    case 'rawjs':
-      return jsUnwrapFirst(parseAny)
-    case 'string':
+    case 'string-input':
       return defaultUnwrapFirst(parseString)
-    case 'styleobject':
+    case 'style-controls':
       return defaultUnwrapFirst(parseAny)
     case 'vector2':
     case 'vector3':
@@ -283,23 +277,20 @@ export function unwrapperAndParserForBaseControl(
 export function unwrapperAndParserForPropertyControl(
   control: RegularControlDescription,
 ): UnwrapperAndParser<unknown> {
-  switch (control.type) {
-    case 'boolean':
+  switch (control.control) {
+    case 'checkbox':
     case 'color':
-    case 'enum':
-    case 'expression-enum':
+    case 'expression-input':
+    case 'expression-popuplist':
     case 'euler':
-    case 'ignore':
-    case 'image':
     case 'matrix3':
     case 'matrix4':
-    case 'number':
-    case 'options':
+    case 'none':
+    case 'number-input':
     case 'popuplist':
-    case 'quaternion':
-    case 'rawjs':
-    case 'string':
-    case 'styleobject':
+    case 'radio':
+    case 'string-input':
+    case 'style-controls':
     case 'vector2':
     case 'vector3':
     case 'vector4':
@@ -349,7 +340,7 @@ export function walkRegularControlDescriptions(
     propertyName: number | string,
     propertyControl: ControlDescription,
   ): void {
-    switch (propertyControl.type) {
+    switch (propertyControl.control) {
       case 'folder':
         addFolder(propertyControl)
         break
@@ -401,37 +392,31 @@ function printJS<T>(value: T): JSXAttribute {
 }
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {
-  switch (control.type) {
-    case 'boolean':
+  switch (control.control) {
+    case 'checkbox':
       return printSimple
     case 'color':
       return printColor
-    case 'enum':
-      return printSimple
-    case 'expression-enum':
+    case 'expression-input':
+      return printJS
+    case 'expression-popuplist':
       return printSimple
     case 'euler':
-      return printSimple
-    case 'ignore':
-      return printSimple
-    case 'image':
       return printSimple
     case 'matrix3':
     case 'matrix4':
       return printSimple
-    case 'number':
+    case 'none':
       return printSimple
-    case 'options':
+    case 'number-input':
       return printSimple
     case 'popuplist':
       return printSimple
-    case 'quaternion':
+    case 'radio':
       return printSimple
-    case 'rawjs':
-      return printJS
-    case 'string':
+    case 'string-input':
       return printSimple
-    case 'styleobject':
+    case 'style-controls':
       return printSimple
     case 'vector2':
       return printSimple
@@ -483,23 +468,20 @@ function printerForUnion<T>(controls: Array<RegularControlDescription>): Printer
 }
 
 export function printerForPropertyControl(control: RegularControlDescription): Printer<unknown> {
-  switch (control.type) {
-    case 'boolean':
+  switch (control.control) {
+    case 'checkbox':
     case 'color':
-    case 'enum':
-    case 'expression-enum':
+    case 'expression-input':
+    case 'expression-popuplist':
     case 'euler':
-    case 'ignore':
-    case 'image':
     case 'matrix3':
     case 'matrix4':
-    case 'number':
-    case 'options':
+    case 'none':
+    case 'number-input':
     case 'popuplist':
-    case 'quaternion':
-    case 'rawjs':
-    case 'string':
-    case 'styleobject':
+    case 'radio':
+    case 'string-input':
+    case 'style-controls':
     case 'vector2':
     case 'vector3':
     case 'vector4':

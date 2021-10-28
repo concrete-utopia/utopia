@@ -4,36 +4,34 @@ import { fastForEach } from '../utils'
 // Base Level Controls
 
 export type BaseControlType =
-  | 'boolean'
+  | 'checkbox'
   | 'color'
-  | 'enum'
-  | 'expression-enum'
   | 'euler'
-  | 'ignore'
-  | 'image'
+  | 'expression-input'
+  | 'expression-popuplist'
   | 'matrix3'
   | 'matrix4'
-  | 'number'
-  | 'options'
+  | 'none'
+  | 'number-input'
   | 'popuplist'
-  | 'quaternion'
-  | 'rawjs'
-  | 'string'
-  | 'styleobject'
+  | 'radio'
+  | 'string-input'
+  | 'style-controls'
   | 'vector2'
   | 'vector3'
   | 'vector4'
 
 interface AbstractControlDescription<T extends ControlType> {
-  title?: string
-  type: T
+  label?: string
+  control: T
   defaultValue?: unknown
+  visibleByDefault?: boolean
 }
 
 interface AbstractBaseControlDescription<T extends BaseControlType>
   extends AbstractControlDescription<T> {}
 
-export interface BooleanControlDescription extends AbstractBaseControlDescription<'boolean'> {
+export interface CheckboxControlDescription extends AbstractBaseControlDescription<'checkbox'> {
   defaultValue?: boolean
   disabledTitle?: string
   enabledTitle?: string
@@ -45,7 +43,7 @@ export interface ColorControlDescription extends AbstractBaseControlDescription<
 
 export type AllowedEnumType = string | boolean | number | undefined | null
 
-export interface EnumControlDescription extends AbstractBaseControlDescription<'enum'> {
+export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
   defaultValue?: AllowedEnumType
   options: AllowedEnumType[]
   optionTitles?: string[] | ((props: unknown | null) => string[])
@@ -64,8 +62,8 @@ export interface ExpressionEnum {
   import?: ImportType
 }
 
-export interface ExpressionEnumControlDescription
-  extends AbstractBaseControlDescription<'expression-enum'> {
+export interface ExpressionPopUpListControlDescription
+  extends AbstractBaseControlDescription<'expression-popuplist'> {
   defaultValue?: ExpressionEnum
   options: ExpressionEnum[]
   optionTitles?: string[] | ((props: unknown | null) => string[])
@@ -75,12 +73,8 @@ export interface EulerControlDescription extends AbstractBaseControlDescription<
   defaultValue?: [number, number, number, string]
 }
 
-export interface IgnoreControlDescription extends AbstractBaseControlDescription<'ignore'> {
+export interface NoneControlDescription extends AbstractBaseControlDescription<'none'> {
   defaultValue?: never
-}
-
-export interface ImageControlDescription extends AbstractBaseControlDescription<'image'> {
-  defaultValue?: string
 }
 
 export interface Matrix3ControlDescription extends AbstractBaseControlDescription<'matrix3'> {
@@ -108,7 +102,8 @@ export interface Matrix4ControlDescription extends AbstractBaseControlDescriptio
   ]
 }
 
-export interface NumberControlDescription extends AbstractBaseControlDescription<'number'> {
+export interface NumberInputControlDescription
+  extends AbstractBaseControlDescription<'number-input'> {
   defaultValue?: number | null
   max?: number
   min?: number
@@ -117,7 +112,7 @@ export interface NumberControlDescription extends AbstractBaseControlDescription
   displayStepper?: boolean
 }
 
-export interface OptionsControlDescription extends AbstractBaseControlDescription<'options'> {
+export interface RadioControlDescription extends AbstractBaseControlDescription<'radio'> {
   defaultValue?: unknown
   options: Array<{
     value: unknown
@@ -125,30 +120,20 @@ export interface OptionsControlDescription extends AbstractBaseControlDescriptio
   }>
 }
 
-export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
-  defaultValue?: unknown
-  options: Array<{
-    value: unknown
-    label: string
-  }>
-}
-
-export interface QuaternionControlDescription extends AbstractBaseControlDescription<'quaternion'> {
-  defaultValue?: [number, number, number, number]
-}
-
-export interface RawJSControlDescription extends AbstractBaseControlDescription<'rawjs'> {
+export interface ExpressionInputControlDescription
+  extends AbstractBaseControlDescription<'expression-input'> {
   defaultValue?: unknown
 }
 
-export interface StringControlDescription extends AbstractBaseControlDescription<'string'> {
+export interface StringInputControlDescription
+  extends AbstractBaseControlDescription<'string-input'> {
   defaultValue?: string
   placeholder?: string
   obscured?: boolean
 }
 
-export interface StyleObjectControlDescription
-  extends AbstractBaseControlDescription<'styleobject'> {
+export interface StyleControlsControlDescription
+  extends AbstractBaseControlDescription<'style-controls'> {
   defaultValue?: CSSProperties
   placeholder?: CSSProperties
 }
@@ -165,22 +150,19 @@ export interface Vector4ControlDescription extends AbstractBaseControlDescriptio
 }
 
 export type BaseControlDescription =
-  | BooleanControlDescription
+  | CheckboxControlDescription
   | ColorControlDescription
-  | EnumControlDescription
-  | ExpressionEnumControlDescription
+  | ExpressionInputControlDescription
+  | ExpressionPopUpListControlDescription
   | EulerControlDescription
-  | IgnoreControlDescription
-  | ImageControlDescription
+  | NoneControlDescription
   | Matrix3ControlDescription
   | Matrix4ControlDescription
-  | NumberControlDescription
-  | OptionsControlDescription
+  | NumberInputControlDescription
+  | RadioControlDescription
   | PopUpListControlDescription
-  | QuaternionControlDescription
-  | RawJSControlDescription
-  | StringControlDescription
-  | StyleObjectControlDescription
+  | StringInputControlDescription
+  | StyleControlsControlDescription
   | Vector2ControlDescription
   | Vector3ControlDescription
   | Vector4ControlDescription
@@ -188,8 +170,8 @@ export type BaseControlDescription =
 // Higher Level Controls
 
 export type HigherLevelControlType = 'array' | 'object' | 'union'
-
-export type ControlType = BaseControlType | HigherLevelControlType | 'folder'
+export type RegularControlType = BaseControlType | HigherLevelControlType
+export type ControlType = RegularControlType | 'folder'
 
 interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType>
   extends AbstractControlDescription<T> {}
@@ -211,8 +193,8 @@ export interface UnionControlDescription extends AbstractHigherLevelControlDescr
 }
 
 export interface FolderControlDescription {
-  type: 'folder'
-  title?: string
+  control: 'folder'
+  label?: string
   controls: PropertyControls
 }
 
@@ -230,23 +212,20 @@ export type ControlDescription = RegularControlDescription | FolderControlDescri
 export function isBaseControlDescription(
   control: ControlDescription,
 ): control is BaseControlDescription {
-  switch (control.type) {
-    case 'boolean':
+  switch (control.control) {
+    case 'checkbox':
     case 'color':
-    case 'enum':
-    case 'expression-enum':
     case 'euler':
-    case 'ignore':
-    case 'image':
+    case 'expression-input':
+    case 'expression-popuplist':
     case 'matrix3':
     case 'matrix4':
-    case 'number':
-    case 'options':
+    case 'none':
+    case 'number-input':
     case 'popuplist':
-    case 'quaternion':
-    case 'rawjs':
-    case 'string':
-    case 'styleobject':
+    case 'radio':
+    case 'string-input':
+    case 'style-controls':
     case 'vector2':
     case 'vector3':
     case 'vector4':
