@@ -312,8 +312,9 @@ export const useColorTheme = () => {
 
 const inspectorXPadding = 8
 const canvasMenuWidth = 38
-const inspectorWidth = 255
-const inspectorPaddedWidth = inspectorWidth - inspectorXPadding * 2
+const inspectorSmallWidth = 255
+const inspectorLargeWidth = 300
+const inspectorSmallPaddedWidth = inspectorSmallWidth - inspectorXPadding * 2
 
 export const UtopiaTheme = {
   layout: {
@@ -331,8 +332,9 @@ export const UtopiaTheme = {
       tall: 26,
     },
     inspectorXPadding,
-    inspectorPaddedWidth,
-    inspectorWidth,
+    inspectorSmallPaddedWidth,
+    inspectorSmallWidth: inspectorSmallWidth,
+    inspectorLargeWidth: inspectorLargeWidth,
     canvasMenuWidth,
     inspectorModalBaseOffset: inspectorXPadding + canvasMenuWidth,
   },
