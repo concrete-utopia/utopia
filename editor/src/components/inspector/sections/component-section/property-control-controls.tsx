@@ -113,6 +113,7 @@ export const ControlForColorProp = betterReactMemo(
         id={controlId}
         testId={controlId}
         value={value}
+        showString={true}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
         onSubmitValue={propMetadata.onSubmitValue}
