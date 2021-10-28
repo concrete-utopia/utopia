@@ -20,7 +20,6 @@ type RowOrFolderWrapperProps = {
   visibleEmptyControls: string[]
   unsetPropNames: string[]
   showHiddenControl: (path: string) => void
-  showIndentation: boolean
 }
 
 export const RowOrFolderWrapper = betterReactMemo(
@@ -32,7 +31,6 @@ export const RowOrFolderWrapper = betterReactMemo(
           <FolderSection
             isRoot={false}
             indentationLevel={props.indentationLevel}
-            showIndentation={props.showIndentation}
             parsedPropertyControls={objectMap(
               (c): ParseResult<ControlDescription> => right(c), // this is not the nicest, but the Either type inference is a bit limited
               props.controlDescription.controls,

@@ -569,7 +569,6 @@ export const RowForControl = betterReactMemo('RowForControl', (props: RowForCont
 
 export interface ComponentSectionProps {
   isScene: boolean
-  showIndentation: boolean
 }
 
 export const ComponentSectionInner = betterReactMemo(
@@ -619,7 +618,6 @@ export const ComponentSectionInner = betterReactMemo(
                 }
                 detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
                 propsWithControlsButNoValue={controlsAndTargets.propsWithControlsButNoValue}
-                showIndentation={props.showIndentation}
               />
             ))}
           </React.Fragment>,

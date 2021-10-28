@@ -19,7 +19,6 @@ interface FolderSectionProps {
   isRoot: boolean
   parsedPropertyControls: ParsedPropertyControls
   indentationLevel: number
-  showIndentation: boolean
   visibleEmptyControls: string[]
   unsetPropNames: string[]
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
@@ -105,7 +104,6 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
             visibleEmptyControls={props.visibleEmptyControls}
             unsetPropNames={props.unsetPropNames}
             showHiddenControl={props.showHiddenControl}
-            showIndentation={props.showIndentation}
           />
         )
       },
@@ -118,7 +116,7 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
       {unless(
         props.isRoot,
         <FolderLabel
-          indentationLevel={props.showIndentation ? props.indentationLevel : 0}
+          indentationLevel={props.indentationLevel}
           open={open}
           toggleOpen={toggleOpen}
           title={props.title ?? ''}
@@ -179,7 +177,6 @@ const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => 
         fontWeight: 500,
         gap: 4,
         cursor: 'pointer',
-        transition: 'padding-left 100ms ease-in-out',
       }}
       onClick={handleOnClick}
     >

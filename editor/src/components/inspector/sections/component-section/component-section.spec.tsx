@@ -47,7 +47,7 @@ describe('Component Section', () => {
         selectedViews={storeHookForTest.api.getState().editor.selectedViews}
         editorStoreData={storeHookForTest}
       >
-        <ComponentSection isScene={false} showIndentation={true} />
+        <ComponentSection isScene={false} />
       </TestInspectorContextProvider>,
     )
 
