@@ -1,23 +1,33 @@
 import { PropertyControls } from 'utopia-api'
+import { ProjectContentTreeRoot } from '../../components/assets'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
+import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
+import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 
-export let LocalThirdPartyControls: PropertyControlsInfo = {}
+export let LocalThirdPartyControls: PropertyControlsInfo = {
+  '@react-three/fiber': ReactThreeFiberControls,
+}
 
 export const registerControls = (
   componentName: string,
   packageName: string,
-  description: PropertyControls,
+  propertyControls: PropertyControls,
 ): void => {
-  if (componentName == null || packageName == null || typeof description !== 'object') {
+  if (componentName == null || packageName == null || typeof propertyControls !== 'object') {
     console.warn(
-      'registerControls has 3 parameters: component name, package name, descriptor object',
+      'registerControls has 3 parameters: component name, package name, property controls object',
     )
   } else {
     LocalThirdPartyControls[packageName] = {
       ...(LocalThirdPartyControls[packageName] ?? {}),
-      [componentName]: description,
+      [componentName]: propertyControls,
     }
   }
+}
+
+export function getAllRegisteredControls(): PropertyControlsInfo {
+  return LocalThirdPartyControls
 }
 
 export function getLocalThirdPartyControls(
@@ -25,4 +35,23 @@ export function getLocalThirdPartyControls(
   packageName: string,
 ): PropertyControls | null {
   return LocalThirdPartyControls[packageName]?.[componentName]
+}
+
+export function getLocalThirdPartyControlsIntrinsic(
+  elementName: string,
+  propertyControlsInfo: PropertyControlsInfo,
+  projectContents: ProjectContentTreeRoot,
+): PropertyControls | null {
+  const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
+  const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
+  const foundPackageWithElement = Object.keys(LocalThirdPartyControls).find((key) => {
+    return LocalThirdPartyControls[key][elementName] != null
+  })
+  if (
+    foundPackageWithElement != null &&
+    dependencies.some((dependency) => dependency.name === foundPackageWithElement)
+  ) {
+    return getLocalThirdPartyControls(elementName, foundPackageWithElement)
+  }
+  return null
 }
