@@ -66,7 +66,6 @@ import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
 import { objectMap } from '../core/shared/object-utils'
-import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
