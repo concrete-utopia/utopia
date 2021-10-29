@@ -74,7 +74,7 @@ export function delay<T>(time: number): Promise<T> {
 
 export function createPersistentModel(): PersistentModel {
   const editor: EditorState = {
-    ...createEditorState(NO_OP, createBuiltInDependenciesList()),
+    ...createEditorState(NO_OP),
     projectContents: contentsToTree({
       [StoryboardFilePath]: textFile(
         textFileContents(
@@ -107,7 +107,7 @@ export function createEditorStates(
   dispatch: EditorDispatch
 } {
   const editor: EditorState = {
-    ...createEditorState(NO_OP, createBuiltInDependenciesList()),
+    ...createEditorState(NO_OP),
     projectContents: contentsToTree({
       '/package.json': textFile(
         textFileContents(

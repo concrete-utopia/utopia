@@ -120,7 +120,6 @@ import { getThirdPartyPropertyControls } from '../../../core/property-controls/p
 import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -229,7 +228,7 @@ const originalModel = deepFreeze(
   ),
 )
 const testEditor: EditorState = deepFreeze({
-  ...createEditorState(NO_OP, []),
+  ...createEditorState(NO_OP),
   projectContents: contentsToTree({
     [StoryboardFilePath]: textFile(
       textFileContents('', originalModel, RevisionsState.ParsedAhead),
@@ -402,7 +401,7 @@ describe('moveTemplate', () => {
 
   function testEditorFromParseSuccess(uiFile: Readonly<ParseSuccess>): EditorState {
     let editor: EditorState = {
-      ...createEditorState(NO_OP, []),
+      ...createEditorState(NO_OP),
       projectContents: contentsToTree({
         [StoryboardFilePath]: textFile(
           textFileContents('', uiFile, RevisionsState.ParsedAhead),
@@ -1000,7 +999,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   }
 
   const testEditorWithPins: EditorState = deepFreeze({
-    ...createEditorState(NO_OP, []),
+    ...createEditorState(NO_OP),
     projectContents: contentsToTree({
       [StoryboardFilePath]: fileForUI,
     }),
@@ -1083,8 +1082,8 @@ describe('LOAD', () => {
       safeMode: false,
     }
 
-    const startingState = deepFreeze(createEditorState(NO_OP, []))
-    const result = UPDATE_FNS.LOAD(action, startingState, NO_OP, createBuiltInDependenciesList())
+    const startingState = deepFreeze(createEditorState(NO_OP))
+    const result = UPDATE_FNS.LOAD(action, startingState, NO_OP)
     const newFirstFileContents = (getContentsTreeFileFromString(
       result.projectContents,
       firstUIJSFile,
@@ -1103,11 +1102,7 @@ describe('LOAD', () => {
 describe('UPDATE_FILE_PATH', () => {
   it('updates the files in a directory and imports related to it', () => {
     const project = complexDefaultProjectPreParsed()
-    const editorState = editorModelFromPersistentModel(
-      project,
-      NO_OP,
-      createBuiltInDependenciesList(),
-    )
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
     const actualResult = UPDATE_FNS.UPDATE_FILE_PATH(
       updateFilePath('/src', '/src2'),
       editorState,
@@ -1146,11 +1141,7 @@ describe('UPDATE_FILE_PATH', () => {
 describe('INSERT_WITH_DEFAULTS', () => {
   it('inserts an element into the project with the given defaults', () => {
     const project = complexDefaultProjectPreParsed()
-    const editorState = editorModelFromPersistentModel(
-      project,
-      NO_OP,
-      createBuiltInDependenciesList(),
-    )
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
       { antd: { status: 'loaded' } },
@@ -1252,11 +1243,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
 
   it('inserts an element into the project with the given defaults, also adding style props', () => {
     const project = complexDefaultProjectPreParsed()
-    const editorState = editorModelFromPersistentModel(
-      project,
-      NO_OP,
-      createBuiltInDependenciesList(),
-    )
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
       { antd: { status: 'loaded' } },
@@ -1359,11 +1346,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
 
   it('inserts an img element into the project, also adding style props', () => {
     const project = complexDefaultProjectPreParsed()
-    const editorState = editorModelFromPersistentModel(
-      project,
-      NO_OP,
-      createBuiltInDependenciesList(),
-    )
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
       {},
@@ -1455,11 +1438,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
 
   it('inserts an img element into the project, also adding style props, added at the back', () => {
     const project = complexDefaultProjectPreParsed()
-    const editorState = editorModelFromPersistentModel(
-      project,
-      NO_OP,
-      createBuiltInDependenciesList(),
-    )
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
       {},
@@ -1551,11 +1530,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
 
   it('inserts a div into the project, wrapping the parents existing children if selected', () => {
     const project = complexDefaultProjectPreParsed()
-    const editorState = editorModelFromPersistentModel(
-      project,
-      NO_OP,
-      createBuiltInDependenciesList(),
-    )
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
       {},
@@ -1641,11 +1616,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
 describe('SET_FOCUSED_ELEMENT', () => {
   it('prevents focusing a non-focusable element', () => {
     const project = complexDefaultProjectPreParsed()
-    let editorState = editorModelFromPersistentModel(
-      project,
-      NO_OP,
-      createBuiltInDependenciesList(),
-    )
+    let editorState = editorModelFromPersistentModel(project, NO_OP)
     const pathToFocus = EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div')
     const underlyingElement = forceNotNull(
       'Should be able to find this.',
@@ -1678,11 +1649,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
   })
   it('focuses a focusable element without a problem', () => {
     const project = complexDefaultProjectPreParsed()
-    let editorState = editorModelFromPersistentModel(
-      project,
-      NO_OP,
-      createBuiltInDependenciesList(),
-    )
+    let editorState = editorModelFromPersistentModel(project, NO_OP)
     const pathToFocus = EP.fromString(
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance',
     )

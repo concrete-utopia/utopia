@@ -46,8 +46,7 @@ function sanitizeJsxMetadata(metadata: ElementInstanceMetadataMap) {
 }
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {
-  const builtInDependencies = createBuiltInDependenciesList()
-  let emptyEditorState = createEditorState(NO_OP, builtInDependencies)
+  let emptyEditorState = createEditorState(NO_OP)
   const derivedState = deriveState(emptyEditorState, null)
 
   const history = History.init(emptyEditorState, derivedState)
@@ -74,7 +73,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     persistence: DummyPersistenceMachine,
     dispatch: dispatch,
     alreadySaved: false,
-    builtInDependencies: builtInDependencies,
+    builtInDependencies: createBuiltInDependenciesList(dispatch, () => emptyEditorState),
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

@@ -90,6 +90,7 @@ import {
   BuiltInDependencies,
   createBuiltInDependenciesList,
 } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { NO_OP } from '../../../core/shared/utils'
 
 const chaiExpect = Chai.expect
 
@@ -99,7 +100,7 @@ const workers = new MockUtopiaTsWorkers()
 
 const testScenePath = ScenePath1ForTestUiJsFile
 const testElementPath = EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['pancake'])
-const builtInDependencies: BuiltInDependencies = createBuiltInDependenciesList()
+const builtInDependencies: BuiltInDependencies = createBuiltInDependenciesList(NO_OP, null)
 
 describe('action SELECT_VIEWS', () => {
   it('updates selectedview in editor', () => {

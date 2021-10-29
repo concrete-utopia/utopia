@@ -1134,10 +1134,7 @@ export const BaseCanvasOffsetLeftPane = {
   y: BaseCanvasOffset.y,
 } as CanvasPoint
 
-export function createEditorState(
-  dispatch: EditorDispatch,
-  builtInDependencies: BuiltInDependencies,
-): EditorState {
+export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
     vscodeBridgeId: vsCodeBridgeIdDefault(UUID()),
@@ -1161,7 +1158,7 @@ export function createEditorState(
       {},
       'full-build',
       true,
-      builtInDependencies,
+      [],
     ),
     propertyControlsInfo: {},
     nodeModules: {
@@ -1395,7 +1392,6 @@ export function createCanvasModelKILLME(
 export function editorModelFromPersistentModel(
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
-  builtInDependencies: BuiltInDependencies,
 ): EditorState {
   const npmDependencies = immediatelyResolvableDependenciesWithEditorRequirements(
     persistentModel.projectContents,
@@ -1422,7 +1418,7 @@ export function editorModelFromPersistentModel(
       {},
       'full-build',
       true,
-      builtInDependencies,
+      [],
     ),
     projectContents: persistentModel.projectContents,
     propertyControlsInfo: getControlsForExternalDependencies(npmDependencies),

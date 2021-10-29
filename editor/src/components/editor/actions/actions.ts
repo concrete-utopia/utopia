@@ -1527,14 +1527,9 @@ export const UPDATE_FNS = {
     oldEditor: EditorModel,
     workers: UtopiaTsWorkers,
     dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     const newPersistentModel = applyMigrations(action.persistentModel)
-    const newModel = editorModelFromPersistentModel(
-      newPersistentModel,
-      dispatch,
-      builtInDependencies,
-    )
+    const newModel = editorModelFromPersistentModel(newPersistentModel, dispatch)
     return {
       ...loadModel(newModel, oldEditor),
       nodeModules: {
@@ -1546,12 +1541,7 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
     }
   },
-  LOAD: (
-    action: Load,
-    oldEditor: EditorModel,
-    dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
-  ): EditorModel => {
+  LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
@@ -1576,7 +1566,7 @@ export const UPDATE_FNS = {
       projectContents: parsedProjectFiles,
     }
     const newModel: EditorModel = {
-      ...editorModelFromPersistentModel(parsedModel, dispatch, builtInDependencies),
+      ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
       vscodeBridgeId: vsCodeBridgeIdProjectId(action.projectId), // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode

@@ -112,8 +112,7 @@ export class Editor {
     updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
-    const builtInDependencies = createBuiltInDependenciesList()
-    let emptyEditorState = createEditorState(this.boundDispatch, builtInDependencies)
+    let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(emptyEditorState, null)
 
     const history = History.init(emptyEditorState, derivedState)
@@ -127,6 +126,8 @@ export class Editor {
     const renderRootEditor = () =>
       renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true)
 
+    const getEditorState = () => this.storedState.editor
+    const builtInDependencies = createBuiltInDependenciesList(this.boundDispatch, getEditorState)
     const onCreatedOrLoadedProject = (
       projectId: string,
       projectName: string,

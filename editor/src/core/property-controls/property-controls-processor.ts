@@ -15,14 +15,14 @@ import {
 } from '../property-controls/property-controls-utils'
 import { RequestedNpmDependency } from '../shared/npm-dependency-types'
 import { NodeModules } from '../shared/project-file-types'
-import { fastForEach } from '../shared/utils'
+import { fastForEach, NO_OP } from '../shared/utils'
 import { resolvedDependencyVersions } from '../third-party/third-party-components'
 import { MultiFileBuildResult } from '../workers/common/worker-types'
 
 export const initPropertyControlsProcessor = (
   onControlsProcessed: (propertyControlsInfo: PropertyControlsInfo) => void,
 ) => {
-  const builtInDependencies = createBuiltInDependenciesList()
+  const builtInDependencies = createBuiltInDependenciesList(NO_OP, null)
   let currentNodeModules: NodeModules = {}
 
   const processPropertyControls = async (

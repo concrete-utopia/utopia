@@ -24,8 +24,9 @@ import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { NO_OP } from '../../../core/shared/utils'
 
-const builtInDependencies = createBuiltInDependenciesList()
+const builtInDependencies = createBuiltInDependenciesList(NO_OP, null)
 builtInDependencies.push({
   moduleName: '@react-three/fiber',
   nodeModule: {

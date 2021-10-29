@@ -18,6 +18,7 @@ import {
 import { pluck } from '../core/shared/array-utils'
 import { getMainHTMLFilename, getMainJSFilename } from '../core/shared/project-contents-utils'
 import { isTextFile, NodeModules } from '../core/shared/project-file-types'
+import { NO_OP } from '../core/shared/utils'
 import { injectTwind } from '../core/tailwind/tailwind'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
@@ -132,7 +133,7 @@ const initPreview = () => {
   queuedModel = null
   cachedDependencies = {}
   const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
-  const builtInDependencies = createBuiltInDependenciesList()
+  const builtInDependencies = createBuiltInDependenciesList(NO_OP, null)
 
   const startPollingFromServer = (appID: string | null) => {
     if (appID != null) {

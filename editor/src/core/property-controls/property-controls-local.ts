@@ -2,14 +2,17 @@ import { PropertyControls } from 'utopia-api'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
-import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
+import {
+  EditorState,
+  packageJsonFileFromProjectContents,
+} from '../../components/editor/store/editor-state'
 import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 
 export let LocalThirdPartyControls: PropertyControlsInfo = {
   '@react-three/fiber': ReactThreeFiberControls,
 }
 
-export const registerControls = (
+export const registerControls = (getEditorState: (() => EditorState) | null) => (
   componentName: string,
   packageName: string,
   propertyControls: PropertyControls,

@@ -152,9 +152,7 @@ export async function renderTestEditorWithModel(
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
 
-  const builtInDependencies =
-    mockBuiltInDependencies != null ? mockBuiltInDependencies : createBuiltInDependenciesList()
-  let emptyEditorState = createEditorState(NO_OP, builtInDependencies)
+  let emptyEditorState = createEditorState(NO_OP)
   const derivedState = deriveState(emptyEditorState, null)
 
   const history = History.init(emptyEditorState, derivedState)
@@ -205,6 +203,10 @@ export async function renderTestEditorWithModel(
     }
   }
 
+  const builtInDependencies =
+    mockBuiltInDependencies != null
+      ? mockBuiltInDependencies
+      : createBuiltInDependenciesList(asyncTestDispatch, () => emptyEditorState)
   const initialEditorStore: EditorStore = {
     editor: emptyEditorState,
     derived: derivedState,
@@ -424,7 +426,7 @@ export function getEditorState(fileContents: string): EditorState {
     0,
   )
   return {
-    ...createEditorState(NO_OP, createBuiltInDependenciesList()),
+    ...createEditorState(NO_OP),
     projectContents: contentsToTree({
       [StoryboardFilePath]: storyboardFile,
     }),
