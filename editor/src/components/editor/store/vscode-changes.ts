@@ -79,7 +79,6 @@ export function ensureDirectoryExistsChange(fullPath: string): EnsureDirectoryEx
 export type ProjectChange = WriteProjectFileChange | DeletePathChange | EnsureDirectoryExistsChange
 
 export function collateProjectChanges(
-  projectID: string,
   oldContents: ProjectContentTreeRoot,
   newContents: ProjectContentTreeRoot,
 ): Array<ProjectChange> {
@@ -212,17 +211,8 @@ export function shouldIncludeSelectedElementChanges(
 export function getProjectContentsChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
-  updateCameFromVSCode: boolean,
 ): Array<ProjectChange> {
-  if (oldEditorState.vscodeBridgeId != null && !updateCameFromVSCode) {
-    return collateProjectChanges(
-      getUnderlyingVSCodeBridgeID(oldEditorState.vscodeBridgeId),
-      oldEditorState.projectContents,
-      newEditorState.projectContents,
-    )
-  } else {
-    return []
-  }
+  return collateProjectChanges(oldEditorState.projectContents, newEditorState.projectContents)
 }
 
 export interface AccumulatedVSCodeChanges {
@@ -273,14 +263,15 @@ export const emptyAccumulatedVSCodeChanges: AccumulatedVSCodeChanges = {
 }
 
 export function localAccumulatedToVSCodeAccumulated(
-  local: AccumulatedVSCodeChanges,
+  updateDecorations: UpdateDecorationsMessage | null,
+  selectedChanged: SelectedElementChanged | null,
 ): AccumulatedToVSCodeMessage {
   let messages: Array<ToVSCodeMessageNoAccumulated> = []
-  if (local.updateDecorations != null) {
-    messages.push(local.updateDecorations)
+  if (updateDecorations != null) {
+    messages.push(updateDecorations)
   }
-  if (local.selectedChanged != null) {
-    messages.push(local.selectedChanged)
+  if (selectedChanged != null) {
+    messages.push(selectedChanged)
   }
   return accumulatedToVSCodeMessage(messages)
 }
@@ -288,10 +279,9 @@ export function localAccumulatedToVSCodeAccumulated(
 export function getVSCodeChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
-  updateCameFromVSCode: boolean,
 ): AccumulatedVSCodeChanges {
   return {
-    fileChanges: getProjectContentsChanges(oldEditorState, newEditorState, updateCameFromVSCode),
+    fileChanges: getProjectContentsChanges(oldEditorState, newEditorState),
     updateDecorations: shouldIncludeVSCodeDecorations(oldEditorState, newEditorState)
       ? getCodeEditorDecorations(newEditorState)
       : null,
@@ -301,9 +291,17 @@ export function getVSCodeChanges(
   }
 }
 
-export async function sendVSCodeChanges(changes: AccumulatedVSCodeChanges): Promise<void> {
-  await applyProjectChanges(changes.fileChanges)
-  const toVSCodeAccumulated = localAccumulatedToVSCodeAccumulated(changes)
+export async function sendVSCodeChanges(
+  changes: AccumulatedVSCodeChanges,
+  includeFileChanges: boolean,
+): Promise<void> {
+  if (includeFileChanges) {
+    await applyProjectChanges(changes.fileChanges)
+  }
+  const toVSCodeAccumulated = localAccumulatedToVSCodeAccumulated(
+    changes.updateDecorations,
+    changes.selectedChanged,
+  )
   if (toVSCodeAccumulated.messages.length > 0) {
     await sendMessage(toVSCodeAccumulated)
   }
