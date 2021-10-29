@@ -37,6 +37,7 @@ import { importedFromWhere } from '../../components/editor/import-utils'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
+import { getLocalThirdPartyControls, LocalThirdPartyControls } from './property-controls-local'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -349,6 +350,8 @@ export function getPropertyControlsForTarget(
             ) {
               if (ReactThreeFiberControls[element.name.baseVariable] != null) {
                 return ReactThreeFiberControls[element.name.baseVariable]
+              } else {
+                getLocalThirdPartyControls(element.name.baseVariable, '@react-three/fiber')
               }
             }
 
@@ -382,7 +385,7 @@ export function getPropertyControlsForTarget(
         ) {
           return propertyControlsInfo[trimmedPath][nameLastPart] as PropertyControls
         } else {
-          return null
+          return getLocalThirdPartyControls(nameLastPart, trimmedPath)
         }
       }
     },

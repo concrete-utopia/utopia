@@ -10,6 +10,8 @@ import * as EmotionStyled from '@emotion/styled'
 import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
+import { PropertyControlsInfo } from '../../../components/custom-code/code-file'
+import { registerControls } from '../../property-controls/property-controls-local'
 
 applyUIDMonkeyPatch()
 
@@ -45,10 +47,15 @@ function builtInDependency(
   }
 }
 
+const UtopiaAPISpecial = {
+  ...UtopiaAPI,
+  registerControls: registerControls,
+}
+
 // Ensure this is kept up to date with:
 // server/src/Utopia/Web/Packager/NPM.hs
 export const BuiltInDependencies: Array<BuiltInDependency> = [
-  builtInDependency('utopia-api', UtopiaAPI, utopiaAPIPackageJSON.version),
+  builtInDependency('utopia-api', UtopiaAPISpecial, utopiaAPIPackageJSON.version),
   builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
   builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
   builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
