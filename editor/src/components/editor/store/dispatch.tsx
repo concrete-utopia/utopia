@@ -92,9 +92,11 @@ import {
   combineAccumulatedVSCodeChanges,
   getVSCodeChanges,
   sendVSCodeChanges,
+  WriteProjectFileChange,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
+import { sendPropertyControlsInfoRequest } from '../../../core/property-controls/property-controls-utils'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -518,6 +520,8 @@ export function editorDispatch(
     })
   }
 
+  triggerPropertyControlsIframeIfNeeded(storedState.editor, frozenEditorState)
+
   const shouldUpdatePreview =
     anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
   if (shouldUpdatePreview) {
@@ -710,5 +714,30 @@ function elementPathStillExists(
     return pathToUpdate
   } else {
     return null
+  }
+}
+
+function triggerPropertyControlsIframeIfNeeded(oldEditor: EditorState, newEditor: EditorState) {
+  const newVSCodeChanges = getVSCodeChanges(oldEditor, newEditor, false)
+  const updatedProjectCodeFilePaths: Array<string> = mapDropNulls((change) => {
+    if (change.type === 'WRITE_PROJECT_FILE') {
+      return change.fullPath
+    } else {
+      return null
+    }
+  }, newVSCodeChanges.fileChanges)
+
+  if (updatedProjectCodeFilePaths.length > 0) {
+    const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
+      newEditor.projectContents,
+      newEditor.nodeModules.files,
+      updatedProjectCodeFilePaths,
+    )
+    sendPropertyControlsInfoRequest(
+      newEditor.nodeModules.files,
+      newEditor.projectContents,
+      true,
+      updatedAndReverseDepFilenames,
+    )
   }
 }
