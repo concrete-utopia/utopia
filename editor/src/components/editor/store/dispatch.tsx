@@ -93,6 +93,7 @@ import {
   getVSCodeChanges,
   sendVSCodeChanges,
   WriteProjectFileChange,
+  ProjectChange,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
@@ -505,12 +506,14 @@ export function editorDispatch(
     )
   }
 
+  const newVSCodeChanges = getVSCodeChanges(storedState.editor, frozenEditorState)
+  currentVSCodeChanges = combineAccumulatedVSCodeChanges(
+    currentVSCodeChanges,
+    updatedFromVSCode ? { ...newVSCodeChanges, fileChanges: [] } : newVSCodeChanges,
+  )
+
   if (frozenEditorState.vscodeReady) {
     // Chain off of the previous one to ensure the ordering is maintained.
-    currentVSCodeChanges = combineAccumulatedVSCodeChanges(
-      currentVSCodeChanges,
-      getVSCodeChanges(storedState.editor, frozenEditorState, updatedFromVSCode),
-    )
     applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
       const changesToSend = currentVSCodeChanges
       currentVSCodeChanges = emptyAccumulatedVSCodeChanges
@@ -520,7 +523,7 @@ export function editorDispatch(
     })
   }
 
-  triggerPropertyControlsIframeIfNeeded(storedState.editor, frozenEditorState)
+  triggerPropertyControlsIframeIfNeeded(frozenEditorState, newVSCodeChanges.fileChanges)
 
   const shouldUpdatePreview =
     anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
@@ -717,15 +720,17 @@ function elementPathStillExists(
   }
 }
 
-function triggerPropertyControlsIframeIfNeeded(oldEditor: EditorState, newEditor: EditorState) {
-  const newVSCodeChanges = getVSCodeChanges(oldEditor, newEditor, false)
+function triggerPropertyControlsIframeIfNeeded(
+  newEditor: EditorState,
+  fileChanges: Array<ProjectChange>,
+) {
   const updatedProjectCodeFilePaths: Array<string> = mapDropNulls((change) => {
     if (change.type === 'WRITE_PROJECT_FILE') {
       return change.fullPath
     } else {
       return null
     }
-  }, newVSCodeChanges.fileChanges)
+  }, fileChanges)
 
   if (updatedProjectCodeFilePaths.length > 0) {
     const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
