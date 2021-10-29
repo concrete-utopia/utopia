@@ -21,6 +21,8 @@ export interface BuiltInDependency {
   version: string
 }
 
+export type BuiltInDependencies = Array<BuiltInDependency>
+
 function builtInDependency(
   moduleName: string,
   baseModule: any,
@@ -47,33 +49,35 @@ function builtInDependency(
   }
 }
 
-const UtopiaAPISpecial = {
-  ...UtopiaAPI,
-  registerControls: registerControls,
-}
+export function createBuiltInDependenciesList(): BuiltInDependencies {
+  const UtopiaAPISpecial = {
+    ...UtopiaAPI,
+    registerControls: registerControls,
+  }
 
-// Ensure this is kept up to date with:
-// server/src/Utopia/Web/Packager/NPM.hs
-export const BuiltInDependencies: Array<BuiltInDependency> = [
-  builtInDependency('utopia-api', UtopiaAPISpecial, utopiaAPIPackageJSON.version),
-  builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
-  builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
-  builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
-  builtInDependency('react', React, editorPackageJSON.dependencies.react),
-  builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
-  builtInDependency(
-    '@emotion/react',
-    EmotionReact,
-    editorPackageJSON.dependencies['@emotion/react'],
-  ),
-  builtInDependency(
-    '@emotion/core',
-    EmotionReact,
-    editorPackageJSON.dependencies['@emotion/react'],
-  ),
-  builtInDependency(
-    '@emotion/styled',
-    EmotionStyled,
-    editorPackageJSON.dependencies['@emotion/styled'],
-  ),
-]
+  // Ensure this is kept up to date with:
+  // server/src/Utopia/Web/Packager/NPM.hs
+  return [
+    builtInDependency('utopia-api', UtopiaAPISpecial, utopiaAPIPackageJSON.version),
+    builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
+    builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
+    builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
+    builtInDependency('react', React, editorPackageJSON.dependencies.react),
+    builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
+    builtInDependency(
+      '@emotion/react',
+      EmotionReact,
+      editorPackageJSON.dependencies['@emotion/react'],
+    ),
+    builtInDependency(
+      '@emotion/core',
+      EmotionReact,
+      editorPackageJSON.dependencies['@emotion/react'],
+    ),
+    builtInDependency(
+      '@emotion/styled',
+      EmotionStyled,
+      editorPackageJSON.dependencies['@emotion/styled'],
+    ),
+  ]
+}

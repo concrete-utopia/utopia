@@ -157,6 +157,7 @@ function processAction(
       workingHistory,
       dispatchEvent,
       spyCollector,
+      working.builtInDependencies,
     )
     const editorAfterCanvas = runLocalCanvasAction(
       editorAfterUpdateFunction,
@@ -196,6 +197,7 @@ function processAction(
       persistence: working.persistence,
       dispatch: dispatchEvent,
       alreadySaved: working.alreadySaved,
+      builtInDependencies: working.builtInDependencies,
     }
   }
 }
@@ -465,6 +467,7 @@ export function editorDispatch(
       editorWithModelChecked.modelUpdateFinished,
     ]),
     alreadySaved: alreadySaved || shouldSave,
+    builtInDependencies: storedState.builtInDependencies,
   }
 
   if (!finalStore.nothingChanged) {
@@ -642,6 +645,7 @@ function editorDispatchInner(
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       alreadySaved: storedState.alreadySaved,
+      builtInDependencies: storedState.builtInDependencies,
     }
   } else {
     //empty return

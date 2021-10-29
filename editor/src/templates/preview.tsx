@@ -9,6 +9,7 @@ import { dependenciesWithEditorRequirements } from '../components/editor/npm-dep
 import { projectIsStoredLocally } from '../components/editor/persistence/persistence-backend'
 import { loadProject } from '../components/editor/server'
 import { isProjectContentsUpdateMessage } from '../components/preview/preview-pane'
+import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../core/es-modules/package-manager/fetch-packages'
 import {
   getRequireFn,
@@ -131,6 +132,7 @@ const initPreview = () => {
   queuedModel = null
   cachedDependencies = {}
   const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
+  const builtInDependencies = createBuiltInDependenciesList()
 
   const startPollingFromServer = (appID: string | null) => {
     if (appID != null) {
@@ -205,7 +207,11 @@ const initPreview = () => {
       if (fastDeepEquals(lastDependencies, npmDependencies)) {
         nodeModules = { ...cachedDependencies }
       } else {
-        const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, true)
+        const fetchNodeModulesResult = await fetchNodeModules(
+          npmDependencies,
+          builtInDependencies,
+          true,
+        )
 
         if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
           const errorToThrow = Error(
@@ -242,7 +248,13 @@ const initPreview = () => {
 
     incorporateBuildResult(nodeModules, projectContents, bundledProjectFiles)
 
-    const requireFn = getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, {})
+    const requireFn = getRequireFn(
+      onRemoteModuleDownload,
+      projectContents,
+      nodeModules,
+      {},
+      builtInDependencies,
+    )
 
     // replacing the document body first
     const previewHTMLFileName = getMainHTMLFilename(projectContents)

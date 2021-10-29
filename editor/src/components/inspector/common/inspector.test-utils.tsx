@@ -30,6 +30,7 @@ import { CSSNumber } from './css-utils'
 import { mapValues } from '../../../core/shared/object-utils'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStore) => void) => void
@@ -55,6 +56,7 @@ export function getStoreHook(
     persistence: null as any,
     dispatch: mockDispatch,
     alreadySaved: false,
+    builtInDependencies: createBuiltInDependenciesList(),
   }
 
   const storeHook = create<EditorStore & UpdateFunctionHelpers>((set) => ({

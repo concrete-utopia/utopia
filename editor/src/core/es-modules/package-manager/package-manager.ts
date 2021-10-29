@@ -19,6 +19,7 @@ import { applyLoaders } from '../../webpack-loaders/loaders'
 import { string } from 'prop-types'
 import { Either } from '../../shared/either'
 import { CurriedUtopiaRequireFn } from '../../../components/custom-code/code-file'
+import type { BuiltInDependencies } from './built-in-dependencies-list'
 
 export type FileEvaluationCache = { exports: any }
 
@@ -44,6 +45,7 @@ export const getCurriedEditorRequireFn = (
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   evaluationCache: EvaluationCache,
+  builtInDependencies: BuiltInDependencies,
 ): CurriedUtopiaRequireFn => {
   const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
     moduleDownload.then((modulesToAdd: NodeModules) =>
@@ -51,7 +53,13 @@ export const getCurriedEditorRequireFn = (
     )
   }
   return (projectContents: ProjectContentTreeRoot) =>
-    getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, evaluationCache)
+    getRequireFn(
+      onRemoteModuleDownload,
+      projectContents,
+      nodeModules,
+      evaluationCache,
+      builtInDependencies,
+    )
 }
 
 export function getRequireFn(
@@ -59,10 +67,11 @@ export function getRequireFn(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   evaluationCache: EvaluationCache,
+  builtInDependencies: BuiltInDependencies,
   injectedEvaluator = evaluator,
 ): RequireFn {
   return function require(importOrigin, toImport): unknown {
-    const builtInDependency = resolveBuiltInDependency(toImport)
+    const builtInDependency = resolveBuiltInDependency(builtInDependencies, toImport)
     if (builtInDependency != null) {
       return builtInDependency
     }

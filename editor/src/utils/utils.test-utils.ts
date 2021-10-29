@@ -66,6 +66,7 @@ import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
 import { objectMap } from '../core/shared/object-utils'
+import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -73,7 +74,7 @@ export function delay<T>(time: number): Promise<T> {
 
 export function createPersistentModel(): PersistentModel {
   const editor: EditorState = {
-    ...createEditorState(NO_OP),
+    ...createEditorState(NO_OP, createBuiltInDependenciesList()),
     projectContents: contentsToTree({
       [StoryboardFilePath]: textFile(
         textFileContents(
@@ -106,7 +107,7 @@ export function createEditorStates(
   dispatch: EditorDispatch
 } {
   const editor: EditorState = {
-    ...createEditorState(NO_OP),
+    ...createEditorState(NO_OP, createBuiltInDependenciesList()),
     projectContents: contentsToTree({
       '/package.json': textFile(
         textFileContents(

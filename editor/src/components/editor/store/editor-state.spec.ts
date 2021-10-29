@@ -45,7 +45,7 @@ function getCodeForFile(actualResult: EditorState, filename: string): string {
 
 describe('modifyUnderlyingTarget', () => {
   const startingEditorModel = {
-    ...createEditorState(() => {}),
+    ...createEditorState(() => {}, []),
     projectContents: defaultProjectContentsForNormalising(),
   }
   it('changes something in the same file', () => {

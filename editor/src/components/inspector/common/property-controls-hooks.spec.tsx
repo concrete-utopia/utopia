@@ -29,6 +29,7 @@ import {
 } from '../../../core/shared/element-template'
 import { right } from '../../../core/shared/either'
 import { objectMap } from '../../../core/shared/object-utils'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'
@@ -150,7 +151,11 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     )
   }
 
-  const initialEditorState = editorModelFromPersistentModel(persistentModel, NO_OP)
+  const initialEditorState = editorModelFromPersistentModel(
+    persistentModel,
+    NO_OP,
+    createBuiltInDependenciesList(),
+  )
   const editorState: EditorState = {
     ...initialEditorState,
     selectedViews: selectedViews,
@@ -173,6 +178,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     persistence: null as any,
     dispatch: null as any,
     alreadySaved: null as any,
+    builtInDependencies: createBuiltInDependenciesList(),
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

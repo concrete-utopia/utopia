@@ -46,6 +46,7 @@ import {
   NodeModules,
 } from '../../shared/project-file-types'
 import { isBuiltInDependency } from './built-in-dependencies'
+import type { BuiltInDependencies } from './built-in-dependencies-list'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'
 import { getJsDelivrFileUrl, getPackagerUrl } from './packager-url'
 
@@ -279,9 +280,12 @@ function failError(dependency: RequestedNpmDependency): DependencyFetchError {
 
 export async function fetchNodeModules(
   newDeps: Array<RequestedNpmDependency>,
+  builtInDependencies: BuiltInDependencies,
   shouldRetry: boolean = true,
 ): Promise<NodeFetchResult> {
-  const dependenciesToDownload = newDeps.filter((d) => !isBuiltInDependency(d.name))
+  const dependenciesToDownload = newDeps.filter(
+    (d) => !isBuiltInDependency(builtInDependencies, d.name),
+  )
   const nodeModulesArr = await Promise.all(
     dependenciesToDownload.map(
       async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {

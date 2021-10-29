@@ -534,6 +534,7 @@ import {
 } from '../../../core/tailwind/tailwind-config'
 import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1526,9 +1527,14 @@ export const UPDATE_FNS = {
     oldEditor: EditorModel,
     workers: UtopiaTsWorkers,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     const newPersistentModel = applyMigrations(action.persistentModel)
-    const newModel = editorModelFromPersistentModel(newPersistentModel, dispatch)
+    const newModel = editorModelFromPersistentModel(
+      newPersistentModel,
+      dispatch,
+      builtInDependencies,
+    )
     return {
       ...loadModel(newModel, oldEditor),
       nodeModules: {
@@ -1540,7 +1546,12 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
     }
   },
-  LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  LOAD: (
+    action: Load,
+    oldEditor: EditorModel,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
     const migratedModel = applyMigrations(action.model)
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
@@ -1565,7 +1576,7 @@ export const UPDATE_FNS = {
       projectContents: parsedProjectFiles,
     }
     const newModel: EditorModel = {
-      ...editorModelFromPersistentModel(parsedModel, dispatch),
+      ...editorModelFromPersistentModel(parsedModel, dispatch, builtInDependencies),
       projectName: action.title,
       id: action.projectId,
       vscodeBridgeId: vsCodeBridgeIdProjectId(action.projectId), // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
@@ -3622,7 +3633,12 @@ export const UPDATE_FNS = {
       return editor
     }
   },
-  UPDATE_FILE: (action: UpdateFile, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  UPDATE_FILE: (
+    action: UpdateFile,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
     if (
       !action.addIfNotInFiles &&
       getContentsTreeFileFromString(editor.projectContents, action.filePath) == null
@@ -3667,7 +3683,7 @@ export const UPDATE_FNS = {
               ),
           )
         }
-        fetchNodeModules(depsToLoad).then((fetchNodeModulesResult) => {
+        fetchNodeModules(depsToLoad, builtInDependencies).then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
@@ -3802,6 +3818,7 @@ export const UPDATE_FNS = {
     action: UpdateFromCodeEditor,
     editor: EditorModel,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
 
@@ -3821,7 +3838,7 @@ export const UPDATE_FNS = {
     }
 
     const updateAction = updateFile(action.filePath, updatedFile, true)
-    return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch)
+    return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
   },
   CLEAR_PARSE_OR_PRINT_IN_FLIGHT: (
     action: ClearParseOrPrintInFlight,
@@ -4268,6 +4285,7 @@ export const UPDATE_FNS = {
     action: UpdateNodeModulesContents,
     editor: EditorState,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorState => {
     let result: EditorState
     if (action.buildType === 'full-build') {
@@ -4303,6 +4321,7 @@ export const UPDATE_FNS = {
         editor.codeResultCache.evaluationCache,
         action.buildType,
         onlyProjectFiles,
+        builtInDependencies,
       ),
     }
 
@@ -4773,6 +4792,7 @@ export const UPDATE_FNS = {
     action: AddTailwindConfig,
     editor: EditorModel,
     dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     const packageJsonFile = getContentsTreeFileFromString(editor.projectContents, '/package.json')
     const currentNpmDeps = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
@@ -4788,7 +4808,7 @@ export const UPDATE_FNS = {
               requestedNpmDependency('tailwindcss', tailwindVersion.version),
               requestedNpmDependency('postcss', postcssVersion.version),
             ]
-            fetchNodeModules(updatedNpmDeps).then((fetchNodeModulesResult) => {
+            fetchNodeModules(updatedNpmDeps, builtInDependencies).then((fetchNodeModulesResult) => {
               const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
                 updatedNpmDeps,
                 fetchNodeModulesResult.dependenciesWithError,
@@ -5099,12 +5119,17 @@ export async function load(
   model: PersistentModel,
   title: string,
   projectId: string,
+  builtInDependencies: BuiltInDependencies,
   retryFetchNodeModules: boolean = true,
 ): Promise<void> {
   // this action is now async!
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
-  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
+  const fetchNodeModulesResult = await fetchNodeModules(
+    npmDependencies,
+    builtInDependencies,
+    retryFetchNodeModules,
+  )
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
   const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
@@ -5124,6 +5149,7 @@ export async function load(
     {},
     'full-build',
     false,
+    builtInDependencies,
   )
 
   const storedState = await loadStoredState(projectId)

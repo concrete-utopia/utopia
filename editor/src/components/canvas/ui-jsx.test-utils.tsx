@@ -81,6 +81,10 @@ import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
 import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
 import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
+import {
+  BuiltInDependencies,
+  createBuiltInDependenciesList,
+} from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -133,6 +137,7 @@ export async function renderTestEditorWithProjectContent(
 export async function renderTestEditorWithModel(
   model: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
+  mockBuiltInDependencies?: BuiltInDependencies,
 ): Promise<{
   dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
   getDomReportDispatched: () => Promise<void>
@@ -147,7 +152,9 @@ export async function renderTestEditorWithModel(
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
 
-  let emptyEditorState = createEditorState(NO_OP)
+  const builtInDependencies =
+    mockBuiltInDependencies != null ? mockBuiltInDependencies : createBuiltInDependenciesList()
+  let emptyEditorState = createEditorState(NO_OP, builtInDependencies)
   const derivedState = deriveState(emptyEditorState, null)
 
   const history = History.init(emptyEditorState, derivedState)
@@ -214,6 +221,7 @@ export async function renderTestEditorWithModel(
     persistence: DummyPersistenceMachine,
     dispatch: asyncTestDispatch,
     alreadySaved: false,
+    builtInDependencies: builtInDependencies,
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)
@@ -255,6 +263,7 @@ export async function renderTestEditorWithModel(
         model,
         'Test',
         '0',
+        initialEditorStore.builtInDependencies,
         false,
       )
     })
@@ -415,7 +424,7 @@ export function getEditorState(fileContents: string): EditorState {
     0,
   )
   return {
-    ...createEditorState(NO_OP),
+    ...createEditorState(NO_OP, createBuiltInDependenciesList()),
     projectContents: contentsToTree({
       [StoryboardFilePath]: storyboardFile,
     }),

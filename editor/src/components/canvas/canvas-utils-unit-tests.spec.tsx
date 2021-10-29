@@ -11,10 +11,15 @@ import { updateFramesOfScenesAndComponents } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { editorModelFromPersistentModel } from '../editor/store/editor-state'
 import { complexDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
+import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 describe('updateFramesOfScenesAndComponents - multi-file', () => {
   it('a simple TLWH pin change works', async () => {
-    const testProject = editorModelFromPersistentModel(complexDefaultProjectPreParsed(), NO_OP)
+    const testProject = editorModelFromPersistentModel(
+      complexDefaultProjectPreParsed(),
+      NO_OP,
+      createBuiltInDependenciesList(),
+    )
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
@@ -68,7 +73,11 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
   })
 
   it('an element move works', async () => {
-    const testProject = editorModelFromPersistentModel(complexDefaultProjectPreParsed(), NO_OP)
+    const testProject = editorModelFromPersistentModel(
+      complexDefaultProjectPreParsed(),
+      NO_OP,
+      createBuiltInDependenciesList(),
+    )
     const targetPath = EP.elementPath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],

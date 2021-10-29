@@ -86,6 +86,7 @@ import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
 import { PersistenceMachine } from '../components/editor/persistence/persistence'
 import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
 import { defaultProject } from '../sample-projects/sample-project-utils'
+import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -111,7 +112,8 @@ export class Editor {
     updateCssVars()
     startPreviewConnectedMonitoring(this.boundDispatch)
 
-    let emptyEditorState = createEditorState(this.boundDispatch)
+    const builtInDependencies = createBuiltInDependenciesList()
+    let emptyEditorState = createEditorState(this.boundDispatch, builtInDependencies)
     const derivedState = deriveState(emptyEditorState, null)
 
     const history = History.init(emptyEditorState, derivedState)
@@ -129,7 +131,7 @@ export class Editor {
       projectId: string,
       projectName: string,
       project: PersistentModel,
-    ) => load(this.storedState.dispatch, project, projectName, projectId)
+    ) => load(this.storedState.dispatch, project, projectName, projectId, builtInDependencies)
 
     this.storedState = {
       editor: emptyEditorState,
@@ -148,6 +150,7 @@ export class Editor {
         onCreatedOrLoadedProject,
       ),
       dispatch: this.boundDispatch,
+      builtInDependencies: builtInDependencies,
       alreadySaved: false,
     }
 

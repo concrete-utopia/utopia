@@ -9,6 +9,7 @@ import {
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
 import { defaultProject } from '../../sample-projects/sample-project-utils'
+import { createBuiltInDependenciesList } from '../es-modules/package-manager/built-in-dependencies-list'
 import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
 import {
   foldParsedTextFile,
@@ -57,7 +58,7 @@ export var App = (props) => {
     ),
   }
 
-  return editorModelFromPersistentModel(persistentModel, NO_OP)
+  return editorModelFromPersistentModel(persistentModel, NO_OP, createBuiltInDependenciesList())
 }
 
 describe('addStoryboardFileToProject', () => {

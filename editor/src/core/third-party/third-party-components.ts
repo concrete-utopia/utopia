@@ -17,6 +17,7 @@ import { parseVersionPackageJsonFile } from '../../utils/package-parser-utils'
 import { forEachRight } from '../shared/either'
 import { UtopiaApiComponents } from './utopia-api-components'
 import { versionForBuiltInDependency } from '../es-modules/package-manager/built-in-dependencies'
+import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 
 const ThirdPartyComponents: DependenciesDescriptors = {
   antd: AntdComponents,
@@ -59,10 +60,11 @@ function parseDependencyVersionFromNodeModules(
 export function resolvedDependencyVersions(
   dependencies: Array<RequestedNpmDependency>,
   files: NodeModules,
+  builtInDependencies: BuiltInDependencies,
 ): Array<PossiblyUnversionedNpmDependency> {
   let result: Array<PossiblyUnversionedNpmDependency> = []
   fastForEach(dependencies, (dependency) => {
-    const builtInVersion = versionForBuiltInDependency(dependency.name)
+    const builtInVersion = versionForBuiltInDependency(builtInDependencies, dependency.name)
     const version = builtInVersion ?? parseDependencyVersionFromNodeModules(files, dependency.name)
     if (version == null) {
       result.push(unversionedNpmDependency(dependency.name))

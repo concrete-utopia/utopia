@@ -35,6 +35,7 @@ import {
 } from '../../core/shared/project-file-types'
 import { addFileToProjectContents } from '../assets'
 import { ExportsInfo, MultiFileBuildResult } from '../../core/workers/common/worker-types'
+import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 function transpileCode(
   rootFilenames: Array<string>,
@@ -361,6 +362,7 @@ describe('Generating codeResultCache', () => {
       {},
       'incremental',
       false,
+      createBuiltInDependenciesList(),
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -377,6 +379,7 @@ describe('Generating codeResultCache', () => {
       {},
       'incremental',
       false,
+      createBuiltInDependenciesList(),
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -392,6 +395,7 @@ describe('Generating codeResultCache', () => {
       {},
       'incremental',
       false,
+      createBuiltInDependenciesList(),
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -410,6 +414,7 @@ describe('Creating require function', () => {
       {},
       'incremental',
       false,
+      createBuiltInDependenciesList(),
     )
 
     expect(codeResultCache.curriedRequireFn({})('/', './app', false)).toMatchSnapshot()
@@ -425,6 +430,7 @@ describe('Creating require function', () => {
       {},
       'incremental',
       false,
+      createBuiltInDependenciesList(),
     )
 
     expect(codeResultCache.curriedRequireFn({})('/', './app', false)).toMatchSnapshot()
@@ -441,6 +447,7 @@ describe('Creating require function', () => {
       {},
       'incremental',
       false,
+      createBuiltInDependenciesList(),
     )
 
     expect(() =>
@@ -458,6 +465,7 @@ describe('Creating require function', () => {
       {},
       'incremental',
       false,
+      createBuiltInDependenciesList(),
     )
 
     expect(() =>

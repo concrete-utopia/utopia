@@ -41,6 +41,7 @@ import {
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -49,6 +50,7 @@ type DependencyListProps = {
   focusedPanel: EditorPanel | null
   packageJsonFile: ProjectFile | null
   packageStatus: PackageStatusMap
+  builtInDependencies: BuiltInDependencies
 }
 
 function packageDetails(
@@ -96,6 +98,7 @@ export const DependencyList = betterReactMemo('DependencyList', () => {
       focusedPanel: store.editor.focusedPanel,
       packageJsonFile: packageJsonFileFromProjectContents(store.editor.projectContents),
       packageStatus: store.editor.nodeModules.packageStatus,
+      builtInDependencies: store.builtInDependencies,
     }
   }, 'DependencyList')
 
@@ -170,20 +173,25 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
 
       this.props.editorDispatch([EditorActions.updatePackageJson(npmDependencies)])
 
-      fetchNodeModules(npmDependencies).then((fetchNodeModulesResult) => {
-        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-          this.packagesUpdateFailed(
-            `Failed to download the following dependencies: ${JSON.stringify(
-              fetchNodeModulesResult.dependenciesWithError.map((d) => d.name),
-            )}`,
-            fetchNodeModulesResult.dependenciesWithError[0]?.name,
-          )
-        }
-        this.setState({ dependencyLoadingStatus: 'not-loading' })
-        this.props.editorDispatch([
-          EditorActions.updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
-        ])
-      })
+      fetchNodeModules(npmDependencies, this.props.builtInDependencies).then(
+        (fetchNodeModulesResult) => {
+          if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+            this.packagesUpdateFailed(
+              `Failed to download the following dependencies: ${JSON.stringify(
+                fetchNodeModulesResult.dependenciesWithError.map((d) => d.name),
+              )}`,
+              fetchNodeModulesResult.dependenciesWithError[0]?.name,
+            )
+          }
+          this.setState({ dependencyLoadingStatus: 'not-loading' })
+          this.props.editorDispatch([
+            EditorActions.updateNodeModulesContents(
+              fetchNodeModulesResult.nodeModules,
+              'full-build',
+            ),
+          ])
+        },
+      )
 
       this.setState({ dependencyLoadingStatus: 'removing' })
     }
@@ -331,7 +339,10 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
                 EditorActions.setPackageStatus(editedPackageName, loadingOrUpdating),
                 EditorActions.updatePackageJson(updatedNpmDeps),
               ])
-              fetchNodeModules([requestedNpmDependency(editedPackageName, editedPackageVersion!)])
+              fetchNodeModules(
+                [requestedNpmDependency(editedPackageName, editedPackageVersion!)],
+                this.props.builtInDependencies,
+              )
                 .then((fetchNodeModulesResult) => {
                   if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
                     this.packagesUpdateFailed(
