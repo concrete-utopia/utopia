@@ -400,10 +400,11 @@ const ResizableInspectorPane = betterReactMemo<ResizableInspectorPaneProps>(
             alignItems: 'stretch',
             flexDirection: 'column',
             width: '100%',
+            height: '100%',
+            overflowY: 'scroll',
             backgroundColor: colorTheme.inspectorBackground.value,
             flexGrow: 0,
             flexShrink: 0,
-            overflowY: 'scroll',
             paddingBottom: 100,
           }}
         >
