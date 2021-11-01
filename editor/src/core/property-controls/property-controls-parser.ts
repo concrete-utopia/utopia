@@ -213,7 +213,7 @@ function parseExpressionControlOption(
     },
     objectKeyParser(parseAny, 'value')(value),
     objectKeyParser(parseString, 'expression')(value),
-    objectKeyParser(parseString, 'label')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
     optionalObjectKeyParser(parseImportType, 'requiredImport')(value),
   )
 }

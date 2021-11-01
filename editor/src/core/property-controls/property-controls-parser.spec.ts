@@ -15,6 +15,7 @@ import {
   EulerControlDescription,
   Matrix3ControlDescription,
   Matrix4ControlDescription,
+  ExpressionPopUpListControlDescription,
 } from 'utopia-api'
 import {
   parseNumberInputControlDescription,
@@ -36,6 +37,7 @@ import {
   parseEulerControlDescription,
   parseMatrix3ControlDescription,
   parseMatrix4ControlDescription,
+  parseExpressionPopUpListControlDescription,
 } from './property-controls-parser'
 import { right, left, isLeft } from '../shared/either'
 import {
@@ -187,6 +189,63 @@ describe('parsePopUpListControlDescription', () => {
     [],
     true,
     parsePopUpListControlDescription,
+  )
+})
+
+const validExpressionPopUpListControlDescriptionValue: ExpressionPopUpListControlDescription = {
+  label: 'Expression Popuplist Control',
+  control: 'expression-popuplist',
+  options: [
+    {
+      value: 0,
+      expression: 'THREE.Multiply',
+      label: 'Multiply',
+      requiredImport: {
+        source: 'three',
+        name: 'THREE',
+        type: 'star',
+      },
+    },
+    {
+      value: 1,
+      expression: 'THREE.MixOperation',
+      label: 'MixOperation',
+      requiredImport: {
+        source: 'three',
+        name: 'THREE',
+        type: 'star',
+      },
+    },
+    {
+      value: 2,
+      expression: 'THREE.AddOperation',
+      label: 'Multiply',
+      requiredImport: {
+        source: 'three',
+        name: 'THREE',
+        type: 'star',
+      },
+    },
+  ],
+  defaultValue: {
+    value: 0,
+    expression: 'THREE.Multiply',
+    label: 'Multiply',
+    requiredImport: {
+      source: 'three',
+      name: 'THREE',
+      type: 'star',
+    },
+  },
+}
+
+describe('parseExpressionPopUpListControlDescription', () => {
+  runBaseTestSuite(
+    validExpressionPopUpListControlDescriptionValue,
+    ['control', 'options'],
+    [],
+    true,
+    parseExpressionPopUpListControlDescription,
   )
 })
 
@@ -432,6 +491,15 @@ describe('parseControlDescription', () => {
         'includeSpecialProps',
       ),
     ).toEqual(right(validPopUpListControlDescriptionValue))
+  })
+  it('parses an expression popup list description correctly', () => {
+    expect(
+      parseControlDescription(
+        validExpressionPopUpListControlDescriptionValue,
+        'testPropName',
+        'includeSpecialProps',
+      ),
+    ).toEqual(right(validExpressionPopUpListControlDescriptionValue))
   })
   it('parses a radio description correctly', () => {
     expect(
