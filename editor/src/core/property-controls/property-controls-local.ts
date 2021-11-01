@@ -1,6 +1,7 @@
 import { PropertyControls } from 'utopia-api'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import type { EditorDispatch } from '../../components/editor/action-types'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import {
   EditorState,
@@ -12,11 +13,10 @@ export let LocalThirdPartyControls: PropertyControlsInfo = {
   '@react-three/fiber': ReactThreeFiberControls,
 }
 
-export const registerControls = (getEditorState: (() => EditorState) | null) => (
-  componentName: string,
-  packageName: string,
-  propertyControls: PropertyControls,
-): void => {
+export const createRegisterControlsFunction = (
+  dispatch: EditorDispatch,
+  getEditorState: (() => EditorState) | null,
+) => (componentName: string, packageName: string, propertyControls: PropertyControls): void => {
   if (componentName == null || packageName == null || typeof propertyControls !== 'object') {
     console.warn(
       'registerControls has 3 parameters: component name, package name, property controls object',
