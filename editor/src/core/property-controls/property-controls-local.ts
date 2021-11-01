@@ -9,10 +9,7 @@ import {
   EditorState,
   packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
-import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
-
-// TODO: somehow insert '@react-three/fiber': ReactThreeFiberControls,
 
 export const createRegisterControlsFunction = (
   dispatch: EditorDispatch,

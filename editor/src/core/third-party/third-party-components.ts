@@ -18,10 +18,12 @@ import { forEachRight } from '../shared/either'
 import { UtopiaApiComponents } from './utopia-api-components'
 import { versionForBuiltInDependency } from '../es-modules/package-manager/built-in-dependencies'
 import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
+import { ReactThreeFiberComponents } from './react-three-fiber-components'
 
 const ThirdPartyComponents: DependenciesDescriptors = {
   antd: AntdComponents,
   'utopia-api': UtopiaApiComponents,
+  '@react-three/fiber': ReactThreeFiberComponents,
 }
 
 export function getThirdPartyComponents(
