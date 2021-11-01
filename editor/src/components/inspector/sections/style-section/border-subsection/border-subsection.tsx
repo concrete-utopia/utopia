@@ -69,7 +69,7 @@ export function updateBorderColor(newColor: CSSColor, oldValue: CSSBorder): CSSB
 }
 
 export function updateBorderColorString(newValue: string, oldValue: CSSBorder): CSSBorder {
-  const parsed = parseColor(newValue)
+  const parsed = parseColor(newValue, 'hex-hash-optional')
   if (isRight(parsed)) {
     return updateBorderColor(parsed.value, oldValue)
   } else {

@@ -35,7 +35,7 @@ export interface ColorControlProps {
 }
 
 export function updateStringCSSColor(newValue: string, oldValue: CSSColor) {
-  const parsed = parseColor(newValue)
+  const parsed = parseColor(newValue, 'hex-hash-optional')
   if (isRight(parsed)) {
     return parsed.value
   } else {
@@ -50,7 +50,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
 
   const onSubmitStringValue = React.useCallback(
     (newValue: string) => {
-      const parsed = parseColor(newValue)
+      const parsed = parseColor(newValue, 'hex-hash-optional')
       if (isRight(parsed)) {
         onSubmitValue(parsed.value)
       }

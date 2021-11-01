@@ -291,7 +291,7 @@ export function parseStringValidateAsColor(value: unknown): ParseResult<string> 
       return invalidColorStringResult
     },
     (text) => {
-      const parsedColor = parseColor(text)
+      const parsedColor = parseColor(text, 'hex-hash-required')
       return foldEither(
         (_) => {
           return invalidColorStringResult
