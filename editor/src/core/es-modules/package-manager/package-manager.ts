@@ -23,7 +23,9 @@ import type { BuiltInDependencies } from './built-in-dependencies-list'
 
 export type FileEvaluationCache = { exports: any }
 
-export type EvaluationCache = { [path: string]: FileEvaluationCache }
+export type EvaluationCache = {
+  [path: string]: { module: FileEvaluationCache; lastEvaluatedContent: string }
+}
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
@@ -82,15 +84,20 @@ export function getRequireFn(
       const resolvedFile = resolveResult.success.file
 
       if (isEsCodeFile(resolvedFile)) {
-        const cacheEntryExists = resolvedPath in evaluationCache
+        const cacheEntryExists =
+          resolvedPath in evaluationCache &&
+          evaluationCache[resolvedPath].lastEvaluatedContent === resolvedFile.fileContents
         let fileEvaluationCache: FileEvaluationCache
         if (cacheEntryExists) {
-          fileEvaluationCache = evaluationCache[resolvedPath]
+          fileEvaluationCache = evaluationCache[resolvedPath].module
         } else {
           fileEvaluationCache = {
             exports: {},
           }
-          evaluationCache[resolvedPath] = fileEvaluationCache
+          evaluationCache[resolvedPath] = {
+            module: fileEvaluationCache,
+            lastEvaluatedContent: resolvedFile.fileContents,
+          }
         }
         if (!cacheEntryExists) {
           try {

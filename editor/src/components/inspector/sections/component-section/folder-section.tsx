@@ -14,6 +14,8 @@ import * as EP from '../../../../core/shared/element-path'
 import { useColorTheme } from '../../../../uuiui'
 import { RowOrFolderWrapper } from './row-or-folder-wrapper'
 import { RowForControl, RowForInvalidControl } from './component-section'
+import { InspectorWidthAtom } from '../../common/inspector-atoms'
+import { useAtom } from 'jotai'
 
 interface FolderSectionProps {
   isRoot: boolean
@@ -28,12 +30,13 @@ interface FolderSectionProps {
 }
 
 export const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProps) => {
+  const showIndentation = useAtom(InspectorWidthAtom)[0] === 'wide'
   const [open, setOpen] = React.useState(true)
   const colorTheme = useColorTheme()
   const hiddenPropsList = React.useMemo(
     () =>
       Object.keys(props.parsedPropertyControls).filter((prop) => {
-        const isNotFolder = eitherToMaybe(props.parsedPropertyControls[prop])?.type !== 'folder'
+        const isNotFolder = eitherToMaybe(props.parsedPropertyControls[prop])?.control !== 'folder'
         return (
           isNotFolder &&
           props.unsetPropNames.includes(prop) &&
@@ -118,6 +121,7 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
         props.isRoot,
         <FolderLabel
           indentationLevel={props.indentationLevel}
+          showIndentation={showIndentation}
           open={open}
           toggleOpen={toggleOpen}
           title={props.title ?? ''}
@@ -169,11 +173,12 @@ interface FolderLabelProps {
   open: boolean
   toggleOpen: () => void
   title: string
+  showIndentation: boolean
 }
 
 const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => {
   const { toggleOpen } = props
-  const indentation = props.indentationLevel * 8
+  const indentation = props.showIndentation ? props.indentationLevel * 8 : 0
   const handleOnClick = React.useCallback(() => toggleOpen(), [toggleOpen])
   return (
     <div
@@ -185,6 +190,7 @@ const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => 
         fontWeight: 500,
         gap: 4,
         cursor: 'pointer',
+        transition: 'padding-left 100ms ease-in-out',
       }}
       onClick={handleOnClick}
     >

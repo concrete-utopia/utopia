@@ -92,9 +92,12 @@ import {
   combineAccumulatedVSCodeChanges,
   getVSCodeChanges,
   sendVSCodeChanges,
+  WriteProjectFileChange,
+  ProjectChange,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
+import { sendPropertyControlsInfoRequest } from '../../../core/property-controls/property-controls-utils'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -506,12 +509,14 @@ export function editorDispatch(
     )
   }
 
+  const newVSCodeChanges = getVSCodeChanges(storedState.editor, frozenEditorState)
+  currentVSCodeChanges = combineAccumulatedVSCodeChanges(
+    currentVSCodeChanges,
+    updatedFromVSCode ? { ...newVSCodeChanges, fileChanges: [] } : newVSCodeChanges,
+  )
+
   if (frozenEditorState.vscodeReady) {
     // Chain off of the previous one to ensure the ordering is maintained.
-    currentVSCodeChanges = combineAccumulatedVSCodeChanges(
-      currentVSCodeChanges,
-      getVSCodeChanges(storedState.editor, frozenEditorState, updatedFromVSCode),
-    )
     applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
       const changesToSend = currentVSCodeChanges
       currentVSCodeChanges = emptyAccumulatedVSCodeChanges
@@ -520,6 +525,8 @@ export function editorDispatch(
       })
     })
   }
+
+  triggerPropertyControlsIframeIfNeeded(frozenEditorState, newVSCodeChanges.fileChanges)
 
   const shouldUpdatePreview =
     anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
@@ -714,5 +721,32 @@ function elementPathStillExists(
     return pathToUpdate
   } else {
     return null
+  }
+}
+
+function triggerPropertyControlsIframeIfNeeded(
+  newEditor: EditorState,
+  fileChanges: Array<ProjectChange>,
+) {
+  const updatedProjectCodeFilePaths: Array<string> = mapDropNulls((change) => {
+    if (change.type === 'WRITE_PROJECT_FILE') {
+      return change.fullPath
+    } else {
+      return null
+    }
+  }, fileChanges)
+
+  if (updatedProjectCodeFilePaths.length > 0) {
+    const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
+      newEditor.projectContents,
+      newEditor.nodeModules.files,
+      updatedProjectCodeFilePaths,
+    )
+    sendPropertyControlsInfoRequest(
+      newEditor.nodeModules.files,
+      newEditor.projectContents,
+      true,
+      updatedAndReverseDepFilenames,
+    )
   }
 }

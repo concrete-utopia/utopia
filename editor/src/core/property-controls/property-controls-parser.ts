@@ -1,27 +1,30 @@
 import {
-  BooleanControlDescription,
+  CheckboxControlDescription,
   ColorControlDescription,
   ControlDescription,
-  EnumControlDescription,
-  NumberControlDescription,
-  OptionsControlDescription,
+  NumberInputControlDescription,
+  RadioControlDescription,
   PopUpListControlDescription,
-  StringControlDescription,
-  IgnoreControlDescription,
+  StringInputControlDescription,
+  NoneControlDescription,
   UnionControlDescription,
-  ImageControlDescription,
   ArrayControlDescription,
   ObjectControlDescription,
-  StyleObjectControlDescription,
+  StyleControlsControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
-  ExpressionEnumControlDescription,
+  ExpressionPopUpListControlDescription,
   ExpressionEnum,
   ImportType,
   FolderControlDescription,
   PropertyControls,
   RegularControlDescription,
-  RawJSControlDescription,
+  ExpressionInputControlDescription,
+  RegularControlType,
+  Vector4ControlDescription,
+  EulerControlDescription,
+  Matrix3ControlDescription,
+  Matrix4ControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -44,6 +47,7 @@ import {
   Parser,
   ParseResult,
   parseString,
+  parseTuple,
   parseUndefined,
 } from '../../utils/value-parser-utils'
 import {
@@ -70,26 +74,26 @@ import {
 import { parseEnumValue } from './property-control-values'
 import { filterSpecialProp, filterSpecialProps } from './property-controls-utils'
 
-export function parseNumberControlDescription(
+export function parseNumberInputControlDescription(
   value: unknown,
-): ParseResult<NumberControlDescription> {
+): ParseResult<NumberInputControlDescription> {
   return applicative8Either(
-    (title, type, defaultValue, max, min, unit, step, displayStepper) => {
-      let numberControlDescription: NumberControlDescription = {
-        type: type,
+    (label, control, defaultValue, max, min, unit, step, displayStepper) => {
+      let numberInputControlDescription: NumberInputControlDescription = {
+        control: control,
       }
-      setOptionalProp(numberControlDescription, 'title', title)
-      setOptionalProp(numberControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(numberControlDescription, 'max', max)
-      setOptionalProp(numberControlDescription, 'min', min)
-      setOptionalProp(numberControlDescription, 'unit', unit)
-      setOptionalProp(numberControlDescription, 'step', step)
-      setOptionalProp(numberControlDescription, 'displayStepper', displayStepper)
+      setOptionalProp(numberInputControlDescription, 'label', label)
+      setOptionalProp(numberInputControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(numberInputControlDescription, 'max', max)
+      setOptionalProp(numberInputControlDescription, 'min', min)
+      setOptionalProp(numberInputControlDescription, 'unit', unit)
+      setOptionalProp(numberInputControlDescription, 'step', step)
+      setOptionalProp(numberInputControlDescription, 'displayStepper', displayStepper)
 
-      return numberControlDescription
+      return numberInputControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['number']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['number-input']), 'control')(value),
     optionalObjectKeyParser(parseNullable(parseNumber), 'defaultValue')(value),
     optionalObjectKeyParser(parseNumber, 'max')(value),
     optionalObjectKeyParser(parseNumber, 'min')(value),
@@ -106,22 +110,28 @@ const parseOptionTitles: Parser<OptionTitles<any>> = parseAlternative<OptionTitl
   'Not a string array or a function.',
 )
 
-export function parseEnumControlDescription(value: unknown): ParseResult<EnumControlDescription> {
+export function parsePopUpListControlDescription(
+  value: unknown,
+): ParseResult<PopUpListControlDescription> {
   return applicative6Either(
-    (title, type, defaultValue, options, optionTitles, displaySegmentedControl) => {
-      let enumControlDescription: EnumControlDescription = {
-        type: type,
+    (label, control, defaultValue, options, optionTitles, displaySegmentedControl) => {
+      let popupListControlDescription: PopUpListControlDescription = {
+        control: control,
         options: options,
       }
-      setOptionalProp(enumControlDescription, 'title', title)
-      setOptionalProp(enumControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(enumControlDescription, 'optionTitles', optionTitles)
-      setOptionalProp(enumControlDescription, 'displaySegmentedControl', displaySegmentedControl)
+      setOptionalProp(popupListControlDescription, 'label', label)
+      setOptionalProp(popupListControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(popupListControlDescription, 'optionTitles', optionTitles)
+      setOptionalProp(
+        popupListControlDescription,
+        'displaySegmentedControl',
+        displaySegmentedControl,
+      )
 
-      return enumControlDescription
+      return popupListControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['enum']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['popuplist']), 'control')(value),
     optionalObjectKeyParser(parseEnumValue, 'defaultValue')(value),
     objectKeyParser(parseArray(parseEnumValue), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
@@ -129,23 +139,23 @@ export function parseEnumControlDescription(value: unknown): ParseResult<EnumCon
   )
 }
 
-export function parseExpressionEnumControlDescription(
+export function parseExpressionPopUpListControlDescription(
   value: unknown,
-): ParseResult<ExpressionEnumControlDescription> {
+): ParseResult<ExpressionPopUpListControlDescription> {
   return applicative5Either(
-    (title, type, defaultValue, options, optionTitles) => {
-      let enumControlDescription: ExpressionEnumControlDescription = {
-        type: type,
+    (label, control, defaultValue, options, optionTitles) => {
+      let enumControlDescription: ExpressionPopUpListControlDescription = {
+        control: control,
         options: options,
       }
-      setOptionalProp(enumControlDescription, 'title', title)
+      setOptionalProp(enumControlDescription, 'label', label)
       setOptionalProp(enumControlDescription, 'defaultValue', defaultValue)
       setOptionalProp(enumControlDescription, 'optionTitles', optionTitles)
 
       return enumControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['expression-enum']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['expression-popuplist']), 'control')(value),
     optionalObjectKeyParser(parseExpressionEnum, 'defaultValue')(value),
     objectKeyParser(parseArray(parseExpressionEnum), 'options')(value),
     optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
@@ -174,7 +184,7 @@ const parseImportType: Parser<ImportType> = (value: unknown) => {
   )
 }
 
-export function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum> {
+function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum> {
   return applicative3Either(
     (enumValue, expression, importType) => {
       let expressionEnum: ExpressionEnum = {
@@ -190,46 +200,46 @@ export function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum>
   )
 }
 
-export function parseBooleanControlDescription(
+export function parseCheckboxControlDescription(
   value: unknown,
-): ParseResult<BooleanControlDescription> {
+): ParseResult<CheckboxControlDescription> {
   return applicative5Either(
-    (title, type, defaultValue, disabledTitle, enabledTitle) => {
-      let booleanControlDescription: BooleanControlDescription = {
-        type: type,
+    (label, control, defaultValue, disabledTitle, enabledTitle) => {
+      let checkboxControlDescription: CheckboxControlDescription = {
+        control: control,
       }
-      setOptionalProp(booleanControlDescription, 'title', title)
-      setOptionalProp(booleanControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(booleanControlDescription, 'disabledTitle', disabledTitle)
-      setOptionalProp(booleanControlDescription, 'enabledTitle', enabledTitle)
+      setOptionalProp(checkboxControlDescription, 'label', label)
+      setOptionalProp(checkboxControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(checkboxControlDescription, 'disabledTitle', disabledTitle)
+      setOptionalProp(checkboxControlDescription, 'enabledTitle', enabledTitle)
 
-      return booleanControlDescription
+      return checkboxControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['boolean']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['checkbox']), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'defaultValue')(value),
     optionalObjectKeyParser(parseString, 'disabledTitle')(value),
     optionalObjectKeyParser(parseString, 'enabledTitle')(value),
   )
 }
 
-export function parseStringControlDescription(
+export function parseStringInputControlDescription(
   value: unknown,
-): ParseResult<StringControlDescription> {
+): ParseResult<StringInputControlDescription> {
   return applicative5Either(
-    (title, type, defaultValue, placeholder, obscured) => {
-      let stringControlDescription: StringControlDescription = {
-        type: type,
+    (label, control, defaultValue, placeholder, obscured) => {
+      let stringInputControlDescription: StringInputControlDescription = {
+        control: control,
       }
-      setOptionalProp(stringControlDescription, 'title', title)
-      setOptionalProp(stringControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(stringControlDescription, 'placeholder', placeholder)
-      setOptionalProp(stringControlDescription, 'obscured', obscured)
+      setOptionalProp(stringInputControlDescription, 'label', label)
+      setOptionalProp(stringInputControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(stringInputControlDescription, 'placeholder', placeholder)
+      setOptionalProp(stringInputControlDescription, 'obscured', obscured)
 
-      return stringControlDescription
+      return stringInputControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['string']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['string-input']), 'control')(value),
     optionalObjectKeyParser(parseString, 'defaultValue')(value),
     optionalObjectKeyParser(parseString, 'placeholder')(value),
     optionalObjectKeyParser(parseBoolean, 'obscured')(value),
@@ -249,43 +259,20 @@ export function parsePropertyOption(value: unknown): ParseResult<{ value: any; l
   )
 }
 
-export function parsePopUpListControlDescription(
-  value: unknown,
-): ParseResult<PopUpListControlDescription> {
+export function parseRadioControlDescription(value: unknown): ParseResult<RadioControlDescription> {
   return applicative4Either(
-    (title, type, defaultValue, options) => {
-      let popUpListControlDescription: PopUpListControlDescription = {
-        type: type,
+    (label, control, defaultValue, options) => {
+      let radioControlDescription: RadioControlDescription = {
+        control: control,
         options: options,
       }
-      setOptionalProp(popUpListControlDescription, 'title', title)
-      setOptionalProp(popUpListControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(radioControlDescription, 'label', label)
+      setOptionalProp(radioControlDescription, 'defaultValue', defaultValue)
 
-      return popUpListControlDescription
+      return radioControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['popuplist']), 'type')(value),
-    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
-    objectKeyParser(parseArray(parsePropertyOption), 'options')(value),
-  )
-}
-
-export function parseOptionsControlDescription(
-  value: unknown,
-): ParseResult<OptionsControlDescription> {
-  return applicative4Either(
-    (title, type, defaultValue, options) => {
-      let optionsControlDescription: OptionsControlDescription = {
-        type: type,
-        options: options,
-      }
-      setOptionalProp(optionsControlDescription, 'title', title)
-      setOptionalProp(optionsControlDescription, 'defaultValue', defaultValue)
-
-      return optionsControlDescription
-    },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['options']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['radio']), 'control')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
     objectKeyParser(parseArray(parsePropertyOption), 'options')(value),
   )
@@ -321,85 +308,68 @@ export function parseStringValidateAsColor(value: unknown): ParseResult<string> 
 
 export function parseColorControlDescription(value: unknown): ParseResult<ColorControlDescription> {
   return applicative3Either(
-    (title, type, defaultValue) => {
+    (label, control, defaultValue) => {
       let colorControlDescription: ColorControlDescription = {
-        type: type,
+        control: control,
       }
-      setOptionalProp(colorControlDescription, 'title', title)
+      setOptionalProp(colorControlDescription, 'label', label)
       setOptionalProp(colorControlDescription, 'defaultValue', defaultValue)
 
       return colorControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['color']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['color']), 'control')(value),
     optionalObjectKeyParser(parseStringValidateAsColor, 'defaultValue')(value),
   )
 }
 
-export function parseRawJSControlDescription(value: unknown): ParseResult<RawJSControlDescription> {
-  return applicative2Either(
-    (title, type) => {
-      let rawJSControlDescription: RawJSControlDescription = {
-        type: type,
-      }
-      setOptionalProp(rawJSControlDescription, 'title', title)
-
-      return rawJSControlDescription
-    },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['rawjs']), 'type')(value),
-  )
-}
-
-export function parseIgnoreControlDescription(
+export function parseExpressionInputControlDescription(
   value: unknown,
-): ParseResult<IgnoreControlDescription> {
+): ParseResult<ExpressionInputControlDescription> {
   return applicative2Either(
-    (title, type) => {
-      let ignoreControlDescription: IgnoreControlDescription = {
-        type: type,
+    (label, control) => {
+      let expressionInputControlDescription: ExpressionInputControlDescription = {
+        control: control,
       }
-      setOptionalProp(ignoreControlDescription, 'title', title)
-      return ignoreControlDescription
+      setOptionalProp(expressionInputControlDescription, 'label', label)
+
+      return expressionInputControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['ignore']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['expression-input']), 'control')(value),
   )
 }
 
-export function parseImageControlDescription(value: unknown): ParseResult<ImageControlDescription> {
-  return applicative3Either(
-    (title, type, defaultValue) => {
-      let imageControlDescription: ImageControlDescription = {
-        type: type,
+export function parseNoneControlDescription(value: unknown): ParseResult<NoneControlDescription> {
+  return applicative2Either(
+    (label, control) => {
+      let noneControlDescription: NoneControlDescription = {
+        control: control,
       }
-      setOptionalProp(imageControlDescription, 'title', title)
-      setOptionalProp(imageControlDescription, 'defaultValue', defaultValue)
-
-      return imageControlDescription
+      setOptionalProp(noneControlDescription, 'label', label)
+      return noneControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['image']), 'type')(value),
-    optionalObjectKeyParser(parseString, 'defaultValue')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['none']), 'control')(value),
   )
 }
 
-export function parseStyleObjectControlDescription(
+export function parseStyleControlsControlDescription(
   value: unknown,
-): ParseResult<StyleObjectControlDescription> {
+): ParseResult<StyleControlsControlDescription> {
   return applicative4Either(
-    (title, type, defaultValue, placeholder) => {
-      let styleObjectControlDescription: StyleObjectControlDescription = {
-        type: type,
+    (label, control, defaultValue, placeholder) => {
+      let styleControlsControlDescription: StyleControlsControlDescription = {
+        control: control,
       }
-      setOptionalProp(styleObjectControlDescription, 'title', title)
-      setOptionalProp(styleObjectControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(styleObjectControlDescription, 'placeholder', placeholder)
+      setOptionalProp(styleControlsControlDescription, 'label', label)
+      setOptionalProp(styleControlsControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(styleControlsControlDescription, 'placeholder', placeholder)
 
-      return styleObjectControlDescription
+      return styleControlsControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['styleobject']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['style-controls']), 'control')(value),
     optionalObjectKeyParser(parseObject(parseAny), 'defaultValue')(value), // FIXME
     optionalObjectKeyParser(parseObject(parseAny), 'placeholder')(value), // FIXME
   )
@@ -407,19 +377,19 @@ export function parseStyleObjectControlDescription(
 
 export function parseArrayControlDescription(value: unknown): ParseResult<ArrayControlDescription> {
   return applicative5Either(
-    (title, type, defaultValue, propertyControl, maxCount) => {
+    (label, control, defaultValue, propertyControl, maxCount) => {
       let arrayControlDescription: ArrayControlDescription = {
-        type: type,
+        control: control,
         propertyControl: propertyControl,
       }
-      setOptionalProp(arrayControlDescription, 'title', title)
+      setOptionalProp(arrayControlDescription, 'label', label)
       setOptionalProp(arrayControlDescription, 'defaultValue', defaultValue)
       setOptionalProp(arrayControlDescription, 'maxCount', maxCount)
 
       return arrayControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['array']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['array']), 'control')(value),
     optionalObjectKeyParser(parseArray(parseAny), 'defaultValue')(value),
     objectKeyParser(parseRegularControlDescription, 'propertyControl')(value),
     optionalObjectKeyParser(parseNumber, 'maxCount')(value),
@@ -430,18 +400,18 @@ export function parseObjectControlDescription(
   value: unknown,
 ): ParseResult<ObjectControlDescription> {
   return applicative4Either(
-    (title, type, defaultValue, object) => {
+    (label, control, defaultValue, object) => {
       let objectControlDescription: ObjectControlDescription = {
-        type: type,
+        control: control,
         object: object,
       }
-      setOptionalProp(objectControlDescription, 'title', title)
+      setOptionalProp(objectControlDescription, 'label', label)
       setOptionalProp(objectControlDescription, 'defaultValue', defaultValue)
 
       return objectControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['object']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['object']), 'control')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
     objectKeyParser(parseObject(parseRegularControlDescription), 'object')(value),
   )
@@ -449,17 +419,17 @@ export function parseObjectControlDescription(
 
 export function parseUnionControlDescription(value: unknown): ParseResult<UnionControlDescription> {
   return applicative4Either(
-    (title, type, defaultValue, controls) => {
+    (label, control, defaultValue, controls) => {
       let unionControlDescription: UnionControlDescription = {
-        type: type,
+        control: control,
         controls: controls,
       }
-      setOptionalProp(unionControlDescription, 'title', title)
+      setOptionalProp(unionControlDescription, 'label', label)
       setOptionalProp(unionControlDescription, 'defaultValue', defaultValue)
       return unionControlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['union']), 'type')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['union']), 'control')(value),
     optionalObjectKeyParser(parseAny, 'defaultValue')(value),
     objectKeyParser(parseArray(parseRegularControlDescription), 'controls')(value),
   )
@@ -469,36 +439,138 @@ export function parseVector2ControlDescription(
   value: unknown,
 ): ParseResult<Vector2ControlDescription> {
   return applicative3Either(
-    (title, type, defaultValue) => {
+    (label, control, defaultValue) => {
       let controlDescription: Vector2ControlDescription = {
-        type: type,
+        control: control,
       }
-      setOptionalProp(controlDescription, 'title', title)
+      setOptionalProp(controlDescription, 'label', label)
       setOptionalProp(controlDescription, 'defaultValue', defaultValue)
 
       return controlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['vector2']), 'type')(value),
-    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['vector2']), 'control')(value),
+    optionalObjectKeyParser(parseTuple<[number, number]>(parseNumber, 2), 'defaultValue')(value),
   )
 }
+
 export function parseVector3ControlDescription(
   value: unknown,
 ): ParseResult<Vector3ControlDescription> {
   return applicative3Either(
-    (title, type, defaultValue) => {
+    (label, control, defaultValue) => {
       let controlDescription: Vector3ControlDescription = {
-        type: type,
+        control: control,
       }
-      setOptionalProp(controlDescription, 'title', title)
+      setOptionalProp(controlDescription, 'label', label)
       setOptionalProp(controlDescription, 'defaultValue', defaultValue)
 
       return controlDescription
     },
-    optionalObjectKeyParser(parseString, 'title')(value),
-    objectKeyParser(parseEnum(['vector3']), 'type')(value),
-    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['vector3']), 'control')(value),
+    optionalObjectKeyParser(
+      parseTuple<[number, number, number]>(parseNumber, 3),
+      'defaultValue',
+    )(value),
+  )
+}
+
+export function parseVector4ControlDescription(
+  value: unknown,
+): ParseResult<Vector4ControlDescription> {
+  return applicative3Either(
+    (label, control, defaultValue) => {
+      let controlDescription: Vector4ControlDescription = {
+        control: control,
+      }
+      setOptionalProp(controlDescription, 'label', label)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['vector4']), 'control')(value),
+    optionalObjectKeyParser(
+      parseTuple<[number, number, number, number]>(parseNumber, 4),
+      'defaultValue',
+    )(value),
+  )
+}
+
+export function parseEulerControlDescription(value: unknown): ParseResult<EulerControlDescription> {
+  return applicative3Either(
+    (label, control, defaultValue) => {
+      let controlDescription: EulerControlDescription = {
+        control: control,
+      }
+      setOptionalProp(controlDescription, 'label', label)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['euler']), 'control')(value),
+    optionalObjectKeyParser(
+      parseTuple<[number, number, number, string]>(
+        (v, i) => (i === 3 ? parseString(v) : parseNumber(v)),
+        4,
+      ),
+      'defaultValue',
+    )(value),
+  )
+}
+
+// prettier-ignore
+type Matrix3 = [
+  number, number, number,
+  number, number, number,
+  number, number, number,
+]
+
+export function parseMatrix3ControlDescription(
+  value: unknown,
+): ParseResult<Matrix3ControlDescription> {
+  return applicative3Either(
+    (label, control, defaultValue) => {
+      let controlDescription: Matrix3ControlDescription = {
+        control: control,
+      }
+      setOptionalProp(controlDescription, 'label', label)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['matrix3']), 'control')(value),
+    optionalObjectKeyParser(parseTuple<Matrix3>(parseNumber, 9), 'defaultValue')(value),
+  )
+}
+
+// prettier-ignore
+type Matrix4 = [
+  number, number, number, number,
+  number, number, number, number,
+  number, number, number, number,
+  number, number, number, number,
+]
+
+export function parseMatrix4ControlDescription(
+  value: unknown,
+): ParseResult<Matrix4ControlDescription> {
+  return applicative3Either(
+    (label, control, defaultValue) => {
+      let controlDescription: Matrix4ControlDescription = {
+        control: control,
+      }
+      setOptionalProp(controlDescription, 'label', label)
+      setOptionalProp(controlDescription, 'defaultValue', defaultValue)
+
+      return controlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['matrix4']), 'control')(value),
+    optionalObjectKeyParser(parseTuple<Matrix4>(parseNumber, 16), 'defaultValue')(value),
   )
 }
 
@@ -534,16 +606,16 @@ export function parseFolderControlDescription(
   )
   // Create the result on a success.
   return applicative2Either(
-    (properties, title) => {
+    (properties, label) => {
       let controlDescription: FolderControlDescription = {
-        type: 'folder',
+        control: 'folder',
         controls: properties,
       }
-      setOptionalProp(controlDescription, 'title', title)
+      setOptionalProp(controlDescription, 'label', label)
       return controlDescription
     },
     parsedControlDescriptions,
-    optionalObjectKeyParser(parseString, 'title')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
   )
 }
 
@@ -551,46 +623,55 @@ export function parseRegularControlDescription(
   value: unknown,
 ): ParseResult<RegularControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-    switch ((value as any)['type']) {
-      case 'boolean':
-        return parseBooleanControlDescription(value)
-      case 'color':
-        return parseColorControlDescription(value)
-      case 'enum':
-        return parseEnumControlDescription(value)
-      case 'expression-enum':
-        return parseExpressionEnumControlDescription(value)
-      case 'ignore':
-        return parseIgnoreControlDescription(value)
-      case 'image':
-        return parseImageControlDescription(value)
-      case 'number':
-        return parseNumberControlDescription(value)
-      case 'options':
-        return parseOptionsControlDescription(value)
-      case 'popuplist':
-        return parsePopUpListControlDescription(value)
-      case 'rawjs':
-        return parseRawJSControlDescription(value)
-      case 'string':
-        return parseStringControlDescription(value)
-      case 'styleobject':
-        return parseStyleObjectControlDescription(value)
+    const controlType = (value as any)['control'] as RegularControlType
+    switch (controlType) {
       case 'array':
         return parseArrayControlDescription(value)
+      case 'checkbox':
+        return parseCheckboxControlDescription(value)
+      case 'color':
+        return parseColorControlDescription(value)
+      case 'euler':
+        return parseEulerControlDescription(value)
+      case 'expression-input':
+        return parseExpressionInputControlDescription(value)
+      case 'expression-popuplist':
+        return parseExpressionPopUpListControlDescription(value)
+      case 'matrix3':
+        return parseMatrix3ControlDescription(value)
+      case 'matrix4':
+        return parseMatrix4ControlDescription(value)
+      case 'none':
+        return parseNoneControlDescription(value)
+      case 'number-input':
+        return parseNumberInputControlDescription(value)
       case 'object':
         return parseObjectControlDescription(value)
+      case 'radio':
+        return parseRadioControlDescription(value)
+      case 'popuplist':
+        return parsePopUpListControlDescription(value)
+      case 'string-input':
+        return parseStringInputControlDescription(value)
+      case 'style-controls':
+        return parseStyleControlsControlDescription(value)
       case 'vector2':
         return parseVector2ControlDescription(value)
       case 'vector3':
         return parseVector3ControlDescription(value)
+      case 'vector4':
+        return parseVector4ControlDescription(value)
       case 'union':
         return parseUnionControlDescription(value)
       case undefined:
-        return left(objectFieldNotPresentParseError('type'))
+        return left(objectFieldNotPresentParseError('control'))
       default:
+        const _exhaustiveCheck: never = controlType
         return left(
-          objectFieldParseError('type', descriptionParseError('Unexpected property control type.')),
+          objectFieldParseError(
+            'control',
+            descriptionParseError('Unexpected property control type.'),
+          ),
         )
     }
   } else {
@@ -604,7 +685,7 @@ export function parseControlDescription(
   filterSpecialPropsFromResult: 'includeSpecialProps' | 'filterSpecialProps',
 ): ParseResult<ControlDescription> | null {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
-    switch ((value as any)['type']) {
+    switch ((value as any)['control']) {
       case 'folder':
         return parseFolderControlDescription(value, filterSpecialPropsFromResult)
       default:

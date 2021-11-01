@@ -11,7 +11,7 @@ import { getDefaultPropsAsAttributes } from './shared'
 
 const StyleObjectProps: PropertyControls = {
   style: {
-    type: 'styleobject',
+    control: 'style-controls',
   },
 }
 

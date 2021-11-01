@@ -151,6 +151,7 @@ specifiers:
   jest-fetch-mock: 3.0.1
   jest-matcher-deep-close-to: 2.0.1
   jest-transform-stub: 2.0.0
+  jotai: ^1.4.2
   jsdom: 17.0.0
   json5: 0.5.1
   jszip: 3.5.0
@@ -188,7 +189,7 @@ specifiers:
   pubsub-js: ^1.9.2
   rc-slider: git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
   rc-table: 7.8.6
-  re-resizable: 6.9.0
+  re-resizable: 6.9.1
   react: npm:utopia-react@17.0.0-rc.1
   react-contexify: 5.0.0
   react-dev-utils: 10.2.1
@@ -302,6 +303,7 @@ dependencies:
   immutability-helper: 2.4.0
   istextorbinary: 5.11.0
   jest-fetch-mock: 3.0.1
+  jotai: 1.4.2_505e9a4a4bca713d56f1d49dedb15ff7
   json5: 0.5.1
   jszip: 3.5.0
   localforage: 1.7.3
@@ -322,7 +324,7 @@ dependencies:
   pubsub-js: 1.9.3
   rc-slider: github.com/momentumworks/slider/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
   rc-table: 7.8.6_d9cccff7df39c9a08a2a815f75fb6cbc
-  re-resizable: 6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc
+  re-resizable: 6.9.1_d9cccff7df39c9a08a2a815f75fb6cbc
   react: /utopia-react/17.0.0-rc.1
   react-contexify: 5.0.0_d9cccff7df39c9a08a2a815f75fb6cbc
   react-dnd: 10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
@@ -10472,6 +10474,46 @@ packages:
       - utf-8-validate
     dev: true
 
+  /jotai/1.4.2_505e9a4a4bca713d56f1d49dedb15ff7:
+    resolution: {integrity: sha512-/NcK8DGvfGcVCqoOvjWIo8/KaUYtadXEl+6uxLiQJUxbyiqCtXkhAdrugk5jmpAFXXD2y6fNDw2Ln7h0EuY+ng==}
+    engines: {node: '>=12.7.0'}
+    peerDependencies:
+      '@babel/core': '*'
+      '@babel/template': '*'
+      '@urql/core': '*'
+      immer: '*'
+      optics-ts: '*'
+      react: '>=16.8'
+      react-query: '*'
+      valtio: '*'
+      wonka: '*'
+      xstate: '*'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@babel/template':
+        optional: true
+      '@urql/core':
+        optional: true
+      immer:
+        optional: true
+      optics-ts:
+        optional: true
+      react-query:
+        optional: true
+      valtio:
+        optional: true
+      wonka:
+        optional: true
+      xstate:
+        optional: true
+    dependencies:
+      '@babel/core': 7.15.5
+      immer: 3.2.0
+      react: /utopia-react/17.0.0-rc.1
+      xstate: 4.23.1
+    dev: false
+
   /js-base64/2.6.4:
     resolution: {integrity: sha512-pZe//GGmwJndub7ZghVHz7vjb2LgC1m8B07Au3eYqeqv9emhESByMXxaEgkUkEqJe87oBbSniGYoQNIBklc7IQ==}
     dev: true
@@ -13745,8 +13787,8 @@ packages:
       strip-json-comments: 2.0.1
     dev: true
 
-  /re-resizable/6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc:
-    resolution: {integrity: sha512-3cUDG81ylyqI0Pdgle/RHwwRYq0ORZzsUaySOCO8IbEtNyaRtrIHYm/jMQ5pjcNiKCxR3vsSymIQZHwJq4gg2Q==}
+  /re-resizable/6.9.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+    resolution: {integrity: sha512-KRYAgr9/j1PJ3K+t+MBhlQ+qkkoLDJ1rs0z1heIWvYbCW/9Vq4djDU+QumJ3hQbwwtzXF6OInla6rOx6hhgRhQ==}
     peerDependencies:
       react: ^16.13.1 || ^17.0.0
       react-dom: ^16.13.1 || ^17.0.0
