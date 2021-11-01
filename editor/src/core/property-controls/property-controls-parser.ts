@@ -14,7 +14,6 @@ import {
   Vector2ControlDescription,
   Vector3ControlDescription,
   ExpressionPopUpListControlDescription,
-  ExpressionEnum,
   ImportType,
   FolderControlDescription,
   PropertyControls,
@@ -27,6 +26,7 @@ import {
   Matrix4ControlDescription,
   BasicControlOption,
   BasicControlOptions,
+  ExpressionControlOption,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -158,23 +158,21 @@ const parseOptionTitles: Parser<OptionTitles<any>> = parseAlternative<OptionTitl
 export function parseExpressionPopUpListControlDescription(
   value: unknown,
 ): ParseResult<ExpressionPopUpListControlDescription> {
-  return applicative5Either(
-    (label, control, defaultValue, options, optionTitles) => {
+  return applicative4Either(
+    (label, control, defaultValue, options) => {
       let enumControlDescription: ExpressionPopUpListControlDescription = {
         control: control,
         options: options,
       }
       setOptionalProp(enumControlDescription, 'label', label)
       setOptionalProp(enumControlDescription, 'defaultValue', defaultValue)
-      setOptionalProp(enumControlDescription, 'optionTitles', optionTitles)
 
       return enumControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseEnum(['expression-popuplist']), 'control')(value),
-    optionalObjectKeyParser(parseExpressionEnum, 'defaultValue')(value),
-    objectKeyParser(parseArray(parseExpressionEnum), 'options')(value),
-    optionalObjectKeyParser(parseOptionTitles, 'optionTitles')(value),
+    optionalObjectKeyParser(parseExpressionControlOption, 'defaultValue')(value),
+    objectKeyParser(parseArray(parseExpressionControlOption), 'options')(value),
   )
 }
 
@@ -200,19 +198,23 @@ const parseImportType: Parser<ImportType> = (value: unknown) => {
   )
 }
 
-function parseExpressionEnum(value: unknown): ParseResult<ExpressionEnum> {
-  return applicative3Either(
-    (enumValue, expression, importType) => {
-      let expressionEnum: ExpressionEnum = {
-        value: enumValue,
+function parseExpressionControlOption(
+  value: unknown,
+): ParseResult<ExpressionControlOption<unknown>> {
+  return applicative4Either(
+    (expressionValue, expression, label, requiredImport) => {
+      let expressionControlOption: ExpressionControlOption<unknown> = {
+        value: expressionValue,
         expression: expression,
       }
-      setOptionalProp(expressionEnum, 'import', importType)
-      return expressionEnum
+      setOptionalProp(expressionControlOption, 'label', label)
+      setOptionalProp(expressionControlOption, 'requiredImport', requiredImport)
+      return expressionControlOption
     },
-    objectKeyParser(parseEnumValue, 'value')(value),
+    objectKeyParser(parseAny, 'value')(value),
     objectKeyParser(parseString, 'expression')(value),
-    optionalObjectKeyParser(parseImportType, 'import')(value),
+    objectKeyParser(parseString, 'label')(value),
+    optionalObjectKeyParser(parseImportType, 'requiredImport')(value),
   )
 }
 

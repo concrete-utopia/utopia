@@ -253,6 +253,23 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
       (store) => store.editor.selectedViews,
       'ExpressionPopUpListPropertyControl selectedViews',
     )
+
+    const targetFilePaths = useEditorState((store) => {
+      const currentFilePath = forceNotNull(
+        'Missing open file',
+        store.editor.canvas.openFile?.filename,
+      )
+      return selectedViews.map((selectedView) => {
+        const normalisedPath = normalisePathToUnderlyingTarget(
+          store.editor.projectContents,
+          store.editor.nodeModules.files,
+          currentFilePath,
+          selectedView,
+        )
+        return normalisePathSuccessOrThrowError(normalisedPath).filePath
+      })
+    }, 'ExpressionPopUpListPropertyControl targetFilePaths')
+
     const target = forceNotNull('Inspector control without selected element', selectedViews[0])
     const { propMetadata, controlDescription } = props
 
@@ -269,11 +286,7 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
       controlDescription.options.map((option, index) => {
         return {
           value: option.expression,
-          label:
-            controlDescription.optionTitles == null ||
-            typeof controlDescription.optionTitles === 'function'
-              ? option.expression
-              : (controlDescription.optionTitles[index] as string),
+          label: option.label ?? option.expression,
         }
       }),
     )
@@ -281,30 +294,33 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
       return fastDeepEquals(option.value, selectedExpression)
     })
 
-    function submitValue(option: SelectOption): void {
-      const actions: EditorAction[] = [
-        setProp_UNSAFE(
-          target,
-          props.propPath,
-          jsxAttributeOtherJavaScript(option.value, `return ${option.value}`, [], null, {}),
-        ),
-      ]
-      const expressionOption = controlDescription.options.find((o) => o.expression === option.value)
-      if (expressionOption != null && expressionOption.import != null) {
-        const importOption = expressionOption.import
-        const importToAdd: Imports = {
-          [importOption.source]: importDetails(
-            importOption.type === 'default' ? importOption.name : null,
-            importOption.type == null
-              ? [{ name: importOption.name, alias: importOption.name }]
-              : [],
-            importOption.type === 'star' ? importOption.name : null,
-          ),
+    const baseOnSubmit = propMetadata.onSubmitValue
+
+    const submitValue = React.useCallback(
+      (option: SelectOption): void => {
+        baseOnSubmit(option.value)
+        let actions: EditorAction[] = targetFilePaths.map((filePath) => forceParseFile(filePath))
+
+        const expressionOption = controlDescription.options.find(
+          (o) => o.expression === option.value,
+        )
+        if (expressionOption != null && expressionOption.requiredImport != null) {
+          const importOption = expressionOption.requiredImport
+          const importToAdd: Imports = {
+            [importOption.source]: importDetails(
+              importOption.type === 'default' ? importOption.name : null,
+              importOption.type == null
+                ? [{ name: importOption.name, alias: importOption.name }]
+                : [],
+              importOption.type === 'star' ? importOption.name : null,
+            ),
+          }
+          actions.push(addImports(importToAdd, target))
         }
-        actions.push(addImports(importToAdd, target))
-      }
-      dispatch(actions, 'everyone')
-    }
+        dispatch(actions, 'everyone')
+      },
+      [dispatch, baseOnSubmit, targetFilePaths, target, controlDescription.options],
+    )
 
     return (
       <PopupList

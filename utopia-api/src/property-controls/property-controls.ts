@@ -60,17 +60,17 @@ export interface ImportType {
   type: 'star' | 'default' | null
 }
 
-export interface ExpressionEnum {
-  value: AllowedEnumType
+export interface ExpressionControlOption<T> {
+  value: T
   expression: string
-  import?: ImportType
+  label?: string
+  requiredImport?: ImportType
 }
 
 export interface ExpressionPopUpListControlDescription
   extends AbstractBaseControlDescription<'expression-popuplist'> {
-  defaultValue?: ExpressionEnum
-  options: ExpressionEnum[]
-  optionTitles?: string[] | ((props: unknown | null) => string[])
+  defaultValue?: ExpressionControlOption<unknown>
+  options: ExpressionControlOption<unknown>[]
 }
 
 export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
@@ -279,15 +279,15 @@ export function getDefaultProps(propertyControls: PropertyControls): { [prop: st
   return defaults
 }
 
-export function expression(
-  value: AllowedEnumType,
+export function expression<T>(
+  value: T,
   expressionString: string,
-  toImport?: ImportType,
-): ExpressionEnum {
+  requiredImport?: ImportType,
+): ExpressionControlOption<T> {
   return {
     value: value,
     expression: expressionString,
-    import: toImport,
+    requiredImport: requiredImport,
   }
 }
 

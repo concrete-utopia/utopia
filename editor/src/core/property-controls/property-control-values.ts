@@ -400,7 +400,7 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
     case 'expression-input':
       return printJS
     case 'expression-popuplist':
-      return printSimple
+      return printJS
     case 'euler':
       return printSimple
     case 'matrix3':
