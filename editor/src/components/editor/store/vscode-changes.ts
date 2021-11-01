@@ -212,9 +212,8 @@ export function shouldIncludeSelectedElementChanges(
 export function getProjectContentsChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
-  updateCameFromVSCode: boolean,
 ): Array<ProjectChange> {
-  if (oldEditorState.vscodeBridgeId != null && !updateCameFromVSCode) {
+  if (oldEditorState.vscodeBridgeId != null) {
     return collateProjectChanges(
       getUnderlyingVSCodeBridgeID(oldEditorState.vscodeBridgeId),
       oldEditorState.projectContents,
@@ -288,10 +287,9 @@ export function localAccumulatedToVSCodeAccumulated(
 export function getVSCodeChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
-  updateCameFromVSCode: boolean,
 ): AccumulatedVSCodeChanges {
   return {
-    fileChanges: getProjectContentsChanges(oldEditorState, newEditorState, updateCameFromVSCode),
+    fileChanges: getProjectContentsChanges(oldEditorState, newEditorState),
     updateDecorations: shouldIncludeVSCodeDecorations(oldEditorState, newEditorState)
       ? getCodeEditorDecorations(newEditorState)
       : null,
