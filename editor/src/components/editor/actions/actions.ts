@@ -474,7 +474,7 @@ import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
 import { notice, Notice } from '../../common/notice'
-import { objectMap } from '../../../core/shared/object-utils'
+import { objectMap, objectMapDropNulls } from '../../../core/shared/object-utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import {
@@ -4391,9 +4391,20 @@ export const UPDATE_FNS = {
     action: UpdatePropertyControlsInfo,
     editor: EditorState,
   ): EditorState => {
+    // Because we have multiple sources of propertyControlsInfo, we want to prevent this action from overwriting existing declarations with a {}
+    const propertyControlsToUpdate = objectMapDropNulls((infoForFile, filenameNoExtension) => {
+      if (Object.keys(infoForFile).length > 0) {
+        return infoForFile
+      } else {
+        return null
+      }
+    }, action.propertyControlsInfo)
     return {
       ...editor,
-      propertyControlsInfo: action.propertyControlsInfo,
+      propertyControlsInfo: {
+        ...editor.propertyControlsInfo,
+        ...propertyControlsToUpdate,
+      },
     }
   },
   PROPERTY_CONTROLS_IFRAME_READY: (

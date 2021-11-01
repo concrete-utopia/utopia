@@ -1,4 +1,6 @@
 import { PropertyControls } from 'utopia-api'
+import deepEqual from 'fast-deep-equal'
+
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import type { EditorDispatch } from '../../components/editor/action-types'
@@ -8,10 +10,9 @@ import {
   packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
 import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
+import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 
-export let LocalThirdPartyControls: PropertyControlsInfo = {
-  '@react-three/fiber': ReactThreeFiberControls,
-}
+// TODO: somehow insert '@react-three/fiber': ReactThreeFiberControls,
 
 export const createRegisterControlsFunction = (
   dispatch: EditorDispatch,
@@ -22,22 +23,24 @@ export const createRegisterControlsFunction = (
       'registerControls has 3 parameters: component name, package name, property controls object',
     )
   } else {
-    LocalThirdPartyControls[packageName] = {
-      ...(LocalThirdPartyControls[packageName] ?? {}),
-      [componentName]: propertyControls,
+    const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
+    if (currentPropertyControlsInfo != null) {
+      const currentControlsAreTheSame = deepEqual(
+        currentPropertyControlsInfo[packageName]?.[componentName],
+        propertyControls,
+      )
+      const updatedControls: PropertyControlsInfo = {
+        [packageName]: {
+          ...currentPropertyControlsInfo[packageName],
+          [componentName]: propertyControls,
+        },
+      }
+      if (!currentControlsAreTheSame) {
+        // only dispatch if the control info is updated, to prevent a potential infinite loop of code re-evaluation
+        dispatch([updatePropertyControlsInfo(updatedControls)])
+      }
     }
   }
-}
-
-export function getAllRegisteredControls(): PropertyControlsInfo {
-  return LocalThirdPartyControls
-}
-
-export function getLocalThirdPartyControls(
-  componentName: string,
-  packageName: string,
-): PropertyControls | null {
-  return LocalThirdPartyControls[packageName]?.[componentName]
 }
 
 export function getLocalThirdPartyControlsIntrinsic(
@@ -47,14 +50,14 @@ export function getLocalThirdPartyControlsIntrinsic(
 ): PropertyControls | null {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
-  const foundPackageWithElement = Object.keys(LocalThirdPartyControls).find((key) => {
-    return LocalThirdPartyControls[key][elementName] != null
+  const foundPackageWithElement = Object.keys(propertyControlsInfo).find((key) => {
+    return propertyControlsInfo[key][elementName] != null
   })
   if (
     foundPackageWithElement != null &&
     dependencies.some((dependency) => dependency.name === foundPackageWithElement)
   ) {
-    return getLocalThirdPartyControls(elementName, foundPackageWithElement)
+    return propertyControlsInfo[foundPackageWithElement][elementName]
   }
   return null
 }

@@ -37,11 +37,7 @@ import { importedFromWhere } from '../../components/editor/import-utils'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
-import {
-  getLocalThirdPartyControls,
-  getLocalThirdPartyControlsIntrinsic,
-  LocalThirdPartyControls,
-} from './property-controls-local'
+import { getLocalThirdPartyControlsIntrinsic } from './property-controls-local'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -376,7 +372,7 @@ export function getPropertyControlsForTarget(
         ) {
           return propertyControlsInfo[trimmedPath][nameLastPart] as PropertyControls
         } else {
-          return getLocalThirdPartyControls(nameLastPart, trimmedPath)
+          return null
         }
       }
     },
