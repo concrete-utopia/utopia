@@ -510,9 +510,31 @@ export function editorDispatch(
   }
 
   const newVSCodeChanges = getVSCodeChanges(storedState.editor, frozenEditorState)
+  applyProjectChanges(frozenEditorState, newVSCodeChanges, updatedFromVSCode)
+
+  const shouldUpdatePreview =
+    anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
+  if (shouldUpdatePreview) {
+    updateEmbeddedPreview(frozenEditorState.id, frozenEditorState.projectContents)
+  }
+
+  if (frozenEditorState.id != null && frozenEditorState.id != storedState.editor.id) {
+    storedState.workers.initWatchdogWorker(frozenEditorState.id)
+  }
+
+  return finalStore
+}
+
+function applyProjectChanges(
+  frozenEditorState: EditorState,
+  accumulatedChanges: AccumulatedVSCodeChanges,
+  updatedFromVSCode: boolean,
+) {
+  triggerPropertyControlsIframeIfNeeded(frozenEditorState, accumulatedChanges.fileChanges)
+
   currentVSCodeChanges = combineAccumulatedVSCodeChanges(
     currentVSCodeChanges,
-    updatedFromVSCode ? { ...newVSCodeChanges, fileChanges: [] } : newVSCodeChanges,
+    updatedFromVSCode ? { ...accumulatedChanges, fileChanges: [] } : accumulatedChanges,
   )
 
   if (frozenEditorState.vscodeReady) {
@@ -526,19 +548,17 @@ export function editorDispatch(
     })
   }
 
-  triggerPropertyControlsIframeIfNeeded(frozenEditorState, newVSCodeChanges.fileChanges)
+  const updatedFileNames = accumulatedChanges.fileChanges.map((fileChange) => fileChange.fullPath)
+  const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
+    frozenEditorState.projectContents,
+    frozenEditorState.nodeModules.files,
+    updatedFileNames,
+  )
 
-  const shouldUpdatePreview =
-    anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
-  if (shouldUpdatePreview) {
-    updateEmbeddedPreview(frozenEditorState.id, frozenEditorState.projectContents)
+  // Mutating the evaluation cache.
+  for (const fileToDelete of updatedAndReverseDepFilenames) {
+    delete frozenEditorState.codeResultCache.evaluationCache[fileToDelete]
   }
-
-  if (frozenEditorState.id != null && frozenEditorState.id != storedState.editor.id) {
-    storedState.workers.initWatchdogWorker(frozenEditorState.id)
-  }
-
-  return finalStore
 }
 
 function editorDispatchInner(
