@@ -250,18 +250,19 @@ export type RegularControlDescription = BaseControlDescription | HigherLevelCont
 // with any changes to this or the component types.
 export type ControlDescription = RegularControlDescription | FolderControlDescription
 
-// These helper functions make sure that every RegularControlDescription has a label, control, defaultValue etc
-function getLabel(control: RegularControlDescription): string | undefined {
-  return control.label
+type ControlBaseFields = {
+  control: RegularControlType
+  label?: string
+  defaultValue?: unknown
+  visibleByDefault?: boolean
 }
-function getControl(control: RegularControlDescription): RegularControlType {
-  return control.control
-}
-function getDefaultValue(control: RegularControlDescription): unknown | undefined {
-  return control.defaultValue
-}
-function getVisibleByDefault(control: RegularControlDescription): boolean | undefined {
-  return control.visibleByDefault
+function getControlSharedFields(control: RegularControlDescription): ControlBaseFields {
+  return {
+    control: control.control,
+    label: control.label,
+    defaultValue: control.defaultValue,
+    visibleByDefault: control.visibleByDefault,
+  }
 }
 
 export function isBaseControlDescription(
