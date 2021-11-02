@@ -1,4 +1,4 @@
-import { PropertyControls } from 'utopia-api'
+import { PropertyControls, registerControls } from 'utopia-api'
 import deepEqual from 'fast-deep-equal'
 
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -11,30 +11,33 @@ import {
 } from '../../components/editor/store/editor-state'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 
-export const createRegisterControlsFunction = (
+export function createRegisterControlsFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
-) => (componentName: string, packageName: string, propertyControls: PropertyControls): void => {
-  if (componentName == null || packageName == null || typeof propertyControls !== 'object') {
-    console.warn(
-      'registerControls has 3 parameters: component name, package name, property controls object',
-    )
-  } else {
-    const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
-    if (currentPropertyControlsInfo != null) {
-      const currentControlsAreTheSame = deepEqual(
-        currentPropertyControlsInfo[packageName]?.[componentName],
-        propertyControls,
+): typeof registerControls {
+  // create a function with a signature that matches utopia-api/registerControls
+  return (componentName: string, packageName: string, propertyControls: PropertyControls): void => {
+    if (componentName == null || packageName == null || typeof propertyControls !== 'object') {
+      console.warn(
+        'registerControls has 3 parameters: component name, package name, property controls object',
       )
-      const updatedControls: PropertyControlsInfo = {
-        [packageName]: {
-          ...currentPropertyControlsInfo[packageName],
-          [componentName]: propertyControls,
-        },
-      }
-      if (!currentControlsAreTheSame) {
-        // only dispatch if the control info is updated, to prevent a potential infinite loop of code re-evaluation
-        dispatch([updatePropertyControlsInfo(updatedControls)])
+    } else {
+      const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
+      if (currentPropertyControlsInfo != null) {
+        const currentControlsAreTheSame = deepEqual(
+          currentPropertyControlsInfo[packageName]?.[componentName],
+          propertyControls,
+        )
+        const updatedControls: PropertyControlsInfo = {
+          [packageName]: {
+            ...currentPropertyControlsInfo[packageName],
+            [componentName]: propertyControls,
+          },
+        }
+        if (!currentControlsAreTheSame) {
+          // only dispatch if the control info is updated, to prevent a potential infinite loop of code re-evaluation
+          dispatch([updatePropertyControlsInfo(updatedControls)])
+        }
       }
     }
   }

@@ -1,4 +1,13 @@
+import { PropertyControls } from '../property-controls/property-controls'
 import { testImage } from './test-assets'
+
+export function registerControls(
+  componentName: string,
+  packageName: string,
+  propertyControls: PropertyControls,
+): void {
+  // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
+}
 
 export type RawSingleBorderWidth = number | string
 export type RawSplitBorderWidth = [
