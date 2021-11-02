@@ -37,7 +37,7 @@ import { importedFromWhere } from '../../components/editor/import-utils'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
-import { getLocalThirdPartyControlsIntrinsic } from './property-controls-local'
+import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -339,7 +339,7 @@ export function getPropertyControlsForTarget(
             return HtmlElementStyleObjectProps
           } else {
             // you can add more intrinsic (ie not imported) element types here
-            return getLocalThirdPartyControlsIntrinsic(
+            return getThirdPartyControlsIntrinsic(
               element.name.baseVariable,
               propertyControlsInfo,
               projectContents,

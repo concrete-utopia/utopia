@@ -43,7 +43,7 @@ export function createRegisterControlsFunction(
   }
 }
 
-export function getLocalThirdPartyControlsIntrinsic(
+export function getThirdPartyControlsIntrinsic(
   elementName: string,
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
@@ -51,12 +51,12 @@ export function getLocalThirdPartyControlsIntrinsic(
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
   const foundPackageWithElement = Object.keys(propertyControlsInfo).find((key) => {
-    return propertyControlsInfo[key][elementName] != null
+    return (
+      propertyControlsInfo[key][elementName] != null &&
+      dependencies.some((dependency) => dependency.name === key)
+    )
   })
-  if (
-    foundPackageWithElement != null &&
-    dependencies.some((dependency) => dependency.name === foundPackageWithElement)
-  ) {
+  if (foundPackageWithElement != null) {
     return propertyControlsInfo[foundPackageWithElement][elementName]
   }
   return null
