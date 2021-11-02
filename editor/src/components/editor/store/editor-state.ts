@@ -136,7 +136,6 @@ import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { loginNotYetKnown, notLoggedIn } from '../../../common/user'
 import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
-import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,

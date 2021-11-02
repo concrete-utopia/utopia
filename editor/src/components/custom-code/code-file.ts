@@ -3,7 +3,6 @@ import { EmitFileResult } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import {
-  getControlsForExternalDependencies,
   NodeModulesUpdate,
   sendPropertyControlsInfoRequest,
 } from '../../core/property-controls/property-controls-utils'
