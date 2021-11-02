@@ -6,6 +6,7 @@ import {
   processExportsInfo,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
+import { createBuiltInDependenciesList } from '../es-modules/package-manager/built-in-dependencies-list'
 import { EvaluationCache, getRequireFn } from '../es-modules/package-manager/package-manager'
 import {
   applyNodeModulesUpdate,
@@ -14,13 +15,14 @@ import {
 } from '../property-controls/property-controls-utils'
 import { RequestedNpmDependency } from '../shared/npm-dependency-types'
 import { NodeModules } from '../shared/project-file-types'
-import { fastForEach } from '../shared/utils'
+import { fastForEach, NO_OP } from '../shared/utils'
 import { resolvedDependencyVersions } from '../third-party/third-party-components'
 import { MultiFileBuildResult } from '../workers/common/worker-types'
 
 export const initPropertyControlsProcessor = (
   onControlsProcessed: (propertyControlsInfo: PropertyControlsInfo) => void,
 ) => {
+  const builtInDependencies = createBuiltInDependenciesList(NO_OP, null)
   let currentNodeModules: NodeModules = {}
 
   const processPropertyControls = async (
@@ -31,7 +33,11 @@ export const initPropertyControlsProcessor = (
     bundledProjectFiles: MultiFileBuildResult,
   ) => {
     currentNodeModules = applyNodeModulesUpdate(currentNodeModules, nodeModulesUpdate)
-    const resolvedNpmDependencies = resolvedDependencyVersions(npmDependencies, currentNodeModules)
+    const resolvedNpmDependencies = resolvedDependencyVersions(
+      npmDependencies,
+      currentNodeModules,
+      builtInDependencies,
+    )
 
     incorporateBuildResult(currentNodeModules, projectContents, bundledProjectFiles)
 
@@ -71,6 +77,7 @@ export const initPropertyControlsProcessor = (
       projectContents,
       currentNodeModules,
       evaluationCache,
+      builtInDependencies,
     )
 
     const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)

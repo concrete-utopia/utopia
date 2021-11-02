@@ -6,6 +6,7 @@ import { StateHistory } from '../history'
 import { setClipboardData, createClipboardDataFromSelection } from '../../../utils/clipboard'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -16,6 +17,7 @@ export function runLocalEditorAction(
   stateHistory: StateHistory,
   dispatch: EditorDispatch,
   spyCollector: UiJsxCanvasContextData,
+  builtInDependencies: BuiltInDependencies,
 ): EditorState {
   switch (action.action) {
     case 'SET_CANVAS_FRAMES':
@@ -36,6 +38,7 @@ export function runLocalEditorAction(
         stateHistory,
         dispatch,
         spyCollector,
+        builtInDependencies,
       )
   }
 }
@@ -49,6 +52,7 @@ export function runSimpleLocalEditorAction(
   stateHistory: StateHistory,
   dispatch: EditorDispatch,
   spyCollector: UiJsxCanvasContextData,
+  builtInDependencies: BuiltInDependencies,
 ): EditorState {
   switch (action.action) {
     case 'NEW':
@@ -190,11 +194,11 @@ export function runSimpleLocalEditorAction(
     case 'OPEN_CODE_EDITOR_FILE':
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(action, state)
     case 'UPDATE_FILE':
-      return UPDATE_FNS.UPDATE_FILE(action, state, dispatch)
+      return UPDATE_FNS.UPDATE_FILE(action, state, dispatch, builtInDependencies)
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, derivedState)
     case 'UPDATE_FROM_CODE_EDITOR':
-      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch)
+      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch, builtInDependencies)
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':
       return UPDATE_FNS.CLEAR_PARSE_OR_PRINT_IN_FLIGHT(action, state)
     case 'ADD_FOLDER':
@@ -258,7 +262,7 @@ export function runSimpleLocalEditorAction(
     case 'RESET_PROP_TO_DEFAULT':
       return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state)
     case 'UPDATE_NODE_MODULES_CONTENTS':
-      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch)
+      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch, builtInDependencies)
     case 'UPDATE_PACKAGE_JSON':
       return UPDATE_FNS.UPDATE_PACKAGE_JSON(action, state)
     case 'START_CHECKPOINT_TIMER':
@@ -318,7 +322,7 @@ export function runSimpleLocalEditorAction(
     case 'CLEAR_TRANSIENT_PROPS':
       return UPDATE_FNS.CLEAR_TRANSIENT_PROPS(action, state)
     case 'ADD_TAILWIND_CONFIG':
-      return UPDATE_FNS.ADD_TAILWIND_CONFIG(action, state, dispatch)
+      return UPDATE_FNS.ADD_TAILWIND_CONFIG(action, state, dispatch, builtInDependencies)
     case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
       return UPDATE_FNS.SET_INSPECTOR_LAYOUT_SECTION_HOVERED(action, state)
     case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':

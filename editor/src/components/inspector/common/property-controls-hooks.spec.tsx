@@ -173,6 +173,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     persistence: null as any,
     dispatch: null as any,
     alreadySaved: null as any,
+    builtInDependencies: [],
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

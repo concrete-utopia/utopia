@@ -10,6 +10,10 @@ import * as EmotionStyled from '@emotion/styled'
 import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
+import { PropertyControlsInfo } from '../../../components/custom-code/code-file'
+import { createRegisterControlsFunction } from '../../property-controls/property-controls-local'
+import type { EditorDispatch } from '../../../components/editor/action-types'
+import type { EditorState } from '../../../components/editor/store/editor-state'
 
 applyUIDMonkeyPatch()
 
@@ -18,6 +22,8 @@ export interface BuiltInDependency {
   nodeModule: any
   version: string
 }
+
+export type BuiltInDependencies = Array<BuiltInDependency>
 
 function builtInDependency(
   moduleName: string,
@@ -45,28 +51,38 @@ function builtInDependency(
   }
 }
 
-// Ensure this is kept up to date with:
-// server/src/Utopia/Web/Packager/NPM.hs
-export const BuiltInDependencies: Array<BuiltInDependency> = [
-  builtInDependency('utopia-api', UtopiaAPI, utopiaAPIPackageJSON.version),
-  builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
-  builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
-  builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
-  builtInDependency('react', React, editorPackageJSON.dependencies.react),
-  builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
-  builtInDependency(
-    '@emotion/react',
-    EmotionReact,
-    editorPackageJSON.dependencies['@emotion/react'],
-  ),
-  builtInDependency(
-    '@emotion/core',
-    EmotionReact,
-    editorPackageJSON.dependencies['@emotion/react'],
-  ),
-  builtInDependency(
-    '@emotion/styled',
-    EmotionStyled,
-    editorPackageJSON.dependencies['@emotion/styled'],
-  ),
-]
+export function createBuiltInDependenciesList(
+  dispatch: EditorDispatch,
+  getEditorState: (() => EditorState) | null,
+): BuiltInDependencies {
+  const UtopiaAPISpecial = {
+    ...UtopiaAPI,
+    registerControls: createRegisterControlsFunction(dispatch, getEditorState),
+  }
+
+  // Ensure this is kept up to date with:
+  // server/src/Utopia/Web/Packager/NPM.hs
+  return [
+    builtInDependency('utopia-api', UtopiaAPISpecial, utopiaAPIPackageJSON.version),
+    builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
+    builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
+    builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
+    builtInDependency('react', React, editorPackageJSON.dependencies.react),
+    builtInDependency('react-dom', ReactDOM, editorPackageJSON.dependencies['react-dom']),
+    builtInDependency(
+      '@emotion/react',
+      EmotionReact,
+      editorPackageJSON.dependencies['@emotion/react'],
+    ),
+    builtInDependency(
+      '@emotion/core',
+      EmotionReact,
+      editorPackageJSON.dependencies['@emotion/react'],
+    ),
+    builtInDependency(
+      '@emotion/styled',
+      EmotionStyled,
+      editorPackageJSON.dependencies['@emotion/styled'],
+    ),
+  ]
+}

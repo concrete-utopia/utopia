@@ -7,6 +7,7 @@ import { createEditorState, EditorState, EditorStore } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 function createEmptyEditorStoreHook() {
   let emptyEditorState = createEditorState(NO_OP)
@@ -20,6 +21,7 @@ function createEmptyEditorStoreHook() {
     persistence: null as any,
     dispatch: null as any,
     alreadySaved: false,
+    builtInDependencies: createBuiltInDependenciesList(NO_OP, () => emptyEditorState),
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

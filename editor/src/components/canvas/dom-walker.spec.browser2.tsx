@@ -29,6 +29,7 @@ import { createTestProjectWithCode } from '../../sample-projects/sample-project-
 import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
+import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 disableStoredStateforTests()
 
@@ -72,6 +73,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     persistence: DummyPersistenceMachine,
     dispatch: dispatch,
     alreadySaved: false,
+    builtInDependencies: createBuiltInDependenciesList(dispatch, () => emptyEditorState),
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)
@@ -86,7 +88,14 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
   )
 
   await act(async () => {
-    await load(dispatch, createTestProjectWithCode(appUiJsFileCode), 'Test', '0', false)
+    await load(
+      dispatch,
+      createTestProjectWithCode(appUiJsFileCode),
+      'Test',
+      '0',
+      initialEditorStore.builtInDependencies,
+      false,
+    )
   })
   const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadata)
   return sanitizedMetadata

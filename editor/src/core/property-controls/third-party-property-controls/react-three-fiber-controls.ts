@@ -654,7 +654,7 @@ const shadowMaterialControls: PropertyControls = {
   },
 }
 
-export const ReactThreeFiberControls: MapLike<PropertyControls> = {
+export const ReactThreeFiberControls = {
   color: colorControls,
   fog: fogControls,
   ambientLight: ambientLightControls,

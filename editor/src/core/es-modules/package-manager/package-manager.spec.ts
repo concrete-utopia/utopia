@@ -29,6 +29,7 @@ import {
   unimportAllButTheseCSSFiles,
 } from '../../webpack-loaders/css-loader'
 import { svgToBase64 } from '../../shared/file-utils'
+import { createBuiltInDependenciesList } from './built-in-dependencies-list'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -64,6 +65,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileNoImports as PackagerServerResponse),
       {},
+      createBuiltInDependenciesList(NO_OP, null),
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -76,6 +78,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
+      createBuiltInDependenciesList(NO_OP, null),
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -88,6 +91,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithLocalImport),
       {},
+      createBuiltInDependenciesList(NO_OP, null),
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -100,6 +104,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
+      createBuiltInDependenciesList(NO_OP, null),
     )
     reqFn('/src/index.js', 'mypackage/simple.css')
 
@@ -113,6 +118,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
+      createBuiltInDependenciesList(NO_OP, null),
     )
     reqFn('/src/index.js', 'mypackage/simple.css')
 
@@ -128,6 +134,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
+      createBuiltInDependenciesList(NO_OP, null),
     )
 
     const requireResult = reqFn('/src/index.js', 'mypackage/simple.svg')
@@ -144,6 +151,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
+      createBuiltInDependenciesList(NO_OP, null),
     )
     const test = () => reqFn('/src/index.js', 'mypackage2')
     expect(test).toThrowError(`Could not find dependency: 'mypackage2' relative to '/src/index.js`)
@@ -158,6 +166,7 @@ describe('ES Dependency Manager — Cycles', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
+      createBuiltInDependenciesList(NO_OP, null),
       spyEvaluator,
     )
     const requireResult = reqFn('/src/index.js', 'mypackage/moduleA')
@@ -179,15 +188,22 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([
-      requestedNpmDependency('react-spring', '8.0.27'),
-    ])
+    const fetchNodeModulesResult = await fetchNodeModules(
+      [requestedNpmDependency('react-spring', '8.0.27')],
+      createBuiltInDependenciesList(NO_OP, null),
+    )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
     const nodeModules = fetchNodeModulesResult.nodeModules
     const onRemoteModuleDownload = jest.fn()
-    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {})
+    const req = getRequireFn(
+      onRemoteModuleDownload,
+      {},
+      nodeModules,
+      {},
+      createBuiltInDependenciesList(NO_OP, null),
+    )
     const reactSpring = req('/src/index.js', 'react-spring')
     expect(Object.keys(reactSpring)).not.toHaveLength(0)
     expect(onRemoteModuleDownload).toBeCalledTimes(0)
@@ -207,7 +223,10 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    fetchNodeModules([requestedNpmDependency('antd', '4.2.5')]).then((fetchNodeModulesResult) => {
+    fetchNodeModules(
+      [requestedNpmDependency('antd', '4.2.5')],
+      createBuiltInDependenciesList(NO_OP, null),
+    ).then((fetchNodeModulesResult) => {
       if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
         fail(`Expected successful nodeModules fetch`)
       }
@@ -222,6 +241,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
           {},
           updatedNodeModules,
           {},
+          createBuiltInDependenciesList(NO_OP, null),
           spyEvaluator,
         )
 
@@ -237,7 +257,14 @@ describe('ES Dependency Manager — Real-life packages', () => {
         done()
       }
 
-      const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, spyEvaluator)
+      const req = getRequireFn(
+        onRemoteModuleDownload,
+        {},
+        nodeModules,
+        {},
+        createBuiltInDependenciesList(NO_OP, null),
+        spyEvaluator,
+      )
       const antd = req('/src/index.js', 'antd')
       expect(Object.keys(antd)).not.toHaveLength(0)
       expect(antd).toHaveProperty('Button')
@@ -261,9 +288,10 @@ describe('ES Dependency Manager — d.ts', () => {
       },
     )
 
-    const fetchNodeModulesResult = await fetchNodeModules([
-      requestedNpmDependency('react-spring', '8.0.27'),
-    ])
+    const fetchNodeModulesResult = await fetchNodeModules(
+      [requestedNpmDependency('react-spring', '8.0.27')],
+      createBuiltInDependenciesList(NO_OP, null),
+    )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -295,38 +323,51 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
       },
     )
-    fetchNodeModules([requestedNpmDependency('mypackage', '0.0.1')]).then(
-      (fetchNodeModulesResult) => {
-        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-          fail(`Expected successful nodeModules fetch`)
-        }
-        const nodeModules = fetchNodeModulesResult.nodeModules
+    fetchNodeModules(
+      [requestedNpmDependency('mypackage', '0.0.1')],
+      createBuiltInDependenciesList(NO_OP, null),
+    ).then((fetchNodeModulesResult) => {
+      if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+        fail(`Expected successful nodeModules fetch`)
+      }
+      const nodeModules = fetchNodeModulesResult.nodeModules
 
-        const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
-          const downloadedModules = await moduleDownload
-          const updatedNodeModules = { ...nodeModules, ...downloadedModules }
-          const innerOnRemoteModuleDownload = jest.fn()
-          const updatedReq = getRequireFn(innerOnRemoteModuleDownload, {}, updatedNodeModules, {})
-
-          // this is like calling `import 'mypackage/dist/style.css';`, we only care about the side effect
-          updatedReq('/src/index.js', 'mypackage/dist/style.css')
-
-          // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
-          const styleTag = document.getElementById(
-            `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
-          )
-          expect(styleTag?.innerHTML).toEqual(simpleCssContent)
-          expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
-
-          done()
-        }
-
-        const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {})
-        expect(() => req('/src/index.js', 'mypackage/dist/style.css')).toThrow(
-          createResolvingRemoteDependencyError('mypackage/dist/style.css'),
+      const onRemoteModuleDownload = async (moduleDownload: Promise<NodeModules>) => {
+        const downloadedModules = await moduleDownload
+        const updatedNodeModules = { ...nodeModules, ...downloadedModules }
+        const innerOnRemoteModuleDownload = jest.fn()
+        const updatedReq = getRequireFn(
+          innerOnRemoteModuleDownload,
+          {},
+          updatedNodeModules,
+          {},
+          createBuiltInDependenciesList(NO_OP, null),
         )
-      },
-    )
+
+        // this is like calling `import 'mypackage/dist/style.css';`, we only care about the side effect
+        updatedReq('/src/index.js', 'mypackage/dist/style.css')
+
+        // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
+        const styleTag = document.getElementById(
+          `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
+        )
+        expect(styleTag?.innerHTML).toEqual(simpleCssContent)
+        expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
+
+        done()
+      }
+
+      const req = getRequireFn(
+        onRemoteModuleDownload,
+        {},
+        nodeModules,
+        {},
+        createBuiltInDependenciesList(NO_OP, null),
+      )
+      expect(() => req('/src/index.js', 'mypackage/dist/style.css')).toThrow(
+        createResolvingRemoteDependencyError('mypackage/dist/style.css'),
+      )
+    })
   })
 })
 
@@ -348,18 +389,19 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then(
-      (fetchNodeModulesResult) => {
-        if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-          fail(`Expected successful nodeModule fetch`)
-        }
-        expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(228)
-        expect(
-          fetchNodeModulesResult.nodeModules['/node_modules/react-spring/index.d.ts'],
-        ).toBeDefined()
-        done()
-      },
-    )
+    fetchNodeModules(
+      [requestedNpmDependency('react-spring', '8.0.27')],
+      createBuiltInDependenciesList(NO_OP, null),
+    ).then((fetchNodeModulesResult) => {
+      if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+        fail(`Expected successful nodeModule fetch`)
+      }
+      expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(228)
+      expect(
+        fetchNodeModulesResult.nodeModules['/node_modules/react-spring/index.d.ts'],
+      ).toBeDefined()
+      done()
+    })
   })
 
   it('stops retrying after retry limit reached', (done) => {
@@ -369,14 +411,15 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then(
-      (fetchNodeModulesResult) => {
-        expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
-        expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
-        expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
-        done()
-      },
-    )
+    fetchNodeModules(
+      [requestedNpmDependency('react-spring', '8.0.27')],
+      createBuiltInDependenciesList(NO_OP, null),
+    ).then((fetchNodeModulesResult) => {
+      expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
+      expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
+      expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
+      done()
+    })
   })
 
   it('does not retry if set to', (done) => {
@@ -396,13 +439,15 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], false).then(
-      (fetchNodeModulesResult) => {
-        expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
-        expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
-        expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
-        done()
-      },
-    )
+    fetchNodeModules(
+      [requestedNpmDependency('react-spring', '8.0.27')],
+      createBuiltInDependenciesList(NO_OP, null),
+      false,
+    ).then((fetchNodeModulesResult) => {
+      expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
+      expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
+      expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
+      done()
+    })
   })
 })

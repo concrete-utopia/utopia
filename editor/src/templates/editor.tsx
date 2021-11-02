@@ -86,6 +86,7 @@ import { isCookiesOrLocalForageUnavailable, LoginState } from '../common/user'
 import { PersistenceMachine } from '../components/editor/persistence/persistence'
 import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
 import { defaultProject } from '../sample-projects/sample-project-utils'
+import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -125,11 +126,13 @@ export class Editor {
     const renderRootEditor = () =>
       renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector, true)
 
+    const getEditorState = () => this.storedState.editor
+    const builtInDependencies = createBuiltInDependenciesList(this.boundDispatch, getEditorState)
     const onCreatedOrLoadedProject = (
       projectId: string,
       projectName: string,
       project: PersistentModel,
-    ) => load(this.storedState.dispatch, project, projectName, projectId)
+    ) => load(this.storedState.dispatch, project, projectName, projectId, builtInDependencies)
 
     this.storedState = {
       editor: emptyEditorState,
@@ -148,6 +151,7 @@ export class Editor {
         onCreatedOrLoadedProject,
       ),
       dispatch: this.boundDispatch,
+      builtInDependencies: builtInDependencies,
       alreadySaved: false,
     }
 

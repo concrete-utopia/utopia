@@ -1,17 +1,29 @@
-import { BuiltInDependencies, BuiltInDependency } from './built-in-dependencies-list'
+import { BuiltInDependency, BuiltInDependencies } from './built-in-dependencies-list'
 
-function findBuiltInForName(moduleName: string): BuiltInDependency | undefined {
-  return BuiltInDependencies.find((builtIn) => builtIn.moduleName === moduleName)
+function findBuiltInForName(
+  builtInDependencies: BuiltInDependencies,
+  moduleName: string,
+): BuiltInDependency | undefined {
+  return builtInDependencies.find((builtIn) => builtIn.moduleName === moduleName)
 }
 
-export function isBuiltInDependency(moduleName: string): boolean {
-  return findBuiltInForName(moduleName) != null
+export function isBuiltInDependency(
+  builtInDependencies: BuiltInDependencies,
+  moduleName: string,
+): boolean {
+  return findBuiltInForName(builtInDependencies, moduleName) != null
 }
 
-export function resolveBuiltInDependency(moduleName: string): any | undefined {
-  return findBuiltInForName(moduleName)?.nodeModule
+export function resolveBuiltInDependency(
+  builtInDependencies: BuiltInDependencies,
+  moduleName: string,
+): any | undefined {
+  return findBuiltInForName(builtInDependencies, moduleName)?.nodeModule
 }
 
-export function versionForBuiltInDependency(moduleName: string): string | undefined {
-  return findBuiltInForName(moduleName)?.version
+export function versionForBuiltInDependency(
+  builtInDependencies: BuiltInDependencies,
+  moduleName: string,
+): string | undefined {
+  return findBuiltInForName(builtInDependencies, moduleName)?.version
 }

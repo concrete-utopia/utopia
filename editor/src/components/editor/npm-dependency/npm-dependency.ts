@@ -452,12 +452,12 @@ export function usePackageDependencies(): Array<RequestedNpmDependency> {
 
 export function usePossiblyResolvedPackageDependencies(): Array<PossiblyUnversionedNpmDependency> {
   const basePackageDependencies = usePackageDependencies()
-  const files = useEditorState((store) => {
-    return store.editor.nodeModules.files
+  const { files, builtInDependencies } = useEditorState((store) => {
+    return { files: store.editor.nodeModules.files, builtInDependencies: store.builtInDependencies }
   }, 'usePossiblyResolvedPackageDependencies')
   return React.useMemo(() => {
-    return resolvedDependencyVersions(basePackageDependencies, files)
-  }, [basePackageDependencies, files])
+    return resolvedDependencyVersions(basePackageDependencies, files, builtInDependencies)
+  }, [basePackageDependencies, files, builtInDependencies])
 }
 
 export function updateDependenciesInPackageJson(

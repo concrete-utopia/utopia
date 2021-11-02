@@ -37,6 +37,7 @@ import { importedFromWhere } from '../../components/editor/import-utils'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
+import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -338,22 +339,11 @@ export function getPropertyControlsForTarget(
             return HtmlElementStyleObjectProps
           } else {
             // you can add more intrinsic (ie not imported) element types here
-            const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
-            const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
-            if (
-              dependencies.some(
-                (dependency) =>
-                  dependency.name === '@react-three/fiber' ||
-                  dependency.name === 'react-three-fiber',
-              )
-            ) {
-              if (ReactThreeFiberControls[element.name.baseVariable] != null) {
-                return ReactThreeFiberControls[element.name.baseVariable]
-              }
-            }
-
-            // we found no match for our intrinsic element
-            return null
+            return getThirdPartyControlsIntrinsic(
+              element.name.baseVariable,
+              propertyControlsInfo,
+              projectContents,
+            )
           }
         } else if (openFilePath != null) {
           filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')

@@ -57,6 +57,7 @@ import {
   ExportType,
   BuildType,
 } from '../../core/workers/common/worker-types'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 export interface CodeResult {
   exports: ModuleExportTypes
@@ -229,6 +230,7 @@ export function generateCodeResultCache(
   evaluationCache: EvaluationCache,
   buildType: BuildType,
   onlyProjectFiles: boolean,
+  builtInDependencies: BuiltInDependencies,
 ): CodeResultCache {
   // Makes the assumption that `fullBuild` and `updatedModules` are in line
   // with each other.
@@ -271,7 +273,12 @@ export function generateCodeResultCache(
     updatedAndReverseDepFilenames,
   )
 
-  const curriedRequireFn = getCurriedEditorRequireFn(nodeModules, dispatch, evaluationCache)
+  const curriedRequireFn = getCurriedEditorRequireFn(
+    nodeModules,
+    dispatch,
+    evaluationCache,
+    builtInDependencies,
+  )
   const curriedResolveFn = getCurriedEditorResolveFunction(nodeModules)
 
   let cache: { [code: string]: CodeResult } = {}

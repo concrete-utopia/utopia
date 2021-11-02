@@ -155,6 +155,7 @@ import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 
 import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 const ObjectPathImmutable: any = OPI
 
@@ -242,6 +243,7 @@ export type EditorStore = {
   workers: UtopiaTsWorkers
   persistence: PersistenceMachine
   dispatch: EditorDispatch
+  builtInDependencies: BuiltInDependencies
   alreadySaved: boolean
 }
 
@@ -1146,7 +1148,18 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadata: [],
     jsxMetadata: emptyJsxMetadata,
     projectContents: {},
-    codeResultCache: generateCodeResultCache({}, {}, {}, [], {}, dispatch, {}, 'full-build', true),
+    codeResultCache: generateCodeResultCache(
+      {},
+      {},
+      {},
+      [],
+      {},
+      dispatch,
+      {},
+      'full-build',
+      true,
+      [],
+    ),
     propertyControlsInfo: {},
     nodeModules: {
       skipDeepFreeze: true,
@@ -1405,6 +1418,7 @@ export function editorModelFromPersistentModel(
       {},
       'full-build',
       true,
+      [],
     ),
     projectContents: persistentModel.projectContents,
     propertyControlsInfo: getControlsForExternalDependencies(npmDependencies),

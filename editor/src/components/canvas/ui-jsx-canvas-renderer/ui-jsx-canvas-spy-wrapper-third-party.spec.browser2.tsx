@@ -22,10 +22,12 @@ import { addFileToProjectContents } from '../../assets'
 import type { EditorStore } from '../../editor/store/editor-state'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
-import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
+import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { NO_OP } from '../../../core/shared/utils'
 
-BuiltInDependencies.push({
+const builtInDependencies = createBuiltInDependenciesList(NO_OP, null)
+builtInDependencies.push({
   moduleName: '@react-three/fiber',
   nodeModule: {
     ...MockReactThreeFiber,
@@ -133,7 +135,7 @@ function renderTestProject() {
       projectContents: updatedProjectContents,
     }
   }, baseModel)
-  return renderTestEditorWithModel(updatedProject, 'await-first-dom-report')
+  return renderTestEditorWithModel(updatedProject, 'await-first-dom-report', builtInDependencies)
 }
 
 async function waitForFullMetadata(getEditorState: () => EditorStore): Promise<true> {

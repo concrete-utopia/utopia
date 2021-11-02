@@ -169,7 +169,13 @@ export function renderCanvasReturnResultAndError(
   const updatedContents = contentsToTree(projectContents)
 
   const curriedRequireFn = (innerProjectContents: ProjectContentTreeRoot) =>
-    getRequireFn(NO_OP, innerProjectContents, {}, {})
+    getRequireFn(
+      NO_OP,
+      innerProjectContents,
+      {},
+      {},
+      storeHookForTest.useStore().builtInDependencies,
+    )
 
   storeHookForTest.updateStore((store) => {
     const updatedEditor = {
