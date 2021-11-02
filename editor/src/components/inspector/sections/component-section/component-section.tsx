@@ -471,7 +471,7 @@ const RowForObjectControl = betterReactMemo(
       >
         <div>
           <div onClick={handleOnClick}>
-            <SimpleFlexRow style={{ flexGrow: 1 }}>
+            <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }}>
               <PropertyLabel
                 target={[propPath]}
                 style={{
