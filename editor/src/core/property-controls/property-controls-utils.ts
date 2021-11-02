@@ -39,97 +39,6 @@ import { ReactThreeFiberControls } from './third-party-property-controls/react-t
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 
-export interface FullNodeModulesUpdate {
-  type: 'FULL_NODE_MODULES_UPDATE'
-  nodeModules: NodeModules
-}
-
-export function fullNodeModulesUpdate(nodeModules: NodeModules): FullNodeModulesUpdate {
-  return {
-    type: 'FULL_NODE_MODULES_UPDATE',
-    nodeModules: nodeModules,
-  }
-}
-
-export interface PartialNodeModulesUpdate {
-  type: 'PARTIAL_NODE_MODULES_UPDATE'
-  nodeModules: NodeModules
-}
-
-export function partialNodeModulesUpdate(nodeModules: NodeModules): PartialNodeModulesUpdate {
-  return {
-    type: 'PARTIAL_NODE_MODULES_UPDATE',
-    nodeModules: nodeModules,
-  }
-}
-
-export type NodeModulesUpdate = FullNodeModulesUpdate | PartialNodeModulesUpdate
-
-export function applyNodeModulesUpdate(
-  currentNodeModules: NodeModules,
-  update: NodeModulesUpdate,
-): NodeModules {
-  switch (update.type) {
-    case 'FULL_NODE_MODULES_UPDATE':
-      return update.nodeModules
-    case 'PARTIAL_NODE_MODULES_UPDATE':
-      return {
-        ...currentNodeModules,
-        ...update.nodeModules,
-      }
-    default:
-      const _exhaustiveCheck: never = update
-      throw new Error(`Unhandled type ${JSON.stringify(update)}`)
-  }
-}
-
-export function combineUpdates(
-  first: NodeModulesUpdate,
-  second: NodeModulesUpdate,
-): NodeModulesUpdate {
-  switch (second.type) {
-    case 'FULL_NODE_MODULES_UPDATE':
-      return second
-    case 'PARTIAL_NODE_MODULES_UPDATE':
-      switch (first.type) {
-        case 'FULL_NODE_MODULES_UPDATE':
-          return fullNodeModulesUpdate({
-            ...first.nodeModules,
-            ...second.nodeModules,
-          })
-        case 'PARTIAL_NODE_MODULES_UPDATE':
-          return partialNodeModulesUpdate({
-            ...first.nodeModules,
-            ...second.nodeModules,
-          })
-        default:
-          const _exhaustiveCheck: never = first
-          throw new Error(`Unhandled type ${JSON.stringify(first)}`)
-      }
-    default:
-      const _exhaustiveCheck: never = second
-      throw new Error(`Unhandled type ${JSON.stringify(second)}`)
-  }
-}
-
-export interface GetPropertyControlsInfoMessage {
-  nodeModulesUpdate: NodeModulesUpdate
-  projectContents: ProjectContentTreeRoot
-  updatedAndReverseDepFilenames: Array<string>
-}
-
-export function createGetPropertyControlsInfoMessage(
-  nodeModulesUpdate: NodeModulesUpdate,
-  projectContents: ProjectContentTreeRoot,
-  updatedAndReverseDepFilenames: Array<string>,
-): GetPropertyControlsInfoMessage {
-  return {
-    nodeModulesUpdate: nodeModulesUpdate,
-    projectContents: projectContents,
-    updatedAndReverseDepFilenames: updatedAndReverseDepFilenames,
-  }
-}
-
 function parsedPropertyControlsForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
@@ -178,76 +87,11 @@ export function getDefaultPropsFromParsedControls(
   return getDefaultProps(safePropertyControls)
 }
 
-export function getMissingPropertyControlsWarning(
-  propsWithoutControls: Array<string>,
-): string | undefined {
-  if (propsWithoutControls.length < 1) {
-    return undefined
-  } else {
-    return `There are no property controls for these props: ${joinSpecial(
-      propsWithoutControls,
-      ', ',
-      ' & ',
-    )}`
-  }
-}
-
-export function findMissingDefaultsAndGetWarning(
-  knownProps: Array<string>,
-  propsWithDefaults: { [prop: string]: unknown },
-): string | undefined {
-  const propsMissingDefaults = findMissingDefaults(knownProps, propsWithDefaults)
-  return getMissingDefaultsWarning(propsMissingDefaults)
-}
-
-export function findMissingDefaults(
-  knownProps: Array<string>,
-  propsWithDefaults: { [prop: string]: unknown },
-): Array<string> {
-  const defaultPropKeys = Object.keys(propsWithDefaults)
-  const filteredKnownProps = filterSpecialProps(knownProps)
-  return filteredKnownProps.filter((propKey) => !defaultPropKeys.includes(propKey))
-}
-
 export function filterSpecialProp(propKey: string | number): boolean {
   return propKey !== 'style' && propKey !== 'css' && propKey !== 'className'
 }
 export function filterSpecialProps(props: Array<string>): Array<string> {
   return props.filter(filterSpecialProp)
-}
-
-export function getMissingDefaultsWarning(propsWithoutDefaults: Array<string>): string | undefined {
-  if (propsWithoutDefaults.length < 1) {
-    return undefined
-  } else if (propsWithoutDefaults.length === 1) {
-    return `The prop ${propsWithoutDefaults[0]} doesn't have a default value.`
-  } else {
-    return `These props don't have default values: ${joinSpecial(
-      propsWithoutDefaults,
-      ', ',
-      ' & ',
-    )}`
-  }
-}
-
-export function removeIgnored(
-  parsedPropertyControls: ParsedPropertyControls,
-): ParsedPropertyControls {
-  let result: ParsedPropertyControls = {}
-  fastForEach(Object.keys(parsedPropertyControls), (key) => {
-    const value = parsedPropertyControls[key]
-    const shouldCopy = foldEither(
-      (_) => true,
-      (controlDescription) => {
-        return controlDescription.control !== 'none'
-      },
-      value,
-    )
-    if (shouldCopy) {
-      result[key] = value
-    }
-  })
-  return result
 }
 
 export function getPropertyControlsForTargetFromEditor(

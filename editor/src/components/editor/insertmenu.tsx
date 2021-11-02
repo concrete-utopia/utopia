@@ -45,10 +45,6 @@ import { defaultIfNull } from '../../core/shared/optional-utils'
 import { forEachRight } from '../../core/shared/either'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
-import {
-  defaultPropertiesForComponentInFile,
-  findMissingDefaultsAndGetWarning,
-} from '../../core/property-controls/property-controls-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import {
