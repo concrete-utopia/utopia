@@ -209,7 +209,8 @@ function getLabelControlStyle(
   propMetadata: InspectorInfo<any>,
 ): ControlStyles {
   if (
-    controlDescription.control === 'expression-popuplist' &&
+    (controlDescription.control === 'expression-input' ||
+      controlDescription.control === 'expression-popuplist') &&
     propMetadata.controlStatus === 'controlled'
   ) {
     return getControlStyles('simple')

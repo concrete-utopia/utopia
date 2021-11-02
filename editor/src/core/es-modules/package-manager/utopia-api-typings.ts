@@ -364,26 +364,29 @@ declare module 'utopia-api/property-controls/property-controls' {
       defaultValue?: string;
   }
   export type AllowedEnumType = string | boolean | number | undefined | null;
+  export interface BasicControlOption<T> {
+      value: T;
+      label: string;
+  }
+  export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[];
   export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
-      defaultValue?: AllowedEnumType;
-      options: AllowedEnumType[];
-      optionTitles?: string[] | ((props: unknown | null) => string[]);
-      displaySegmentedControl?: boolean;
+      defaultValue?: unknown;
+      options: BasicControlOptions<unknown>;
   }
   export interface ImportType {
       source: string;
       name: string;
       type: 'star' | 'default' | null;
   }
-  export interface ExpressionEnum {
-      value: AllowedEnumType;
+  export interface ExpressionControlOption<T> {
+      value: T;
       expression: string;
-      import?: ImportType;
+      label?: string;
+      requiredImport?: ImportType;
   }
   export interface ExpressionPopUpListControlDescription extends AbstractBaseControlDescription<'expression-popuplist'> {
-      defaultValue?: ExpressionEnum;
-      options: ExpressionEnum[];
-      optionTitles?: string[] | ((props: unknown | null) => string[]);
+      defaultValue?: ExpressionControlOption<unknown>;
+      options: ExpressionControlOption<unknown>[];
   }
   export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
       defaultValue?: [number, number, number, string];
@@ -424,10 +427,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export interface RadioControlDescription extends AbstractBaseControlDescription<'radio'> {
       defaultValue?: unknown;
-      options: Array<{
-          value: unknown;
-          label: string;
-      }>;
+      options: BasicControlOptions<unknown>;
   }
   export interface ExpressionInputControlDescription extends AbstractBaseControlDescription<'expression-input'> {
       defaultValue?: unknown;
@@ -488,7 +488,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   export function getDefaultProps(propertyControls: PropertyControls): {
       [prop: string]: unknown;
   };
-  export function expression(value: AllowedEnumType, expressionString: string, toImport?: ImportType): ExpressionEnum;
+  export function expression<T>(value: T, expressionString: string, requiredImport?: ImportType): ExpressionControlOption<T>;
   export function importStar(source: string, name: string): ImportType;
   export function importDefault(source: string, name: string): ImportType;
   export function importNamed(source: string, name: string): ImportType;

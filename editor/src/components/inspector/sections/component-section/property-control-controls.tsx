@@ -2,7 +2,9 @@ import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
 import { betterReactMemo, CSSCursor, SliderControl } from '../../../../uuiui-deps'
 import {
+  AllowedEnumType,
   BaseControlDescription,
+  BasicControlOption,
   CheckboxControlDescription,
   ColorControlDescription,
   EulerControlDescription,
@@ -171,6 +173,24 @@ export const ExpressionInputPropertyControl = betterReactMemo(
   },
 )
 
+type IndividualOption = AllowedEnumType | BasicControlOption<unknown>
+
+function valueForIndividualOption(option: IndividualOption): unknown {
+  if (typeof option === 'object' && option != null) {
+    return option.value
+  } else {
+    return option
+  }
+}
+
+function labelForIndividualOption(option: IndividualOption): string {
+  if (typeof option === 'object' && option != null) {
+    return option.label
+  } else {
+    return `${option}`
+  }
+}
+
 export const PopUpListPropertyControl = betterReactMemo(
   'PopUpListPropertyControl',
   (props: ControlForPropProps<PopUpListControlDescription>) => {
@@ -179,15 +199,14 @@ export const PopUpListPropertyControl = betterReactMemo(
       ? propMetadata.value
       : controlDescription.defaultValue
 
+    // TS baulks at the map below for some reason if we don't first do this
+    const controlOptions: Array<IndividualOption> = controlDescription.options
+
     const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
-      controlDescription.options.map((option, index) => {
+      controlOptions.map((option) => {
         return {
-          value: option as string, // TODO cheating with type
-          label:
-            controlDescription.optionTitles == null ||
-            typeof controlDescription.optionTitles === 'function'
-              ? (option as string)
-              : (controlDescription.optionTitles[index] as string),
+          value: valueForIndividualOption(option),
+          label: labelForIndividualOption(option),
         }
       }),
     )
@@ -223,6 +242,23 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
       (store) => store.editor.selectedViews,
       'ExpressionPopUpListPropertyControl selectedViews',
     )
+
+    const targetFilePaths = useEditorState((store) => {
+      const currentFilePath = forceNotNull(
+        'Missing open file',
+        store.editor.canvas.openFile?.filename,
+      )
+      return selectedViews.map((selectedView) => {
+        const normalisedPath = normalisePathToUnderlyingTarget(
+          store.editor.projectContents,
+          store.editor.nodeModules.files,
+          currentFilePath,
+          selectedView,
+        )
+        return normalisePathSuccessOrThrowError(normalisedPath).filePath
+      })
+    }, 'ExpressionPopUpListPropertyControl targetFilePaths')
+
     const target = forceNotNull('Inspector control without selected element', selectedViews[0])
     const { propMetadata, controlDescription } = props
 
@@ -239,11 +275,7 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
       controlDescription.options.map((option, index) => {
         return {
           value: option.expression,
-          label:
-            controlDescription.optionTitles == null ||
-            typeof controlDescription.optionTitles === 'function'
-              ? option.expression
-              : (controlDescription.optionTitles[index] as string),
+          label: option.label ?? option.expression,
         }
       }),
     )
@@ -251,30 +283,33 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
       return fastDeepEquals(option.value, selectedExpression)
     })
 
-    function submitValue(option: SelectOption): void {
-      const actions: EditorAction[] = [
-        setProp_UNSAFE(
-          target,
-          props.propPath,
-          jsxAttributeOtherJavaScript(option.value, `return ${option.value}`, [], null, {}),
-        ),
-      ]
-      const expressionOption = controlDescription.options.find((o) => o.expression === option.value)
-      if (expressionOption != null && expressionOption.import != null) {
-        const importOption = expressionOption.import
-        const importToAdd: Imports = {
-          [importOption.source]: importDetails(
-            importOption.type === 'default' ? importOption.name : null,
-            importOption.type == null
-              ? [{ name: importOption.name, alias: importOption.name }]
-              : [],
-            importOption.type === 'star' ? importOption.name : null,
-          ),
+    const baseOnSubmit = propMetadata.onSubmitValue
+
+    const submitValue = React.useCallback(
+      (option: SelectOption): void => {
+        baseOnSubmit(option.value)
+        let actions: EditorAction[] = targetFilePaths.map((filePath) => forceParseFile(filePath))
+
+        const expressionOption = controlDescription.options.find(
+          (o) => o.expression === option.value,
+        )
+        if (expressionOption != null && expressionOption.requiredImport != null) {
+          const importOption = expressionOption.requiredImport
+          const importToAdd: Imports = {
+            [importOption.source]: importDetails(
+              importOption.type === 'default' ? importOption.name : null,
+              importOption.type == null
+                ? [{ name: importOption.name, alias: importOption.name }]
+                : [],
+              importOption.type === 'star' ? importOption.name : null,
+            ),
+          }
+          actions.push(addImports(importToAdd, target))
         }
-        actions.push(addImports(importToAdd, target))
-      }
-      dispatch(actions, 'everyone')
-    }
+        dispatch(actions, 'everyone')
+      },
+      [dispatch, baseOnSubmit, targetFilePaths, target, controlDescription.options],
+    )
 
     return (
       <PopupList
@@ -348,16 +383,35 @@ export const RadioPropertyControl = betterReactMemo(
       ? propMetadata.value
       : controlDescription.defaultValue
 
+    // TS baulks at the map below for some reason if we don't first do this
+    const controlOptions: Array<IndividualOption> = controlDescription.options
+
+    const options: Array<SelectOption> = useKeepReferenceEqualityIfPossible(
+      controlOptions.map((option) => {
+        return {
+          value: valueForIndividualOption(option),
+          label: labelForIndividualOption(option),
+        }
+      }),
+    )
+    const currentValue = options.find((option) => {
+      return fastDeepEquals(option.value, value)
+    })
+
+    function submitValue(option: SelectOption): void {
+      propMetadata.onSubmitValue(option.value)
+    }
+
     return (
       <OptionChainControl
         key={controlId}
         id={controlId}
         testId={controlId}
-        value={value}
+        value={currentValue}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
-        onSubmitValue={propMetadata.onSubmitValue}
-        options={controlDescription.options}
+        onSubmitValue={submitValue}
+        options={options}
       />
     )
   },

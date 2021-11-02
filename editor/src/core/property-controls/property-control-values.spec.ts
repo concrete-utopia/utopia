@@ -129,17 +129,8 @@ describe('PopUpListControlDescription', () => {
   }
 
   const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
-  const wrappedInvalidValues = [
-    jsxAttributeValue('hat', emptyComments),
-    jsxAttributeValue(0, emptyComments),
-  ]
 
-  runBaseTestSuite(
-    validValue,
-    wrappedValidValue,
-    wrappedInvalidValues,
-    popUpListControlDescriptionValue,
-  )
+  runBaseTestSuite(validValue, wrappedValidValue, [], popUpListControlDescriptionValue)
 })
 
 describe('NoneControlDescription', () => {
