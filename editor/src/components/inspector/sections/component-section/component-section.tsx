@@ -245,7 +245,14 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       <PropertyLabel
         controlStyles={labelControlStyle}
         target={[propPath]}
-        style={{ textTransform: 'capitalize', paddingLeft: indentation }}
+        style={{
+          textTransform: 'capitalize',
+          paddingLeft: indentation,
+          alignSelf: 'flex-start',
+          lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+          paddingTop: 6,
+          // this combo of lineheight and padding-top aligns the label with the text in input controls
+        }}
       >
         <Tooltip title={title}>
           <span>{title}</span>
