@@ -266,7 +266,11 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow padded={false} style={{ paddingLeft: 0 }} variant='<--1fr--><--1fr-->'>
+      <UIGridRow
+        padded={false}
+        style={{ paddingLeft: 0, paddingRight: 8 }}
+        variant='<--1fr--><--1fr-->'
+      >
         {propertyLabel}
         <ControlForProp
           propPath={propPath}
