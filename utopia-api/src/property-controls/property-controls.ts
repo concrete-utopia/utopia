@@ -21,71 +21,84 @@ export type BaseControlType =
   | 'vector3'
   | 'vector4'
 
-interface AbstractControlDescription<T extends ControlType> {
+export type CheckboxControlDescription = {
+  control: 'checkbox'
   label?: string
-  control: T
-  defaultValue?: unknown
-  visibleByDefault?: boolean
-}
-
-interface AbstractBaseControlDescription<T extends BaseControlType>
-  extends AbstractControlDescription<T> {}
-
-export interface CheckboxControlDescription extends AbstractBaseControlDescription<'checkbox'> {
   defaultValue?: boolean
+  visibleByDefault?: boolean
   disabledTitle?: string
   enabledTitle?: string
 }
 
-export interface ColorControlDescription extends AbstractBaseControlDescription<'color'> {
+export type ColorControlDescription = {
+  control: 'color'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: string
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
-export interface BasicControlOption<T> {
+export type BasicControlOption<T> = {
   value: T
   label: string
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
 
-export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
+export type PopUpListControlDescription = {
+  control: 'popuplist'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: unknown
   options: BasicControlOptions<unknown>
 }
 
-export interface ImportType {
+export type ImportType = {
   source: string // importSource
   name: string
   type: 'star' | 'default' | null
 }
 
-export interface ExpressionControlOption<T> {
+export type ExpressionControlOption<T> = {
   value: T
   expression: string
   label?: string
   requiredImport?: ImportType
 }
 
-export interface ExpressionPopUpListControlDescription
-  extends AbstractBaseControlDescription<'expression-popuplist'> {
+export type ExpressionPopUpListControlDescription = {
+  control: 'expression-popuplist'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: ExpressionControlOption<unknown>
   options: ExpressionControlOption<unknown>[]
 }
 
-export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
+export type EulerControlDescription = {
+  control: 'euler'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: [number, number, number, string]
 }
 
-export interface NoneControlDescription extends AbstractBaseControlDescription<'none'> {
+export type NoneControlDescription = {
+  control: 'none'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: never
 }
 
-export interface Matrix3ControlDescription extends AbstractBaseControlDescription<'matrix3'> {
+export type Matrix3ControlDescription = {
+  control: 'matrix3'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: [number, number, number, number, number, number, number, number, number]
 }
 
-export interface Matrix4ControlDescription extends AbstractBaseControlDescription<'matrix4'> {
+export type Matrix4ControlDescription = {
+  control: 'matrix4'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: [
     number,
     number,
@@ -106,8 +119,10 @@ export interface Matrix4ControlDescription extends AbstractBaseControlDescriptio
   ]
 }
 
-export interface NumberInputControlDescription
-  extends AbstractBaseControlDescription<'number-input'> {
+export type NumberInputControlDescription = {
+  control: 'number-input'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: number | null
   max?: number
   min?: number
@@ -116,37 +131,56 @@ export interface NumberInputControlDescription
   displayStepper?: boolean
 }
 
-export interface RadioControlDescription extends AbstractBaseControlDescription<'radio'> {
+export type RadioControlDescription = {
+  control: 'radio'
+  label?: string
   defaultValue?: unknown
+  visibleByDefault?: boolean
   options: BasicControlOptions<unknown>
 }
 
-export interface ExpressionInputControlDescription
-  extends AbstractBaseControlDescription<'expression-input'> {
+export type ExpressionInputControlDescription = {
+  control: 'expression-input'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: unknown
 }
 
-export interface StringInputControlDescription
-  extends AbstractBaseControlDescription<'string-input'> {
+export type StringInputControlDescription = {
+  control: 'string-input'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: string
   placeholder?: string
   obscured?: boolean
 }
 
-export interface StyleControlsControlDescription
-  extends AbstractBaseControlDescription<'style-controls'> {
+export type StyleControlsControlDescription = {
+  control: 'style-controls'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: CSSProperties
   placeholder?: CSSProperties
 }
-export interface Vector2ControlDescription extends AbstractBaseControlDescription<'vector2'> {
+
+export type Vector2ControlDescription = {
+  control: 'vector2'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: [number, number]
 }
 
-export interface Vector3ControlDescription extends AbstractBaseControlDescription<'vector3'> {
+export type Vector3ControlDescription = {
+  control: 'vector3'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: [number, number, number]
 }
 
-export interface Vector4ControlDescription extends AbstractBaseControlDescription<'vector4'> {
+export type Vector4ControlDescription = {
+  control: 'vector4'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: [number, number, number, number]
 }
 
@@ -174,26 +208,32 @@ export type HigherLevelControlType = 'array' | 'object' | 'union'
 export type RegularControlType = BaseControlType | HigherLevelControlType
 export type ControlType = RegularControlType | 'folder'
 
-interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType>
-  extends AbstractControlDescription<T> {}
-
-export interface ArrayControlDescription extends AbstractHigherLevelControlDescription<'array'> {
+export type ArrayControlDescription = {
+  control: 'array'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: unknown[]
   propertyControl: RegularControlDescription
   maxCount?: number
 }
 
-export interface ObjectControlDescription extends AbstractHigherLevelControlDescription<'object'> {
+export type ObjectControlDescription = {
+  control: 'object'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: unknown
   object: { [prop: string]: RegularControlDescription }
 }
 
-export interface UnionControlDescription extends AbstractHigherLevelControlDescription<'union'> {
+export type UnionControlDescription = {
+  control: 'union'
+  label?: string
+  visibleByDefault?: boolean
   defaultValue?: unknown
   controls: Array<RegularControlDescription>
 }
 
-export interface FolderControlDescription {
+export type FolderControlDescription = {
   control: 'folder'
   label?: string
   controls: PropertyControls
@@ -209,6 +249,20 @@ export type RegularControlDescription = BaseControlDescription | HigherLevelCont
 // Please ensure that `property-controls-utils.ts` is kept up to date
 // with any changes to this or the component types.
 export type ControlDescription = RegularControlDescription | FolderControlDescription
+
+// These helper functions make sure that every RegularControlDescription has a label, control, defaultValue etc
+function getLabel(control: RegularControlDescription): string | undefined {
+  return control.label
+}
+function getControl(control: RegularControlDescription): RegularControlType {
+  return control.control
+}
+function getDefaultValue(control: RegularControlDescription): unknown | undefined {
+  return control.defaultValue
+}
+function getVisibleByDefault(control: RegularControlDescription): boolean | undefined {
+  return control.visibleByDefault
+}
 
 export function isBaseControlDescription(
   control: ControlDescription,
