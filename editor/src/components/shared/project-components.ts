@@ -7,6 +7,7 @@ import {
   JSXAttributes,
   jsxAttributesEntry,
   jsxAttributeValue,
+  jsxElementName,
   jsxElementWithoutUID,
   JSXElementWithoutUID,
 } from '../../core/shared/element-template'
@@ -24,6 +25,7 @@ import {
   isTextFile,
   ProjectFile,
 } from '../../core/shared/project-file-types'
+import { getDefaultPropsAsAttributes } from '../../core/third-party/shared'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import {
   ComponentDescriptor,
@@ -391,19 +393,29 @@ export function getComponentGroups(
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
     if (isResolvedNpmDependency(dependency)) {
-      const possibleComponentDescriptor = getThirdPartyComponents(
+      const dependencyStatus = getDependencyStatus(
+        packageStatus,
+        propertyControlsInfo,
         dependency.name,
-        dependency.version,
+        'loaded',
       )
-      if (possibleComponentDescriptor != null) {
-        const dependencyStatus = getDependencyStatus(
-          packageStatus,
-          propertyControlsInfo,
-          dependency.name,
-          'loaded',
-        )
-        const components =
-          dependencyStatus === 'loaded' ? possibleComponentDescriptor.components : []
+      const propertyControlsForDependency = propertyControlsInfo[dependency.name]
+      if (propertyControlsForDependency != null) {
+        const components = Object.keys(propertyControlsForDependency).map((name) => {
+          const elementNameAsArray = name.split('.')
+          const elementName =
+            elementNameAsArray.length > 0
+              ? jsxElementName(elementNameAsArray.shift()!, elementNameAsArray)
+              : name
+          const defaultAttributes = getDefaultPropsAsAttributes(propertyControlsForDependency[name])
+          return componentDescriptor(
+            {},
+            jsxElementWithoutUID(elementName, defaultAttributes, []),
+            name,
+            propertyControlsForDependency[name],
+          )
+        })
+
         addDependencyDescriptor(
           insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
           components,
