@@ -2,10 +2,7 @@ import Utils from '../../utils/utils'
 import { EmitFileResult } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
-import {
-  NodeModulesUpdate,
-  sendPropertyControlsInfoRequest,
-} from '../../core/property-controls/property-controls-utils'
+import { NodeModulesUpdate } from '../../core/property-controls/property-controls-utils'
 import {
   NodeModules,
   esCodeFile,
@@ -263,14 +260,6 @@ export function generateCodeResultCache(
 
   // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it.
   incorporateBuildResult(nodeModules, projectContents, projectModules)
-
-  // Trigger async call to build the property controls info.
-  sendPropertyControlsInfoRequest(
-    nodeModules,
-    projectContents,
-    onlyProjectFiles,
-    updatedAndReverseDepFilenames,
-  )
 
   const curriedRequireFn = getCurriedEditorRequireFn(
     nodeModules,
