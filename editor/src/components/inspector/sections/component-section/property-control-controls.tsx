@@ -31,22 +31,11 @@ import {
   wrappedEmptyOrUnknownOnSubmitValue,
   FlexColumn,
 } from '../../../../uuiui'
-import {
-  parseColor,
-  CSSColor,
-  printColor,
-  printCSSNumber,
-  CSSNumber,
-  cssNumber,
-  defaultCSSColor,
-} from '../../common/css-utils'
+import { printCSSNumber, CSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
 import * as PP from '../../../../core/shared/property-path'
-import { foldEither } from '../../../../core/shared/either'
 import { ColorControl } from '../../controls/color-control'
 import { StringControl } from '../../controls/string-control'
-import { NO_OP } from '../../../../core/shared/utils'
-import { SelectControl, SelectOption } from '../../controls/select-control'
-import { EventHandlerControl } from '../event-handlers-section/event-handlers-section'
+import { SelectOption } from '../../controls/select-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
