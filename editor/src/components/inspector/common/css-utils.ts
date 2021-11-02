@@ -1058,7 +1058,7 @@ export function parseBoxShadow(boxShadow: unknown): Either<string, CSSBoxShadows
         isRight(parsedSpreadRadius) ? parsedSpreadRadius.value : { ...cssPixelLengthZero },
         !isRight(parsedSpreadRadius),
       )
-      const parsedColor = parseColor(matches[7])
+      const parsedColor = parseColor(matches[7], 'hex-hash-optional')
       if (isRight(parsedOffsetX) && isRight(parsedOffsetY) && isRight(parsedColor)) {
         const offsetX = parsedOffsetX.value
         const offsetY = parsedOffsetY.value
@@ -2155,7 +2155,7 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSDefault
     let parsed: Either<string, CSSColor>
     const matches = color.match(solidColorRegExp)
     if (matches != null) {
-      parsed = parseColor(matches[2])
+      parsed = parseColor(matches[2], 'hex-hash-optional')
       const enabled = matches[1] === undefined && matches[3] === undefined
       if (isRight(parsed)) {
         const underlyingColor = cssSolidColor(parsed.value, enabled)
@@ -2178,8 +2178,37 @@ function printBackgroundColor(value: CSSDefault<CSSSolidColor>): JSXAttributeVal
 
 const matchColorKeyword = combineRegExp(['^', '(', RegExpLibrary.colorKeyword, ')', '$'])
 const matchColorHex = combineRegExp(['^', RegExpLibrary.colorHexOptionalOctothorp, '$'])
+const matchColorHexStrict = combineRegExp(['^', RegExpLibrary.colorHex, '$'])
 
-export function parseColor(color: unknown): Either<string, CSSColor> {
+function parseHexColor(
+  color: string,
+  strictHash: 'hex-hash-required' | 'hex-hash-optional',
+): Either<string, CSSColor> {
+  if (strictHash === 'hex-hash-required') {
+    const matchedHex = color.match(matchColorHexStrict)
+    if (Array.isArray(matchedHex)) {
+      return right({
+        type: 'Hex',
+        hex: matchedHex[0],
+      })
+    }
+  } else {
+    const matchedHex = color.match(matchColorHex)
+    if (Array.isArray(matchedHex) && matchedHex[2] != null) {
+      return right({
+        type: 'Hex',
+        hex: '#' + matchedHex[2],
+      })
+    }
+  }
+
+  return left('Not a valid hex color.')
+}
+
+export function parseColor(
+  color: unknown,
+  strictHash: 'hex-hash-required' | 'hex-hash-optional',
+): Either<string, CSSColor> {
   if (color == null) {
     return left('No color value provided.')
   }
@@ -2196,12 +2225,9 @@ export function parseColor(color: unknown): Either<string, CSSColor> {
     return flatMapEither(parseHSLColor, separateParams(trimmed))
   }
 
-  const matchedHex = trimmed.match(matchColorHex)
-  if (Array.isArray(matchedHex) && matchedHex[2] != null) {
-    return right({
-      type: 'Hex',
-      hex: '#' + matchedHex[2],
-    })
+  const parsedHex = parseHexColor(trimmed, strictHash)
+  if (isRight(parsedHex)) {
+    return parsedHex
   }
 
   if (trimmed === 'transparent') {
@@ -2220,12 +2246,14 @@ export function parseColor(color: unknown): Either<string, CSSColor> {
   return left('No valid color found.')
 }
 
+const parseColorHexHashOptional = (color: unknown) => parseColor(color, 'hex-hash-optional')
+
 export function printColorToJsx(color: CSSColor | undefined): JSXAttributeValue<string> {
   return jsxAttributeValue(color != null ? printColor(color) : '', emptyComments)
 }
 
 export function cssColor(value: string, defaultColor: CSSColor = { ...defaultCSSColor }): CSSColor {
-  const parsedColor = parseColor(value)
+  const parsedColor = parseColor(value, 'hex-hash-optional')
   if (isRight(parsedColor)) {
     return parsedColor.value
   } else {
@@ -3054,7 +3082,7 @@ function parseGradientStops(gradient: string): Either<string, Array<CSSGradientS
   RegExpLibrary.gradientColorStopValues.lastIndex = 0
   let stopMatches = RegExpLibrary.gradientColorStopValues.exec(gradient)
   while (stopMatches != null) {
-    const parsedColor = parseColor(stopMatches[1])
+    const parsedColor = parseColor(stopMatches[1], 'hex-hash-optional')
     const parsedPosition = parseCSSLengthPercent(stopMatches[27]) // TODO: make solids not have any position
     if (isRight(parsedColor) && isRight(parsedPosition)) {
       const stopResult: CSSGradientStop = {
@@ -3455,7 +3483,7 @@ export function parseTextShadow(textShadow: unknown): Either<string, CSSTextShad
         isRight(parsedBlurRadius) ? parsedBlurRadius.value : { ...cssPixelLengthZero },
         !isRight(parsedBlurRadius),
       )
-      const parsedColor = parseColor(matches[5])
+      const parsedColor = parseColor(matches[5], 'hex-hash-optional')
       if (isRight(parsedOffsetX) && isRight(parsedOffsetY) && isRight(parsedColor)) {
         const offsetX = parsedOffsetX.value
         const offsetY = parsedOffsetY.value
@@ -4205,7 +4233,7 @@ const cssParsers: CSSParsers = {
   border: parseBorder,
   borderRadius: parseBorderRadius,
   boxShadow: parseBoxShadow,
-  color: parseColor,
+  color: parseColorHexHashOptional,
   fontFamily: parseFontFamily,
   fontSize: parseCSSLengthPercent,
   fontStyle: parseFontStyle,
@@ -4216,7 +4244,7 @@ const cssParsers: CSSParsers = {
   opacity: parseCSSUnitlessPercent,
   overflow: parseOverflow,
   textAlign: parseTextAlign,
-  textDecorationColor: parseColor,
+  textDecorationColor: parseColorHexHashOptional,
   textDecorationLine: parseTextDecorationLine,
   textDecorationStyle: parseTextDecorationStyle,
   textShadow: parseTextShadow,

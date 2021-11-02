@@ -72,7 +72,7 @@ export function parseColorValue(value: unknown): ParseResult<CSSColor> {
   return foldEither(
     (l) => left(descriptionParseError(l)),
     (r) => right(r),
-    parseColor(value),
+    parseColor(value, 'hex-hash-optional'),
   )
 }
 
