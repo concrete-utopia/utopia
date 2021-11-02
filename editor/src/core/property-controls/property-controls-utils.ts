@@ -4,19 +4,10 @@ import { PropertyControls, getDefaultProps } from 'utopia-api'
 import { isRight, foldEither, left } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
-import React from 'react'
-import { joinSpecial } from '../shared/array-utils'
-import { fastForEach } from '../shared/utils'
-import {
-  isResolvedNpmDependency,
-  PossiblyUnversionedNpmDependency,
-} from '../shared/npm-dependency-types'
-import { getThirdPartyComponents } from '../third-party/third-party-components'
 import {
   getJSXElementNameAsString,
   isIntrinsicHTMLElement,
   JSXElement,
-  getJSXElementNameLastPart,
   isIntrinsicElement,
 } from '../shared/element-template'
 import {
@@ -29,13 +20,10 @@ import {
   getOpenUIJSFileKey,
   EditorState,
   withUnderlyingTarget,
-  packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import { importedFromWhere } from '../../components/editor/import-utils'
-import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
-import { ReactThreeFiberControls } from './third-party-property-controls/react-three-fiber-controls'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 
