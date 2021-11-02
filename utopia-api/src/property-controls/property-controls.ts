@@ -42,12 +42,16 @@ export interface ColorControlDescription extends AbstractBaseControlDescription<
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
+export interface BasicControlOption<T> {
+  value: T
+  label: string
+}
+
+export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
 
 export interface PopUpListControlDescription extends AbstractBaseControlDescription<'popuplist'> {
-  defaultValue?: AllowedEnumType
-  options: AllowedEnumType[]
-  optionTitles?: string[] | ((props: unknown | null) => string[])
-  displaySegmentedControl?: boolean
+  defaultValue?: unknown
+  options: BasicControlOptions<unknown>
 }
 
 export interface ImportType {
@@ -56,17 +60,17 @@ export interface ImportType {
   type: 'star' | 'default' | null
 }
 
-export interface ExpressionEnum {
-  value: AllowedEnumType
+export interface ExpressionControlOption<T> {
+  value: T
   expression: string
-  import?: ImportType
+  label?: string
+  requiredImport?: ImportType
 }
 
 export interface ExpressionPopUpListControlDescription
   extends AbstractBaseControlDescription<'expression-popuplist'> {
-  defaultValue?: ExpressionEnum
-  options: ExpressionEnum[]
-  optionTitles?: string[] | ((props: unknown | null) => string[])
+  defaultValue?: ExpressionControlOption<unknown>
+  options: ExpressionControlOption<unknown>[]
 }
 
 export interface EulerControlDescription extends AbstractBaseControlDescription<'euler'> {
@@ -114,10 +118,7 @@ export interface NumberInputControlDescription
 
 export interface RadioControlDescription extends AbstractBaseControlDescription<'radio'> {
   defaultValue?: unknown
-  options: Array<{
-    value: unknown
-    label: string
-  }>
+  options: BasicControlOptions<unknown>
 }
 
 export interface ExpressionInputControlDescription
@@ -278,15 +279,15 @@ export function getDefaultProps(propertyControls: PropertyControls): { [prop: st
   return defaults
 }
 
-export function expression(
-  value: AllowedEnumType,
+export function expression<T>(
+  value: T,
   expressionString: string,
-  toImport?: ImportType,
-): ExpressionEnum {
+  requiredImport?: ImportType,
+): ExpressionControlOption<T> {
   return {
     value: value,
     expression: expressionString,
-    import: toImport,
+    requiredImport: requiredImport,
   }
 }
 

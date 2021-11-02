@@ -257,7 +257,7 @@ export function unwrapperAndParserForBaseControl(
     case 'number-input':
       return defaultUnwrapFirst(parseNumber)
     case 'popuplist':
-      return defaultUnwrapFirst(parseAllowedEnum(control.options))
+      return defaultUnwrapFirst(parseAny)
     case 'radio':
       return defaultUnwrapFirst(parseAny)
     case 'string-input':
@@ -400,7 +400,7 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
     case 'expression-input':
       return printJS
     case 'expression-popuplist':
-      return printSimple
+      return printJS
     case 'euler':
       return printSimple
     case 'matrix3':
