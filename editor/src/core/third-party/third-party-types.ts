@@ -1,5 +1,3 @@
-import { JSXElementWithoutUID } from '../shared/element-template'
-import { Imports } from '../shared/project-file-types'
 import { ImportType, PropertyControls } from 'utopia-api'
 
 export interface ComponentDescriptor {
@@ -19,14 +17,3 @@ export function componentDescriptor(
     propertyControls: propertyControls,
   }
 }
-
-export interface DependencyDescriptor {
-  name: string
-  components: Array<ComponentDescriptor>
-}
-
-// A dictionary of bounds to the descriptors for those respective versions.
-export type DependencyBoundDescriptors = { [dependencyBounds: string]: DependencyDescriptor }
-
-// A dictionary of dependency names to the various instances of that dependency.
-export type DependenciesDescriptors = { [dependencyName: string]: DependencyBoundDescriptors }

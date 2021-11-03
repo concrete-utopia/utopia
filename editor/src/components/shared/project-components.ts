@@ -29,11 +29,7 @@ import {
   ProjectFile,
 } from '../../core/shared/project-file-types'
 import { getDefaultPropsAsAttributes } from '../../core/third-party/shared'
-import {
-  ComponentDescriptor,
-  componentDescriptor,
-  DependencyDescriptor,
-} from '../../core/third-party/third-party-types'
+import { ComponentDescriptor, componentDescriptor } from '../../core/third-party/third-party-types'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -202,56 +198,53 @@ function makeHTMLDescriptor(
   )
 }
 
-const basicHTMLElementsDescriptor: DependencyDescriptor = {
-  name: 'HTML Elements',
-  components: [
-    makeHTMLDescriptor('div', {}),
-    makeHTMLDescriptor('span', {}),
-    makeHTMLDescriptor('h1', {}),
-    makeHTMLDescriptor('h2', {}),
-    makeHTMLDescriptor('p', {}),
-    makeHTMLDescriptor('button', {}),
-    makeHTMLDescriptor('input', {}),
-    makeHTMLDescriptor('video', {
-      controls: {
-        control: 'checkbox',
-        defaultValue: true,
+const basicHTMLElementsDescriptors = [
+  makeHTMLDescriptor('div', {}),
+  makeHTMLDescriptor('span', {}),
+  makeHTMLDescriptor('h1', {}),
+  makeHTMLDescriptor('h2', {}),
+  makeHTMLDescriptor('p', {}),
+  makeHTMLDescriptor('button', {}),
+  makeHTMLDescriptor('input', {}),
+  makeHTMLDescriptor('video', {
+    controls: {
+      control: 'checkbox',
+      defaultValue: true,
+    },
+    autoPlay: {
+      control: 'checkbox',
+      defaultValue: true,
+    },
+    loop: {
+      control: 'checkbox',
+      defaultValue: true,
+    },
+    src: {
+      control: 'string-input',
+      defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
+    },
+    style: {
+      control: 'style-controls',
+      defaultValue: {
+        width: '250px',
+        height: '120px',
       },
-      autoPlay: {
-        control: 'checkbox',
-        defaultValue: true,
+    },
+  }),
+  makeHTMLDescriptor('img', {
+    src: {
+      control: 'string-input',
+      defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
+    },
+    style: {
+      control: 'style-controls',
+      defaultValue: {
+        width: '64px',
+        height: '64px',
       },
-      loop: {
-        control: 'checkbox',
-        defaultValue: true,
-      },
-      src: {
-        control: 'string-input',
-        defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
-      },
-      style: {
-        control: 'style-controls',
-        defaultValue: {
-          width: '250px',
-          height: '120px',
-        },
-      },
-    }),
-    makeHTMLDescriptor('img', {
-      src: {
-        control: 'string-input',
-        defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
-      },
-      style: {
-        control: 'style-controls',
-        defaultValue: {
-          width: '64px',
-          height: '64px',
-        },
-      },
-    }),
-  ],
-}
+    },
+  }),
+]
 
 export function stylePropOptionsForPropertyControls(
   propertyControls: PropertyControls,
@@ -379,7 +372,7 @@ export function getComponentGroups(
   }
 
   // Add HTML entries.
-  addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptor.components)
+  addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {

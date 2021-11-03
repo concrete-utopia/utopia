@@ -1,11 +1,4 @@
 import {
-  DependenciesDescriptors,
-  DependencyDescriptor,
-  DependencyBoundDescriptors,
-} from './third-party-types'
-import { AntdComponents } from './antd-components'
-import { satisfies } from 'semver'
-import {
   PossiblyUnversionedNpmDependency,
   RequestedNpmDependency,
   resolvedNpmDependency,
@@ -15,10 +8,8 @@ import { NodeModules, isEsCodeFile } from '../shared/project-file-types'
 import { fastForEach } from '../shared/utils'
 import { parseVersionPackageJsonFile } from '../../utils/package-parser-utils'
 import { forEachRight } from '../shared/either'
-import { UtopiaApiComponents } from './utopia-api-components'
 import { versionForBuiltInDependency } from '../es-modules/package-manager/built-in-dependencies'
 import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
-import { ReactThreeFiberComponents } from './react-three-fiber-components'
 
 function parseDependencyVersionFromNodeModules(
   nodeModules: NodeModules,
