@@ -1,5 +1,5 @@
 import {
-  combineAccumulatedVSCodeChanges,
+  combineProjectChanges,
   deletePathChange,
   ensureDirectoryExistsChange,
   writeProjectFileChange,
@@ -28,7 +28,7 @@ describe('combineAccumulatedVSCodeChanges', () => {
       selectedChanged: null,
     }
 
-    const result = combineAccumulatedVSCodeChanges(first, second)
+    const result = combineProjectChanges(first, second)
     expect(result).toEqual({
       fileChanges: [
         ensureDirectoryExists1,
