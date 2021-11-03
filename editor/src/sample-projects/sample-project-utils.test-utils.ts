@@ -12,6 +12,7 @@ import {
   RevisionsState,
   textFile,
   textFileContents,
+  ParseFailure,
 } from '../core/shared/project-file-types'
 import { emptySet } from '../core/shared/set-utils'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
@@ -87,4 +88,41 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
       ),
     ),
   }
+}
+
+export function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
+  const baseModel = defaultProject()
+
+  const updatedProject = Object.keys(modifiedFiles).reduce((workingProject, modifiedFilename) => {
+    const parsedFile = lintAndParse(
+      modifiedFilename,
+      modifiedFiles[modifiedFilename],
+      null,
+      emptySet(),
+    ) as ParsedTextFile
+    if (!isParseSuccess(parsedFile)) {
+      const failedParse = parsedFile as ParseFailure
+      const failure =
+        failedParse.errorMessage ?? failedParse.errorMessages.map((m) => m.message).join(`,\n`)
+      throw new Error(`The test file parse failed ${modifiedFilename}, ${failure}`)
+    }
+
+    const updatedProjectContents = addFileToProjectContents(
+      workingProject.projectContents,
+      modifiedFilename,
+      textFile(
+        textFileContents(modifiedFiles[modifiedFilename], parsedFile, RevisionsState.BothMatch),
+        null,
+        parsedFile,
+        Date.now(),
+      ),
+    )
+
+    return {
+      ...baseModel,
+      projectContents: updatedProjectContents,
+    }
+  }, baseModel)
+
+  return updatedProject
 }
