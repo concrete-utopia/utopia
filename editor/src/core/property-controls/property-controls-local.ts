@@ -31,7 +31,10 @@ export function createRegisterControlsFunction(
         const updatedControls: PropertyControlsInfo = {
           [packageName]: {
             ...currentPropertyControlsInfo[packageName],
-            [componentName]: propertyControls,
+            [componentName]: {
+              propertyControls: propertyControls,
+              componentInfo: {}, // TODO requiredimport
+            },
           },
         }
         if (!currentControlsAreTheSame) {
@@ -57,7 +60,7 @@ export function getThirdPartyControlsIntrinsic(
     )
   })
   if (foundPackageWithElement != null) {
-    return propertyControlsInfo[foundPackageWithElement][elementName]
+    return propertyControlsInfo[foundPackageWithElement][elementName].propertyControls
   }
   return null
 }

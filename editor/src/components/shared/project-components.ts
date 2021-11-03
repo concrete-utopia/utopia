@@ -407,12 +407,15 @@ export function getComponentGroups(
             elementNameAsArray.length > 0
               ? jsxElementName(elementNameAsArray.shift()!, elementNameAsArray)
               : name
-          const defaultAttributes = getDefaultPropsAsAttributes(propertyControlsForDependency[name])
+          const defaultAttributes = getDefaultPropsAsAttributes(
+            propertyControlsForDependency[name].propertyControls,
+          )
+          const importsToAdd = propertyControlsForDependency[name].componentInfo.requiredImports
           return componentDescriptor(
             {},
             jsxElementWithoutUID(elementName, defaultAttributes, []),
             name,
-            propertyControlsForDependency[name],
+            propertyControlsForDependency[name].propertyControls,
           )
         })
 

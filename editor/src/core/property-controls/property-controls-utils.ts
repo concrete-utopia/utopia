@@ -262,7 +262,10 @@ export function getThirdPartyPropertyControls(
         const jsxElementName = getJSXElementNameAsString(descriptor.element.name)
         propertyControlsInfo[packageName] = {
           ...propertyControlsInfo[packageName],
-          [jsxElementName]: descriptor.propertyControls,
+          [jsxElementName]: {
+            propertyControls: descriptor.propertyControls,
+            componentInfo: {}, // TODO requiredImports
+          },
         }
       }
     })
@@ -370,7 +373,8 @@ export function getPropertyControlsForTarget(
           propertyControlsInfo[trimmedPath] != null &&
           propertyControlsInfo[trimmedPath][nameLastPart] != null
         ) {
-          return propertyControlsInfo[trimmedPath][nameLastPart] as PropertyControls
+          return propertyControlsInfo[trimmedPath][nameLastPart]
+            .propertyControls as PropertyControls
         } else {
           return null
         }
