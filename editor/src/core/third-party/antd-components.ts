@@ -23,10 +23,14 @@ function createBasicComponent(
 ): ComponentDescriptor {
   const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
   return componentDescriptor(
-    {
-      antd: importDetails(null, [importAlias(baseVariable)], null),
-      'antd/dist/antd.css': importDetails(null, [], null),
-    },
+    [
+      {
+        source: 'antd',
+        name: baseVariable,
+        type: null,
+      },
+      { source: 'antd/dist/antd.css', name: null, type: null },
+    ],
     jsxElementWithoutUID(jsxElementName(baseVariable, propertyPathParts), defaultAttributes, []),
     name,
     { ...StyleObjectProps, ...propertyControls },

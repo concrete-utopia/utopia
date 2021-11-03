@@ -157,8 +157,8 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     propertyControlsInfo: {
       ...initialEditorState.propertyControlsInfo,
       '/utopia/storyboard': {
-        App: propertyControlsForApp,
-        OtherComponent: propertyControlsForOtherComponent,
+        App: { propertyControls: propertyControlsForApp, componentInfo: {} },
+        OtherComponent: { propertyControls: propertyControlsForOtherComponent, componentInfo: {} },
       },
     },
     jsxMetadata: metadata,
