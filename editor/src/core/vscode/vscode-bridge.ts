@@ -62,7 +62,7 @@ import {
   getHighlightBoundsForElementPath,
   getOpenTextFileKey,
 } from '../../components/editor/store/editor-state'
-import { ProjectChange } from '../../components/editor/store/vscode-changes'
+import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -244,7 +244,7 @@ export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
   return sendMessage(getUtopiaVSCodeConfig())
 }
 
-export async function applyProjectChanges(changes: Array<ProjectChange>): Promise<void> {
+export async function applyProjectChanges(changes: Array<ProjectFileChange>): Promise<void> {
   for (const change of changes) {
     switch (change.type) {
       case 'DELETE_PATH':

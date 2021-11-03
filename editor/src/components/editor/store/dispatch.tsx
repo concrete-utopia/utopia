@@ -87,13 +87,13 @@ import {
   getUnsavedCodeFromTextFile,
 } from '../../../core/model/project-file-utils'
 import {
-  AccumulatedVSCodeChanges,
-  emptyAccumulatedVSCodeChanges,
-  combineAccumulatedVSCodeChanges,
-  getVSCodeChanges,
+  ProjectChanges,
+  emptyProjectChanges,
+  combineProjectChanges,
+  getProjectChanges,
   sendVSCodeChanges,
   WriteProjectFileChange,
-  ProjectChange,
+  ProjectFileChange,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
@@ -353,7 +353,7 @@ function maybeRequestModelUpdateOnEditor(
   }
 }
 
-let currentVSCodeChanges: AccumulatedVSCodeChanges = emptyAccumulatedVSCodeChanges
+let accumulatedProjectChanges: ProjectChanges = emptyProjectChanges
 let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
 export function editorDispatch(
@@ -509,8 +509,8 @@ export function editorDispatch(
     )
   }
 
-  const newVSCodeChanges = getVSCodeChanges(storedState.editor, frozenEditorState)
-  applyProjectChanges(frozenEditorState, newVSCodeChanges, updatedFromVSCode)
+  const projectChanges = getProjectChanges(storedState.editor, frozenEditorState)
+  applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
 
   const shouldUpdatePreview =
     anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
@@ -527,28 +527,28 @@ export function editorDispatch(
 
 function applyProjectChanges(
   frozenEditorState: EditorState,
-  accumulatedChanges: AccumulatedVSCodeChanges,
+  projectChanges: ProjectChanges,
   updatedFromVSCode: boolean,
 ) {
-  triggerPropertyControlsIframeIfNeeded(frozenEditorState, accumulatedChanges.fileChanges)
+  triggerPropertyControlsIframeIfNeeded(frozenEditorState, projectChanges.fileChanges)
 
-  currentVSCodeChanges = combineAccumulatedVSCodeChanges(
-    currentVSCodeChanges,
-    updatedFromVSCode ? { ...accumulatedChanges, fileChanges: [] } : accumulatedChanges,
+  accumulatedProjectChanges = combineProjectChanges(
+    accumulatedProjectChanges,
+    updatedFromVSCode ? { ...projectChanges, fileChanges: [] } : projectChanges,
   )
 
   if (frozenEditorState.vscodeReady) {
     // Chain off of the previous one to ensure the ordering is maintained.
     applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-      const changesToSend = currentVSCodeChanges
-      currentVSCodeChanges = emptyAccumulatedVSCodeChanges
+      const changesToSend = accumulatedProjectChanges
+      accumulatedProjectChanges = emptyProjectChanges
       return sendVSCodeChanges(changesToSend).catch((error) => {
         console.error('Error sending updates to VS Code', error)
       })
     })
   }
 
-  const updatedFileNames = accumulatedChanges.fileChanges.map((fileChange) => fileChange.fullPath)
+  const updatedFileNames = projectChanges.fileChanges.map((fileChange) => fileChange.fullPath)
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
     frozenEditorState.projectContents,
     frozenEditorState.nodeModules.files,
@@ -746,7 +746,7 @@ function elementPathStillExists(
 
 function triggerPropertyControlsIframeIfNeeded(
   newEditor: EditorState,
-  fileChanges: Array<ProjectChange>,
+  fileChanges: Array<ProjectFileChange>,
 ) {
   const updatedProjectCodeFilePaths: Array<string> = mapDropNulls((change) => {
     if (change.type === 'WRITE_PROJECT_FILE') {
