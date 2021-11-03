@@ -5,13 +5,13 @@ import { ImportType, PropertyControls } from 'utopia-api'
 export interface ComponentDescriptor {
   importsToAdd: Array<ImportType>
   name: string
-  propertyControls: PropertyControls | null
+  propertyControls: PropertyControls
 }
 
 export function componentDescriptor(
   importsToAdd: Array<ImportType>,
   name: string,
-  propertyControls: PropertyControls | null,
+  propertyControls: PropertyControls,
 ): ComponentDescriptor {
   return {
     importsToAdd: importsToAdd,
