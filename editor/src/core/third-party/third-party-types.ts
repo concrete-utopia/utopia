@@ -4,20 +4,17 @@ import { ImportType, PropertyControls } from 'utopia-api'
 
 export interface ComponentDescriptor {
   importsToAdd: Array<ImportType>
-  element: JSXElementWithoutUID
   name: string
   propertyControls: PropertyControls | null
 }
 
 export function componentDescriptor(
   importsToAdd: Array<ImportType>,
-  element: JSXElementWithoutUID,
   name: string,
   propertyControls: PropertyControls | null,
 ): ComponentDescriptor {
   return {
     importsToAdd: importsToAdd,
-    element: element,
     name: name,
     propertyControls: propertyControls,
   }

@@ -195,29 +195,8 @@ function makeHTMLDescriptor(
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
-  let defaultProps: JSXAttributes = []
-  function addDefaultProps(targetPropertyControls: PropertyControls): void {
-    for (const propKey of Object.keys(targetPropertyControls)) {
-      const prop = targetPropertyControls[propKey]
-      if (prop.control === 'folder') {
-        addDefaultProps(prop.controls)
-      } else {
-        if (prop?.defaultValue != null) {
-          defaultProps.push(
-            jsxAttributesEntry(
-              propKey,
-              jsxAttributeValue(prop.defaultValue, emptyComments),
-              emptyComments,
-            ),
-          )
-        }
-      }
-    }
-  }
-  addDefaultProps(propertyControls)
   return componentDescriptor(
     [{ source: 'react', name: 'React', type: 'star' }],
-    jsxElementWithoutUID(tag, defaultProps, []),
     tag,
     propertyControls,
   )
@@ -379,13 +358,19 @@ export function getComponentGroups(
           }
         }
       }
+
+      // Create the insertable JSX element here
+      const [baseVariable, ...propertyPathParts] = component.name.split('.')
+      const elementName = jsxElementName(baseVariable, propertyPathParts)
+      const defaultAttributes = getDefaultPropsAsAttributes(component.propertyControls)
+
       return insertableComponent(
         mapArrayToDictionary(
           component.importsToAdd,
           (importOption) => importOption.source,
           (importOption) => importDetailsFromImportOption(importOption),
         ),
-        component.element,
+        jsxElementWithoutUID(elementName, defaultAttributes, []),
         component.name,
         stylePropOptions,
       )
@@ -408,12 +393,6 @@ export function getComponentGroups(
       const propertyControlsForDependency = propertyControlsInfo[dependency.name]
       if (propertyControlsForDependency != null) {
         const components = Object.keys(propertyControlsForDependency).map((name) => {
-          const [baseVariable, ...propertyPathParts] = name.split('.')
-          const elementName = jsxElementName(baseVariable, propertyPathParts)
-          const defaultAttributes = getDefaultPropsAsAttributes(
-            propertyControlsForDependency[name].propertyControls,
-          )
-
           const probablyIntrinsicElement = isIntrinsicElementFromString(name)
           const fallbackImports: Array<ImportType> = probablyIntrinsicElement
             ? []
@@ -423,7 +402,6 @@ export function getComponentGroups(
             propertyControlsForDependency[name].componentInfo.requiredImports ?? fallbackImports
           return componentDescriptor(
             requiredImports,
-            jsxElementWithoutUID(elementName, defaultAttributes, []),
             name,
             propertyControlsForDependency[name].propertyControls,
           )
