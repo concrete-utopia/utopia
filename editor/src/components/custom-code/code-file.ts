@@ -54,6 +54,8 @@ import {
 } from '../../core/workers/common/worker-types'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
+type ModuleExportTypes = { [name: string]: ExportType }
+
 export interface CodeResult {
   exports: ModuleExportTypes
   transpiledCode: string | null
@@ -101,11 +103,6 @@ export type CodeResultCache = {
   projectModules: MultiFileBuildResult
   evaluationCache: EvaluationCache
 }
-
-type ModuleExportValues = { [name: string]: any }
-type ModuleExportTypes = { [name: string]: ExportType }
-type ExportValue = { value: any }
-type ModuleExportTypesAndValues = { [name: string]: ExportType & ExportValue }
 
 export function incorporateBuildResult(
   nodeModules: NodeModules,
