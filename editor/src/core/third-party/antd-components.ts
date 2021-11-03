@@ -1,19 +1,9 @@
-import { importAlias, importDetails, PropertyPathPart } from '../shared/project-file-types'
-import { componentDescriptor, DependencyBoundDescriptors } from './third-party-types'
-import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
 import { PropertyControls } from 'utopia-api'
-import { getDefaultPropsAsAttributes } from './shared'
 import {
   ComponentDescriptor2_RENAME,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
-
-const StyleObjectProps: PropertyControls = {
-  style: {
-    control: 'style-controls',
-  },
-}
 
 function createBasicComponent(
   baseVariable: string,
