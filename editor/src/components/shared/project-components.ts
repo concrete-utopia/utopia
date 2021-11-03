@@ -32,29 +32,15 @@ import { getDefaultPropsAsAttributes } from '../../core/third-party/shared'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
-import { PropertyControlsInfo } from '../custom-code/code-file'
+import {
+  PropertyControlsInfo,
+  ComponentDescriptor,
+  ComponentDescriptorsForFile,
+} from '../custom-code/code-file'
 import { getExportedComponentImports } from '../editor/export-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 export type WrapContentOption = 'wrap-content' | 'do-now-wrap-content'
-
-interface ComponentDescriptor_DELETE_ME {
-  importsToAdd: Array<ImportType>
-  name: string
-  propertyControls: PropertyControls
-}
-
-function componentDescriptor_DELETE_ME(
-  importsToAdd: Array<ImportType>,
-  name: string,
-  propertyControls: PropertyControls,
-): ComponentDescriptor_DELETE_ME {
-  return {
-    importsToAdd: importsToAdd,
-    name: name,
-    propertyControls: propertyControls,
-  }
-}
 
 export interface InsertableComponent {
   importsToAdd: Imports
@@ -203,27 +189,28 @@ const stockHTMLPropertyControls: PropertyControls = {
 function makeHTMLDescriptor(
   tag: string,
   extraPropertyControls: PropertyControls,
-): ComponentDescriptor_DELETE_ME {
+): ComponentDescriptor {
   const propertyControls: PropertyControls = {
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
-  return componentDescriptor_DELETE_ME(
-    [{ source: 'react', name: 'React', type: 'star' }],
-    tag,
-    propertyControls,
-  )
+  return {
+    propertyControls: propertyControls,
+    componentInfo: {
+      requiredImports: [{ source: 'react', name: 'React', type: 'star' }],
+    },
+  }
 }
 
-const basicHTMLElementsDescriptors = [
-  makeHTMLDescriptor('div', {}),
-  makeHTMLDescriptor('span', {}),
-  makeHTMLDescriptor('h1', {}),
-  makeHTMLDescriptor('h2', {}),
-  makeHTMLDescriptor('p', {}),
-  makeHTMLDescriptor('button', {}),
-  makeHTMLDescriptor('input', {}),
-  makeHTMLDescriptor('video', {
+const basicHTMLElementsDescriptors = {
+  div: makeHTMLDescriptor('div', {}),
+  span: makeHTMLDescriptor('span', {}),
+  h1: makeHTMLDescriptor('h1', {}),
+  h2: makeHTMLDescriptor('h2', {}),
+  p: makeHTMLDescriptor('p', {}),
+  button: makeHTMLDescriptor('button', {}),
+  input: makeHTMLDescriptor('input', {}),
+  video: makeHTMLDescriptor('video', {
     controls: {
       control: 'checkbox',
       defaultValue: true,
@@ -248,7 +235,7 @@ const basicHTMLElementsDescriptors = [
       },
     },
   }),
-  makeHTMLDescriptor('img', {
+  img: makeHTMLDescriptor('img', {
     src: {
       control: 'string-input',
       defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
@@ -261,7 +248,7 @@ const basicHTMLElementsDescriptors = [
       },
     },
   }),
-]
+}
 
 export function stylePropOptionsForPropertyControls(
   propertyControls: PropertyControls,
@@ -353,10 +340,12 @@ export function getComponentGroups(
   })
 
   function addDependencyDescriptor(
+    moduleName: string | null,
     groupType: InsertableComponentGroupType,
-    components: Array<ComponentDescriptor_DELETE_ME>,
+    components: ComponentDescriptorsForFile,
   ): void {
-    const insertableComponents = components.map((component) => {
+    const insertableComponents = Object.keys(components).map((componentName) => {
+      const component = components[componentName]
       let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
       // Drill down to see if this dependency component has a style object entry
       // against style.
@@ -370,18 +359,31 @@ export function getComponentGroups(
       }
 
       // Create the insertable JSX element here
-      const [baseVariable, ...propertyPathParts] = component.name.split('.')
+      const [baseVariable, ...propertyPathParts] = componentName.split('.')
       const elementName = jsxElementName(baseVariable, propertyPathParts)
       const defaultAttributes = getDefaultPropsAsAttributes(component.propertyControls)
 
+      const probablyIntrinsicElement =
+        moduleName == null || isIntrinsicElementFromString(componentName)
+
+      const fallbackImports: Array<ImportType> = probablyIntrinsicElement
+        ? []
+        : [
+            {
+              type: null,
+              source: moduleName!, // if we updgrade TS we can remove this ! from here
+              name: componentName,
+            },
+          ]
+
       return insertableComponent(
         mapArrayToDictionary(
-          component.importsToAdd,
+          component.componentInfo.requiredImports ?? fallbackImports,
           (importOption) => importOption.source,
           (importOption) => importDetailsFromImportOption(importOption),
         ),
         jsxElementWithoutUID(elementName, defaultAttributes, []),
-        component.name,
+        componentName,
         stylePropOptions,
       )
     })
@@ -389,7 +391,7 @@ export function getComponentGroups(
   }
 
   // Add HTML entries.
-  addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
+  addDependencyDescriptor(null, insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
@@ -402,24 +404,10 @@ export function getComponentGroups(
       )
       const propertyControlsForDependency = propertyControlsInfo[dependency.name]
       if (propertyControlsForDependency != null) {
-        const components = Object.keys(propertyControlsForDependency).map((name) => {
-          const probablyIntrinsicElement = isIntrinsicElementFromString(name)
-          const fallbackImports: Array<ImportType> = probablyIntrinsicElement
-            ? []
-            : [{ type: null, source: dependency.name, name: name }]
-
-          const requiredImports =
-            propertyControlsForDependency[name].componentInfo.requiredImports ?? fallbackImports
-          return componentDescriptor_DELETE_ME(
-            requiredImports,
-            name,
-            propertyControlsForDependency[name].propertyControls,
-          )
-        })
-
         addDependencyDescriptor(
+          dependency.name,
           insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
-          components,
+          propertyControlsForDependency,
         )
       }
     }
