@@ -450,6 +450,11 @@ const RowForObjectControl = betterReactMemo(
     const title = labelForControl(propPath, controlDescription)
     const indentation = props.indentationLevel * 8
 
+    const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+    const contextMenuItems = Utils.stripNulls([
+      addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
+    ])
+
     return (
       <div
         css={{
@@ -465,8 +470,12 @@ const RowForObjectControl = betterReactMemo(
           },
         }}
       >
-        <div>
-          <div onClick={handleOnClick}>
+        <div onClick={handleOnClick}>
+          <InspectorContextMenuWrapper
+            id={`context-menu-for-${PP.toString(propPath)}`}
+            items={contextMenuItems}
+            data={null}
+          >
             <SimpleFlexRow style={{ flexGrow: 1 }}>
               <PropertyLabel
                 target={[propPath]}
@@ -485,25 +494,25 @@ const RowForObjectControl = betterReactMemo(
                 <ObjectIndicator open={open} />
               </PropertyLabel>
             </SimpleFlexRow>
-          </div>
-          {when(
-            open,
-            mapToArray((innerControl: RegularControlDescription, prop: string, index: number) => {
-              const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
-              return (
-                <RowForControl
-                  key={`object-control-row-${PP.toString(innerPropPath)}`}
-                  controlDescription={innerControl}
-                  isScene={isScene}
-                  propPath={innerPropPath}
-                  setGlobalCursor={props.setGlobalCursor}
-                  indentationLevel={props.indentationLevel + 1}
-                  focusOnMount={props.focusOnMount && index === 0}
-                />
-              )
-            }, controlDescription.object),
-          )}
+          </InspectorContextMenuWrapper>
         </div>
+        {when(
+          open,
+          mapToArray((innerControl: RegularControlDescription, prop: string, index: number) => {
+            const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+            return (
+              <RowForControl
+                key={`object-control-row-${PP.toString(innerPropPath)}`}
+                controlDescription={innerControl}
+                isScene={isScene}
+                propPath={innerPropPath}
+                setGlobalCursor={props.setGlobalCursor}
+                indentationLevel={props.indentationLevel + 1}
+                focusOnMount={props.focusOnMount && index === 0}
+              />
+            )
+          }, controlDescription.object),
+        )}
       </div>
     )
   },
