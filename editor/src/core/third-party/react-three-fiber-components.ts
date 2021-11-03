@@ -1,11 +1,11 @@
 import { PropertyControls } from 'utopia-api'
 import { ReactThreeFiberControls } from '../property-controls/third-party-property-controls/react-three-fiber-controls'
 import {
-  ComponentDescriptor2_RENAME,
+  ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 
-function createBasicComponent(propertyControls: PropertyControls): ComponentDescriptor2_RENAME {
+function createBasicComponent(propertyControls: PropertyControls): ComponentDescriptor {
   return {
     propertyControls: propertyControls,
     componentInfo: {

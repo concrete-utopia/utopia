@@ -1,9 +1,9 @@
 import {
-  ComponentDescriptor2_RENAME,
+  ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 
-const BasicUtopiaComponentDescriptor: ComponentDescriptor2_RENAME = {
+const BasicUtopiaComponentDescriptor: ComponentDescriptor = {
   propertyControls: {
     style: {
       control: 'style-controls',

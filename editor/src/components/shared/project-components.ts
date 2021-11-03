@@ -38,17 +38,17 @@ import { getExportedComponentImports } from '../editor/export-utils'
 export type StylePropOption = 'do-not-add' | 'add-size'
 export type WrapContentOption = 'wrap-content' | 'do-now-wrap-content'
 
-interface ComponentDescriptor {
+interface ComponentDescriptor_DELETE_ME {
   importsToAdd: Array<ImportType>
   name: string
   propertyControls: PropertyControls
 }
 
-function componentDescriptor(
+function componentDescriptor_DELETE_ME(
   importsToAdd: Array<ImportType>,
   name: string,
   propertyControls: PropertyControls,
-): ComponentDescriptor {
+): ComponentDescriptor_DELETE_ME {
   return {
     importsToAdd: importsToAdd,
     name: name,
@@ -203,12 +203,12 @@ const stockHTMLPropertyControls: PropertyControls = {
 function makeHTMLDescriptor(
   tag: string,
   extraPropertyControls: PropertyControls,
-): ComponentDescriptor {
+): ComponentDescriptor_DELETE_ME {
   const propertyControls: PropertyControls = {
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
-  return componentDescriptor(
+  return componentDescriptor_DELETE_ME(
     [{ source: 'react', name: 'React', type: 'star' }],
     tag,
     propertyControls,
@@ -354,7 +354,7 @@ export function getComponentGroups(
 
   function addDependencyDescriptor(
     groupType: InsertableComponentGroupType,
-    components: Array<ComponentDescriptor>,
+    components: Array<ComponentDescriptor_DELETE_ME>,
   ): void {
     const insertableComponents = components.map((component) => {
       let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
@@ -410,7 +410,7 @@ export function getComponentGroups(
 
           const requiredImports =
             propertyControlsForDependency[name].componentInfo.requiredImports ?? fallbackImports
-          return componentDescriptor(
+          return componentDescriptor_DELETE_ME(
             requiredImports,
             name,
             propertyControlsForDependency[name].propertyControls,

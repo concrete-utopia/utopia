@@ -1,14 +1,14 @@
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
 import { PropertyControls } from 'utopia-api'
 import {
-  ComponentDescriptor2_RENAME,
+  ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 
 function createBasicComponent(
   baseVariable: string,
   propertyControls: PropertyControls,
-): ComponentDescriptor2_RENAME {
+): ComponentDescriptor {
   return {
     propertyControls: propertyControls,
     componentInfo: {
