@@ -30,6 +30,8 @@ import {
   ChainedNumberInput,
   wrappedEmptyOrUnknownOnSubmitValue,
   FlexColumn,
+  FlexRow,
+  UtopiaTheme,
 } from '../../../../uuiui'
 import { printCSSNumber, CSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
 import * as PP from '../../../../core/shared/property-path'
@@ -558,11 +560,13 @@ export const VectorPropertyControl = betterReactMemo(
     }, [controlDescription.control, controlDescription.defaultValue, propMetadata, propPath])
 
     return (
-      <ChainedNumberInput
-        idPrefix={'vector'}
-        propsArray={propsArray}
-        setGlobalCursor={setGlobalCursor}
-      />
+      <FlexRow style={{ alignItems: 'flex-start', paddingTop: 3, paddingBottom: 3 }}>
+        <ChainedNumberInput
+          idPrefix={'vector'}
+          propsArray={propsArray}
+          setGlobalCursor={setGlobalCursor}
+        />
+      </FlexRow>
     )
   },
 )
@@ -593,24 +597,26 @@ export const EulerPropertyControl = betterReactMemo(
     const orderControlId = `euler-order-control`
 
     return (
-      <FlexColumn>
-        <ChainedNumberInput
-          idPrefix={'euler-xyz'}
-          propsArray={numericPropsArray}
-          setGlobalCursor={setGlobalCursor}
-        />
-        <StringControl
-          key={'euler-order'}
-          id={orderControlId}
-          testId={orderControlId}
-          value={orderValue}
-          onSubmitValue={orderWrappedOnSubmit}
-          controlStatus={propMetadata.controlStatus}
-          controlStyles={propMetadata.controlStyles}
-          DEPRECATED_controlOptions={{
-            DEPRECATED_labelBelow: 'order',
-          }}
-        />
+      <FlexColumn style={{ paddingTop: 3, paddingBottom: 3 }}>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.max }}>
+          <ChainedNumberInput
+            idPrefix={'euler-xyz'}
+            propsArray={numericPropsArray}
+            setGlobalCursor={setGlobalCursor}
+          />
+          <StringControl
+            key={'euler-order'}
+            id={orderControlId}
+            testId={orderControlId}
+            value={orderValue}
+            onSubmitValue={orderWrappedOnSubmit}
+            controlStatus={propMetadata.controlStatus}
+            controlStyles={propMetadata.controlStyles}
+            DEPRECATED_controlOptions={{
+              DEPRECATED_labelBelow: 'order',
+            }}
+          />
+        </FlexRow>
       </FlexColumn>
     )
   },
@@ -636,22 +642,28 @@ export const Matrix3PropertyControl = betterReactMemo(
     }, [controlDescription.defaultValue, propMetadata, propPath])
 
     return (
-      <FlexColumn>
-        <ChainedNumberInput
-          idPrefix={'matrix3-row1'}
-          propsArray={propsArray.slice(0, 3)}
-          setGlobalCursor={setGlobalCursor}
-        />
-        <ChainedNumberInput
-          idPrefix={'matrix3-row2'}
-          propsArray={propsArray.slice(3, 6)}
-          setGlobalCursor={setGlobalCursor}
-        />
-        <ChainedNumberInput
-          idPrefix={'matrix3-row3'}
-          propsArray={propsArray.slice(6, 9)}
-          setGlobalCursor={setGlobalCursor}
-        />
+      <FlexColumn style={{ paddingTop: 3, paddingBottom: 3 }}>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.large }}>
+          <ChainedNumberInput
+            idPrefix={'matrix3-row1'}
+            propsArray={propsArray.slice(0, 3)}
+            setGlobalCursor={setGlobalCursor}
+          />
+        </FlexRow>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.large }}>
+          <ChainedNumberInput
+            idPrefix={'matrix3-row2'}
+            propsArray={propsArray.slice(3, 6)}
+            setGlobalCursor={setGlobalCursor}
+          />
+        </FlexRow>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.large }}>
+          <ChainedNumberInput
+            idPrefix={'matrix3-row3'}
+            propsArray={propsArray.slice(6, 9)}
+            setGlobalCursor={setGlobalCursor}
+          />
+        </FlexRow>
       </FlexColumn>
     )
   },
@@ -678,27 +690,35 @@ export const Matrix4PropertyControl = betterReactMemo(
     }, [controlDescription.defaultValue, propMetadata, propPath])
 
     return (
-      <FlexColumn>
-        <ChainedNumberInput
-          idPrefix={'matrix4-row1'}
-          propsArray={propsArray.slice(0, 4)}
-          setGlobalCursor={setGlobalCursor}
-        />
-        <ChainedNumberInput
-          idPrefix={'matrix4-row2'}
-          propsArray={propsArray.slice(4, 8)}
-          setGlobalCursor={setGlobalCursor}
-        />
-        <ChainedNumberInput
-          idPrefix={'matrix4-row3'}
-          propsArray={propsArray.slice(8, 12)}
-          setGlobalCursor={setGlobalCursor}
-        />
-        <ChainedNumberInput
-          idPrefix={'matrix4-row4'}
-          propsArray={propsArray.slice(12, 16)}
-          setGlobalCursor={setGlobalCursor}
-        />
+      <FlexColumn style={{ paddingTop: 3, paddingBottom: 3 }}>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.large }}>
+          <ChainedNumberInput
+            idPrefix={'matrix4-row1'}
+            propsArray={propsArray.slice(0, 4)}
+            setGlobalCursor={setGlobalCursor}
+          />
+        </FlexRow>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.large }}>
+          <ChainedNumberInput
+            idPrefix={'matrix4-row2'}
+            propsArray={propsArray.slice(4, 8)}
+            setGlobalCursor={setGlobalCursor}
+          />
+        </FlexRow>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.large }}>
+          <ChainedNumberInput
+            idPrefix={'matrix4-row3'}
+            propsArray={propsArray.slice(8, 12)}
+            setGlobalCursor={setGlobalCursor}
+          />
+        </FlexRow>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.large }}>
+          <ChainedNumberInput
+            idPrefix={'matrix4-row4'}
+            propsArray={propsArray.slice(12, 16)}
+            setGlobalCursor={setGlobalCursor}
+          />
+        </FlexRow>
       </FlexColumn>
     )
   },
