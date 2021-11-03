@@ -21,9 +21,7 @@ function createBasicUtopiaComponent(
 ): ComponentDescriptor {
   const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
   return componentDescriptor(
-    {
-      'utopia-api': importDetails(null, [importAlias(baseVariable)], null),
-    },
+    [{ source: 'utopia-api', type: null, name: baseVariable }],
     jsxElementWithoutUID(jsxElementName(baseVariable, []), defaultAttributes, children),
     name,
     propertyControls,

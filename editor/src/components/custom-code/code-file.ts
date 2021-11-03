@@ -1,6 +1,6 @@
 import Utils from '../../utils/utils'
 import { EmitFileResult } from '../../core/workers/ts/ts-worker'
-import { PropertyControls } from 'utopia-api'
+import { ImportType, PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import {
   getControlsForExternalDependencies,
@@ -81,7 +81,12 @@ export type UtopiaRequireFn = (
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
 export type PropertyControlsInfo = {
-  [filenameNoExtension: string]: { [componentName: string]: PropertyControls }
+  [filenameNoExtension: string]: {
+    [componentName: string]: {
+      propertyControls: PropertyControls
+      componentInfo: { requiredImports?: Array<ImportType> }
+    }
+  }
 }
 
 export type ResolveFn = (importOrigin: string, toImport: string) => Either<string, string>

@@ -13,7 +13,7 @@ function createBasicComponent(
   propertyControls: PropertyControls | null,
 ): ComponentDescriptor {
   return componentDescriptor(
-    {},
+    [],
     jsxElementWithoutUID(
       jsxElementName(baseVariable, []),
       [], // Note: we don't have default props for react-three-fiber insertion

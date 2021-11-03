@@ -56,7 +56,7 @@ export interface PopUpListControlDescription extends AbstractBaseControlDescript
 
 export interface ImportType {
   source: string // importSource
-  name: string
+  name: string | null
   type: 'star' | 'default' | null
 }
 
