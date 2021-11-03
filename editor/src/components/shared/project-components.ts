@@ -1,10 +1,11 @@
-import { PropertyControls } from 'utopia-api'
+import { ImportType, PropertyControls } from 'utopia-api'
 import { URL_HASH } from '../../common/env-vars'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { flatMapEither, foldEither, right } from '../../core/shared/either'
 import {
   emptyComments,
+  isIntrinsicElementFromString,
   JSXAttributes,
   jsxAttributesEntry,
   jsxAttributeValue,
@@ -412,8 +413,14 @@ export function getComponentGroups(
           const defaultAttributes = getDefaultPropsAsAttributes(
             propertyControlsForDependency[name].propertyControls,
           )
+
+          const probablyIntrinsicElement = isIntrinsicElementFromString(name)
+          const fallbackImports: Array<ImportType> = probablyIntrinsicElement
+            ? []
+            : [{ type: null, source: dependency.name, name: name }]
+
           const requiredImports =
-            propertyControlsForDependency[name].componentInfo.requiredImports ?? []
+            propertyControlsForDependency[name].componentInfo.requiredImports ?? fallbackImports
           return componentDescriptor(
             requiredImports,
             jsxElementWithoutUID(elementName, defaultAttributes, []),
