@@ -1,4 +1,4 @@
-import { NormalisedFrame } from 'utopia-api'
+import { ImportType, NormalisedFrame } from 'utopia-api'
 import {
   ArbitraryJSBlock,
   ImportStatement,
@@ -144,6 +144,14 @@ export type Imports = { [importSource: string]: ImportDetails }
 
 export function importsEquals(first: Imports, second: Imports): boolean {
   return objectEquals(first, second, importDetailsEquals)
+}
+
+export function importDetailsFromImportOption(importOption: ImportType): ImportDetails {
+  return importDetails(
+    importOption.type === 'default' ? importOption.name : null,
+    importOption.type == null ? [{ name: importOption.name, alias: importOption.name }] : [],
+    importOption.type === 'star' ? importOption.name : null,
+  )
 }
 
 // export let name1, name2, …, nameN; // also var, const

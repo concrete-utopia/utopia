@@ -1,6 +1,7 @@
 import { PropertyControls } from 'utopia-api'
 import { URL_HASH } from '../../common/env-vars'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
+import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { flatMapEither, foldEither, right } from '../../core/shared/either'
 import {
   emptyComments,
@@ -19,6 +20,7 @@ import {
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
 import {
+  importDetailsFromImportOption,
   Imports,
   isParsedTextFile,
   isParseSuccess,
@@ -410,9 +412,13 @@ export function getComponentGroups(
           const defaultAttributes = getDefaultPropsAsAttributes(
             propertyControlsForDependency[name].propertyControls,
           )
-          const importsToAdd = propertyControlsForDependency[name].componentInfo.requiredImports
+          const importsToAdd: Imports = mapArrayToDictionary(
+            propertyControlsForDependency[name].componentInfo.requiredImports ?? [],
+            (importInfo) => importInfo.source,
+            (importInfo) => importDetailsFromImportOption(importInfo),
+          )
           return componentDescriptor(
-            {},
+            importsToAdd,
             jsxElementWithoutUID(elementName, defaultAttributes, []),
             name,
             propertyControlsForDependency[name].propertyControls,
