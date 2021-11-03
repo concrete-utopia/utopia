@@ -147,11 +147,13 @@ export function importsEquals(first: Imports, second: Imports): boolean {
 }
 
 export function importDetailsFromImportOption(importOption: ImportType): ImportDetails {
-  return importDetails(
-    importOption.type === 'default' ? importOption.name : null,
-    importOption.type == null ? [{ name: importOption.name, alias: importOption.name }] : [],
-    importOption.type === 'star' ? importOption.name : null,
-  )
+  const importedWithName = importOption.type === 'default' ? importOption.name : null
+  const importedAs = importOption.type === 'star' ? importOption.name : null
+  const importedFromWithin =
+    importOption.type == null && importOption.name != null
+      ? [{ name: importOption.name, alias: importOption.name }]
+      : []
+  return importDetails(importedWithName, importedFromWithin, importedAs)
 }
 
 // export let name1, name2, …, nameN; // also var, const
