@@ -75,13 +75,17 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
+export type ComponentDescriptor2_RENAME = {
+  propertyControls: PropertyControls
+  componentInfo: { requiredImports?: Array<ImportType> }
+}
+
+export type ComponentDescriptorsForFile = {
+  [componentName: string]: ComponentDescriptor2_RENAME
+}
+
 export type PropertyControlsInfo = {
-  [filenameNoExtension: string]: {
-    [componentName: string]: {
-      propertyControls: PropertyControls
-      componentInfo: { requiredImports?: Array<ImportType> }
-    }
-  }
+  [filenameNoExtension: string]: ComponentDescriptorsForFile
 }
 
 export type ResolveFn = (importOrigin: string, toImport: string) => Either<string, string>

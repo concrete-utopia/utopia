@@ -28,7 +28,6 @@ import {
   ProjectFile,
 } from '../../core/shared/project-file-types'
 import { getDefaultPropsAsAttributes } from '../../core/third-party/shared'
-import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import {
   ComponentDescriptor,
   componentDescriptor,

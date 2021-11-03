@@ -1,10 +1,10 @@
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
-import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
-import { ReactThreeFiberControls } from '../property-controls/third-party-property-controls/react-three-fiber-controls'
-import { UtopiaApiControls } from '../property-controls/third-party-property-controls/utopia-api-controls'
+import { AntdComponents } from './antd-components'
+import { ReactThreeFiberComponents } from './react-three-fiber-components'
+import { UtopiaApiComponents } from './utopia-api-components'
 
 export const DefaultThirdPartyControlDefinitions: PropertyControlsInfo = {
-  '@react-three/fiber': ReactThreeFiberControls,
-  antd: AntdControls,
-  'utopia-api': UtopiaApiControls,
+  '@react-three/fiber': ReactThreeFiberComponents,
+  antd: AntdComponents,
+  'utopia-api': UtopiaApiComponents,
 }

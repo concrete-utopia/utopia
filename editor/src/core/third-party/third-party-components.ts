@@ -20,30 +20,6 @@ import { versionForBuiltInDependency } from '../es-modules/package-manager/built
 import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { ReactThreeFiberComponents } from './react-three-fiber-components'
 
-const ThirdPartyComponents: DependenciesDescriptors = {
-  antd: AntdComponents,
-  'utopia-api': UtopiaApiComponents,
-  '@react-three/fiber': ReactThreeFiberComponents,
-}
-
-export function getThirdPartyComponents(
-  dependencyName: string,
-  dependencyVersion: string,
-): DependencyDescriptor | null {
-  if (dependencyName in ThirdPartyComponents) {
-    const boundsDescriptors: DependencyBoundDescriptors = ThirdPartyComponents[dependencyName]
-    const dependencyBounds = Object.keys(boundsDescriptors)
-    for (const bounds of dependencyBounds) {
-      if (satisfies(dependencyVersion, bounds)) {
-        return boundsDescriptors[bounds]
-      }
-    }
-    return null
-  } else {
-    return null
-  }
-}
-
 function parseDependencyVersionFromNodeModules(
   nodeModules: NodeModules,
   dependencyName: string,

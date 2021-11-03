@@ -53,7 +53,6 @@ import {
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
-import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 import {
