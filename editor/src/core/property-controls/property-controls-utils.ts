@@ -1,6 +1,6 @@
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
-import { PropertyControls, getDefaultProps } from 'utopia-api'
+import { PropertyControls, getDefaultProps, ImportType } from 'utopia-api'
 import { isRight, foldEither, left } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
@@ -264,7 +264,7 @@ export function getThirdPartyPropertyControls(
           ...propertyControlsInfo[packageName],
           [jsxElementName]: {
             propertyControls: descriptor.propertyControls,
-            componentInfo: {}, // TODO requiredImports
+            componentInfo: { requiredImports: descriptor.importsToAdd },
           },
         }
       }

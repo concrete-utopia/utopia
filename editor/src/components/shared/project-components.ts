@@ -216,7 +216,7 @@ function makeHTMLDescriptor(
   }
   addDefaultProps(propertyControls)
   return componentDescriptor(
-    addImport('', 'react', null, [], 'React', emptyImportsValue),
+    [{ source: 'react', name: 'React', type: 'star' }],
     jsxElementWithoutUID(tag, defaultProps, []),
     tag,
     propertyControls,
@@ -380,7 +380,11 @@ export function getComponentGroups(
         }
       }
       return insertableComponent(
-        component.importsToAdd,
+        mapArrayToDictionary(
+          component.importsToAdd,
+          (importOption) => importOption.source,
+          (importOption) => importDetailsFromImportOption(importOption),
+        ),
         component.element,
         component.name,
         stylePropOptions,
@@ -412,13 +416,10 @@ export function getComponentGroups(
           const defaultAttributes = getDefaultPropsAsAttributes(
             propertyControlsForDependency[name].propertyControls,
           )
-          const importsToAdd: Imports = mapArrayToDictionary(
-            propertyControlsForDependency[name].componentInfo.requiredImports ?? [],
-            (importInfo) => importInfo.source,
-            (importInfo) => importDetailsFromImportOption(importInfo),
-          )
+          const requiredImports =
+            propertyControlsForDependency[name].componentInfo.requiredImports ?? []
           return componentDescriptor(
-            importsToAdd,
+            requiredImports,
             jsxElementWithoutUID(elementName, defaultAttributes, []),
             name,
             propertyControlsForDependency[name].propertyControls,

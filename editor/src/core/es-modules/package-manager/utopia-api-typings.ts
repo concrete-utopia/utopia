@@ -377,7 +377,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export interface ImportType {
       source: string;
-      name: string;
+      name: string | null;
       type: 'star' | 'default' | null;
   }
   export interface ExpressionControlOption<T> {
