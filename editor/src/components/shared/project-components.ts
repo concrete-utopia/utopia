@@ -408,11 +408,8 @@ export function getComponentGroups(
       const propertyControlsForDependency = propertyControlsInfo[dependency.name]
       if (propertyControlsForDependency != null) {
         const components = Object.keys(propertyControlsForDependency).map((name) => {
-          const elementNameAsArray = name.split('.')
-          const elementName =
-            elementNameAsArray.length > 0
-              ? jsxElementName(elementNameAsArray.shift()!, elementNameAsArray)
-              : name
+          const [baseVariable, ...propertyPathParts] = name.split('.')
+          const elementName = jsxElementName(baseVariable, propertyPathParts)
           const defaultAttributes = getDefaultPropsAsAttributes(
             propertyControlsForDependency[name].propertyControls,
           )
