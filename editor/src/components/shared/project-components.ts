@@ -29,7 +29,6 @@ import {
   ProjectFile,
 } from '../../core/shared/project-file-types'
 import { getDefaultPropsAsAttributes } from '../../core/third-party/shared'
-import { ComponentDescriptor, componentDescriptor } from '../../core/third-party/third-party-types'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -38,6 +37,24 @@ import { getExportedComponentImports } from '../editor/export-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 export type WrapContentOption = 'wrap-content' | 'do-now-wrap-content'
+
+interface ComponentDescriptor {
+  importsToAdd: Array<ImportType>
+  name: string
+  propertyControls: PropertyControls
+}
+
+function componentDescriptor(
+  importsToAdd: Array<ImportType>,
+  name: string,
+  propertyControls: PropertyControls,
+): ComponentDescriptor {
+  return {
+    importsToAdd: importsToAdd,
+    name: name,
+    propertyControls: propertyControls,
+  }
+}
 
 export interface InsertableComponent {
   importsToAdd: Imports
