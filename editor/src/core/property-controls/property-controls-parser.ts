@@ -694,7 +694,7 @@ function parseRegularControlDescription(value: unknown): ParseResult<RegularCont
       case 'union':
         return parseUnionControlDescription(value)
       case undefined:
-        return left(objectFieldNotPresentParseError(JSON.stringify(value)))
+        return left(objectFieldNotPresentParseError('control'))
       default:
         const _exhaustiveCheck: never = controlType
         return left(
