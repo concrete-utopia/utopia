@@ -386,7 +386,7 @@ interface ArrayControlItemProps {
   setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
-const ArrayControlItem = (props: ArrayControlItemProps) => {
+const ArrayControlItem = betterReactMemo('ArrayControlItem', (props: ArrayControlItemProps) => {
   const colorTheme = useColorTheme()
   const { bind, propPath, index, isScene, springStyle, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
@@ -456,7 +456,7 @@ const ArrayControlItem = (props: ArrayControlItemProps) => {
       </animated.div>
     </InspectorContextMenuWrapper>
   )
-}
+})
 
 interface ObjectIndicatorProps {
   open: boolean
