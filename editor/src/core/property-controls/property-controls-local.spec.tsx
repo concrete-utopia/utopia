@@ -58,15 +58,27 @@ describe('registered property controls', () => {
             "requiredImports": undefined,
           },
           "propertyControls": Object {
-            "background": Object {
-              "control": "color",
-            },
-            "label": Object {
-              "control": "string-input",
-            },
-            "visible": Object {
-              "control": "checkbox",
-              "defaultValue": true,
+            "type": "RIGHT",
+            "value": Object {
+              "background": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "color",
+                },
+              },
+              "label": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "string-input",
+                },
+              },
+              "visible": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "checkbox",
+                  "defaultValue": true,
+                },
+              },
             },
           },
         },

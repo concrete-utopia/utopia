@@ -157,7 +157,7 @@ export function objectKeyParser<V>(
       if (key in valueAsObject) {
         return withErrorParser(valueAsObject[key], key)
       } else {
-        return left(objectFieldNotPresentParseError(key))
+        return left(objectFieldNotPresentParseError(JSON.stringify(value)))
       }
     } else {
       return left(descriptionParseError('Not an object.'))

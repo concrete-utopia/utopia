@@ -1,7 +1,7 @@
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
-import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
+import { ParsedPropertyControls } from './property-controls-parser'
 import { PropertyControls, getDefaultProps, ImportType } from 'utopia-api'
-import { isRight, foldEither, left } from '../shared/either'
+import { isRight, foldEither, left, maybeEitherToMaybe, eitherToMaybe } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
 import {
@@ -33,11 +33,11 @@ function parsedPropertyControlsForComponentInFile(
   propertyControlsInfo: PropertyControlsInfo,
 ): ParseResult<ParsedPropertyControls> {
   const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
-  if (componentName in propertyControlsForFile) {
-    return parsePropertyControls(propertyControlsForFile[componentName], 'includeSpecialProps')
-  } else {
-    return left(descriptionParseError(`No property controls for ${componentName}.`))
-  }
+  const propertyControlsForComponent = propertyControlsForFile[componentName]?.propertyControls
+  return (
+    propertyControlsForComponent ??
+    left(descriptionParseError(`No property controls for ${componentName}.`))
+  )
 }
 
 interface DefaultPropertiesForComponentInFileResult {
@@ -75,17 +75,10 @@ export function getDefaultPropsFromParsedControls(
   return getDefaultProps(safePropertyControls)
 }
 
-export function filterSpecialProp(propKey: string | number): boolean {
-  return propKey !== 'style' && propKey !== 'css' && propKey !== 'className'
-}
-export function filterSpecialProps(props: Array<string>): Array<string> {
-  return props.filter(filterSpecialProp)
-}
-
 export function getPropertyControlsForTargetFromEditor(
   target: ElementPath,
   editor: EditorState,
-): PropertyControls | null {
+): ParseResult<ParsedPropertyControls> | null {
   const openFilePath = getOpenUIJSFileKey(editor)
   return getPropertyControlsForTarget(
     target,
@@ -102,7 +95,7 @@ export function getPropertyControlsForTarget(
   openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-): PropertyControls | null {
+): ParseResult<ParsedPropertyControls> | null {
   return withUnderlyingTarget(
     target,
     projectContents,
@@ -162,16 +155,27 @@ export function getPropertyControlsForTarget(
           : absolutePath
 
         const nameLastPart = getJSXElementNameAsString(element.name)
-        if (
-          propertyControlsInfo[trimmedPath] != null &&
-          propertyControlsInfo[trimmedPath][nameLastPart] != null
-        ) {
-          return propertyControlsInfo[trimmedPath][nameLastPart]
-            .propertyControls as PropertyControls
-        } else {
-          return null
-        }
+        return propertyControlsInfo[trimmedPath]?.[nameLastPart]?.propertyControls
       }
     },
+  )
+}
+
+export function hasStyleControls(propertyControls: ParseResult<ParsedPropertyControls>): boolean {
+  return foldEither(
+    (_parseFailed) => false,
+    (parsedPropertyControls) => {
+      const styleControls = parsedPropertyControls['style']
+      if (styleControls == null) {
+        return false
+      } else {
+        return foldEither(
+          (_) => false,
+          (r) => r.control === 'style-controls',
+          styleControls,
+        )
+      }
+    },
+    propertyControls,
   )
 }

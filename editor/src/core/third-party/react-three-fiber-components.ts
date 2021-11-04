@@ -4,10 +4,11 @@ import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
+import { parsePropertyControls } from '../property-controls/property-controls-parser'
 
 function createBasicComponent(propertyControls: PropertyControls): ComponentDescriptor {
   return {
-    propertyControls: propertyControls,
+    propertyControls: parsePropertyControls(propertyControls),
     componentInfo: {
       requiredImports: [],
     },

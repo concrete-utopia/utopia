@@ -473,160 +473,94 @@ const validFolderControlDescriptionValue: FolderControlDescription = {
 
 describe('parseControlDescription', () => {
   it('parses a number input description correctly', () => {
-    expect(
-      parseControlDescription(
-        validNumberInputControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validNumberInputControlDescriptionValue))
+    expect(parseControlDescription(validNumberInputControlDescriptionValue)).toEqual(
+      right(validNumberInputControlDescriptionValue),
+    )
   })
   it('parses a checkbox description correctly', () => {
-    expect(
-      parseControlDescription(
-        validCheckboxControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validCheckboxControlDescriptionValue))
+    expect(parseControlDescription(validCheckboxControlDescriptionValue)).toEqual(
+      right(validCheckboxControlDescriptionValue),
+    )
   })
   it('parses a string input description correctly', () => {
-    expect(
-      parseControlDescription(
-        validStringInputControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validStringInputControlDescriptionValue))
+    expect(parseControlDescription(validStringInputControlDescriptionValue)).toEqual(
+      right(validStringInputControlDescriptionValue),
+    )
   })
   it('parses a popup list description correctly', () => {
-    expect(
-      parseControlDescription(
-        validPopUpListControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validPopUpListControlDescriptionValue))
+    expect(parseControlDescription(validPopUpListControlDescriptionValue)).toEqual(
+      right(validPopUpListControlDescriptionValue),
+    )
   })
   it('parses an expression popup list description correctly', () => {
-    expect(
-      parseControlDescription(
-        validExpressionPopUpListControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validExpressionPopUpListControlDescriptionValue))
+    expect(parseControlDescription(validExpressionPopUpListControlDescriptionValue)).toEqual(
+      right(validExpressionPopUpListControlDescriptionValue),
+    )
   })
   it('parses a radio description correctly', () => {
-    expect(
-      parseControlDescription(
-        validRadioControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validRadioControlDescriptionValue))
+    expect(parseControlDescription(validRadioControlDescriptionValue)).toEqual(
+      right(validRadioControlDescriptionValue),
+    )
   })
   it('parses a color description correctly', () => {
-    expect(
-      parseControlDescription(
-        validColorControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validColorControlDescriptionValue))
+    expect(parseControlDescription(validColorControlDescriptionValue)).toEqual(
+      right(validColorControlDescriptionValue),
+    )
   })
   it('parses an expression input control description correctly', () => {
-    expect(
-      parseControlDescription(
-        validExpressionInputControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validExpressionInputControlDescriptionValue))
+    expect(parseControlDescription(validExpressionInputControlDescriptionValue)).toEqual(
+      right(validExpressionInputControlDescriptionValue),
+    )
   })
   it('parses a none description correctly', () => {
-    expect(
-      parseControlDescription(
-        validNoneControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validNoneControlDescriptionValue))
+    expect(parseControlDescription(validNoneControlDescriptionValue)).toEqual(
+      right(validNoneControlDescriptionValue),
+    )
   })
   it('parses a folder instance description correctly', () => {
-    expect(
-      parseControlDescription(
-        validFolderControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validFolderControlDescriptionValue))
+    expect(parseControlDescription(validFolderControlDescriptionValue)).toEqual(
+      right(validFolderControlDescriptionValue),
+    )
   })
   it('parses a vector2 description correctly', () => {
-    expect(
-      parseControlDescription(
-        validVector2ControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validVector2ControlDescriptionValue))
+    expect(parseControlDescription(validVector2ControlDescriptionValue)).toEqual(
+      right(validVector2ControlDescriptionValue),
+    )
   })
   it('parses a vector3 description correctly', () => {
-    expect(
-      parseControlDescription(
-        validVector3ControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validVector3ControlDescriptionValue))
+    expect(parseControlDescription(validVector3ControlDescriptionValue)).toEqual(
+      right(validVector3ControlDescriptionValue),
+    )
   })
   it('parses a vector4 description correctly', () => {
-    expect(
-      parseControlDescription(
-        validVector4ControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validVector4ControlDescriptionValue))
+    expect(parseControlDescription(validVector4ControlDescriptionValue)).toEqual(
+      right(validVector4ControlDescriptionValue),
+    )
   })
   it('parses a euler description correctly', () => {
-    expect(
-      parseControlDescription(
-        validEulerControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validEulerControlDescriptionValue))
+    expect(parseControlDescription(validEulerControlDescriptionValue)).toEqual(
+      right(validEulerControlDescriptionValue),
+    )
   })
   it('parses a matrix3 description correctly', () => {
-    expect(
-      parseControlDescription(
-        validMatrix3ControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validMatrix3ControlDescriptionValue))
+    expect(parseControlDescription(validMatrix3ControlDescriptionValue)).toEqual(
+      right(validMatrix3ControlDescriptionValue),
+    )
   })
   it('parses a matrix4 description correctly', () => {
-    expect(
-      parseControlDescription(
-        validMatrix4ControlDescriptionValue,
-        'testPropName',
-        'includeSpecialProps',
-      ),
-    ).toEqual(right(validMatrix4ControlDescriptionValue))
+    expect(parseControlDescription(validMatrix4ControlDescriptionValue)).toEqual(
+      right(validMatrix4ControlDescriptionValue),
+    )
   })
   it('fails on a value that is not an object', () => {
-    expect(parseControlDescription('hat', 'testPropName', 'includeSpecialProps')).toEqual(
-      left(descriptionParseError('Not an object.')),
-    )
+    expect(parseControlDescription('hat')).toEqual(left(descriptionParseError('Not an object.')))
   })
   it('fails on a value that is an invalid case of one of the descriptions', () => {
     const value = {
       ...validRadioControlDescriptionValue,
       label: true,
     }
-    expect(parseControlDescription(value, 'testPropName', 'includeSpecialProps')).toEqual(
+    expect(parseControlDescription(value)).toEqual(
       left(objectFieldParseError('label', descriptionParseError('Not a string.'))),
     )
   })
@@ -642,9 +576,7 @@ describe('parsePropertyControls', () => {
       width: right(validNumberInputControlDescriptionValue),
       height: right(validNumberInputControlDescriptionValue),
     })
-    expect(parsePropertyControls(propertyControlsValue, 'includeSpecialProps')).toEqual(
-      expectedResult,
-    )
+    expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
   })
   it('returns the property controls fully parsed when some are invalid', () => {
     const propertyControlsValue = {
@@ -658,17 +590,13 @@ describe('parsePropertyControls', () => {
       width: right(validNumberInputControlDescriptionValue),
       height: left(objectFieldParseError('defaultValue', descriptionParseError('Not a number.'))),
     })
-    expect(parsePropertyControls(propertyControlsValue, 'includeSpecialProps')).toEqual(
-      expectedResult,
-    )
+    expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
   })
   it('gives an error if the entire value is invalid', () => {
     const propertyControlsValue = 5
     const expectedResult: ParseResult<ParsedPropertyControls> = left(
       descriptionParseError('Not an object.'),
     )
-    expect(parsePropertyControls(propertyControlsValue, 'includeSpecialProps')).toEqual(
-      expectedResult,
-    )
+    expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
   })
 })
