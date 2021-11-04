@@ -36,9 +36,14 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
   const hiddenPropsList = React.useMemo(
     () =>
       Object.keys(props.parsedPropertyControls).filter((prop) => {
-        const isNotFolder = eitherToMaybe(props.parsedPropertyControls[prop])?.control !== 'folder'
+        const parsedControl = props.parsedPropertyControls[prop]
+        const isVisibleByDefault = foldEither(
+          (_) => false,
+          (r) => r.control === 'folder' || (r.visibleByDefault ?? false),
+          parsedControl,
+        )
         return (
-          isNotFolder &&
+          !isVisibleByDefault &&
           props.unsetPropNames.includes(prop) &&
           !props.visibleEmptyControls.includes(prop)
         )
@@ -49,9 +54,9 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
   const controlsWithValue = React.useMemo(
     () =>
       Object.keys(props.parsedPropertyControls).filter((prop) => {
-        return !props.unsetPropNames.includes(prop) && !props.visibleEmptyControls.includes(prop)
+        return !hiddenPropsList.includes(prop) && !props.visibleEmptyControls.includes(prop)
       }),
-    [props.parsedPropertyControls, props.unsetPropNames, props.visibleEmptyControls],
+    [props.parsedPropertyControls, props.visibleEmptyControls, hiddenPropsList],
   )
   const emptyControls = React.useMemo(
     () =>

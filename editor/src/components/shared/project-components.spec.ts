@@ -1,9 +1,9 @@
-import { getControlsForExternalDependencies } from '../../core/property-controls/property-controls-utils'
 import {
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
   resolvedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
+import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
 import { simpleDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 import { getComponentGroups } from './project-components'
@@ -16,9 +16,10 @@ describe('getComponentGroups', () => {
     const dependencies: Array<PossiblyUnversionedNpmDependency> = [
       resolvedNpmDependency('antd', '4.1.0'),
     ]
-    const propertyControlsInfo: PropertyControlsInfo = getControlsForExternalDependencies(
-      dependencies,
-    )
+
+    const propertyControlsInfo: PropertyControlsInfo = {
+      antd: DefaultThirdPartyControlDefinitions.antd,
+    }
     const actualResult = getComponentGroups(
       packageStatus,
       propertyControlsInfo,

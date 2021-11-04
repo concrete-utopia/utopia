@@ -345,7 +345,6 @@ import {
   SetPackageStatus,
   SetShortcut,
   UpdatePropertyControlsInfo,
-  PropertyControlsIFrameReady,
   AddStoryboardFile,
   SendLinterRequestMessage,
   UpdateChildText,
@@ -480,7 +479,6 @@ import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch
 import {
   getPropertyControlsForTarget,
   getPropertyControlsForTargetFromEditor,
-  setPropertyControlsIFrameReady,
 } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { ShortcutConfiguration } from '../shortcut-definitions'
@@ -4407,14 +4405,6 @@ export const UPDATE_FNS = {
       },
     }
   },
-  PROPERTY_CONTROLS_IFRAME_READY: (
-    _action: PropertyControlsIFrameReady,
-    editor: EditorModel,
-  ): EditorModel => {
-    // Internal side effect.
-    setPropertyControlsIFrameReady(true)
-    return editor
-  },
   ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
     const updatedEditor = addStoryboardFileToProject(editor)
     if (updatedEditor == null) {
@@ -5177,28 +5167,6 @@ export async function load(
 
 export function isSendPreviewModel(action: any): action is SendPreviewModel {
   return action != null && (action as SendPreviewModel).action === 'SEND_PREVIEW_MODEL'
-}
-
-export function isPropertyControlsIFrameReady(
-  action: unknown,
-): action is PropertyControlsIFrameReady {
-  const parseResult = objectKeyParser(parseString, 'action')(action)
-  return foldEither(
-    (_) => false,
-    (prop) => prop === 'PROPERTY_CONTROLS_IFRAME_READY',
-    parseResult,
-  )
-}
-
-export function isUpdatePropertyControlsInfo(
-  action: unknown,
-): action is UpdatePropertyControlsInfo {
-  const parseResult = objectKeyParser(parseString, 'action')(action)
-  return foldEither(
-    (_) => false,
-    (prop) => prop === 'UPDATE_PROPERTY_CONTROLS_INFO',
-    parseResult,
-  )
 }
 
 function revertFileInProjectContents(

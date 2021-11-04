@@ -387,9 +387,9 @@ export const AntdControls = {
   Space: Space,
   Row: Row,
   Col: Col,
-  Text: Text,
+  'Typography.Text': Text,
   Menu: Menu,
-  Item: MenuItem,
-  SubMenu: MenuSubMenu,
-  ItemGroup: MenuItemGroup,
+  'Menu.Item': MenuItem,
+  'Menu.SubMenu': MenuSubMenu,
+  'Menu.ItemGroup': MenuItemGroup,
 }
