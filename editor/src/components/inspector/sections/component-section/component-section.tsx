@@ -376,7 +376,7 @@ const RowForArrayControl = betterReactMemo(
   },
 )
 interface ArrayControlItemProps {
-  springStyle: { [x: string]: any; [x: number]: any; [x: symbol]: any }
+  springStyle: { [x: string]: any; [x: number]: any }
   bind: (...args: any[]) => ReactEventHandlers
   propPath: PropertyPath
   index: number
