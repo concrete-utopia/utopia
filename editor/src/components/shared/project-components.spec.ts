@@ -17,7 +17,6 @@ describe('getComponentGroups', () => {
       resolvedNpmDependency('antd', '4.1.0'),
     ]
 
-    // TODO This might clash with Eni's changes here
     const propertyControlsInfo: PropertyControlsInfo = {
       antd: DefaultThirdPartyControlDefinitions.antd,
     }
