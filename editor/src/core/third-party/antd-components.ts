@@ -5,12 +5,18 @@ import {
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 
+const StyleObjectProps: PropertyControls = {
+  style: {
+    control: 'style-controls',
+  },
+}
+
 function createBasicComponent(
   baseVariable: string,
   propertyControls: PropertyControls,
 ): ComponentDescriptor {
   return {
-    propertyControls: propertyControls,
+    propertyControls: { ...StyleObjectProps, ...propertyControls },
     componentInfo: {
       requiredImports: [
         {
