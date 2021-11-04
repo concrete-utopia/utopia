@@ -74,6 +74,7 @@ import { ComponentInfoBox } from './component-info-box'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
+import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -309,7 +310,6 @@ const RowForArrayControl = betterReactMemo(
       false,
     )
     const [insertingRow, setInsertingRow] = React.useState(false)
-    const colorTheme = useColorTheme()
     const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
 
     React.useEffect(() => setInsertingRow(false), [springs.length])
@@ -347,60 +347,19 @@ const RowForArrayControl = betterReactMemo(
             height: rowHeight * springs.length,
           }}
         >
-          {springs.map((springStyle, index) => {
-            return (
-              <animated.div
-                {...bind(index)}
-                key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
-                style={{
-                  ...springStyle,
-                  width: '100%',
-                  position: 'absolute',
-                  height: rowHeight,
-                }}
-                css={{
-                  '& > .handle': {
-                    opacity: 0,
-                  },
-                  '&:hover > .handle': {
-                    opacity: 1,
-                  },
-                }}
-              >
-                <RowForControl
-                  controlDescription={controlDescription.propertyControl}
-                  isScene={isScene}
-                  propPath={PP.appendPropertyPathElems(propPath, [index])}
-                  setGlobalCursor={props.setGlobalCursor}
-                  indentationLevel={1}
-                  focusOnMount={props.focusOnMount && index === 0}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    bottom: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                  className='handle'
-                >
-                  <svg width='5px' height='23px' viewBox='0 0 4 23'>
-                    <g
-                      stroke={colorTheme.border3.value}
-                      strokeWidth='1'
-                      fill='none'
-                      fillRule='evenodd'
-                      strokeLinecap='round'
-                    >
-                      <line x1='1' y1='1.5' x2='1' y2='21'></line>
-                      <line x1='4' y1='1.5' x2='4' y2='21'></line>
-                    </g>
-                  </svg>
-                </div>
-              </animated.div>
-            )
-          })}
+          {springs.map((springStyle, index) => (
+            <ArrayControlItem
+              springStyle={springStyle}
+              bind={bind}
+              key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
+              index={index}
+              propPath={propPath}
+              isScene={props.isScene}
+              controlDescription={controlDescription}
+              focusOnMount={props.focusOnMount}
+              setGlobalCursor={props.setGlobalCursor}
+            />
+          ))}
         </div>
         {insertingRow ? (
           <RowForControl
@@ -416,6 +375,88 @@ const RowForArrayControl = betterReactMemo(
     )
   },
 )
+interface ArrayControlItemProps {
+  springStyle: { [x: string]: any; [x: number]: any; [x: symbol]: any }
+  bind: (...args: any[]) => ReactEventHandlers
+  propPath: PropertyPath
+  index: number
+  isScene: boolean
+  controlDescription: ArrayControlDescription
+  focusOnMount: boolean
+  setGlobalCursor: (cursor: CSSCursor | null) => void
+}
+
+const ArrayControlItem = (props: ArrayControlItemProps) => {
+  const colorTheme = useColorTheme()
+  const { bind, propPath, index, isScene, springStyle, controlDescription } = props
+  const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
+  const propMetadata = useComponentPropsInspectorInfo(
+    propPathWithIndex,
+    isScene,
+    controlDescription,
+  )
+  const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
+
+  const rowHeight = UtopiaTheme.layout.rowHeight.normal
+  return (
+    <InspectorContextMenuWrapper
+      id={`context-menu-for-${PP.toString(propPathWithIndex)}`}
+      items={contextMenuItems}
+      data={null}
+      key={index}
+    >
+      <animated.div
+        {...bind(index)}
+        style={{
+          ...springStyle,
+          width: '100%',
+          position: 'absolute',
+          height: rowHeight,
+        }}
+        css={{
+          '& > .handle': {
+            opacity: 0,
+          },
+          '&:hover > .handle': {
+            opacity: 1,
+          },
+        }}
+      >
+        <RowForControl
+          controlDescription={controlDescription.propertyControl}
+          isScene={isScene}
+          propPath={PP.appendPropertyPathElems(propPath, [index])}
+          setGlobalCursor={props.setGlobalCursor}
+          indentationLevel={1}
+          focusOnMount={props.focusOnMount && index === 0}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+          }}
+          className='handle'
+        >
+          <svg width='5px' height='23px' viewBox='0 0 4 23'>
+            <g
+              stroke={colorTheme.border3.value}
+              strokeWidth='1'
+              fill='none'
+              fillRule='evenodd'
+              strokeLinecap='round'
+            >
+              <line x1='1' y1='1.5' x2='1' y2='21'></line>
+              <line x1='4' y1='1.5' x2='4' y2='21'></line>
+            </g>
+          </svg>
+        </div>
+      </animated.div>
+    </InspectorContextMenuWrapper>
+  )
+}
 
 interface ObjectIndicatorProps {
   open: boolean
