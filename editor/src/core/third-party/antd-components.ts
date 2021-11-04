@@ -1,13 +1,9 @@
-import { importAlias, importDetails, PropertyPathPart } from '../shared/project-file-types'
-import {
-  componentDescriptor,
-  DependencyBoundDescriptors,
-  ComponentDescriptor,
-} from './third-party-types'
-import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
 import { PropertyControls } from 'utopia-api'
-import { getDefaultPropsAsAttributes } from './shared'
+import {
+  ComponentDescriptor,
+  ComponentDescriptorsForFile,
+} from '../../components/custom-code/code-file'
 
 const StyleObjectProps: PropertyControls = {
   style: {
@@ -17,41 +13,33 @@ const StyleObjectProps: PropertyControls = {
 
 function createBasicComponent(
   baseVariable: string,
-  propertyPathParts: PropertyPathPart[],
-  name: string,
-  propertyControls: PropertyControls | null,
+  propertyControls: PropertyControls,
 ): ComponentDescriptor {
-  const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
-  return componentDescriptor(
-    [
-      {
-        source: 'antd',
-        name: baseVariable,
-        type: null,
-      },
-      { source: 'antd/dist/antd.css', name: null, type: null },
-    ],
-    jsxElementWithoutUID(jsxElementName(baseVariable, propertyPathParts), defaultAttributes, []),
-    name,
-    { ...StyleObjectProps, ...propertyControls },
-  )
+  return {
+    propertyControls: { ...StyleObjectProps, ...propertyControls },
+    componentInfo: {
+      requiredImports: [
+        {
+          source: 'antd',
+          name: baseVariable,
+          type: null,
+        },
+        { source: 'antd/dist/antd.css', name: null, type: null },
+      ],
+    },
+  }
 }
 
-export const AntdComponents: DependencyBoundDescriptors = {
-  '>=4.0.0 <5.0.0': {
-    name: 'Antd',
-    components: [
-      createBasicComponent('DatePicker', [], 'Date Picker', null),
-      createBasicComponent('Button', [], 'Button', AntdControls.Button),
-      createBasicComponent('InputNumber', [], 'Number Input', null),
-      createBasicComponent('Row', [], 'Row', AntdControls.Row),
-      createBasicComponent('Col', [], 'Col', AntdControls.Col),
-      createBasicComponent('Space', [], 'Space', AntdControls.Space),
-      createBasicComponent('Menu', [], 'Menu', AntdControls.Menu),
-      createBasicComponent('Menu', ['Item'], 'Menu Item', AntdControls.Item),
-      createBasicComponent('Menu', ['SubMenu'], 'Menu SubMenu', AntdControls.SubMenu),
-      createBasicComponent('Menu', ['ItemGroup'], 'Menu ItemGroup', AntdControls.ItemGroup),
-      createBasicComponent('Typography', ['Text'], 'Typography Text', AntdControls.Text),
-    ],
-  },
+export const AntdComponents: ComponentDescriptorsForFile = {
+  DatePicker: createBasicComponent('DatePicker', {}),
+  Button: createBasicComponent('Button', AntdControls.Button),
+  InputNumber: createBasicComponent('InputNumber', {}),
+  Row: createBasicComponent('Row', AntdControls.Row),
+  Col: createBasicComponent('Col', AntdControls.Col),
+  Space: createBasicComponent('Space', AntdControls.Space),
+  Menu: createBasicComponent('Menu', AntdControls.Menu),
+  'Menu.Item': createBasicComponent('Menu', AntdControls['Menu.Item']),
+  'Menu.SubMenu': createBasicComponent('Menu', AntdControls['Menu.SubMenu']),
+  'Menu.ItemGroup': createBasicComponent('Menu', AntdControls['Menu.ItemGroup']),
+  'Typography.Text': createBasicComponent('Typography', AntdControls['Typography.Text']),
 }

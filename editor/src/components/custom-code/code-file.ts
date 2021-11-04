@@ -3,11 +3,6 @@ import { EmitFileResult } from '../../core/workers/ts/ts-worker'
 import { ImportType, PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import {
-  getControlsForExternalDependencies,
-  NodeModulesUpdate,
-  sendPropertyControlsInfoRequest,
-} from '../../core/property-controls/property-controls-utils'
-import {
   NodeModules,
   esCodeFile,
   ProjectContents,
@@ -59,6 +54,8 @@ import {
 } from '../../core/workers/common/worker-types'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
+type ModuleExportTypes = { [name: string]: ExportType }
+
 export interface CodeResult {
   exports: ModuleExportTypes
   transpiledCode: string | null
@@ -80,13 +77,17 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
+export type ComponentDescriptor = {
+  propertyControls: PropertyControls
+  componentInfo: { requiredImports?: Array<ImportType> }
+}
+
+export type ComponentDescriptorsForFile = {
+  [componentName: string]: ComponentDescriptor
+}
+
 export type PropertyControlsInfo = {
-  [filenameNoExtension: string]: {
-    [componentName: string]: {
-      propertyControls: PropertyControls
-      componentInfo: { requiredImports?: Array<ImportType> }
-    }
-  }
+  [filenameNoExtension: string]: ComponentDescriptorsForFile
 }
 
 export type ResolveFn = (importOrigin: string, toImport: string) => Either<string, string>
@@ -101,93 +102,6 @@ export type CodeResultCache = {
   curriedResolveFn: CurriedResolveFn
   projectModules: MultiFileBuildResult
   evaluationCache: EvaluationCache
-}
-
-type ModuleExportValues = { [name: string]: any }
-type ModuleExportTypes = { [name: string]: ExportType }
-type ExportValue = { value: any }
-type ModuleExportTypesAndValues = { [name: string]: ExportType & ExportValue }
-
-export function getExportValuesFromAllModules(
-  buildResult: MultiFileBuildResult,
-  requireFn: UtopiaRequireFn,
-): { [module: string]: ModuleExportValues } {
-  /**
-   * TODO
-   * we are requiring every user module here. unfortunately it means that if
-   * requiring them has any side effect, we will trigger that side effect here,
-   * even if it was never imported by the user
-   *
-   * a better solution would be to store the exported values as a side effect of the user requiring the module
-   * that way the side effects would happen at the correct time, and we would
-   * still have access to things like the PropertyControls for every component the user
-   * can select (since selecting them requires the component to be on screen, which means it must be imported anyways)
-   *
-   */
-
-  let exports: { [module: string]: ModuleExportValues } = {}
-  const moduleNames = Object.keys(buildResult)
-  // get all the modules from System to fill in the exports with their values
-  moduleNames.forEach((moduleName) => {
-    if (moduleName.toLowerCase().endsWith('.css')) {
-      // Skip eager evalution of css
-      return
-    }
-
-    const module = buildResult[moduleName]
-    if (module.transpiledCode == null) {
-      return
-    }
-    try {
-      exports[moduleName] = {}
-      const codeModule = requireFn('/', moduleName, true)
-      if (codeModule != null) {
-        Object.keys(codeModule).forEach((exp) => {
-          exports[moduleName][exp] = codeModule[exp]
-        })
-      }
-    } catch (e) {
-      // skipping this module, there is a runtime error executing it
-    }
-  })
-  return exports
-}
-
-export function processExportsInfo(
-  exportValues: ModuleExportValues,
-  exportTypes: ModuleExportTypes,
-): {
-  exports: ModuleExportTypesAndValues
-  error: Error | null
-} {
-  let exportsWithType: ModuleExportTypesAndValues = {}
-  try {
-    Utils.fastForEach(Object.keys(exportValues), (name: string) => {
-      if (exportTypes[name] == null) {
-        exportsWithType[name] = {
-          value: exportValues[name],
-          type: 'any',
-          functionInfo: null,
-          reactClassInfo: null,
-        }
-      } else {
-        exportsWithType[name] = {
-          ...exportTypes[name],
-          value: exportValues[name],
-        }
-      }
-    })
-
-    return {
-      exports: exportsWithType,
-      error: null,
-    }
-  } catch (e) {
-    return {
-      exports: exportsWithType,
-      error: e,
-    }
-  }
 }
 
 export function incorporateBuildResult(
@@ -269,14 +183,6 @@ export function generateCodeResultCache(
 
   // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it.
   incorporateBuildResult(nodeModules, projectContents, projectModules)
-
-  // Trigger async call to build the property controls info.
-  sendPropertyControlsInfoRequest(
-    nodeModules,
-    projectContents,
-    onlyProjectFiles,
-    updatedAndReverseDepFilenames,
-  )
 
   const curriedRequireFn = getCurriedEditorRequireFn(
     nodeModules,

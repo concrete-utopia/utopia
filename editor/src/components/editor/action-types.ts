@@ -786,10 +786,6 @@ export interface UpdatePropertyControlsInfo {
   propertyControlsInfo: PropertyControlsInfo
 }
 
-export interface PropertyControlsIFrameReady {
-  action: 'PROPERTY_CONTROLS_IFRAME_READY'
-}
-
 export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
@@ -1057,7 +1053,6 @@ export type EditorAction =
   | SetPackageStatus
   | SetShortcut
   | UpdatePropertyControlsInfo
-  | PropertyControlsIFrameReady
   | AddStoryboardFile
   | UpdateChildText
   | MarkVSCodeBridgeReady

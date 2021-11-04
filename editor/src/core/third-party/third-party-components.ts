@@ -1,11 +1,4 @@
 import {
-  DependenciesDescriptors,
-  DependencyDescriptor,
-  DependencyBoundDescriptors,
-} from './third-party-types'
-import { AntdComponents } from './antd-components'
-import { satisfies } from 'semver'
-import {
   PossiblyUnversionedNpmDependency,
   RequestedNpmDependency,
   resolvedNpmDependency,
@@ -15,34 +8,8 @@ import { NodeModules, isEsCodeFile } from '../shared/project-file-types'
 import { fastForEach } from '../shared/utils'
 import { parseVersionPackageJsonFile } from '../../utils/package-parser-utils'
 import { forEachRight } from '../shared/either'
-import { UtopiaApiComponents } from './utopia-api-components'
 import { versionForBuiltInDependency } from '../es-modules/package-manager/built-in-dependencies'
 import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
-import { ReactThreeFiberComponents } from './react-three-fiber-components'
-
-const ThirdPartyComponents: DependenciesDescriptors = {
-  antd: AntdComponents,
-  'utopia-api': UtopiaApiComponents,
-  '@react-three/fiber': ReactThreeFiberComponents,
-}
-
-export function getThirdPartyComponents(
-  dependencyName: string,
-  dependencyVersion: string,
-): DependencyDescriptor | null {
-  if (dependencyName in ThirdPartyComponents) {
-    const boundsDescriptors: DependencyBoundDescriptors = ThirdPartyComponents[dependencyName]
-    const dependencyBounds = Object.keys(boundsDescriptors)
-    for (const bounds of dependencyBounds) {
-      if (satisfies(dependencyVersion, bounds)) {
-        return boundsDescriptors[bounds]
-      }
-    }
-    return null
-  } else {
-    return null
-  }
-}
 
 function parseDependencyVersionFromNodeModules(
   nodeModules: NodeModules,
