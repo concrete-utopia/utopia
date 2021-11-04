@@ -1,12 +1,15 @@
-import { PropertyControls } from 'utopia-api'
+import { ImportType, PropertyControls } from 'utopia-api'
 import { URL_HASH } from '../../common/env-vars'
 import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
+import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { flatMapEither, foldEither, right } from '../../core/shared/either'
 import {
   emptyComments,
+  isIntrinsicElementFromString,
   JSXAttributes,
   jsxAttributesEntry,
   jsxAttributeValue,
+  jsxElementName,
   jsxElementWithoutUID,
   JSXElementWithoutUID,
 } from '../../core/shared/element-template'
@@ -18,12 +21,14 @@ import {
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
 import {
+  importDetailsFromImportOption,
   Imports,
   isParsedTextFile,
   isParseSuccess,
   isTextFile,
   ProjectFile,
 } from '../../core/shared/project-file-types'
+import { getDefaultPropsAsAttributes } from '../../core/third-party/shared'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import {
   ComponentDescriptor,
@@ -212,7 +217,7 @@ function makeHTMLDescriptor(
   }
   addDefaultProps(propertyControls)
   return componentDescriptor(
-    addImport('', 'react', null, [], 'React', emptyImportsValue),
+    [{ source: 'react', name: 'React', type: 'star' }],
     jsxElementWithoutUID(tag, defaultProps, []),
     tag,
     propertyControls,
@@ -376,7 +381,11 @@ export function getComponentGroups(
         }
       }
       return insertableComponent(
-        component.importsToAdd,
+        mapArrayToDictionary(
+          component.importsToAdd,
+          (importOption) => importOption.source,
+          (importOption) => importDetailsFromImportOption(importOption),
+        ),
         component.element,
         component.name,
         stylePropOptions,
@@ -391,19 +400,36 @@ export function getComponentGroups(
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
     if (isResolvedNpmDependency(dependency)) {
-      const possibleComponentDescriptor = getThirdPartyComponents(
+      const dependencyStatus = getDependencyStatus(
+        packageStatus,
+        propertyControlsInfo,
         dependency.name,
-        dependency.version,
+        'loaded',
       )
-      if (possibleComponentDescriptor != null) {
-        const dependencyStatus = getDependencyStatus(
-          packageStatus,
-          propertyControlsInfo,
-          dependency.name,
-          'loaded',
-        )
-        const components =
-          dependencyStatus === 'loaded' ? possibleComponentDescriptor.components : []
+      const propertyControlsForDependency = propertyControlsInfo[dependency.name]
+      if (propertyControlsForDependency != null) {
+        const components = Object.keys(propertyControlsForDependency).map((name) => {
+          const [baseVariable, ...propertyPathParts] = name.split('.')
+          const elementName = jsxElementName(baseVariable, propertyPathParts)
+          const defaultAttributes = getDefaultPropsAsAttributes(
+            propertyControlsForDependency[name].propertyControls,
+          )
+
+          const probablyIntrinsicElement = isIntrinsicElementFromString(name)
+          const fallbackImports: Array<ImportType> = probablyIntrinsicElement
+            ? []
+            : [{ type: null, source: dependency.name, name: name }]
+
+          const requiredImports =
+            propertyControlsForDependency[name].componentInfo.requiredImports ?? fallbackImports
+          return componentDescriptor(
+            requiredImports,
+            jsxElementWithoutUID(elementName, defaultAttributes, []),
+            name,
+            propertyControlsForDependency[name].propertyControls,
+          )
+        })
+
         addDependencyDescriptor(
           insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
           components,

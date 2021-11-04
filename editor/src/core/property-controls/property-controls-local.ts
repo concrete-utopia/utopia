@@ -1,4 +1,4 @@
-import { PropertyControls, registerControls } from 'utopia-api'
+import { ImportType, PropertyControls, registerControls } from 'utopia-api'
 import deepEqual from 'fast-deep-equal'
 
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -16,7 +16,12 @@ export function createRegisterControlsFunction(
   getEditorState: (() => EditorState) | null,
 ): typeof registerControls {
   // create a function with a signature that matches utopia-api/registerControls
-  return (componentName: string, packageName: string, propertyControls: PropertyControls): void => {
+  return (
+    componentName: string,
+    packageName: string,
+    propertyControls: PropertyControls,
+    requiredImports?: Array<ImportType>,
+  ): void => {
     if (componentName == null || packageName == null || typeof propertyControls !== 'object') {
       console.warn(
         'registerControls has 3 parameters: component name, package name, property controls object',
@@ -31,7 +36,10 @@ export function createRegisterControlsFunction(
         const updatedControls: PropertyControlsInfo = {
           [packageName]: {
             ...currentPropertyControlsInfo[packageName],
-            [componentName]: propertyControls,
+            [componentName]: {
+              propertyControls: propertyControls,
+              componentInfo: { requiredImports: requiredImports },
+            },
           },
         }
         if (!currentControlsAreTheSame) {
@@ -57,7 +65,7 @@ export function getThirdPartyControlsIntrinsic(
     )
   })
   if (foundPackageWithElement != null) {
-    return propertyControlsInfo[foundPackageWithElement][elementName]
+    return propertyControlsInfo[foundPackageWithElement][elementName].propertyControls
   }
   return null
 }

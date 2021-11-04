@@ -41,7 +41,11 @@ import { SelectOption } from '../../controls/select-control'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { UIGridRow } from '../../widgets/ui-grid-row'
-import { importDetails, Imports, PropertyPath } from '../../../../core/shared/project-file-types'
+import {
+  importDetailsFromImportOption,
+  Imports,
+  PropertyPath,
+} from '../../../../core/shared/project-file-types'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { jsxAttributeOtherJavaScript } from '../../../../core/shared/element-template'
@@ -298,13 +302,7 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
         if (expressionOption != null && expressionOption.requiredImport != null) {
           const importOption = expressionOption.requiredImport
           const importToAdd: Imports = {
-            [importOption.source]: importDetails(
-              importOption.type === 'default' ? importOption.name : null,
-              importOption.type == null
-                ? [{ name: importOption.name, alias: importOption.name }]
-                : [],
-              importOption.type === 'star' ? importOption.name : null,
-            ),
+            [importOption.source]: importDetailsFromImportOption(importOption),
           }
           actions.push(addImports(importToAdd, target))
         }

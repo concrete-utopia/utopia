@@ -1,16 +1,16 @@
 import { JSXElementWithoutUID } from '../shared/element-template'
 import { Imports } from '../shared/project-file-types'
-import { PropertyControls } from 'utopia-api'
+import { ImportType, PropertyControls } from 'utopia-api'
 
 export interface ComponentDescriptor {
-  importsToAdd: Imports
+  importsToAdd: Array<ImportType>
   element: JSXElementWithoutUID
   name: string
   propertyControls: PropertyControls | null
 }
 
 export function componentDescriptor(
-  importsToAdd: Imports,
+  importsToAdd: Array<ImportType>,
   element: JSXElementWithoutUID,
   name: string,
   propertyControls: PropertyControls | null,

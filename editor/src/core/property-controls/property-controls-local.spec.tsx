@@ -54,15 +54,20 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo[storyboardPath]).toMatchInlineSnapshot(`
       Object {
         "App": Object {
-          "background": Object {
-            "control": "color",
+          "componentInfo": Object {
+            "requiredImports": undefined,
           },
-          "label": Object {
-            "control": "string-input",
-          },
-          "visible": Object {
-            "control": "checkbox",
-            "defaultValue": true,
+          "propertyControls": Object {
+            "background": Object {
+              "control": "color",
+            },
+            "label": Object {
+              "control": "string-input",
+            },
+            "visible": Object {
+              "control": "checkbox",
+              "defaultValue": true,
+            },
           },
         },
       }

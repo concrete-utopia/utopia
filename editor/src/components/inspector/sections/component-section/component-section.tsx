@@ -279,7 +279,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
     >
       <UIGridRow
         padded={false}
-        style={{ paddingLeft: 0, paddingTop: 3, paddingBottom: 3 }}
+        style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
         variant='<--1fr--><--1fr-->'
       >
         {propertyLabel}
@@ -482,7 +482,10 @@ const RowForObjectControl = betterReactMemo(
       >
         <div>
           <div onClick={handleOnClick}>
-            <SimpleFlexRow style={{ flexGrow: 1 }}>
+            <SimpleFlexRow style={{ flexGrow: 1, 
+                
+                
+                : 8 }}>
               <PropertyLabel
                 target={[propPath]}
                 style={{

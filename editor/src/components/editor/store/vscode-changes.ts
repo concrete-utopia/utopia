@@ -76,14 +76,17 @@ export function ensureDirectoryExistsChange(fullPath: string): EnsureDirectoryEx
   }
 }
 
-export type ProjectChange = WriteProjectFileChange | DeletePathChange | EnsureDirectoryExistsChange
+export type ProjectFileChange =
+  | WriteProjectFileChange
+  | DeletePathChange
+  | EnsureDirectoryExistsChange
 
 export function collateProjectChanges(
   projectID: string,
   oldContents: ProjectContentTreeRoot,
   newContents: ProjectContentTreeRoot,
-): Array<ProjectChange> {
-  let changesToProcess: Array<ProjectChange> = []
+): Array<ProjectFileChange> {
+  let changesToProcess: Array<ProjectFileChange> = []
 
   function applyChanges(
     fullPath: string,
@@ -212,7 +215,7 @@ export function shouldIncludeSelectedElementChanges(
 export function getProjectContentsChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
-): Array<ProjectChange> {
+): Array<ProjectFileChange> {
   if (oldEditorState.vscodeBridgeId != null) {
     return collateProjectChanges(
       getUnderlyingVSCodeBridgeID(oldEditorState.vscodeBridgeId),
@@ -224,18 +227,18 @@ export function getProjectContentsChanges(
   }
 }
 
-export interface AccumulatedVSCodeChanges {
-  fileChanges: Array<ProjectChange>
+export interface ProjectChanges {
+  fileChanges: Array<ProjectFileChange>
   updateDecorations: UpdateDecorationsMessage | null
   selectedChanged: SelectedElementChanged | null
 }
 
 function combineFileChanges(
-  first: Array<ProjectChange>,
-  second: Array<ProjectChange>,
-): Array<ProjectChange> {
+  first: Array<ProjectFileChange>,
+  second: Array<ProjectFileChange>,
+): Array<ProjectFileChange> {
   let writeFilePathsSeen: Set<string> = new Set()
-  let reversedResult: Array<ProjectChange> = []
+  let reversedResult: Array<ProjectFileChange> = []
   fastForEach([...first, ...second].reverse(), (change) => {
     if (change.type === 'WRITE_PROJECT_FILE') {
       if (writeFilePathsSeen.has(change.fullPath)) {
@@ -254,10 +257,10 @@ function combineFileChanges(
   return result
 }
 
-export function combineAccumulatedVSCodeChanges(
-  first: AccumulatedVSCodeChanges,
-  second: AccumulatedVSCodeChanges,
-): AccumulatedVSCodeChanges {
+export function combineProjectChanges(
+  first: ProjectChanges,
+  second: ProjectChanges,
+): ProjectChanges {
   return {
     fileChanges: combineFileChanges(first.fileChanges, second.fileChanges),
     updateDecorations: second.updateDecorations ?? first.updateDecorations,
@@ -265,15 +268,13 @@ export function combineAccumulatedVSCodeChanges(
   }
 }
 
-export const emptyAccumulatedVSCodeChanges: AccumulatedVSCodeChanges = {
+export const emptyProjectChanges: ProjectChanges = {
   fileChanges: [],
   updateDecorations: null,
   selectedChanged: null,
 }
 
-export function localAccumulatedToVSCodeAccumulated(
-  local: AccumulatedVSCodeChanges,
-): AccumulatedToVSCodeMessage {
+export function projectChangesToVSCodeMessages(local: ProjectChanges): AccumulatedToVSCodeMessage {
   let messages: Array<ToVSCodeMessageNoAccumulated> = []
   if (local.updateDecorations != null) {
     messages.push(local.updateDecorations)
@@ -284,10 +285,10 @@ export function localAccumulatedToVSCodeAccumulated(
   return accumulatedToVSCodeMessage(messages)
 }
 
-export function getVSCodeChanges(
+export function getProjectChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
-): AccumulatedVSCodeChanges {
+): ProjectChanges {
   return {
     fileChanges: getProjectContentsChanges(oldEditorState, newEditorState),
     updateDecorations: shouldIncludeVSCodeDecorations(oldEditorState, newEditorState)
@@ -299,9 +300,9 @@ export function getVSCodeChanges(
   }
 }
 
-export async function sendVSCodeChanges(changes: AccumulatedVSCodeChanges): Promise<void> {
+export async function sendVSCodeChanges(changes: ProjectChanges): Promise<void> {
   await applyProjectChanges(changes.fileChanges)
-  const toVSCodeAccumulated = localAccumulatedToVSCodeAccumulated(changes)
+  const toVSCodeAccumulated = projectChangesToVSCodeMessages(changes)
   if (toVSCodeAccumulated.messages.length > 0) {
     await sendMessage(toVSCodeAccumulated)
   }
