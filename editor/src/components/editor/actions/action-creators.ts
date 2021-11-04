@@ -92,7 +92,6 @@ import type {
   OpenPopup,
   OpenTextEditor,
   PasteJSXElements,
-  PropertyControlsIFrameReady,
   AddToast,
   RemoveToast,
   Redo,
@@ -1274,12 +1273,6 @@ export function updatePropertyControlsInfo(
   return {
     action: 'UPDATE_PROPERTY_CONTROLS_INFO',
     propertyControlsInfo: propertyControlsInfo,
-  }
-}
-
-export function propertyControlsIFrameReady(): PropertyControlsIFrameReady {
-  return {
-    action: 'PROPERTY_CONTROLS_IFRAME_READY',
   }
 }
 

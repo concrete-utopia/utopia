@@ -51,13 +51,6 @@ import {
   ParsedPropertyControls,
   parsePropertyControls,
 } from '../../../core/property-controls/property-controls-parser'
-import {
-  filterSpecialProps,
-  findMissingDefaults,
-  getDefaultPropsFromParsedControls,
-  removeIgnored,
-  getPropertyControlsForTargetFromEditor,
-} from '../../../core/property-controls/property-controls-utils'
 import { addUniquely, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
 import {
   defaultEither,

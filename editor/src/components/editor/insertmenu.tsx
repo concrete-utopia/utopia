@@ -45,10 +45,6 @@ import { defaultIfNull } from '../../core/shared/optional-utils'
 import { forEachRight } from '../../core/shared/either'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
-import {
-  defaultPropertiesForComponentInFile,
-  findMissingDefaultsAndGetWarning,
-} from '../../core/property-controls/property-controls-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
 import {
@@ -57,7 +53,6 @@ import {
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
-import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
 import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 import {

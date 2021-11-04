@@ -136,7 +136,6 @@ import { fastForEach } from '../../../core/shared/utils'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { loginNotYetKnown, notLoggedIn } from '../../../common/user'
 import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
-import { getControlsForExternalDependencies } from '../../../core/property-controls/property-controls-utils'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
@@ -156,6 +155,7 @@ import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
 import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1160,7 +1160,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       true,
       [],
     ),
-    propertyControlsInfo: {},
+    propertyControlsInfo: { ...DefaultThirdPartyControlDefinitions },
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
@@ -1421,7 +1421,7 @@ export function editorModelFromPersistentModel(
       [],
     ),
     projectContents: persistentModel.projectContents,
-    propertyControlsInfo: getControlsForExternalDependencies(npmDependencies),
+    propertyControlsInfo: { ...DefaultThirdPartyControlDefinitions },
     nodeModules: {
       skipDeepFreeze: true,
       files: {},
