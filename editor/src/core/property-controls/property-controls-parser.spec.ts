@@ -111,6 +111,7 @@ const validCheckboxControlDescriptionValue: CheckboxControlDescription = {
   defaultValue: true,
   disabledTitle: 'Not set.',
   enabledTitle: 'Value is set',
+  visibleByDefault: true,
 }
 
 describe('parseCheckboxControlDescription', () => {
@@ -127,6 +128,7 @@ const validColorControlDescriptionValue: ColorControlDescription = {
   label: 'Slider Control',
   control: 'color',
   defaultValue: '#FFFFFF',
+  visibleByDefault: true,
 }
 
 describe('parseColorControlDescription', () => {
@@ -142,6 +144,7 @@ describe('parseColorControlDescription', () => {
 const validExpressionInputControlDescriptionValue: ExpressionInputControlDescription = {
   label: 'Expression Input Control',
   control: 'expression-input',
+  visibleByDefault: true,
 }
 
 describe('parseExpressionInputControlDescription', () => {
@@ -180,6 +183,7 @@ const validPopUpListControlDescriptionValue: PopUpListControlDescription = {
       label: 'Null',
     },
   ],
+  visibleByDefault: true,
 }
 
 describe('parsePopUpListControlDescription', () => {
@@ -237,6 +241,7 @@ const validExpressionPopUpListControlDescriptionValue: ExpressionPopUpListContro
       type: 'star',
     },
   },
+  visibleByDefault: true,
 }
 
 describe('parseExpressionPopUpListControlDescription', () => {
@@ -252,6 +257,7 @@ describe('parseExpressionPopUpListControlDescription', () => {
 const validNoneControlDescriptionValue: NoneControlDescription = {
   label: 'None Description',
   control: 'none',
+  visibleByDefault: true,
 }
 
 describe('parseNoneControlDescription', () => {
@@ -273,6 +279,7 @@ const validNumberInputControlDescriptionValue: NumberInputControlDescription = {
   unit: 'Some Unit',
   step: 1,
   displayStepper: true,
+  visibleByDefault: true,
 }
 
 describe('parseNumberInputControlDescription', () => {
@@ -293,6 +300,7 @@ const validRadioControlDescriptionValue: RadioControlDescription = {
     { value: 5, label: 'Five' },
     { value: 8, label: 'Eight' },
   ],
+  visibleByDefault: true,
 }
 
 describe('parseRadioControlDescription', () => {
@@ -311,6 +319,7 @@ const validStringInputControlDescriptionValue: StringInputControlDescription = {
   defaultValue: 'Some text',
   placeholder: 'Enter text',
   obscured: true,
+  visibleByDefault: true,
 }
 
 describe('parseStringInputControlDescription', () => {
@@ -328,6 +337,7 @@ const validStyleControlsControlDescriptionValue: StyleControlsControlDescription
   control: 'style-controls',
   defaultValue: { width: 100 },
   placeholder: { height: 100 },
+  visibleByDefault: true,
 }
 
 describe('parseStyleControlsControlDescription', () => {
@@ -344,6 +354,7 @@ const validVector2ControlDescriptionValue: Vector2ControlDescription = {
   label: 'Vector2 Control',
   control: 'vector2',
   defaultValue: [10, 20],
+  visibleByDefault: true,
 }
 
 describe('parseVector2ControlDescription', () => {
@@ -360,6 +371,7 @@ const validVector3ControlDescriptionValue: Vector3ControlDescription = {
   label: 'Vector3 Control',
   control: 'vector3',
   defaultValue: [10, 20, 30],
+  visibleByDefault: true,
 }
 
 describe('parseVector3ControlDescription', () => {
@@ -376,6 +388,7 @@ const validVector4ControlDescriptionValue: Vector4ControlDescription = {
   label: 'Vector4 Control',
   control: 'vector4',
   defaultValue: [10, 20, 30, 40],
+  visibleByDefault: true,
 }
 
 describe('parseVector4ControlDescription', () => {
@@ -392,6 +405,7 @@ const validEulerControlDescriptionValue: EulerControlDescription = {
   label: 'Euler Control',
   control: 'euler',
   defaultValue: [10, 20, 30, 'XYZ'],
+  visibleByDefault: true,
 }
 
 describe('parseEulerControlDescription', () => {
@@ -412,7 +426,8 @@ const validMatrix3ControlDescriptionValue: Matrix3ControlDescription = {
     10, 20, 30,
     40, 50, 60,
     70, 80, 90,
-  ]
+  ],
+  visibleByDefault: true,
 }
 
 describe('parseMatrix3ControlDescription', () => {
@@ -434,7 +449,8 @@ const validMatrix4ControlDescriptionValue: Matrix4ControlDescription = {
     50, 60, 70, 80,
     11, 21, 31, 41,
     51, 61, 71, 81,
-  ]
+  ],
+  visibleByDefault: true,
 }
 
 describe('parseMatrix4ControlDescription', () => {
