@@ -1,4 +1,4 @@
-import { ImportType, PropertyControls, registerControls } from 'utopia-api'
+import { ImportType, PropertyControls, registerComponent as registerComponentAPI } from 'utopia-api'
 import deepEqual from 'fast-deep-equal'
 
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -13,37 +13,37 @@ import { updatePropertyControlsInfo } from '../../components/editor/actions/acti
 import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
 
-export function createRegisterControlsFunction(
+export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
-): typeof registerControls {
-  // create a function with a signature that matches utopia-api/registerControls
-  return (
+): typeof registerComponentAPI {
+  // create a function with a signature that matches utopia-api/registerComponent
+  return function registerComponent(
     componentName: string,
-    packageName: string,
+    moduleNameOrPath: string,
     propertyControls: PropertyControls,
-    requiredImports?: Array<ImportType>,
-  ): void => {
-    if (componentName == null || packageName == null || typeof propertyControls !== 'object') {
+    optionalParameters?: { requiredImports?: Array<ImportType> },
+  ): void {
+    if (componentName == null || moduleNameOrPath == null || typeof propertyControls !== 'object') {
       console.warn(
-        'registerControls has 3 parameters: component name, package name, property controls object',
+        'registerComponent has 3 parameters: component name, module name or path, property controls object',
       )
     } else {
       const parsedPropertyControls = parsePropertyControls(propertyControls)
       const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
       if (currentPropertyControlsInfo != null) {
         const currentParsedPropertyControls: ParseResult<ParsedPropertyControls> =
-          currentPropertyControlsInfo[packageName]?.[componentName]?.propertyControls
+          currentPropertyControlsInfo[moduleNameOrPath]?.[componentName]?.propertyControls
         const currentControlsAreTheSame = deepEqual(
           currentParsedPropertyControls,
           parsedPropertyControls,
         )
         const updatedControls: PropertyControlsInfo = {
-          [packageName]: {
-            ...currentPropertyControlsInfo[packageName],
+          [moduleNameOrPath]: {
+            ...currentPropertyControlsInfo[moduleNameOrPath],
             [componentName]: {
               propertyControls: parsedPropertyControls,
-              componentInfo: { requiredImports: requiredImports },
+              componentInfo: { requiredImports: optionalParameters?.requiredImports },
             },
           },
         }
