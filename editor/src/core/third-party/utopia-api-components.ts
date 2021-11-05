@@ -2,13 +2,14 @@ import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
+import { parsePropertyControls } from '../property-controls/property-controls-parser'
 
 const BasicUtopiaComponentDescriptor: ComponentDescriptor = {
-  propertyControls: {
+  propertyControls: parsePropertyControls({
     style: {
       control: 'style-controls',
     },
-  },
+  }),
   componentInfo: {},
 }
 

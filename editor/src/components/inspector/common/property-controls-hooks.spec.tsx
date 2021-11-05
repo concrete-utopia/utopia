@@ -2,51 +2,44 @@ import React from 'react'
 import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext } from '../../editor/store/store-hook'
 import { useGetPropertyControlsForSelectedComponents } from './property-controls-hooks'
-import {
-  InspectorCallbackContext,
-  InspectorCallbackContextData,
-  InspectorPropsContext,
-} from './property-path-hooks'
+import { InspectorCallbackContext, InspectorCallbackContextData } from './property-path-hooks'
 import create from 'zustand'
 import {
-  createEditorState,
   editorModelFromPersistentModel,
   EditorState,
   EditorStore,
-  StoryboardFilePath,
 } from '../../editor/store/editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
-import { projectContentFile } from '../../assets'
-import { ElementPath, textFile, textFileContents } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { createTestProjectWithCode } from '../../../sample-projects/sample-project-utils.test-utils'
 import { TestAppUID, TestSceneUID } from '../../canvas/ui-jsx.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
-import { PropertyControls } from 'utopia-api'
 import {
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { right } from '../../../core/shared/either'
-import { objectMap } from '../../../core/shared/object-utils'
+import { parsePropertyControls } from '../../../core/property-controls/property-controls-parser'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'
 
-const propertyControlsForApp: PropertyControls = {
+const propertyControlsForApp = parsePropertyControls({
   propWithControlButNoValue: {
     control: 'string-input',
     label: 'No Value',
     defaultValue: 'doggie',
   },
-}
-const propertyControlsForOtherComponent: PropertyControls = {
+})
+
+const propertyControlsForOtherComponent = parsePropertyControls({
   propWithOtherKey: {
     control: 'number-input',
     label: 'Katz',
     defaultValue: 5,
   },
-}
+})
+
 function callPropertyControlsHook(selectedViews: ElementPath[]) {
   const persistentModel = createTestProjectWithCode(`
   import * as React from 'react'
@@ -205,7 +198,7 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
 
     expect(result.length).toBe(1)
 
-    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForApp)))
+    expect(result[0].controls).toEqual(propertyControlsForApp)
     expect(result[0].detectedPropsAndValuesWithoutControls).toEqual({
       testPropWithoutControl: 'yes',
     })
@@ -223,7 +216,7 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
 
     expect(result.length).toBe(1)
 
-    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForApp)))
+    expect(result[0].controls).toEqual(propertyControlsForApp)
     expect(result[0].detectedPropsAndValuesWithoutControls).toEqual({
       testPropWithoutControl: 'yes',
     })
@@ -242,7 +235,7 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
 
     expect(result.length).toBe(2)
 
-    expect(result[0].controls).toEqual(right(objectMap(right, propertyControlsForApp)))
+    expect(result[0].controls).toEqual(propertyControlsForApp)
     expect(result[0].detectedPropsAndValuesWithoutControls).toEqual({
       testPropWithoutControl: 'yes',
     })
@@ -257,7 +250,7 @@ describe('useGetPropertyControlsForSelectedComponents', () => {
       EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestOtherComponentUID]]),
     ])
 
-    expect(result[1].controls).toEqual(right(objectMap(right, propertyControlsForOtherComponent)))
+    expect(result[1].controls).toEqual(propertyControlsForOtherComponent)
     expect(result[1].detectedPropsAndValuesWithoutControls).toEqual({})
     expect(result[1].detectedPropsWithNoValue).toEqual([])
     expect(result[1].propsWithControlsButNoValue).toEqual([])

@@ -477,7 +477,7 @@ import { objectMap, objectMapDropNulls } from '../../../core/shared/object-utils
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import {
-  getPropertyControlsForTarget,
+  getDefaultPropsFromParsedControls,
   getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
@@ -4230,15 +4230,8 @@ export const UPDATE_FNS = {
       if (element == null) {
         return editor
       }
-      let defaultProps: { [key: string]: any } = {}
-      if (propertyControls != null) {
-        Utils.fastForEach(Object.keys(propertyControls), (key) => {
-          const defaultValue = (propertyControls[key] as any).defaultValue
-          if (defaultValue != null) {
-            defaultProps[key] = defaultValue
-          }
-        })
-      }
+      const defaultProps =
+        propertyControls == null ? {} : getDefaultPropsFromParsedControls(propertyControls)
 
       const pathToUpdate: PropertyPath | null = action.path
 

@@ -53,6 +53,8 @@ import {
   BuildType,
 } from '../../core/workers/common/worker-types'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
+import { ParseResult } from '../../utils/value-parser-utils'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -78,7 +80,7 @@ export type UtopiaRequireFn = (
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
 export type ComponentDescriptor = {
-  propertyControls: PropertyControls
+  propertyControls: ParseResult<ParsedPropertyControls>
   componentInfo: { requiredImports?: Array<ImportType> }
 }
 
