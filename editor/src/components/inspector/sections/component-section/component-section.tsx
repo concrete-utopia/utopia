@@ -485,7 +485,6 @@ const RowForObjectControl = betterReactMemo(
           },
         }}
       >
-
         <div onClick={handleOnClick}>
           <InspectorContextMenuWrapper
             id={`context-menu-for-${PP.toString(propPath)}`}
