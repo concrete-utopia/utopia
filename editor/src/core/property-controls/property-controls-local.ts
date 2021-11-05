@@ -10,6 +10,8 @@ import {
   packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
+import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
+import { ParseResult } from '../../utils/value-parser-utils'
 
 export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
@@ -27,17 +29,20 @@ export function createRegisterComponentFunction(
         'registerComponent has 3 parameters: component name, module name or path, property controls object',
       )
     } else {
+      const parsedPropertyControls = parsePropertyControls(propertyControls)
       const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
       if (currentPropertyControlsInfo != null) {
+        const currentParsedPropertyControls: ParseResult<ParsedPropertyControls> =
+          currentPropertyControlsInfo[moduleNameOrPath]?.[componentName]?.propertyControls
         const currentControlsAreTheSame = deepEqual(
-          currentPropertyControlsInfo[moduleNameOrPath]?.[componentName],
-          propertyControls,
+          currentParsedPropertyControls,
+          parsedPropertyControls,
         )
         const updatedControls: PropertyControlsInfo = {
           [moduleNameOrPath]: {
             ...currentPropertyControlsInfo[moduleNameOrPath],
             [componentName]: {
-              propertyControls: propertyControls,
+              propertyControls: parsedPropertyControls,
               componentInfo: optionalParameters ?? {},
             },
           },
@@ -55,7 +60,7 @@ export function getThirdPartyControlsIntrinsic(
   elementName: string,
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
-): PropertyControls | null {
+): ParseResult<ParsedPropertyControls> | null {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
   const foundPackageWithElement = Object.keys(propertyControlsInfo).find((key) => {
@@ -65,7 +70,7 @@ export function getThirdPartyControlsIntrinsic(
     )
   })
   if (foundPackageWithElement != null) {
-    return propertyControlsInfo[foundPackageWithElement][elementName].propertyControls
+    return propertyControlsInfo[foundPackageWithElement]?.[elementName]?.propertyControls
   }
   return null
 }

@@ -1,8 +1,19 @@
 import { ImportType, PropertyControls } from 'utopia-api'
 import { URL_HASH } from '../../common/env-vars'
-import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
+import { parsePropertyControls } from '../../core/property-controls/property-controls-parser'
+import {
+  defaultPropertiesForComponentInFile,
+  getDefaultPropsFromParsedControls,
+  hasStyleControls,
+} from '../../core/property-controls/property-controls-utils'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
-import { flatMapEither, foldEither, right } from '../../core/shared/either'
+import {
+  eitherToMaybe,
+  flatMapEither,
+  foldEither,
+  forEachRight,
+  right,
+} from '../../core/shared/either'
 import {
   emptyComments,
   isIntrinsicElementFromString,
@@ -20,6 +31,7 @@ import {
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
+import { mapToArray, mapValues } from '../../core/shared/object-utils'
 import {
   importDetailsFromImportOption,
   Imports,
@@ -28,7 +40,6 @@ import {
   isTextFile,
   ProjectFile,
 } from '../../core/shared/project-file-types'
-import { getDefaultPropsAsAttributes } from '../../core/third-party/shared'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -195,7 +206,7 @@ function makeHTMLDescriptor(
     ...extraPropertyControls,
   }
   return {
-    propertyControls: propertyControls,
+    propertyControls: parsePropertyControls(propertyControls),
     componentInfo: {
       requiredImports: [{ source: 'react', name: 'React', type: 'star' }],
     },
@@ -347,21 +358,22 @@ export function getComponentGroups(
     const insertableComponents = Object.keys(components).map((componentName) => {
       const component = components[componentName]
       let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
+      const propertyControls = component.propertyControls
       // Drill down to see if this dependency component has a style object entry
       // against style.
-      if (component.propertyControls != null) {
-        if ('style' in component.propertyControls) {
-          const styleControls = component.propertyControls['style']
-          if (styleControls?.control === 'style-controls') {
-            stylePropOptions = addSizeAndNotStyleProp
-          }
-        }
+      if (hasStyleControls(propertyControls)) {
+        stylePropOptions = addSizeAndNotStyleProp
       }
 
       // Create the insertable JSX element here
       const [baseVariable, ...propertyPathParts] = componentName.split('.')
       const elementName = jsxElementName(baseVariable, propertyPathParts)
-      const defaultAttributes = getDefaultPropsAsAttributes(component.propertyControls)
+      const defaultProps = getDefaultPropsFromParsedControls(propertyControls)
+      const defaultAttributes = mapToArray(
+        (value, prop) =>
+          jsxAttributesEntry(prop, jsxAttributeValue(value, emptyComments), emptyComments),
+        defaultProps,
+      )
 
       const probablyIntrinsicElement =
         moduleName == null || isIntrinsicElementFromString(componentName)
