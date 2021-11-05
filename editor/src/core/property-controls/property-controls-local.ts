@@ -43,7 +43,7 @@ export function createRegisterComponentFunction(
             ...currentPropertyControlsInfo[moduleNameOrPath],
             [componentName]: {
               propertyControls: parsedPropertyControls,
-              componentInfo: optionalParameters ?? {},
+              componentInfo: { requiredImports: optionalParameters?.requiredImports },
             },
           },
         }
