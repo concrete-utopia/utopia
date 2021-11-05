@@ -11,7 +11,7 @@ import {
 } from '../../components/editor/store/editor-state'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 
-export function createRegisterControlsFunction(
+export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
 ): typeof registerComponentAPI {
