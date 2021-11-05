@@ -13,6 +13,7 @@ import {
   ObjectControlDescription,
   PropertyControls,
   RegularControlDescription,
+  TupleControlDescription,
   UnionControlDescription,
 } from 'utopia-api'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
@@ -458,6 +459,127 @@ const ArrayControlItem = betterReactMemo('ArrayControlItem', (props: ArrayContro
   )
 })
 
+interface RowForTupleControlProps extends AbstractRowForControlProps {
+  controlDescription: TupleControlDescription
+}
+
+const RowForTupleControl = betterReactMemo(
+  'RowForTupleControl',
+  (props: RowForTupleControlProps) => {
+    const { propPath, controlDescription, isScene } = props
+    const title = labelForControl(propPath, controlDescription)
+    const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+      propPath,
+      isScene,
+      controlDescription,
+    )
+
+    const rowHeight = UtopiaTheme.layout.rowHeight.normal
+    const transformedValue = Array.isArray(value) ? value : [value]
+    const boundedTransformedValue = transformedValue.slice(
+      0,
+      controlDescription.propertyControls.length,
+    )
+
+    return (
+      <React.Fragment>
+        <InspectorSectionHeader>
+          <SimpleFlexRow style={{ flexGrow: 1 }}>
+            <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+              {title}
+            </PropertyLabel>
+          </SimpleFlexRow>
+        </InspectorSectionHeader>
+        <div
+          style={{
+            height: rowHeight * boundedTransformedValue.length,
+          }}
+        >
+          {boundedTransformedValue.map((_, index) => (
+            <TupleControlItem
+              key={index}
+              index={index}
+              propPath={propPath}
+              isScene={props.isScene}
+              controlDescription={controlDescription}
+              setGlobalCursor={props.setGlobalCursor}
+            />
+          ))}
+        </div>
+      </React.Fragment>
+    )
+  },
+)
+
+interface TupleControlItemProps {
+  propPath: PropertyPath
+  index: number
+  isScene: boolean
+  controlDescription: TupleControlDescription
+  setGlobalCursor: (cursor: CSSCursor | null) => void
+}
+
+const TupleControlItem = betterReactMemo('TupleControlItem', (props: TupleControlItemProps) => {
+  const colorTheme = useColorTheme()
+  const { propPath, index, isScene, controlDescription } = props
+  const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
+  const propMetadata = useComponentPropsInspectorInfo(
+    propPathWithIndex,
+    isScene,
+    controlDescription,
+  )
+  const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
+
+  const rowHeight = UtopiaTheme.layout.rowHeight.normal
+  return (
+    <InspectorContextMenuWrapper
+      id={`context-menu-for-${PP.toString(propPathWithIndex)}`}
+      items={contextMenuItems}
+      data={null}
+      key={index}
+    >
+      <div
+        style={{
+          width: '100%',
+          position: 'absolute',
+          height: rowHeight,
+        }}
+      >
+        <RowForControl
+          controlDescription={controlDescription.propertyControls[index]}
+          isScene={isScene}
+          propPath={PP.appendPropertyPathElems(propPath, [index])}
+          setGlobalCursor={props.setGlobalCursor}
+          indentationLevel={1}
+          focusOnMount={false}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <svg width='5px' height='23px' viewBox='0 0 4 23'>
+            <g
+              stroke={colorTheme.border3.value}
+              strokeWidth='1'
+              fill='none'
+              fillRule='evenodd'
+              strokeLinecap='round'
+            >
+              <line x1='1' y1='1.5' x2='1' y2='21'></line>
+              <line x1='4' y1='1.5' x2='4' y2='21'></line>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </InspectorContextMenuWrapper>
+  )
+})
+
 interface ObjectIndicatorProps {
   open: boolean
 }
@@ -653,6 +775,8 @@ export const RowForControl = betterReactMemo('RowForControl', (props: RowForCont
         return <RowForArrayControl {...props} controlDescription={controlDescription} />
       case 'object':
         return <RowForObjectControl {...props} controlDescription={controlDescription} />
+      case 'tuple':
+        return <RowForTupleControl {...props} controlDescription={controlDescription} />
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
       default:
