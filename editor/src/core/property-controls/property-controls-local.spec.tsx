@@ -12,7 +12,7 @@ describe('registered property controls', () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
-        import { Scene, Storyboard, View, registerControls } from 'utopia-api'
+        import { Scene, Storyboard, View, registerComponent } from 'utopia-api'
 
         export var App = (props) => {
           return (
@@ -20,7 +20,7 @@ describe('registered property controls', () => {
           )
         }
 
-        registerControls('App', '${storyboardPath}', {
+        registerComponent('App', '${storyboardPath}', {
           label: {
             control: 'string-input',
           },

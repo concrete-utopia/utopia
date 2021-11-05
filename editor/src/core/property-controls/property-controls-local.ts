@@ -15,7 +15,7 @@ export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
 ): typeof registerComponentAPI {
-  // create a function with a signature that matches utopia-api/registerControls
+  // create a function with a signature that matches utopia-api/registerComponent
   return function registerComponent(
     componentName: string,
     moduleNameOrPath: string,
@@ -24,7 +24,7 @@ export function createRegisterComponentFunction(
   ): void {
     if (componentName == null || moduleNameOrPath == null || typeof propertyControls !== 'object') {
       console.warn(
-        'registerControls has 3 parameters: component name, module name or path, property controls object',
+        'registerComponent has 3 parameters: component name, module name or path, property controls object',
       )
     } else {
       const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
