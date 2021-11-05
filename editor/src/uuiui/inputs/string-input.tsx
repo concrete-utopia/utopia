@@ -53,8 +53,8 @@ export const StringInput = betterReactMemo(
         }
       }, [focusOnMount, ref])
 
-      const disabled = controlStatus === 'disabled'
       const controlStyles: ControlStyles = getControlStyles(controlStatus)
+      const disabled = !controlStyles.interactive
 
       const inputPropsKeyDown = inputProps.onKeyDown
 
