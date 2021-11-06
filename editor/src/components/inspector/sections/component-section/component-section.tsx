@@ -246,10 +246,21 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       <PropertyLabel
         controlStyles={labelControlStyle}
         target={[propPath]}
-        style={{ textTransform: 'capitalize', paddingLeft: indentation }}
+        style={{
+          textTransform: 'capitalize',
+          paddingLeft: indentation,
+          alignSelf: 'flex-start',
+        }}
       >
         <Tooltip title={title}>
-          <span>{title}</span>
+          <span
+            style={{
+              marginTop: 3,
+              lineHeight: `${UtopiaTheme.layout.inputHeight.default}px`,
+            }}
+          >
+            {title}
+          </span>
         </Tooltip>
       </PropertyLabel>
     ) : (
@@ -269,7 +280,7 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
     >
       <UIGridRow
         padded={false}
-        style={{ paddingLeft: 0, paddingRight: 8 }}
+        style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
         variant='<--1fr--><--1fr-->'
       >
         {propertyLabel}
