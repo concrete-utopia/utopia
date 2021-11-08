@@ -16,6 +16,9 @@ import {
   Matrix3ControlDescription,
   Matrix4ControlDescription,
   ExpressionPopUpListControlDescription,
+  ArrayControlDescription,
+  ObjectControlDescription,
+  TupleControlDescription,
 } from 'utopia-api'
 import {
   parseNumberInputControlDescription,
@@ -38,6 +41,9 @@ import {
   parseMatrix3ControlDescription,
   parseMatrix4ControlDescription,
   parseExpressionPopUpListControlDescription,
+  parseArrayControlDescription,
+  parseObjectControlDescription,
+  parseTupleControlDescription,
 } from './property-controls-parser'
 import { right, left, isLeft } from '../shared/either'
 import {
@@ -463,6 +469,68 @@ describe('parseMatrix4ControlDescription', () => {
   )
 })
 
+const validArrayControlDescriptionValue: ArrayControlDescription = {
+  label: 'Array Control',
+  control: 'array',
+  defaultValue: ['cat', 'dog'],
+  propertyControl: {
+    control: 'string-input',
+  },
+}
+
+describe('parseArrayControlDescription', () => {
+  runBaseTestSuite(
+    validArrayControlDescriptionValue,
+    ['control', 'propertyControl'],
+    ['hat', 9, true, 'bananas'],
+    true,
+    parseArrayControlDescription,
+  )
+})
+
+const validObjectControlDescriptionValue: ObjectControlDescription = {
+  label: 'Object Control',
+  control: 'object',
+  defaultValue: {
+    cat: 'dog',
+  },
+  object: {
+    cat: {
+      control: 'string-input',
+    },
+  },
+}
+
+describe('parseObjectControlDescription', () => {
+  runBaseTestSuite(
+    validObjectControlDescriptionValue,
+    ['control', 'object'],
+    ['hat', 9, true, 'bananas'],
+    true,
+    parseObjectControlDescription,
+  )
+})
+
+const validTupleControlDescriptionValue: TupleControlDescription = {
+  control: 'tuple',
+  defaultValue: ['cat', 1, 'dog'],
+  propertyControls: [
+    { control: 'string-input' },
+    { control: 'number-input' },
+    { control: 'string-input' },
+  ],
+}
+
+describe('parseTupleControlDescription', () => {
+  runBaseTestSuite(
+    validTupleControlDescriptionValue,
+    ['control', 'propertyControls'],
+    ['hat', 9, true, 'bananas'],
+    true,
+    parseTupleControlDescription,
+  )
+})
+
 const validFolderControlDescriptionValue: FolderControlDescription = {
   control: 'folder',
   controls: {
@@ -470,6 +538,16 @@ const validFolderControlDescriptionValue: FolderControlDescription = {
     someSlider: validNumberInputControlDescriptionValue,
   },
 }
+
+describe('parseFolderControlDescription', () => {
+  runBaseTestSuite(
+    validFolderControlDescriptionValue,
+    ['control', 'controls'],
+    [],
+    false,
+    parseFolderControlDescription,
+  )
+})
 
 describe('parseControlDescription', () => {
   it('parses a number input description correctly', () => {
@@ -515,6 +593,21 @@ describe('parseControlDescription', () => {
   it('parses a none description correctly', () => {
     expect(parseControlDescription(validNoneControlDescriptionValue)).toEqual(
       right(validNoneControlDescriptionValue),
+    )
+  })
+  it('parses an array description correctly', () => {
+    expect(parseControlDescription(validArrayControlDescriptionValue)).toEqual(
+      right(validArrayControlDescriptionValue),
+    )
+  })
+  it('parses an object description correctly', () => {
+    expect(parseControlDescription(validObjectControlDescriptionValue)).toEqual(
+      right(validObjectControlDescriptionValue),
+    )
+  })
+  it('parses a tuple description correctly', () => {
+    expect(parseControlDescription(validTupleControlDescriptionValue)).toEqual(
+      right(validTupleControlDescriptionValue),
     )
   })
   it('parses a folder instance description correctly', () => {

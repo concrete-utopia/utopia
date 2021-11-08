@@ -27,6 +27,7 @@ import {
   BasicControlOption,
   BasicControlOptions,
   ExpressionControlOption,
+  TupleControlDescription,
 } from 'utopia-api'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
@@ -416,6 +417,27 @@ export function parseArrayControlDescription(value: unknown): ParseResult<ArrayC
   )
 }
 
+export function parseTupleControlDescription(value: unknown): ParseResult<TupleControlDescription> {
+  return applicative5Either(
+    (label, control, defaultValue, propertyControls, visibleByDefault) => {
+      let tupleControlDescription: TupleControlDescription = {
+        control: control,
+        propertyControls: propertyControls,
+      }
+      setOptionalProp(tupleControlDescription, 'label', label)
+      setOptionalProp(tupleControlDescription, 'defaultValue', defaultValue)
+      setOptionalProp(tupleControlDescription, 'visibleByDefault', visibleByDefault)
+
+      return tupleControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['tuple']), 'control')(value),
+    optionalObjectKeyParser(parseArray(parseAny), 'defaultValue')(value),
+    objectKeyParser(parseArray(parseRegularControlDescription), 'propertyControls')(value),
+    optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
+  )
+}
+
 export function parseObjectControlDescription(
   value: unknown,
 ): ParseResult<ObjectControlDescription> {
@@ -433,7 +455,7 @@ export function parseObjectControlDescription(
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseEnum(['object']), 'control')(value),
-    optionalObjectKeyParser(parseAny, 'defaultValue')(value),
+    optionalObjectKeyParser(parseObject(parseAny), 'defaultValue')(value),
     objectKeyParser(parseObject(parseRegularControlDescription), 'object')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
@@ -637,17 +659,18 @@ export function parseFolderControlDescription(
     propertiesResult,
   )
   // Create the result on a success.
-  return applicative2Either(
-    (properties, label) => {
+  return applicative3Either(
+    (label, control, properties) => {
       let controlDescription: FolderControlDescription = {
-        control: 'folder',
+        control: control,
         controls: properties,
       }
       setOptionalProp(controlDescription, 'label', label)
       return controlDescription
     },
-    parsedControlDescriptions,
     optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseEnum(['folder']), 'control')(value),
+    parsedControlDescriptions,
   )
 }
 
@@ -685,6 +708,8 @@ function parseRegularControlDescription(value: unknown): ParseResult<RegularCont
         return parseStringInputControlDescription(value)
       case 'style-controls':
         return parseStyleControlsControlDescription(value)
+      case 'tuple':
+        return parseTupleControlDescription(value)
       case 'vector2':
         return parseVector2ControlDescription(value)
       case 'vector3':

@@ -170,7 +170,7 @@ export type BaseControlDescription =
 
 // Higher Level Controls
 
-export type HigherLevelControlType = 'array' | 'object' | 'union'
+export type HigherLevelControlType = 'array' | 'tuple' | 'object' | 'union'
 export type RegularControlType = BaseControlType | HigherLevelControlType
 export type ControlType = RegularControlType | 'folder'
 
@@ -188,6 +188,11 @@ export interface ObjectControlDescription extends AbstractHigherLevelControlDesc
   object: { [prop: string]: RegularControlDescription }
 }
 
+export interface TupleControlDescription extends AbstractHigherLevelControlDescription<'tuple'> {
+  defaultValue?: unknown[]
+  propertyControls: RegularControlDescription[]
+}
+
 export interface UnionControlDescription extends AbstractHigherLevelControlDescription<'union'> {
   defaultValue?: unknown
   controls: Array<RegularControlDescription>
@@ -202,6 +207,7 @@ export interface FolderControlDescription {
 export type HigherLevelControlDescription =
   | ArrayControlDescription
   | ObjectControlDescription
+  | TupleControlDescription
   | UnionControlDescription
 
 export type RegularControlDescription = BaseControlDescription | HigherLevelControlDescription
@@ -233,6 +239,7 @@ export function isBaseControlDescription(
       return true
     case 'array':
     case 'object':
+    case 'tuple':
     case 'union':
     case 'folder':
       return false
