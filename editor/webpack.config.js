@@ -324,8 +324,8 @@ const config = {
     : {},
 
   optimization: {
-    minimize: isProd,
-    minimizer: isProd
+    minimize: isProdOrStaging,
+    minimizer: isProdOrStaging
       ? [
           new TerserPlugin({
             parallel: true,

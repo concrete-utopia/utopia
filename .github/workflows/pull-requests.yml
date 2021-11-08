@@ -69,7 +69,7 @@ jobs:
       - name: Send webpack stats to RelativeCI
         uses: relative-ci/agent-action@v1.1.0
         with:
-          webpackStatsFile: editor/lib/production-stats.json
+          webpackStatsFile: editor/lib/staging-stats.json
           key: ${{ secrets.RELATIVE_CI_KEY }}
           debug: false
       - name: Delete node_modules
