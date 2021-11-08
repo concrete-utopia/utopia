@@ -61,16 +61,24 @@ export const CanvasComponentEntry = betterReactMemo(
       return canvasProps?.canvasIsLive === false
     }, [canvasProps?.canvasIsLive])
 
+    const [lastRenderReactHookError, setLastRenderReactHookError] = React.useState(false)
+
     const onRuntimeError = React.useCallback(
       (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
         addToRuntimeErrors(editedFile, error, errorInfo)
         // Reset the canvas if we get a hooks error while the canvas is in edit/select modes.
-        if (canvasEditOrSelect && isHooksErrorMessage(error.message)) {
+        if (canvasEditOrSelect && isHooksErrorMessage(error.message) && !lastRenderReactHookError) {
+          setLastRenderReactHookError(true)
           dispatch([resetCanvas()], 'everyone')
         }
       },
-      [addToRuntimeErrors, canvasEditOrSelect, dispatch],
+      [addToRuntimeErrors, canvasEditOrSelect, dispatch, lastRenderReactHookError],
     )
+
+    const localClearRuntimeErrors = React.useCallback(() => {
+      setLastRenderReactHookError(false)
+      clearRuntimeErrors()
+    }, [clearRuntimeErrors])
 
     if (canvasProps == null) {
       return <CanvasLoadingScreen />
@@ -98,7 +106,7 @@ export const CanvasComponentEntry = betterReactMemo(
               projectContents={canvasProps.projectContents}
               requireFn={canvasProps.curriedRequireFn}
             >
-              <DomWalkerWrapper {...canvasProps} clearErrors={clearRuntimeErrors} />
+              <DomWalkerWrapper {...canvasProps} clearErrors={localClearRuntimeErrors} />
             </RemoteDependencyBoundary>
           </CanvasErrorBoundary>
         </div>
