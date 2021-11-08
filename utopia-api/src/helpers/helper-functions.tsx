@@ -1,11 +1,11 @@
 import { PropertyControls, ImportType } from '../property-controls/property-controls'
 import { testImage } from './test-assets'
 
-export function registerControls(
+export function registerComponent(
   componentName: string,
-  packageName: string,
+  moduleNameOrPath: string,
   propertyControls: PropertyControls,
-  requiredImports?: Array<ImportType>,
+  optionalParameters?: { requiredImports?: Array<ImportType> },
 ): void {
   // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
 }

@@ -130,7 +130,9 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
           }}
           onMouseDown={(e) => {
             e.stopPropagation()
-            setPopupOpen((value) => !value)
+            if (props.controlStyles.interactive) {
+              setPopupOpen((value) => !value)
+            }
           }}
         >
           <div

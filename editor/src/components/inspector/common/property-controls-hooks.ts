@@ -36,6 +36,7 @@ import {
   eitherToMaybe,
   flatMapEither,
   foldEither,
+  mapEither,
   unwrapEither,
 } from '../../../core/shared/either'
 import {
@@ -53,16 +54,10 @@ import {
 } from '../../../core/shared/element-template'
 import { addUniquely, mapArrayToDictionary, mapDropNulls } from '../../../core/shared/array-utils'
 import { ParseError, ParseResult } from '../../../utils/value-parser-utils'
-import {
-  ParsedPropertyControls,
-  parsePropertyControls,
-} from '../../../core/property-controls/property-controls-parser'
+import { ParsedPropertyControls } from '../../../core/property-controls/property-controls-parser'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  filterSpecialProps,
-  getPropertyControlsForTargetFromEditor,
-} from '../../../core/property-controls/property-controls-utils'
+import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { findUnderlyingTargetComponentImplementation } from '../../custom-code/code-file'
 import {
@@ -70,9 +65,20 @@ import {
   UtopiaJSXComponentKeepDeepEquality,
 } from '../../editor/store/store-deep-equality-instances'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
+import { omit } from '../../../core/shared/object-utils'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
+
+const propsToOmit = ['style', 'css', 'className']
+
+function filterSpecialProp(propKey: string): boolean {
+  return !propsToOmit.includes(propKey)
+}
+
+function filterSpecialProps(props: Array<string>): Array<string> {
+  return props.filter(filterSpecialProp)
+}
 
 export function useInspectorInfoForPropertyControl(
   propertyPath: PropertyPath,
@@ -209,18 +215,24 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
     (store) => {
       let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
       fastForEach(selectedViews.current, (path) => {
-        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor) ?? {}
-        const parsed = parsePropertyControls(propertyControls, 'filterSpecialProps')
-        const foundMatch = parsedPropertyControls.findIndex((existing) =>
-          areMatchingPropertyControls(existing.controls, parsed),
-        )
-        if (foundMatch > -1) {
-          parsedPropertyControls[foundMatch].targets.push(path)
-        } else {
-          parsedPropertyControls.push({
-            controls: parsed,
-            targets: [path],
-          })
+        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor)
+        if (propertyControls != null) {
+          const withFilteredProps = mapEither(
+            (parsedControls) => omit(propsToOmit, parsedControls),
+            propertyControls,
+          )
+
+          const foundMatch = parsedPropertyControls.findIndex((existing) =>
+            areMatchingPropertyControls(existing.controls, withFilteredProps),
+          )
+          if (foundMatch > -1) {
+            parsedPropertyControls[foundMatch].targets.push(path)
+          } else {
+            parsedPropertyControls.push({
+              controls: withFilteredProps,
+              targets: [path],
+            })
+          }
         }
       })
 

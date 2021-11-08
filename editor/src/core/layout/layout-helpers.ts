@@ -45,7 +45,10 @@ import { createLayoutPropertyPath, pinnedPropForFramePoint } from './layout-help
 import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
 import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
 import { EdgePosition } from '../../components/canvas/canvas-types'
-import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
+import {
+  getPropertyControlsForTarget,
+  hasStyleControls,
+} from '../property-controls/property-controls-utils'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
@@ -63,7 +66,8 @@ export function targetRespectsLayout(
     projectContents,
     nodeModules,
   )
-  return propControls?.style?.control === 'style-controls'
+
+  return propControls != null && hasStyleControls(propControls)
 }
 
 export const PinLayoutHelpers = {
