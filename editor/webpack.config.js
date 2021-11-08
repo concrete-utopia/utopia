@@ -331,6 +331,9 @@ const config = {
             parallel: true,
             terserOptions: {
               ecma: 8,
+              format: {
+                ascii_only: true, // https://github.com/concrete-utopia/utopia/issues/1932
+              },
             },
           }),
         ]
