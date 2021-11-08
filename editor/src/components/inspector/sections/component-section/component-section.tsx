@@ -531,7 +531,6 @@ interface TupleControlItemProps {
 }
 
 const TupleControlItem = betterReactMemo('TupleControlItem', (props: TupleControlItemProps) => {
-  const colorTheme = useColorTheme()
   const { propPath, index, isScene, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
   const propMetadata = useComponentPropsInspectorInfo(
@@ -541,7 +540,6 @@ const TupleControlItem = betterReactMemo('TupleControlItem', (props: TupleContro
   )
   const contextMenuItems = Utils.stripNulls([addOnUnsetValues([index], propMetadata.onUnsetValues)])
 
-  const rowHeight = UtopiaTheme.layout.rowHeight.normal
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${PP.toString(propPathWithIndex)}`}
@@ -549,44 +547,14 @@ const TupleControlItem = betterReactMemo('TupleControlItem', (props: TupleContro
       data={null}
       key={index}
     >
-      <div
-        style={{
-          width: '100%',
-          position: 'absolute',
-          height: rowHeight,
-        }}
-      >
-        <RowForControl
-          controlDescription={controlDescription.propertyControls[index]}
-          isScene={isScene}
-          propPath={PP.appendPropertyPathElems(propPath, [index])}
-          setGlobalCursor={props.setGlobalCursor}
-          indentationLevel={1}
-          focusOnMount={false}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <svg width='5px' height='23px' viewBox='0 0 4 23'>
-            <g
-              stroke={colorTheme.border3.value}
-              strokeWidth='1'
-              fill='none'
-              fillRule='evenodd'
-              strokeLinecap='round'
-            >
-              <line x1='1' y1='1.5' x2='1' y2='21'></line>
-              <line x1='4' y1='1.5' x2='4' y2='21'></line>
-            </g>
-          </svg>
-        </div>
-      </div>
+      <RowForControl
+        controlDescription={controlDescription.propertyControls[index]}
+        isScene={isScene}
+        propPath={PP.appendPropertyPathElems(propPath, [index])}
+        setGlobalCursor={props.setGlobalCursor}
+        indentationLevel={1}
+        focusOnMount={false}
+      />
     </InspectorContextMenuWrapper>
   )
 })

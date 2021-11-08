@@ -37,6 +37,7 @@ import {
   flatMapEither,
   foldEither,
   mapEither,
+  right,
   unwrapEither,
 } from '../../../core/shared/either'
 import {
@@ -208,6 +209,8 @@ type PropertyControlsAndTargets = {
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
 }
 
+const emptyControls: ParseResult<ParsedPropertyControls> = right({})
+
 export function useGetPropertyControlsForSelectedComponents(): Array<PropertyControlsAndTargets> {
   const selectedViews = useRefSelectedViews()
 
@@ -216,7 +219,12 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
       let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
       fastForEach(selectedViews.current, (path) => {
         const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor)
-        if (propertyControls != null) {
+        if (propertyControls == null) {
+          parsedPropertyControls.push({
+            controls: emptyControls,
+            targets: [path],
+          })
+        } else {
           const withFilteredProps = mapEither(
             (parsedControls) => omit(propsToOmit, parsedControls),
             propertyControls,
