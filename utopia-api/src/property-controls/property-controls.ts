@@ -92,30 +92,24 @@ export interface Matrix3ControlDescription {
   control: 'matrix3'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: [number, number, number, number, number, number, number, number, number]
+  // prettier-ignore
+  defaultValue?: [
+    number, number, number,
+    number, number, number,
+    number, number, number,
+  ]
 }
 
 export interface Matrix4ControlDescription {
   control: 'matrix4'
   label?: string
   visibleByDefault?: boolean
+  // prettier-ignore
   defaultValue?: [
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
-    number,
+    number, number, number, number,
+    number, number, number, number,
+    number, number, number, number,
+    number, number, number, number,
   ]
 }
 
