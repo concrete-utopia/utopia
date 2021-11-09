@@ -492,8 +492,8 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   )
 
   const onStyleSelectorInsert = React.useCallback(
-    (parent: CSSTarget, label: string) => {
-      const newPath = [...parent.path, label]
+    (parent: CSSTarget | undefined, label: string) => {
+      const newPath = [...(parent?.path ?? []), label]
       const newPropertyPath = PP.create(newPath)
       const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
         EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
