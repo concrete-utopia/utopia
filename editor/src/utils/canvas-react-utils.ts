@@ -316,3 +316,12 @@ function patchedCreateReactElement(type: any, props: any, ...children: any): any
     return realCreateElement(type, updatedProps, ...children)
   }
 }
+
+export function isHooksErrorMessage(message: string): boolean {
+  return (
+    message === 'Rendered more hooks than during the previous render.' ||
+    message ===
+      'Rendered fewer hooks than expected. This may be caused by an accidental early return statement.' ||
+    message === 'Should have a queue. This is likely a bug in React. Please file an issue.'
+  )
+}

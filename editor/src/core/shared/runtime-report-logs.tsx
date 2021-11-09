@@ -31,7 +31,7 @@ export function useReadOnlyRuntimeErrors(): Array<RuntimeErrorInfo> {
 }
 
 export function useWriteOnlyRuntimeErrors(): {
-  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
+  addToRuntimeErrors: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
   clearRuntimeErrors: () => void
 } {
   const updateRuntimeErrors = usePubSubAtomWriteOnly(runtimeErrorsAtom)
@@ -67,7 +67,7 @@ export function useWriteOnlyRuntimeErrors(): {
   }, [updateRuntimeErrors])
 
   return {
-    onRuntimeError: onRuntimeError,
+    addToRuntimeErrors: onRuntimeError,
     clearRuntimeErrors: clearRuntimeErrors,
   }
 }
