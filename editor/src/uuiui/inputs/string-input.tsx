@@ -8,7 +8,7 @@ import {
   ControlStyles,
   getControlStyles,
 } from '../../components/inspector/common/control-status'
-import { stopPropagation } from '../../components/inspector/common/inspector-utils'
+import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { betterReactMemo } from '../../uuiui-deps'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { InspectorInput, InspectorInputEmotionStyle } from './base-input'
@@ -84,7 +84,12 @@ export const StringInput = betterReactMemo(
       }
 
       return (
-        <form autoComplete='off' style={style} onMouseDown={stopPropagation}>
+        <form
+          autoComplete='off'
+          style={style}
+          onMouseDown={stopPropagation}
+          onSubmit={preventDefault}
+        >
           <div
             className='string-input-container'
             css={{

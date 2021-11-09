@@ -147,6 +147,10 @@ export const stopPropagation = (e: React.MouseEvent) => {
   e.stopPropagation()
 }
 
+export const preventDefault = (e: React.SyntheticEvent) => {
+  e.preventDefault()
+}
+
 export const useHandleCloseOnESCOrEnter = (closePopup: (key: 'Escape' | 'Enter') => void): void => {
   const handleCloseOnESCOrEnter = React.useCallback(
     (e: KeyboardEvent) => {
