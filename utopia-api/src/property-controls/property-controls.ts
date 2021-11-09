@@ -1,6 +1,22 @@
 import type { CSSProperties } from 'react'
 import { fastForEach } from '../utils'
 
+// these fields are shared among all RegularControlDescription. the helper function getControlSharedFields makes sure the types line up
+interface ControlBaseFields {
+  control: RegularControlType
+  label?: string
+  defaultValue?: unknown
+  visibleByDefault?: boolean
+}
+function getControlSharedFields(control: RegularControlDescription): ControlBaseFields {
+  return {
+    control: control.control,
+    label: control.label,
+    defaultValue: control.defaultValue,
+    visibleByDefault: control.visibleByDefault,
+  }
+}
+
 // Base Level Controls
 
 export type BaseControlType =
@@ -251,21 +267,6 @@ export type RegularControlDescription = BaseControlDescription | HigherLevelCont
 // Please ensure that `property-controls-utils.ts` is kept up to date
 // with any changes to this or the component types.
 export type ControlDescription = RegularControlDescription | FolderControlDescription
-
-interface ControlBaseFields {
-  control: RegularControlType
-  label?: string
-  defaultValue?: unknown
-  visibleByDefault?: boolean
-}
-function getControlSharedFields(control: RegularControlDescription): ControlBaseFields {
-  return {
-    control: control.control,
-    label: control.label,
-    defaultValue: control.defaultValue,
-    visibleByDefault: control.visibleByDefault,
-  }
-}
 
 export function isBaseControlDescription(
   control: ControlDescription,
