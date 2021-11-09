@@ -394,7 +394,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       updateDecorations(currentDecorations)
     }),
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      if (event.kind !== undefined && event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
+      if (event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
         cursorPositionChanged(event)
       }
     }),
@@ -463,10 +463,14 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
 }
 
 function cursorPositionChanged(event: vscode.TextEditorSelectionChangeEvent): void {
-  const editor = event.textEditor
-  const filename = editor.document.uri.path
-  const position = editor.selection.active
-  sendMessage(editorCursorPositionChanged(filename, position.line, position.character))
+  try {
+    const editor = event.textEditor
+    const filename = editor.document.uri.path
+    const position = editor.selection.active
+    sendMessage(editorCursorPositionChanged(filename, position.line, position.character))
+  } catch (error) {
+    console.error('cursorPositionChanged failure.', error)
+  }
 }
 
 function rangesIntersectLinesOnly(first: vscode.Range, second: vscode.Range): boolean {

@@ -46,7 +46,6 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
-  getHighlightBoundsForUids,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -694,49 +693,5 @@ function filterEditorForFiles(editor: EditorState) {
       buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
     },
-  }
-}
-
-function removeNonExistingViewReferencesFromState(editorState: EditorState): EditorState {
-  const rootComponents = editorState.jsxMetadata
-  const updatedSelectedViews = ElementPathArrayKeepDeepEquality(
-    editorState.selectedViews,
-    mapDropNulls(
-      (selectedView) => elementPathStillExists(rootComponents, selectedView),
-      editorState.selectedViews,
-    ),
-  ).value
-  const updatedHighlightedViews = ElementPathArrayKeepDeepEquality(
-    editorState.highlightedViews,
-    mapDropNulls(
-      (highlightedView) => elementPathStillExists(rootComponents, highlightedView),
-      editorState.highlightedViews,
-    ),
-  ).value
-  const updatedHiddenInstances = ElementPathArrayKeepDeepEquality(
-    editorState.hiddenInstances,
-    mapDropNulls(
-      (hiddenInstance) => elementPathStillExists(rootComponents, hiddenInstance),
-      editorState.hiddenInstances,
-    ),
-  ).value
-  return {
-    ...editorState,
-    selectedViews: updatedSelectedViews,
-    highlightedViews: updatedHighlightedViews,
-    hiddenInstances: updatedHiddenInstances,
-  }
-}
-
-function elementPathStillExists(
-  newComponents: ElementInstanceMetadataMap,
-  pathToUpdate: ElementPath,
-): ElementPath | null {
-  const pathStillExists =
-    MetadataUtils.findElementByElementPath(newComponents, pathToUpdate) != null
-  if (pathStillExists) {
-    return pathToUpdate
-  } else {
-    return null
   }
 }

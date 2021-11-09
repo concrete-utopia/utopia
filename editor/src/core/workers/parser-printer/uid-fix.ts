@@ -1,4 +1,6 @@
 import {
+  ElementsWithin,
+  isJSXArbitraryBlock,
   isJSXElement,
   isJSXFragment,
   isUtopiaJSXComponent,
@@ -129,15 +131,17 @@ export function fixParseSuccessUIDs(
   }
 }
 
+type OnElement = (
+  oldUID: string,
+  newUID: string,
+  oldPathToRestore: StaticElementPathPart,
+  newElementPath: StaticElementPathPart,
+) => void
+
 function zipTopLevelElements(
   firstTopLevelElements: Array<TopLevelElement>,
   secondTopLevelElements: Array<TopLevelElement>,
-  onElement: (
-    oldUID: string,
-    newUID: string,
-    oldPathToRestore: StaticElementPathPart,
-    newElementPath: StaticElementPathPart,
-  ) => void,
+  onElement: OnElement,
 ): void {
   const firstComponents = getComponentsFromTopLevelElements(firstTopLevelElements)
   const secondComponents = getComponentsFromTopLevelElements(secondTopLevelElements)
@@ -156,17 +160,43 @@ function zipTopLevelElements(
   })
 }
 
+function walkElementsWithin(
+  pathSoFar: StaticElementPathPart,
+  oldElements: ElementsWithin,
+  newElements: ElementsWithin,
+  onElement: OnElement,
+): void {
+  const oldElementKeys = Object.keys(oldElements)
+  const newElementKeys = Object.keys(newElements)
+  newElementKeys.forEach((elementKey, index) => {
+    const newElement = newElements[elementKey]
+    const oldElementKey: string | null = oldElementKeys[index] ?? null
+    const oldElement: JSXElementChild | null =
+      oldElementKey == null ? null : oldElements[oldElementKey] ?? null
+
+    compareAndWalkElements(oldElement, newElement, pathSoFar, onElement)
+  })
+}
+
 function walkElementChildren(
   pathSoFar: StaticElementPathPart,
   oldElements: Array<JSXElementChild>,
   newElements: Array<JSXElementChild>,
-  onElement: (
-    oldUID: string,
-    newUID: string,
-    oldPathToRestore: StaticElementPathPart,
-    newElementPath: StaticElementPathPart,
-  ) => void,
+  onElement: OnElement,
 ): void {
+  newElements.forEach((newElement, index) => {
+    const oldElement: JSXElementChild | null = oldElements[index] ?? null
+
+    compareAndWalkElements(oldElement, newElement, pathSoFar, onElement)
+  })
+}
+
+function compareAndWalkElements(
+  oldElement: JSXElementChild | null,
+  newElement: JSXElementChild,
+  pathSoFar: StaticElementPathPart,
+  onElement: OnElement,
+) {
   /**
    * this first version works by trying to match up indexes. this is really primitive.
    * here's some ideas how could we improve it
@@ -174,18 +204,18 @@ function walkElementChildren(
    * • try to match offsets: if the user deletes or inserts an element, all subsequent uids will be shifted and thus mismatched in an index-to-index comparison
    */
 
-  newElements.forEach((newElement, index) => {
-    const oldElement: JSXElementChild | null = oldElements[index]
-
-    if (oldElement != null && isJSXElement(oldElement) && isJSXElement(newElement)) {
+  if (oldElement != null) {
+    if (isJSXElement(oldElement) && isJSXElement(newElement)) {
       const oldUID = getUtopiaID(oldElement)
       const newUid = getUtopiaID(newElement)
       const path = EP.appendToElementPath(pathSoFar, newUid)
       const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
       walkElementChildren(path, oldElement.children, newElement.children, onElement)
-    } else if (oldElement != null && isJSXFragment(oldElement) && isJSXFragment(newElement)) {
+    } else if (isJSXFragment(oldElement) && isJSXFragment(newElement)) {
       walkElementChildren(pathSoFar, oldElement.children, newElement.children, onElement)
+    } else if (isJSXArbitraryBlock(oldElement) && isJSXArbitraryBlock(newElement)) {
+      walkElementsWithin(pathSoFar, oldElement.elementsWithin, newElement.elementsWithin, onElement)
     }
-  })
+  }
 }

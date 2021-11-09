@@ -441,7 +441,6 @@ import {
   addSceneToJSXComponents,
   UserState,
   UserConfiguration,
-  getHighlightBoundsForUids,
   getElementPathsInBounds,
   StoryboardFilePath,
   modifyUnderlyingTarget,
