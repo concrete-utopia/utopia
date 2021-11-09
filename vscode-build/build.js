@@ -5,7 +5,7 @@ const fse = require('fs-extra')
 const glob = require('glob')
 const rmdir = require('rimraf')
 
-const vscodeVersion = '1.53.0'
+const vscodeVersion = '1.62.0'
 
 if (fs.existsSync('vscode')) {
   process.chdir('vscode')
