@@ -324,13 +324,16 @@ const config = {
     : {},
 
   optimization: {
-    minimize: isProd,
-    minimizer: isProd
+    minimize: isProdOrStaging,
+    minimizer: isProdOrStaging
       ? [
           new TerserPlugin({
             parallel: true,
             terserOptions: {
               ecma: 8,
+              format: {
+                ascii_only: true, // https://github.com/concrete-utopia/utopia/issues/1932
+              },
             },
           }),
         ]
