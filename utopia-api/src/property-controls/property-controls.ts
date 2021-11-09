@@ -21,7 +21,7 @@ export type BaseControlType =
   | 'vector3'
   | 'vector4'
 
-export type CheckboxControlDescription = {
+export interface CheckboxControlDescription {
   control: 'checkbox'
   label?: string
   defaultValue?: boolean
@@ -30,7 +30,7 @@ export type CheckboxControlDescription = {
   enabledTitle?: string
 }
 
-export type ColorControlDescription = {
+export interface ColorControlDescription {
   control: 'color'
   label?: string
   visibleByDefault?: boolean
@@ -38,14 +38,14 @@ export type ColorControlDescription = {
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
-export type BasicControlOption<T> = {
+export interface BasicControlOption<T> {
   value: T
   label: string
 }
 
 export type BasicControlOptions<T> = AllowedEnumType[] | BasicControlOption<T>[]
 
-export type PopUpListControlDescription = {
+export interface PopUpListControlDescription {
   control: 'popuplist'
   label?: string
   visibleByDefault?: boolean
@@ -53,20 +53,20 @@ export type PopUpListControlDescription = {
   options: BasicControlOptions<unknown>
 }
 
-export type ImportType = {
+export interface ImportType {
   source: string // importSource
   name: string | null
   type: 'star' | 'default' | null
 }
 
-export type ExpressionControlOption<T> = {
+export interface ExpressionControlOption<T> {
   value: T
   expression: string
   label?: string
   requiredImport?: ImportType
 }
 
-export type ExpressionPopUpListControlDescription = {
+export interface ExpressionPopUpListControlDescription {
   control: 'expression-popuplist'
   label?: string
   visibleByDefault?: boolean
@@ -74,28 +74,28 @@ export type ExpressionPopUpListControlDescription = {
   options: ExpressionControlOption<unknown>[]
 }
 
-export type EulerControlDescription = {
+export interface EulerControlDescription {
   control: 'euler'
   label?: string
   visibleByDefault?: boolean
   defaultValue?: [number, number, number, string]
 }
 
-export type NoneControlDescription = {
+export interface NoneControlDescription {
   control: 'none'
   label?: string
   visibleByDefault?: boolean
   defaultValue?: never
 }
 
-export type Matrix3ControlDescription = {
+export interface Matrix3ControlDescription {
   control: 'matrix3'
   label?: string
   visibleByDefault?: boolean
   defaultValue?: [number, number, number, number, number, number, number, number, number]
 }
 
-export type Matrix4ControlDescription = {
+export interface Matrix4ControlDescription {
   control: 'matrix4'
   label?: string
   visibleByDefault?: boolean
@@ -119,7 +119,7 @@ export type Matrix4ControlDescription = {
   ]
 }
 
-export type NumberInputControlDescription = {
+export interface NumberInputControlDescription {
   control: 'number-input'
   label?: string
   visibleByDefault?: boolean
@@ -131,7 +131,7 @@ export type NumberInputControlDescription = {
   displayStepper?: boolean
 }
 
-export type RadioControlDescription = {
+export interface RadioControlDescription {
   control: 'radio'
   label?: string
   defaultValue?: unknown
@@ -139,14 +139,14 @@ export type RadioControlDescription = {
   options: BasicControlOptions<unknown>
 }
 
-export type ExpressionInputControlDescription = {
+export interface ExpressionInputControlDescription {
   control: 'expression-input'
   label?: string
   visibleByDefault?: boolean
   defaultValue?: unknown
 }
 
-export type StringInputControlDescription = {
+export interface StringInputControlDescription {
   control: 'string-input'
   label?: string
   visibleByDefault?: boolean
@@ -155,7 +155,7 @@ export type StringInputControlDescription = {
   obscured?: boolean
 }
 
-export type StyleControlsControlDescription = {
+export interface StyleControlsControlDescription {
   control: 'style-controls'
   label?: string
   visibleByDefault?: boolean
@@ -163,21 +163,21 @@ export type StyleControlsControlDescription = {
   placeholder?: CSSProperties
 }
 
-export type Vector2ControlDescription = {
+export interface Vector2ControlDescription {
   control: 'vector2'
   label?: string
   visibleByDefault?: boolean
   defaultValue?: [number, number]
 }
 
-export type Vector3ControlDescription = {
+export interface Vector3ControlDescription {
   control: 'vector3'
   label?: string
   visibleByDefault?: boolean
   defaultValue?: [number, number, number]
 }
 
-export type Vector4ControlDescription = {
+export interface Vector4ControlDescription {
   control: 'vector4'
   label?: string
   visibleByDefault?: boolean
@@ -208,7 +208,7 @@ export type HigherLevelControlType = 'array' | 'tuple' | 'object' | 'union'
 export type RegularControlType = BaseControlType | HigherLevelControlType
 export type ControlType = RegularControlType | 'folder'
 
-export type ArrayControlDescription = {
+export interface ArrayControlDescription {
   control: 'array'
   label?: string
   visibleByDefault?: boolean
@@ -217,7 +217,7 @@ export type ArrayControlDescription = {
   maxCount?: number
 }
 
-export type ObjectControlDescription = {
+export interface ObjectControlDescription {
   control: 'object'
   label?: string
   visibleByDefault?: boolean
@@ -225,14 +225,14 @@ export type ObjectControlDescription = {
   object: { [prop: string]: RegularControlDescription }
 }
 
-export type UnionControlDescription = {
+export interface UnionControlDescription {
   control: 'union'
   label?: string
   visibleByDefault?: boolean
   defaultValue?: unknown
   controls: Array<RegularControlDescription>
 }
-export type TupleControlDescription = {
+export interface TupleControlDescription {
   control: 'tuple'
   label?: string
   visibleByDefault?: boolean
@@ -240,7 +240,7 @@ export type TupleControlDescription = {
   propertyControls: RegularControlDescription[]
 }
 
-export type FolderControlDescription = {
+export interface FolderControlDescription {
   control: 'folder'
   label?: string
   controls: PropertyControls
@@ -258,7 +258,7 @@ export type RegularControlDescription = BaseControlDescription | HigherLevelCont
 // with any changes to this or the component types.
 export type ControlDescription = RegularControlDescription | FolderControlDescription
 
-type ControlBaseFields = {
+interface ControlBaseFields {
   control: RegularControlType
   label?: string
   defaultValue?: unknown
