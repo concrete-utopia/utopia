@@ -11,7 +11,7 @@ import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { PropertyControlsInfo } from '../../../components/custom-code/code-file'
-import { createRegisterControlsFunction } from '../../property-controls/property-controls-local'
+import { createRegisterComponentFunction } from '../../property-controls/property-controls-local'
 import type { EditorDispatch } from '../../../components/editor/action-types'
 import type { EditorState } from '../../../components/editor/store/editor-state'
 
@@ -55,9 +55,9 @@ export function createBuiltInDependenciesList(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
 ): BuiltInDependencies {
-  const UtopiaAPISpecial = {
+  const UtopiaAPISpecial: typeof UtopiaAPI = {
     ...UtopiaAPI,
-    registerControls: createRegisterControlsFunction(dispatch, getEditorState),
+    registerComponent: createRegisterComponentFunction(dispatch, getEditorState),
   }
 
   // Ensure this is kept up to date with:

@@ -1,45 +1,31 @@
-import { importAlias, importDetails, PropertyPathPart } from '../shared/project-file-types'
-import {
-  componentDescriptor,
-  DependencyBoundDescriptors,
-  ComponentDescriptor,
-} from './third-party-types'
-import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
 import { PropertyControls } from 'utopia-api'
 import { ReactThreeFiberControls } from '../property-controls/third-party-property-controls/react-three-fiber-controls'
+import {
+  ComponentDescriptor,
+  ComponentDescriptorsForFile,
+} from '../../components/custom-code/code-file'
+import { parsePropertyControls } from '../property-controls/property-controls-parser'
 
-function createBasicComponent(
-  baseVariable: string,
-  propertyControls: PropertyControls | null,
-): ComponentDescriptor {
-  return componentDescriptor(
-    {},
-    jsxElementWithoutUID(
-      jsxElementName(baseVariable, []),
-      [], // Note: we don't have default props for react-three-fiber insertion
-      [],
-    ),
-    baseVariable,
-    { ...propertyControls },
-  )
+function createBasicComponent(propertyControls: PropertyControls): ComponentDescriptor {
+  return {
+    propertyControls: parsePropertyControls(propertyControls),
+    componentInfo: {
+      requiredImports: [],
+    },
+  }
 }
 
-export const ReactThreeFiberComponents: DependencyBoundDescriptors = {
-  '*': {
-    name: '@react-three/fiber',
-    components: [
-      createBasicComponent('color', ReactThreeFiberControls.color),
-      createBasicComponent('fog', ReactThreeFiberControls.fog),
-      createBasicComponent('ambientLight', ReactThreeFiberControls.ambientLight),
-      createBasicComponent('directionalLight', ReactThreeFiberControls.directionalLight),
-      createBasicComponent('pointLight', ReactThreeFiberControls.pointLight),
-      createBasicComponent('spotLight', ReactThreeFiberControls.spotLight),
-      createBasicComponent('boxGeometry', ReactThreeFiberControls.boxGeometry),
-      createBasicComponent('planeGeometry', ReactThreeFiberControls.planeGeometry),
-      createBasicComponent('sphereGeometry', ReactThreeFiberControls.sphereGeometry),
-      createBasicComponent('meshBasicMaterial', ReactThreeFiberControls.meshBasicMaterial),
-      createBasicComponent('meshStandardMaterial', ReactThreeFiberControls.meshStandardMaterial),
-      createBasicComponent('shadowMaterial', ReactThreeFiberControls.shadowMaterial),
-    ],
-  },
+export const ReactThreeFiberComponents: ComponentDescriptorsForFile = {
+  color: createBasicComponent(ReactThreeFiberControls.color),
+  fog: createBasicComponent(ReactThreeFiberControls.fog),
+  ambientLight: createBasicComponent(ReactThreeFiberControls.ambientLight),
+  directionalLight: createBasicComponent(ReactThreeFiberControls.directionalLight),
+  pointLight: createBasicComponent(ReactThreeFiberControls.pointLight),
+  spotLight: createBasicComponent(ReactThreeFiberControls.spotLight),
+  boxGeometry: createBasicComponent(ReactThreeFiberControls.boxGeometry),
+  planeGeometry: createBasicComponent(ReactThreeFiberControls.planeGeometry),
+  sphereGeometry: createBasicComponent(ReactThreeFiberControls.sphereGeometry),
+  meshBasicMaterial: createBasicComponent(ReactThreeFiberControls.meshBasicMaterial),
+  meshStandardMaterial: createBasicComponent(ReactThreeFiberControls.meshStandardMaterial),
+  shadowMaterial: createBasicComponent(ReactThreeFiberControls.shadowMaterial),
 }

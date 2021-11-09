@@ -55,7 +55,7 @@ export type PopUpListControlDescription = {
 
 export type ImportType = {
   source: string // importSource
-  name: string
+  name: string | null
   type: 'star' | 'default' | null
 }
 
@@ -204,7 +204,7 @@ export type BaseControlDescription =
 
 // Higher Level Controls
 
-export type HigherLevelControlType = 'array' | 'object' | 'union'
+export type HigherLevelControlType = 'array' | 'tuple' | 'object' | 'union'
 export type RegularControlType = BaseControlType | HigherLevelControlType
 export type ControlType = RegularControlType | 'folder'
 
@@ -232,6 +232,13 @@ export type UnionControlDescription = {
   defaultValue?: unknown
   controls: Array<RegularControlDescription>
 }
+export type TupleControlDescription = {
+  control: 'tuple'
+  label?: string
+  visibleByDefault?: boolean
+  defaultValue?: unknown[]
+  propertyControls: RegularControlDescription[]
+}
 
 export type FolderControlDescription = {
   control: 'folder'
@@ -242,6 +249,7 @@ export type FolderControlDescription = {
 export type HigherLevelControlDescription =
   | ArrayControlDescription
   | ObjectControlDescription
+  | TupleControlDescription
   | UnionControlDescription
 
 export type RegularControlDescription = BaseControlDescription | HigherLevelControlDescription
@@ -288,6 +296,7 @@ export function isBaseControlDescription(
       return true
     case 'array':
     case 'object':
+    case 'tuple':
     case 'union':
     case 'folder':
       return false

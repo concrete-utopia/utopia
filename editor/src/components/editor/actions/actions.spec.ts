@@ -116,10 +116,10 @@ import {
 } from '../../shared/project-components'
 import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
 import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
-import { getThirdPartyPropertyControls } from '../../../core/property-controls/property-controls-utils'
 import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
+import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -1145,7 +1145,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
 
     const insertableGroups = getComponentGroups(
       { antd: { status: 'loaded' } },
-      getThirdPartyPropertyControls('antd', '4.0.0'),
+      { antd: DefaultThirdPartyControlDefinitions.antd },
       editorState.projectContents,
       [resolvedNpmDependency('antd', '4.0.0')],
       StoryboardFilePath,
@@ -1247,7 +1247,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
 
     const insertableGroups = getComponentGroups(
       { antd: { status: 'loaded' } },
-      getThirdPartyPropertyControls('antd', '4.0.0'),
+      { antd: DefaultThirdPartyControlDefinitions.antd },
       editorState.projectContents,
       [resolvedNpmDependency('antd', '4.0.0')],
       StoryboardFilePath,

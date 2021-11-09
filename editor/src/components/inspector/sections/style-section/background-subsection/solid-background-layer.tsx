@@ -34,7 +34,7 @@ function getIndexedUpdateStringCSSBackgroundLayerSolidColor(index: number) {
     newValue: string,
     oldValue: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    const parsedColor = parseColor(newValue)
+    const parsedColor = parseColor(newValue, 'hex-hash-optional')
     let newCSSBackgroundLayers = [...oldValue]
     if (isRight(parsedColor)) {
       const oldIndexedValue = newCSSBackgroundLayers[index]

@@ -414,7 +414,7 @@ Array [
             "importedWithName": null,
           },
         },
-        "name": "Date Picker",
+        "name": "DatePicker",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -611,7 +611,7 @@ Array [
             "importedWithName": null,
           },
         },
-        "name": "Number Input",
+        "name": "InputNumber",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -1236,7 +1236,7 @@ Array [
             "importedWithName": null,
           },
         },
-        "name": "Menu Item",
+        "name": "Menu.Item",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -1289,7 +1289,7 @@ Array [
             "importedWithName": null,
           },
         },
-        "name": "Menu SubMenu",
+        "name": "Menu.SubMenu",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -1325,7 +1325,7 @@ Array [
             "importedWithName": null,
           },
         },
-        "name": "Menu ItemGroup",
+        "name": "Menu.ItemGroup",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",
@@ -1522,7 +1522,7 @@ Array [
             "importedWithName": null,
           },
         },
-        "name": "Typography Text",
+        "name": "Typography.Text",
         "stylePropOptions": Array [
           "do-not-add",
           "add-size",

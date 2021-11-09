@@ -353,7 +353,7 @@ export const parseLexedColor: Parser<CSSColor> = (value) => {
           if (leaf.match[0] != null) {
             const tokenLeaf = leaf.match[0]
             if (isLexerToken(tokenLeaf)) {
-              const parsed = parseColor(tokenLeaf.token)
+              const parsed = parseColor(tokenLeaf.token, 'hex-hash-optional')
               if (isRight(parsed)) {
                 return parsed
               } else {

@@ -1,5 +1,5 @@
 import Chroma from 'chroma-js'
-import { clamp, WindowPoint } from '../../../core/shared/math-utils'
+import { clamp, WindowPoint, roundTo } from '../../../core/shared/math-utils'
 import { getControlStyles } from '../common/control-status'
 import {
   CSSColor,
@@ -70,7 +70,11 @@ export interface ColorPickerInnerProps {
   testId: string
 }
 
-function toPassedInColorType(color: Chroma.Color, passedInColor: CSSColor): CSSColor {
+function toPassedInColorType(
+  color: Chroma.Color,
+  passedInColor: CSSColor,
+  stateNormalisedHuePosition: number,
+): CSSColor {
   if (isKeyword(passedInColor)) {
     const name = color.name()
     if (name.startsWith('#')) {
@@ -93,9 +97,9 @@ function toPassedInColorType(color: Chroma.Color, passedInColor: CSSColor): CSSC
     const [h, s, l, a] = (color.hsl() as any) as [number, number, number, number] // again, the types are out of date
     return {
       type: 'HSL',
-      h: h,
-      s: s,
-      l: l,
+      h: getSafeHue(h, stateNormalisedHuePosition),
+      s: roundTo(s * 100, 0),
+      l: roundTo(l * 100, 0),
       a: a,
       percentageAlpha: passedInColor.percentageAlpha,
     }
@@ -271,7 +275,11 @@ export class ColorPickerInner extends React.Component<
   }
 
   submitNewColor = (chromaColor: Chroma.Color, transient: boolean) => {
-    const newValue = toPassedInColorType(chromaColor, this.props.value)
+    const newValue = toPassedInColorType(
+      chromaColor,
+      this.props.value,
+      this.state.normalisedHuePosition,
+    )
     if (transient) {
       this.props.onTransientSubmitValue(newValue)
     } else {

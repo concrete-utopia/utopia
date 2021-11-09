@@ -54,6 +54,7 @@ import {
   jsxAttributeNestedObject,
   jsxPropertyAssignment,
   emptyComments,
+  JSXArrayValue,
 } from '../shared/element-template'
 import {
   ModifiableAttribute,
@@ -72,7 +73,7 @@ export function parseColorValue(value: unknown): ParseResult<CSSColor> {
   return foldEither(
     (l) => left(descriptionParseError(l)),
     (r) => right(r),
-    parseColor(value),
+    parseColor(value, 'hex-hash-optional'),
   )
 }
 
@@ -111,6 +112,11 @@ function rawAndRealValueAtIndex(
   }
 }
 
+const noRawOrRealValue: { rawValue: Either<string, ModifiableAttribute>; realValue: unknown } = {
+  rawValue: left('No value'),
+  realValue: undefined,
+}
+
 function unwrapAndParseArrayValues(
   propertyControl: RegularControlDescription,
 ): UnwrapperAndParser<Array<unknown>> {
@@ -134,6 +140,37 @@ function unwrapAndParseArrayValues(
       return right(parsedContents)
     } else {
       return left(descriptionParseError(`Value isn't an array`))
+    }
+  }
+}
+
+function unwrapAndParseTupleValues(
+  propertyControls: Array<RegularControlDescription>,
+): UnwrapperAndParser<Array<unknown>> {
+  return (rawValue: Either<string, ModifiableAttribute>, realValue: unknown) => {
+    const unwrappedValue = defaultUnwrapper(rawValue, realValue)
+    if (Array.isArray(unwrappedValue)) {
+      const length = unwrappedValue.length
+      const controlsLength = propertyControls.length
+
+      let parsedContents: Array<unknown> = []
+      for (let i = 0; i < controlsLength; i++) {
+        // If there aren't enough values, we use undefined for missing values
+        // If there are too many, we just parse up to the last value we care about
+        const unwrapperAndParser = unwrapperAndParserForPropertyControl(propertyControls[i])
+        const valuesForIndex =
+          i < length ? rawAndRealValueAtIndex(rawValue, realValue, i) : noRawOrRealValue
+        const innerResult = unwrapperAndParser(valuesForIndex.rawValue, valuesForIndex.realValue)
+        if (isLeft(innerResult)) {
+          return left(descriptionParseError(`Unable to parse object at index ${i}`))
+        } else {
+          parsedContents.push(innerResult.value)
+        }
+      }
+
+      return right(parsedContents)
+    } else {
+      return left(descriptionParseError(`Value isn't a tuple`))
     }
   }
 }
@@ -300,6 +337,8 @@ export function unwrapperAndParserForPropertyControl(
       return unwrapAndParseArrayValues(control.propertyControl)
     case 'object':
       return unwrapAndParseObjectValues(control.object)
+    case 'tuple':
+      return unwrapAndParseTupleValues(control.propertyControls)
     case 'union':
       return unwrapAndParseUnionValue(control.controls)
     default:
@@ -440,6 +479,22 @@ function printerForArray<T>(control: RegularControlDescription): Printer<Array<T
   }
 }
 
+function printerForTuple(controls: Array<RegularControlDescription>): Printer<Array<unknown>> {
+  return (array: Array<unknown>): JSXAttribute => {
+    const length = Math.min(array.length, controls.length)
+    let printedContents: Array<JSXArrayValue> = []
+
+    for (let i = 0; i < length; i++) {
+      const value = array[i]
+      const control = controls[i]
+      const printContentsValue = printerForPropertyControl(control)
+      printedContents.push(jsxArrayValue(printContentsValue(value), emptyComments))
+    }
+
+    return jsxAttributeNestedArray(printedContents, emptyComments)
+  }
+}
+
 function printerForObject(objectControls: {
   [prop: string]: RegularControlDescription
 }): Printer<{ [prop: string]: unknown }> {
@@ -491,6 +546,8 @@ export function printerForPropertyControl(control: RegularControlDescription): P
       return printerForArray(control.propertyControl) as Printer<unknown> // Why???!!
     case 'object':
       return printerForObject(control.object) as Printer<unknown> // Why???!!
+    case 'tuple':
+      return printerForTuple(control.propertyControls) as Printer<unknown> // Why???!!
     case 'union':
       return printerForUnion(control.controls)
     default:

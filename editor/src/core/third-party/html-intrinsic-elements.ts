@@ -1,7 +1,14 @@
 import { PropertyControls } from 'utopia-api'
+import { ParseResult } from '../../utils/value-parser-utils'
+import {
+  ParsedPropertyControls,
+  parsePropertyControls,
+} from '../property-controls/property-controls-parser'
 
-export const HtmlElementStyleObjectProps: PropertyControls = {
-  style: {
-    control: 'style-controls',
+export const HtmlElementStyleObjectProps: ParseResult<ParsedPropertyControls> = parsePropertyControls(
+  {
+    style: {
+      control: 'style-controls',
+    },
   },
-}
+)

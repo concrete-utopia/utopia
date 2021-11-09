@@ -36,10 +36,6 @@ import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import { PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
 import {
-  PropertyControlsInfoIFrameID,
-  setPropertyControlsIFrameAvailable,
-} from '../../core/property-controls/property-controls-utils'
-import {
   SimpleFlexRow,
   SimpleFlexColumn,
   UtopiaTheme,
@@ -69,9 +65,7 @@ interface NumberSize {
   height: number
 }
 
-export interface EditorProps {
-  propertyControlsInfoSupported: boolean
-}
+export interface EditorProps {}
 
 function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
   const [returnValue, setReturnValue] = React.useState(inputValue)
@@ -223,10 +217,6 @@ export const EditorComponentInner = betterReactMemo(
       [dispatch],
     )
 
-    React.useEffect(() => {
-      setPropertyControlsIFrameAvailable(props.propertyControlsInfoSupported)
-    })
-
     const vscodeBridgeReady = useEditorState((store) => {
       return store.editor.vscodeBridgeReady
     }, 'EditorComponentInner vscodeBridgeReady')
@@ -340,9 +330,6 @@ export const EditorComponentInner = betterReactMemo(
         <ModalComponent />
         <ToastRenderer />
         <EditorCursorComponent />
-        {props.propertyControlsInfoSupported && vscodeBridgeReady ? (
-          <PropertyControlsInfoComponent />
-        ) : null}
       </SimpleFlexRow>
     )
   },
@@ -429,28 +416,5 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
         />
       ))}
     </FlexColumn>
-  )
-})
-
-const PropertyControlsInfoComponent = betterReactMemo('PropertyControlsInfoComponent', () => {
-  const iframeSrc = createIframeUrl(PROPERTY_CONTROLS_INFO_BASE_URL, 'property-controls-info.html')
-
-  const url = new URL(iframeSrc)
-  setBranchNameFromURL(url.searchParams)
-  return (
-    <iframe
-      key={PropertyControlsInfoIFrameID}
-      id={PropertyControlsInfoIFrameID}
-      width='0px'
-      height='0px'
-      src={url.toString()}
-      allow='autoplay'
-      style={{
-        backgroundColor: 'transparent',
-        width: '0px',
-        height: '0px',
-        borderWidth: 0,
-      }}
-    />
   )
 })

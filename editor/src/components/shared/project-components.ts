@@ -1,12 +1,26 @@
-import { PropertyControls } from 'utopia-api'
+import { ImportType, PropertyControls } from 'utopia-api'
 import { URL_HASH } from '../../common/env-vars'
-import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
-import { flatMapEither, foldEither, right } from '../../core/shared/either'
+import { parsePropertyControls } from '../../core/property-controls/property-controls-parser'
+import {
+  defaultPropertiesForComponentInFile,
+  getDefaultPropsFromParsedControls,
+  hasStyleControls,
+} from '../../core/property-controls/property-controls-utils'
+import { mapArrayToDictionary } from '../../core/shared/array-utils'
+import {
+  eitherToMaybe,
+  flatMapEither,
+  foldEither,
+  forEachRight,
+  right,
+} from '../../core/shared/either'
 import {
   emptyComments,
+  isIntrinsicElementFromString,
   JSXAttributes,
   jsxAttributesEntry,
   jsxAttributeValue,
+  jsxElementName,
   jsxElementWithoutUID,
   JSXElementWithoutUID,
 } from '../../core/shared/element-template'
@@ -17,23 +31,23 @@ import {
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
+import { mapToArray, mapValues } from '../../core/shared/object-utils'
 import {
+  importDetailsFromImportOption,
   Imports,
   isParsedTextFile,
   isParseSuccess,
   isTextFile,
   ProjectFile,
 } from '../../core/shared/project-file-types'
-import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
-import {
-  ComponentDescriptor,
-  componentDescriptor,
-  DependencyDescriptor,
-} from '../../core/third-party/third-party-types'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
-import { PropertyControlsInfo } from '../custom-code/code-file'
+import {
+  PropertyControlsInfo,
+  ComponentDescriptor,
+  ComponentDescriptorsForFile,
+} from '../custom-code/code-file'
 import { getExportedComponentImports } from '../editor/export-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
@@ -191,83 +205,60 @@ function makeHTMLDescriptor(
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
-  let defaultProps: JSXAttributes = []
-  function addDefaultProps(targetPropertyControls: PropertyControls): void {
-    for (const propKey of Object.keys(targetPropertyControls)) {
-      const prop = targetPropertyControls[propKey]
-      if (prop.control === 'folder') {
-        addDefaultProps(prop.controls)
-      } else {
-        if (prop?.defaultValue != null) {
-          defaultProps.push(
-            jsxAttributesEntry(
-              propKey,
-              jsxAttributeValue(prop.defaultValue, emptyComments),
-              emptyComments,
-            ),
-          )
-        }
-      }
-    }
+  return {
+    propertyControls: parsePropertyControls(propertyControls),
+    componentInfo: {
+      requiredImports: [{ source: 'react', name: 'React', type: 'star' }],
+    },
   }
-  addDefaultProps(propertyControls)
-  return componentDescriptor(
-    addImport('', 'react', null, [], 'React', emptyImportsValue),
-    jsxElementWithoutUID(tag, defaultProps, []),
-    tag,
-    propertyControls,
-  )
 }
 
-const basicHTMLElementsDescriptor: DependencyDescriptor = {
-  name: 'HTML Elements',
-  components: [
-    makeHTMLDescriptor('div', {}),
-    makeHTMLDescriptor('span', {}),
-    makeHTMLDescriptor('h1', {}),
-    makeHTMLDescriptor('h2', {}),
-    makeHTMLDescriptor('p', {}),
-    makeHTMLDescriptor('button', {}),
-    makeHTMLDescriptor('input', {}),
-    makeHTMLDescriptor('video', {
-      controls: {
-        control: 'checkbox',
-        defaultValue: true,
+const basicHTMLElementsDescriptors = {
+  div: makeHTMLDescriptor('div', {}),
+  span: makeHTMLDescriptor('span', {}),
+  h1: makeHTMLDescriptor('h1', {}),
+  h2: makeHTMLDescriptor('h2', {}),
+  p: makeHTMLDescriptor('p', {}),
+  button: makeHTMLDescriptor('button', {}),
+  input: makeHTMLDescriptor('input', {}),
+  video: makeHTMLDescriptor('video', {
+    controls: {
+      control: 'checkbox',
+      defaultValue: true,
+    },
+    autoPlay: {
+      control: 'checkbox',
+      defaultValue: true,
+    },
+    loop: {
+      control: 'checkbox',
+      defaultValue: true,
+    },
+    src: {
+      control: 'string-input',
+      defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
+    },
+    style: {
+      control: 'style-controls',
+      defaultValue: {
+        width: '250px',
+        height: '120px',
       },
-      autoPlay: {
-        control: 'checkbox',
-        defaultValue: true,
+    },
+  }),
+  img: makeHTMLDescriptor('img', {
+    src: {
+      control: 'string-input',
+      defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
+    },
+    style: {
+      control: 'style-controls',
+      defaultValue: {
+        width: '64px',
+        height: '64px',
       },
-      loop: {
-        control: 'checkbox',
-        defaultValue: true,
-      },
-      src: {
-        control: 'string-input',
-        defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
-      },
-      style: {
-        control: 'style-controls',
-        defaultValue: {
-          width: '250px',
-          height: '120px',
-        },
-      },
-    }),
-    makeHTMLDescriptor('img', {
-      src: {
-        control: 'string-input',
-        defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
-      },
-      style: {
-        control: 'style-controls',
-        defaultValue: {
-          width: '64px',
-          height: '64px',
-        },
-      },
-    }),
-  ],
+    },
+  }),
 }
 
 export function stylePropOptionsForPropertyControls(
@@ -360,25 +351,51 @@ export function getComponentGroups(
   })
 
   function addDependencyDescriptor(
+    moduleName: string | null,
     groupType: InsertableComponentGroupType,
-    components: Array<ComponentDescriptor>,
+    components: ComponentDescriptorsForFile,
   ): void {
-    const insertableComponents = components.map((component) => {
+    const insertableComponents = Object.keys(components).map((componentName) => {
+      const component = components[componentName]
       let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
+      const propertyControls = component.propertyControls
       // Drill down to see if this dependency component has a style object entry
       // against style.
-      if (component.propertyControls != null) {
-        if ('style' in component.propertyControls) {
-          const styleControls = component.propertyControls['style']
-          if (styleControls?.control === 'style-controls') {
-            stylePropOptions = addSizeAndNotStyleProp
-          }
-        }
+      if (hasStyleControls(propertyControls)) {
+        stylePropOptions = addSizeAndNotStyleProp
       }
+
+      // Create the insertable JSX element here
+      const [baseVariable, ...propertyPathParts] = componentName.split('.')
+      const elementName = jsxElementName(baseVariable, propertyPathParts)
+      const defaultProps = getDefaultPropsFromParsedControls(propertyControls)
+      const defaultAttributes = mapToArray(
+        (value, prop) =>
+          jsxAttributesEntry(prop, jsxAttributeValue(value, emptyComments), emptyComments),
+        defaultProps,
+      )
+
+      const probablyIntrinsicElement =
+        moduleName == null || isIntrinsicElementFromString(componentName)
+
+      const fallbackImports: Array<ImportType> = probablyIntrinsicElement
+        ? []
+        : [
+            {
+              type: null,
+              source: moduleName!, // if we updgrade TS we can remove this ! from here
+              name: componentName,
+            },
+          ]
+
       return insertableComponent(
-        component.importsToAdd,
-        component.element,
-        component.name,
+        mapArrayToDictionary(
+          component.componentInfo.requiredImports ?? fallbackImports,
+          (importOption) => importOption.source,
+          (importOption) => importDetailsFromImportOption(importOption),
+        ),
+        jsxElementWithoutUID(elementName, defaultAttributes, []),
+        componentName,
         stylePropOptions,
       )
     })
@@ -386,27 +403,23 @@ export function getComponentGroups(
   }
 
   // Add HTML entries.
-  addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptor.components)
+  addDependencyDescriptor(null, insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
     if (isResolvedNpmDependency(dependency)) {
-      const possibleComponentDescriptor = getThirdPartyComponents(
+      const dependencyStatus = getDependencyStatus(
+        packageStatus,
+        propertyControlsInfo,
         dependency.name,
-        dependency.version,
+        'loaded',
       )
-      if (possibleComponentDescriptor != null) {
-        const dependencyStatus = getDependencyStatus(
-          packageStatus,
-          propertyControlsInfo,
-          dependency.name,
-          'loaded',
-        )
-        const components =
-          dependencyStatus === 'loaded' ? possibleComponentDescriptor.components : []
+      const propertyControlsForDependency = propertyControlsInfo[dependency.name]
+      if (propertyControlsForDependency != null) {
         addDependencyDescriptor(
+          dependency.name,
           insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
-          components,
+          propertyControlsForDependency,
         )
       }
     }

@@ -12,7 +12,7 @@ describe('registered property controls', () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
-        import { Scene, Storyboard, View, registerControls } from 'utopia-api'
+        import { Scene, Storyboard, View, registerComponent } from 'utopia-api'
 
         export var App = (props) => {
           return (
@@ -20,7 +20,7 @@ describe('registered property controls', () => {
           )
         }
 
-        registerControls('App', '${storyboardPath}', {
+        registerComponent('App', '${storyboardPath}', {
           label: {
             control: 'string-input',
           },
@@ -54,15 +54,32 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo[storyboardPath]).toMatchInlineSnapshot(`
       Object {
         "App": Object {
-          "background": Object {
-            "control": "color",
+          "componentInfo": Object {
+            "requiredImports": undefined,
           },
-          "label": Object {
-            "control": "string-input",
-          },
-          "visible": Object {
-            "control": "checkbox",
-            "defaultValue": true,
+          "propertyControls": Object {
+            "type": "RIGHT",
+            "value": Object {
+              "background": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "color",
+                },
+              },
+              "label": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "string-input",
+                },
+              },
+              "visible": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "checkbox",
+                  "defaultValue": true,
+                },
+              },
+            },
           },
         },
       }

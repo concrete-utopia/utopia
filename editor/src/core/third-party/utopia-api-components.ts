@@ -1,52 +1,24 @@
-import { importAlias, importDetails } from '../shared/project-file-types'
 import {
-  componentDescriptor,
-  DependencyBoundDescriptors,
   ComponentDescriptor,
-} from './third-party-types'
-import {
-  JSXElementChildren,
-  jsxElementName,
-  jsxElementWithoutUID,
-  jsxTextBlock,
-} from '../shared/element-template'
-import { PropertyControls } from 'utopia-api'
-import { getDefaultPropsAsAttributes } from './shared'
+  ComponentDescriptorsForFile,
+} from '../../components/custom-code/code-file'
+import { parsePropertyControls } from '../property-controls/property-controls-parser'
 
-function createBasicUtopiaComponent(
-  baseVariable: string,
-  name: string,
-  propertyControls: PropertyControls | null,
-  children: JSXElementChildren = [],
-): ComponentDescriptor {
-  const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
-  return componentDescriptor(
-    {
-      'utopia-api': importDetails(null, [importAlias(baseVariable)], null),
+const BasicUtopiaComponentDescriptor: ComponentDescriptor = {
+  propertyControls: parsePropertyControls({
+    style: {
+      control: 'style-controls',
     },
-    jsxElementWithoutUID(jsxElementName(baseVariable, []), defaultAttributes, children),
-    name,
-    propertyControls,
-  )
+  }),
+  componentInfo: {},
 }
 
-const StyleObjectProps: PropertyControls = {
-  style: {
-    control: 'style-controls',
-  },
-}
-
-export const UtopiaApiComponents: DependencyBoundDescriptors = {
-  '>=0.0.0 <1.0.0': {
-    name: 'utopia-api',
-    components: [
-      createBasicUtopiaComponent('Ellipse', 'Ellipse', StyleObjectProps),
-      createBasicUtopiaComponent('Rectangle', 'Rectangle', StyleObjectProps),
-      createBasicUtopiaComponent('Text', 'Text', StyleObjectProps, [jsxTextBlock('Utopia')]),
-      createBasicUtopiaComponent('View', 'View', StyleObjectProps),
-      createBasicUtopiaComponent('FlexRow', 'FlexRow', StyleObjectProps),
-      createBasicUtopiaComponent('FlexCol', 'FlexCol', StyleObjectProps),
-      createBasicUtopiaComponent('Scene', 'Scene', StyleObjectProps),
-    ],
-  },
+export const UtopiaApiComponents: ComponentDescriptorsForFile = {
+  Ellipse: BasicUtopiaComponentDescriptor,
+  Rectangle: BasicUtopiaComponentDescriptor,
+  Text: BasicUtopiaComponentDescriptor,
+  View: BasicUtopiaComponentDescriptor,
+  FlexRow: BasicUtopiaComponentDescriptor,
+  FlexCol: BasicUtopiaComponentDescriptor,
+  Scene: BasicUtopiaComponentDescriptor,
 }

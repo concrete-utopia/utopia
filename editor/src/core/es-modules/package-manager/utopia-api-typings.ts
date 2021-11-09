@@ -1,6 +1,8 @@
 export const utopiaApiTypings = `declare module 'utopia-api/helpers/helper-functions' {
-  import { PropertyControls } from 'utopia-api/property-controls/property-controls';
-  export function registerControls(componentName: string, packageName: string, propertyControls: PropertyControls): void;
+  import { PropertyControls, ImportType } from 'utopia-api/property-controls/property-controls';
+  export function registerComponent(componentName: string, moduleNameOrPath: string, propertyControls: PropertyControls, optionalParameters?: {
+      requiredImports?: Array<ImportType>;
+  }): void;
   export type RawSingleBorderWidth = number | string;
   export type RawSplitBorderWidth = [
       RawSingleBorderWidth,
@@ -377,7 +379,7 @@ declare module 'utopia-api/property-controls/property-controls' {
   }
   export interface ImportType {
       source: string;
-      name: string;
+      name: string | null;
       type: 'star' | 'default' | null;
   }
   export interface ExpressionControlOption<T> {
@@ -453,7 +455,7 @@ declare module 'utopia-api/property-controls/property-controls' {
       defaultValue?: [number, number, number, number];
   }
   export type BaseControlDescription = CheckboxControlDescription | ColorControlDescription | ExpressionInputControlDescription | ExpressionPopUpListControlDescription | EulerControlDescription | NoneControlDescription | Matrix3ControlDescription | Matrix4ControlDescription | NumberInputControlDescription | RadioControlDescription | PopUpListControlDescription | StringInputControlDescription | StyleControlsControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
-  export type HigherLevelControlType = 'array' | 'object' | 'union';
+  export type HigherLevelControlType = 'array' | 'tuple' | 'object' | 'union';
   export type RegularControlType = BaseControlType | HigherLevelControlType;
   export type ControlType = RegularControlType | 'folder';
   interface AbstractHigherLevelControlDescription<T extends HigherLevelControlType> extends AbstractControlDescription<T> {
@@ -469,6 +471,10 @@ declare module 'utopia-api/property-controls/property-controls' {
           [prop: string]: RegularControlDescription;
       };
   }
+  export interface TupleControlDescription extends AbstractHigherLevelControlDescription<'tuple'> {
+      defaultValue?: unknown[];
+      propertyControls: RegularControlDescription[];
+  }
   export interface UnionControlDescription extends AbstractHigherLevelControlDescription<'union'> {
       defaultValue?: unknown;
       controls: Array<RegularControlDescription>;
@@ -478,7 +484,7 @@ declare module 'utopia-api/property-controls/property-controls' {
       label?: string;
       controls: PropertyControls;
   }
-  export type HigherLevelControlDescription = ArrayControlDescription | ObjectControlDescription | UnionControlDescription;
+  export type HigherLevelControlDescription = ArrayControlDescription | ObjectControlDescription | TupleControlDescription | UnionControlDescription;
   export type RegularControlDescription = BaseControlDescription | HigherLevelControlDescription;
   export type ControlDescription = RegularControlDescription | FolderControlDescription;
   export function isBaseControlDescription(control: ControlDescription): control is BaseControlDescription;

@@ -57,9 +57,6 @@ const config = {
     preview: hot
       ? ['react-hot-loader/patch', './src/templates/preview.tsx']
       : './src/templates/preview.tsx',
-    propertyControlsInfo: hot
-      ? ['react-hot-loader/patch', './src/templates/property-controls-info.tsx']
-      : './src/templates/property-controls-info.tsx',
     vsCodeEditorOuterIframe: hot
       ? ['react-hot-loader/patch', './src/templates/vscode-editor-outer-iframe.tsx']
       : './src/templates/vscode-editor-outer-iframe.tsx',
@@ -106,15 +103,6 @@ const config = {
       scriptLoading: 'defer',
       template: './src/templates/preview.html',
       filename: 'preview.html',
-      minify: false,
-    }),
-    new HtmlWebpackPlugin({
-      // Run it again to generate the preview.html
-      chunks: ['propertyControlsInfo'],
-      inject: 'head', // Add the script tags to the end of the <head>
-      scriptLoading: 'defer',
-      template: './src/templates/property-controls-info.html',
-      filename: 'property-controls-info.html',
       minify: false,
     }),
     new HtmlWebpackPlugin({

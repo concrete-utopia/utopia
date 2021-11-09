@@ -78,14 +78,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)
 
-  render(
-    <EditorRoot
-      api={storeHook}
-      useStore={storeHook}
-      spyCollector={spyCollector}
-      propertyControlsInfoSupported={false}
-    />,
-  )
+  render(<EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />)
 
   await act(async () => {
     await load(

@@ -99,11 +99,24 @@ function inferControlTypeBasedOnValueInner(
             label: propName,
           }
         } else if (propValue.length > 0) {
-          // Otherwise we go with a regular array control
-          return {
-            control: 'array',
-            label: propName,
-            propertyControl: inferControlTypeBasedOnValueInner(stackSize + 1, propValue[0]),
+          // It's either an array or a tuple control, so let's check if the values' controls all match
+          const propertyControls = propValue.map((v) =>
+            inferControlTypeBasedOnValueInner(stackSize + 1, v),
+          )
+          if (propertyControls.every((c) => c.control === propertyControls[0].control)) {
+            // Assume a regular array control without drilling into inner arrays or objects
+            return {
+              control: 'array',
+              label: propName,
+              propertyControl: propertyControls[0],
+            }
+          } else {
+            // Different typed values means we have to use a tuple control
+            return {
+              control: 'tuple',
+              label: propName,
+              propertyControls: propertyControls,
+            }
           }
         } else {
           // We can't infer the underlying control type for empty arrays, so our hands are tied here

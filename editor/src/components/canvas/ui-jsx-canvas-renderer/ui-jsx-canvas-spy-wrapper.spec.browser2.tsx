@@ -1,26 +1,16 @@
 import { canvasPoint, point } from '../../../core/shared/math-utils'
-import {
-  ParsedTextFile,
-  textFile,
-  textFileContents,
-  RevisionsState,
-  isParseSuccess,
-} from '../../../core/shared/project-file-types'
-import { emptySet } from '../../../core/shared/set-utils'
 import * as EP from '../../../core/shared/element-path'
-import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
-import { defaultProject } from '../../../sample-projects/sample-project-utils'
 import {
   wait,
   simplifiedMetadataMap,
   domWalkerMetadataToSimplifiedMetadataMap,
 } from '../../../utils/utils.test-utils'
-import { addFileToProjectContents } from '../../assets'
 import { setFocusedElement } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
+import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 
 const exampleProject = `
 import * as React from "react";
@@ -85,41 +75,13 @@ export var storyboard = (
 );
 `
 
-function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
-  const baseModel = defaultProject()
-
-  const updatedProject = Object.keys(modifiedFiles).reduce((workingProject, modifiedFilename) => {
-    const parsedFile = lintAndParse(
-      modifiedFilename,
-      modifiedFiles[modifiedFilename],
-      null,
-      emptySet(),
-    ) as ParsedTextFile
-    if (!isParseSuccess(parsedFile)) {
-      fail('The test file parse failed')
-    }
-
-    const updatedProjectContents = addFileToProjectContents(
-      workingProject.projectContents,
-      modifiedFilename,
-      textFile(
-        textFileContents(modifiedFiles[modifiedFilename], parsedFile, RevisionsState.BothMatch),
-        null,
-        parsedFile,
-        Date.now(),
-      ),
-    )
-
-    return {
-      ...baseModel,
-      projectContents: updatedProjectContents,
-    }
-  }, baseModel)
-  return renderTestEditorWithModel(updatedProject, 'await-first-dom-report')
+function createAndRenderModifiedProject(modifiedFiles: { [filename: string]: string }) {
+  const project = createModifiedProject(modifiedFiles)
+  return renderTestEditorWithModel(project, 'await-first-dom-report')
 }
 
 function createExampleProject() {
-  return createModifiedProject({
+  return createAndRenderModifiedProject({
     [StoryboardFilePath]: exampleProject,
     '/src/card.js': `import * as React from "react";
 import { jsx } from "utopia-api";
@@ -1428,7 +1390,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
 describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
   it('a generated component instance is focused inside a component instance inside the main App component', async () => {
-    const { dispatch, getEditorState } = await createModifiedProject({
+    const { dispatch, getEditorState } = await createAndRenderModifiedProject({
       [StoryboardFilePath]: exampleProject,
 
       '/src/hi.js': `
@@ -1654,7 +1616,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
   })
 
   it('elements inside cyclic imports can still be focused', async () => {
-    const { dispatch, getEditorState } = await createModifiedProject({
+    const { dispatch, getEditorState } = await createAndRenderModifiedProject({
       [StoryboardFilePath]: exampleProject,
 
       '/src/hi.js': `

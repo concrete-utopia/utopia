@@ -345,7 +345,6 @@ import {
   SetPackageStatus,
   SetShortcut,
   UpdatePropertyControlsInfo,
-  PropertyControlsIFrameReady,
   AddStoryboardFile,
   SendLinterRequestMessage,
   UpdateChildText,
@@ -478,9 +477,8 @@ import { objectMap, objectMapDropNulls } from '../../../core/shared/object-utils
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import {
-  getPropertyControlsForTarget,
+  getDefaultPropsFromParsedControls,
   getPropertyControlsForTargetFromEditor,
-  setPropertyControlsIFrameReady,
 } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { ShortcutConfiguration } from '../shortcut-definitions'
@@ -4232,15 +4230,8 @@ export const UPDATE_FNS = {
       if (element == null) {
         return editor
       }
-      let defaultProps: { [key: string]: any } = {}
-      if (propertyControls != null) {
-        Utils.fastForEach(Object.keys(propertyControls), (key) => {
-          const defaultValue = (propertyControls[key] as any).defaultValue
-          if (defaultValue != null) {
-            defaultProps[key] = defaultValue
-          }
-        })
-      }
+      const defaultProps =
+        propertyControls == null ? {} : getDefaultPropsFromParsedControls(propertyControls)
 
       const pathToUpdate: PropertyPath | null = action.path
 
@@ -4406,14 +4397,6 @@ export const UPDATE_FNS = {
         ...propertyControlsToUpdate,
       },
     }
-  },
-  PROPERTY_CONTROLS_IFRAME_READY: (
-    _action: PropertyControlsIFrameReady,
-    editor: EditorModel,
-  ): EditorModel => {
-    // Internal side effect.
-    setPropertyControlsIFrameReady(true)
-    return editor
   },
   ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
     const updatedEditor = addStoryboardFileToProject(editor)
@@ -5177,28 +5160,6 @@ export async function load(
 
 export function isSendPreviewModel(action: any): action is SendPreviewModel {
   return action != null && (action as SendPreviewModel).action === 'SEND_PREVIEW_MODEL'
-}
-
-export function isPropertyControlsIFrameReady(
-  action: unknown,
-): action is PropertyControlsIFrameReady {
-  const parseResult = objectKeyParser(parseString, 'action')(action)
-  return foldEither(
-    (_) => false,
-    (prop) => prop === 'PROPERTY_CONTROLS_IFRAME_READY',
-    parseResult,
-  )
-}
-
-export function isUpdatePropertyControlsInfo(
-  action: unknown,
-): action is UpdatePropertyControlsInfo {
-  const parseResult = objectKeyParser(parseString, 'action')(action)
-  return foldEither(
-    (_) => false,
-    (prop) => prop === 'UPDATE_PROPERTY_CONTROLS_INFO',
-    parseResult,
-  )
 }
 
 function revertFileInProjectContents(

@@ -1164,7 +1164,7 @@ describe('parseColor', () => {
       },
     ]
     validStrings.forEach((valid, i) => {
-      expect(parseColor(valid)).toEqual(right(expectedValues[i]))
+      expect(parseColor(valid, 'hex-hash-optional')).toEqual(right(expectedValues[i]))
     })
 
     const invalidStrings: Array<string> = [
@@ -1176,7 +1176,7 @@ describe('parseColor', () => {
       'orangey',
     ]
     invalidStrings.forEach((invalid, i) => {
-      expect(parseColor(invalid).type).toEqual('LEFT')
+      expect(parseColor(invalid, 'hex-hash-optional').type).toEqual('LEFT')
     })
   })
 })
