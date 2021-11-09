@@ -418,9 +418,10 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
         {selectedItem}
       </H1>
       <SectionActionSheet className='actionsheet'>
-        <SquareButton highlight disabled={isAdding} onClick={startAdding}>
+        {/* Plus button is disabled until the root insertion issue is fixed https://github.com/concrete-utopia/utopia/issues/1991 */}
+        {/* <SquareButton highlight disabled={isAdding} onClick={startAdding}>
           <FunctionIcons.Add />
-        </SquareButton>
+        </SquareButton> */}
         <SquareButton highlight onClick={togglePathPanel}>
           <ExpandableIndicator
             testId='target-selector'
