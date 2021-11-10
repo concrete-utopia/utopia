@@ -11,46 +11,69 @@ Utopia is an integrated design and development environment for React. It uses Re
 
 ![screenshot of utopia](https://user-images.githubusercontent.com/2226774/93580752-7b7b8e80-f9a0-11ea-8663-39683a53df2e.png)
 
-[Start the editor](https://utopia.app/project)
 
-# For contributors: Installing Utopia on your machine
 
-Utopia is browser-based. To run it locally, clone the repo, and then set up the server and webpack by following these instructions.
 
-⚠️ We're looking into M1 related issues for some folks, but have it running successfully on three machine
+### Contributing and Bug Reporting
 
-## Prerequisites
+* Have a bug to report? File an issue, or find us on [Discord](https://discord.gg/NEEnPKCgzC)
+* Want to contribute? Please read our [contributing](contributing.md) doc to get started, and join our Discord. It's a big project and the core contributors are  there to help.
 
-- **If using Windows** you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10). All following steps and commands will assume you are using the wsl.
-- On **macOS** you need [brew](https://brew.sh/) and must run `brew install gmp` first. On new M1 Macbooks please follow [these steps](https://github.com/concrete-utopia/utopia#m1-macbook) to install brew and run the server the first time.
-- [nix-shell](https://nixos.org/download.html). If you are on macOS Catalina or later, you will be prompted to include an extra flag in the install script. If using Windows follow [this guide](https://nathan.gs/2019/04/12/nix-on-windows/). If you don't want to use nix, we have instructions [here](https://github.com/concrete-utopia/utopia#running-this-without-nix)
-- Recommended: [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands, and switching to nix will be a bit slower.
 
-## Contributing and Bug Reporting
 
-We welcome contributions. Utopia is a big project, but we're here to help, and are happy to pair up with you. The easiest way is to file an issue, or reach out on [Discord](https://discord.gg/NEEnPKCgzC). Please read our [contributing](contributing.md) doc to get started
+# Install Utopia locally
+Just want to _use_ Utopia? Head to [utopia.app/project](https://utopia.app/project) instead.
 
-# Run the Editor
+Utopia is browser-based. To run it locally, clone the repo, install the prerequisites, and run the editor.
 
-The first time running the editor, run the following script:
+
+
+### Install Prerequisites
+
+- (Windows only) Install WSL (Windows only)
+- (MacOS only: Install [brew](https://brew.sh/) and run run `brew install gmp`. On an M1 Mac, follow [these steps](https://github.com/concrete-utopia/utopia#m1-macbook)
+- Install [nix-shell](https://nixos.org/download.html). On Windows? Follow [this guide](https://nathan.gs/2019/04/12/nix-on-windows/). 
+- Recommended: Install [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). 
+
+### Run the Editor for the first time
+
+Install the prerequsites, then run this in your terminal. NB There's no docker image at the moment.
 
 ```
+nix-shell
 start-full
 ```
 
-Subsequently it should be possible to just run, unless either changes have been made to VS Code or something like the dependencies have changed in the editor project:
+Then visit [localhost:8000/p](https://localhost:8000/p) for the editor, or [localhost:8000](https://localhost:8000/) for the website.
+
+(If you have direnv installed, you can skip running `nix-shell` here)
+
+### Run the editor after the first time
+
+To start the editor after the first install, run 
 
 ```
+nix-shell
 start-minimal
 ```
 
-Both of these scripts result in a tmux session with all of the various servers running and watching for changes. You can see all of the active sessions in the bar along the bottom, prefixed by the "window" number that they are running in. You should be able to click on each of those to switch to viewing that session, or if that doesn't work you can use the key combo `cmd`+`b` (macOS) or `ctrl`+`b` (Linux or Windows), followed by the number for that session. (see [here](https://github.com/tmux/tmux/wiki/Getting-Started#changing-the-current-window) for the relevant tmux docs)
+Then visit [localhost:8000/p](https://localhost:8000/p) for the editor, or [localhost:8000](https://localhost:8000/) for the website.
 
-To shut them down, in the "Scratchpad" tab of the session run the following command:
+
+If you run into errors from missing dependencies, or VSCode isn't loading, you'll want to run `start-full` instead.
+
+### Stop the editor
+
+The editor runs a tmux shell with a few tabs for the different servers. To shut them all down, in the "Scratchpad" tab of the session run the following command:
 
 ```
 stop-dev
 ```
+
+
+Both `start` and `start-minimal` open a tmux session with all of the various servers running and watching for changes. You can see all of the active sessions in the bar along the bottom, prefixed by the "window" number that they are running in. You should be able to click on each of those to switch to viewing that session, or if that doesn't work you can use the key combo `cmd`+`b` (macOS) or `ctrl`+`b` (Linux or Windows), followed by the number for that session. (see [here](https://github.com/tmux/tmux/wiki/Getting-Started#changing-the-current-window) for the relevant tmux docs)
+
+
 
 ### Finally, loading the running application
 
