@@ -403,7 +403,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
             }
           }
           let defaults = [...DefaultStyleTargets]
-          defaults.reverse().map((defaultTarget) => {
+          defaults.reverse().forEach((defaultTarget) => {
             const styleObject = getSimpleAttributeAtPath(
               right(localJSXElement.props),
               PP.create(defaultTarget.path),
