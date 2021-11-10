@@ -1,8 +1,8 @@
 diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
-index fbf4739f2ff..0428df85ccd 100644
+index 6d3a369082a..7ad32223052 100644
 --- a/build/gulpfile.vscode.js
 +++ b/build/gulpfile.vscode.js
-@@ -35,14 +35,15 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
+@@ -35,11 +35,12 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
  
  // Build
  const vscodeEntryPoints = _.flatten([
@@ -11,16 +11,13 @@ index fbf4739f2ff..0428df85ccd 100644
  	buildfile.base,
  	buildfile.workerExtensionHost,
  	buildfile.workerNotebook,
- 	buildfile.workerLanguageDetection,
- 	buildfile.workerSharedProcess,
- 	buildfile.workerLocalFileSearch,
 -	buildfile.workbenchDesktop,
 +	buildfile.workbenchWeb,
-+	buildfile.keyboardMaps,
++  buildfile.keyboardMaps,
  	buildfile.code
  ]);
  
-@@ -158,8 +159,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
+@@ -157,8 +158,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
  
  		const checksums = computeChecksums(out, [
  			'vs/base/parts/sandbox/electron-browser/preload.js',
@@ -40,10 +37,10 @@ index 9e26dfeeb6e..00000000000
 -{}
 \ No newline at end of file
 diff --git a/extensions/simple-browser/src/simpleBrowserView.ts b/extensions/simple-browser/src/simpleBrowserView.ts
-index c5d8a68184e..5f1157ff43b 100644
+index 104acfe9559..123e8e79f58 100644
 --- a/extensions/simple-browser/src/simpleBrowserView.ts
 +++ b/extensions/simple-browser/src/simpleBrowserView.ts
-@@ -156,7 +156,7 @@ export class SimpleBrowserView extends Disposable {
+@@ -136,7 +136,7 @@ export class SimpleBrowserView extends Disposable {
  				</header>
  				<div class="content">
  					<div class="iframe-focused-alert">${localize('view.iframe-focused', "Focus Lock")}</div>
@@ -53,10 +50,10 @@ index c5d8a68184e..5f1157ff43b 100644
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/product.json b/product.json
-index 14ef10628d3..b37ebcd9f73 100644
+index 9cddae242a6..35400d5d59b 100644
 --- a/product.json
 +++ b/product.json
-@@ -1,97 +1,9 @@
+@@ -1,140 +1,9 @@
  {
 -	"nameShort": "Code - OSS",
 -	"nameLong": "Code - OSS",
@@ -64,8 +61,7 @@ index 14ef10628d3..b37ebcd9f73 100644
 -	"dataFolderName": ".vscode-oss",
 -	"win32MutexName": "vscodeoss",
 -	"licenseName": "MIT",
--	"licenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
--	"serverGreeting": [],
+-	"licenseUrl": "https://github.com/microsoft/vscode/blob/master/LICENSE.txt",
 -	"win32DirName": "Microsoft Code OSS",
 -	"win32NameVersion": "Microsoft Code OSS",
 -	"win32RegValueName": "CodeOSS",
@@ -82,20 +78,47 @@ index 14ef10628d3..b37ebcd9f73 100644
 -	"licenseFileName": "LICENSE.txt",
 -	"reportIssueUrl": "https://github.com/microsoft/vscode/issues/new",
 -	"urlProtocol": "code-oss",
--	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-webview.net/insider/dc1a6699060423b8c4d2ced736ad70195378fddf/out/vs/workbench/contrib/webview/browser/pre/",
 -	"extensionAllowedProposedApi": [
 -		"ms-vscode.vscode-js-profile-flame",
 -		"ms-vscode.vscode-js-profile-table",
--		"ms-vscode.remotehub",
--		"ms-vscode.remotehub-insiders",
--		"GitHub.remotehub",
--		"GitHub.remotehub-insiders"
+-		"ms-vscode.github-browser",
+-		"ms-vscode.github-richnav"
 -	],
 -	"builtInExtensions": [
 -		{
+-			"name": "ms-vscode.node-debug",
+-			"version": "1.44.16",
+-			"repo": "https://github.com/microsoft/vscode-node-debug",
+-			"metadata": {
+-				"id": "b6ded8fb-a0a0-4c1c-acbd-ab2a3bc995a6",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.node-debug2",
+-			"version": "1.42.5",
+-			"repo": "https://github.com/microsoft/vscode-node-debug2",
+-			"metadata": {
+-				"id": "36d19e17-7569-4841-a001-947eb18602b2",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
 -			"name": "ms-vscode.references-view",
--			"version": "0.0.81",
--			"repo": "https://github.com/microsoft/vscode-references-view",
+-			"version": "0.0.77",
+-			"repo": "https://github.com/microsoft/vscode-reference-view",
 -			"metadata": {
 -				"id": "dc489f46-520d-4556-ae85-1f9eab3c412d",
 -				"publisherId": {
@@ -109,7 +132,7 @@ index 14ef10628d3..b37ebcd9f73 100644
 -		},
 -		{
 -			"name": "ms-vscode.js-debug-companion",
--			"version": "1.0.15",
+-			"version": "1.0.8",
 -			"repo": "https://github.com/microsoft/vscode-js-debug-companion",
 -			"metadata": {
 -				"id": "99cb0b7f-7354-4278-b8da-6cc79972169d",
@@ -124,7 +147,7 @@ index 14ef10628d3..b37ebcd9f73 100644
 -		},
 -		{
 -			"name": "ms-vscode.js-debug",
--			"version": "1.62.0",
+-			"version": "1.53.0",
 -			"repo": "https://github.com/microsoft/vscode-js-debug",
 -			"metadata": {
 -				"id": "25629058-ddac-4e17-abba-74678e126c5d",
@@ -139,8 +162,8 @@ index 14ef10628d3..b37ebcd9f73 100644
 -		},
 -		{
 -			"name": "ms-vscode.vscode-js-profile-table",
--			"version": "0.0.18",
--			"repo": "https://github.com/microsoft/vscode-js-profile-visualizer",
+-			"version": "0.0.11",
+-			"repo": "https://github.com/microsoft/vscode-js-debug",
 -			"metadata": {
 -				"id": "7e52b41b-71ad-457b-ab7e-0620f1fc4feb",
 -				"publisherId": {
@@ -152,57 +175,74 @@ index 14ef10628d3..b37ebcd9f73 100644
 -				"publisherDisplayName": "Microsoft"
 -			}
 -		}
+-	],
+-	"webBuiltInExtensions": [
+-		{
+-			"name": "ms-vscode.github-browser",
+-			"version": "0.0.14",
+-			"repo": "https://github.com/microsoft/vscode-github-browser",
+-			"metadata": {
+-				"id": "c1bcff4b-4ecb-466e-b8f6-b02788b5fb5a",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		}
 -	]
-+	"productConfiguration": {
-+		"nameShort": "Code Web",
-+		"nameLong": "Code Web",
-+		"applicationName": "code-web",
-+		"dataFolderName": ".vscode-web",
-+		"version": "1.62.0"
-+	}
++  "productConfiguration": {
++    "nameShort": "Code Web",
++    "nameLong": "Code Web",
++    "applicationName": "code-web",
++    "dataFolderName": ".vscode-web",
++    "version": "1.53.0"
++  }
  }
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
-index 6148eb30092..6948ededa4a 100644
+index a9bbd661562..2c702a4ebbb 100644
 --- a/src/vs/base/browser/dom.ts
 +++ b/src/vs/base/browser/dom.ts
-@@ -365,7 +365,11 @@ export function getClientArea(element: HTMLElement): Dimension {
+@@ -374,7 +374,11 @@ export function getClientArea(element: HTMLElement): Dimension {
  		return new Dimension(document.documentElement.clientWidth, document.documentElement.clientHeight);
  	}
  
 -	throw new Error('Unable to figure out browser width and height');
-+ 	// this Error would prevent VSCode from loading inside Utopia if the browser tab is not in the foreground
-+ 	// throw new Error('Unable to figure out browser width and height');
-+ 
-+ 	// Instead, we just return 0 x 0, it seems to be fine
-+ 	return new Dimension(0, 0);
++	// this Error would prevent VSCode from loading inside Utopia if the browser tab is not in the foreground
++	// throw new Error('Unable to figure out browser width and height');
++
++	// Instead, we just return 0 x 0, it seems to be fine
++	return new Dimension(0, 0);
  }
  
  class SizeUtils {
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 534fe232636..be23a3bd1e9 100644
+index 1ed7feec97b..573adf16ba8 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -1,536 +1,98 @@
+@@ -1,532 +1,99 @@
 -/*---------------------------------------------------------------------------------------------
 - *  Copyright (c) Microsoft Corporation. All rights reserved.
 - *  Licensed under the MIT License. See License.txt in the project root for license information.
 - *--------------------------------------------------------------------------------------------*/
 -
--import { isStandalone } from 'vs/base/browser/browser';
--import { streamToBuffer } from 'vs/base/common/buffer';
--import { CancellationToken } from 'vs/base/common/cancellation';
--import { Emitter, Event } from 'vs/base/common/event';
--import { Disposable } from 'vs/base/common/lifecycle';
--import { Schemas } from 'vs/base/common/network';
--import { isEqual } from 'vs/base/common/resources';
+-import { IWorkbenchConstructionOptions, create, ICredentialsProvider, IURLCallbackProvider, IWorkspaceProvider, IWorkspace, IWindowIndicator, IHomeIndicator, IProductQualityChangeHandler, ISettingsSyncOptions } from 'vs/workbench/workbench.web.api';
 -import { URI, UriComponents } from 'vs/base/common/uri';
+-import { Event, Emitter } from 'vs/base/common/event';
 -import { generateUuid } from 'vs/base/common/uuid';
+-import { CancellationToken } from 'vs/base/common/cancellation';
+-import { streamToBuffer } from 'vs/base/common/buffer';
+-import { Disposable } from 'vs/base/common/lifecycle';
 -import { request } from 'vs/base/parts/request/browser/request';
--import { localize } from 'vs/nls';
--import { parseLogLevel } from 'vs/platform/log/common/log';
--import product from 'vs/platform/product/common/product';
 -import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/windows/common/windows';
--import { create, ICredentialsProvider, IHomeIndicator, IProductQualityChangeHandler, ISettingsSyncOptions, IURLCallbackProvider, IWelcomeBanner, IWindowIndicator, IWorkbenchConstructionOptions, IWorkspace, IWorkspaceProvider } from 'vs/workbench/workbench.web.api';
+-import { isEqual } from 'vs/base/common/resources';
+-import { isStandalone } from 'vs/base/browser/browser';
+-import { localize } from 'vs/nls';
+-import { Schemas } from 'vs/base/common/network';
+-import product from 'vs/platform/product/common/product';
+-import { parseLogLevel } from 'vs/platform/log/common/log';
 -
 -function doCreateUri(path: string, queryValues: Map<string, string>): URI {
 -	let query: string | undefined = undefined;
@@ -370,10 +410,6 @@ index 534fe232636..be23a3bd1e9 100644
 -			url: doCreateUri('/auth/logout', queryValues).toString(true)
 -		}, CancellationToken.None);
 -	}
--
--	async clear(): Promise<void> {
--		window.localStorage.removeItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY);
--	}
 -}
 -
 -class PollingURLCallbackProvider extends Disposable implements IURLCallbackProvider {
@@ -464,35 +500,28 @@ index 534fe232636..be23a3bd1e9 100644
 -
 -	static QUERY_PARAM_PAYLOAD = 'payload';
 -
--	readonly trusted = true;
--
 -	constructor(
--		readonly workspace: IWorkspace,
--		readonly payload: object
+-		public readonly workspace: IWorkspace,
+-		public readonly payload: object
 -	) { }
 -
--	async open(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): Promise<boolean> {
+-	async open(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): Promise<void> {
 -		if (options?.reuse && !options.payload && this.isSame(this.workspace, workspace)) {
--			return true; // return early if workspace and environment is not changing and we are reusing window
+-			return; // return early if workspace and environment is not changing and we are reusing window
 -		}
 -
 -		const targetHref = this.createTargetUrl(workspace, options);
 -		if (targetHref) {
 -			if (options?.reuse) {
 -				window.location.href = targetHref;
--				return true;
 -			} else {
--				let result;
 -				if (isStandalone) {
--					result = window.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
+-					window.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
 -				} else {
--					result = window.open(targetHref);
+-					window.open(targetHref);
 -				}
--
--				return !!result;
 -			}
 -		}
--		return false;
 -	}
 -
 -	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): string | undefined {
@@ -579,14 +608,14 @@ index 534fe232636..be23a3bd1e9 100644
 -
 -		// Repo
 -		if (repositoryName && repositoryOwner) {
--			this.label = localize('playgroundLabelRepository', "$(remote) Visual Studio Code Playground: {0}/{1}", repositoryOwner, repositoryName);
--			this.tooltip = localize('playgroundRepositoryTooltip', "Visual Studio Code Playground: {0}/{1}", repositoryOwner, repositoryName);
+-			this.label = localize('playgroundLabelRepository', "$(remote) VS Code Web Playground: {0}/{1}", repositoryOwner, repositoryName);
+-			this.tooltip = localize('playgroundRepositoryTooltip', "VS Code Web Playground: {0}/{1}", repositoryOwner, repositoryName);
 -		}
 -
 -		// No Repo
 -		else {
--			this.label = localize('playgroundLabel', "$(remote) Visual Studio Code Playground");
--			this.tooltip = localize('playgroundTooltip', "Visual Studio Code Playground");
+-			this.label = localize('playgroundLabel', "$(remote) VS Code Web Playground");
+-			this.tooltip = localize('playgroundTooltip', "VS Code Web Playground");
 -		}
 -	}
 -}
@@ -601,6 +630,13 @@ index 534fe232636..be23a3bd1e9 100644
 -	}
 -
 -	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents } = JSON.parse(configElementAttribute);
+-
+-	// Revive static extension locations
+-	if (Array.isArray(config.staticExtensions)) {
+-		config.staticExtensions.forEach(extension => {
+-			extension.extensionLocation = URI.revive(extension.extensionLocation);
+-		});
+-	}
 -
 -	// Find workspace to open and payload
 -	let foundWorkspace = false;
@@ -667,15 +703,6 @@ index 534fe232636..be23a3bd1e9 100644
 -		title: localize('home', "Home")
 -	};
 -
--	// Welcome Banner
--	const welcomeBanner: IWelcomeBanner = {
--		message: localize('welcomeBannerMessage', "{0} Web. Browser based playground for testing.", product.nameShort),
--		actions: [{
--			href: 'https://github.com/microsoft/vscode',
--			label: localize('learnMore', "Learn More")
--		}]
--	};
--
 -	// Window indicator (unless connected to a remote)
 -	let windowIndicator: WindowIndicator | undefined = undefined;
 -	if (!workspaceProvider.hasRemote()) {
@@ -700,19 +727,28 @@ index 534fe232636..be23a3bd1e9 100644
 -	// settings sync options
 -	const settingsSyncOptions: ISettingsSyncOptions | undefined = config.settingsSyncOptions ? {
 -		enabled: config.settingsSyncOptions.enabled,
+-		enablementHandler: (enablement) => {
+-			let queryString = `settingsSync=${enablement ? 'true' : 'false'}`;
+-
+-			// Save all other query params we might have
+-			const query = new URL(document.location.href).searchParams;
+-			query.forEach((value, key) => {
+-				if (key !== 'settingsSync') {
+-					queryString += `&${key}=${value}`;
+-				}
+-			});
+-
+-			window.location.href = `${window.location.origin}?${queryString}`;
+-		}
 -	} : undefined;
 -
 -	// Finally create workbench
 -	create(document.body, {
 -		...config,
--		developmentOptions: {
--			logLevel: logLevel ? parseLogLevel(logLevel) : undefined,
--			...config.developmentOptions
--		},
+-		logLevel: logLevel ? parseLogLevel(logLevel) : undefined,
 -		settingsSyncOptions,
 -		homeIndicator,
 -		windowIndicator,
--		welcomeBanner,
 -		productQualityChangeHandler,
 -		workspaceProvider,
 -		urlCallbackProvider: new PollingURLCallbackProvider(),
@@ -721,7 +757,6 @@ index 534fe232636..be23a3bd1e9 100644
 -})();
 +import {
 +  create,
-+	IWorkspace,
 +  IWorkbenchConstructionOptions,
 +  IWorkspaceProvider,
 +} from 'vs/workbench/workbench.web.api'
@@ -804,25 +839,26 @@ index 534fe232636..be23a3bd1e9 100644
 +    webviewEndpoint: webviewEndpoint,
 +  }
 +
++  if (Array.isArray(config.staticExtensions)) {
++    config.staticExtensions.forEach((extension) => {
++      extension.extensionLocation = URI.revive(extension.extensionLocation)
++    })
++  }
++
 +  const workspace = { folderUri: URI.revive(config.folderUri) }
 +
 +  if (workspace) {
-+    const workspaceProvider: IWorkspaceProvider = { 
-+			workspace,
-+			open: async (workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }) => true,
-+			trusted: true 
-+		}
++    const workspaceProvider: IWorkspaceProvider = { workspace, open: async () => {} }
 +    config = { ...config, workspaceProvider }
 +  }
 +
 +  create(document.body, config)
 +})()
-\ No newline at end of file
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 8a49a5f9c62..b3a23860eb3 100644
+index 1fe5aa621c5..18d257fab34 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
-@@ -54,6 +54,7 @@ import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxili
+@@ -51,6 +51,7 @@ import { ILogService } from 'vs/platform/log/common/log';
  export enum Settings {
  	ACTIVITYBAR_VISIBLE = 'workbench.activityBar.visible',
  	STATUSBAR_VISIBLE = 'workbench.statusBar.visible',
@@ -830,11 +866,11 @@ index 8a49a5f9c62..b3a23860eb3 100644
  
  	SIDEBAR_POSITION = 'workbench.sideBar.location',
  	PANEL_POSITION = 'workbench.panel.defaultLocation',
-@@ -190,16 +191,16 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -179,16 +180,16 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		windowBorder: false,
  
  		menuBar: {
--			visibility: 'classic' as MenuBarVisibility,
+-			visibility: 'default' as MenuBarVisibility,
 +			visibility: 'hidden' as MenuBarVisibility,
  			toggled: false
  		},
@@ -850,7 +886,7 @@ index 8a49a5f9c62..b3a23860eb3 100644
  			position: Position.LEFT,
  			width: 300,
  			viewletToRestore: undefined as string | undefined
-@@ -214,7 +215,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -203,7 +204,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		},
  
  		panel: {
@@ -859,7 +895,7 @@ index 8a49a5f9c62..b3a23860eb3 100644
  			position: Position.BOTTOM,
  			lastNonMaximizedWidth: 300,
  			lastNonMaximizedHeight: 300,
-@@ -228,7 +229,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -212,7 +213,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		},
  
  		statusBar: {
@@ -868,7 +904,15 @@ index 8a49a5f9c62..b3a23860eb3 100644
  		},
  
  		views: {
-@@ -513,13 +514,13 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -384,7 +385,6 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.updatePanelPosition();
+ 
+ 		if (!this.state.zenMode.active) {
+-
+ 			// Statusbar visibility
+ 			const newStatusbarHiddenValue = !this.configurationService.getValue<boolean>(Settings.STATUSBAR_VISIBLE);
+ 			if (newStatusbarHiddenValue !== this.state.statusBar.hidden) {
+@@ -487,13 +487,13 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		this.state.fullscreen = isFullscreen();
  
  		// Menubar visibility
@@ -877,33 +921,33 @@ index 8a49a5f9c62..b3a23860eb3 100644
  
  		// Activity bar visibility
 -		this.state.activityBar.hidden = !this.configurationService.getValue<string>(Settings.ACTIVITYBAR_VISIBLE);
-+		this.state.activityBar.hidden = true;
++		this.state.activityBar.hidden = true
  
  		// Sidebar visibility
 -		this.state.sideBar.hidden = this.storageService.getBoolean(Storage.SIDEBAR_HIDDEN, StorageScope.WORKSPACE, this.contextService.getWorkbenchState() === WorkbenchState.EMPTY);
-+		this.state.sideBar.hidden = true;
++		this.state.sideBar.hidden = true
  
  		// Sidebar position
  		this.state.sideBar.position = (this.configurationService.getValue<string>(Settings.SIDEBAR_POSITION) === 'right') ? Position.RIGHT : Position.LEFT;
-@@ -552,7 +553,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		this.state.editor.editorsToOpen = this.resolveEditorsToOpen(fileService, this.contextService);
+@@ -526,7 +526,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.editor.editorsToOpen = this.resolveEditorsToOpen(fileService);
  
  		// Panel visibility
 -		this.state.panel.hidden = this.storageService.getBoolean(Storage.PANEL_HIDDEN, StorageScope.WORKSPACE, true);
-+		this.state.panel.hidden = true;
++		this.state.panel.hidden = true
  
  		// Whether or not the panel was last maximized
  		this.state.panel.wasLastMaximized = this.storageService.getBoolean(Storage.PANEL_LAST_IS_MAXIMIZED, StorageScope.WORKSPACE, false);
-@@ -590,7 +591,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -550,7 +550,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		this.state.panel.lastNonMaximizedWidth = this.storageService.getNumber(Storage.PANEL_LAST_NON_MAXIMIZED_WIDTH, StorageScope.GLOBAL, 300);
  
  		// Statusbar visibility
 -		this.state.statusBar.hidden = !this.configurationService.getValue<string>(Settings.STATUSBAR_VISIBLE);
-+		this.state.statusBar.hidden = true;
++		this.state.statusBar.hidden = true
  
  		// Zen mode enablement
  		this.state.zenMode.restore = this.storageService.getBoolean(Storage.ZEN_MODE_ENABLED, StorageScope.WORKSPACE, false) && this.configurationService.getValue(Settings.ZEN_MODE_RESTORE);
-@@ -1227,7 +1228,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1094,7 +1094,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		}
  	}
  
@@ -913,130 +957,376 @@ index 8a49a5f9c62..b3a23860eb3 100644
  		this.state.statusBar.hidden = hidden;
  
  		// Adjust CSS
-@@ -1459,7 +1461,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1298,7 +1299,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		}
  	}
  
--	private setActivityBarHidden(hidden: boolean, skipLayout?: boolean): void {
-+	private setActivityBarHidden(_hidden: boolean, skipLayout?: boolean): void {
-+		const hidden = true;
+-	setActivityBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	setActivityBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true
  		this.state.activityBar.hidden = hidden;
  
  		// Propagate to grid
-@@ -1506,7 +1509,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1341,7 +1343,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		]);
  	}
  
--	private setSideBarHidden(hidden: boolean, skipLayout?: boolean): void {
-+	private setSideBarHidden(_hidden: boolean, skipLayout?: boolean): void {
+-	setSideBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	setSideBarHidden(_hidden: boolean, skipLayout?: boolean): void {
 +		const hidden = true
  		this.state.sideBar.hidden = hidden;
  
  		// Adjust CSS
-@@ -1566,7 +1570,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
- 		return viewContainerModel.activeViewDescriptors.length >= 1;
+@@ -1387,7 +1390,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		}
  	}
  
--	private setPanelHidden(hidden: boolean, skipLayout?: boolean): void {
-+	private setPanelHidden(_hidden: boolean, skipLayout?: boolean): void {
-+		const hidden = true;
+-	setPanelHidden(hidden: boolean, skipLayout?: boolean): void {
++	setPanelHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true
  		const wasHidden = this.state.panel.hidden;
  		this.state.panel.hidden = hidden;
  
-@@ -1777,7 +1782,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1541,7 +1545,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		return this.state.sideBar.position;
  	}
  
 -	setMenubarVisibility(visibility: MenuBarVisibility, skipLayout: boolean): void {
 +	setMenubarVisibility(_visibility: MenuBarVisibility, skipLayout: boolean): void {
-+		const visibility = 'hidden';
++		const visibility = 'hidden'
  		if (this.state.menuBar.visibility !== visibility) {
  			this.state.menuBar.visibility = visibility;
  
+diff --git a/src/vs/workbench/browser/parts/dummies/activitybarPart.ts b/src/vs/workbench/browser/parts/dummies/activitybarPart.ts
+new file mode 100644
+index 00000000000..455a50bb453
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/activitybarPart.ts
+@@ -0,0 +1,25 @@
++import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++import { IBadge } from 'vs/workbench/services/activity/common/activity';
++import { IActivityBarService } from 'vs/workbench/services/activityBar/browser/activityBarService';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++
++export class ActivitybarPart extends DummyPart implements IActivityBarService {
++	declare readonly _serviceBrand: undefined;
++
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.ACTIVITYBAR_PART, themeService, storageService, layoutService)
++
++		this.setVisible(false)
++	}
++
++	showActivity(viewletOrActionId: string, badge: IBadge, clazz?: string, priority?: number): IDisposable { return Disposable.None }
++	getPinnedViewContainerIds(): string[] { return [] }
++	getVisibleViewContainerIds(): string[] { return [] }
++	focusActivityBar(): void { }
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/dummyPart.ts b/src/vs/workbench/browser/parts/dummies/dummyPart.ts
+new file mode 100644
+index 00000000000..8bc3a355ed2
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/dummyPart.ts
+@@ -0,0 +1,39 @@
++import { Event } from 'vs/base/common/event';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { Part } from 'vs/workbench/browser/part';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++
++export abstract class DummyPart extends Part {
++	constructor(
++		private part: Parts,
++		themeService: IThemeService,
++		storageService: IStorageService,
++		layoutService: IWorkbenchLayoutService
++	) {
++		super(part, {}, themeService, storageService, layoutService)
++	}
++
++	create(parent: HTMLElement): void {
++		this.element = parent
++	}
++
++	setVisible(_: boolean) {
++		super.setVisible(false)
++	}
++
++	minimumWidth: number = 0
++	maximumWidth: number = Number.POSITIVE_INFINITY;
++	minimumHeight: number = 0
++	maximumHeight: number = Number.POSITIVE_INFINITY;
++	toJSON(): object {
++		return {
++			type: this.part
++		}
++	}
++
++	onDidOpenEvent<T>(): Event<T> {
++		this.setVisible(false);
++		return Event.None
++	}
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/panelPart.ts b/src/vs/workbench/browser/parts/dummies/panelPart.ts
+new file mode 100644
+index 00000000000..7615e89b437
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/panelPart.ts
+@@ -0,0 +1,45 @@
++import { Event } from 'vs/base/common/event';
++import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
++import { IProgressIndicator } from 'vs/platform/progress/common/progress';
++import { IPanel } from 'vs/workbench/common/panel';
++import { IBadge } from 'vs/workbench/services/activity/common/activity';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++import { IPanelIdentifier, IPanelService } from 'vs/workbench/services/panel/common/panelService';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++
++export class PanelPart extends DummyPart implements IPanelService {
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.PANEL_PART, themeService, storageService, layoutService)
++	}
++
++	declare readonly _serviceBrand: undefined;
++
++	get onDidPanelOpen(): Event<{ panel: IPanel, focus: boolean; }> { return this.onDidOpenEvent() }
++
++	get onDidPanelClose() { return Event.None }
++
++	openPanel(id?: string, focus?: boolean): Promise<IPanel | undefined> {
++		return Promise.resolve(undefined)
++	}
++
++	getActivePanel(): IPanel | undefined { return undefined }
++
++	getPanel(id: string): IPanelIdentifier | undefined { return undefined }
++
++	getPanels(): readonly IPanelIdentifier[] { return [] }
++
++	getPinnedPanels(): readonly IPanelIdentifier[] { return [] }
++
++	getProgressIndicator(id: string): IProgressIndicator | undefined { return undefined }
++
++	showActivity(panelId: string, badge: IBadge, clazz?: string): IDisposable { return Disposable.None }
++
++	hideActivePanel(): void { }
++
++	getLastActivePanelId(): string { return '' }
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/sidebarPart.ts b/src/vs/workbench/browser/parts/dummies/sidebarPart.ts
+new file mode 100644
+index 00000000000..6bb61434848
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/sidebarPart.ts
+@@ -0,0 +1,43 @@
++import { Event } from 'vs/base/common/event';
++import { IProgressIndicator } from 'vs/platform/progress/common/progress';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
++import { ViewletDescriptor } from 'vs/workbench/browser/viewlet';
++import { IViewlet } from 'vs/workbench/common/viewlet';
++
++export class SidebarPart extends DummyPart implements IViewletService {
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.SIDEBAR_PART, themeService, storageService, layoutService)
++
++		this.setVisible(false)
++	}
++
++	declare readonly _serviceBrand: undefined;
++
++	get onDidViewletRegister(): Event<ViewletDescriptor> { return Event.None }
++	get onDidViewletDeregister(): Event<ViewletDescriptor> { return Event.None }
++	get onDidViewletOpen(): Event<IViewlet> { return this.onDidOpenEvent() }
++	get onDidViewletClose(): Event<IViewlet> { return Event.None }
++
++	openViewlet(id: string | undefined, focus?: boolean): Promise<IViewlet | undefined> {
++		return Promise.resolve(undefined)
++	}
++
++	getActiveViewlet(): IViewlet | undefined { return undefined }
++
++	getViewlet(id: string): ViewletDescriptor | undefined { return undefined }
++
++	getViewlets(): ViewletDescriptor[] { return [] }
++
++	getProgressIndicator(id: string): IProgressIndicator | undefined { return undefined }
++
++	hideActiveViewlet(): void { }
++
++	getLastActiveViewletId(): string { return '' }
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/statusbarPart.ts b/src/vs/workbench/browser/parts/dummies/statusbarPart.ts
+new file mode 100644
+index 00000000000..225cfe59c90
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/statusbarPart.ts
+@@ -0,0 +1,35 @@
++import { Event } from 'vs/base/common/event';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++import { IStatusbarEntry, IStatusbarService, IStatusbarEntryAccessor, StatusbarAlignment } from 'vs/workbench/services/statusbar/common/statusbar';
++
++export class StatusbarPart extends DummyPart implements IStatusbarService {
++	readonly _serviceBrand: undefined;
++
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.STATUSBAR_PART, themeService, storageService, layoutService)
++
++		this.setVisible(false)
++	}
++
++	addEntry(entry: IStatusbarEntry, id: string, name: string, alignment: StatusbarAlignment, priority?: number): IStatusbarEntryAccessor {
++		return dummyStatusbarEntryAccessor
++	}
++
++	get onDidChangeEntryVisibility(): Event<{ id: string, visible: boolean }> { return this.onDidOpenEvent() }
++	isEntryVisible(id: string): boolean { return false }
++	updateEntryVisibility(id: string, visible: boolean): void { }
++	focus(preserveEntryFocus?: boolean): void { }
++	focusNextEntry(): void { }
++	focusPreviousEntry(): void { }
++}
++
++const dummyStatusbarEntryAccessor: IStatusbarEntryAccessor = {
++	dispose() { },
++	update(properties: IStatusbarEntry): void { }
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/titlebarPart.ts b/src/vs/workbench/browser/parts/dummies/titlebarPart.ts
+new file mode 100644
+index 00000000000..4466b0a0545
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/titlebarPart.ts
+@@ -0,0 +1,25 @@
++import { Event } from 'vs/base/common/event';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++import { ITitleProperties, ITitleService } from 'vs/workbench/services/title/common/titleService';
++
++export class TitlebarPart extends DummyPart implements ITitleService {
++	declare readonly _serviceBrand: undefined;
++
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.TITLEBAR_PART, themeService, storageService, layoutService)
++
++		this.setVisible(false)
++	}
++
++	get onMenubarVisibilityChange(): Event<boolean> {
++		return Event.None
++	}
++
++	updateProperties(properties: ITitleProperties): void { }
++}
 diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
-index b8a8c87d94e..1ca4f4da481 100644
+index 03297afe7fa..dcf30dd1ef1 100644
 --- a/src/vs/workbench/browser/workbench.contribution.ts
 +++ b/src/vs/workbench/browser/workbench.contribution.ts
-@@ -7,7 +7,7 @@ import product from 'vs/platform/product/common/product';
+@@ -6,7 +6,7 @@
  import { Registry } from 'vs/platform/registry/common/platform';
- import { localize } from 'vs/nls';
+ import * as nls from 'vs/nls';
  import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from 'vs/platform/configuration/common/configurationRegistry';
 -import { isMacintosh, isWindows, isLinux, isWeb, isNative } from 'vs/base/common/platform';
 +import { isMacintosh, isWeb, isNative } from 'vs/base/common/platform';
  import { workbenchConfigurationNodeBase } from 'vs/workbench/common/configuration';
  import { isStandalone } from 'vs/base/browser/browser';
  
-@@ -282,6 +282,12 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+@@ -253,6 +253,12 @@ import { isStandalone } from 'vs/base/browser/browser';
  				'default': 'left',
- 				'description': localize('sideBarLocation', "Controls the location of the sidebar and activity bar. They can either show on the left or right of the workbench.")
+ 				'description': nls.localize('sideBarLocation', "Controls the location of the sidebar and activity bar. They can either show on the left or right of the workbench.")
  			},
 +			'workbench.sideBar.visible': {
 +				'type': 'boolean',
 +				'default': false,
-+				'description': localize('sideBarVisibility', "Controls the visibility of the side bar at the side of the workbench."),
++				'description': nls.localize('sideBarVisibility', "Controls the visibility of the side bar at the side of the workbench."),
 +				'included': false
 +			},
  			'workbench.panel.defaultLocation': {
  				'type': 'string',
  				'enum': ['left', 'bottom', 'right'],
-@@ -301,13 +307,15 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+@@ -272,13 +278,15 @@ import { isStandalone } from 'vs/base/browser/browser';
  			},
  			'workbench.statusBar.visible': {
  				'type': 'boolean',
 -				'default': true,
--				'description': localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench.")
+-				'description': nls.localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench.")
 +				'default': false,
-+				'description': localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench."),
++				'description': nls.localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench."),
 +				'included': false
  			},
  			'workbench.activityBar.visible': {
  				'type': 'boolean',
 -				'default': true,
--				'description': localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench.")
+-				'description': nls.localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench.")
 +				'default': false,
-+				'description': localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench."),
++				'description': nls.localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench."),
 +				'included': false
  			},
  			'workbench.activityBar.iconClickBehavior': {
  				'type': 'string',
-@@ -424,26 +432,26 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
- 					localize('window.menuBarVisibility.hidden', "Menu is always hidden."),
- 					localize('window.menuBarVisibility.compact', "Menu is displayed as a compact button in the sidebar. This value is ignored when `#window.titleBarStyle#` is `native`.")
+@@ -380,24 +388,24 @@ import { isStandalone } from 'vs/base/browser/browser';
+ 					nls.localize('window.menuBarVisibility.hidden', "Menu is always hidden."),
+ 					nls.localize('window.menuBarVisibility.compact', "Menu is displayed as a compact button in the sidebar. This value is ignored when `#window.titleBarStyle#` is `native`.")
  				],
--				'default': isWeb ? 'compact' : 'classic',
+-				'default': isWeb ? 'compact' : 'default',
 +				'default': 'hidden',
  				'scope': ConfigurationScope.APPLICATION,
- 				'markdownDescription': isMacintosh ?
- 					localize('menuBarVisibility.mac', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and executing `Focus Application Menu` will show it. A setting of 'compact' will move the menu into the sidebar.") :
- 					localize('menuBarVisibility', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and a single press of the Alt key will show it. A setting of 'compact' will move the menu into the sidebar."),
+ 				'description': nls.localize('menuBarVisibility', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and a single press of the Alt key will show it. By default, the menu bar will be visible, unless the window is full screen."),
 -				'included': isWindows || isLinux || isWeb
 +				'included': false
  			},
  			'window.enableMenuBarMnemonics': {
  				'type': 'boolean',
--				'default': true,
+-				'default': !isMacintosh,
 +				'default': false,
  				'scope': ConfigurationScope.APPLICATION,
- 				'description': localize('enableMenuBarMnemonics', "Controls whether the main menus can be opened via Alt-key shortcuts. Disabling mnemonics allows to bind these Alt-key shortcuts to editor commands instead."),
--				'included': isWindows || isLinux
+ 				'description': nls.localize('enableMenuBarMnemonics', "Controls whether the main menus can be opened via Alt-key shortcuts. Disabling mnemonics allows to bind these Alt-key shortcuts to editor commands instead."),
+-				'included': isWindows || isLinux || isWeb
 +				'included': false
  			},
  			'window.customMenuBarAltFocus': {
  				'type': 'boolean',
--				'default': true,
+-				'default': !isMacintosh,
 +				'default': false,
  				'scope': ConfigurationScope.APPLICATION,
- 				'markdownDescription': localize('customMenuBarAltFocus', "Controls whether the menu bar will be focused by pressing the Alt-key. This setting has no effect on toggling the menu bar with the Alt-key."),
--				'included': isWindows || isLinux
+ 				'markdownDescription': nls.localize('customMenuBarAltFocus', "Controls whether the menu bar will be focused by pressing the Alt-key. This setting has no effect on toggling the menu bar with the Alt-key."),
+-				'included': isWindows || isLinux || isWeb
 +				'included': false
  			},
  			'window.openFilesInNewWindow': {
  				'type': 'string',
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index dea856ea03c..ee828866172 100644
+index ef6eb4dd9b4..1ec36e71373 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-@@ -567,6 +567,38 @@ CommandsRegistry.registerCommand({
+@@ -546,6 +546,38 @@ CommandsRegistry.registerCommand({
  	}
  });
  
@@ -1065,7 +1355,7 @@ index dea856ea03c..ee828866172 100644
 +		}
 +
 +		try {
-+			await editorService.revert(editors.filter(({ editor }) => !editor.hasCapability(EditorInputCapabilities.Untitled) /* all except untitled */), { force: true });
++			await editorService.revert(editors.filter(({ editor }) => !editor.isUntitled() /* all except untitled */), { force: true });
 +		} catch (error) {
 +			notificationService.error(nls.localize('genericRevertError', "Failed to revert '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)));
 +		}
@@ -1076,29 +1366,29 @@ index dea856ea03c..ee828866172 100644
  	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 732be379785..18433ba16c3 100644
+index f4b223bf4cd..4556923fe25 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -234,12 +234,12 @@ configurationRegistry.registerConfiguration({
- 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "An editor with changes is automatically saved when the editor loses focus."),
- 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "An editor with changes is automatically saved when the window loses focus.")
+@@ -315,12 +315,12 @@ configurationRegistry.registerConfiguration({
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "A dirty editor is automatically saved when the editor loses focus."),
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "A dirty editor is automatically saved when the window loses focus.")
  			],
--			'default': isWeb ? AutoSaveConfiguration.AFTER_DELAY : AutoSaveConfiguration.OFF,
+-			'default': platform.isWeb ? AutoSaveConfiguration.AFTER_DELAY : AutoSaveConfiguration.OFF,
 +			'default': AutoSaveConfiguration.OFF,
- 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of editors that have unsaved changes. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of dirty editors. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
  		},
  		'files.autoSaveDelay': {
  			'type': 'number',
 -			'default': 1000,
 +			'default': 100,
- 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveDelay' }, "Controls the delay in milliseconds after which an editor with unsaved changes is saved automatically. Only applies when `#files.autoSave#` is set to `{0}`.", AutoSaveConfiguration.AFTER_DELAY)
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveDelay' }, "Controls the delay in ms after which a dirty editor is saved automatically. Only applies when `#files.autoSave#` is set to `{0}`.", AutoSaveConfiguration.AFTER_DELAY)
  		},
  		'files.watcherExclude': {
 diff --git a/src/vs/workbench/contrib/search/browser/search.contribution.ts b/src/vs/workbench/contrib/search/browser/search.contribution.ts
-index 3c1960a2850..d8a427219e9 100644
+index cfbbb00c6e9..e7486279aba 100644
 --- a/src/vs/workbench/contrib/search/browser/search.contribution.ts
 +++ b/src/vs/workbench/contrib/search/browser/search.contribution.ts
-@@ -889,7 +889,7 @@ configurationRegistry.registerConfiguration({
+@@ -879,7 +879,7 @@ configurationRegistry.registerConfiguration({
  		'search.quickOpen.includeHistory': {
  			type: 'boolean',
  			description: nls.localize('search.quickOpen.includeHistory', "Whether to include results from recently opened files in the file results for Quick Open."),
@@ -1108,54 +1398,63 @@ index 3c1960a2850..d8a427219e9 100644
  		'search.quickOpen.history.filterSortOrder': {
  			'type': 'string',
 diff --git a/src/vs/workbench/contrib/url/browser/trustedDomains.ts b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
-index 265a5dc43e3..8f1db546879 100644
+index 145afdf032c..bedd34dbbd2 100644
 --- a/src/vs/workbench/contrib/url/browser/trustedDomains.ts
 +++ b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
-@@ -217,7 +217,11 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
+@@ -215,10 +215,19 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
+ 	const storageService = accessor.get(IStorageService);
+ 	const productService = accessor.get(IProductService);
  
- 	const defaultTrustedDomains = [
- 		...productService.linkProtectionTrustedDomains ?? [],
--		...environmentService.options?.additionalTrustedDomains ?? []
-+		...environmentService.options?.additionalTrustedDomains ?? [],
+-	const defaultTrustedDomains: string[] = productService.linkProtectionTrustedDomains
++	const utopiaTrustedDomains: string[] = [
 +		"https://utopia.app",
 +		"https://utopia.fm",
 +		"https://utopia.pizza",
 +		"https://utopia95.com"
- 	];
++	]
++
++	const baseTrustedDomains: string[] = productService.linkProtectionTrustedDomains
+ 		? [...productService.linkProtectionTrustedDomains]
+ 		: [];
  
++	const defaultTrustedDomains = [...baseTrustedDomains, ...utopiaTrustedDomains]
++
  	let trustedDomains: string[] = [];
+ 	try {
+ 		const trustedDomainsSrc = storageService.get(TRUSTED_DOMAINS_STORAGE_KEY, StorageScope.GLOBAL);
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/main.js b/src/vs/workbench/contrib/webview/browser/pre/main.js
-index eefa6593a51..a1883dd2c8d 100644
+index b2f093ee195..6624b75df02 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/main.js
 +++ b/src/vs/workbench/contrib/webview/browser/pre/main.js
-@@ -809,6 +809,7 @@ onDomReady(() => {
- 		if (options.allowScripts) {
- 			sandboxRules.add('allow-scripts');
- 			sandboxRules.add('allow-downloads');
-+			sandboxRules.add('allow-popups');
- 		}
- 		if (options.allowForms) {
- 			sandboxRules.add('allow-forms');
+@@ -505,7 +505,7 @@
+ 				const newFrame = document.createElement('iframe');
+ 				newFrame.setAttribute('id', 'pending-frame');
+ 				newFrame.setAttribute('frameborder', '0');
+-				newFrame.setAttribute('sandbox', options.allowScripts ? 'allow-scripts allow-forms allow-same-origin allow-pointer-lock allow-downloads' : 'allow-same-origin allow-pointer-lock');
++				newFrame.setAttribute('sandbox', options.allowScripts ? 'allow-scripts allow-forms allow-same-origin allow-pointer-lock allow-downloads allow-popups' : 'allow-same-origin allow-pointer-lock');
+ 				if (host.fakeLoad) {
+ 					// We should just be able to use srcdoc, but I wasn't
+ 					// seeing the service worker applying properly.
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 69595361535..7cc755cda73 100644
+index 4403a2ac4b4..3ca8554cfcf 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -380,7 +380,7 @@ export class IFrameWebview extends Disposable implements Webview {
+@@ -90,7 +90,7 @@ export class IFrameWebview extends BaseWebview<HTMLIFrameElement> implements Web
+ 		// Wait the end of the ctor when all listeners have been hooked up.
  		const element = document.createElement('iframe');
- 		element.name = this.id;
  		element.className = `webview ${options.customClasses || ''}`;
 -		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
 +		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads', 'allow-popups');
- 		if (!isFirefox) {
- 			element.setAttribute('allow', 'clipboard-read; clipboard-write;');
- 		}
+ 		element.style.border = 'none';
+ 		element.style.width = '100%';
+ 		element.style.height = '100%';
 diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
-index 674eade0db1..f0b7198440f 100644
+index 380122d2514..f979c438874 100644
 --- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
 +++ b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
-@@ -26,7 +26,7 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
- 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.newUntitledFile' }, "Open a new untitled file (only applies when opening an empty window)."),
- 					localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.welcomePageInEmptyWorkbench' }, "Open the Welcome page when opening an empty workbench."),
+@@ -38,7 +38,7 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+ 					? [localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.gettingStarted' }, "Open the Getting Started page (experimental).")]
+ 					: [])
  				],
 -				'default': 'welcomePage',
 +				'default': 'none',
@@ -1163,14 +1462,13 @@ index 674eade0db1..f0b7198440f 100644
  			},
  		}
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index aedda47bd66..1e685812b0e 100644
+index c3aab1b7d03..0a524d6cb79 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-@@ -190,7 +190,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
- 
+@@ -116,6 +116,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
  		// help the file service to activate providers by activating extensions by file system event
  		this._register(this._fileService.onWillActivateFileSystemProvider(e => {
--			e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
+ 			e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
 +			e.join(this.activateByEvent(`onFileSystem:utopia`));
  		}));
  
