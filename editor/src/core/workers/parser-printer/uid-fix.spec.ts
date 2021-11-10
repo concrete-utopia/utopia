@@ -172,6 +172,17 @@ describe('fixParseSuccessUIDs', () => {
     )
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
+
+  it('handles elements within arbitrary blocks', () => {
+    const firstResult = lintAndParse('test.js', fileWithArbitraryBlockInside, null, emptySet())
+    const secondResult = lintAndParse(
+      'test.js',
+      fileWithSlightlyDifferentArbitraryBlockInside,
+      asParseSuccessOrNull(firstResult),
+      emptySet(),
+    )
+    expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
+  })
 })
 
 const baseFileContents = createFileText(`
@@ -392,6 +403,42 @@ export var SameFileApp = (props) => {
         }}
       />
     </>
+  )
+}
+`)
+
+const fileWithArbitraryBlockInside = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      {[1, 2, 3].map((index) => {
+      <View
+        style={{
+          width: 191 + index,
+        }}
+      />
+      })}
+    </div>
+  )
+}
+`)
+
+const fileWithSlightlyDifferentArbitraryBlockInside = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      {[1, 2, 3].map((index) => {
+      <View
+        style={{
+          width: 161 + index,
+        }}
+      />
+      })}
+    </div>
   )
 }
 `)

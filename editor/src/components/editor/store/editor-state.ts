@@ -1880,22 +1880,18 @@ export function getStoryboardElementPathFromEditorState(
   )
 }
 
-export function getHighlightBoundsForUids(editorState: EditorState): HighlightBoundsForUids | null {
-  const selectedFile = getOpenFile(editorState)
-  if (isTextFile(selectedFile)) {
-    return getHighlightBoundsFromParseResult(selectedFile.fileContents.parsed)
-  }
-
-  return null
-}
-
 export function getHighlightBoundsForFile(
   editorState: EditorState,
   fullPath: string,
 ): HighlightBoundsForUids | null {
   const file = getContentsTreeFileFromString(editorState.projectContents, fullPath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    return getHighlightBoundsFromParseResult(file.fileContents.parsed)
+  if (isTextFile(file)) {
+    if (isParseSuccess(file.fileContents.parsed)) {
+      return getHighlightBoundsFromParseResult(file.fileContents.parsed)
+    }
+    if (file.lastParseSuccess != null) {
+      return getHighlightBoundsFromParseResult(file.lastParseSuccess)
+    }
   }
   return null
 }
