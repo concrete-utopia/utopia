@@ -12,10 +12,12 @@ import {
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
+import { createParseFile, getParseResult, UtopiaTsWorkers } from '../workers/common/worker-types'
 
 export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
+  workers: UtopiaTsWorkers | null = null,
 ): typeof registerComponentAPI {
   // create a function with a signature that matches utopia-api/registerComponent
   return function registerComponent(
@@ -29,6 +31,23 @@ export function createRegisterComponentFunction(
         'registerComponent has 3 parameters: component name, module name or path, property controls object',
       )
     } else {
+      if (workers != null) {
+        getParseResult(workers, [
+          createParseFile(
+            'code.tsx',
+            `import { Cica } from 'cica-kutya'; function Utopia$$$Component(props) {
+          return (
+            <div>Hi!</div>
+          )
+         }`,
+            null,
+            Date.now(),
+          ),
+        ]).then((value) => {
+          // yay
+        })
+      }
+
       const parsedPropertyControls = parsePropertyControls(propertyControls)
       const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
       if (currentPropertyControlsInfo != null) {
