@@ -5,27 +5,41 @@ import {
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 import { parsePropertyControls } from '../property-controls/property-controls-parser'
+import { jsxElementWithoutUID } from '../shared/element-template'
 
-function createBasicComponent(propertyControls: PropertyControls): ComponentDescriptor {
+function createBasicComponent(
+  name: string,
+  propertyControls: PropertyControls,
+): ComponentDescriptor {
   return {
     propertyControls: parsePropertyControls(propertyControls),
     componentInfo: {
-      requiredImports: [],
+      importsToAdd: {},
+      elementToInsert: jsxElementWithoutUID(name, [], []),
     },
   }
 }
 
 export const ReactThreeFiberComponents: ComponentDescriptorsForFile = {
-  color: createBasicComponent(ReactThreeFiberControls.color),
-  fog: createBasicComponent(ReactThreeFiberControls.fog),
-  ambientLight: createBasicComponent(ReactThreeFiberControls.ambientLight),
-  directionalLight: createBasicComponent(ReactThreeFiberControls.directionalLight),
-  pointLight: createBasicComponent(ReactThreeFiberControls.pointLight),
-  spotLight: createBasicComponent(ReactThreeFiberControls.spotLight),
-  boxGeometry: createBasicComponent(ReactThreeFiberControls.boxGeometry),
-  planeGeometry: createBasicComponent(ReactThreeFiberControls.planeGeometry),
-  sphereGeometry: createBasicComponent(ReactThreeFiberControls.sphereGeometry),
-  meshBasicMaterial: createBasicComponent(ReactThreeFiberControls.meshBasicMaterial),
-  meshStandardMaterial: createBasicComponent(ReactThreeFiberControls.meshStandardMaterial),
-  shadowMaterial: createBasicComponent(ReactThreeFiberControls.shadowMaterial),
+  color: createBasicComponent('color', ReactThreeFiberControls.color),
+  fog: createBasicComponent('fog', ReactThreeFiberControls.fog),
+  ambientLight: createBasicComponent('ambientLight', ReactThreeFiberControls.ambientLight),
+  directionalLight: createBasicComponent(
+    'directionalLight',
+    ReactThreeFiberControls.directionalLight,
+  ),
+  pointLight: createBasicComponent('pointLight', ReactThreeFiberControls.pointLight),
+  spotLight: createBasicComponent('spotLight', ReactThreeFiberControls.spotLight),
+  boxGeometry: createBasicComponent('boxGeometry', ReactThreeFiberControls.boxGeometry),
+  planeGeometry: createBasicComponent('planeGeometry', ReactThreeFiberControls.planeGeometry),
+  sphereGeometry: createBasicComponent('sphereGeometry', ReactThreeFiberControls.sphereGeometry),
+  meshBasicMaterial: createBasicComponent(
+    'meshBasicMaterial',
+    ReactThreeFiberControls.meshBasicMaterial,
+  ),
+  meshStandardMaterial: createBasicComponent(
+    'meshStandardMaterial',
+    ReactThreeFiberControls.meshStandardMaterial,
+  ),
+  shadowMaterial: createBasicComponent('shadowMaterial', ReactThreeFiberControls.shadowMaterial),
 }

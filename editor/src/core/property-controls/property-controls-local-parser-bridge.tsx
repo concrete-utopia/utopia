@@ -1,11 +1,18 @@
-import { Either, left, mapEither, right } from '../shared/either'
-import { JSXElementChild, UtopiaJSXComponent } from '../shared/element-template'
+import { Either, isRight, left, mapEither, right } from '../shared/either'
+import {
+  clearJSXElementUniqueIDs,
+  JSXElementChild,
+  JSXElementWithoutUID,
+  UtopiaJSXComponent,
+} from '../shared/element-template'
+import { jsxSimpleAttributesToProps } from '../shared/jsx-attributes'
+import { objectMapDropNulls } from '../shared/object-utils'
 import { Imports, isParseSuccess } from '../shared/project-file-types'
 import { createParseFile, getParseResult, UtopiaTsWorkers } from '../workers/common/worker-types'
 
 type ProcessedParseResult = Either<
   string,
-  { parsedImports: Imports; insertionElement: JSXElementChild }
+  { importsToAdd: Imports; elementToInsert: JSXElementWithoutUID }
 >
 const resultCache: Map<string, ProcessedParseResult> = new Map()
 
@@ -56,14 +63,18 @@ async function getParseResultForUserStrings(
       )
 
       if (parsedWrapperComponent != null) {
-        const insertionElement = parsedWrapperComponent.rootElement
+        const elementToInsert = clearJSXElementUniqueIDs(parsedWrapperComponent.rootElement)
 
-        return right({
-          parsedImports: parsedImports,
-          insertionElement: insertionElement,
-        })
+        if (elementToInsert.type === 'JSX_ELEMENT') {
+          return right({
+            importsToAdd: parsedImports,
+            elementToInsert: elementToInsert,
+          })
+        }
       }
     }
   }
+
+  // TODO way better error handling
   return left('There was some error')
 }

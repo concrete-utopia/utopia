@@ -18,6 +18,7 @@ import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import {
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
+  jsxElementWithoutUID,
 } from '../../../core/shared/element-template'
 import { parsePropertyControls } from '../../../core/property-controls/property-controls-parser'
 
@@ -150,8 +151,17 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     propertyControlsInfo: {
       ...initialEditorState.propertyControlsInfo,
       '/utopia/storyboard': {
-        App: { propertyControls: propertyControlsForApp, componentInfo: {} },
-        OtherComponent: { propertyControls: propertyControlsForOtherComponent, componentInfo: {} },
+        App: {
+          propertyControls: propertyControlsForApp,
+          componentInfo: { importsToAdd: {}, elementToInsert: jsxElementWithoutUID('App', [], []) },
+        },
+        OtherComponent: {
+          propertyControls: propertyControlsForOtherComponent,
+          componentInfo: {
+            importsToAdd: {},
+            elementToInsert: jsxElementWithoutUID('OtherComponent', [], []),
+          },
+        },
       },
     },
     jsxMetadata: metadata,

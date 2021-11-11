@@ -2,7 +2,7 @@ import { ImportType, PropertyControls, registerComponent as registerComponentAPI
 import deepEqual from 'fast-deep-equal'
 
 import { ProjectContentTreeRoot } from '../../components/assets'
-import { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import { ComponentDescriptor, PropertyControlsInfo } from '../../components/custom-code/code-file'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import {
@@ -14,7 +14,54 @@ import { ParsedPropertyControls, parsePropertyControls } from './property-contro
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
-import { bimapEither, mapEither } from '../shared/either'
+import { bimapEither, Either, isRight, left, mapEither } from '../shared/either'
+import { jsxSimpleAttributesToProps, jsxSimpleAttributeToValue } from '../shared/jsx-attributes'
+import { JSXElement, JSXElementWithoutUID } from '../shared/element-template'
+import { Imports } from '../shared/project-file-types'
+
+async function registerComponentInternal(
+  dispatch: EditorDispatch,
+  getEditorState: (() => EditorState) | null,
+  workers: UtopiaTsWorkers,
+  componentName: string,
+  moduleNameOrPath: string,
+  propertyControls: PropertyControls,
+  elementToInsert: string,
+  importsToAdd: string,
+) {
+  const parsedParams = await getCachedParseResultForUserStrings(
+    workers,
+    importsToAdd,
+    elementToInsert,
+  )
+  if (isRight(parsedParams)) {
+    const parsedPropertyControls = parsePropertyControls(propertyControls)
+    const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
+    if (currentPropertyControlsInfo != null) {
+      const currentInfo: ComponentDescriptor | null =
+        currentPropertyControlsInfo[moduleNameOrPath]?.[componentName]
+
+      const newInfo: ComponentDescriptor = {
+        propertyControls: parsedPropertyControls,
+        componentInfo: {
+          importsToAdd: parsedParams.value.importsToAdd,
+          elementToInsert: parsedParams.value.elementToInsert,
+        },
+      }
+      const currentControlsAreTheSame = deepEqual(currentInfo, newInfo)
+      const updatedPropertyControlsInfo: PropertyControlsInfo = {
+        [moduleNameOrPath]: {
+          ...currentPropertyControlsInfo[moduleNameOrPath],
+          [componentName]: newInfo,
+        },
+      }
+      if (!currentControlsAreTheSame) {
+        // only dispatch if the control info is updated, to prevent a potential infinite loop of code re-evaluation
+        dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+      }
+    }
+  }
+}
 
 export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
@@ -22,59 +69,36 @@ export function createRegisterComponentFunction(
   workers: UtopiaTsWorkers | null = null,
 ): typeof registerComponentAPI {
   // create a function with a signature that matches utopia-api/registerComponent
-  return function registerComponent(
-    componentName: string,
-    moduleNameOrPath: string,
-    propertyControls: PropertyControls,
-    optionalParameters?: { requiredImports?: Array<ImportType> },
-  ): void {
-    if (componentName == null || moduleNameOrPath == null || typeof propertyControls !== 'object') {
+  return function registerComponent(paramsObj: {
+    name: string
+    moduleName: string
+    controls: PropertyControls
+    insert: string
+    requiredImports: string
+  }): void {
+    const { name, moduleName, controls, insert, requiredImports } = paramsObj
+    if (
+      name == null ||
+      moduleName == null ||
+      typeof controls !== 'object' ||
+      insert == null ||
+      requiredImports == null
+    ) {
       console.warn(
-        'registerComponent has 3 parameters: component name, module name or path, property controls object',
+        'registerComponent has 5 parameters: component name, module name or path, property controls object, inserted element, required imports',
       )
     } else {
       if (workers != null) {
-        getCachedParseResultForUserStrings(
+        registerComponentInternal(
+          dispatch,
+          getEditorState,
           workers,
-          `import { Cica } from 'cica-kutya'`,
-          `<Cica>Hi!</Cica>`,
-        ).then((result) => {
-          bimapEither(
-            (error) => {
-              // eslint-disable-next-line no-console
-              console.log('sad', error)
-            },
-            ({ parsedImports, insertionElement }) => {
-              // eslint-disable-next-line no-console
-              console.log('yay', parsedImports, insertionElement)
-            },
-            result,
-          )
-        })
-      }
-
-      const parsedPropertyControls = parsePropertyControls(propertyControls)
-      const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
-      if (currentPropertyControlsInfo != null) {
-        const currentParsedPropertyControls: ParseResult<ParsedPropertyControls> =
-          currentPropertyControlsInfo[moduleNameOrPath]?.[componentName]?.propertyControls
-        const currentControlsAreTheSame = deepEqual(
-          currentParsedPropertyControls,
-          parsedPropertyControls,
+          name,
+          moduleName,
+          controls,
+          insert,
+          requiredImports,
         )
-        const updatedControls: PropertyControlsInfo = {
-          [moduleNameOrPath]: {
-            ...currentPropertyControlsInfo[moduleNameOrPath],
-            [componentName]: {
-              propertyControls: parsedPropertyControls,
-              componentInfo: { requiredImports: optionalParameters?.requiredImports },
-            },
-          },
-        }
-        if (!currentControlsAreTheSame) {
-          // only dispatch if the control info is updated, to prevent a potential infinite loop of code re-evaluation
-          dispatch([updatePropertyControlsInfo(updatedControls)])
-        }
       }
     }
   }

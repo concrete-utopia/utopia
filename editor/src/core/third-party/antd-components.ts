@@ -5,6 +5,7 @@ import {
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 import { parsePropertyControls } from '../property-controls/property-controls-parser'
+import { jsxElementWithoutUID } from '../shared/element-template'
 
 const StyleObjectProps: PropertyControls = {
   style: {
@@ -19,14 +20,24 @@ function createBasicComponent(
   return {
     propertyControls: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
     componentInfo: {
-      requiredImports: [
-        {
-          source: 'antd',
-          name: baseVariable,
-          type: null,
+      importsToAdd: {
+        antd: {
+          importedWithName: null,
+          importedFromWithin: [
+            {
+              name: baseVariable,
+              alias: baseVariable,
+            },
+          ],
+          importedAs: null,
         },
-        { source: 'antd/dist/antd.css', name: null, type: null },
-      ],
+        'antd/dist/antd.css': {
+          importedWithName: null,
+          importedFromWithin: [],
+          importedAs: null,
+        },
+      },
+      elementToInsert: jsxElementWithoutUID(baseVariable, [], []),
     },
   }
 }

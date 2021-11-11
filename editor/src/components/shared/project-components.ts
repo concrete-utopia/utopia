@@ -208,7 +208,8 @@ function makeHTMLDescriptor(
   return {
     propertyControls: parsePropertyControls(propertyControls),
     componentInfo: {
-      requiredImports: [{ source: 'react', name: 'React', type: 'star' }],
+      importsToAdd: {},
+      elementToInsert: jsxElementWithoutUID(tag, [], []),
     },
   }
 }
@@ -365,19 +366,10 @@ export function getComponentGroups(
         stylePropOptions = addSizeAndNotStyleProp
       }
 
-      // Create the insertable JSX element here
-      const [baseVariable, ...propertyPathParts] = componentName.split('.')
-      const elementName = jsxElementName(baseVariable, propertyPathParts)
-      const defaultProps = getDefaultPropsFromParsedControls(propertyControls)
-      const defaultAttributes = mapToArray(
-        (value, prop) =>
-          jsxAttributesEntry(prop, jsxAttributeValue(value, emptyComments), emptyComments),
-        defaultProps,
-      )
-
       const probablyIntrinsicElement =
         moduleName == null || isIntrinsicElementFromString(componentName)
 
+      // TODO fallback imports!
       const fallbackImports: Array<ImportType> = probablyIntrinsicElement
         ? []
         : [
@@ -389,12 +381,8 @@ export function getComponentGroups(
           ]
 
       return insertableComponent(
-        mapArrayToDictionary(
-          component.componentInfo.requiredImports ?? fallbackImports,
-          (importOption) => importOption.source,
-          (importOption) => importDetailsFromImportOption(importOption),
-        ),
-        jsxElementWithoutUID(elementName, defaultAttributes, []),
+        component.componentInfo.importsToAdd,
+        component.componentInfo.elementToInsert,
         componentName,
         stylePropOptions,
       )
