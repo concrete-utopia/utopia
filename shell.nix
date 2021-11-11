@@ -1,5 +1,5 @@
 { 
-  compiler ? "ghc8104",
+  compiler ? "ghc8107",
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,
@@ -489,5 +489,5 @@ in pkgs.mkShell {
     })
   ] ++ packagesToUse;
   # Makes the electron runner use this executable instead.
-  ELECTRON_OVERRIDE_DIST_PATH = if stdenv.isLinux then "${pkgs.electron_6}/bin" else null;
+  ELECTRON_OVERRIDE_DIST_PATH = if stdenv.isLinux then "${pkgs.electron}/bin" else null;
 }
