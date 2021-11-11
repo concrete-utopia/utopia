@@ -13,7 +13,7 @@ import { updatePropertyControlsInfo } from '../../components/editor/actions/acti
 import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaTsWorkers } from '../workers/common/worker-types'
-import { getParseResultForUserStrings } from './property-controls-local-parser-bridge'
+import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
 import { bimapEither, mapEither } from '../shared/either'
 
 export function createRegisterComponentFunction(
@@ -34,7 +34,7 @@ export function createRegisterComponentFunction(
       )
     } else {
       if (workers != null) {
-        getParseResultForUserStrings(
+        getCachedParseResultForUserStrings(
           workers,
           `import { Cica } from 'cica-kutya'`,
           `<Cica>Hi!</Cica>`,

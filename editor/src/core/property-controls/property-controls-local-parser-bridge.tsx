@@ -3,14 +3,33 @@ import { JSXElementChild, UtopiaJSXComponent } from '../shared/element-template'
 import { Imports, isParseSuccess } from '../shared/project-file-types'
 import { createParseFile, getParseResult, UtopiaTsWorkers } from '../workers/common/worker-types'
 
-export async function getParseResultForUserStrings(
+type ProcessedParseResult = Either<
+  string,
+  { parsedImports: Imports; insertionElement: JSXElementChild }
+>
+const resultCache: Map<string, ProcessedParseResult> = new Map()
+
+export async function getCachedParseResultForUserStrings(
   workers: UtopiaTsWorkers,
   imports: string,
   toInsert: string,
-): Promise<Either<string, { parsedImports: Imports; insertionElement: JSXElementChild }>> {
-  // TODO instead of calling getParseResult directly,
-  // 1. try to use a cached value first, see if the user's input string(s) changed at all
-  // 2. we also _probably_ need a queue here, but I'm not sure
+): Promise<ProcessedParseResult> {
+  const cacheKey = imports + toInsert
+  const cachedResult = resultCache.get(cacheKey)
+  if (cachedResult != null) {
+    return cachedResult
+  } else {
+    const result = await getParseResultForUserStrings(workers, imports, toInsert)
+    resultCache.set(cacheKey, result)
+    return result
+  }
+}
+
+async function getParseResultForUserStrings(
+  workers: UtopiaTsWorkers,
+  imports: string,
+  toInsert: string,
+): Promise<ProcessedParseResult> {
   const parseResult = await getParseResult(workers, [
     createParseFile(
       'code.tsx',
