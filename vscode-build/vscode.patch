@@ -1,8 +1,8 @@
 diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
-index fbf4739f2ff..0428df85ccd 100644
+index 13c20bed989..2a8452a08ab 100644
 --- a/build/gulpfile.vscode.js
 +++ b/build/gulpfile.vscode.js
-@@ -35,14 +35,15 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
+@@ -35,13 +35,14 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
  
  // Build
  const vscodeEntryPoints = _.flatten([
@@ -12,7 +12,6 @@ index fbf4739f2ff..0428df85ccd 100644
  	buildfile.workerExtensionHost,
  	buildfile.workerNotebook,
  	buildfile.workerLanguageDetection,
- 	buildfile.workerSharedProcess,
  	buildfile.workerLocalFileSearch,
 -	buildfile.workbenchDesktop,
 +	buildfile.workbenchWeb,
@@ -20,7 +19,7 @@ index fbf4739f2ff..0428df85ccd 100644
  	buildfile.code
  ]);
  
-@@ -158,8 +159,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
+@@ -157,8 +158,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
  
  		const checksums = computeChecksums(out, [
  			'vs/base/parts/sandbox/electron-browser/preload.js',
@@ -40,10 +39,10 @@ index 9e26dfeeb6e..00000000000
 -{}
 \ No newline at end of file
 diff --git a/extensions/simple-browser/src/simpleBrowserView.ts b/extensions/simple-browser/src/simpleBrowserView.ts
-index c5d8a68184e..5f1157ff43b 100644
+index 2d7da1aecf8..052f52383f0 100644
 --- a/extensions/simple-browser/src/simpleBrowserView.ts
 +++ b/extensions/simple-browser/src/simpleBrowserView.ts
-@@ -156,7 +156,7 @@ export class SimpleBrowserView extends Disposable {
+@@ -139,7 +139,7 @@ export class SimpleBrowserView extends Disposable {
  				</header>
  				<div class="content">
  					<div class="iframe-focused-alert">${localize('view.iframe-focused', "Focus Lock")}</div>
@@ -53,10 +52,10 @@ index c5d8a68184e..5f1157ff43b 100644
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/product.json b/product.json
-index 14ef10628d3..b37ebcd9f73 100644
+index 7b60eac641d..b37ebcd9f73 100644
 --- a/product.json
 +++ b/product.json
-@@ -1,97 +1,9 @@
+@@ -1,96 +1,9 @@
  {
 -	"nameShort": "Code - OSS",
 -	"nameLong": "Code - OSS",
@@ -65,7 +64,6 @@ index 14ef10628d3..b37ebcd9f73 100644
 -	"win32MutexName": "vscodeoss",
 -	"licenseName": "MIT",
 -	"licenseUrl": "https://github.com/microsoft/vscode/blob/main/LICENSE.txt",
--	"serverGreeting": [],
 -	"win32DirName": "Microsoft Code OSS",
 -	"win32NameVersion": "Microsoft Code OSS",
 -	"win32RegValueName": "CodeOSS",
@@ -82,7 +80,7 @@ index 14ef10628d3..b37ebcd9f73 100644
 -	"licenseFileName": "LICENSE.txt",
 -	"reportIssueUrl": "https://github.com/microsoft/vscode/issues/new",
 -	"urlProtocol": "code-oss",
--	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-webview.net/insider/dc1a6699060423b8c4d2ced736ad70195378fddf/out/vs/workbench/contrib/webview/browser/pre/",
+-	"webviewContentExternalBaseUrlTemplate": "https://{{uuid}}.vscode-webview.net/{{quality}}/{{commit}}/out/vs/workbench/contrib/webview/browser/pre/",
 -	"extensionAllowedProposedApi": [
 -		"ms-vscode.vscode-js-profile-flame",
 -		"ms-vscode.vscode-js-profile-table",
@@ -124,7 +122,7 @@ index 14ef10628d3..b37ebcd9f73 100644
 -		},
 -		{
 -			"name": "ms-vscode.js-debug",
--			"version": "1.62.0",
+-			"version": "1.61.0",
 -			"repo": "https://github.com/microsoft/vscode-js-debug",
 -			"metadata": {
 -				"id": "25629058-ddac-4e17-abba-74678e126c5d",
@@ -819,7 +817,7 @@ index 534fe232636..be23a3bd1e9 100644
 +})()
 \ No newline at end of file
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 8a49a5f9c62..b3a23860eb3 100644
+index 6b59c1e9faa..a9192e938ef 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -54,6 +54,7 @@ import { AuxiliaryBarPart } from 'vs/workbench/browser/parts/auxiliarybar/auxili
@@ -913,7 +911,7 @@ index 8a49a5f9c62..b3a23860eb3 100644
  		this.state.statusBar.hidden = hidden;
  
  		// Adjust CSS
-@@ -1459,7 +1461,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1453,7 +1455,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		}
  	}
  
@@ -923,7 +921,7 @@ index 8a49a5f9c62..b3a23860eb3 100644
  		this.state.activityBar.hidden = hidden;
  
  		// Propagate to grid
-@@ -1506,7 +1509,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1500,7 +1503,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		]);
  	}
  
@@ -933,7 +931,7 @@ index 8a49a5f9c62..b3a23860eb3 100644
  		this.state.sideBar.hidden = hidden;
  
  		// Adjust CSS
-@@ -1566,7 +1570,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1560,7 +1564,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		return viewContainerModel.activeViewDescriptors.length >= 1;
  	}
  
@@ -943,7 +941,7 @@ index 8a49a5f9c62..b3a23860eb3 100644
  		const wasHidden = this.state.panel.hidden;
  		this.state.panel.hidden = hidden;
  
-@@ -1777,7 +1782,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+@@ -1771,7 +1776,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
  		return this.state.sideBar.position;
  	}
  
@@ -954,7 +952,7 @@ index 8a49a5f9c62..b3a23860eb3 100644
  			this.state.menuBar.visibility = visibility;
  
 diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
-index b8a8c87d94e..1ca4f4da481 100644
+index 000fd151ee2..d21a981e220 100644
 --- a/src/vs/workbench/browser/workbench.contribution.ts
 +++ b/src/vs/workbench/browser/workbench.contribution.ts
 @@ -7,7 +7,7 @@ import product from 'vs/platform/product/common/product';
@@ -966,7 +964,7 @@ index b8a8c87d94e..1ca4f4da481 100644
  import { workbenchConfigurationNodeBase } from 'vs/workbench/common/configuration';
  import { isStandalone } from 'vs/base/browser/browser';
  
-@@ -282,6 +282,12 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+@@ -278,6 +278,12 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
  				'default': 'left',
  				'description': localize('sideBarLocation', "Controls the location of the sidebar and activity bar. They can either show on the left or right of the workbench.")
  			},
@@ -979,7 +977,7 @@ index b8a8c87d94e..1ca4f4da481 100644
  			'workbench.panel.defaultLocation': {
  				'type': 'string',
  				'enum': ['left', 'bottom', 'right'],
-@@ -301,13 +307,15 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+@@ -297,13 +303,15 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
  			},
  			'workbench.statusBar.visible': {
  				'type': 'boolean',
@@ -999,7 +997,7 @@ index b8a8c87d94e..1ca4f4da481 100644
  			},
  			'workbench.activityBar.iconClickBehavior': {
  				'type': 'string',
-@@ -424,26 +432,26 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
+@@ -420,26 +428,26 @@ const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Con
  					localize('window.menuBarVisibility.hidden', "Menu is always hidden."),
  					localize('window.menuBarVisibility.compact', "Menu is displayed as a compact button in the sidebar. This value is ignored when `#window.titleBarStyle#` is `native`.")
  				],
@@ -1033,7 +1031,7 @@ index b8a8c87d94e..1ca4f4da481 100644
  			'window.openFilesInNewWindow': {
  				'type': 'string',
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index dea856ea03c..ee828866172 100644
+index b9beba774a5..40627803528 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -567,6 +567,38 @@ CommandsRegistry.registerCommand({
@@ -1076,26 +1074,26 @@ index dea856ea03c..ee828866172 100644
  	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index 732be379785..18433ba16c3 100644
+index 114f1357403..bec56e38917 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -234,12 +234,12 @@ configurationRegistry.registerConfiguration({
- 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "An editor with changes is automatically saved when the editor loses focus."),
- 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "An editor with changes is automatically saved when the window loses focus.")
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "A dirty editor is automatically saved when the editor loses focus."),
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "A dirty editor is automatically saved when the window loses focus.")
  			],
 -			'default': isWeb ? AutoSaveConfiguration.AFTER_DELAY : AutoSaveConfiguration.OFF,
 +			'default': AutoSaveConfiguration.OFF,
- 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of editors that have unsaved changes. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of dirty editors. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
  		},
  		'files.autoSaveDelay': {
  			'type': 'number',
 -			'default': 1000,
 +			'default': 100,
- 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveDelay' }, "Controls the delay in milliseconds after which an editor with unsaved changes is saved automatically. Only applies when `#files.autoSave#` is set to `{0}`.", AutoSaveConfiguration.AFTER_DELAY)
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSaveDelay' }, "Controls the delay in ms after which a dirty editor is saved automatically. Only applies when `#files.autoSave#` is set to `{0}`.", AutoSaveConfiguration.AFTER_DELAY)
  		},
  		'files.watcherExclude': {
 diff --git a/src/vs/workbench/contrib/search/browser/search.contribution.ts b/src/vs/workbench/contrib/search/browser/search.contribution.ts
-index 3c1960a2850..d8a427219e9 100644
+index 79e5defa112..318ab13d6fd 100644
 --- a/src/vs/workbench/contrib/search/browser/search.contribution.ts
 +++ b/src/vs/workbench/contrib/search/browser/search.contribution.ts
 @@ -889,7 +889,7 @@ configurationRegistry.registerConfiguration({
@@ -1125,10 +1123,10 @@ index 265a5dc43e3..8f1db546879 100644
  
  	let trustedDomains: string[] = [];
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/main.js b/src/vs/workbench/contrib/webview/browser/pre/main.js
-index eefa6593a51..a1883dd2c8d 100644
+index 618837df8e2..29b5ba8d333 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/main.js
 +++ b/src/vs/workbench/contrib/webview/browser/pre/main.js
-@@ -809,6 +809,7 @@ onDomReady(() => {
+@@ -810,6 +810,7 @@ onDomReady(() => {
  		if (options.allowScripts) {
  			sandboxRules.add('allow-scripts');
  			sandboxRules.add('allow-downloads');
@@ -1137,10 +1135,10 @@ index eefa6593a51..a1883dd2c8d 100644
  		if (options.allowForms) {
  			sandboxRules.add('allow-forms');
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 69595361535..7cc755cda73 100644
+index b23847b8bf1..9c2a6875fe0 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-@@ -380,7 +380,7 @@ export class IFrameWebview extends Disposable implements Webview {
+@@ -370,7 +370,7 @@ export class IFrameWebview extends Disposable implements Webview {
  		const element = document.createElement('iframe');
  		element.name = this.id;
  		element.className = `webview ${options.customClasses || ''}`;
