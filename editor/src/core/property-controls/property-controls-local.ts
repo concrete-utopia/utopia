@@ -12,7 +12,8 @@ import {
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
-import { createParseFile, getParseResult, UtopiaTsWorkers } from '../workers/common/worker-types'
+import { UtopiaTsWorkers } from '../workers/common/worker-types'
+import { getParseResultForUserStrings } from './property-controls-local-parser-bridge'
 
 export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
@@ -32,18 +33,11 @@ export function createRegisterComponentFunction(
       )
     } else {
       if (workers != null) {
-        getParseResult(workers, [
-          createParseFile(
-            'code.tsx',
-            `import { Cica } from 'cica-kutya'; function Utopia$$$Component(props) {
-          return (
-            <div>Hi!</div>
-          )
-         }`,
-            null,
-            Date.now(),
-          ),
-        ]).then((value) => {
+        getParseResultForUserStrings(
+          workers,
+          `import { Cica } from 'cica-kutya'`,
+          `<Cica>Hi!</Cica>`,
+        ).then(({ parsedImports, toInsert }) => {
           // yay
         })
       }
