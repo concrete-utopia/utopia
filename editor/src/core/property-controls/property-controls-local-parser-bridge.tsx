@@ -7,7 +7,7 @@ import {
 } from '../shared/element-template'
 import { jsxSimpleAttributesToProps } from '../shared/jsx-attributes'
 import { objectMapDropNulls } from '../shared/object-utils'
-import { Imports, isParseSuccess } from '../shared/project-file-types'
+import { Imports, isParseFailure, isParseSuccess } from '../shared/project-file-types'
 import { createParseFile, getParseResult, UtopiaTsWorkers } from '../workers/common/worker-types'
 
 type ProcessedParseResult = Either<
@@ -62,7 +62,9 @@ async function getParseResultForUserStrings(
           topLevelElement.name === 'Utopia$$$Component',
       )
 
-      if (parsedWrapperComponent != null) {
+      if (parsedWrapperComponent == null) {
+        return left('could not find Utopia$$$Component')
+      } else {
         const elementToInsert = clearJSXElementUniqueIDs(parsedWrapperComponent.rootElement)
 
         if (elementToInsert.type === 'JSX_ELEMENT') {
@@ -70,11 +72,15 @@ async function getParseResultForUserStrings(
             importsToAdd: parsedImports,
             elementToInsert: elementToInsert,
           })
+        } else {
+          return left('Element to insert must be a correct JSXElement')
         }
       }
+    } else if (isParseFailure(parseFileResult.parseResult)) {
+      // TODO better error messages!
+      return left(parseFileResult.parseResult.errorMessages.map((em) => em.message).join(', '))
     }
   }
 
-  // TODO way better error handling
-  return left('There was some error')
+  return left('Unknown error')
 }
