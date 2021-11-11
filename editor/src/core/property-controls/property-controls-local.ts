@@ -14,6 +14,7 @@ import { ParsedPropertyControls, parsePropertyControls } from './property-contro
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getParseResultForUserStrings } from './property-controls-local-parser-bridge'
+import { bimapEither, mapEither } from '../shared/either'
 
 export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
@@ -37,8 +38,18 @@ export function createRegisterComponentFunction(
           workers,
           `import { Cica } from 'cica-kutya'`,
           `<Cica>Hi!</Cica>`,
-        ).then(({ parsedImports, toInsert }) => {
-          // yay
+        ).then((result) => {
+          bimapEither(
+            (error) => {
+              // eslint-disable-next-line no-console
+              console.log('sad', error)
+            },
+            ({ parsedImports, insertionElement }) => {
+              // eslint-disable-next-line no-console
+              console.log('yay', parsedImports, insertionElement)
+            },
+            result,
+          )
         })
       }
 
