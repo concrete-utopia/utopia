@@ -36,7 +36,7 @@ let
   pnpm = "${pnpmPkg}/lib/node_modules/pnpm/bin/pnpm.cjs";
   pnpx = "${pnpmPkg}/lib/node_modules/pnpm/bin/pnpx.cjs";
 
-  yarn = "${pkgs.nodePackages_latest.yarn}/lib/node_modules/yarn/bin/yarn";
+  yarn = "${pkgs.nodePackages_latest.yarn}/lib/node_modules/yarn/bin/yarn.js";
 
   cabal = pkgs.haskellPackages.cabal-install;
   # Slightly kludgy because the zlib Haskell package is a pain in the face.
@@ -484,7 +484,7 @@ in pkgs.mkShell {
       '') scripts)) + ''
         ln -s ${pnpm} $out/bin/pnpm
         ln -s ${pnpx} $out/bin/pnpx
-        ln -s ${yarn} $out/bin
+        ln -s ${yarn} $out/bin/yarn
       '';
     })
   ] ++ packagesToUse;
