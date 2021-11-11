@@ -13,8 +13,30 @@ let
   lib = pkgs.lib;
   node = pkgs.nodejs-16_x;
   postgres = pkgs.postgresql_13;
-  pnpm = pkgs.nodePackages.pnpm;
   stdenv = pkgs.stdenv;
+
+  pnpmPkg = pkgs.nodePackages_latest.pnpm.override {
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+
+    preRebuild = ''
+      sed 's/"link:/"file:/g' --in-place package.json
+    '';
+
+    postInstall = let
+      pnpmLibPath = pkgs.lib.makeBinPath [
+        node.passthru.python
+        node
+      ];
+    in ''
+      for prog in $out/lib/node_modules/pnpm/bin/*; do
+        wrapProgram "$prog" --prefix PATH : ${pnpmLibPath}
+      done
+    '';
+  };
+  pnpm = "${pnpmPkg}/lib/node_modules/pnpm/bin/pnpm.cjs";
+  pnpx = "${pnpmPkg}/lib/node_modules/pnpm/bin/pnpx.cjs";
+
+  yarn = "${pkgs.nodePackages_latest.yarn}/lib/node_modules/yarn/bin/yarn";
 
   cabal = pkgs.haskellPackages.cabal-install;
   # Slightly kludgy because the zlib Haskell package is a pain in the face.
@@ -23,45 +45,50 @@ let
   ]);
 
   baseEditorScripts = [
+    (pkgs.writeScriptBin "pnpm-config-list" ''
+      #!/usr/bin/env bash
+      set -e
+      ${pnpm} config list
+    '')
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
-      ${pnpm}/bin/pnpm install
+      ${pnpm} install
       update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install
+      ${pnpm} install
     '')
     (pkgs.writeScriptBin "install-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install
+      ${pnpm} install
     '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
+      ${pnpm} install
     '')
     (pkgs.writeScriptBin "test-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm test
+      ${pnpm} test
     '')
     (pkgs.writeScriptBin "test-utopia-api" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
-      ${pnpm}/bin/pnpm test
+      ${pnpm} test
     '')
     (pkgs.writeScriptBin "test-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      # ${pnpm}/bin/pnpm test
+      # ${pnpm} test
     '')
     (pkgs.writeScriptBin "test-editor-all" ''
       #!/usr/bin/env bash
@@ -73,13 +100,13 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run check
+      ${pnpm} run check
     '')
     (pkgs.writeScriptBin "check-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run check-ci
+      ${pnpm} run check-ci
     '')
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
@@ -94,38 +121,38 @@ let
       set -e
       install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
+      ${pnpm} install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run staging-print-json
+      ${pnpm} run staging-print-json
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run build
+      ${pnpm} install
+      ${pnpm} run build
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run build
+      ${pnpm} install
+      ${pnpm} run build
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.yarn}/bin/yarn run pull-utopia-extension
+      ${yarn} run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "build-vscode" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.yarn}/bin/yarn
-      ${pkgs.yarn}/bin/yarn run build
+      ${yarn}
+      ${yarn} run build
     '')
     (pkgs.writeScriptBin "build-vscode-with-extension" ''
       #!/usr/bin/env bash
@@ -184,38 +211,38 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpx tsc --watch && NODE_OPTIONS=--max_old_space_size=4096
+      ${pnpx} tsc --watch && NODE_OPTIONS=--max_old_space_size=4096
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm}/bin/pnpm run move-fast-and-break-things
+      RUN_COMPILER=true ${pnpm} run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-no-compile" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=false ${pnpm}/bin/pnpm run move-fast-and-break-things
+      RUN_COMPILER=false ${pnpm} run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-performance" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm}/bin/pnpm run performance-test
+      RUN_COMPILER=true ${pnpm} run performance-test
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy-danger-hot" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm}/bin/pnpm run move-fast-and-break-things-hot
+      RUN_COMPILER=true ${pnpm} run move-fast-and-break-things-hot
     '')
     (pkgs.writeScriptBin "watch-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
-      BROWSER=none ${pnpm}/bin/pnpm run dev
+      ${pnpm} install
+      BROWSER=none ${pnpm} run dev
     '')
   ];
 
@@ -308,34 +335,34 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.yarn}/bin/yarn
-      ${pkgs.yarn}/bin/yarn run make-patch
+      ${yarn}
+      ${yarn} run make-patch
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run watch-dev
+      ${pnpm} install
+      ${pnpm} run watch-dev
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run watch-dev
+      ${pnpm} install
+      ${pnpm} run watch-dev
     '')
     (pkgs.writeScriptBin "pull-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.yarn}/bin/yarn run pull-utopia-extension
+      ${yarn} run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.nodePackages.nodemon}/bin/nodemon --watch ../utopia-vscode-extension/dist/browser/extension.js --exec pull-extension
+      ${pkgs.nodePackages.nodemon}/bin/nodemon --watch ../utopia-vscode-extension/dist/browser/utopia-vscode-extension.js --exec pull-extension
     '')
   ];
 
@@ -391,16 +418,16 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install --unsafe-perm
-      ${pnpm}/bin/pnpm run production
+      ${pnpm} install --unsafe-perm
+      ${pnpm} run production
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
     (pkgs.writeScriptBin "build-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
-      CI=false ${pnpm}/bin/pnpm run export
+      ${pnpm} install
+      CI=false ${pnpm} run export
     '')
     (pkgs.writeScriptBin "build-server" ''
       #!/usr/bin/env bash
@@ -444,7 +471,7 @@ let
 
   pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pnpm pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
@@ -459,7 +486,11 @@ in pkgs.mkShell {
         mkdir -p $out/bin
       '' + (builtins.concatStringsSep "" (builtins.map (script: ''
         for f in $(ls -d ${script}/bin/*); do ln -s $f $out/bin; done
-      '') scripts));
+      '') scripts)) + ''
+        ln -s ${pnpm} $out/bin/pnpm
+        ln -s ${pnpx} $out/bin/pnpx
+        ln -s ${yarn} $out/bin
+      '';
     })
   ] ++ packagesToUse;
   # Makes the electron runner use this executable instead.
