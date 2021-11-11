@@ -28,7 +28,6 @@ import {
 import {
   EditorState,
   getHighlightBoundsForElementPaths,
-  getHighlightBoundsForUids,
   getUnderlyingVSCodeBridgeID,
 } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
