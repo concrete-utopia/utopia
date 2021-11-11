@@ -45,11 +45,6 @@ let
   ]);
 
   baseEditorScripts = [
-    (pkgs.writeScriptBin "pnpm-config-list" ''
-      #!/usr/bin/env bash
-      set -e
-      ${pnpm} config list
-    '')
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
