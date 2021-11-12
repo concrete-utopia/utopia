@@ -245,35 +245,6 @@ export function jsxAttributesToProps(
   return result
 }
 
-export function jsxSimpleAttributesToProps(attributes: JSXAttributes): Either<string, any> {
-  let result: Either<string, any> = reduceWithEither(
-    (acc: any, entry: JSXAttributesPart): Either<string, any> => {
-      switch (entry.type) {
-        case 'JSX_ATTRIBUTES_ENTRY':
-          return mapEither((attributeValue) => {
-            acc[entry.key] = attributeValue
-            return acc
-          }, jsxSimpleAttributeToValue(entry.value))
-        case 'JSX_ATTRIBUTES_SPREAD':
-          return mapEither(
-            (spreadValue) => ({
-              ...acc,
-              ...spreadValue,
-            }),
-            jsxSimpleAttributeToValue(entry.spreadValue),
-          )
-        default:
-          const _exhaustiveCheck: never = entry
-          throw new Error(`Unhandled entry ${JSON.stringify(entry)}`)
-      }
-    },
-    {},
-    attributes,
-  )
-
-  return result
-}
-
 export type GetModifiableAttributeResult = Either<string, ModifiableAttribute>
 
 export type ModifiableAttribute = JSXAttribute | PartOfJSXAttributeValue | JSXAttributeNotFound

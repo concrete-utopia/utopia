@@ -6,8 +6,6 @@ import {
   JSXElementWithoutUID,
   UtopiaJSXComponent,
 } from '../shared/element-template'
-import { jsxSimpleAttributesToProps } from '../shared/jsx-attributes'
-import { objectMapDropNulls } from '../shared/object-utils'
 import { Imports, isParseFailure, isParseSuccess } from '../shared/project-file-types'
 import { createParseFile, getParseResult, UtopiaTsWorkers } from '../workers/common/worker-types'
 

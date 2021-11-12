@@ -14,10 +14,7 @@ import { ParsedPropertyControls, parsePropertyControls } from './property-contro
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
-import { bimapEither, Either, isRight, left, mapEither } from '../shared/either'
-import { jsxSimpleAttributesToProps, jsxSimpleAttributeToValue } from '../shared/jsx-attributes'
-import { JSXElement, JSXElementWithoutUID } from '../shared/element-template'
-import { Imports } from '../shared/project-file-types'
+import { isRight } from '../shared/either'
 
 async function registerComponentInternal(
   dispatch: EditorDispatch,
