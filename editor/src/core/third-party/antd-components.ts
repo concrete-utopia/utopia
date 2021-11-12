@@ -6,7 +6,7 @@ import {
 } from '../../components/custom-code/code-file'
 import { parsePropertyControls } from '../property-controls/property-controls-parser'
 import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
-import { getDefaultPropsAsAttributes } from './shared'
+import { getDefaultPropsAsAttributesFromParsedControls } from './shared'
 import { PropertyPathPart } from '../shared/project-file-types'
 
 const StyleObjectProps: PropertyControls = {
@@ -20,7 +20,8 @@ function createBasicComponent(
   propertyPathParts: PropertyPathPart[],
   propertyControls: PropertyControls,
 ): ComponentDescriptor {
-  const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
+  const parsedControls = parsePropertyControls(propertyControls)
+  const defaultAttributes = getDefaultPropsAsAttributesFromParsedControls(parsedControls)
   return {
     propertyControls: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
     componentInfo: {

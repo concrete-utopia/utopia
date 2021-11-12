@@ -1,4 +1,6 @@
-import { getDefaultProps, PropertyControls } from 'utopia-api'
+import { ParseResult } from '../../utils/value-parser-utils'
+import { ParsedPropertyControls } from '../property-controls/property-controls-parser'
+import { getDefaultPropsFromParsedControls } from '../property-controls/property-controls-utils'
 import {
   emptyComments,
   JSXAttributes,
@@ -6,10 +8,10 @@ import {
   jsxAttributeValue,
 } from '../shared/element-template'
 
-export function getDefaultPropsAsAttributes(
-  propertyControls: PropertyControls | null | undefined,
+export function getDefaultPropsAsAttributesFromParsedControls(
+  parsedControls: ParseResult<ParsedPropertyControls>,
 ): JSXAttributes {
-  const defaultProps = getDefaultProps(propertyControls ?? {})
+  const defaultProps = getDefaultPropsFromParsedControls(parsedControls)
   let result: JSXAttributes = []
   for (const key of Object.keys(defaultProps)) {
     result.push(
