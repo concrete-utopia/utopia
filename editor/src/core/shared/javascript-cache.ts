@@ -19,6 +19,7 @@ export function resetFunctionCache(): void {
 }
 
 export function resolveParamsAndRunJsCode(
+  filePath: string,
   javascriptBlock: JavaScriptContainer,
   requireResult: MapLike<any>,
   currentScope: MapLike<any>,
@@ -38,13 +39,14 @@ export function resolveParamsAndRunJsCode(
   //
   // The reason for us filtering the `definedElsewhere` here is so that we can throw a ReferenceError when
   // actually executing the JS code, rather than an error that would confuse the user
-  const result = getOrUpdateFunctionCache(updatedBlock, requireResult, (e) => {
+  const result = getOrUpdateFunctionCache(filePath, updatedBlock, requireResult, (e) => {
     throw e
   })(currentScope['callerThis'], ...Object.values(definedElsewhereInfo))
   return result
 }
 
 function getOrUpdateFunctionCache(
+  filePath: string,
   javascript: JavaScriptContainer,
   requireResult: MapLike<any>,
   handleError: (error: Error) => void,
@@ -54,6 +56,7 @@ function getOrUpdateFunctionCache(
     const newCachedFunction = SafeFunctionCurriedErrorHandler(
       false,
       requireResult,
+      filePath,
       javascript.transpiledJavascript,
       javascript.sourceMap,
       javascript.definedElsewhere,

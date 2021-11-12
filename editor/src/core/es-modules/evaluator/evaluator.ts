@@ -86,6 +86,7 @@ function evaluateJs(
     SafeFunction(
       false,
       { require: requireFn, exports: exports, module: module, process: process },
+      filePath,
       code,
       sourceMap,
       [],

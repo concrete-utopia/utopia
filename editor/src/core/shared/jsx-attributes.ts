@@ -166,6 +166,7 @@ export function jsxFunctionAttributeToRawValue(
 }
 
 export function jsxAttributeToValue(
+  filePath: string,
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
   attribute: JSXAttribute,
@@ -176,7 +177,7 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
-        const value = jsxAttributeToValue(inScope, requireResult, elem.value)
+        const value = jsxAttributeToValue(filePath, inScope, requireResult, elem.value)
 
         // We don't need to explicitly handle spreads because `concat` will take care of it for us
         returnArray = returnArray.concat(value)
@@ -186,7 +187,7 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
       fastForEach(attribute.content, (prop) => {
-        const value = jsxAttributeToValue(inScope, requireResult, prop.value)
+        const value = jsxAttributeToValue(filePath, inScope, requireResult, prop.value)
 
         switch (prop.type) {
           case 'PROPERTY_ASSIGNMENT':
@@ -206,13 +207,13 @@ export function jsxAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) =>
-          jsxAttributeToValue(inScope, requireResult, param),
+          jsxAttributeToValue(filePath, inScope, requireResult, param),
         )
         return foundFunction(...resolvedParameters)
       }
       throw new Error(`Couldn't find helper function with name ${attribute.functionName}`)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(attribute, requireResult, inScope)
+      return resolveParamsAndRunJsCode(filePath, attribute, requireResult, inScope)
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
@@ -220,6 +221,7 @@ export function jsxAttributeToValue(
 }
 
 export function jsxAttributesToProps(
+  filePath: string,
   inScope: MapLike<any>,
   attributes: JSXAttributes,
   requireResult: MapLike<any>,
@@ -228,12 +230,12 @@ export function jsxAttributesToProps(
   for (const entry of attributes) {
     switch (entry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        result[entry.key] = jsxAttributeToValue(inScope, requireResult, entry.value)
+        result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
         break
       case 'JSX_ATTRIBUTES_SPREAD':
         result = {
           ...result,
-          ...jsxAttributeToValue(inScope, requireResult, entry.spreadValue),
+          ...jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
         }
         break
       default:

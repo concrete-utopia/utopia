@@ -111,6 +111,7 @@ export function createComponentRendererComponent(params: {
     const appliedProps = optionalMap(
       (param) =>
         applyPropsParamToPassedProps(
+          params.filePath,
           mutableContext.rootScope,
           mutableContext.requireResult,
           realPassedProps,
@@ -167,6 +168,7 @@ export function createComponentRendererComponent(params: {
       )
 
       runBlockUpdatingScope(
+        params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,

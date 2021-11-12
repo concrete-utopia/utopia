@@ -10,6 +10,7 @@ import {
 import { AnyMap, jsxAttributeToValue } from '../../../core/shared/jsx-attributes'
 
 export function applyPropsParamToPassedProps(
+  filePath: string,
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
   passedProps: MapLike<unknown>,
@@ -22,7 +23,7 @@ export function applyPropsParamToPassedProps(
     defaultExpression: JSXAttributeOtherJavaScript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
-      return jsxAttributeToValue(inScope, requireResult, defaultExpression)
+      return jsxAttributeToValue(filePath, inScope, requireResult, defaultExpression)
     } else {
       return value
     }
