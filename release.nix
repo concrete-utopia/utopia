@@ -7,9 +7,9 @@ let
 
   pkgs = import (builtins.fetchTarball {
     name = "nixos-master";
-    url = https://github.com/NixOS/nixpkgs/archive/62126f8c155d58f7836b2c3873a40e4ad00cf46e.tar.gz;
+    url = https://github.com/NixOS/nixpkgs/archive/f513127ffe5e3f5225d814933d554488c9f33c5c.tar.gz;
     # Hash obtained using `nix-prefetch-url --unpack <url>`
-    sha256 = "0vzbm8hfc8nqp8nkw2riphgz1bbrrrx0m6717a2yyzxpg0na26wr";
+    sha256 = "18l6qn7plavxhw6h1xpg7h1szjc0bvqdy1wfzhc2zqw9j8890a0j";
   }) { inherit config; };
 in
   { 
