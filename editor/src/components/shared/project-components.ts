@@ -40,6 +40,7 @@ import {
   isTextFile,
   ProjectFile,
 } from '../../core/shared/project-file-types'
+import { getDefaultPropsAsAttributes } from '../../core/third-party/shared'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -205,11 +206,18 @@ function makeHTMLDescriptor(
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
+  const defaultValues = getDefaultPropsAsAttributes(propertyControls)
   return {
     propertyControls: parsePropertyControls(propertyControls),
     componentInfo: {
-      importsToAdd: {},
-      elementToInsert: jsxElementWithoutUID(tag, [], []),
+      importsToAdd: {
+        react: {
+          importedAs: 'React',
+          importedFromWithin: [],
+          importedWithName: null,
+        },
+      },
+      elementToInsert: jsxElementWithoutUID(tag, defaultValues, []),
     },
   }
 }

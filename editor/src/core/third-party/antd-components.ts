@@ -5,7 +5,9 @@ import {
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 import { parsePropertyControls } from '../property-controls/property-controls-parser'
-import { jsxElementWithoutUID } from '../shared/element-template'
+import { jsxElementName, jsxElementWithoutUID } from '../shared/element-template'
+import { getDefaultPropsAsAttributes } from './shared'
+import { PropertyPathPart } from '../shared/project-file-types'
 
 const StyleObjectProps: PropertyControls = {
   style: {
@@ -15,8 +17,10 @@ const StyleObjectProps: PropertyControls = {
 
 function createBasicComponent(
   baseVariable: string,
+  propertyPathParts: PropertyPathPart[],
   propertyControls: PropertyControls,
 ): ComponentDescriptor {
+  const defaultAttributes = getDefaultPropsAsAttributes(propertyControls)
   return {
     propertyControls: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
     componentInfo: {
@@ -37,21 +41,25 @@ function createBasicComponent(
           importedAs: null,
         },
       },
-      elementToInsert: jsxElementWithoutUID(baseVariable, [], []),
+      elementToInsert: jsxElementWithoutUID(
+        jsxElementName(baseVariable, propertyPathParts),
+        defaultAttributes,
+        [],
+      ),
     },
   }
 }
 
 export const AntdComponents: ComponentDescriptorsForFile = {
-  DatePicker: createBasicComponent('DatePicker', {}),
-  Button: createBasicComponent('Button', AntdControls.Button),
-  InputNumber: createBasicComponent('InputNumber', {}),
-  Row: createBasicComponent('Row', AntdControls.Row),
-  Col: createBasicComponent('Col', AntdControls.Col),
-  Space: createBasicComponent('Space', AntdControls.Space),
-  Menu: createBasicComponent('Menu', AntdControls.Menu),
-  'Menu.Item': createBasicComponent('Menu', AntdControls['Menu.Item']),
-  'Menu.SubMenu': createBasicComponent('Menu', AntdControls['Menu.SubMenu']),
-  'Menu.ItemGroup': createBasicComponent('Menu', AntdControls['Menu.ItemGroup']),
-  'Typography.Text': createBasicComponent('Typography', AntdControls['Typography.Text']),
+  DatePicker: createBasicComponent('DatePicker', [], {}),
+  Button: createBasicComponent('Button', [], AntdControls.Button),
+  InputNumber: createBasicComponent('InputNumber', [], {}),
+  Row: createBasicComponent('Row', [], AntdControls.Row),
+  Col: createBasicComponent('Col', [], AntdControls.Col),
+  Space: createBasicComponent('Space', [], AntdControls.Space),
+  Menu: createBasicComponent('Menu', [], AntdControls.Menu),
+  'Menu.Item': createBasicComponent('Menu', ['Item'], AntdControls['Menu.Item']),
+  'Menu.SubMenu': createBasicComponent('Menu', ['SubMenu'], AntdControls['Menu.SubMenu']),
+  'Menu.ItemGroup': createBasicComponent('Menu', ['ItemGroup'], AntdControls['Menu.ItemGroup']),
+  'Typography.Text': createBasicComponent('Typography', ['Text'], AntdControls['Typography.Text']),
 }
