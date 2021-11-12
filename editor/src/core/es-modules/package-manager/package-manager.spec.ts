@@ -296,7 +296,7 @@ describe('ES Dependency Manager', () => {
     )
     const fetchNodeModulesResult = await fetchNodeModules(
       [requestedNpmDependency('broken', '1.0.0')],
-      createBuiltInDependenciesList(NO_OP, null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
@@ -308,7 +308,7 @@ describe('ES Dependency Manager', () => {
       {},
       nodeModules,
       {},
-      createBuiltInDependenciesList(NO_OP, null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     expect(() => req('/src/index.js', 'broken')).toThrowErrorMatchingInlineSnapshot(
       `"Fail on import."`,
