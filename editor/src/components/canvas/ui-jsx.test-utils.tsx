@@ -203,10 +203,16 @@ export async function renderTestEditorWithModel(
     }
   }
 
+  const workers = new UtopiaTsWorkersImplementation(
+    new FakeParserPrinterWorker(),
+    new FakeLinterWorker(),
+    new FakeWatchdogWorker(),
+  )
+
   const builtInDependencies =
     mockBuiltInDependencies != null
       ? mockBuiltInDependencies
-      : createBuiltInDependenciesList(asyncTestDispatch, () => emptyEditorState)
+      : createBuiltInDependenciesList(asyncTestDispatch, () => emptyEditorState, workers)
   const initialEditorStore: EditorStore = {
     editor: emptyEditorState,
     derived: derivedState,
@@ -215,11 +221,7 @@ export async function renderTestEditorWithModel(
       loginState: notLoggedIn,
       shortcutConfig: {},
     },
-    workers: new UtopiaTsWorkersImplementation(
-      new FakeParserPrinterWorker(),
-      new FakeLinterWorker(),
-      new FakeWatchdogWorker(),
-    ),
+    workers: workers,
     persistence: DummyPersistenceMachine,
     dispatch: asyncTestDispatch,
     alreadySaved: false,

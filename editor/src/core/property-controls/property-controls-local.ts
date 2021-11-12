@@ -68,7 +68,7 @@ async function registerComponentInternal(
 export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
-  workers: UtopiaTsWorkers | null = null,
+  workers: UtopiaTsWorkers | null,
 ): typeof registerComponentAPI {
   // create a function with a signature that matches utopia-api/registerComponent
   return function registerComponent(paramsObj: {

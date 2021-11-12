@@ -55,7 +55,7 @@ function builtInDependency(
 export function createBuiltInDependenciesList(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
-  workers: UtopiaTsWorkers | null = null,
+  workers: UtopiaTsWorkers | null,
 ): BuiltInDependencies {
   const UtopiaAPISpecial: typeof UtopiaAPI = {
     ...UtopiaAPI,
