@@ -61,7 +61,9 @@ async function registerComponentInternal(
       }
     }
   } else {
-    console.error('there was a problem with registerComponent:', parsedParams.value)
+    console.error(
+      `There was a problem with 'registerComponent' ${componentName}: ${parsedParams.value}`,
+    )
   }
 }
 

@@ -1,5 +1,6 @@
 import { Either, isRight, left, mapEither, right } from '../shared/either'
 import {
+  ArbitraryJSBlock,
   clearJSXElementUniqueIDs,
   JSXElementChild,
   JSXElementWithoutUID,
@@ -61,10 +62,12 @@ async function getParseResultForUserStrings(
           topLevelElement.type === 'UTOPIA_JSX_COMPONENT' &&
           topLevelElement.name === 'Utopia$$$Component',
       )
-
-      if (parsedWrapperComponent == null) {
-        return left('could not find Utopia$$$Component')
-      } else {
+      const parsedWrapperIsArbitrary = parseFileResult.parseResult.topLevelElements.find(
+        (topLevelElement): topLevelElement is ArbitraryJSBlock =>
+          topLevelElement.type === 'ARBITRARY_JS_BLOCK' &&
+          topLevelElement.definedWithin.includes('Utopia$$$Component'),
+      )
+      if (parsedWrapperComponent != null) {
         const elementToInsert = clearJSXElementUniqueIDs(parsedWrapperComponent.rootElement)
 
         if (elementToInsert.type === 'JSX_ELEMENT') {
@@ -75,6 +78,10 @@ async function getParseResultForUserStrings(
         } else {
           return left('Element to insert must be a correct JSXElement')
         }
+      } else if (parsedWrapperIsArbitrary != null) {
+        return left('Element cannot be inserted without its import statement')
+      } else {
+        return left('could not find Utopia$$$Component')
       }
     } else if (isParseFailure(parseFileResult.parseResult)) {
       // TODO better error messages!
