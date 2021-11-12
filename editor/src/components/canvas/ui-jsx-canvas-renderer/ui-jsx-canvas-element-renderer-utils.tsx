@@ -205,7 +205,12 @@ export function renderCoreElement(
           }
         : inScope
 
-      const assembledProps = jsxAttributesToProps(blockScope, element.props, requireResult)
+      const assembledProps = jsxAttributesToProps(
+        filePath,
+        blockScope,
+        element.props,
+        requireResult,
+      )
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
 
@@ -262,7 +267,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSXArbitraryBlock(requireResult, element, blockScope)
+      return runJSXArbitraryBlock(filePath, requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
       let renderedChildren: Array<React.ReactChild> = []
@@ -467,11 +472,12 @@ export function utopiaCanvasJSXLookup(
 }
 
 function runJSXArbitraryBlock(
+  filePath: string,
   requireResult: MapLike<any>,
   block: JSXArbitraryBlock,
   currentScope: MapLike<any>,
 ): any {
-  return resolveParamsAndRunJsCode(block, requireResult, currentScope)
+  return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
 }
 
 function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any> | null): any {

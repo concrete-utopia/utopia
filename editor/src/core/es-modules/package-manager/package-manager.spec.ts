@@ -275,6 +275,47 @@ describe('ES Dependency Manager — Real-life packages', () => {
   })
 })
 
+describe('ES Dependency Manager', () => {
+  it('handles modules that throw an exception on import', async () => {
+    const brokenModule = {
+      contents: {
+        '/node_modules/broken/index.js': {
+          content: "throw new Error('Fail on import.')",
+        },
+      },
+    }
+    ;(fetch as any).mockResponse(
+      (request: Request): Promise<{ body?: string; status?: number }> => {
+        switch (request.url) {
+          case getPackagerUrl('broken@1.0.0'):
+            return Promise.resolve({ status: 200, body: JSON.stringify(brokenModule) })
+          default:
+            throw new Error(`unexpected fetch called: ${request.url}`)
+        }
+      },
+    )
+    const fetchNodeModulesResult = await fetchNodeModules(
+      [requestedNpmDependency('broken', '1.0.0')],
+      createBuiltInDependenciesList(NO_OP, null),
+    )
+    if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
+      fail(`Expected successful nodeModules fetch`)
+    }
+    const nodeModules = fetchNodeModulesResult.nodeModules
+    const onRemoteModuleDownload = jest.fn()
+    const req = getRequireFn(
+      onRemoteModuleDownload,
+      {},
+      nodeModules,
+      {},
+      createBuiltInDependenciesList(NO_OP, null),
+    )
+    expect(() => req('/src/index.js', 'broken')).toThrowErrorMatchingInlineSnapshot(
+      `"Fail on import."`,
+    )
+  })
+})
+
 describe('ES Dependency Manager — d.ts', () => {
   it('get typings from node modules', async () => {
     ;(fetch as any).mockResponse(

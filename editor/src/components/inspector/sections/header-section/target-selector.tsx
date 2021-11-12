@@ -51,7 +51,7 @@ export const TargetSelectorPanel = betterReactMemo(
     const {
       targets,
       onSelect,
-      selectedTargetPath: selectedTarget,
+      selectedTargetPath,
       onStyleSelectorRename,
       onStyleSelectorDelete,
       onStyleSelectorInsert,
@@ -81,10 +81,12 @@ export const TargetSelectorPanel = betterReactMemo(
       onSelect,
     ])
     const onInsertByIndex = React.useCallback(
-      (index: number, label: string) => onStyleSelectorInsert(targets[index], label),
+      (index: number, label: string) => {
+        onStyleSelectorInsert(targets[index], label)
+      },
       [targets, onStyleSelectorInsert],
     )
-    const targetIndex = getCSSTargetIndex(selectedTarget, targets)
+    const targetIndex = getCSSTargetIndex(selectedTargetPath, targets)
 
     const slicedTargetsAdding = React.useMemo(() => targets.slice(0, addingIndex ?? undefined), [
       addingIndex,
@@ -109,8 +111,9 @@ export const TargetSelectorPanel = betterReactMemo(
           isOpen={isOpen}
           setIsOpen={setIsOpen}
           setAddingIndex={setAddingIndex}
-          selectedTargetPath={selectedTarget}
+          selectedTargetPath={selectedTargetPath}
           isAdding={addingIndex != null}
+          targetIndex={targetIndex}
         />
         {/* outer flexColumn takes a fixed height (or can grow to fill space, this way addable row can
       be at the top without being included in scrollable list */}
@@ -387,20 +390,22 @@ interface TargetListHeaderProps {
   setAddingIndex: React.Dispatch<React.SetStateAction<number | null>>
   selectedTargetPath: Array<string>
   isAdding: boolean
+  targetIndex: number
 }
 
 const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListHeaderProps) => {
   const colorTheme = useColorTheme()
-  const { isOpen, setIsOpen, setAddingIndex, selectedTargetPath: selectedItem, isAdding } = props
+  const { isOpen, setIsOpen, setAddingIndex, selectedTargetPath, isAdding, targetIndex } = props
 
   const startAdding = React.useCallback(() => {
     setIsOpen(true)
-    setAddingIndex(0)
-  }, [setIsOpen, setAddingIndex])
+    setAddingIndex(targetIndex)
+  }, [setIsOpen, setAddingIndex, targetIndex])
 
   const togglePathPanel = React.useCallback(() => setIsOpen((value) => !value), [setIsOpen])
 
-  const titleStyle = selectedItem[0] === 'style' ? undefined : { color: colorTheme.primary.value }
+  const titleStyle =
+    selectedTargetPath[0] === 'style' ? undefined : { color: colorTheme.primary.value }
 
   return (
     <FlexRow
@@ -412,16 +417,15 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
       }}
     >
       <H1
-        data-testid={`target-selector-${selectedItem[0]}`}
+        data-testid={`target-selector-${selectedTargetPath[0]}`}
         style={{ flexGrow: 1, display: 'inline', overflow: 'hidden', ...titleStyle }}
       >
-        {selectedItem}
+        {selectedTargetPath}
       </H1>
       <SectionActionSheet className='actionsheet'>
-        {/* Plus button is disabled until the root insertion issue is fixed https://github.com/concrete-utopia/utopia/issues/1991 */}
-        {/* <SquareButton highlight disabled={isAdding} onClick={startAdding}>
+        <SquareButton highlight disabled={isAdding} onClick={startAdding}>
           <FunctionIcons.Add />
-        </SquareButton> */}
+        </SquareButton>
         <SquareButton highlight onClick={togglePathPanel}>
           <ExpandableIndicator
             testId='target-selector'
@@ -448,7 +452,7 @@ const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
 
   const addItem = React.useCallback(() => {
     if (addingIndex != null) {
-      onInsert(addingIndex - 1, value)
+      onInsert(addingIndex, value)
     }
     finishAdding()
   }, [addingIndex, finishAdding, value, onInsert])

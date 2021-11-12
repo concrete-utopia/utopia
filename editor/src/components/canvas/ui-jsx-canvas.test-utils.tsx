@@ -278,7 +278,7 @@ export function renderCanvasReturnResultAndError(
     errorsReportedSpyEnabled = errorsReported
   } catch (e) {
     // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
-    processErrorWithSourceMap(e, true)
+    processErrorWithSourceMap(UiFilePath, uiFileCode, e, true)
     errorsReportedSpyEnabled = [e]
   }
   errorsReported = []
@@ -298,7 +298,7 @@ export function renderCanvasReturnResultAndError(
     errorsReportedSpyDisabled = errorsReported
   } catch (e) {
     // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
-    processErrorWithSourceMap(e, true)
+    processErrorWithSourceMap(UiFilePath, uiFileCode, e, true)
     errorsReportedSpyDisabled = [e]
   }
 
