@@ -60,6 +60,8 @@ async function registerComponentInternal(
         dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
       }
     }
+  } else {
+    console.error('there was a problem with registerComponent:', parsedParams.value)
   }
 }
 
