@@ -156,7 +156,7 @@ export function createExecutionScope(
       lookupRenderer,
     )
 
-    runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
+    runBlockUpdatingScope(filePath, requireResult, combinedTopLevelArbitraryBlock, executionScope)
   }
   // WARNING: mutating the mutableContextRef
   updateMutableUtopiaCtxRefWithNewProps(mutableContextRef, {
