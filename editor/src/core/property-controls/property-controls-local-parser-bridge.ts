@@ -79,7 +79,14 @@ async function getParseResultForUserStrings(
           return left('Element to insert must be a correct JSXElement')
         }
       } else if (parsedWrapperIsArbitrary != null) {
-        return left('Element cannot be inserted without its import statement')
+        const missingElements = parsedWrapperIsArbitrary.definedElsewhere.filter(
+          (v) => v !== 'React' && v !== 'utopiaCanvasJSXLookup',
+        )
+        return left(
+          `Element cannot be inserted without its import statement. Make sure to import ${missingElements.join(
+            ', ',
+          )}`,
+        )
       } else {
         return left('could not find Utopia$$$Component')
       }
