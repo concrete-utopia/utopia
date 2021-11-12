@@ -377,17 +377,6 @@ export function getComponentGroups(
       const probablyIntrinsicElement =
         moduleName == null || isIntrinsicElementFromString(componentName)
 
-      // TODO fallback imports!
-      const fallbackImports: Array<ImportType> = probablyIntrinsicElement
-        ? []
-        : [
-            {
-              type: null,
-              source: moduleName!, // if we updgrade TS we can remove this ! from here
-              name: componentName,
-            },
-          ]
-
       return insertableComponent(
         component.componentInfo.importsToAdd,
         component.componentInfo.elementToInsert,
