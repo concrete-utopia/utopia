@@ -51,21 +51,21 @@ function getOrUpdateFunctionCache(
   requireResult: MapLike<any>,
   handleError: (error: Error) => void,
 ): (...args: Array<unknown>) => unknown {
-  const fromCache = functionCache[javascript.uniqueID]
-  if (fromCache == null) {
-    const newCachedFunction = SafeFunctionCurriedErrorHandler(
-      false,
-      requireResult,
-      filePath,
-      javascript.transpiledJavascript,
-      javascript.sourceMap,
-      javascript.definedElsewhere,
-    )
-    functionCache[javascript.uniqueID] = newCachedFunction
-    return newCachedFunction(handleError)
-  } else {
-    return fromCache(handleError)
-  }
+  //const fromCache = functionCache[javascript.uniqueID]
+  //if (fromCache == null) {
+  const newCachedFunction = SafeFunctionCurriedErrorHandler(
+    false,
+    requireResult,
+    filePath,
+    javascript.transpiledJavascript,
+    javascript.sourceMap,
+    javascript.definedElsewhere,
+  )
+  functionCache[javascript.uniqueID] = newCachedFunction
+  return newCachedFunction(handleError)
+  //} else {
+  //  return fromCache(handleError)
+  //}
 }
 
 function resolveDefinedElsewhere(
