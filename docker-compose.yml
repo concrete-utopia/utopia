@@ -1,0 +1,39 @@
+version: '3'
+services:
+  editor:
+    container_name: utopia_editor
+    build:
+      context: .
+      dockerfile: editor/Dockerfile
+    image: utopia
+    command: pnpm run move-fast-and-break-things
+    ports:
+      - "8088:8088"
+    environment:
+      UTOPIA_BACKEND: http://localhost:8000
+  tsc:
+    container_name: utopia_tsc
+    image: utopia
+    command: pnpx tsc --watch
+    ports:
+      - "8089:8089"
+  website:
+    container_name: utopia_website
+    build:
+      context: .
+      dockerfile: website-next/Dockerfile
+    command: pnpm run dev
+    ports:
+      - "3000:3000"
+  server:
+    container_name: utopia_server
+    image: utopia_server
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://hector@192.168.1.66:5432/utopia_server
+      PROXY_WEBPACK: http://utopia_editor:8088
+    command: cabal new-run --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N
+    ports:
+      - "8000:8000"
