@@ -5,9 +5,14 @@
       "registerComponent({",
       "  name: ${1}, // name is what appears in the insertion list",
       "  moduleName: ${2}, // name of module, or relative file path",
-      "  controls: ${3}, // property controls",
-      "  insert: ${4}, ",
-      "  requiredImports: ${5}",
+      "  controls: {",
+      "    replaceMe: {",
+      "      control: 'string-input',",
+      "      label: 'placeholder control'",
+      "    },",
+      "  }, // property controls",
+      "  insert: ${4}, // `<Button label='Click Me!' />`",
+      "  requiredImports: ${5} // `import { Button } from 'my-app';` ",
       "})"
     ],
     "description": "Register Component"
