@@ -350,6 +350,7 @@ function getFullConfig(): UtopiaVSCodeConfig {
 
 let currentDecorations: Array<DecorationRange> = []
 let currentSelection: BoundsInFile | null = null
+let squashNextSelectionChange: boolean = false
 
 function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
   function handleMessage(message: ToVSCodeMessage): void {
@@ -394,7 +395,10 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       updateDecorations(currentDecorations)
     }),
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      if (event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
+      if (squashNextSelectionChange) {
+        // Ignore selection changes coming from Utopia
+        squashNextSelectionChange = false
+      } else {
         cursorPositionChanged(event)
       }
     }),
@@ -449,6 +453,7 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
   const filePath = fromUtopiaURI(fileUri)
   const fileExists = await exists(filePath)
   if (fileExists) {
+    squashNextSelectionChange = true
     await vscode.commands.executeCommand('vscode.open', fileUri, { preserveFocus: true })
     return true
   } else {
@@ -471,11 +476,6 @@ function cursorPositionChanged(event: vscode.TextEditorSelectionChangeEvent): vo
   } catch (error) {
     console.error('cursorPositionChanged failure.', error)
   }
-}
-
-function rangesIntersectLinesOnly(first: vscode.Range, second: vscode.Range): boolean {
-  // For the case when we only care if the lines overlap, and don't care about the columns
-  return first.start.line <= second.end.line && second.start.line <= first.end.line
 }
 
 async function revealRangeIfPossible(
@@ -505,17 +505,18 @@ async function revealRangeIfPossibleInVisibleEditor(boundsInFile: BoundsInFile):
   )
   if (visibleEditor != null) {
     const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
-    const alreadySelected = rangesIntersectLinesOnly(visibleEditor.selection, rangeToReveal)
     const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
       r.contains(visibleEditor.selection),
     )
 
-    if (!alreadySelected) {
-      const selectionRange = getVSCodeRange(boundsInFile)
-      visibleEditor.selection = new vscode.Selection(selectionRange.start, selectionRange.start)
+    const selectionRange = getVSCodeRange(boundsInFile)
+    const newSelection = new vscode.Selection(selectionRange.start, selectionRange.start) // selectionRange.end?
+    if (!visibleEditor.selection.isEqual(newSelection)) {
+      squashNextSelectionChange = true
+      visibleEditor.selection = newSelection
     }
 
-    const shouldReveal = !(alreadySelected && alreadyVisible)
+    const shouldReveal = !alreadyVisible
     if (shouldReveal) {
       visibleEditor.revealRange(
         rangeToReveal,
