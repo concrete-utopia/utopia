@@ -4,8 +4,8 @@
     "body": ["registerComponent"],
     "description": "Register Component Import"
   },
-  "registerComponent({})": {
-    "prefix": "registerComponent({})",
+  "registerComponent({...})": {
+    "prefix": "registerComponent({...})",
     "body": [
       "registerComponent({",
       "  name: '${1}', // name is what appears in the insertion list",
