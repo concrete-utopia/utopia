@@ -1,0 +1,20 @@
+{
+  "registerComponent": {
+    "prefix": "registerComponent",
+    "body": [
+      "registerComponent({",
+      "  name: '${1}', // name is what appears in the insertion list",
+      "  moduleName: '${2}', // name of module, or relative file path",
+      "  controls: {",
+      "    replaceMe: {",
+      "      control: 'string-input',",
+      "      label: 'placeholder control'",
+      "    },",
+      "  }, // property controls",
+      "  insert: '<${1} />', // `<Button label='Click Me!' />`",
+      "  requiredImports: `import { ${1} } from '${2}';` // `import { Button } from 'my-app';` ",
+      "})"
+    ],
+    "description": "Register Component"
+  }
+}

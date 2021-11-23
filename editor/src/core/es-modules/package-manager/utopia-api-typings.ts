@@ -1,7 +1,11 @@
 export const utopiaApiTypings = `declare module 'utopia-api/helpers/helper-functions' {
-  import { PropertyControls, ImportType } from 'utopia-api/property-controls/property-controls';
-  export function registerComponent(componentName: string, moduleNameOrPath: string, propertyControls: PropertyControls, optionalParameters?: {
-      requiredImports?: Array<ImportType>;
+  import { PropertyControls } from 'utopia-api/property-controls/property-controls';
+  export function registerComponent(paramsObj: {
+      name: string;
+      moduleName: string;
+      controls: PropertyControls;
+      insert: string;
+      requiredImports: string;
   }): void;
   export type RawSingleBorderWidth = number | string;
   export type RawSplitBorderWidth = [

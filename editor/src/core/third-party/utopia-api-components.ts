@@ -3,22 +3,39 @@ import {
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 import { parsePropertyControls } from '../property-controls/property-controls-parser'
+import { jsxElementWithoutUID } from '../shared/element-template'
 
-const BasicUtopiaComponentDescriptor: ComponentDescriptor = {
-  propertyControls: parsePropertyControls({
-    style: {
-      control: 'style-controls',
+const BasicUtopiaComponentDescriptor = (name: string): ComponentDescriptor => {
+  return {
+    propertyControls: parsePropertyControls({
+      style: {
+        control: 'style-controls',
+      },
+    }),
+    componentInfo: {
+      importsToAdd: {
+        'utopia-api': {
+          importedWithName: null,
+          importedFromWithin: [
+            {
+              name: name,
+              alias: name,
+            },
+          ],
+          importedAs: null,
+        },
+      },
+      elementToInsert: jsxElementWithoutUID(name, [], []),
     },
-  }),
-  componentInfo: {},
+  }
 }
 
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
-  Ellipse: BasicUtopiaComponentDescriptor,
-  Rectangle: BasicUtopiaComponentDescriptor,
-  Text: BasicUtopiaComponentDescriptor,
-  View: BasicUtopiaComponentDescriptor,
-  FlexRow: BasicUtopiaComponentDescriptor,
-  FlexCol: BasicUtopiaComponentDescriptor,
-  Scene: BasicUtopiaComponentDescriptor,
+  Ellipse: BasicUtopiaComponentDescriptor('Ellipse'),
+  Rectangle: BasicUtopiaComponentDescriptor('Rectangle'),
+  Text: BasicUtopiaComponentDescriptor('Text'),
+  View: BasicUtopiaComponentDescriptor('View'),
+  FlexRow: BasicUtopiaComponentDescriptor('FlexRow'),
+  FlexCol: BasicUtopiaComponentDescriptor('FlexCol'),
+  Scene: BasicUtopiaComponentDescriptor('Scene'),
 }

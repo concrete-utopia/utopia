@@ -14,6 +14,7 @@ import { PropertyControlsInfo } from '../../../components/custom-code/code-file'
 import { createRegisterComponentFunction } from '../../property-controls/property-controls-local'
 import type { EditorDispatch } from '../../../components/editor/action-types'
 import type { EditorState } from '../../../components/editor/store/editor-state'
+import { UtopiaTsWorkers } from '../../workers/common/worker-types'
 
 applyUIDMonkeyPatch()
 
@@ -54,10 +55,11 @@ function builtInDependency(
 export function createBuiltInDependenciesList(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
+  workers: UtopiaTsWorkers | null,
 ): BuiltInDependencies {
   const UtopiaAPISpecial: typeof UtopiaAPI = {
     ...UtopiaAPI,
-    registerComponent: createRegisterComponentFunction(dispatch, getEditorState),
+    registerComponent: createRegisterComponentFunction(dispatch, getEditorState, workers),
   }
 
   // Ensure this is kept up to date with:

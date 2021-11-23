@@ -38,6 +38,12 @@
           }
         }
       }
+    ],
+    "snippets": [
+      {
+        "language": "javascript",
+        "path": "./snippets.json"
+      }
     ]
   },
   "dependencies": {

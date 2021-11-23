@@ -20,17 +20,23 @@ describe('registered property controls', () => {
           )
         }
 
-        registerComponent('App', '${storyboardPath}', {
-          label: {
-            control: 'string-input',
+        registerComponent({
+          name: 'App',
+          moduleName: '${storyboardPath}', 
+          controls: {
+            label: {
+              control: 'string-input',
+            },
+            background: {
+              control: 'color',
+            },
+            visible: {
+              control: 'checkbox',
+              defaultValue: true,
+            },
           },
-          background: {
-            control: 'color',
-          },
-          visible: {
-            control: 'checkbox',
-            defaultValue: true,
-          },
+          insert: '<Card  />',
+          requiredImports: 'import {Card} from "card"',
         })
 
         export var storyboard = (props) => {
@@ -55,7 +61,47 @@ describe('registered property controls', () => {
       Object {
         "App": Object {
           "componentInfo": Object {
-            "requiredImports": undefined,
+            "elementToInsert": Object {
+              "children": Array [],
+              "name": Object {
+                "baseVariable": "Card",
+                "propertyPath": Object {
+                  "propertyElements": Array [],
+                },
+              },
+              "props": Array [
+                Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "key": "data-uid",
+                  "type": "JSX_ATTRIBUTES_ENTRY",
+                  "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "fb0",
+                  },
+                },
+              ],
+              "type": "JSX_ELEMENT",
+              "uid": "fb0",
+            },
+            "importsToAdd": Object {
+              "card": Object {
+                "importedAs": null,
+                "importedFromWithin": Array [
+                  Object {
+                    "alias": "Card",
+                    "name": "Card",
+                  },
+                ],
+                "importedWithName": null,
+              },
+            },
           },
           "propertyControls": Object {
             "type": "RIGHT",
