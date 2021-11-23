@@ -1,6 +1,11 @@
 {
   "registerComponent": {
     "prefix": "registerComponent",
+    "body": ["registerComponent"],
+    "description": "Register Component Import"
+  },
+  "registerComponent({})": {
+    "prefix": "registerComponent({})",
     "body": [
       "registerComponent({",
       "  name: '${1}', // name is what appears in the insertion list",
@@ -15,6 +20,6 @@
       "  requiredImports: `import { ${1} } from '${2}';` // `import { Button } from 'my-app';` ",
       "})"
     ],
-    "description": "Register Component"
+    "description": "Register Component Function Body"
   }
 }
