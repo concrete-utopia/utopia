@@ -14,6 +14,7 @@ import {
   isParseSuccess,
   StaticElementPath,
   ParseSuccess,
+  Imports,
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
@@ -34,6 +35,7 @@ import {
   isJSXAttributeOtherJavaScript,
   isUtopiaJSXComponent,
   JSXElement,
+  JSXElementWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import { findElementWithUID } from '../../core/shared/uid-utils'
@@ -81,7 +83,7 @@ export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) =
 
 export type ComponentDescriptor = {
   propertyControls: ParseResult<ParsedPropertyControls>
-  componentInfo: { requiredImports?: Array<ImportType> }
+  componentInfo: { importsToAdd: Imports; elementToInsert: JSXElementWithoutUID }
 }
 
 export type ComponentDescriptorsForFile = {

@@ -121,8 +121,18 @@ export class Editor {
     const renderRootEditor = () =>
       renderRootComponent(this.utopiaStoreHook, this.utopiaStoreApi, this.spyCollector)
 
+    const workers = new UtopiaTsWorkersImplementation(
+      new RealParserPrinterWorker(),
+      new RealLinterWorker(),
+      watchdogWorker,
+    )
+
     const getEditorState = () => this.storedState.editor
-    const builtInDependencies = createBuiltInDependenciesList(this.boundDispatch, getEditorState)
+    const builtInDependencies = createBuiltInDependenciesList(
+      this.boundDispatch,
+      getEditorState,
+      workers,
+    )
     const onCreatedOrLoadedProject = (
       projectId: string,
       projectName: string,
@@ -134,11 +144,7 @@ export class Editor {
       derived: derivedState,
       history: history,
       userState: defaultUserState,
-      workers: new UtopiaTsWorkersImplementation(
-        new RealParserPrinterWorker(),
-        new RealLinterWorker(),
-        watchdogWorker,
-      ),
+      workers: workers,
       persistence: new PersistenceMachine(
         PersistenceBackend,
         this.boundDispatch,

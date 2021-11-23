@@ -2,7 +2,7 @@ import { ImportType, PropertyControls, registerComponent as registerComponentAPI
 import deepEqual from 'fast-deep-equal'
 
 import { ProjectContentTreeRoot } from '../../components/assets'
-import { PropertyControlsInfo } from '../../components/custom-code/code-file'
+import { ComponentDescriptor, PropertyControlsInfo } from '../../components/custom-code/code-file'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import {
@@ -12,45 +12,94 @@ import {
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
+import { UtopiaTsWorkers } from '../workers/common/worker-types'
+import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
+import { isRight } from '../shared/either'
+
+async function registerComponentInternal(
+  dispatch: EditorDispatch,
+  getEditorState: (() => EditorState) | null,
+  workers: UtopiaTsWorkers,
+  componentName: string,
+  moduleNameOrPath: string,
+  propertyControls: PropertyControls,
+  elementToInsert: string,
+  importsToAdd: string,
+) {
+  const parsedParams = await getCachedParseResultForUserStrings(
+    workers,
+    importsToAdd,
+    elementToInsert,
+  )
+  if (isRight(parsedParams)) {
+    const parsedPropertyControls = parsePropertyControls(propertyControls)
+    const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
+    if (currentPropertyControlsInfo != null) {
+      const currentInfo: ComponentDescriptor | null =
+        currentPropertyControlsInfo[moduleNameOrPath]?.[componentName]
+
+      const newInfo: ComponentDescriptor = {
+        propertyControls: parsedPropertyControls,
+        componentInfo: {
+          importsToAdd: parsedParams.value.importsToAdd,
+          elementToInsert: parsedParams.value.elementToInsert,
+        },
+      }
+      const currentControlsAreTheSame = deepEqual(currentInfo, newInfo)
+      const updatedPropertyControlsInfo: PropertyControlsInfo = {
+        [moduleNameOrPath]: {
+          ...currentPropertyControlsInfo[moduleNameOrPath],
+          [componentName]: newInfo,
+        },
+      }
+      if (!currentControlsAreTheSame) {
+        // only dispatch if the control info is updated, to prevent a potential infinite loop of code re-evaluation
+        dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+      }
+    }
+  } else {
+    console.error(
+      `There was a problem with 'registerComponent' ${componentName}: ${parsedParams.value}`,
+    )
+  }
+}
 
 export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
+  workers: UtopiaTsWorkers | null,
 ): typeof registerComponentAPI {
   // create a function with a signature that matches utopia-api/registerComponent
-  return function registerComponent(
-    componentName: string,
-    moduleNameOrPath: string,
-    propertyControls: PropertyControls,
-    optionalParameters?: { requiredImports?: Array<ImportType> },
-  ): void {
-    if (componentName == null || moduleNameOrPath == null || typeof propertyControls !== 'object') {
+  return function registerComponent(paramsObj: {
+    name: string
+    moduleName: string
+    controls: PropertyControls
+    insert: string
+    requiredImports: string
+  }): void {
+    const { name, moduleName, controls, insert, requiredImports } = paramsObj
+    if (
+      name == null ||
+      moduleName == null ||
+      typeof controls !== 'object' ||
+      insert == null ||
+      requiredImports == null
+    ) {
       console.warn(
-        'registerComponent has 3 parameters: component name, module name or path, property controls object',
+        'registerComponent has 5 parameters: component name, module name or path, property controls object, inserted element, required imports',
       )
     } else {
-      const parsedPropertyControls = parsePropertyControls(propertyControls)
-      const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
-      if (currentPropertyControlsInfo != null) {
-        const currentParsedPropertyControls: ParseResult<ParsedPropertyControls> =
-          currentPropertyControlsInfo[moduleNameOrPath]?.[componentName]?.propertyControls
-        const currentControlsAreTheSame = deepEqual(
-          currentParsedPropertyControls,
-          parsedPropertyControls,
+      if (workers != null) {
+        registerComponentInternal(
+          dispatch,
+          getEditorState,
+          workers,
+          name,
+          moduleName,
+          controls,
+          insert,
+          requiredImports,
         )
-        const updatedControls: PropertyControlsInfo = {
-          [moduleNameOrPath]: {
-            ...currentPropertyControlsInfo[moduleNameOrPath],
-            [componentName]: {
-              propertyControls: parsedPropertyControls,
-              componentInfo: { requiredImports: optionalParameters?.requiredImports },
-            },
-          },
-        }
-        if (!currentControlsAreTheSame) {
-          // only dispatch if the control info is updated, to prevent a potential infinite loop of code re-evaluation
-          dispatch([updatePropertyControlsInfo(updatedControls)])
-        }
       }
     }
   }

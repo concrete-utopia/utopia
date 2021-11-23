@@ -31,6 +31,7 @@ import {
   isJSXAttributeOtherJavaScript,
   emptyComments,
   jsxAttributeNestedArraySimple,
+  JSXAttributesPart,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'

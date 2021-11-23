@@ -40,6 +40,7 @@ import {
   isTextFile,
   ProjectFile,
 } from '../../core/shared/project-file-types'
+import { getDefaultPropsAsAttributesFromParsedControls } from '../../core/third-party/shared'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -205,10 +206,19 @@ function makeHTMLDescriptor(
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
+  const parsedControls = parsePropertyControls(propertyControls)
+  const defaultValues = getDefaultPropsAsAttributesFromParsedControls(parsedControls)
   return {
     propertyControls: parsePropertyControls(propertyControls),
     componentInfo: {
-      requiredImports: [{ source: 'react', name: 'React', type: 'star' }],
+      importsToAdd: {
+        react: {
+          importedAs: 'React',
+          importedFromWithin: [],
+          importedWithName: null,
+        },
+      },
+      elementToInsert: jsxElementWithoutUID(tag, defaultValues, []),
     },
   }
 }
@@ -365,36 +375,12 @@ export function getComponentGroups(
         stylePropOptions = addSizeAndNotStyleProp
       }
 
-      // Create the insertable JSX element here
-      const [baseVariable, ...propertyPathParts] = componentName.split('.')
-      const elementName = jsxElementName(baseVariable, propertyPathParts)
-      const defaultProps = getDefaultPropsFromParsedControls(propertyControls)
-      const defaultAttributes = mapToArray(
-        (value, prop) =>
-          jsxAttributesEntry(prop, jsxAttributeValue(value, emptyComments), emptyComments),
-        defaultProps,
-      )
-
       const probablyIntrinsicElement =
         moduleName == null || isIntrinsicElementFromString(componentName)
 
-      const fallbackImports: Array<ImportType> = probablyIntrinsicElement
-        ? []
-        : [
-            {
-              type: null,
-              source: moduleName!, // if we updgrade TS we can remove this ! from here
-              name: componentName,
-            },
-          ]
-
       return insertableComponent(
-        mapArrayToDictionary(
-          component.componentInfo.requiredImports ?? fallbackImports,
-          (importOption) => importOption.source,
-          (importOption) => importDetailsFromImportOption(importOption),
-        ),
-        jsxElementWithoutUID(elementName, defaultAttributes, []),
+        component.componentInfo.importsToAdd,
+        component.componentInfo.elementToInsert,
         componentName,
         stylePropOptions,
       )
