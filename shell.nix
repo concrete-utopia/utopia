@@ -442,7 +442,7 @@ let
 
   scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
 
-  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.x11 pkgs.xorg.libxkbfile ];
+  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.x11 pkgs.xorg.libX11 pkgs.xorg.libxkbfile ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
     Cocoa
     CoreServices
