@@ -26,6 +26,8 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
+	"initializeCommand": "cp ./shell.nix docker-dev-env/ && cp ./release.nix docker-dev-env/",
+
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "nix-shell --run \"sudo --preserve-env=PATH --preserve-env --user vscodeuser bash\"",
 
