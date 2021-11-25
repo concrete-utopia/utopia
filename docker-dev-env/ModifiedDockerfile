@@ -25,7 +25,15 @@ EXPOSE 8000
 # Create a group and user.
 ARG DOCKER_USER
 ARG DOCKER_UID
-RUN addgroup $DOCKER_USER && adduser --uid $DOCKER_UID --ingroup $DOCKER_USER $DOCKER_USER
+RUN addgroup $DOCKER_USER && adduser --disabled-password --gecos '' --uid $DOCKER_UID --ingroup $DOCKER_USER $DOCKER_USER
+
+#  Add new user docker to sudo group
+RUN adduser $DOCKER_USER sudo
+
+# Ensure sudo group users are not 
+# asked for a password when using 
+# sudo command by ammending sudoers file
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 RUN chmod -R o+rwx /root/
 
