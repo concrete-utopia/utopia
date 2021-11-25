@@ -53,7 +53,7 @@ npmSpec = do
     describe "withInstalledProject" $ do
       it "should have the various dependencies in node_modules for react" $ \(logger, _, _, npmMetrics, semaphore) -> do
         result <- runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "react@16.13.1" getNodeModulesSubDirectories
-        (sort result) `shouldBe` [".bin", ".package-lock.json", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
+        (sort result) `shouldBe` [".bin", ".yarn-integrity", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
       it "should fail for a non-existent project" $ \(logger, _, _, npmMetrics, semaphore) -> do
         (runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "non-existent-project-that-will-never-exist@9.9.9.9.9.9" getNodeModulesSubDirectories) `shouldThrow` anyIOException
     describe "getModuleAndDependenciesFiles" $ do
