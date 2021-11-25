@@ -2,6 +2,7 @@ FROM nixos/nix
 
 RUN set -ex && apk --no-cache add sudo chromium 
 
+RUN echo 'filter-syscalls = false' >> /etc/nix/nix.conf
 RUN nix-channel --add https://nixos.org/channels/nixos-21.05 nixpkgs
 RUN nix-channel --update
 
