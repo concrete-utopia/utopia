@@ -38,3 +38,12 @@ VOLUME /home/utopia/utopia-src
 ENV CHROME_BIN=chromium-browser
 
 WORKDIR /home/utopia/utopia-src
+
+# Fixes locale-related issues: https://gitlab.haskell.org/ghc/ghc/-/issues/8118
+# USER $DOCKER_USER
+
+RUN apt-get install --no-install-recommends -y locales
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+RUN locale-gen en_US.UTF-8
+RUN dpkg-reconfigure locales
+# RUN update-locale LANG='en_US.UTF-8'
