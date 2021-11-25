@@ -132,6 +132,5 @@ server/.pglock
 server/utopia-db
 
 # Docker Dev Environment
-docker-dev-env/*.nix
 docker-dev-env/.cache
 .pnpm-store
