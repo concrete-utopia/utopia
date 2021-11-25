@@ -1,6 +1,13 @@
-FROM nixos/nix
+FROM mcr.microsoft.com/vscode/devcontainers/base:hirsute
 
-RUN set -ex && apk --no-cache add sudo chromium 
+# RUN set -ex && apk --no-cache add sudo chromium
+RUN apt-get update
+RUN apt-get install --no-install-recommends -y nix-bin
+
+
+# I commented this out && sudo chown $DOCKER_USER /nix
+RUN sudo mkdir -m 0755 /nix && sudo mkdir -p /etc/nix && sudo groupadd -r nixbld \
+      && for n in $(seq 1 10); do sudo useradd -c "Nix build user $n" -d /var/empty -g nixbld -G nixbld -M -N -r -s "$(command -v nologin)" "nixbld$n"; done
 
 RUN echo 'filter-syscalls = false' >> /etc/nix/nix.conf
 RUN nix-channel --add https://nixos.org/channels/nixos-21.05 nixpkgs
@@ -18,7 +25,15 @@ EXPOSE 8000
 # Create a group and user.
 ARG DOCKER_USER
 ARG DOCKER_UID
-RUN addgroup -S $DOCKER_USER && adduser -S $DOCKER_USER --uid $DOCKER_UID -G $DOCKER_USER
+RUN addgroup $DOCKER_USER && adduser --disabled-password --gecos '' --uid $DOCKER_UID --ingroup $DOCKER_USER $DOCKER_USER
+
+#  Add new user docker to sudo group
+RUN adduser $DOCKER_USER sudo
+
+# Ensure sudo group users are not 
+# asked for a password when using 
+# sudo command by ammending sudoers file
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 RUN chmod -R o+rwx /root/
 
@@ -33,3 +48,11 @@ ENV CHROME_BIN=chromium-browser
 
 WORKDIR /home/utopia/utopia-src
 
+# Fixes locale-related issues: https://gitlab.haskell.org/ghc/ghc/-/issues/8118
+# USER $DOCKER_USER
+
+RUN apt-get install --no-install-recommends -y locales
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+RUN locale-gen en_US.UTF-8
+RUN dpkg-reconfigure locales
+# RUN update-locale LANG='en_US.UTF-8'
