@@ -56,3 +56,7 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 RUN locale-gen en_US.UTF-8
 RUN dpkg-reconfigure locales
 # RUN update-locale LANG='en_US.UTF-8'
+
+# install Direnv for the vscodeuser user
+RUN apt-get install --no-install-recommends -y direnv
+ADD .direnvrc /home/vscodeuser/.direnvrc
