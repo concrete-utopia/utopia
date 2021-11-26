@@ -59,4 +59,7 @@ RUN dpkg-reconfigure locales
 
 # install Direnv for the vscodeuser user
 RUN apt-get install --no-install-recommends -y direnv
-ADD .direnvrc /home/vscodeuser/.direnvrc
+ADD .direnvrc /home/$DOCKER_USER/.direnvrc
+
+RUN echo 'export TMPDIR=/tmp' > ~/.bashrc
+RUN echo 'export TMPDIR=/tmp' > /home/$DOCKER_USER/.bashrc
