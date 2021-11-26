@@ -47,16 +47,17 @@ cleanupPrerequisites (_, loggerShutdown, _, _, _) = loggerShutdown
 withPrerequisites :: (Prerequisites -> IO ()) -> IO ()
 withPrerequisites = bracket createPrerequisites cleanupPrerequisites
 
-npmSpec :: Spec
-npmSpec = do
+npmSpec :: Bool -> Spec
+npmSpec enableExternalTests = do
+  let toggledDescribe = if enableExternalTests then describe else xdescribe
   around withPrerequisites $ do
-    describe "withInstalledProject" $ do
+    toggledDescribe "withInstalledProject" $ do
       it "should have the various dependencies in node_modules for react" $ \(logger, _, _, npmMetrics, semaphore) -> do
         result <- runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "react@16.13.1" getNodeModulesSubDirectories
         (sort result) `shouldBe` [".bin", ".yarn-integrity", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
       it "should fail for a non-existent project" $ \(logger, _, _, npmMetrics, semaphore) -> do
         (runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "non-existent-project-that-will-never-exist@9.9.9.9.9.9" getNodeModulesSubDirectories) `shouldThrow` anyIOException
-    describe "getModuleAndDependenciesFiles" $ do
+    toggledDescribe "getModuleAndDependenciesFiles" $ do
       it "should get a bunch of .cjs, .js, .mjs and package.json files" $ \(logger, _, _, npmMetrics, semaphore) -> do
         result <- runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "fflate@0.7.1" getModuleAndDependenciesFiles
         let filteredResult = filter (\(_, v) -> v /= encodedPlaceholder) result

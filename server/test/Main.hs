@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Main where
 
 import           Protolude
@@ -12,8 +14,13 @@ main = do
   tree <- tests
   defaultMain tree
 
+enableExternalTests :: Bool
+enableExternalTests = ENABLE_EXTERNAL_TESTS 
+
 tests :: IO TestTree
 tests = do
-  routingTestTree <- testSpec "Routing Tests" routingSpec
-  npmTestTree <- testSpec "NPM Tests" npmSpec
-  return $ testGroup "Tests" [routingTestTree, npmTestTree, servantTestTree]
+  routingTestTree <- testSpec "Routing Tests" $ routingSpec enableExternalTests
+  npmTestTree <- testSpec "NPM Tests" $ npmSpec enableExternalTests
+  return $
+    localOption TreatPendingAsSuccess $
+      testGroup "Tests" [routingTestTree, npmTestTree, servantTestTree]
