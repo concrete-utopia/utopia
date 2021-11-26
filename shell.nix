@@ -169,14 +169,14 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${cabal}/bin/cabal new-update 'hackage.haskell.org,2021-06-09T12:43:34Z'
+      ${cabal}/bin/cabal new-update 'hackage.haskell.org,2021-11-26T13:12:52Z'
     '')
     (pkgs.writeScriptBin "test-server-inner" ''
       #!/usr/bin/env bash
       set -e
       rebuild-cabal
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${cabal}/bin/cabal new-test --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web-test
+      nix-shell --run "${cabal}/bin/cabal new-test --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web-test"
     '')
     (pkgs.writeScriptBin "test-server" ''
       #!/usr/bin/env bash
@@ -247,7 +247,7 @@ let
     (pkgs.writeScriptBin "create-db" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       PGLOCK_DIR="`pwd`/.pglock/"
       echo "Ignore previous line about database not existing." > pglog.txt
       ${postgres}/bin/createdb -e -h "$PGLOCK_DIR" utopia
@@ -256,7 +256,7 @@ let
       #!/usr/bin/env bash
       stop-postgres
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       PGLOCK_DIR="`pwd`/.pglock/"
       [ ! -d "utopia-db" ] && ${postgres}/bin/initdb -D utopia-db
       mkdir -p $PGLOCK_DIR
@@ -267,14 +267,14 @@ let
       #!/usr/bin/env bash
       stop-postgres
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       start-postgres-background
       tail -f pglog.txt
     '')
     (pkgs.writeScriptBin "stop-postgres" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       PGLOCK_DIR="`pwd`/.pglock/"
       mkdir -p $PGLOCK_DIR
       ${postgres}/bin/pg_ctl -D utopia-db stop 
@@ -282,7 +282,7 @@ let
     (pkgs.writeScriptBin "run-psql" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       PGLOCK_DIR="`pwd`/.pglock/"
       mkdir -p $PGLOCK_DIR
       ${postgres}/bin/psql -h "$PGLOCK_DIR" -d utopia
@@ -306,7 +306,7 @@ let
       rebuild-cabal
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       pkill utopia-web || true
-      ${cabal}/bin/cabal new-run -j --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N -c
+      nix-shell --run "${cabal}/bin/cabal new-run -j --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web -- +RTS -N -c"
     '')
     (pkgs.writeScriptBin "run-server" ''
       #!/usr/bin/env bash
