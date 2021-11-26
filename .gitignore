@@ -127,9 +127,12 @@ editor/src/components/editor/npm-dependency/utopia-api-typings.ts
 .github-test-projects
 
 # Database.
-server/pglog.txt
-server/.pglock
-server/utopia-db
+pglog.txt
+.pglock
+utopia-db
+
+# Nix builds.
+server-build-result
 
 # Docker Dev Environment
 docker-dev-env/*.nix

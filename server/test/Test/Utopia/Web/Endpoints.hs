@@ -23,6 +23,7 @@ import           Network.HTTP.Types             (Status, badRequest400,
                                                  notFound404)
 import qualified Network.Socket.Wait            as W
 import           Protolude
+import           Prelude (String)
 import           Servant
 import           Servant.Client
 import           Servant.Client.Core
@@ -170,9 +171,15 @@ setBodyAsText = setRequestBody (RequestBodyBS textBytes) textMediaType
 validAuthenticate :: ClientM (Headers '[Header "Set-Cookie" SetCookie] Text)
 validAuthenticate = authenticateClient (Just "logmein") (Just "auto-close")
 
-updateAssetPathSpec :: Spec
-updateAssetPathSpec = around_ withServer $ do
-  describe "PUT v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
+databaseAround :: HasCallStack => Bool -> ((String -> SpecWith a -> SpecWith a) -> SpecWith a) -> SpecWith a
+databaseAround enableExternalTests specDefinition = do
+  if enableExternalTests
+    then around_ withServer $ specDefinition describe
+    else specDefinition xdescribe
+
+updateAssetPathSpec :: Bool -> Spec
+updateAssetPathSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
+  describeFn "PUT v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
     it "should update the asset path" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       -- Create a project, save an asset, rename it and try to load it from the new path.
@@ -198,9 +205,9 @@ updateAssetPathSpec = around_ withServer $ do
         (Left _)                            -> expectationFailure "Unexpected response type."
         (Right _)                           -> expectationFailure "Unexpected successful response."
 
-deleteAssetSpec :: Spec
-deleteAssetSpec = around_ withServer $ do
-  describe "DELETE v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
+deleteAssetSpec :: Bool -> Spec
+deleteAssetSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
+  describeFn "DELETE v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
     it "should delete the asset" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       let projectContents = toJSON
                           $ M.singleton ("storyboard.js" :: Text)
@@ -224,9 +231,9 @@ deleteAssetSpec = around_ withServer $ do
         (Left _)                            -> expectationFailure "Unexpected response type."
         (Right _)                           -> expectationFailure "Unexpected successful response."
 
-saveUserConfigurationSpec :: Spec
-saveUserConfigurationSpec = around_ withServer $ do
-  describe "GET v1/user/config" $ do
+saveUserConfigurationSpec :: Bool -> Spec
+saveUserConfigurationSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
+  describeFn "GET v1/user/config" $ do
     it "should return an empty result when nothing has been set" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       userConfig <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
@@ -242,9 +249,9 @@ saveUserConfigurationSpec = around_ withServer $ do
         getUserConfigurationClient cookieHeader
       (userConfig ^? _Right) `shouldBe` (Just $ UserConfigurationResponse shortcutConf)
 
-projectsSpec :: Spec
-projectsSpec = around_ withServer $ do
-  describe "GET /authenticate" $ do
+projectsSpec :: Bool -> Spec
+projectsSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
+  describeFn "GET /authenticate" $ do
     it "should set a cookie for valid login" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       result <- runClientM validAuthenticate clientEnv
       traverse_ (\l -> putText $ show l) $ lefts [result]
@@ -252,7 +259,7 @@ projectsSpec = around_ withServer $ do
       httpCookieJar <- readTVarIO cookieJarTVar
       let cookies = destroyCookieJar httpCookieJar
       length cookies `shouldBe` 1
-  describe "GET /project/{project_id}/owner" $ do
+  describeFn "GET /project/{project_id}/owner" $ do
     it "return the owner of the project" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       projectOwnerResponse <- withClientEnv clientEnv $ do
@@ -263,7 +270,7 @@ projectsSpec = around_ withServer $ do
         _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
         projectOwnerClient cookieHeader projectId
       (projectOwnerResponse ^? _Right . isOwner) `shouldBe` Just True
-  describe "GET /projects" $ do
+  describeFn "GET /projects" $ do
     it "return an empty list of projects when nothing has been added" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectListingResponse <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
@@ -282,7 +289,7 @@ projectsSpec = around_ withServer $ do
         return $ (projectId, listing)
       ((ProjectIdWithSuffix projectId _), listing) <- either throwIO return projectIdAndListingResult
       (listing ^.. projects . traverse . field @"_id") `shouldBe` [projectId]
-  describe "GET /showcase" $ do
+  describeFn "GET /showcase" $ do
     it "return an empty list of projects when nothing has been added" $ withClientAndCookieJar $ \(clientEnv, _) -> do
       projectListingResponse <- (flip runClientM) clientEnv $ do
         getShowcaseClient
@@ -300,7 +307,7 @@ projectsSpec = around_ withServer $ do
         return $ (projectId, listing)
       (projectId, listing) <- either throwIO return projectIdAndListingResult
       (listing ^.. projects . traverse . field @"_id") `shouldBe` [toUrlPiece projectId]
-  describe "GET /project/{project_id}" $ do
+  describeFn "GET /project/{project_id}" $ do
     it "returns the not changed result if the last updated data is the same" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       earlyTime <- getCurrentTime
@@ -318,7 +325,7 @@ projectsSpec = around_ withServer $ do
       (projectId, firstLoad, secondLoad) <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents firstLoad) `shouldBe` (Just ("My Project", projectContents))
       secondLoad `shouldBe` (ProjectUnchanged $ toUrlPiece projectId)
-  describe "GET /project/{project_id}/{file_path} (using the sample project)" $ do
+  describeFn "GET /project/{project_id}/{file_path} (using the sample project)" $ do
     it "should return the contents of the file if it is a text file" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       fileFromPathResult <- withClientEnv clientEnv $ do
@@ -383,7 +390,7 @@ projectsSpec = around_ withServer $ do
         loadProjectFileClient projectId Nothing ["text.txt"] identity
       fileFromPath <- either throwIO return fileFromPathResult
       (responseBody fileFromPath) `shouldBe` (BL.fromStrict textBytes)
-  describe "POST /project" $ do
+  describeFn "POST /project" $ do
     it "should create a project if a request body is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
       projectContents <- getSampleProject
@@ -420,7 +427,7 @@ projectsSpec = around_ withServer $ do
         loadProjectClient cookieHeader forkedProjectId (Just earlyTime)
       loadedProject <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents loadedProject) `shouldBe` (Just ("My Project", projectContents))
-  describe "PUT /project" $ do
+  describeFn "PUT /project" $ do
     it "should update a project's contents if the project contents are supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
       firstProjectContents <- getSampleProject
@@ -448,7 +455,7 @@ projectsSpec = around_ withServer $ do
         loadProjectClient cookieHeader projectId (Just earlyTime)
       loadedProject <- either throwIO return loadedProjectResult
       (getLoadedTitleAndContents loadedProject) `shouldBe` Just ("Best Project Ever", projectContents)
-  describe "DELETE /project" $ do
+  describeFn "DELETE /project" $ do
     it "should delete a project" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       earlyTime <- getCurrentTime
       projectContents <- getSampleProject
@@ -467,9 +474,9 @@ projectsSpec = around_ withServer $ do
       loadedProjectResult `shouldSatisfy` errorWithStatusCode notFound404
       projectListingResponse `shouldBe` (Right $ ProjectListResponse [])
 
-routingSpec :: Spec
-routingSpec = do
-  projectsSpec
-  updateAssetPathSpec
-  deleteAssetSpec
-  saveUserConfigurationSpec
+routingSpec :: Bool -> Spec
+routingSpec enableExternalTests = do
+  projectsSpec enableExternalTests
+  updateAssetPathSpec enableExternalTests
+  deleteAssetSpec enableExternalTests
+  saveUserConfigurationSpec enableExternalTests

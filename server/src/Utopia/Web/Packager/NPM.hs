@@ -118,14 +118,14 @@ withInstalledProject logger NPMMetrics{..} semaphore versionedPackageName withIn
   let deleteDir = ignoringIOErrors . removeDirectoryRecursive
   bracketP createDir deleteDir $ \tempDir -> do
     -- Run `npm install "packageName@packageVersion"`.
-    let baseProc = proc "npm" ["install", "--silent", "--ignore-scripts", "--omit", "peer", toS versionedPackageName]
+    let baseProc = proc "yarn" ["add", "--silent", "--ignore-scripts", toS versionedPackageName]
     let procWithCwd = baseProc { cwd = Just tempDir, env = Just [("NODE_OPTIONS", "--max_old_space_size=256")] }
     liftIO $ withSemaphore semaphore $ do
-      loggerLn logger ("Starting NPM Install: " <> toLogStr versionedPackageName)
+      loggerLn logger ("Starting Yarn Add: " <> toLogStr versionedPackageName)
       _ <- invokeAndMeasure npmInstallMetric $
           addInvocationDescription npmInstallMetric ("NPM install for " <> versionedPackageName) $
           readCreateProcess procWithCwd ""
-      loggerLn logger ("NPM Install Finished: " <> toLogStr versionedPackageName)
+      loggerLn logger ("Yarn Add Finished: " <> toLogStr versionedPackageName)
     -- Invoke action against path.
     withInstalledPath tempDir
 
