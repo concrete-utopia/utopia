@@ -12,13 +12,14 @@ import {
   ParseResult,
   parseAlternative,
   parseObject,
-  parseNullable,
+  parseFalse,
 } from '../../../utils/value-parser-utils'
 import {
   applicative3Either,
   applicative4Either,
   Either,
   foldEither,
+  isLeft,
   isRight,
   left,
   right,
@@ -209,7 +210,7 @@ interface PartialPackageJsonDefinition {
   name?: string
   main?: string
   module?: string
-  browser?: string | MapLike<string | null>
+  browser?: string | MapLike<string | false>
 }
 
 export function parsePartialPackageJsonDefinition(
@@ -228,8 +229,16 @@ export function parsePartialPackageJsonDefinition(
     optionalObjectKeyParser(parseString, 'main')(value),
     optionalObjectKeyParser(parseString, 'module')(value),
     optionalObjectKeyParser(
-      parseAlternative<string | MapLike<string | null>>(
-        [parseString, parseObject(parseNullable(parseString))],
+      parseAlternative<string | MapLike<string | false>>(
+        [
+          parseString,
+          parseObject(
+            parseAlternative<string | false>(
+              [parseString, parseFalse],
+              `package.browser replacement entries must be either string or 'false' for ignoring a package`,
+            ),
+          ),
+        ],
         'package.browser field must either be a string or an object with type {[key: string]: string}',
       ),
       'browser',
@@ -252,7 +261,7 @@ function processPackageJson(
     (_) => resolveNotPresent,
     (packageJson) => {
       const moduleName: string | null = packageJson.name ?? null
-      const browserEntry: string | MapLike<string | null> | null = packageJson.browser ?? null
+      const browserEntry: string | MapLike<string | false> | null = packageJson.browser ?? null
       const mainEntry: string | null = packageJson.main ?? null
       const moduleEntry: string | null = packageJson.module ?? null
 
@@ -398,15 +407,15 @@ function resolveModuleInternal(
 }
 
 function applyBrowserFieldReplacements(
-  browserField: MapLike<string | null>,
+  browserField: MapLike<string | false>,
   toImport: string,
-): string | null {
+): Either<boolean, string> {
   // The pkg.browser field can contain potential substitutions https://github.com/defunctzombie/package-browser-field-spec
   if (toImport in browserField) {
     const replacement = browserField[toImport]
-    if (replacement == null) {
+    if (replacement === false) {
       // special case, null substitution means ignoring a module, resolving it as null
-      return null
+      return left(false)
     } else {
       // the browser field is sneaky and supports recursive replacements
       return applyBrowserFieldReplacements(browserField, replacement)
@@ -414,14 +423,14 @@ function applyBrowserFieldReplacements(
   }
 
   // we couldn't find any replacements, return the original toImport string
-  return toImport
+  return right(toImport)
 }
 
 function findSubstitutionsForImport(
   fileLookupFn: FileLookupFn,
   importOrigin: string,
   toImport: string,
-): string | null {
+): Either<boolean, string> {
   const originPackageJson = findPackageJsonForPath(fileLookupFn, getPartsFromPath(importOrigin))
   if (isResolveSuccess(originPackageJson) && isEsCodeFile(originPackageJson.success.file)) {
     try {
@@ -440,7 +449,7 @@ function findSubstitutionsForImport(
     }
   }
   // Fail fallback – we couldn't find a substitution
-  return toImport
+  return right(toImport)
 }
 
 function resolveModuleAndApplySubstitutions(
@@ -454,16 +463,17 @@ function resolveModuleAndApplySubstitutions(
     projectContentsFileLookup(projectContents),
   ])
 
-  const substitutedImport: string | null = findSubstitutionsForImport(
+  const substitutedImport: Either<boolean, string> = findSubstitutionsForImport(
     lookupFn,
     importOrigin,
     toImport,
   )
-  if (substitutedImport == null) {
+
+  if (isLeft(substitutedImport)) {
     return resolveSuccessIgnoreModule
+  } else {
+    return resolveModuleInternal(lookupFn, importOrigin, substitutedImport.value)
   }
-  const resolution = resolveModuleInternal(lookupFn, importOrigin, substitutedImport)
-  return resolution
 }
 
 export function resolveModule(

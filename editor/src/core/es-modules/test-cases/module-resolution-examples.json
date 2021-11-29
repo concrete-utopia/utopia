@@ -221,7 +221,7 @@
       "requires": []
     },
     "/node_modules/module-with-browser-replacements-ignore-module/package.json": {
-      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"some-module\": null}}",
+      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"some-module\": false}}",
       "isModule": false,
       "requires": []
     },
