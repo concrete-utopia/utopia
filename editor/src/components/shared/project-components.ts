@@ -343,12 +343,29 @@ export function getComponentGroups(
               ),
             )
           }
-          return insertableComponent(
-            exportedComponent.importsToAdd,
-            jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
-            exportedComponent.listingName,
-            stylePropOptions,
-          )
+
+          const propertyControlsForDependency =
+            propertyControlsInfo[fullPath] ?? propertyControlsInfo[pathWithoutExtension]
+          if (
+            propertyControlsForDependency != null &&
+            propertyControlsForDependency[exportedComponent.listingName] != null
+          ) {
+            const descriptor = propertyControlsForDependency[exportedComponent.listingName]
+
+            return insertableComponent(
+              descriptor.componentInfo.importsToAdd,
+              descriptor.componentInfo.elementToInsert,
+              exportedComponent.listingName,
+              stylePropOptions,
+            )
+          } else {
+            return insertableComponent(
+              exportedComponent.importsToAdd,
+              jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
+              exportedComponent.listingName,
+              stylePropOptions,
+            )
+          }
         })
         result.push(
           insertableComponentGroup(
