@@ -81,9 +81,19 @@ export type UtopiaRequireFn = (
 
 export type CurriedUtopiaRequireFn = (projectContents: ProjectContentTreeRoot) => UtopiaRequireFn
 
+export type ComponentInfo = {
+  insertMenuLabel: string
+  elementToInsert: JSXElementWithoutUID
+  importsToAdd: Imports
+}
+
 export type ComponentDescriptor = {
   propertyControls: ParseResult<ParsedPropertyControls>
-  componentInfo: { importsToAdd: Imports; elementToInsert: JSXElementWithoutUID }
+  insertOptions: ComponentInfo[]
+}
+
+export type ComponentDescriptorWithName = ComponentDescriptor & {
+  componentName: string
 }
 
 export type ComponentDescriptorsForFile = {
