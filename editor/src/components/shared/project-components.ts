@@ -337,22 +337,39 @@ export function getComponentGroups(
             },
             parsedControls,
           )
-          let attributes: JSXAttributes = []
-          for (const key of Object.keys(defaultProps)) {
-            attributes.push(
-              jsxAttributesEntry(
-                key,
-                jsxAttributeValue(defaultProps[key], emptyComments),
-                emptyComments,
-              ),
+
+          const propertyControlsForDependency =
+            propertyControlsInfo[fullPath] ?? propertyControlsInfo[pathWithoutExtension]
+          if (
+            propertyControlsForDependency != null &&
+            propertyControlsForDependency[exportedComponent.listingName] != null
+          ) {
+            const descriptor = propertyControlsForDependency[exportedComponent.listingName]
+
+            return insertableComponent(
+              descriptor.componentInfo.importsToAdd,
+              descriptor.componentInfo.elementToInsert,
+              exportedComponent.listingName,
+              stylePropOptions,
+            )
+          } else {
+            let attributes: JSXAttributes = []
+            for (const key of Object.keys(defaultProps)) {
+              attributes.push(
+                jsxAttributesEntry(
+                  key,
+                  jsxAttributeValue(defaultProps[key], emptyComments),
+                  emptyComments,
+                ),
+              )
+            }
+            return insertableComponent(
+              exportedComponent.importsToAdd,
+              jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
+              exportedComponent.listingName,
+              stylePropOptions,
             )
           }
-          return insertableComponent(
-            exportedComponent.importsToAdd,
-            jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
-            exportedComponent.listingName,
-            stylePropOptions,
-          )
         })
         result.push(
           insertableComponentGroup(
