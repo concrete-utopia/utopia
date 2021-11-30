@@ -1,25 +1,33 @@
 {
-  "registerComponent": {
-    "prefix": "registerComponent",
-    "body": ["registerComponent"],
-    "description": "Register Component Import"
+  "registerModule": {
+    "prefix": "registerModule",
+    "body": ["registerModule"],
+    "description": "Register Module Import"
   },
-  "registerComponent({...})": {
-    "prefix": "registerComponent({...})",
+  "registerModule(...)": {
+    "prefix": "registerModule(...)",
     "body": [
-      "registerComponent({",
-      "  name: '${1}', // name is what appears in the insertion list",
-      "  moduleName: '${2}', // name of module, or relative file path",
-      "  controls: {",
-      "    replaceMe: {",
-      "      control: 'string-input',",
-      "      label: 'placeholder control'",
+      "registerModule(",
+      "  '${1:${TM_FILEPATH/~(.*)\\..+$/$1/}}', // module name or absolute file path",
+      "  {",
+      "    ${2:ComponentName}: {",
+      "      controls: { // property controls",
+      "        replaceMe: {",
+      "          control: 'string-input',",
+      "          label: 'placeholder control'",
+      "        },",
+      "      },",
+      "      insertOptions: [ // each option appears in the insert menu",
+      "        {",
+      "          menuLabel: '${2:ComponentName}', // label to use in the insert menu, optional",
+      "          codeToInsert: '<${2:ComponentName} />',",
+      "          // additionalRequiredImports: `import '/src/styles.css';`, // optional",
+      "        },",
+      "      ],",
       "    },",
-      "  }, // property controls",
-      "  insert: '<${1} />', // `<Button label='Click Me!' />`",
-      "  requiredImports: `import { ${1} } from '${2}';` // `import { Button } from 'my-app';` ",
-      "})"
+      "  }",
+      ")"
     ],
-    "description": "Register Component Function Body"
+    "description": "Register Module Function Body"
   }
 }
