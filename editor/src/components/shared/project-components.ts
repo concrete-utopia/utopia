@@ -302,7 +302,8 @@ export function getComponentGroups(
         file.fileContents.parsed,
       )
       if (possibleExportedComponents != null) {
-        const insertableComponents = possibleExportedComponents.map((exportedComponent) => {
+        let insertableComponents: Array<InsertableComponent> = []
+        fastForEach(possibleExportedComponents, (exportedComponent) => {
           const pathWithoutExtension = dropFileExtension(fullPath)
           const { defaultProps, parsedControls } = defaultPropertiesForComponentInFile(
             exportedComponent.listingName,
@@ -345,13 +346,16 @@ export function getComponentGroups(
             propertyControlsForDependency[exportedComponent.listingName] != null
           ) {
             const descriptor = propertyControlsForDependency[exportedComponent.listingName]
-
-            return insertableComponent(
-              descriptor.componentInfo.importsToAdd,
-              descriptor.componentInfo.elementToInsert,
-              exportedComponent.listingName,
-              stylePropOptions,
-            )
+            fastForEach(descriptor.insertOptions, (insertOption) => {
+              insertableComponents.push(
+                insertableComponent(
+                  insertOption.importsToAdd,
+                  insertOption.elementToInsert,
+                  insertOption.insertMenuLabel,
+                  stylePropOptions,
+                ),
+              )
+            })
           } else {
             let attributes: JSXAttributes = []
             for (const key of Object.keys(defaultProps)) {
@@ -363,11 +367,13 @@ export function getComponentGroups(
                 ),
               )
             }
-            return insertableComponent(
-              exportedComponent.importsToAdd,
-              jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
-              exportedComponent.listingName,
-              stylePropOptions,
+            insertableComponents.push(
+              insertableComponent(
+                exportedComponent.importsToAdd,
+                jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
+                exportedComponent.listingName,
+                stylePropOptions,
+              ),
             )
           }
         })
@@ -405,7 +411,7 @@ export function getComponentGroups(
           insertableComponent(
             insertOption.importsToAdd,
             insertOption.elementToInsert,
-            componentName,
+            insertOption.insertMenuLabel,
             stylePropOptions,
           ),
         )
