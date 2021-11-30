@@ -5,7 +5,12 @@ import {
   isEsRemoteDependencyPlaceholder,
 } from '../../shared/project-file-types'
 import { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
-import { isResolveSuccess, resolveModule, resolveModulePath } from './module-resolution'
+import {
+  isResolveSuccess,
+  isResolveSuccessIgnoreModule,
+  resolveModule,
+  resolveModulePath,
+} from './module-resolution'
 import { evaluator } from '../evaluator/evaluator'
 import { fetchMissingFileDependency } from './fetch-packages'
 import { EditorDispatch } from '../../../components/editor/action-types'
@@ -79,7 +84,12 @@ export function getRequireFn(
     }
 
     const resolveResult = resolveModule(projectContents, nodeModules, importOrigin, toImport)
-    if (isResolveSuccess(resolveResult)) {
+
+    if (isResolveSuccessIgnoreModule(resolveResult)) {
+      // we found an "ignored module" https://github.com/defunctzombie/package-browser-field-spec#ignore-a-module
+      // the return value is an empty object
+      return {}
+    } else if (isResolveSuccess(resolveResult)) {
       const resolvedPath = resolveResult.success.path
       const resolvedFile = resolveResult.success.file
 

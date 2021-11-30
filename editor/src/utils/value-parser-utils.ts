@@ -267,6 +267,14 @@ export function parseBoolean(value: unknown): ParseResult<boolean> {
   }
 }
 
+export function parseFalse(value: unknown): ParseResult<false> {
+  if (typeof value === 'boolean' && value === false) {
+    return right(value)
+  } else {
+    return left(descriptionParseError('Not a boolean false.'))
+  }
+}
+
 export function parseNumber(value: unknown): ParseResult<number> {
   if (typeof value === 'number') {
     return right(value)

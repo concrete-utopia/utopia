@@ -46,6 +46,9 @@ export function getDirectReverseDependencies(
             case 'RESOLVE_NOT_PRESENT':
               // Do nothing for now...
               break
+            case 'RESOLVE_SUCCESS_IGNORE_MODULE':
+              // Do nothing for now...
+              break
             default:
               const _exhaustiveCheck: never = resolveResult
               throw new Error(`Unhandled case ${JSON.stringify(resolveResult)}`)

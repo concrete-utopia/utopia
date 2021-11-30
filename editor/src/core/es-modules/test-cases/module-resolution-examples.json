@@ -165,6 +165,71 @@
       "isModule": false,
       "requires": []
     },
+    "/node_modules/module-with-browser-module-and-main-fields/package.json": {
+      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": \"index.browser.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-module-and-main-fields/index.browser.js": {
+      "content": "export const whoami = 'Browser';",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/other-module/package.json": {
+      "content": "{\"name\": \"es-module-only-package\", \"main\": \"index.js\"}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/other-module/index.js": {
+      "content": "export const greeting = 'Hello Other Module!'",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements/package.json": {
+      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"./localFile.js\": \"./localFile.shim.js\", \"node-only-module\": \"other-module\", \"node-only-module-2\": \"./local.shim.js\"}}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements/local.shim.js": {
+      "content": "export const greeting = 'Hello Browser Shim!'",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements/localFile.shim.js": {
+      "content": "export const value = 'Browser!'",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements/index.module.js": {
+      "content": "import { value } from './localFile'; export const cica = value;",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements-chained/package.json": {
+      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"some-module\": \"other-module\", \"other-module\": \"./local-shim.js\"}}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements-chained/local-shim.js": {
+      "content": "export const value = 'local-shim for some-module chained through other-module'",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements-chained/index.module.js": {
+      "content": "import { value } from 'some-module'; export const cica = value;",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements-ignore-module/package.json": {
+      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"some-module\": false}}",
+      "isModule": false,
+      "requires": []
+    },
+    "/node_modules/module-with-browser-replacements-ignore-module/index.module.js": {
+      "content": "import { value } from 'some-module'; export const cica = value;",
+      "isModule": false,
+      "requires": []
+    },
     "my-package-with-package-root/src/deep-folder/moduleA.js": {
       "content": "exports.cica = 'kitten';",
       "isModule": false,
