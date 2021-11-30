@@ -1,4 +1,9 @@
-import { ImportType, PropertyControls, registerComponent as registerComponentAPI } from 'utopia-api'
+import {
+  ImportType,
+  PropertyControls,
+  registerComponent as registerComponentAPI,
+  RegisterComponentEntry,
+} from 'utopia-api'
 import deepEqual from 'fast-deep-equal'
 
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -9,12 +14,26 @@ import {
   EditorState,
   packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
-import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
-import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
-import { ParseResult } from '../../utils/value-parser-utils'
+import {
+  showToast,
+  updatePropertyControlsInfo,
+} from '../../components/editor/actions/action-creators'
+import {
+  parseControlDescription,
+  ParsedPropertyControls,
+  parsePropertyControls,
+} from './property-controls-parser'
+import {
+  getParseErrorDetails,
+  objectKeyParser,
+  parseObject,
+  ParseResult,
+  parseString,
+} from '../../utils/value-parser-utils'
 import { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
-import { isRight } from '../shared/either'
+import { applicative5Either, forEachLeft, forEachRight, isLeft, isRight } from '../shared/either'
+import { notice } from '../../components/common/notice'
 
 async function registerComponentInternal(
   dispatch: EditorDispatch,
@@ -64,31 +83,44 @@ async function registerComponentInternal(
   }
 }
 
+export function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControls> {
+  return parseObject(parseControlDescription)(value)
+}
+
+export function parseRegisterComponentEntry(value: unknown): ParseResult<RegisterComponentEntry> {
+  return applicative5Either(
+    (componentName, moduleName, controls, insert, requiredImports) => {
+      return {
+        name: componentName,
+        moduleName: moduleName,
+        controls: controls,
+        insert: insert,
+        requiredImports: requiredImports,
+      }
+    },
+    objectKeyParser(parseString, 'name')(value),
+    objectKeyParser(parseString, 'moduleName')(value),
+    objectKeyParser(fullyParsePropertyControls, 'controls')(value),
+    objectKeyParser(parseString, 'insert')(value),
+    objectKeyParser(parseString, 'requiredImports')(value),
+  )
+}
+
 export function createRegisterComponentFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
   workers: UtopiaTsWorkers | null,
 ): typeof registerComponentAPI {
   // create a function with a signature that matches utopia-api/registerComponent
-  return function registerComponent(paramsObj: {
-    name: string
-    moduleName: string
-    controls: PropertyControls
-    insert: string
-    requiredImports: string
-  }): void {
-    const { name, moduleName, controls, insert, requiredImports } = paramsObj
-    if (
-      name == null ||
-      moduleName == null ||
-      typeof controls !== 'object' ||
-      insert == null ||
-      requiredImports == null
-    ) {
-      console.warn(
-        'registerComponent has 5 parameters: component name, module name or path, property controls object, inserted element, required imports',
-      )
-    } else {
+  return function registerComponent(paramsObj: unknown): void {
+    const stackFrames = new Error().stack
+    const parseResult = parseRegisterComponentEntry(paramsObj)
+    if (isLeft(parseResult)) {
+      const errorDescription = getParseErrorDetails(parseResult.value).description
+      throw new Error(`registerComponent error: ${errorDescription}`)
+    }
+    forEachRight(parseResult, (registerComponentEntry) => {
+      const { name, moduleName, controls, insert, requiredImports } = registerComponentEntry
       if (workers != null) {
         registerComponentInternal(
           dispatch,
@@ -101,7 +133,7 @@ export function createRegisterComponentFunction(
           requiredImports,
         )
       }
-    }
+    })
   }
 }
 

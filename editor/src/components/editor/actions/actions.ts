@@ -481,7 +481,6 @@ import {
 } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { ShortcutConfiguration } from '../shortcut-definitions'
-import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import {

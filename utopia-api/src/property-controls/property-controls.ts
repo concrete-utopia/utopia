@@ -371,3 +371,11 @@ export function importNamed(source: string, name: string): ImportType {
     type: null,
   }
 }
+
+export interface RegisterComponentEntry {
+  name: string
+  moduleName: string
+  controls: PropertyControls
+  insert: string
+  requiredImports: string
+}
