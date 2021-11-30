@@ -70,7 +70,7 @@ export const TargetSelectorPanel = betterReactMemo(
       [targets, onStyleSelectorRename],
     )
 
-    const [isOpen, setIsOpen] = React.useState<boolean>(false)
+    const [isOpen, setIsOpen] = React.useState<boolean>(true)
 
     const onDeleteByIndex = React.useCallback(
       (index: number) => onStyleSelectorDelete(targets[index]),
