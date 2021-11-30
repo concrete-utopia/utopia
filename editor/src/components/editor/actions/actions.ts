@@ -4381,19 +4381,11 @@ export const UPDATE_FNS = {
     action: UpdatePropertyControlsInfo,
     editor: EditorState,
   ): EditorState => {
-    // Because we have multiple sources of propertyControlsInfo, we want to prevent this action from overwriting existing declarations with a {}
-    const propertyControlsToUpdate = objectMapDropNulls((infoForFile, filenameNoExtension) => {
-      if (Object.keys(infoForFile).length > 0) {
-        return infoForFile
-      } else {
-        return null
-      }
-    }, action.propertyControlsInfo)
     return {
       ...editor,
       propertyControlsInfo: {
         ...editor.propertyControlsInfo,
-        ...propertyControlsToUpdate,
+        ...action.propertyControlsInfo,
       },
     }
   },

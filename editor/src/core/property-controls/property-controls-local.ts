@@ -28,11 +28,16 @@ import { mapArrayToDictionary } from '../shared/array-utils'
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
   componentName: string,
+  moduleName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentInfo>> {
+  const allRequiredImports = `import { ${componentName} } from '${moduleName}'; ${
+    insertOption.additionalRequiredImports ?? ''
+  }`
+
   const parsedParams = await getCachedParseResultForUserStrings(
     workers,
-    insertOption.additionalRequiredImports ?? '',
+    allRequiredImports,
     insertOption.codeToInsert,
   )
 
@@ -45,14 +50,39 @@ async function parseInsertOption(
   }, parsedParams)
 }
 
+function insertOptionsForComponentToRegister(
+  componentToRegister: ComponentToRegister,
+  componentName: string,
+  moduleName: string,
+): Array<ComponentInsertOption> {
+  if (componentToRegister.insertOptions.length > 0) {
+    return componentToRegister.insertOptions
+  } else {
+    // If none provided, fall back to a default insert option
+    return [
+      {
+        menuLabel: componentName,
+        codeToInsert: `<${componentName} />`,
+      },
+    ]
+  }
+}
+
 async function componentDescriptorForComponentToRegister(
   componentToRegister: ComponentToRegister,
   componentName: string,
+  moduleName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
   const parsedPropertyControls = parsePropertyControls(componentToRegister.controls)
-  const parsedInsertOptionPromises = componentToRegister.insertOptions.map((insertOption) =>
-    parseInsertOption(insertOption, componentName, workers),
+  const unparsedInsertOptions = insertOptionsForComponentToRegister(
+    componentToRegister,
+    componentName,
+    moduleName,
+  )
+
+  const parsedInsertOptionPromises = unparsedInsertOptions.map((insertOption) =>
+    parseInsertOption(insertOption, componentName, moduleName, workers),
   )
 
   const parsedInsertOptionsUnsequenced = await Promise.all(parsedInsertOptionPromises)
@@ -77,7 +107,12 @@ async function registerModuleInternal(
   const componentNames = Object.keys(components)
   const componentDescriptorPromises = componentNames.map((componentName) => {
     const componentToRegister = components[componentName]
-    return componentDescriptorForComponentToRegister(componentToRegister, componentName, workers)
+    return componentDescriptorForComponentToRegister(
+      componentToRegister,
+      componentName,
+      moduleNameOrPath,
+      workers,
+    )
   })
 
   const componentDescriptorsUnsequenced = await Promise.all(componentDescriptorPromises)
