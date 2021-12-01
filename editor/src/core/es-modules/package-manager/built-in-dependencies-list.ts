@@ -10,8 +10,7 @@ import * as EmotionStyled from '@emotion/styled'
 import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
-import { PropertyControlsInfo } from '../../../components/custom-code/code-file'
-import { createRegisterComponentFunction } from '../../property-controls/property-controls-local'
+import { createRegisterModuleFunction } from '../../property-controls/property-controls-local'
 import type { EditorDispatch } from '../../../components/editor/action-types'
 import type { EditorState } from '../../../components/editor/store/editor-state'
 import { UtopiaTsWorkers } from '../../workers/common/worker-types'
@@ -59,7 +58,7 @@ export function createBuiltInDependenciesList(
 ): BuiltInDependencies {
   const UtopiaAPISpecial: typeof UtopiaAPI = {
     ...UtopiaAPI,
-    registerComponent: createRegisterComponentFunction(dispatch, getEditorState, workers),
+    registerModule: createRegisterModuleFunction(dispatch, getEditorState, workers),
   }
 
   // Ensure this is kept up to date with:

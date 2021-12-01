@@ -9,6 +9,9 @@ import {
   setJSXAttributesAttribute,
   jsxElement,
   emptyComments,
+  JSXAttributes,
+  JSXAttributesPart,
+  isJSXAttributesEntry,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -73,6 +76,7 @@ import {
 } from '../shared/project-components'
 import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { UTOPIA_UIDS_KEY } from '../../core/model/utopia-constants'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
@@ -115,16 +119,33 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
 export interface ComponentBeingInserted {
   importsToAdd: Imports
   elementName: JSXElementName
+  props: JSXAttributes
 }
 
 export function componentBeingInserted(
   importsToAdd: Imports,
   elementName: JSXElementName,
+  props: JSXAttributes,
 ): ComponentBeingInserted {
   return {
     importsToAdd: importsToAdd,
     elementName: elementName,
+    props: props,
   }
+}
+
+function isUidProp(prop: JSXAttributesPart): boolean {
+  return isJSXAttributesEntry(prop) && prop.key === UTOPIA_UIDS_KEY
+}
+
+const isNonUidProp = (prop: JSXAttributesPart) => !isUidProp(prop)
+
+function nonUidPropsEqual(l: JSXAttributes, r: JSXAttributes): boolean {
+  const nonUidL = l.filter(isNonUidProp)
+  const nonUidR = r.filter(isNonUidProp)
+  return (
+    nonUidL.length === nonUidR.length && nonUidL.every((v, i) => isUidProp(v) || nonUidR[i] === v)
+  )
 }
 
 export function componentBeingInsertedEquals(
@@ -139,35 +160,12 @@ export function componentBeingInsertedEquals(
     } else {
       return (
         importsEquals(first.importsToAdd, second.importsToAdd) &&
-        jsxElementNameEquals(first.elementName, second.elementName)
+        jsxElementNameEquals(first.elementName, second.elementName) &&
+        nonUidPropsEqual(first.props, second.props)
       )
     }
   }
 }
-
-const divComponentBeingInserted = componentBeingInserted({}, jsxElementName('div', []))
-
-const imageComponentBeingInserted = componentBeingInserted({}, jsxElementName('img', []))
-
-const textComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
-  jsxElementName('Text', []),
-)
-
-const ellipseComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
-  jsxElementName('Ellipse', []),
-)
-
-const rectangleComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
-  jsxElementName('Rectangle', []),
-)
-
-const animatedDivComponentBeingInserted = componentBeingInserted(
-  { 'react-spring': importDetails(null, [importAlias('animated')], null) },
-  jsxElementName('animated', ['div']),
-)
 
 class InsertMenuInner extends React.Component<InsertMenuProps> {
   shouldComponentUpdate(nextProps: InsertMenuProps) {
@@ -276,6 +274,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         currentlyBeingInserted = componentBeingInserted(
           insertionSubject.importsToAdd,
           insertionSubject.element.name,
+          insertionSubject.element.props,
         )
       }
     }
@@ -339,7 +338,11 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                   label={component.name}
                   selected={componentBeingInsertedEquals(
                     currentlyBeingInserted,
-                    componentBeingInserted(component.importsToAdd, component.element.name),
+                    componentBeingInserted(
+                      component.importsToAdd,
+                      component.element.name,
+                      component.element.props,
+                    ),
                   )}
                   // eslint-disable-next-line react/jsx-no-bind
                   onMouseDown={insertItemOnMouseDown}

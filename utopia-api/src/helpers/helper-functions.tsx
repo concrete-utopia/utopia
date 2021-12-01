@@ -1,13 +1,20 @@
 import { PropertyControls, ImportType } from '../property-controls/property-controls'
-import { testImage } from './test-assets'
 
-export function registerComponent(paramsObj: {
-  name: string
-  moduleName: string
+export interface ComponentInsertOption {
+  codeToInsert: string
+  additionalRequiredImports?: string
+  menuLabel?: string
+}
+
+export interface ComponentToRegister {
   controls: PropertyControls
-  insert: string
-  requiredImports: string
-}): void {
+  insertOptions: Array<ComponentInsertOption>
+}
+
+export function registerModule(
+  moduleName: string,
+  components: { [componentName: string]: ComponentToRegister },
+): void {
   // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
 }
 

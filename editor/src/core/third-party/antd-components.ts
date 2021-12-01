@@ -24,30 +24,33 @@ function createBasicComponent(
   const defaultAttributes = getDefaultPropsAsAttributesFromParsedControls(parsedControls)
   return {
     propertyControls: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
-    componentInfo: {
-      importsToAdd: {
-        antd: {
-          importedWithName: null,
-          importedFromWithin: [
-            {
-              name: baseVariable,
-              alias: baseVariable,
-            },
-          ],
-          importedAs: null,
+    insertOptions: [
+      {
+        insertMenuLabel: [baseVariable, ...propertyPathParts].join('.'),
+        importsToAdd: {
+          antd: {
+            importedWithName: null,
+            importedFromWithin: [
+              {
+                name: baseVariable,
+                alias: baseVariable,
+              },
+            ],
+            importedAs: null,
+          },
+          'antd/dist/antd.css': {
+            importedWithName: null,
+            importedFromWithin: [],
+            importedAs: null,
+          },
         },
-        'antd/dist/antd.css': {
-          importedWithName: null,
-          importedFromWithin: [],
-          importedAs: null,
-        },
+        elementToInsert: jsxElementWithoutUID(
+          jsxElementName(baseVariable, propertyPathParts),
+          defaultAttributes,
+          [],
+        ),
       },
-      elementToInsert: jsxElementWithoutUID(
-        jsxElementName(baseVariable, propertyPathParts),
-        defaultAttributes,
-        [],
-      ),
-    },
+    ],
   }
 }
 

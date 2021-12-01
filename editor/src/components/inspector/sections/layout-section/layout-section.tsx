@@ -1,6 +1,5 @@
 import React from 'react'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
-import { SelfLayoutSubsection } from './self-layout-subsection/self-layout-subsection-old'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import { betterReactMemo } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -38,24 +37,6 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
 
   const dispatch = useEditorState((store) => store.dispatch, 'LayoutSection dispatch')
 
-  const selfLayoutSection = isFeatureEnabled('Layout Section Experimental') ? (
-    <LayoutSubsection
-      position={specialSizeMeasurements.position}
-      parentLayoutSystem={specialSizeMeasurements.parentLayoutSystem}
-      parentFlexDirection={specialSizeMeasurements.parentFlexDirection}
-      aspectRatioLocked={props.aspectRatioLocked}
-      toggleAspectRatioLock={props.toggleAspectRatioLock}
-    />
-  ) : (
-    <SelfLayoutSubsection
-      position={specialSizeMeasurements.position}
-      isChildOfFlexComponent={specialSizeMeasurements.parentLayoutSystem === 'flex'}
-      parentFlexDirection={specialSizeMeasurements.parentFlexDirection}
-      aspectRatioLocked={props.aspectRatioLocked}
-      toggleAspectRatioLock={props.toggleAspectRatioLock}
-    />
-  )
-
   return (
     <div
       onMouseOver={() => {
@@ -65,7 +46,13 @@ export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSect
         dispatch([setInspectorLayoutSectionHovered(false)], 'everyone')
       }}
     >
-      {selfLayoutSection}
+      <LayoutSubsection
+        position={specialSizeMeasurements.position}
+        parentLayoutSystem={specialSizeMeasurements.parentLayoutSystem}
+        parentFlexDirection={specialSizeMeasurements.parentFlexDirection}
+        aspectRatioLocked={props.aspectRatioLocked}
+        toggleAspectRatioLock={props.toggleAspectRatioLock}
+      />
       <LayoutSystemSubsection specialSizeMeasurements={specialSizeMeasurements} />
     </div>
   )

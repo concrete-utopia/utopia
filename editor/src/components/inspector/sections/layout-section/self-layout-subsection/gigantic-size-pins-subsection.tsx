@@ -28,7 +28,7 @@ import {
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { SelfLayoutTab } from './self-layout-subsection-old'
+import { SelfLayoutTab } from './self-layout-subsection'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   NumberInput,

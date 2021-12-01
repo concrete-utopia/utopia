@@ -1,8 +1,16 @@
-import { ImportType, PropertyControls, registerComponent as registerComponentAPI } from 'utopia-api'
+import {
+  registerModule as registerModuleAPI,
+  ComponentToRegister,
+  ComponentInsertOption,
+} from 'utopia-api'
 import deepEqual from 'fast-deep-equal'
-
 import { ProjectContentTreeRoot } from '../../components/assets'
-import { ComponentDescriptor, PropertyControlsInfo } from '../../components/custom-code/code-file'
+import {
+  ComponentDescriptorsForFile,
+  ComponentDescriptorWithName,
+  ComponentInfo,
+  PropertyControlsInfo,
+} from '../../components/custom-code/code-file'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import {
@@ -14,93 +22,141 @@ import { ParsedPropertyControls, parsePropertyControls } from './property-contro
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
-import { isRight } from '../shared/either'
+import { Either, isRight, mapEither, sequenceEither } from '../shared/either'
+import { mapArrayToDictionary } from '../shared/array-utils'
 
-async function registerComponentInternal(
+async function parseInsertOption(
+  insertOption: ComponentInsertOption,
+  componentName: string,
+  moduleName: string,
+  workers: UtopiaTsWorkers,
+): Promise<Either<string, ComponentInfo>> {
+  const allRequiredImports = `import { ${componentName} } from '${moduleName}'; ${
+    insertOption.additionalRequiredImports ?? ''
+  }`
+
+  const parsedParams = await getCachedParseResultForUserStrings(
+    workers,
+    allRequiredImports,
+    insertOption.codeToInsert,
+  )
+
+  return mapEither(({ importsToAdd, elementToInsert }) => {
+    return {
+      insertMenuLabel: insertOption.menuLabel ?? componentName,
+      elementToInsert: elementToInsert,
+      importsToAdd: importsToAdd,
+    }
+  }, parsedParams)
+}
+
+function insertOptionsForComponentToRegister(
+  componentToRegister: ComponentToRegister,
+  componentName: string,
+): Array<ComponentInsertOption> {
+  if (componentToRegister.insertOptions.length > 0) {
+    return componentToRegister.insertOptions
+  } else {
+    // If none provided, fall back to a default insert option
+    return [
+      {
+        menuLabel: componentName,
+        codeToInsert: `<${componentName} />`,
+      },
+    ]
+  }
+}
+
+async function componentDescriptorForComponentToRegister(
+  componentToRegister: ComponentToRegister,
+  componentName: string,
+  moduleName: string,
+  workers: UtopiaTsWorkers,
+): Promise<Either<string, ComponentDescriptorWithName>> {
+  const parsedPropertyControls = parsePropertyControls(componentToRegister.controls)
+  const unparsedInsertOptions = insertOptionsForComponentToRegister(
+    componentToRegister,
+    componentName,
+  )
+
+  const parsedInsertOptionPromises = unparsedInsertOptions.map((insertOption) =>
+    parseInsertOption(insertOption, componentName, moduleName, workers),
+  )
+
+  const parsedInsertOptionsUnsequenced = await Promise.all(parsedInsertOptionPromises)
+  const parsedInsertOptions = sequenceEither(parsedInsertOptionsUnsequenced)
+
+  return mapEither((insertOptions) => {
+    return {
+      componentName: componentName,
+      propertyControls: parsedPropertyControls,
+      insertOptions: insertOptions,
+    }
+  }, parsedInsertOptions)
+}
+
+async function registerModuleInternal(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
   workers: UtopiaTsWorkers,
-  componentName: string,
   moduleNameOrPath: string,
-  propertyControls: PropertyControls,
-  elementToInsert: string,
-  importsToAdd: string,
+  components: { [componentName: string]: ComponentToRegister },
 ) {
-  const parsedParams = await getCachedParseResultForUserStrings(
-    workers,
-    importsToAdd,
-    elementToInsert,
-  )
-  if (isRight(parsedParams)) {
-    const parsedPropertyControls = parsePropertyControls(propertyControls)
-    const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo
-    if (currentPropertyControlsInfo != null) {
-      const currentInfo: ComponentDescriptor | null =
-        currentPropertyControlsInfo[moduleNameOrPath]?.[componentName]
+  const componentNames = Object.keys(components)
+  const componentDescriptorPromises = componentNames.map((componentName) => {
+    const componentToRegister = components[componentName]
+    return componentDescriptorForComponentToRegister(
+      componentToRegister,
+      componentName,
+      moduleNameOrPath,
+      workers,
+    )
+  })
 
-      const newInfo: ComponentDescriptor = {
-        propertyControls: parsedPropertyControls,
-        componentInfo: {
-          importsToAdd: parsedParams.value.importsToAdd,
-          elementToInsert: parsedParams.value.elementToInsert,
-        },
-      }
-      const currentControlsAreTheSame = deepEqual(currentInfo, newInfo)
+  const componentDescriptorsUnsequenced = await Promise.all(componentDescriptorPromises)
+  const componentDescriptors = sequenceEither(componentDescriptorsUnsequenced)
+  if (isRight(componentDescriptors)) {
+    // FIXME At what point should we be caching / memoising this?
+    const newDescriptorsForFile: ComponentDescriptorsForFile = mapArrayToDictionary(
+      componentDescriptors.value,
+      (descriptorWithName) => descriptorWithName.componentName,
+      (descriptorWithName) => {
+        return {
+          propertyControls: descriptorWithName.propertyControls,
+          insertOptions: descriptorWithName.insertOptions,
+        }
+      },
+    )
+
+    const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo ?? {}
+    const currentDescriptorsForFile = currentPropertyControlsInfo[moduleNameOrPath] ?? {}
+
+    const descriptorsChanged = !deepEqual(currentDescriptorsForFile, newDescriptorsForFile)
+    if (descriptorsChanged) {
       const updatedPropertyControlsInfo: PropertyControlsInfo = {
-        [moduleNameOrPath]: {
-          ...currentPropertyControlsInfo[moduleNameOrPath],
-          [componentName]: newInfo,
-        },
+        [moduleNameOrPath]: newDescriptorsForFile,
       }
-      if (!currentControlsAreTheSame) {
-        // only dispatch if the control info is updated, to prevent a potential infinite loop of code re-evaluation
-        dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
-      }
+      dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
     }
   } else {
     console.error(
-      `There was a problem with 'registerComponent' ${componentName}: ${parsedParams.value}`,
+      `There was a problem with 'registerModule' ${moduleNameOrPath}: ${componentDescriptors.value}`,
     )
   }
 }
 
-export function createRegisterComponentFunction(
+export function createRegisterModuleFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
   workers: UtopiaTsWorkers | null,
-): typeof registerComponentAPI {
-  // create a function with a signature that matches utopia-api/registerComponent
-  return function registerComponent(paramsObj: {
-    name: string
-    moduleName: string
-    controls: PropertyControls
-    insert: string
-    requiredImports: string
-  }): void {
-    const { name, moduleName, controls, insert, requiredImports } = paramsObj
-    if (
-      name == null ||
-      moduleName == null ||
-      typeof controls !== 'object' ||
-      insert == null ||
-      requiredImports == null
-    ) {
-      console.warn(
-        'registerComponent has 5 parameters: component name, module name or path, property controls object, inserted element, required imports',
-      )
-    } else {
-      if (workers != null) {
-        registerComponentInternal(
-          dispatch,
-          getEditorState,
-          workers,
-          name,
-          moduleName,
-          controls,
-          insert,
-          requiredImports,
-        )
-      }
+): typeof registerModuleAPI {
+  // create a function with a signature that matches utopia-api/registerModule
+  return function registerModule(
+    moduleName: string,
+    components: { [componentName: string]: ComponentToRegister },
+  ): void {
+    if (workers != null) {
+      registerModuleInternal(dispatch, getEditorState, workers, moduleName, components)
     }
   }
 }
