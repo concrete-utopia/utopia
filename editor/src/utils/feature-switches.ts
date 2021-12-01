@@ -11,7 +11,6 @@ export type FeatureName =
   | 'Re-parse Project Button'
   | 'Performance Test Triggers'
   | 'Click on empty canvas unfocuses'
-  | 'Layout Section Experimental'
   | 'Insertion Plus Button'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -23,7 +22,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Re-parse Project Button',
   'Performance Test Triggers',
   'Click on empty canvas unfocuses',
-  'Layout Section Experimental',
   'Insertion Plus Button',
 ]
 
@@ -36,7 +34,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Re-parse Project Button': !(PRODUCTION_CONFIG as boolean),
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Click on empty canvas unfocuses': true,
-  'Layout Section Experimental': false,
   'Insertion Plus Button': true,
 }
 
