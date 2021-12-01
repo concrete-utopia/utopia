@@ -30,7 +30,8 @@ describe('Inserting imports into the parsed model', () => {
       import { Original as Renamed } from '/src/original'
       import { OtherCard } from '/src/card'
       import { OtherThing } from '/src/thing'
-      import { OtherOriginal } from '/src/original'
+      import { OtherOriginal as OtherRenamed } from '/src/original'
+      import * as Star from '/src/star'
       import '/src/styles.css'
       `,
       false,
@@ -54,8 +55,16 @@ describe('Inserting imports into the parsed model', () => {
       },
       '/src/original': {
         importedWithName: null,
-        importedFromWithin: [importAlias('Original', 'Renamed'), importAlias('OtherOriginal')],
+        importedFromWithin: [
+          importAlias('Original', 'Renamed'),
+          importAlias('OtherOriginal', 'OtherRenamed'),
+        ],
         importedAs: null,
+      },
+      '/src/star': {
+        importedWithName: null,
+        importedFromWithin: [],
+        importedAs: 'Star',
       },
       '/src/styles.css': {
         importedWithName: null,
