@@ -26,7 +26,7 @@ function createBasicComponent(
     propertyControls: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
     insertOptions: [
       {
-        insertMenuLabel: baseVariable,
+        insertMenuLabel: [baseVariable, ...propertyPathParts].join('.'),
         importsToAdd: {
           antd: {
             importedWithName: null,

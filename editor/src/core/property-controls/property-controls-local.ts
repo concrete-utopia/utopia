@@ -53,7 +53,6 @@ async function parseInsertOption(
 function insertOptionsForComponentToRegister(
   componentToRegister: ComponentToRegister,
   componentName: string,
-  moduleName: string,
 ): Array<ComponentInsertOption> {
   if (componentToRegister.insertOptions.length > 0) {
     return componentToRegister.insertOptions
@@ -78,7 +77,6 @@ async function componentDescriptorForComponentToRegister(
   const unparsedInsertOptions = insertOptionsForComponentToRegister(
     componentToRegister,
     componentName,
-    moduleName,
   )
 
   const parsedInsertOptionPromises = unparsedInsertOptions.map((insertOption) =>

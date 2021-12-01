@@ -12,7 +12,7 @@ describe('registered property controls', () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
-        import { Scene, Storyboard, View, registerComponent } from 'utopia-api'
+        import { Scene, Storyboard, View, registerModule } from 'utopia-api'
 
         export var App = (props) => {
           return (
@@ -20,24 +20,36 @@ describe('registered property controls', () => {
           )
         }
 
-        registerComponent({
-          name: 'App',
-          moduleName: '${storyboardPath}', 
-          controls: {
-            label: {
-              control: 'string-input',
+        registerModule(
+          '/src/card',
+          {
+            Card: {
+              controls: {
+                label: {
+                  control: 'string-input',
+                },
+                background: {
+                  control: 'color',
+                },
+                visible: {
+                  control: 'checkbox',
+                  defaultValue: true,
+                },
+              },
+              insertOptions: [
+                {
+                  codeToInsert: '<Card />',
+                  menuLabel: 'Card',
+                },
+                {
+                  codeToInsert: '<Card person={DefaultPerson} />',
+                  menuLabel: 'ID Card',
+                  additionalRequiredImports: "import { DefaultPerson } from '/src/defaults';",
+                },
+              ],
             },
-            background: {
-              control: 'color',
-            },
-            visible: {
-              control: 'checkbox',
-              defaultValue: true,
-            },
-          },
-          insert: '<Card  />',
-          requiredImports: 'import {Card} from "card"',
-        })
+          }
+        )
 
         export var storyboard = (props) => {
           return (
@@ -57,52 +69,147 @@ describe('registered property controls', () => {
     const renderResult = await renderTestEditorWithCode(testCode, 'dont-await-first-dom-report')
     const editorState = renderResult.getEditorState().editor
 
-    expect(editorState.propertyControlsInfo[storyboardPath]).toMatchInlineSnapshot(`
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
-        "App": Object {
-          "componentInfo": Object {
-            "elementToInsert": Object {
-              "children": Array [],
-              "name": Object {
-                "baseVariable": "Card",
-                "propertyPath": Object {
-                  "propertyElements": Array [],
-                },
-              },
-              "props": Array [
-                Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
+        "Card": Object {
+          "insertOptions": Array [
+            Object {
+              "elementToInsert": Object {
+                "children": Array [],
+                "name": Object {
+                  "baseVariable": "Card",
+                  "propertyPath": Object {
+                    "propertyElements": Array [],
                   },
-                  "key": "data-uid",
-                  "type": "JSX_ATTRIBUTES_ENTRY",
-                  "value": Object {
+                },
+                "props": Array [
+                  Object {
                     "comments": Object {
                       "leadingComments": Array [],
                       "trailingComments": Array [],
                     },
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": "fb0",
-                  },
-                },
-              ],
-              "type": "JSX_ELEMENT",
-              "uid": "fb0",
-            },
-            "importsToAdd": Object {
-              "card": Object {
-                "importedAs": null,
-                "importedFromWithin": Array [
-                  Object {
-                    "alias": "Card",
-                    "name": "Card",
+                    "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": "fb0",
+                    },
                   },
                 ],
-                "importedWithName": null,
+                "type": "JSX_ELEMENT",
+                "uid": "fb0",
               },
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "Card",
             },
-          },
+            Object {
+              "elementToInsert": Object {
+                "children": Array [],
+                "name": Object {
+                  "baseVariable": "Card",
+                  "propertyPath": Object {
+                    "propertyElements": Array [],
+                  },
+                },
+                "props": Array [
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "person",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
+                    "value": Object {
+                      "definedElsewhere": Array [
+                        "DefaultPerson",
+                      ],
+                      "elementsWithin": Object {},
+                      "javascript": "DefaultPerson",
+                      "sourceMap": Object {
+                        "file": "code.tsx",
+                        "mappings": "OAI2BA",
+                        "names": Array [
+                          "DefaultPerson",
+                        ],
+                        "sources": Array [
+                          "code.tsx",
+                        ],
+                        "sourcesContent": Array [
+                          "import { Card } from '/src/card'; import { DefaultPerson } from '/src/defaults';;
+
+             function Utopia$$$Component(props) {
+                return (
+                  <Card person={DefaultPerson} />
+                )
+               }",
+                        ],
+                        "version": 3,
+                      },
+                      "transpiledJavascript": "return DefaultPerson;",
+                      "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                      "uniqueID": "",
+                    },
+                  },
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": "8c0",
+                    },
+                  },
+                ],
+                "type": "JSX_ELEMENT",
+                "uid": "8c0",
+              },
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+                "/src/defaults": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "DefaultPerson",
+                      "name": "DefaultPerson",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "ID Card",
+            },
+          ],
           "propertyControls": Object {
             "type": "RIGHT",
             "value": Object {
