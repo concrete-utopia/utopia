@@ -1757,6 +1757,58 @@ export var storyboard = (
       `,
     )
   })
+
+  it('renders fine with a valid registerModule call', () => {
+    testCanvasRender(
+      null,
+      `
+      import * as React from 'react'
+      import { View, Storyboard, Scene, registerModule } from 'utopia-api'
+      
+      export var App = (props) => {
+        return (
+          <View
+            style={{ position: 'absolute', height: '99.9', width: '77.7' }}
+            data-uid={'aaa'}
+          >
+            <View style={{position: 'absolute'}} data-uid={'bbb'}>hi</View>
+          </View>
+        )
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      registerModule(
+        '/utopia/storyboard',
+        {
+          App: {
+            controls: {
+              test: {
+                control: 'checkbox'
+              }
+            },
+            insertOptions: [
+              {
+                codeToInsert: '<App />',
+              }
+            ]
+          }
+        }
+      )
+      `,
+    )
+  })
 })
 
 describe('UiJsxCanvas render multifile projects', () => {
