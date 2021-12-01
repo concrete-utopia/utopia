@@ -3,6 +3,9 @@ import Utils from './utils'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../core/shared/math-utils'
 import { longestCommonArray } from '../core/shared/utils'
 import fastDeepEquals from 'fast-deep-equal'
+
+// disabling jest/valid-expect because this file uses Chai.expect
+/* eslint-disable jest/valid-expect */
 const expect = Chai.expect
 
 describe('longestCommonArray', () => {

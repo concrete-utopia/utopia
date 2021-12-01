@@ -18,7 +18,7 @@ function nameForModuleLoader(moduleLoader: ModuleLoader): string {
   } else if (moduleLoader === SVGLoader) {
     return 'SVG Loader'
   } else {
-    fail('Invalid loader')
+    throw new Error('Invalid loader')
   }
 }
 

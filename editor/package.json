@@ -272,6 +272,7 @@
     "enzyme": "3.3.0",
     "eslint": "6.8.0",
     "eslint-config-prettier": "6.9.0",
+    "eslint-plugin-jest": "^25.3.0",
     "eslint-plugin-prettier": "3.1.2",
     "expect": "26.1.0",
     "fast-check": "1.15.0",

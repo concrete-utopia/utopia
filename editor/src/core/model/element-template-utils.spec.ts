@@ -81,13 +81,13 @@ describe('guaranteeUniqueUids', () => {
     const fixedElementProps = Utils.pathOr([], ['props'], fixedElement)
     const fixedElementUIDProp = getJSXAttribute(fixedElementProps, 'data-uid')
     if (fixedElementUIDProp == null) {
-      fail('Unable to find uid for element.')
+      throw new Error('Unable to find uid for element.')
     } else if (isJSXAttributeValue(fixedElementUIDProp)) {
       const fixedElementUID = (fixedElement as JSXElement).uid
       expect(fixedElementUID).toEqual(fixedElementUIDProp.value)
       expect(fixedElementUID).not.toEqual('')
     } else {
-      fail('fixedElementUIDProp is not a simple value')
+      throw new Error('fixedElementUIDProp is not a simple value')
     }
   })
 })

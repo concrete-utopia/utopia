@@ -2227,7 +2227,7 @@ describe('UiJsxCanvas render multifile projects', () => {
     `)
   })
 
-  it('renders a canvas with App imported from a file', () => {
+  it('renders a canvas with App imported from a file 2', () => {
     testCanvasErrorMultifile(
       null,
       `import * as React from 'react'

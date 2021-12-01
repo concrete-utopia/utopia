@@ -108,7 +108,7 @@ describe('JSX parser', () => {
         "
       `)
     } else {
-      fail(parseResult)
+      throw new Error(JSON.stringify(parseResult))
     }
   })
 })

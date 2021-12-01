@@ -436,7 +436,7 @@ describe('setJSXValueAtPath', () => {
       jsxAttributeValue(100, emptyComments),
     )
     if (isLeft(result)) {
-      fail(`result is LEFT`)
+      throw new Error(`result is LEFT`)
     }
 
     expect(result.value).toEqual(
@@ -491,7 +491,7 @@ describe('setJSXValueAtPath', () => {
       jsxAttributeValue(100, emptyComments),
     )
     if (isLeft(result)) {
-      fail(`result is LEFT`)
+      throw new Error(`result is LEFT`)
     }
 
     expect(result.value).toEqual(
@@ -613,7 +613,7 @@ describe('getModifiableJSXAttributeAtPath', () => {
       if (backgroundColor != null && isJSXAttributeValue(backgroundColor.value)) {
         expect(backgroundColor.value.value).toEqual('red')
       } else {
-        fail('backgroundColor is not a JSXAttributeValue')
+        throw new Error('backgroundColor is not a JSXAttributeValue')
       }
     }
   })
@@ -680,7 +680,7 @@ describe('jsxSimpleAttributeToValue', () => {
       top: 50,
       left: 100,
     }
-    expect(isRight(attributeValue))
+    expect(isRight(attributeValue)).toBeTruthy()
     expect(attributeValue.value).toEqual(expectedAttrValue)
   })
 })
