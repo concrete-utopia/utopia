@@ -488,7 +488,7 @@ describe('incorporateBuildResult', () => {
     })
     expect(Object.keys(nodeModules)).toMatchInlineSnapshot(`Array []`)
   })
-  it('should remove a value if there is no transpiled code', () => {
+  it('should remove a value if there is no transpiled code 2', () => {
     const projectContents = addFileToProjectContents(
       {},
       '/app.js',

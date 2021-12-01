@@ -909,7 +909,7 @@ describe('Integration Test: opacity property', () => {
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
   })
 
-  xit('parses a multiselect-unoverwritable control status', () => {
+  xit('parses a multiselect-unoverwritable control status 2', () => {
     const hookResult = getOpacityHookResult(
       [`nodeValue1`, `nodeValue2`],
       [`nodeValue1`, `nodeValue2`],

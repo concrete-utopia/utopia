@@ -45,7 +45,7 @@ describe('cssValueOnlyContainsComments', () => {
     expect(cssValueOnlyContainsComments(testStringWithValue)).toBeFalsy()
   })
 
-  it('identifies one comment and one real value', () => {
+  it('identifies one comment and one real value 2', () => {
     const testStringWithValue = '/*red*/ green'
     expect(cssValueOnlyContainsComments(testStringWithValue)).toBeFalsy()
   })

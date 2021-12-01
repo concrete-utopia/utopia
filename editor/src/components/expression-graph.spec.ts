@@ -1,3 +1,5 @@
+// disaling jest expect rules because this file uses Chai.expect
+/* eslint-disable jest/valid-expect */
 import * as Chai from 'chai'
 const expect = Chai.expect
 import Utils from '../utils/utils'

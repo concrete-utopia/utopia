@@ -195,7 +195,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
       createBuiltInDependenciesList(NO_OP, null, null),
     )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      fail(`Expected successful nodeModules fetch`)
+      throw new Error(`Expected successful nodeModules fetch`)
     }
     const nodeModules = fetchNodeModulesResult.nodeModules
     const onRemoteModuleDownload = jest.fn()
@@ -230,7 +230,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
       createBuiltInDependenciesList(NO_OP, null, null),
     ).then((fetchNodeModulesResult) => {
       if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-        fail(`Expected successful nodeModules fetch`)
+        throw new Error(`Expected successful nodeModules fetch`)
       }
       const nodeModules = fetchNodeModulesResult.nodeModules
 
@@ -301,7 +301,7 @@ describe('ES Dependency Manager', () => {
       createBuiltInDependenciesList(NO_OP, null, null),
     )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      fail(`Expected successful nodeModules fetch`)
+      throw new Error(`Expected successful nodeModules fetch`)
     }
     const nodeModules = fetchNodeModulesResult.nodeModules
     const onRemoteModuleDownload = jest.fn()
@@ -336,7 +336,7 @@ describe('ES Dependency Manager — d.ts', () => {
       createBuiltInDependenciesList(NO_OP, null, null),
     )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-      fail(`Expected successful nodeModules fetch`)
+      throw new Error(`Expected successful nodeModules fetch`)
     }
     const nodeModules = fetchNodeModulesResult.nodeModules
     const typings = getDependencyTypeDefinitions(nodeModules)
@@ -371,7 +371,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
       createBuiltInDependenciesList(NO_OP, null, null),
     ).then((fetchNodeModulesResult) => {
       if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-        fail(`Expected successful nodeModules fetch`)
+        throw new Error(`Expected successful nodeModules fetch`)
       }
       const nodeModules = fetchNodeModulesResult.nodeModules
 
@@ -437,7 +437,7 @@ describe('ES Dependency manager - retry behavior', () => {
       createBuiltInDependenciesList(NO_OP, null, null),
     ).then((fetchNodeModulesResult) => {
       if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
-        fail(`Expected successful nodeModule fetch`)
+        throw new Error(`Expected successful nodeModule fetch`)
       }
       expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(228)
       expect(

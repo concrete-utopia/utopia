@@ -394,7 +394,7 @@ export function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap): Sim
   const sanitizedSpyData = objectMap((elementMetadata, key) => {
     const elementPathAsReportedBySpy = EP.toString(elementMetadata.elementPath)
     if (elementPathAsReportedBySpy !== key) {
-      fail(`The reported template path should match what was used as key`)
+      throw new Error(`The reported template path should match what was used as key`)
     }
 
     return simplifiedMetadata(elementMetadata)

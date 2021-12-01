@@ -88,15 +88,15 @@ export function getPropsForStyleProp(
 
   const parseResult = testParseCode(code)
   if (!isParseSuccess(parseResult)) {
-    fail('expected parseResult to be Right')
+    throw new Error('expected parseResult to be Right')
   }
   const appComponent = parseResult.topLevelElements.find(isUtopiaJSXComponent)
 
   if (appComponent == null || !isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
-    fail('expected the second topLevelElement to be the App component')
+    throw new Error('expected the second topLevelElement to be the App component')
   }
   if (!isJSXElement(appComponent.rootElement)) {
-    fail(`expected the App component's root element to be a JSXElement`)
+    throw new Error(`expected the App component's root element to be a JSXElement`)
   }
 
   return appComponent.rootElement.props

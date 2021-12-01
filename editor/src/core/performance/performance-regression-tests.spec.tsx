@@ -14,7 +14,7 @@ jest.mock('../../components/canvas/controls/outline-utils', () => ({
   isZeroSizedElement: () => false, // in test environment elements have no size
 }))
 
-describe('React Render Count Tests - ', () => {
+describe('React Render Count Tests -', () => {
   it('Clicking on opacity slider with a simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

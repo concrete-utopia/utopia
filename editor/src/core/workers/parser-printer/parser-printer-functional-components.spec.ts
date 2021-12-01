@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 import {
   clearParseResultUniqueIDsAndEmptyBlocks,
   testParseCode,
@@ -856,7 +857,7 @@ describe('Parsing, printing, reparsing a function component with props', () => {
     const firstParse = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
 
     if (!isParseSuccess(firstParse)) {
-      fail(firstParse)
+      throw new Error(JSON.stringify(firstParse))
     }
 
     const firstAsParseSuccess = firstParse
@@ -873,7 +874,7 @@ describe('Parsing, printing, reparsing a function component with props', () => {
     const secondParse = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printed))
 
     if (!isParseSuccess(secondParse)) {
-      fail(secondParse)
+      throw new Error(JSON.stringify(secondParse))
     }
 
     const secondAsParseSuccess = firstParse
