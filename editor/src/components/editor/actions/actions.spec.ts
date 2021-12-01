@@ -1194,6 +1194,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "import * as React from 'react'
           import { Rectangle } from 'utopia-api'
           import { Menu } from 'antd'
+          import 'antd/dist/antd.css'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -1296,6 +1297,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "import * as React from 'react'
           import { Rectangle } from 'utopia-api'
           import { Menu } from 'antd'
+          import 'antd/dist/antd.css'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
