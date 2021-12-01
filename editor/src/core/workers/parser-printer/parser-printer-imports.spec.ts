@@ -85,7 +85,7 @@ describe('Inserting imports into the parsed model', () => {
       )
       expect(printedCode).toEqual(expectedCodeAfter)
     } else {
-      fail('Parse result is not a success.')
+      throw new Error('Parse result is not a success.')
     }
   })
 })
