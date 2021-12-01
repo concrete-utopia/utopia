@@ -122,25 +122,21 @@ const FailJestOnCanvasError = () => {
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  failOnCanvasErrors: boolean = true,
 ) {
   return renderTestEditorWithModel(
     createTestProjectWithCode(appUiJsFileCode),
     awaitFirstDomReport,
     undefined,
-    failOnCanvasErrors,
   )
 }
 export async function renderTestEditorWithProjectContent(
   projectContent: ProjectContentTreeRoot,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  failOnCanvasErrors: boolean = true,
 ) {
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
     undefined,
-    failOnCanvasErrors,
   )
 }
 
@@ -148,7 +144,6 @@ export async function renderTestEditorWithModel(
   model: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   mockBuiltInDependencies?: BuiltInDependencies,
-  failOnCanvasErrors: boolean = true,
 ): Promise<{
   dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
   getDomReportDispatched: () => Promise<void>
@@ -254,7 +249,7 @@ export async function renderTestEditorWithModel(
         numberOfCommits++
       }}
     >
-      {when(failOnCanvasErrors, <FailJestOnCanvasError />)}
+      <FailJestOnCanvasError />
       <EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />
     </React.Profiler>,
   )
