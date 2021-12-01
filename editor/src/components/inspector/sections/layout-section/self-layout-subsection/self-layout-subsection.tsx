@@ -42,7 +42,7 @@ import {
 } from '../../../../../core/layout/layout-helpers-new'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 
-type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
+export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
 function useActiveLayoutTab(
   position: CSSPosition | null,

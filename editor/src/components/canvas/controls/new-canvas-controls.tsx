@@ -402,7 +402,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     >
       {renderModeControlContainer()}
       {renderHighlightControls()}
-      {when(isFeatureEnabled('Layout Section Experimental'), <LayoutParentControl />)}
+      {<LayoutParentControl />}
     </div>
   )
 }
