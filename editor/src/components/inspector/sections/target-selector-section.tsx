@@ -40,7 +40,7 @@ export const TargetSelectorSection = betterReactMemo(
             <div>{props.selectedTargetPath}</div>
           </InspectorSubsectionHeader>
           <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.normal, gap: 8, paddingLeft: 8 }}>
-            <Tooltip title='style'>
+            <Tooltip title='Changes effect inline style properties'>
               <div
                 onClick={() => props.onSelectTarget(['style'])}
                 style={{
@@ -56,7 +56,7 @@ export const TargetSelectorSection = betterReactMemo(
                 🦥 Style
               </div>
             </Tooltip>
-            <Tooltip title='css'>
+            <Tooltip title='Editing emotion CSS properties'>
               <div
                 onClick={() => props.onSelectTarget(['css'])}
                 style={{
@@ -70,7 +70,7 @@ export const TargetSelectorSection = betterReactMemo(
                 🦚 CSS
               </div>
             </Tooltip>
-            <Tooltip title='css:&hover'>
+            <Tooltip title='Changes below add css:&hover effects'>
               <div
                 onClick={() => props.onSelectTarget(['css:&hover'])}
                 style={{
@@ -87,6 +87,24 @@ export const TargetSelectorSection = betterReactMemo(
               </div>
             </Tooltip>
           </FlexRow>
+          <div style={{ borderBottom: '1px solid hsl(0,0%,90%)', width: '100%' }}></div>
+          <div
+            style={{
+              borderTop: '1px solid hsl(0,0%,90%)',
+              borderLeft: '1px solid hsl(0,0%,90%)',
+              transform: 'rotate(45deg)',
+              width: 5,
+              height: 5,
+              position: 'relative',
+              top: -4,
+              background: 'white',
+              left: props.selectedTargetPath.includes('style')
+                ? 30
+                : props.selectedTargetPath.includes('css')
+                ? 86
+                : 160,
+            }}
+          ></div>
         </FlexColumn>
       </Section>
     )
