@@ -30,6 +30,8 @@ import {
 } from '../../webpack-loaders/css-loader'
 import { svgToBase64 } from '../../shared/file-utils'
 import { createBuiltInDependenciesList } from './built-in-dependencies-list'
+import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
+import { createNodeModules } from './test-utils'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -490,5 +492,33 @@ describe('ES Dependency manager - retry behavior', () => {
       expect(Object.keys(fetchNodeModulesResult.nodeModules)).toHaveLength(0)
       done()
     })
+  })
+})
+
+describe('ES Dependency manager - browser field substitutions', () => {
+  const reqFn = getRequireFn(
+    NO_OP,
+    {},
+    createNodeModules(moduleResolutionExamples.contents),
+    {},
+    createBuiltInDependenciesList(NO_OP, null, null),
+  )
+
+  it('returns the replaced module', () => {
+    const requireResult = reqFn(
+      '/node_modules/module-with-browser-replacements-chained/index.module.js',
+      'some-module',
+    )
+    expect(requireResult).toEqual({
+      value: 'local-shim for some-module chained through other-module',
+    })
+  })
+
+  it('returns an empty object for an ignored dependency', () => {
+    const requireResult = reqFn(
+      '/node_modules/module-with-browser-replacements-ignore-module/index.module.js',
+      'some-module',
+    )
+    expect(requireResult).toEqual({})
   })
 })

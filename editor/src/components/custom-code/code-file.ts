@@ -265,6 +265,20 @@ export function normalisePathEndsAtDependency(dependency: string): NormalisePath
   }
 }
 
+export interface NormalisePathEndsAtIgnoredDependency {
+  type: 'NORMALISE_PATH_ENDS_AT_IGNORED_DEPENDENCY'
+  dependency: string
+}
+
+export function normalisePathEndsAtIgnoredDependency(
+  dependency: string,
+): NormalisePathEndsAtIgnoredDependency {
+  return {
+    type: 'NORMALISE_PATH_ENDS_AT_IGNORED_DEPENDENCY',
+    dependency: dependency,
+  }
+}
+
 export interface NormalisePathError {
   type: 'NORMALISE_PATH_ERROR'
   errorMessage: string
@@ -306,6 +320,7 @@ export type NormalisePathResult =
   | NormalisePathUnableToProceed
   | NormalisePathImportNotFound
   | NormalisePathEndsAtDependency
+  | NormalisePathEndsAtIgnoredDependency
   | NormalisePathSuccess
 
 export function normalisePathSuccessOrThrowError(
@@ -322,6 +337,10 @@ export function normalisePathSuccessOrThrowError(
       throw new Error(`Could not proceed past ${normalisePathResult.filePath}.`)
     case 'NORMALISE_PATH_ENDS_AT_DEPENDENCY':
       throw new Error(`Reached an external dependency ${normalisePathResult.dependency}.`)
+    case 'NORMALISE_PATH_ENDS_AT_IGNORED_DEPENDENCY':
+      throw new Error(
+        `Reached an external dependency that was ignored by the package.json browser field ${normalisePathResult.dependency}.`,
+      )
     default:
       const _exhaustiveCheck: never = normalisePathResult
       throw new Error(`Unhandled case ${JSON.stringify(normalisePathResult)}`)
@@ -479,6 +498,8 @@ function lookupElementImport(
           }
         case 'RESOLVE_NOT_PRESENT':
           return normalisePathError(`Unable to find resolve path at ${importedFrom}`)
+        case 'RESOLVE_SUCCESS_IGNORE_MODULE':
+          return normalisePathEndsAtIgnoredDependency(importedFrom.filePath)
         default:
           const _exhaustiveCheck: never = resolutionResult
           throw new Error(`Unhandled case ${JSON.stringify(resolutionResult)}`)
