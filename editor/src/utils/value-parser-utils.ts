@@ -104,25 +104,31 @@ export function parseErrorDetails(path: string, description: string): ParseError
 }
 
 export function getParseErrorDetails(parseError: ParseError): ParseErrorDetails {
-  function innerDetails(pathSoFar: string, parseErrorHere: ParseError): ParseErrorDetails {
+  function innerDetails(pathSoFar: string[], parseErrorHere: ParseError): ParseErrorDetails {
     switch (parseErrorHere.type) {
       case 'DESCRIPTION_PARSE_ERROR':
-        return parseErrorDetails(pathSoFar, parseErrorHere.description)
+        return parseErrorDetails(pathSoFar.join('.'), parseErrorHere.description)
       case 'OBJECT_FIELD_PARSE_ERROR':
-        return innerDetails(`${pathSoFar}.${parseErrorHere.field}`, parseErrorHere.innerError)
+        return innerDetails(pathSoFar.concat(parseErrorHere.field), parseErrorHere.innerError)
       case 'OBJECT_FIELD_NOT_PRESENT_PARSE_ERROR':
-        return parseErrorDetails(`${pathSoFar}.${parseErrorHere.field}`, 'Missing object field.')
+        return parseErrorDetails(
+          pathSoFar.concat(parseErrorHere.field).join('.'),
+          'Missing object field',
+        )
       case 'ARRAY_INDEX_PARSE_ERROR':
-        return innerDetails(`${pathSoFar}[${parseErrorHere.index}]`, parseErrorHere.innerError)
+        return innerDetails(pathSoFar.concat(`${parseErrorHere.index}`), parseErrorHere.innerError)
       case 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR':
-        return parseErrorDetails(`${pathSoFar}[${parseErrorHere.index}]`, 'Missing array index.')
+        return parseErrorDetails(
+          pathSoFar.concat(`${parseErrorHere.index}`).join(','),
+          'Missing array index.',
+        )
       default:
         const _exhaustiveCheck: never = parseErrorHere
         throw new Error(`Unhandled type ${JSON.stringify(parseErrorHere)}`)
     }
   }
 
-  return innerDetails('property', parseError)
+  return innerDetails([], parseError)
 }
 
 export type ParseResult<T> = Either<ParseError, T>

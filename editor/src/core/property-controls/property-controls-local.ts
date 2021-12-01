@@ -2,6 +2,7 @@ import {
   registerModule as registerModuleAPI,
   ComponentToRegister,
   ComponentInsertOption,
+  PropertyControls,
 } from 'utopia-api'
 import deepEqual from 'fast-deep-equal'
 import { ProjectContentTreeRoot } from '../../components/assets'
@@ -18,12 +19,34 @@ import {
   packageJsonFileFromProjectContents,
 } from '../../components/editor/store/editor-state'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
-import { ParsedPropertyControls, parsePropertyControls } from './property-controls-parser'
-import { ParseResult } from '../../utils/value-parser-utils'
+import {
+  parseControlDescription,
+  ParsedPropertyControls,
+  parsePropertyControls,
+} from './property-controls-parser'
+import {
+  getParseErrorDetails,
+  objectKeyParser,
+  optionalObjectKeyParser,
+  parseArray,
+  parseObject,
+  ParseResult,
+  parseString,
+} from '../../utils/value-parser-utils'
 import { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
-import { Either, isRight, mapEither, sequenceEither } from '../shared/either'
+import {
+  applicative2Either,
+  applicative3Either,
+  Either,
+  forEachRight,
+  isLeft,
+  isRight,
+  mapEither,
+  sequenceEither,
+} from '../shared/either'
 import { mapArrayToDictionary } from '../shared/array-utils'
+import { setOptionalProp } from '../shared/object-utils'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -145,6 +168,47 @@ async function registerModuleInternal(
   }
 }
 
+export function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControls> {
+  return parseObject(parseControlDescription)(value)
+}
+
+export function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
+  return applicative3Either(
+    (codeToInsert, additionalRequiredImports, menuLabel) => {
+      let insertOption: ComponentInsertOption = {
+        codeToInsert: codeToInsert,
+      }
+
+      setOptionalProp(insertOption, 'additionalRequiredImports', additionalRequiredImports)
+      setOptionalProp(insertOption, 'menuLabel', menuLabel)
+
+      return insertOption
+    },
+    objectKeyParser(parseString, 'codeToInsert')(value),
+    optionalObjectKeyParser(parseString, 'additionalRequiredImports')(value),
+    optionalObjectKeyParser(parseString, 'menuLabel')(value),
+  )
+}
+
+export function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
+  return applicative2Either(
+    (controls, insertOptions) => {
+      return {
+        controls: controls,
+        insertOptions: insertOptions,
+      }
+    },
+    objectKeyParser(fullyParsePropertyControls, 'controls')(value),
+    objectKeyParser(parseArray(parseComponentInsertOption), 'insertOptions')(value),
+  )
+}
+
+export const parseComponents: (
+  value: unknown,
+) => ParseResult<{ [componentName: string]: ComponentToRegister }> = parseObject(
+  parseComponentToRegister,
+)
+
 export function createRegisterModuleFunction(
   dispatch: EditorDispatch,
   getEditorState: (() => EditorState) | null,
@@ -152,12 +216,37 @@ export function createRegisterModuleFunction(
 ): typeof registerModuleAPI {
   // create a function with a signature that matches utopia-api/registerModule
   return function registerModule(
-    moduleName: string,
-    components: { [componentName: string]: ComponentToRegister },
+    unparsedModuleName: string,
+    unparsedComponents: { [componentName: string]: ComponentToRegister },
   ): void {
-    if (workers != null) {
-      registerModuleInternal(dispatch, getEditorState, workers, moduleName, components)
+    const parsedModuleName = parseString(unparsedModuleName)
+    const parsedComponents = parseComponents(unparsedComponents)
+
+    const parsedParams = applicative2Either(
+      (moduleName, components) => {
+        return { moduleName: moduleName, components: components }
+      },
+      parsedModuleName,
+      parsedComponents,
+    )
+
+    if (isLeft(parsedModuleName)) {
+      const errorDetails = getParseErrorDetails(parsedModuleName.value)
+      throw new Error(`registerModule first param (moduleName): ${errorDetails.description}`)
     }
+
+    if (isLeft(parsedComponents)) {
+      const errorDetails = getParseErrorDetails(parsedComponents.value)
+      throw new Error(
+        `registerModule second param (components): ${errorDetails.description} [${errorDetails.path}]`,
+      )
+    }
+
+    forEachRight(parsedParams, ({ moduleName, components }) => {
+      if (workers != null) {
+        registerModuleInternal(dispatch, getEditorState, workers, moduleName, components)
+      }
+    })
   }
 }
 
