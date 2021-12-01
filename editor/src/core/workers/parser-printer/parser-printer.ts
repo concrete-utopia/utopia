@@ -97,6 +97,7 @@ import {
   parseSuccess,
   exportIdentifier,
   ExportDetail,
+  isImportSideEffects,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { fastForEach, NO_OP } from '../../shared/utils'
@@ -869,6 +870,17 @@ function printCodeImpl(
         wildcardClause,
         TS.createStringLiteral(importOrigin),
       )
+      pushImportDeclaration(importDeclaration)
+    }
+
+    if (isImportSideEffects(importForClause) && matchingTopLevelElements.length === 0) {
+      const importDeclaration = TS.createImportDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        TS.createStringLiteral(importOrigin),
+      )
+
       pushImportDeclaration(importDeclaration)
     }
   })
