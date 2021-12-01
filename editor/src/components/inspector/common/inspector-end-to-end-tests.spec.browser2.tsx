@@ -1821,6 +1821,11 @@ describe('inspector tests with real metadata', () => {
 
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
+    await act(async () => {
+      await screen.findByTestId('layout-system-expand')
+      fireEvent.click(screen.getByTestId('layout-system-expand'))
+    })
+
     const flexBasis = (await renderResult.renderedDOM.findByTestId(
       'position-flexBasis-number-input',
     )) as HTMLInputElement
