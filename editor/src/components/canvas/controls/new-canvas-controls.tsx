@@ -402,7 +402,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     >
       {renderModeControlContainer()}
       {renderHighlightControls()}
-      {<LayoutParentControl />}
+      <LayoutParentControl />
     </div>
   )
 }
