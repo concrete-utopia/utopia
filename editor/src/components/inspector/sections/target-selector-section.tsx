@@ -44,46 +44,46 @@ export const TargetSelectorSection = betterReactMemo(
               <div
                 onClick={() => props.onSelectTarget(['style'])}
                 style={{
-                  backgroundColor: '#D5D5D5',
-                  width: 16,
-                  height: 16,
+                  backgroundColor: 'hsl(0,0%,94%)',
+                  padding: '2px 4px',
                   textAlign: 'center',
                   outline: props.selectedTargetPath.includes('style')
                     ? '1px solid #007AFF'
                     : 'none',
+                  borderRadius: 4,
                 }}
               >
-                ⭐️
+                🦥 Style
               </div>
             </Tooltip>
             <Tooltip title='css'>
               <div
                 onClick={() => props.onSelectTarget(['css'])}
                 style={{
-                  backgroundColor: '#C4EDFD',
-                  width: 16,
-                  height: 16,
+                  backgroundColor: 'hsl(0,0%,94%)',
+                  padding: '2px 4px',
                   textAlign: 'center',
                   outline: props.selectedTargetPath.includes('css') ? '1px solid #007AFF' : 'none',
+                  borderRadius: 4,
                 }}
               >
-                🍓
+                🦚 CSS
               </div>
             </Tooltip>
             <Tooltip title='css:&hover'>
               <div
                 onClick={() => props.onSelectTarget(['css:&hover'])}
                 style={{
-                  backgroundColor: '#FDF0ED',
-                  width: 16,
-                  height: 16,
+                  backgroundColor: 'hsl(0,0%,94%)',
+                  padding: '2px 4px',
                   textAlign: 'center',
                   outline: props.selectedTargetPath.includes('css:&hover')
                     ? '1px solid #007AFF'
                     : 'none',
+                  borderRadius: 4,
                 }}
               >
-                🐹
+                🐹 CSS:&hover
               </div>
             </Tooltip>
           </FlexRow>
