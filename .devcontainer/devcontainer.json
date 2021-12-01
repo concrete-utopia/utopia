@@ -9,8 +9,6 @@
 		// Use -bullseye variants on local on arm64/Apple Silicon.
 		"args": { 
 			"VARIANT": "16-bullseye",
-			"DOCKER_USER": "vscodeuser",
-			"DOCKER_UID": "501",
 		}
 	},
 
@@ -29,10 +27,10 @@
 	"initializeCommand": "cp ./shell.nix docker-dev-env/ && cp ./release.nix docker-dev-env/",
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "echo 'eval \"$(direnv hook bash)\"' > ~/.bashrc && echo \"use nix\" > .envrc && direnv allow",
+	"postCreateCommand": "sudo bash -c 'nix-daemon &' && echo 'eval \"$(direnv hook bash)\"' > ~/.bashrc && echo \"use nix\" > .envrc && direnv allow",
 
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscodeuser",
+	"remoteUser": "vscode",
 	"features": {
 		"git": "os-provided",
 	}

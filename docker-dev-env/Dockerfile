@@ -22,34 +22,13 @@ RUN nix-shell --run "exit"
 
 EXPOSE 8000
 
-# Create a group and user.
-ARG DOCKER_USER
-ARG DOCKER_UID
-RUN addgroup $DOCKER_USER && adduser --disabled-password --gecos '' --uid $DOCKER_UID --ingroup $DOCKER_USER $DOCKER_USER
-
-#  Add new user docker to sudo group
-RUN adduser $DOCKER_USER sudo
-
-# Ensure sudo group users are not 
-# asked for a password when using 
-# sudo command by ammending sudoers file
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
 RUN chmod -R o+rwx /root/
 
 RUN mkdir -p /root/.cabal/
 VOLUME /root/.cabal/
 
-RUN mkdir -p /home/utopia/utopia-src
-VOLUME /home/utopia/utopia-src
-
 # This is for jest.
 ENV CHROME_BIN=chromium-browser
-
-WORKDIR /home/utopia/utopia-src
-
-# Fixes locale-related issues: https://gitlab.haskell.org/ghc/ghc/-/issues/8118
-# USER $DOCKER_USER
 
 RUN apt-get install --no-install-recommends -y locales
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
@@ -59,7 +38,7 @@ RUN dpkg-reconfigure locales
 
 # install Direnv for the vscodeuser user
 RUN apt-get install --no-install-recommends -y direnv
-ADD .direnvrc /home/$DOCKER_USER/.direnvrc
+ADD .direnvrc /home/vscode/.direnvrc
 
 RUN echo 'export TMPDIR=/tmp' > ~/.bashrc
 RUN echo 'export TMPDIR=/tmp' > /home/$DOCKER_USER/.bashrc
