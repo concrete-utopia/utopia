@@ -153,14 +153,23 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       '/utopia/storyboard': {
         App: {
           propertyControls: propertyControlsForApp,
-          componentInfo: { importsToAdd: {}, elementToInsert: jsxElementWithoutUID('App', [], []) },
+          insertOptions: [
+            {
+              insertMenuLabel: 'App',
+              importsToAdd: {},
+              elementToInsert: jsxElementWithoutUID('App', [], []),
+            },
+          ],
         },
         OtherComponent: {
           propertyControls: propertyControlsForOtherComponent,
-          componentInfo: {
-            importsToAdd: {},
-            elementToInsert: jsxElementWithoutUID('OtherComponent', [], []),
-          },
+          insertOptions: [
+            {
+              insertMenuLabel: 'OtherComponent',
+              importsToAdd: {},
+              elementToInsert: jsxElementWithoutUID('OtherComponent', [], []),
+            },
+          ],
         },
       },
     },

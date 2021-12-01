@@ -12,21 +12,24 @@ const BasicUtopiaComponentDescriptor = (name: string): ComponentDescriptor => {
         control: 'style-controls',
       },
     }),
-    componentInfo: {
-      importsToAdd: {
-        'utopia-api': {
-          importedWithName: null,
-          importedFromWithin: [
-            {
-              name: name,
-              alias: name,
-            },
-          ],
-          importedAs: null,
+    insertOptions: [
+      {
+        insertMenuLabel: name,
+        importsToAdd: {
+          'utopia-api': {
+            importedWithName: null,
+            importedFromWithin: [
+              {
+                name: name,
+                alias: name,
+              },
+            ],
+            importedAs: null,
+          },
         },
+        elementToInsert: jsxElementWithoutUID(name, [], []),
       },
-      elementToInsert: jsxElementWithoutUID(name, [], []),
-    },
+    ],
   }
 }
 

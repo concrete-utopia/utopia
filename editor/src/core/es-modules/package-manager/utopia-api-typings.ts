@@ -7,6 +7,18 @@ export const utopiaApiTypings = `declare module 'utopia-api/helpers/helper-funct
       insert: string;
       requiredImports: string;
   }): void;
+  export interface ComponentInsertOption {
+      codeToInsert: string;
+      additionalRequiredImports?: string;
+      menuLabel?: string;
+  }
+  export interface ComponentToRegister {
+      controls: PropertyControls;
+      insertOptions: Array<ComponentInsertOption>;
+  }
+  export function registerModule(moduleName: string, components: {
+      [componentName: string]: ComponentToRegister;
+  }): void;
   export type RawSingleBorderWidth = number | string;
   export type RawSplitBorderWidth = [
       RawSingleBorderWidth,

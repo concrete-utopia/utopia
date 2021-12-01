@@ -13,10 +13,13 @@ function createBasicComponent(
 ): ComponentDescriptor {
   return {
     propertyControls: parsePropertyControls(propertyControls),
-    componentInfo: {
-      importsToAdd: {},
-      elementToInsert: jsxElementWithoutUID(name, [], []),
-    },
+    insertOptions: [
+      {
+        insertMenuLabel: name,
+        importsToAdd: {},
+        elementToInsert: jsxElementWithoutUID(name, [], []),
+      },
+    ],
   }
 }
 

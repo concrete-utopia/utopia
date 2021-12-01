@@ -40,6 +40,7 @@ import {
   isTextFile,
   ProjectFile,
 } from '../../core/shared/project-file-types'
+import { fastForEach } from '../../core/shared/utils'
 import { getDefaultPropsAsAttributesFromParsedControls } from '../../core/third-party/shared'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
@@ -210,16 +211,19 @@ function makeHTMLDescriptor(
   const defaultValues = getDefaultPropsAsAttributesFromParsedControls(parsedControls)
   return {
     propertyControls: parsePropertyControls(propertyControls),
-    componentInfo: {
-      importsToAdd: {
-        react: {
-          importedAs: 'React',
-          importedFromWithin: [],
-          importedWithName: null,
+    insertOptions: [
+      {
+        insertMenuLabel: tag,
+        importsToAdd: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
         },
+        elementToInsert: jsxElementWithoutUID(tag, defaultValues, []),
       },
-      elementToInsert: jsxElementWithoutUID(tag, defaultValues, []),
-    },
+    ],
   }
 }
 
@@ -298,7 +302,8 @@ export function getComponentGroups(
         file.fileContents.parsed,
       )
       if (possibleExportedComponents != null) {
-        const insertableComponents = possibleExportedComponents.map((exportedComponent) => {
+        let insertableComponents: Array<InsertableComponent> = []
+        fastForEach(possibleExportedComponents, (exportedComponent) => {
           const pathWithoutExtension = dropFileExtension(fullPath)
           const { defaultProps, parsedControls } = defaultPropertiesForComponentInFile(
             exportedComponent.listingName,
@@ -341,13 +346,16 @@ export function getComponentGroups(
             propertyControlsForDependency[exportedComponent.listingName] != null
           ) {
             const descriptor = propertyControlsForDependency[exportedComponent.listingName]
-
-            return insertableComponent(
-              descriptor.componentInfo.importsToAdd,
-              descriptor.componentInfo.elementToInsert,
-              exportedComponent.listingName,
-              stylePropOptions,
-            )
+            fastForEach(descriptor.insertOptions, (insertOption) => {
+              insertableComponents.push(
+                insertableComponent(
+                  insertOption.importsToAdd,
+                  insertOption.elementToInsert,
+                  insertOption.insertMenuLabel,
+                  stylePropOptions,
+                ),
+              )
+            })
           } else {
             let attributes: JSXAttributes = []
             for (const key of Object.keys(defaultProps)) {
@@ -359,11 +367,13 @@ export function getComponentGroups(
                 ),
               )
             }
-            return insertableComponent(
-              exportedComponent.importsToAdd,
-              jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
-              exportedComponent.listingName,
-              stylePropOptions,
+            insertableComponents.push(
+              insertableComponent(
+                exportedComponent.importsToAdd,
+                jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
+                exportedComponent.listingName,
+                stylePropOptions,
+              ),
             )
           }
         })
@@ -382,7 +392,8 @@ export function getComponentGroups(
     groupType: InsertableComponentGroupType,
     components: ComponentDescriptorsForFile,
   ): void {
-    const insertableComponents = Object.keys(components).map((componentName) => {
+    let insertableComponents: Array<InsertableComponent> = []
+    fastForEach(Object.keys(components), (componentName) => {
       const component = components[componentName]
       let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
       const propertyControls = component.propertyControls
@@ -395,12 +406,16 @@ export function getComponentGroups(
       const probablyIntrinsicElement =
         moduleName == null || isIntrinsicElementFromString(componentName)
 
-      return insertableComponent(
-        component.componentInfo.importsToAdd,
-        component.componentInfo.elementToInsert,
-        componentName,
-        stylePropOptions,
-      )
+      fastForEach(component.insertOptions, (insertOption) => {
+        insertableComponents.push(
+          insertableComponent(
+            insertOption.importsToAdd,
+            insertOption.elementToInsert,
+            insertOption.insertMenuLabel,
+            stylePropOptions,
+          ),
+        )
+      })
     })
     result.push(insertableComponentGroup(groupType, insertableComponents))
   }
