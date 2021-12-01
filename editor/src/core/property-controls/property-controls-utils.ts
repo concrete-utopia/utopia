@@ -154,8 +154,10 @@ export function getPropertyControlsForTarget(
           ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
           : absolutePath
 
-        const nameLastPart = getJSXElementNameAsString(element.name)
-        return propertyControlsInfo[trimmedPath]?.[nameLastPart]?.propertyControls
+        const originalName =
+          importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
+        const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+        return propertyControlsInfo[trimmedPath]?.[nameAsString]?.propertyControls
       }
     },
   )
