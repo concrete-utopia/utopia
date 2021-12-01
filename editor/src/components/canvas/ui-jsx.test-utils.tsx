@@ -85,6 +85,7 @@ import {
   BuiltInDependencies,
   createBuiltInDependenciesList,
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { when } from '../../utils/react-conditionals'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -121,16 +122,25 @@ const FailJestOnCanvasError = () => {
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
+  failOnCanvasErrors: boolean = true,
 ) {
-  return renderTestEditorWithModel(createTestProjectWithCode(appUiJsFileCode), awaitFirstDomReport)
+  return renderTestEditorWithModel(
+    createTestProjectWithCode(appUiJsFileCode),
+    awaitFirstDomReport,
+    undefined,
+    failOnCanvasErrors,
+  )
 }
 export async function renderTestEditorWithProjectContent(
   projectContent: ProjectContentTreeRoot,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
+  failOnCanvasErrors: boolean = true,
 ) {
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
+    undefined,
+    failOnCanvasErrors,
   )
 }
 
@@ -138,6 +148,7 @@ export async function renderTestEditorWithModel(
   model: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   mockBuiltInDependencies?: BuiltInDependencies,
+  failOnCanvasErrors: boolean = true,
 ): Promise<{
   dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
   getDomReportDispatched: () => Promise<void>
@@ -243,7 +254,7 @@ export async function renderTestEditorWithModel(
         numberOfCommits++
       }}
     >
-      <FailJestOnCanvasError />
+      {when(failOnCanvasErrors, <FailJestOnCanvasError />)}
       <EditorRoot api={storeHook} useStore={storeHook} spyCollector={spyCollector} />
     </React.Profiler>,
   )

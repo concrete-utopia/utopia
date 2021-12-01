@@ -113,7 +113,6 @@ export function createRegisterComponentFunction(
 ): typeof registerComponentAPI {
   // create a function with a signature that matches utopia-api/registerComponent
   return function registerComponent(paramsObj: unknown): void {
-    const stackFrames = new Error().stack
     const parseResult = parseRegisterComponentEntry(paramsObj)
     if (isLeft(parseResult)) {
       const errorDescription = getParseErrorDetails(parseResult.value).description
