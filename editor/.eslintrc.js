@@ -8,13 +8,14 @@ module.exports = {
     },
   },
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'prettier', 'react', 'react-hooks'],
+  plugins: ['@typescript-eslint', 'prettier', 'react', 'react-hooks', 'jest'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
     'prettier',
     'prettier/@typescript-eslint',
+    'plugin:jest/recommended',
   ],
   rules: {
     // Built-in eslint rules
@@ -160,6 +161,9 @@ module.exports = {
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-shadow': ['error'],
+    'jest/no-conditional-expect': 'off',
+    'jest/no-done-callback': 'off',
+    'jest/no-test-prefixes': 'off',
   },
   overrides: [
     {

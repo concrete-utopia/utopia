@@ -26,7 +26,9 @@ function getBuildResultMessageForDefaultProject(onResult: (result: BuildResultMe
           break
         }
         default:
-          fail(`Expected a 'build' message from tsworker, received ${receivedContent.type}`)
+          throw new Error(
+            `Expected a 'build' message from tsworker, received ${receivedContent.type}`,
+          )
       }
     },
     'noid',

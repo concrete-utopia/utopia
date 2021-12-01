@@ -72,7 +72,7 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
   ) as ParsedTextFile
 
   if (!isParseSuccess(parsedFile)) {
-    fail('The test file parse failed')
+    throw new Error('The test file parse failed')
   }
 
   return {

@@ -116,7 +116,7 @@ function renderTestProject() {
       emptySet(),
     ) as ParsedTextFile
     if (!isParseSuccess(parsedFile)) {
-      fail('The test file parse failed')
+      throw new Error('The test file parse failed')
     }
 
     const updatedProjectContents = addFileToProjectContents(

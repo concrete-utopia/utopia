@@ -74,7 +74,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     ).formatted
     const parseResult = testParseCode(code)
     foldParsedTextFile(
-      (failure) => fail(failure),
+      (failure) => {
+        throw new Error(JSON.stringify(failure))
+      },
       (success) => {
         const firstComponent = success.topLevelElements.find(isUtopiaJSXComponent)
         if (firstComponent != null) {
@@ -87,19 +89,22 @@ export var ${BakedInStoryboardVariableName} = (props) => {
                 firstChild.elementsWithin[Object.keys(firstChild.elementsWithin)[0]]
               expect(getJSXAttribute(elementWithin.props, 'data-uid')).not.toBeNull()
             } else {
-              fail('First child is not an arbitrary block of code.')
+              throw new Error('First child is not an arbitrary block of code.')
             }
           } else {
-            fail('Root element not a JSX element.')
+            throw new Error('Root element not a JSX element.')
           }
         } else {
-          fail('Not a component at the root.')
+          throw new Error('Not a component at the root.')
         }
       },
-      (unparsed) => fail(unparsed),
+      (unparsed) => {
+        throw new Error(JSON.stringify(unparsed))
+      },
       parseResult,
     )
   })
+  // eslint-disable-next-line jest/expect-expect
   it('should write updated arbitrary elements back into code', () => {
     const code = applyPrettier(
       `import * as React from "react";
@@ -772,7 +777,7 @@ return { arr: arr };`
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('supports passing down the scope to children of components', () => {
+  it('supports passing down the scope to children of components 2', () => {
     const code = `import React from "react";
 import { View } from "utopia-api";
 export var whatever = (props) => {
@@ -864,7 +869,7 @@ export var whatever = (props) => {
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  xit('supports nested array destructuring in a function param', () => {
+  xit('supports nested array destructuring in a function param 2', () => {
     // FIXME Nested array destructuring doesn't work
     const code = `import React from "react";
 import { View } from "utopia-api";
@@ -1210,7 +1215,7 @@ export var storyboard = (
         }
       `)
     } else {
-      fail(`Failed to parse code`)
+      throw new Error(`Failed to parse code`)
     }
   })
 

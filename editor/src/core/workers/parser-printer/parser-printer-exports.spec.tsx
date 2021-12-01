@@ -61,7 +61,7 @@ describe('parseCode', () => {
     if (isParseSuccess(actualResult)) {
       expect(actualResult.exportsDetail).toMatchInlineSnapshot(`Array []`)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -88,7 +88,7 @@ export const { name: firstName, surname } = entireValue`
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -116,7 +116,7 @@ export { thing1, thing2 }`
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -144,7 +144,7 @@ export { thing1 as importantThing1, thing2 as importantThing2 }`
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -172,7 +172,7 @@ export { thing1 as default, thing2 as importantThing2 }`
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -212,7 +212,7 @@ export let exportedLet1, exportedLet2;
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -265,7 +265,7 @@ export const exportedConst1 = 'const1', exportedConst2 = 'const2';
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -286,28 +286,7 @@ export function App() {
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
-    }
-  })
-
-  it(`parses 'export function' marked values`, () => {
-    const code = `import * as React from "react";
-export function App() {
-  return <div />
-}
-`
-    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
-    if (isParseSuccess(actualResult)) {
-      expect(actualResult.exportsDetail).toMatchInlineSnapshot(`
-        Array [
-          Object {
-            "functionName": "App",
-            "type": "EXPORT_FUNCTION",
-          },
-        ]
-      `)
-    } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -326,7 +305,7 @@ export class App {}
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -345,7 +324,7 @@ export default function() { return 5 }
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -364,7 +343,7 @@ export default function addFive() { return 5 }
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
 
@@ -383,7 +362,7 @@ export default class App {}
         ]
       `)
     } else {
-      fail('Did not parse successfully.')
+      throw new Error('Did not parse successfully.')
     }
   })
   describe(`re-exports`, () => {
@@ -402,7 +381,7 @@ export default class App {}
           ]
         `)
       } else {
-        fail(actualResult)
+        throw new Error(JSON.stringify(actualResult))
       }
     })
     it(`parses a wildcard re-export into a named value from another module`, () => {
@@ -420,7 +399,7 @@ export default class App {}
           ]
         `)
       } else {
-        fail(actualResult)
+        throw new Error(JSON.stringify(actualResult))
       }
     })
     it(`parses a re-export of specific named values from another module`, () => {
@@ -447,10 +426,10 @@ export default class App {}
           ]
         `)
       } else {
-        fail(actualResult)
+        throw new Error(JSON.stringify(actualResult))
       }
     })
-    it(`parses a re-export of specific named values from another module`, () => {
+    it(`parses a re-export of specific named values from another module 2`, () => {
       const code = `export { import1 as thing1, import2 as thing2 } from 'othermodule'`
 
       const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
@@ -474,7 +453,7 @@ export default class App {}
           ]
         `)
       } else {
-        fail(actualResult)
+        throw new Error(JSON.stringify(actualResult))
       }
     })
     it(`parses a re-export of the default export from another module`, () => {
@@ -497,7 +476,7 @@ export default class App {}
           ]
         `)
       } else {
-        fail(actualResult)
+        throw new Error(JSON.stringify(actualResult))
       }
     })
   })

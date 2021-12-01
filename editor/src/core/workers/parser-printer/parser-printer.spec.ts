@@ -2498,7 +2498,7 @@ export var Whatever = (props) => <View>
       expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(1)
       expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(0)
     } else {
-      fail('Parse result is not a success.')
+      throw new Error('Parse result is not a success.')
     }
   })
 
@@ -2525,13 +2525,15 @@ export var whatever = (props) => <View data-uid='aaa'>
             const leftProp = getJSXAttributeForced(child.props, 'left')
             expect(leftProp.type).toEqual('ATTRIBUTE_OTHER_JAVASCRIPT')
           } else {
-            fail(`First child is not an element ${child}`)
+            throw new Error(`First child is not an element ${child}`)
           }
         } else {
-          fail(`Unexpected number of children returned: ${result.rootElement.children.length}`)
+          throw new Error(
+            `Unexpected number of children returned: ${result.rootElement.children.length}`,
+          )
         }
       } else {
-        fail(`Root element is not an element ${result.rootElement}`)
+        throw new Error(`Root element is not an element ${result.rootElement}`)
       }
     }
   })
@@ -2613,7 +2615,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('parses the code when it is a var', () => {
+  it('parses the code when it is a var 2', () => {
     const code = `import * as React from "react";
 import {
   UtopiaUtils,
@@ -3055,7 +3057,7 @@ export var whatever = props => {
       )
       expect(printedCode).toEqual(code)
     } else {
-      fail('Parse result is not a success.')
+      throw new Error('Parse result is not a success.')
     }
   })
   it('parses back and forth as a function', () => {
@@ -4557,7 +4559,9 @@ export var whatever2 = (props) => <View data-uid='aaa'>
 `
     const actualResult = testParseCode(code)
     foldParsedTextFile(
-      (_) => fail('Unable to parse code.'),
+      (_) => {
+        throw new Error('Unable to parse code.')
+      },
       (success) => {
         let uids: Array<string> = []
         for (const topLevelElement of success.topLevelElements) {
@@ -4566,7 +4570,9 @@ export var whatever2 = (props) => <View data-uid='aaa'>
           }
         }
       },
-      (_) => fail('Unable to parse code.'),
+      (_) => {
+        throw new Error('Unable to parse code.')
+      },
       actualResult,
     )
   })
@@ -4614,7 +4620,9 @@ export var whatever = (props) => <View data-uid='aaa'>
 `
     const actualResult = testParseCode(code)
     foldParsedTextFile(
-      (_) => fail('Unable to parse code.'),
+      (_) => {
+        throw new Error('Unable to parse code.')
+      },
       (success) => {
         expect(elementsStructure(success.topLevelElements)).toMatchInlineSnapshot(`
           "UNPARSED_CODE
@@ -4622,7 +4630,9 @@ export var whatever = (props) => <View data-uid='aaa'>
           UNPARSED_CODE"
         `)
       },
-      (_) => fail('Unable to parse code.'),
+      (_) => {
+        throw new Error('Unable to parse code.')
+      },
       actualResult,
     )
   })
@@ -4665,7 +4675,7 @@ export var App = props => {
   it('maps a arbitraryJSBlock correctly', () => {
     const parseResult = testParseCode(code)
     if (!isParseSuccess(parseResult)) {
-      fail('expected parseResult to be Right')
+      throw new Error('expected parseResult to be Right')
     }
     const consoleLogBlock = parseResult.topLevelElements.find(isArbitraryJSBlock)!
 
@@ -4673,7 +4683,7 @@ export var App = props => {
       !isArbitraryJSBlock(consoleLogBlock) ||
       consoleLogBlock.javascript !== `console.log('hello!')`
     ) {
-      fail('expected the first topLevelElement to be the console logline')
+      throw new Error('expected the first topLevelElement to be the console logline')
     }
 
     const transpiledCharacter = 1 + consoleLogBlock.transpiledJavascript.indexOf('log')
@@ -4689,17 +4699,17 @@ export var App = props => {
   it('maps an arbitraryJSBlock inside a utopiaJSXComponent', () => {
     const parseResult = testParseCode(code)
     if (!isParseSuccess(parseResult)) {
-      fail('expected parseResult to be Right')
+      throw new Error('expected parseResult to be Right')
     }
     const appComponent = parseResult.topLevelElements.find(isUtopiaJSXComponent)!
     if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
-      fail('expected the second topLevelElement to be the App component')
+      throw new Error('expected the second topLevelElement to be the App component')
     }
 
     const arbitraryBlock = appComponent.arbitraryJSBlock
 
     if (arbitraryBlock == null) {
-      fail(`expected the App component's arbitraryJSBlock to be defined`)
+      throw new Error(`expected the App component's arbitraryJSBlock to be defined`)
     }
 
     const transpiledCharacter = 1 + arbitraryBlock.transpiledJavascript.split('\n')[1].indexOf('b')
@@ -4715,14 +4725,14 @@ export var App = props => {
   it('maps a jsxAttributeOtherJavaScript correctly', () => {
     const parseResult = testParseCode(code)
     if (!isParseSuccess(parseResult)) {
-      fail('expected parseResult to be a success')
+      throw new Error('expected parseResult to be a success')
     }
     const appComponent = parseResult.topLevelElements.find(isUtopiaJSXComponent)!
     if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
-      fail('expected the second topLevelElement to be the App component')
+      throw new Error('expected the second topLevelElement to be the App component')
     }
     if (!isJSXElement(appComponent.rootElement)) {
-      fail(`expected the App component's root element to be a JSXElement`)
+      throw new Error(`expected the App component's root element to be a JSXElement`)
     }
 
     const arbitraryProp = optionalMap(
@@ -4733,7 +4743,7 @@ export var App = props => {
     )
 
     if (arbitraryProp == null || !isJSXAttributeOtherJavaScript(arbitraryProp)) {
-      fail(`expected <View /> to have an arbitrary js prop called props.arbitrary`)
+      throw new Error(`expected <View /> to have an arbitrary js prop called props.arbitrary`)
     }
 
     const transpiledCharacter = 1 + arbitraryProp.transpiledJavascript.indexOf('log')

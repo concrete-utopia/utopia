@@ -16,7 +16,7 @@ describe('Parsing JSX Pragma:', () => {
     if (isParseSuccess(parsedPlainCode)) {
       expect(parsedPlainCode.jsxFactoryFunction).toEqual(null)
     } else {
-      fail(parsedPlainCode)
+      throw new Error(JSON.stringify(parsedPlainCode))
     }
   })
 
@@ -33,7 +33,7 @@ describe('Parsing JSX Pragma:', () => {
     if (isParseSuccess(parsedPlainCode)) {
       expect(parsedPlainCode.jsxFactoryFunction).toEqual('jsx')
     } else {
-      fail(parsedPlainCode)
+      throw new Error(JSON.stringify(parsedPlainCode))
     }
   })
 
@@ -76,7 +76,7 @@ describe('Parsing JSX Pragma:', () => {
     if (isParseSuccess(parsedPlainCode)) {
       expect(parsedPlainCode.jsxFactoryFunction).toEqual('preact.h')
     } else {
-      fail(parsedPlainCode)
+      throw new Error(JSON.stringify(parsedPlainCode))
     }
   })
 
@@ -94,7 +94,7 @@ describe('Parsing JSX Pragma:', () => {
     if (isParseSuccess(parsedPlainCode)) {
       expect(parsedPlainCode.jsxFactoryFunction).toEqual('preact.h')
     } else {
-      fail(parsedPlainCode)
+      throw new Error(JSON.stringify(parsedPlainCode))
     }
   })
 })

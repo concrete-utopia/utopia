@@ -258,7 +258,7 @@ function testRegexMatches(
       const matchGroup = stringAndMatch.matchGroups[i]
       if (matchGroup != null) {
         if (stringAndMatch.testString.match(regex)![i] !== matchGroup) {
-          fail(
+          throw new Error(
             `${stringAndMatch.testString}: ${
               stringAndMatch.testString.match(regex)![i]
             } doesn't equal ${matchGroup}`,
@@ -370,13 +370,13 @@ function testBackgroundLayers(
   for (const validString of validStrings) {
     const parsed = parseFunction(validString)
     if (isLeft(parsed)) {
-      fail(`${parsed.value}: ${validString}`)
+      throw new Error(`${parsed.value}: ${validString}`)
     }
   }
   for (const invalidString of invalidStrings) {
     const parsed = parseFunction(invalidString)
     if (isRight(parsed)) {
-      fail(`${parsed.value}: ${invalidString}`)
+      throw new Error(`${parsed.value}: ${invalidString}`)
     }
   }
 }
@@ -1640,7 +1640,7 @@ describe('cssColorToChromaColor', () => {
   })
 })
 
-describe('parseBackgroundColor', () => {
+describe('parseBackgroundColor 2', () => {
   it('parses a background color', () => {
     const validStrings = ['#fff', 'rgba(255 255 255 / 1)']
 
