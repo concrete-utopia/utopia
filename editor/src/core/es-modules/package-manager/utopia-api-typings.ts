@@ -1,12 +1,5 @@
 export const utopiaApiTypings = `declare module 'utopia-api/helpers/helper-functions' {
   import { PropertyControls } from 'utopia-api/property-controls/property-controls';
-  export function registerComponent(paramsObj: {
-      name: string;
-      moduleName: string;
-      controls: PropertyControls;
-      insert: string;
-      requiredImports: string;
-  }): void;
   export interface ComponentInsertOption {
       codeToInsert: string;
       additionalRequiredImports?: string;
