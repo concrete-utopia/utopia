@@ -6,7 +6,7 @@ import {
   getPrintedUiJsCodeWithoutUIDs,
 } from './ui-jsx.test-utils'
 
-describe.only('Canvas', () => {
+describe('Canvas', () => {
   it('renders fine with a valid registerComponent call', async () => {
     const renderResult = await renderTestEditorWithCode(
       `
