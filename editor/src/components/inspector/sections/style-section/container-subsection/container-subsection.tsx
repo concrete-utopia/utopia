@@ -24,7 +24,7 @@ export const ContainerSubsection = betterReactMemo('ContainerSubsection', () => 
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
   return (
     <>
-      <InspectorSubsectionHeader>
+      <InspectorSubsectionHeader style={{ borderTop: 'none' }}>
         <FlexRow
           style={{
             flexGrow: 1,

@@ -1,6 +1,9 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import styled from '@emotion/styled'
 import React from 'react'
+import { arrayEquals } from '../../../../core/shared/utils'
+import { unless, when } from '../../../../utils/react-conditionals'
 import Utils from '../../../../utils/utils'
 import {
   FlexColumn,
@@ -15,6 +18,9 @@ import {
   FunctionIcons,
   OnClickOutsideHOC,
   UIRow,
+  H2,
+  InspectorSubsectionHeader,
+  Tooltip,
 } from '../../../../uuiui'
 import { betterReactMemo, ContextMenuWrapper } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -167,6 +173,14 @@ export const TargetSelectorPanel = betterReactMemo(
             </FlexColumn>
           </FlexColumn>
         ) : null}
+        {unless(
+          isOpen,
+          <MiniTargetSelector
+            targets={targets}
+            selectedTargetPath={selectedTargetPath}
+            onSelect={onSelect}
+          />,
+        )}
       </FlexColumn>
     )
   },
@@ -404,28 +418,28 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
 
   const togglePathPanel = React.useCallback(() => setIsOpen((value) => !value), [setIsOpen])
 
-  const titleStyle =
-    selectedTargetPath[0] === 'style' ? undefined : { color: colorTheme.primary.value }
-
   return (
     <FlexRow
       style={{
         paddingLeft: 8,
         paddingRight: 8,
         cursor: 'pointer',
-        height: 42,
+        height: UtopiaTheme.layout.rowHeight.normal,
       }}
     >
-      <H1
+      <H2
         data-testid={`target-selector-${selectedTargetPath[0]}`}
-        style={{ flexGrow: 1, display: 'inline', overflow: 'hidden', ...titleStyle }}
+        style={{ flexGrow: 1, display: 'inline', overflow: 'hidden' }}
       >
-        {selectedTargetPath}
-      </H1>
+        Styling
+      </H2>
       <SectionActionSheet className='actionsheet'>
-        <SquareButton highlight disabled={isAdding} onClick={startAdding}>
-          <FunctionIcons.Add />
-        </SquareButton>
+        {when(
+          isOpen,
+          <SquareButton highlight disabled={isAdding} onClick={startAdding}>
+            <FunctionIcons.Add />
+          </SquareButton>,
+        )}
         <SquareButton highlight onClick={togglePathPanel}>
           <ExpandableIndicator
             testId='target-selector'
@@ -508,3 +522,122 @@ function getCSSTargetLabel(target: CSSTarget): string {
 export function getCSSTargetIndex(targetPath: Array<string>, allTargets: Array<CSSTarget>) {
   return allTargets.findIndex((t) => Utils.shallowEqual(t.path, targetPath))
 }
+
+interface MiniTargetSelectorProps {
+  targets: CSSTarget[]
+  selectedTargetPath: string[]
+  onSelect: (targetPath: Array<string>) => void
+}
+
+const MiniTargetSelector = betterReactMemo(
+  'MiniTargetSelector',
+  (props: MiniTargetSelectorProps) => {
+    const colorTheme = useColorTheme()
+    const { targets, selectedTargetPath } = props
+    const targetIndex = getCSSTargetIndex(selectedTargetPath, targets)
+
+    return (
+      <React.Fragment>
+        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.smaller, gap: 8, paddingLeft: 8 }}>
+          {targets.map((target) => {
+            return (
+              <MiniTargetItem
+                key={target.path.join()}
+                target={target}
+                selectedTargetPath={selectedTargetPath}
+                onSelect={props.onSelect}
+              />
+            )
+          })}
+        </FlexRow>
+        <SelectionLineWithArrow targetIndex={targetIndex} />
+        <FlexRow style={{ justifyContent: 'center', padding: 4, paddingTop: 0 }}>
+          <SelectedTargetLabel
+            style={{
+              backgroundColor: colorTheme.fg8.value,
+            }}
+          >
+            {selectedTargetPath.join(' ')}
+          </SelectedTargetLabel>
+        </FlexRow>
+      </React.Fragment>
+    )
+  },
+)
+
+interface MiniTargetItemProps {
+  target: CSSTarget
+  selectedTargetPath: string[]
+  onSelect: (targetPath: Array<string>) => void
+}
+const MiniTargetItem = betterReactMemo('MiniTargetItem', (props: MiniTargetItemProps) => {
+  const { target, selectedTargetPath } = props
+  const isSelected = arrayEquals(target.path, selectedTargetPath)
+  const colorTheme = useColorTheme()
+  return (
+    <Tooltip title={`${target.path.join()}`}>
+      <div
+        style={{
+          backgroundColor: isSelected ? colorTheme.primary.value : 'transparent',
+          width: 20,
+          height: 20,
+          borderRadius: '50%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <div
+          onClick={() => props.onSelect(target.path)}
+          style={{
+            backgroundColor: target.path.includes('style') ? colorTheme.primary.value : '#60d2d6',
+            width: 16,
+            height: 16,
+            border: `2px solid ${colorTheme.inspectorBackground.value}`,
+            borderRadius: '50%',
+            color: colorTheme.white.value,
+            textAlign: 'center',
+            fontSize: 8,
+            lineHeight: '12px',
+          }}
+        >
+          {isSelected && target.selectorLength}
+        </div>
+      </div>
+    </Tooltip>
+  )
+})
+
+const SelectionLineWithArrow = betterReactMemo(
+  'SelectionLineWithArrow',
+  (props: { targetIndex: number }) => {
+    const colorTheme = useColorTheme()
+    return (
+      <div style={{ paddingTop: 2 }}>
+        <div style={{ borderBottom: '1px solid hsl(0,0%,90%)', width: '100%' }} />
+        <div
+          style={{
+            borderTop: '1px solid hsl(0,0%,90%)',
+            borderLeft: '1px solid hsl(0,0%,90%)',
+            transform: 'rotate(45deg)',
+            width: 5,
+            height: 5,
+            position: 'relative',
+            top: -4,
+            background: colorTheme.inspectorBackground.value,
+            left: 15 + 28 * props.targetIndex,
+          }}
+        />
+      </div>
+    )
+  },
+)
+
+const SelectedTargetLabel = styled.div({
+  color: '#6b6b6b',
+  padding: '2px 8px',
+  width: UtopiaTheme.layout.inspectorSmallWidth - 20,
+  borderRadius: 4,
+  fontWeight: 500,
+  textAlign: 'center',
+})
