@@ -105,7 +105,7 @@ jobs:
   performance-test:
     name: Run Performance Tests
     runs-on: self-hosted
-    needs: deploy-staging
+    # needs: deploy-staging
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
@@ -120,6 +120,13 @@ jobs:
           FIXED_REF="${GITHUB_HEAD_REF////-}"
           echo "##[set-output name=branch;]$FIXED_REF"
         id: extract_branch
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: Run Performance Test
         id: run-performance-test
         env:
