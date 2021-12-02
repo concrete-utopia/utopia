@@ -155,7 +155,7 @@ let
       build-utopia-vscode-extension
       build-vscode
     '')
-    (pkgs writeScriptBin "run-puppeteer-test" ''
+    (pkgs.writeScriptBin "run-puppeteer-test" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
