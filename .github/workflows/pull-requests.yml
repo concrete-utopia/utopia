@@ -139,7 +139,7 @@ jobs:
           PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
           PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run performance-test"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "run-puppeteer-test"
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v1
         if: ${{ success() || failure() }}

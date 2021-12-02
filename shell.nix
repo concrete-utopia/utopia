@@ -155,6 +155,13 @@ let
       build-utopia-vscode-extension
       build-vscode
     '')
+    (pkgs writeScriptBin "run-puppeteer-test" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
+      ${pnpm} install --unsafe-perm
+      PUPPETEER_EXECUTABLE_PATH=${pkgs.google-chrome}/bin/google-chrome-stable ${pnpm} run performance-test
+    '')
   ];
 
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
@@ -442,7 +449,7 @@ let
 
   scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
 
-  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.x11 pkgs.xorg.libxkbfile ];
+  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.x11 pkgs.xorg.libxkbfile pkgs.google-chrome ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
     Cocoa
     CoreServices
