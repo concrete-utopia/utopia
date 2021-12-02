@@ -107,11 +107,11 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const rootElementProps = Utils.path<JSXAttributes>(['rootElement', 'props'], fixedComponent)
     const uidProp = getJSXAttribute(rootElementProps ?? [], 'data-uid')
     if (uidProp == null) {
-      fail('uid prop does not exist')
+      throw new Error('uid prop does not exist')
     } else if (isJSXAttributeValue(uidProp)) {
       expect(rootElement?.uid).toEqual(uidProp.value)
     } else {
-      fail('uid prop should be a simple value')
+      throw new Error('uid prop should be a simple value')
     }
   })
 

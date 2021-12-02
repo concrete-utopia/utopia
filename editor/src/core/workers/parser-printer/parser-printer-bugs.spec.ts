@@ -19,23 +19,6 @@ import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
 
-export function stripUnhelpfulFields(value: any): any {
-  switch (typeof value) {
-    case 'object': {
-      if (Array.isArray(value)) {
-        return value.map(stripUnhelpfulFields)
-      } else {
-        return objectMap(
-          stripUnhelpfulFields,
-          omit(['sourceMap', 'javascript', 'uniqueID', 'code'], value),
-        )
-      }
-    }
-    default:
-      return value
-  }
-}
-
 describe('JSX parser', () => {
   it('adds in data-uid attributes for elements in arbitrary code', () => {
     const code = `import * as React from "react";
@@ -50,7 +33,7 @@ export var App = props => {
 };`
     const parsedCode = testParseCode(code)
     if (!isParseSuccess(parsedCode)) {
-      fail(parsedCode)
+      throw new Error(JSON.stringify(parsedCode))
     }
   })
   it('fails on unprettied code', () => {
@@ -78,13 +61,13 @@ export var App = props => {
           })
           expect(topComponent.rootElement.props).toEqual(expectedProps)
         } else {
-          fail('Root element not a JSX element.')
+          throw new Error('Root element not a JSX element.')
         }
       } else {
-        fail('Not a component.')
+        throw new Error('Not a component.')
       }
     } else {
-      fail(parsedPlainCode)
+      throw new Error(JSON.stringify(parsedPlainCode))
     }
   })
   it('parses elements that use props spreading - #1365', () => {

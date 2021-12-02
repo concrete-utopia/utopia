@@ -59,7 +59,9 @@ describe('parseCode', () => {
   it('produces unique IDs for every element', () => {
     const parseResult = testParseCode(MajesticBrokerTestCaseCode)
     foldParsedTextFile(
-      (_) => fail('Is a failure.'),
+      (_) => {
+        throw new Error('Is a failure.')
+      },
       (success) => {
         const projectContents = addFileToProjectContents(
           {},
@@ -74,7 +76,9 @@ describe('parseCode', () => {
         const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
         expect(uniq(uniqueIDs).length).toMatchInlineSnapshot(`77`)
       },
-      (_) => fail('Is unparsed.'),
+      (_) => {
+        throw new Error('Is unparsed.')
+      },
       parseResult,
     )
   })

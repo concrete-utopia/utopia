@@ -35,7 +35,7 @@ export var App = (props) => {
   const parsedFile = lintAndParse(StoryboardFilePath, appFile, null, emptySet()) as ParsedTextFile
 
   if (!isParseSuccess(parsedFile)) {
-    fail('The test file parse failed')
+    throw new Error('The test file parse failed')
   }
 
   const projectContentsWithoutStoryboard = removeFromProjectContents(
@@ -64,14 +64,14 @@ describe('addStoryboardFileToProject', () => {
   it('adds storyboard file to project that does not have one', () => {
     const actualResult = addStoryboardFileToProject(createTestProjectLackingStoryboardFile())
     if (actualResult == null) {
-      fail('Editor state was not updated.')
+      throw new Error('Editor state was not updated.')
     } else {
       const storyboardFile = getContentsTreeFileFromString(
         actualResult.projectContents,
         StoryboardFilePath,
       )
       if (storyboardFile == null) {
-        fail('No storyboard file was created.')
+        throw new Error('No storyboard file was created.')
       } else {
         if (isTextFile(storyboardFile)) {
           const topLevelElements = foldParsedTextFile(
@@ -84,7 +84,7 @@ describe('addStoryboardFileToProject', () => {
           )
           expect(topLevelElements).toMatchSnapshot()
         } else {
-          fail('Storyboard file is not a UI JS file.')
+          throw new Error('Storyboard file is not a UI JS file.')
         }
       }
     }

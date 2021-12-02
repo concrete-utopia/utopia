@@ -44,18 +44,20 @@ export var storyboard = (props) => {
     const parseResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     foldParsedTextFile(
       (failure) => {
-        fail(failure)
+        throw new Error(JSON.stringify(failure))
       },
       (success) => {
         expect(success.imports).toMatchSnapshot()
         expect(success.topLevelElements).toMatchSnapshot()
       },
       (unparsed) => {
-        fail(unparsed)
+        throw new Error(JSON.stringify(unparsed))
       },
       parseResult,
     )
   })
+
+  // eslint-disable-next-line jest/expect-expect
   it('dot-notated elements cycle fully back and forth', () => {
     const originalCode = `
 import * as React from "react";

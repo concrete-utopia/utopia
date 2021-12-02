@@ -1018,7 +1018,7 @@ describe('updating package.json', () => {
       '/package.json',
     )
     if (packageJsonFile == null || packageJsonFile.type != 'TEXT_FILE') {
-      fail('Package.json file should exist and should be a TextFile')
+      throw new Error('Package.json file should exist and should be a TextFile')
     } else {
       expect(packageJsonFile.fileContents).toMatchInlineSnapshot(`
         Object {

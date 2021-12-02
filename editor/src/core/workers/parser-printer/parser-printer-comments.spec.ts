@@ -117,11 +117,12 @@ describe('Parsing and printing code with comments', () => {
   forEachValue((commentText, commentKey) => {
     const testFn = notYetSupported.includes(commentKey) ? xit : it
     testFn(`should retain the comment '${commentText}'`, () => {
+      // eslint-disable-next-line jest/no-standalone-expect
       expect(parsedThenPrinted.includes(commentText)).toBeTruthy()
       const firstIndex = parsedThenPrinted.indexOf(commentText)
       const lastIndex = parsedThenPrinted.lastIndexOf(commentText)
       if (firstIndex !== lastIndex) {
-        fail(`Found more than one instance of ${commentText}`)
+        throw new Error(`Found more than one instance of ${commentText}`)
       }
     })
   }, comments)

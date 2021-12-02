@@ -243,7 +243,9 @@ function parseModifyPrint(
 ): string {
   const initialParseResult = testParseCode(originalCode)
   return foldParsedTextFile(
-    (failure) => fail(failure),
+    (failure) => {
+      throw new Error(JSON.stringify(failure))
+    },
     (initialParseSuccess) => {
       const transformed = transform(initialParseSuccess)
       const printedCode = printCode(
@@ -256,7 +258,9 @@ function parseModifyPrint(
       )
       return printedCode
     },
-    (failure) => fail(failure),
+    (failure) => {
+      throw new Error(JSON.stringify(failure))
+    },
     initialParseResult,
   )
 }
@@ -931,10 +935,10 @@ export function forceParseSuccessFromFileOrFail(
     if (isParseSuccess(file.fileContents.parsed)) {
       return file.fileContents.parsed
     } else {
-      fail(`Not a parse success ${file.fileContents.parsed}`)
+      throw new Error(`Not a parse success ${file.fileContents.parsed}`)
     }
   } else {
-    fail(`Not a text file ${file}`)
+    throw new Error(`Not a text file ${file}`)
   }
 }
 

@@ -52,7 +52,7 @@ describe('Bundler State Machine', () => {
 
     await initReadyPromise
 
-    expect(stateMachine.state.matches('worker.idle'))
+    expect(stateMachine.state.matches('worker.idle')).toBeTruthy()
   })
 
   it('starts the worker when it receives a file to update', async () => {

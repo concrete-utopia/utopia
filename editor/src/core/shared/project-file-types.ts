@@ -99,6 +99,15 @@ export function importDetails(
   }
 }
 
+export function isImportSideEffects(target: ImportDetails): boolean {
+  // import './place'
+  return (
+    target.importedWithName == null &&
+    target.importedFromWithin.length === 0 &&
+    target.importedAs == null
+  )
+}
+
 export function importStatementFromImportDetails(
   moduleName: string,
   details: ImportDetails,

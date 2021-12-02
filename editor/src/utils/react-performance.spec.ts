@@ -46,12 +46,12 @@ describe('keepDeepReferenceEqualityIfPossible', () => {
     expect(a[1] === r[1]).toBeTruthy()
   })
 
-  it('keeps reference equality for matching parts of arrays even if they are different in length', () => {
+  it('keeps reference equality for matching parts of arrays even if they are different in length 2', () => {
     const a = deepFreeze([{ a: 5 }, { b: { c: { d: 6 } } }]) as any[]
     const b = deepFreeze([{ a: 5 }]) as any[]
     const r = keepDeepReferenceEqualityIfPossible(a, b)
     expect(fastDeepEquals(b, r)).toBeTruthy()
-    expect(r.length === 1).toBeTruthy
+    expect(r.length === 1).toBeTruthy()
     expect(a === r).toBeFalsy()
     expect(a[0] === r[0]).toBeTruthy()
   })
@@ -126,7 +126,7 @@ describe('keepDeepReferenceEqualityIfPossible', () => {
     expect(a.b === r.b).toBeTruthy()
   })
 
-  it('keeps reference equality for parts of objects even if they have different keys', () => {
+  it('keeps reference equality for parts of objects even if they have different keys 2', () => {
     const a = deepFreeze({
       a: ['this is', 'an array'],
       b: { c: { d: 6 } },

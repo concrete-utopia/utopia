@@ -17,6 +17,7 @@ describe('Typescript worker builds the project', () => {
   it('initializing a new project', (done) => {
     handleMessage(SampleInitTSWorkerMessage, (msg) => {
       if (msg.type === 'build') {
+        // eslint-disable-next-line jest/no-conditional-expect
         expect(msg).toMatchSnapshot()
         done()
       }
@@ -43,7 +44,7 @@ describe('Typescript worker applies the loaders', () => {
         // Ensure no errors
         for (const builtFile in msg.buildResult) {
           if (msg.buildResult[builtFile].errors.length > 0) {
-            fail(`Build errors found in built file ${builtFile}`)
+            done.fail(`Build errors found in built file ${builtFile}`)
           }
         }
 

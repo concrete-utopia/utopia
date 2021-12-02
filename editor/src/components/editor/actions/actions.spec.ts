@@ -489,13 +489,13 @@ describe('moveTemplate', () => {
           const movedView = Utils.path(['rootElement', 'children', 0, 'children', 0], updatedRoot)
           expect(movedView).toEqual(view('ccc', [], 10, 10, 100, 100))
         } else {
-          fail('First top level element is not a component.')
+          throw new Error('First top level element is not a component.')
         }
       } else {
-        fail('File does not contain parse success.')
+        throw new Error('File does not contain parse success.')
       }
     } else {
-      fail('src/app.js is not a UI JS file.')
+      throw new Error('src/app.js is not a UI JS file.')
     }
   })
 
@@ -1194,6 +1194,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "import * as React from 'react'
           import { Rectangle } from 'utopia-api'
           import { Menu } from 'antd'
+          import 'antd/dist/antd.css'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -1234,10 +1235,10 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "
         `)
       } else {
-        fail('File does not contain parse success.')
+        throw new Error('File does not contain parse success.')
       }
     } else {
-      fail('File is not a text file.')
+      throw new Error('File is not a text file.')
     }
   })
 
@@ -1296,6 +1297,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "import * as React from 'react'
           import { Rectangle } from 'utopia-api'
           import { Menu } from 'antd'
+          import 'antd/dist/antd.css'
           export var Card = (props) => {
             return (
               <div style={{ ...props.style }}>
@@ -1337,10 +1339,10 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "
         `)
       } else {
-        fail('File does not contain parse success.')
+        throw new Error('File does not contain parse success.')
       }
     } else {
-      fail('File is not a text file.')
+      throw new Error('File is not a text file.')
     }
   })
 
@@ -1429,10 +1431,10 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "
         `)
       } else {
-        fail('File does not contain parse success.')
+        throw new Error('File does not contain parse success.')
       }
     } else {
-      fail('File is not a text file.')
+      throw new Error('File is not a text file.')
     }
   })
 
@@ -1521,10 +1523,10 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "
         `)
       } else {
-        fail('File does not contain parse success.')
+        throw new Error('File does not contain parse success.')
       }
     } else {
-      fail('File is not a text file.')
+      throw new Error('File is not a text file.')
     }
   })
 
@@ -1605,10 +1607,10 @@ describe('INSERT_WITH_DEFAULTS', () => {
           "
         `)
       } else {
-        fail('File does not contain parse success.')
+        throw new Error('File does not contain parse success.')
       }
     } else {
-      fail('File is not a text file.')
+      throw new Error('File is not a text file.')
     }
   })
 })

@@ -93,7 +93,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       ).formatted
       expect(printedCode).toEqual(expectedCode)
     } else {
-      fail(parseResult)
+      throw new Error(JSON.stringify(parseResult))
     }
   })
 })
