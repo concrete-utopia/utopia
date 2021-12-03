@@ -21,6 +21,7 @@ import {
   H2,
   InspectorSubsectionHeader,
   Tooltip,
+  UNSAFE_getIconURL,
 } from '../../../../uuiui'
 import { betterReactMemo, ContextMenuWrapper } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -408,7 +409,6 @@ interface TargetListHeaderProps {
 }
 
 const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListHeaderProps) => {
-  const colorTheme = useColorTheme()
   const { isOpen, setIsOpen, setAddingIndex, selectedTargetPath, isAdding, targetIndex } = props
 
   const startAdding = React.useCallback(() => {
@@ -427,6 +427,9 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
         height: UtopiaTheme.layout.rowHeight.normal,
       }}
     >
+      <SquareButton highlight onClick={Utils.NO_OP}>
+        <ExpandableIndicator testId='style-tab-toggle' visible collapsed={false} selected={false} />
+      </SquareButton>
       <H2
         data-testid={`target-selector-${selectedTargetPath[0]}`}
         style={{ flexGrow: 1, display: 'inline', overflow: 'hidden' }}
@@ -538,7 +541,12 @@ const MiniTargetSelector = betterReactMemo(
 
     return (
       <React.Fragment>
-        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.smaller, gap: 8, paddingLeft: 8 }}>
+        <FlexRow
+          style={{
+            paddingLeft: 8,
+            flexWrap: 'wrap',
+          }}
+        >
           {targets.map((target) => {
             return (
               <MiniTargetItem
@@ -550,8 +558,8 @@ const MiniTargetSelector = betterReactMemo(
             )
           })}
         </FlexRow>
-        <SelectionLineWithArrow targetIndex={targetIndex} />
-        <FlexRow style={{ justifyContent: 'center', padding: 4, paddingTop: 0 }}>
+        {/* <SelectionLineWithArrow targetIndex={targetIndex} /> */}
+        {/* <FlexRow style={{ justifyContent: 'center', padding: 4, paddingTop: 0 }}>
           <SelectedTargetLabel
             style={{
               backgroundColor: colorTheme.fg8.value,
@@ -559,7 +567,7 @@ const MiniTargetSelector = betterReactMemo(
           >
             {selectedTargetPath.join(' ')}
           </SelectedTargetLabel>
-        </FlexRow>
+        </FlexRow> */}
       </React.Fragment>
     )
   },
@@ -574,34 +582,99 @@ const MiniTargetItem = betterReactMemo('MiniTargetItem', (props: MiniTargetItemP
   const { target, selectedTargetPath } = props
   const isSelected = arrayEquals(target.path, selectedTargetPath)
   const colorTheme = useColorTheme()
+  const mediaQuery = target.path.find((pathElement) => pathElement.includes('media'))
+  const mediaQueryMatch = mediaQuery?.match(/@media \(min-width: (.*?)\)/)
+  const mediaQuerySize = mediaQueryMatch != null ? mediaQueryMatch[1] : null
+
+  const hasHover = target.path.includes('&:hover') || target.path.includes(':hover')
+
+  const filteredPath = target.path.filter((path) => !path.includes(':hover'))
+  let textToDisplay = filteredPath.join(' ')
+  if (filteredPath.length === 1) {
+    textToDisplay = filteredPath[0]
+  } else {
+    if (mediaQuery != null && mediaQuerySize != null) {
+      textToDisplay = mediaQuerySize
+    } else {
+      textToDisplay = filteredPath.slice(1).join(' ')
+    }
+  }
+  if (target.path.length === 1) {
+    if (target.path[0] === 'css') {
+      textToDisplay = '💅'
+    } else if (target.path[0] === 'style') {
+      textToDisplay = '🏠'
+    }
+  }
+  const isStyle = target.path.includes('style')
   return (
-    <Tooltip title={`${target.path.join()}`}>
+    <Tooltip title={`${target.path.join(' ')}`}>
       <div
         style={{
           backgroundColor: isSelected ? colorTheme.primary.value : 'transparent',
-          width: 20,
-          height: 20,
-          borderRadius: '50%',
+          height: 24,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          padding: 2,
         }}
       >
         <div
           onClick={() => props.onSelect(target.path)}
           style={{
-            backgroundColor: target.path.includes('style') ? colorTheme.primary.value : '#60d2d6',
-            width: 16,
-            height: 16,
-            border: `2px solid ${colorTheme.inspectorBackground.value}`,
-            borderRadius: '50%',
+            backgroundColor: isStyle ? colorTheme.primary.value : '#60d2d6',
+            fontStyle: target.selectorLength === 0 ? 'italic' : undefined,
+            height: 20,
+            border: `1px solid ${isStyle ? '#89c2ff ' : '#9ee4e6'}`,
             color: colorTheme.white.value,
             textAlign: 'center',
-            fontSize: 8,
-            lineHeight: '12px',
+            fontSize: 12,
+            lineHeight: '18px',
+            cursor: 'pointer',
+            padding: '0px 2px',
+            display: 'flex',
+            alignItems: 'center',
+            columnGap: 8,
           }}
         >
-          {isSelected && target.selectorLength}
+          {hasHover && (
+            <div
+              style={{
+                backgroundColor: 'transparent',
+                backgroundSize: 18,
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                outline: 'none',
+                border: 'none',
+                width: 18,
+                height: 18,
+                backgroundImage: `url(${UNSAFE_getIconURL(
+                  'bracketed-pointer',
+                  'white',
+                  'semantic',
+                  18,
+                  18,
+                )})`,
+              }}
+            ></div>
+          )}
+          <div
+            style={{
+              maxWidth: 70,
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+            }}
+          >
+            {textToDisplay}
+          </div>
+          {target.selectorLength > 0 && (
+            <div
+              style={{ paddingLeft: 2, borderLeft: `1px solid ${isStyle ? '#89c2ff' : '#9ee4e6'}` }}
+            >
+              {target.selectorLength}
+            </div>
+          )}
         </div>
       </div>
     </Tooltip>
