@@ -155,7 +155,12 @@ let
       build-utopia-vscode-extension
       build-vscode
     '')
-    (pkgs.writeScriptBin "run-puppeteer-test" ''
+  ];
+
+  withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
+
+  puppeteerScripts = [
+      (pkgs.writeScriptBin "run-puppeteer-test" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
@@ -164,7 +169,7 @@ let
     '')
   ];
 
-  withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
+  withPuppeteerScripts = withBaseEditorScripts ++ (lib.optionals stdenv.isLinux puppeteerScripts);
 
   serverBaseScripts = [
     (pkgs.writeScriptBin "rebuild-cabal" ''
@@ -206,7 +211,7 @@ let
     '')
   ];
 
-  withServerBaseScripts = withBaseEditorScripts ++ (lib.optionals includeServerBuildSupport serverBaseScripts);
+  withServerBaseScripts = withPuppeteerScripts ++ (lib.optionals includeServerBuildSupport serverBaseScripts);
 
   editorRunScripts = [
     (pkgs.writeScriptBin "watch-tsc" ''
