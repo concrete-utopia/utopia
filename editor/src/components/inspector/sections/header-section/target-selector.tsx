@@ -577,9 +577,11 @@ const MiniTargetSelector = betterReactMemo(
         <SelectionLineWithArrow targetIndex={targetIndex} />
         <FlexRow style={{ justifyContent: 'center', padding: 4, paddingTop: 0 }}>
           <SelectedTargetLabel
-            style={{
-              backgroundColor: colorTheme.fg8.value,
-            }}
+            style={
+              {
+                // backgroundColor: colorTheme.fg8.value,
+              }
+            }
           >
             {displayedTargetPath}
           </SelectedTargetLabel>
