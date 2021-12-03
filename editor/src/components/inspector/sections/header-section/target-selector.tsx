@@ -539,6 +539,20 @@ const MiniTargetSelector = betterReactMemo(
     const { targets, selectedTargetPath } = props
     const targetIndex = getCSSTargetIndex(selectedTargetPath, targets)
 
+    const [displayedTargetPath, setDisplayedTargetPath] = React.useState(
+      selectedTargetPath.join(' '),
+    )
+
+    const onItemMouseEnter = React.useCallback(
+      (targetPath: string) => {
+        setDisplayedTargetPath(targetPath)
+      },
+      [setDisplayedTargetPath],
+    )
+    const onItemMouseLeave = React.useCallback(() => {
+      setDisplayedTargetPath(selectedTargetPath.join(' '))
+    }, [setDisplayedTargetPath, selectedTargetPath])
+
     return (
       <React.Fragment>
         <FlexRow
@@ -550,6 +564,8 @@ const MiniTargetSelector = betterReactMemo(
           {targets.map((target) => {
             return (
               <MiniTargetItem
+                onMouseEnter={onItemMouseEnter}
+                onMouseLeave={onItemMouseLeave}
                 key={target.path.join()}
                 target={target}
                 selectedTargetPath={selectedTargetPath}
@@ -558,16 +574,16 @@ const MiniTargetSelector = betterReactMemo(
             )
           })}
         </FlexRow>
-        {/* <SelectionLineWithArrow targetIndex={targetIndex} /> */}
-        {/* <FlexRow style={{ justifyContent: 'center', padding: 4, paddingTop: 0 }}>
+        <SelectionLineWithArrow targetIndex={targetIndex} />
+        <FlexRow style={{ justifyContent: 'center', padding: 4, paddingTop: 0 }}>
           <SelectedTargetLabel
             style={{
               backgroundColor: colorTheme.fg8.value,
             }}
           >
-            {selectedTargetPath.join(' ')}
+            {displayedTargetPath}
           </SelectedTargetLabel>
-        </FlexRow> */}
+        </FlexRow>
       </React.Fragment>
     )
   },
@@ -577,6 +593,8 @@ interface MiniTargetItemProps {
   target: CSSTarget
   selectedTargetPath: string[]
   onSelect: (targetPath: Array<string>) => void
+  onMouseEnter: (targetPath: string) => void
+  onMouseLeave: () => void
 }
 const MiniTargetItem = betterReactMemo('MiniTargetItem', (props: MiniTargetItemProps) => {
   const { target, selectedTargetPath } = props
@@ -606,12 +624,25 @@ const MiniTargetItem = betterReactMemo('MiniTargetItem', (props: MiniTargetItemP
       textToDisplay = '🏠'
     }
   }
+  const [isOver, setIsOver] = React.useState(false)
   const isStyle = target.path.includes('style')
   return (
     <Tooltip title={`${target.path.join(' ')}`}>
       <div
+        onMouseEnter={() => {
+          props.onMouseEnter(target.path.join(' '))
+          setIsOver(true)
+        }}
+        onMouseLeave={() => {
+          props.onMouseLeave()
+          setIsOver(false)
+        }}
         style={{
-          backgroundColor: isSelected ? colorTheme.primary.value : 'transparent',
+          backgroundColor: isSelected
+            ? colorTheme.primary.value
+            : isOver
+            ? '#89c2ff'
+            : 'transparent',
           height: 24,
           display: 'flex',
           justifyContent: 'center',
