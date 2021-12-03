@@ -100,7 +100,7 @@ const workers = new MockUtopiaTsWorkers()
 
 const testScenePath = ScenePath1ForTestUiJsFile
 const testElementPath = EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['pancake'])
-const builtInDependencies: BuiltInDependencies = createBuiltInDependenciesList(NO_OP, null, null)
+const builtInDependencies: BuiltInDependencies = createBuiltInDependenciesList(null)
 
 describe('action SELECT_VIEWS', () => {
   it('updates selectedview in editor', () => {

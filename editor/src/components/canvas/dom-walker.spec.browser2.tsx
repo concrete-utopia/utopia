@@ -73,7 +73,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     persistence: DummyPersistenceMachine,
     dispatch: dispatch,
     alreadySaved: false,
-    builtInDependencies: createBuiltInDependenciesList(dispatch, () => emptyEditorState, null),
+    builtInDependencies: createBuiltInDependenciesList(null),
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

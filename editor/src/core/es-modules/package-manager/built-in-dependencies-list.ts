@@ -52,13 +52,11 @@ function builtInDependency(
 }
 
 export function createBuiltInDependenciesList(
-  dispatch: EditorDispatch,
-  getEditorState: (() => EditorState) | null,
   workers: UtopiaTsWorkers | null,
 ): BuiltInDependencies {
   const UtopiaAPISpecial: typeof UtopiaAPI = {
     ...UtopiaAPI,
-    registerModule: createRegisterModuleFunction(dispatch, getEditorState, workers),
+    registerModule: createRegisterModuleFunction(workers),
   }
 
   // Ensure this is kept up to date with:

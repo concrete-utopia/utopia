@@ -4381,12 +4381,16 @@ export const UPDATE_FNS = {
     action: UpdatePropertyControlsInfo,
     editor: EditorState,
   ): EditorState => {
+    let updatedPropertyControlsInfo: PropertyControlsInfo = {
+      ...editor.propertyControlsInfo,
+      ...action.propertyControlsInfo,
+    }
+    for (const moduleNameOrPathToDelete of action.moduleNamesOrPathsToDelete) {
+      delete updatedPropertyControlsInfo[moduleNameOrPathToDelete]
+    }
     return {
       ...editor,
-      propertyControlsInfo: {
-        ...editor.propertyControlsInfo,
-        ...action.propertyControlsInfo,
-      },
+      propertyControlsInfo: updatedPropertyControlsInfo,
     }
   },
   ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
