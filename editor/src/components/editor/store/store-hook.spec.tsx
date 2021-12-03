@@ -21,7 +21,7 @@ function createEmptyEditorStoreHook() {
     persistence: null as any,
     dispatch: null as any,
     alreadySaved: false,
-    builtInDependencies: createBuiltInDependenciesList(NO_OP, () => emptyEditorState, null),
+    builtInDependencies: createBuiltInDependenciesList(null),
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

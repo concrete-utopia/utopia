@@ -47,6 +47,7 @@ import {
 } from '../shared/either'
 import { mapArrayToDictionary } from '../shared/array-utils'
 import { setOptionalProp } from '../shared/object-utils'
+import { addControlsToCheck } from '../../components/canvas/canvas-globals'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -118,13 +119,11 @@ async function componentDescriptorForComponentToRegister(
   }, parsedInsertOptions)
 }
 
-async function registerModuleInternal(
-  dispatch: EditorDispatch,
-  getEditorState: (() => EditorState) | null,
+function registerModuleInternal(
   workers: UtopiaTsWorkers,
   moduleNameOrPath: string,
   components: { [componentName: string]: ComponentToRegister },
-) {
+): void {
   const componentNames = Object.keys(components)
   const componentDescriptorPromises = componentNames.map((componentName) => {
     const componentToRegister = components[componentName]
@@ -136,36 +135,11 @@ async function registerModuleInternal(
     )
   })
 
-  const componentDescriptorsUnsequenced = await Promise.all(componentDescriptorPromises)
-  const componentDescriptors = sequenceEither(componentDescriptorsUnsequenced)
-  if (isRight(componentDescriptors)) {
-    // FIXME At what point should we be caching / memoising this?
-    const newDescriptorsForFile: ComponentDescriptorsForFile = mapArrayToDictionary(
-      componentDescriptors.value,
-      (descriptorWithName) => descriptorWithName.componentName,
-      (descriptorWithName) => {
-        return {
-          propertyControls: descriptorWithName.propertyControls,
-          insertOptions: descriptorWithName.insertOptions,
-        }
-      },
-    )
-
-    const currentPropertyControlsInfo = getEditorState?.().propertyControlsInfo ?? {}
-    const currentDescriptorsForFile = currentPropertyControlsInfo[moduleNameOrPath] ?? {}
-
-    const descriptorsChanged = !deepEqual(currentDescriptorsForFile, newDescriptorsForFile)
-    if (descriptorsChanged) {
-      const updatedPropertyControlsInfo: PropertyControlsInfo = {
-        [moduleNameOrPath]: newDescriptorsForFile,
-      }
-      dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
-    }
-  } else {
-    console.error(
-      `There was a problem with 'registerModule' ${moduleNameOrPath}: ${componentDescriptors.value}`,
-    )
-  }
+  const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
+  const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
+    sequenceEither(unsequenced),
+  )
+  addControlsToCheck(moduleNameOrPath, componentDescriptors)
 }
 
 export function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControls> {
@@ -210,8 +184,6 @@ export const parseComponents: (
 )
 
 export function createRegisterModuleFunction(
-  dispatch: EditorDispatch,
-  getEditorState: (() => EditorState) | null,
   workers: UtopiaTsWorkers | null,
 ): typeof registerModuleAPI {
   // create a function with a signature that matches utopia-api/registerModule
@@ -244,7 +216,8 @@ export function createRegisterModuleFunction(
 
     forEachRight(parsedParams, ({ moduleName, components }) => {
       if (workers != null) {
-        registerModuleInternal(dispatch, getEditorState, workers, moduleName, components)
+        // Fires off asynchronously.
+        registerModuleInternal(workers, moduleName, components)
       }
     })
   }
