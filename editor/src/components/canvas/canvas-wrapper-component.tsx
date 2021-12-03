@@ -2,7 +2,12 @@ import React from 'react'
 import { EditorCanvas } from '../../templates/editor-canvas'
 import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-error-overlay'
 import { setFocus } from '../common/actions'
-import { openCodeEditorFile, setSafeMode } from '../editor/actions/action-creators'
+import {
+  clearHighlightedViews,
+  openCodeEditorFile,
+  setSafeMode,
+  switchEditorMode,
+} from '../editor/actions/action-creators'
 import {
   createCanvasModelKILLME,
   getAllCodeEditorErrors,
@@ -24,6 +29,8 @@ import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { ModeSelectButtons } from './mode-select-buttons'
 import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
+import CanvasActions from './canvas-actions'
+import { EditorModes } from '../editor/editor-modes'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -170,14 +177,31 @@ const ErrorOverlayComponent = betterReactMemo(
       [dispatch],
     )
 
-    return (
-      <ReactErrorOverlay
-        currentBuildErrorRecords={errorRecords}
-        currentRuntimeErrorRecords={overlayErrors}
-        onOpenFile={onOpenFile}
-        overlayOffset={0}
-      />
+    const overlay = React.useMemo(
+      () => (
+        <ReactErrorOverlay
+          currentBuildErrorRecords={errorRecords}
+          currentRuntimeErrorRecords={overlayErrors}
+          onOpenFile={onOpenFile}
+          overlayOffset={0}
+        />
+      ),
+      [errorRecords, overlayErrors, onOpenFile],
     )
+
+    React.useEffect(() => {
+      if (overlay != null) {
+        // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
+        // since that might have been the cause of the error being thrown, as well as switching back to select mode
+        dispatch([
+          CanvasActions.clearDragState(true),
+          switchEditorMode(EditorModes.selectMode()),
+          clearHighlightedViews(),
+        ])
+      }
+    }, [dispatch, overlay])
+
+    return overlay
   },
 )
 
