@@ -1269,12 +1269,10 @@ export function setShortcut(shortcutName: string, newKey: Key): SetShortcut {
 
 export function updatePropertyControlsInfo(
   propertyControlsInfo: PropertyControlsInfo,
-  moduleNamesOrPathsToDelete: Array<string>,
 ): UpdatePropertyControlsInfo {
   return {
     action: 'UPDATE_PROPERTY_CONTROLS_INFO',
     propertyControlsInfo: propertyControlsInfo,
-    moduleNamesOrPathsToDelete: moduleNamesOrPathsToDelete,
   }
 }
 

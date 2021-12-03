@@ -30,12 +30,7 @@ import {
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
-import {
-  CurriedResolveFn,
-  CurriedUtopiaRequireFn,
-  PropertyControlsInfo,
-  UtopiaRequireFn,
-} from '../custom-code/code-file'
+import { CurriedResolveFn, CurriedUtopiaRequireFn, UtopiaRequireFn } from '../custom-code/code-file'
 import { importResultFromImports } from '../editor/npm-dependency/npm-dependency'
 import {
   DerivedState,
@@ -89,8 +84,6 @@ import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
 import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { omit } from '../../core/shared/object-utils'
-import { resetControlsToCheck, validateControlsToCheck } from './canvas-globals'
-import { EditorDispatch } from '../editor/action-types'
 
 applyUIDMonkeyPatch()
 
@@ -157,8 +150,6 @@ export interface UiJsxCanvasProps {
   projectContents: ProjectContentTreeRoot
   transientFilesState: TransientFilesState | null
   scrollAnimation: boolean
-  propertyControlsInfo: PropertyControlsInfo
-  dispatch: EditorDispatch
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -177,7 +168,6 @@ export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactCl
 export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
-  dispatch: EditorDispatch,
   walkDOM: boolean,
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
@@ -238,8 +228,6 @@ export function pickUiJsxCanvasProps(
       projectContents: editor.projectContents,
       transientFilesState: derived.canvas.transientState.filesState,
       scrollAnimation: editor.canvas.scrollAnimation,
-      propertyControlsInfo: editor.propertyControlsInfo,
-      dispatch: dispatch,
     }
   }
 }
@@ -312,14 +300,7 @@ export const UiJsxCanvas = betterReactMemo(
       projectContents,
       transientFilesState,
       shouldIncludeCanvasRootInTheSpy,
-      propertyControlsInfo,
-      dispatch,
     } = props
-
-    resetControlsToCheck()
-    React.useEffect(() => {
-      validateControlsToCheck(dispatch, propertyControlsInfo)
-    })
 
     // FIXME This is illegal! The two lines below are triggering a re-render
     clearConsoleLogs()

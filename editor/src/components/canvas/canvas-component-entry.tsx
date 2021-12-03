@@ -49,7 +49,6 @@ export const CanvasComponentEntry = betterReactMemo(
       return pickUiJsxCanvasProps(
         store.editor,
         store.derived,
-        store.dispatch,
         true,
         onDomReport,
         clearConsoleLogs,

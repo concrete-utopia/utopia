@@ -57,7 +57,7 @@ export function getStoreHook(
     persistence: null as any,
     dispatch: mockDispatch,
     alreadySaved: false,
-    builtInDependencies: createBuiltInDependenciesList(null),
+    builtInDependencies: createBuiltInDependenciesList(NO_OP, null, null),
   }
 
   const storeHook = create<EditorStore & UpdateFunctionHelpers>((set) => ({

@@ -133,7 +133,7 @@ const initPreview = () => {
   queuedModel = null
   cachedDependencies = {}
   const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
-  const builtInDependencies = createBuiltInDependenciesList(null)
+  const builtInDependencies = createBuiltInDependenciesList(NO_OP, null, null)
 
   const startPollingFromServer = (appID: string | null) => {
     if (appID != null) {

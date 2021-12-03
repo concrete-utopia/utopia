@@ -67,7 +67,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileNoImports as PackagerServerResponse),
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -80,7 +80,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -93,7 +93,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithLocalImport),
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -106,7 +106,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     reqFn('/src/index.js', 'mypackage/simple.css')
 
@@ -120,7 +120,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     reqFn('/src/index.js', 'mypackage/simple.css')
 
@@ -136,7 +136,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
 
     const requireResult = reqFn('/src/index.js', 'mypackage/simple.svg')
@@ -153,7 +153,7 @@ describe('ES Dependency Package Manager', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     const test = () => reqFn('/src/index.js', 'mypackage2')
     expect(test).toThrowError(`Could not find dependency: 'mypackage2' relative to '/src/index.js`)
@@ -168,7 +168,7 @@ describe('ES Dependency Manager — Cycles', () => {
       {},
       extractNodeModulesFromPackageResponse(fileWithImports),
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
       spyEvaluator,
     )
     const requireResult = reqFn('/src/index.js', 'mypackage/moduleA')
@@ -192,7 +192,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     )
     const fetchNodeModulesResult = await fetchNodeModules(
       [requestedNpmDependency('react-spring', '8.0.27')],
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       throw new Error(`Expected successful nodeModules fetch`)
@@ -204,7 +204,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
       {},
       nodeModules,
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     const reactSpring = req('/src/index.js', 'react-spring')
     expect(Object.keys(reactSpring)).not.toHaveLength(0)
@@ -227,7 +227,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     )
     fetchNodeModules(
       [requestedNpmDependency('antd', '4.2.5')],
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     ).then((fetchNodeModulesResult) => {
       if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
         throw new Error(`Expected successful nodeModules fetch`)
@@ -243,7 +243,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
           {},
           updatedNodeModules,
           {},
-          createBuiltInDependenciesList(null),
+          createBuiltInDependenciesList(NO_OP, null, null),
           spyEvaluator,
         )
 
@@ -264,7 +264,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
         {},
         nodeModules,
         {},
-        createBuiltInDependenciesList(null),
+        createBuiltInDependenciesList(NO_OP, null, null),
         spyEvaluator,
       )
       const antd = req('/src/index.js', 'antd')
@@ -298,7 +298,7 @@ describe('ES Dependency Manager', () => {
     )
     const fetchNodeModulesResult = await fetchNodeModules(
       [requestedNpmDependency('broken', '1.0.0')],
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       throw new Error(`Expected successful nodeModules fetch`)
@@ -310,7 +310,7 @@ describe('ES Dependency Manager', () => {
       {},
       nodeModules,
       {},
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     expect(() => req('/src/index.js', 'broken')).toThrowErrorMatchingInlineSnapshot(
       `"Fail on import."`,
@@ -333,7 +333,7 @@ describe('ES Dependency Manager — d.ts', () => {
 
     const fetchNodeModulesResult = await fetchNodeModules(
       [requestedNpmDependency('react-spring', '8.0.27')],
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       throw new Error(`Expected successful nodeModules fetch`)
@@ -368,7 +368,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
     )
     fetchNodeModules(
       [requestedNpmDependency('mypackage', '0.0.1')],
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     ).then((fetchNodeModulesResult) => {
       if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
         throw new Error(`Expected successful nodeModules fetch`)
@@ -384,7 +384,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
           {},
           updatedNodeModules,
           {},
-          createBuiltInDependenciesList(null),
+          createBuiltInDependenciesList(NO_OP, null, null),
         )
 
         // this is like calling `import 'mypackage/dist/style.css';`, we only care about the side effect
@@ -405,7 +405,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         {},
         nodeModules,
         {},
-        createBuiltInDependenciesList(null),
+        createBuiltInDependenciesList(NO_OP, null, null),
       )
       expect(() => req('/src/index.js', 'mypackage/dist/style.css')).toThrow(
         createResolvingRemoteDependencyError('mypackage/dist/style.css'),
@@ -434,7 +434,7 @@ describe('ES Dependency manager - retry behavior', () => {
 
     fetchNodeModules(
       [requestedNpmDependency('react-spring', '8.0.27')],
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     ).then((fetchNodeModulesResult) => {
       if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
         throw new Error(`Expected successful nodeModule fetch`)
@@ -456,7 +456,7 @@ describe('ES Dependency manager - retry behavior', () => {
 
     fetchNodeModules(
       [requestedNpmDependency('react-spring', '8.0.27')],
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
     ).then((fetchNodeModulesResult) => {
       expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
       expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
@@ -484,7 +484,7 @@ describe('ES Dependency manager - retry behavior', () => {
 
     fetchNodeModules(
       [requestedNpmDependency('react-spring', '8.0.27')],
-      createBuiltInDependenciesList(null),
+      createBuiltInDependenciesList(NO_OP, null, null),
       false,
     ).then((fetchNodeModulesResult) => {
       expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
@@ -501,7 +501,7 @@ describe('ES Dependency manager - browser field substitutions', () => {
     {},
     createNodeModules(moduleResolutionExamples.contents),
     {},
-    createBuiltInDependenciesList(null),
+    createBuiltInDependenciesList(NO_OP, null, null),
   )
 
   it('returns the replaced module', () => {
