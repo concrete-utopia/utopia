@@ -362,7 +362,7 @@ describe('Generating codeResultCache', () => {
       {},
       'incremental',
       false,
-      createBuiltInDependenciesList(NO_OP, null, null),
+      createBuiltInDependenciesList(null),
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -379,7 +379,7 @@ describe('Generating codeResultCache', () => {
       {},
       'incremental',
       false,
-      createBuiltInDependenciesList(NO_OP, null, null),
+      createBuiltInDependenciesList(null),
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -395,7 +395,7 @@ describe('Generating codeResultCache', () => {
       {},
       'incremental',
       false,
-      createBuiltInDependenciesList(NO_OP, null, null),
+      createBuiltInDependenciesList(null),
     )
 
     expect(codeResultCache).toMatchSnapshot()
@@ -414,7 +414,7 @@ describe('Creating require function', () => {
       {},
       'incremental',
       false,
-      createBuiltInDependenciesList(NO_OP, null, null),
+      createBuiltInDependenciesList(null),
     )
 
     expect(codeResultCache.curriedRequireFn({})('/', './app', false)).toMatchSnapshot()
@@ -430,7 +430,7 @@ describe('Creating require function', () => {
       {},
       'incremental',
       false,
-      createBuiltInDependenciesList(NO_OP, null, null),
+      createBuiltInDependenciesList(null),
     )
 
     expect(codeResultCache.curriedRequireFn({})('/', './app', false)).toMatchSnapshot()
@@ -447,7 +447,7 @@ describe('Creating require function', () => {
       {},
       'incremental',
       false,
-      createBuiltInDependenciesList(NO_OP, null, null),
+      createBuiltInDependenciesList(null),
     )
 
     expect(() =>
@@ -465,7 +465,7 @@ describe('Creating require function', () => {
       {},
       'incremental',
       false,
-      createBuiltInDependenciesList(NO_OP, null, null),
+      createBuiltInDependenciesList(null),
     )
 
     expect(() =>
