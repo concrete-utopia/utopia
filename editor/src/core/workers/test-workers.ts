@@ -10,6 +10,7 @@ import { BundlerWorker } from './bundler-bridge'
 import {
   createParsePrintFilesRequest,
   ParseOrPrint,
+  ParsePrintFilesRequest,
   ParsePrintResultMessage,
 } from './common/worker-types'
 
@@ -30,8 +31,8 @@ export class FakeParserPrinterWorker implements ParserPrinterWorker {
     })
   }
 
-  sendParsePrintMessage = (files: Array<ParseOrPrint>): void => {
-    handleParserPrinterMessage(createParsePrintFilesRequest(files), this.receiveMessage)
+  sendParsePrintMessage = (request: ParsePrintFilesRequest): void => {
+    handleParserPrinterMessage(request, this.receiveMessage)
   }
 }
 
