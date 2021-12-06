@@ -254,7 +254,7 @@
       "  label: '${1:PropName}'",
       "  //visibleByDefault: true",
       "  //defaultValue: {itemID: 10, name: 'Hat'}",
-      "  object: [{label: 'itemID', control: 'number-input'}, {label: 'name', control: 'string-input'}]",
+      "  object: { itemID: {label: 'itemID', control: 'number-input'}, name: {label: 'name', control: 'string-input'} }",
       "},"
     ],
     "description": "Register Module Array Control"
