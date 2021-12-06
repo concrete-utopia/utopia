@@ -119,7 +119,7 @@
     "prefix": "registerModule:Number Control",
     "body": [
       "${1:PropName}: {",
-      "  control: 'matrix4',",
+      "  control: 'number-input',",
       "  label: '${1:PropName}'",
       "  //visibleByDefault: true",
       "  //defaultValue: 0",
