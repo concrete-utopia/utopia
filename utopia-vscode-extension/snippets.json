@@ -87,8 +87,6 @@
     "body": [
       "${1:PropName}: {",
       "  control: 'none',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
       "},"
     ],
     "description": "Register Module None Control"
