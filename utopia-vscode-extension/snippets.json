@@ -29,5 +29,27 @@
       ")"
     ],
     "description": "Register Module Function Body"
+  },
+  "property control": {
+    "prefix": "registerModule:Property Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'string-input',",
+      "  label: '${1:PropName}'",
+      "},"
+    ],
+    "description": "Register Module Property Control"
+  },
+  "insert option": {
+    "prefix": "registerModule:Insert Option",
+    "body": [
+      "{",
+      "  menuLabel: '${1:ComponentName}', // label to use in the insert menu, optional",
+      "  codeToInsert: '<${1:ComponentName} />',",
+      "  // additionalRequiredImports: `import '/src/styles.css';`, // optional",
+      "},"
+    ],
+    "description": "Register Module Insert Option"
   }
+
 }
