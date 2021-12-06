@@ -10,6 +10,7 @@ import { CanvasControlsLegacyLayer } from './controls/new-canvas-controls'
 function useScroll(ref: React.RefObject<HTMLDivElement>): void {
   const dispatch = useEditorState((store) => store.dispatch, 'useScroll dispatch')
   React.useEffect(() => {
+    const canavsRootRef = ref.current
     function onWheel(this: HTMLDivElement, event: WheelEvent) {
       event.stopPropagation()
       event.stopImmediatePropagation()
@@ -17,12 +18,12 @@ function useScroll(ref: React.RefObject<HTMLDivElement>): void {
       dispatch([CanvasActions.scrollCanvas({ x: event.deltaX, y: event.deltaY } as CanvasVector)])
     }
 
-    ref.current?.addEventListener('wheel', onWheel)
+    canavsRootRef?.addEventListener('wheel', onWheel)
 
     return function cleanup() {
-      ref.current?.removeEventListener('wheel', onWheel)
+      canavsRootRef?.removeEventListener('wheel', onWheel)
     }
-  }, [dispatch])
+  }, [dispatch, ref])
 }
 
 const CanvasRootDiv = styled.div({
