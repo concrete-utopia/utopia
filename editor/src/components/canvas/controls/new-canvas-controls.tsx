@@ -3,7 +3,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
-import { CanvasPoint } from '../../../core/shared/math-utils'
+import { CanvasPoint, RawPoint, WindowPoint } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
   DerivedState,
@@ -57,6 +57,7 @@ import { KeysPressed } from '../../../utils/keyboard'
 import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
+import { useWindowToCanvasCoordinates } from '../dom-lookup-hooks'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -110,6 +111,18 @@ export interface ControlProps {
   resolve: ResolveFn
   resizeOptions: ResizeOptions
 }
+
+export const CanvasControlsLegacyLayer = betterReactMemo<{}>('CanvasControlsLegacyLayer', () => {
+  const windowToCanvasPosition = useWindowToCanvasCoordinates()
+  return (
+    <NewCanvasControls
+      cursor={CSSCursor.Select}
+      windowToCanvasPosition={(event) =>
+        windowToCanvasPosition({ x: event.clientX, y: event.clientY } as WindowPoint)
+      }
+    />
+  )
+})
 
 interface NewCanvasControlsProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
@@ -203,7 +216,7 @@ export const NewCanvasControls = betterReactMemo(
               transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
             }}
           >
-            <NewCanvasControlsInner
+            <NewCanvasControlsNewInner
               windowToCanvasPosition={props.windowToCanvasPosition}
               localSelectedViews={localSelectedViews}
               localHighlightedViews={localHighlightedViews}
@@ -231,6 +244,7 @@ interface NewCanvasControlsInnerProps {
   setLocalSelectedViews: (newSelectedViews: ElementPath[]) => void
 }
 
+// This is unused, I kept it here for reference
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const colorTheme = useColorTheme()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
@@ -380,6 +394,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               frame={frame}
               scale={props.editor.canvas.scale}
               canvasOffset={props.canvasOffset}
+              outlineWidth={1.5}
             />
           )
         })
@@ -402,6 +417,88 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     >
       {renderModeControlContainer()}
       {renderHighlightControls()}
+      <LayoutParentControl />
+    </div>
+  )
+}
+
+const NewCanvasControlsNewInner = (props: NewCanvasControlsInnerProps) => {
+  const colorTheme = useColorTheme()
+
+  const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
+  const cmdKeyPressed = props.editor.keysPressed['cmd'] ?? false
+
+  const componentMetadata = getMetadata(props.editor)
+
+  const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
+
+  const { onMouseMove, onMouseDown } = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
+
+  const renderSelectedOutlines = () => {
+    return selectionEnabled
+      ? localSelectedViews.map((path) => {
+          const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
+          if (frame == null) {
+            return null
+          }
+          const color = colorTheme.canvasSelectionPrimaryOutline.value
+          return (
+            <HighlightControl
+              key={`highlight-control-${EP.toComponentId(path)}`}
+              color={color}
+              frame={frame}
+              scale={props.editor.canvas.scale}
+              canvasOffset={props.canvasOffset}
+              outlineWidth={0.5}
+            />
+          )
+        })
+      : []
+  }
+
+  const renderHighlightControls = () => {
+    return selectionEnabled
+      ? localHighlightedViews.map((path) => {
+          const frame = MetadataUtils.getFrameInCanvasCoords(path, componentMetadata)
+          if (frame == null) {
+            return null
+          }
+          const isFocusableComponent = MetadataUtils.isFocusableComponent(path, componentMetadata)
+          const isFocusedComponent = EP.isFocused(props.editor.focusedElementPath, path)
+          const color =
+            isFocusableComponent || isFocusedComponent
+              ? colorTheme.canvasSelectionIsolatedComponent.value
+              : colorTheme.canvasSelectionPrimaryOutline.value
+          return (
+            <HighlightControl
+              key={`highlight-control-${EP.toComponentId(path)}`}
+              color={color}
+              frame={frame}
+              scale={props.editor.canvas.scale}
+              canvasOffset={props.canvasOffset}
+              outlineWidth={1.5}
+            />
+          )
+        })
+      : []
+  }
+
+  return (
+    <div
+      id={CanvasControlsContainerID}
+      data-testid={CanvasControlsContainerID}
+      className='new-canvas-controls-container'
+      style={{
+        pointerEvents: 'initial',
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+      }}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
+    >
+      {renderHighlightControls()}
+      {renderSelectedOutlines()}
       <LayoutParentControl />
     </div>
   )

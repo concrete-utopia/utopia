@@ -10,13 +10,14 @@ interface HighlightControlProps {
   canvasOffset: CanvasPoint
   scale: number
   color?: string
+  outlineWidth: number
 }
 
 export const HighlightControl = betterReactMemo(
   'HighlightControl',
   (props: HighlightControlProps) => {
     const colorTheme = useColorTheme()
-    const outlineWidth = 1.5 / props.scale
+    const outlineWidth = props.outlineWidth / props.scale
     const outlineColor =
       props.color === null ? colorTheme.canvasSelectionPrimaryOutline.value : props.color
 

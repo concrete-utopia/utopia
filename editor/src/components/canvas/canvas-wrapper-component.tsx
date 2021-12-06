@@ -31,6 +31,8 @@ import { usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import CanvasActions from './canvas-actions'
 import { EditorModes } from '../editor/editor-modes'
+import { CanvasComponentEntry } from './canvas-component-entry'
+import { InteractiveCanvasRoot } from './interactive-canvas-root'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -93,13 +95,7 @@ export const CanvasWrapperComponent = betterReactMemo('CanvasWrapperComponent', 
         // ^ prevents Monaco from pushing the inspector out
       }}
     >
-      {fatalErrors.length === 0 && !safeMode ? (
-        <EditorCanvas
-          editor={editorState}
-          model={createCanvasModelKILLME(editorState, derivedState)}
-          dispatch={dispatch}
-        />
-      ) : null}
+      {fatalErrors.length === 0 && !safeMode ? <InteractiveCanvasRoot /> : null}
       <FlexRow
         style={{
           position: 'absolute',
