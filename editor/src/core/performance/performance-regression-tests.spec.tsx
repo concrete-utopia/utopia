@@ -63,8 +63,8 @@ describe('React Render Count Tests -', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(485) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(495)
+    // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`483`)
   })
 
   it('Clicking on opacity slider with a less simple project', async () => {
@@ -123,8 +123,8 @@ describe('React Render Count Tests -', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(525) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(535)
+    // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`521`)
   })
 
   it('Changing the selected view with a simple project', async () => {
@@ -177,8 +177,8 @@ describe('React Render Count Tests -', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2350) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(2360)
+    // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`2344`)
   })
 
   it('Changing the selected view with a less simple project', async () => {
@@ -241,7 +241,7 @@ describe('React Render Count Tests -', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(2505) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(2515)
+    // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`2498`)
   })
 })

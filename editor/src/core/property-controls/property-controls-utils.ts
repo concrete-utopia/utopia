@@ -181,3 +181,5 @@ export function hasStyleControls(propertyControls: ParseResult<ParsedPropertyCon
     propertyControls,
   )
 }
+
+export const specialPropertiesToIgnore: Array<string> = ['style', 'children']
