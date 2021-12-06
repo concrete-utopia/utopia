@@ -30,17 +30,275 @@
     ],
     "description": "Register Module Function Body"
   },
-  "property control": {
-    "prefix": "registerModule:Property Control",
+  "registerModule:string property control": {
+    "prefix": "registerModule:String Control",
     "body": [
       "${1:PropName}: {",
       "  control: 'string-input',",
       "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: 'string'",
+      "  //placeholder: 'string'",
+      "  //obscured: false",
       "},"
     ],
-    "description": "Register Module Property Control"
+    "description": "Register Module String Control"
   },
-  "insert option": {
+  "registerModule:checkbox property control": {
+    "prefix": "registerModule:Checkbox Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'checkbox',",
+      "  label: '${1:PropName}'",
+      "  //defaultValue: false",
+      "  //visibleByDefault: true",
+      "  //disabledTitle: 'Disabled Title'",
+      "  //enabledTitle: 'Enabled Title'",
+      "},"
+    ],
+    "description": "Register Module Checkbox Control"
+  },
+  "registerModule:color property control": {
+    "prefix": "registerModule:Color Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'color',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: 'blue'",
+      "},"
+    ],
+    "description": "Register Module Color Control"
+  },
+  "registerModule:euler property control": {
+    "prefix": "registerModule:Euler Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'euler',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: [0, 0, 0, 'XYZ']",
+      "},"
+    ],
+    "description": "Register Module Euler Control"
+  },
+  "registerModule:none property control": {
+    "prefix": "registerModule:None Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'euler',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "},"
+    ],
+    "description": "Register Module None Control"
+  },
+  "registerModule:matrix3 property control": {
+    "prefix": "registerModule:Matrix3 Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'matrix3',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: [0, 0, 0, 0, 0, 0, 0, 0, 0]",
+      "},"
+    ],
+    "description": "Register Module Matrix3 Control"
+  },
+  "registerModule:matrix4 property control": {
+    "prefix": "registerModule:Matrix4 Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'matrix4',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
+      "},"
+    ],
+    "description": "Register Module Matrix4 Control"
+  },
+  "registerModule:number property control": {
+    "prefix": "registerModule:Number Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'matrix4',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: 0",
+      "  //max: 10",
+      "  //min: 0",
+      "  //unit: 'px'",
+      "  //step: 1",
+      "  //displayStepper: true",
+      "},"
+    ],
+    "description": "Register Module Number Control"
+  },
+  "registerModule:popup list property control": {
+    "prefix": "registerModule:Popup List Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'popuplist',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: 'A'",
+      "  //options: ['A', 'B', 'C']",
+      "},"
+    ],
+    "description": "Register Module Popup List Control"
+  },
+  "registerModule:radio property control": {
+    "prefix": "registerModule:Radio Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'radio',",
+      "  label: '${1:PropName}'",
+      "  //defaultValue: 'A'",
+      "  //visibleByDefault: true",
+      "  //options: ['A', 'B', 'C']",
+      "},"
+    ],
+    "description": "Register Module Radio Control"
+  },
+  "registerModule:style property control": {
+    "prefix": "registerModule:Style Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'style',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: {backgroundColor: 'blue'}",
+      "  //placeholder: {backgroundColor: 'blue'}",
+      "},"
+    ],
+    "description": "Register Module Style Control"
+  },
+  "registerModule:vector2 property control": {
+    "prefix": "registerModule:Vector2 Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'vector2',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: [0, 0]",
+      "},"
+    ],
+    "description": "Register Module Vector2 Control"
+  },
+  "registerModule:vector3 property control": {
+    "prefix": "registerModule:Vector3 Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'vector3',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: [0, 0, 0]",
+      "},"
+    ],
+    "description": "Register Module Vector3 Control"
+  },
+  "registerModule:vector4 property control": {
+    "prefix": "registerModule:Vector4 Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'vector4',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: [0, 0, 0, 0]",
+      "},"
+    ],
+    "description": "Register Module Vector4 Control"
+  },
+  "registerModule:expression property control": {
+    "prefix": "registerModule:Expression Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'expression-input',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: 'expression'",
+      "},"
+    ],
+    "description": "Register Module Expression Control"
+  },
+  "registerModule:expression popup list property control": {
+    "prefix": "registerModule:Expression Popup List Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'expression-popuplist',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: {value: 'expression', expression: `'expression'`}",
+      "  options: [{value: 'expression', expression: `'expression'`}]",
+      "},"
+    ],
+    "description": "Register Module Expression Control"
+  },
+  "registerModule:array property control": {
+    "prefix": "registerModule:Array Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'array',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: ['A', 'B']",
+      "  propertyControl: {control: 'string-input'}",
+      "  //maxCount: 5",
+      "},"
+    ],
+    "description": "Register Module Array Control"
+  },
+  "registerModule:object property control": {
+    "prefix": "registerModule:Object Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'object',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: {itemID: 10, name: 'Hat'}",
+      "  object: [{label: 'itemID', control: 'number-input'}, {label: 'name', control: 'string-input'}]",
+      "},"
+    ],
+    "description": "Register Module Array Control"
+  },
+  "registerModule:union property control": {
+    "prefix": "registerModule:Union Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'union',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: 'Hat'",
+      "  controls: [{control: 'string-input'}, {control: 'number-input'}]",
+      "},"
+    ],
+    "description": "Register Module Union Control"
+  },
+  "registerModule:tuple property control": {
+    "prefix": "registerModule:Tuple Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'tuple',",
+      "  label: '${1:PropName}'",
+      "  //visibleByDefault: true",
+      "  //defaultValue: ['Hat', 9]",
+      "  propertyControls: [{control: 'string-input'}, {control: 'number-input'}]",
+      "},"
+    ],
+    "description": "Register Module Tuple Control"
+  },
+  "registerModule:folder property control": {
+    "prefix": "registerModule:Folder Control",
+    "body": [
+      "${1:PropName}: {",
+      "  control: 'folder',",
+      "  label: '${1:PropName}'",
+      "  controls: {title: {control: 'string-input'}, size: {control: 'number-input'}}",
+      "},"
+    ],
+    "description": "Register Module Tuple Control"
+  },
+  "registerModule:insert option": {
     "prefix": "registerModule:Insert Option",
     "body": [
       "{",
