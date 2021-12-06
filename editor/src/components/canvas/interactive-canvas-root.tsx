@@ -37,6 +37,7 @@ export const InteractiveCanvasRoot = betterReactMemo('InteractiveCanvasRoot', ()
   return (
     <CanvasRootDiv id='canvas-root' className='interactive-canvas-root' ref={canvasRootRef}>
       <CanvasComponentEntry />
+      {/* TODO: remove the legacy layer from here */}
       <CanvasControlsLegacyLayer />
     </CanvasRootDiv>
   )
