@@ -86,7 +86,7 @@
     "prefix": "registerModule:None Control",
     "body": [
       "${1:PropName}: {",
-      "  control: 'euler',",
+      "  control: 'none',",
       "  label: '${1:PropName}'",
       "  //visibleByDefault: true",
       "},"
