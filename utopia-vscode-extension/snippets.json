@@ -162,7 +162,7 @@
     "prefix": "registerModule:Style Control",
     "body": [
       "${1:PropName}: {",
-      "  control: 'style',",
+      "  control: 'style-controls',",
       "  label: '${1:PropName}'",
       "  //visibleByDefault: true",
       "  //defaultValue: {backgroundColor: 'blue'}",
