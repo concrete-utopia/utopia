@@ -39,7 +39,8 @@
     "parse-print-analysis": "npx -s sh ts-node --require ignore-styles --transpile-only ./src/scripts/parse-print-analysis.ts",
     "parse-debug": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/parse-debug.ts",
     "fetch-tailwind-classes": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/fetch-and-parse-tailwind-classes.ts && npx prettier --write ./src/core/third-party/tailwind-defaults.ts",
-    "lint-editor": "lint-staged"
+    "lint-editor": "lint-staged",
+    "dev-fast": "vite"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
@@ -203,6 +204,7 @@
     "@babel/preset-react": "^7.14.5",
     "@babel/preset-typescript": "^7.14.5",
     "@hot-loader/react-dom": "16.13.0",
+    "@originjs/vite-plugin-commonjs": "^1.0.1",
     "@react-three/fiber": "7.0.1",
     "@relative-ci/agent": "^2.1.0",
     "@testing-library/react": "9.1.4",
@@ -257,6 +259,7 @@
     "@types/uuid": "2.0.29",
     "@typescript-eslint/eslint-plugin": "4.24.0",
     "@typescript-eslint/parser": "4.24.0",
+    "@vitejs/plugin-react": "^1.0.7",
     "@welldone-software/why-did-you-render": "5.0.0-rc.1",
     "babel-jest": "^27.2.4",
     "babel-loader": "^8.1.0",
@@ -326,6 +329,7 @@
     "ts-loader": "5.3.3",
     "tsify": "3.0.1",
     "val-loader": "2.1.0",
+    "vite": "^2.7.0",
     "webpack": "5.52.0",
     "webpack-bundle-analyzer": "4.4.1",
     "webpack-cli": "4.8.0",
