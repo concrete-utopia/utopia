@@ -1,4 +1,4 @@
-const domtoimage = require('domtoimage')
+// const domtoimage = require('domtoimage')
 
 const BASE64_PREFIX = 'data:image/png;base64,'
 
@@ -8,7 +8,8 @@ export async function getPNGOfElement(
   element: HTMLElement,
   options: Dom2ImageOptions = {},
 ): Promise<string | null> {
-  return domtoimage.toPng(element, options)
+  // return domtoimage.toPng(element, options)
+  return new Promise((r, re) => re(null))
 }
 
 export async function getPNGOfElementWithID(
