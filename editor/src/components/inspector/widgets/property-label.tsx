@@ -1,4 +1,5 @@
-/**@jsx jsx */
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { PropertyPath } from '../../../core/shared/project-file-types'

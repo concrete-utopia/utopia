@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { Interpolation, jsx } from '@emotion/react'

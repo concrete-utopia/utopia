@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import composeRefs from '@seznam/compose-react-refs'
 import React from 'react'

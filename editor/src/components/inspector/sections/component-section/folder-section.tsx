@@ -1,4 +1,5 @@
-/**@jsx jsx */
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
