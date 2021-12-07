@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    // "outDir": "./dist",
+    "outDir": "./dist",
     "target": "es2019",
     "module": "ES2020",
-    // "declaration": true,
+    "declaration": true,
     "removeComments": true,
     "noLib": false,
     "noImplicitAny": true,
