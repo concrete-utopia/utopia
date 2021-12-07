@@ -30,7 +30,7 @@ import {
 } from '../../shared/project-components'
 import {
   closeFloatingInsertMenu,
-  insertWithDefaults,
+  insertInsertable,
   updateJSXElementName,
   wrapInView,
   wrapInElement,
@@ -489,7 +489,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             if (targetParent != null) {
               // TODO multiselect?
               actionsToDispatch = [
-                insertWithDefaults(
+                insertInsertable(
                   targetParent,
                   elementToInsert,
                   fixedSizeForInsertion ? 'add-size' : 'do-not-add',

@@ -59,8 +59,6 @@ import { fastForEach } from '../shared/utils'
 function runBaseTestSuite<T>(
   validObject: T,
   requiredFields: Array<keyof T>,
-  invalidDefaults: unknown[],
-  defaultAllowed: boolean,
   parseFn: (value: unknown) => ParseResult<T>,
 ) {
   it('parses a full value correctly', () => {
@@ -88,33 +86,11 @@ function runBaseTestSuite<T>(
       left(objectFieldParseError('control', descriptionParseError('Not a member of an enum.'))),
     )
   })
-
-  if (defaultAllowed) {
-    it('fails on an invalid default', () => {
-      fastForEach(invalidDefaults, (invalidDefault) => {
-        const value = {
-          ...validObject,
-          defaultValue: invalidDefault,
-        }
-        expect(isLeft(parseFn(value))).toBeTruthy()
-      })
-    })
-  } else {
-    it('ignores a default value', () => {
-      const value = {
-        ...validObject,
-        defaultValue: 'anything really',
-      }
-
-      expect(parseFn(value)).toEqual(right(validObject))
-    })
-  }
 }
 
 const validCheckboxControlDescriptionValue: CheckboxControlDescription = {
   label: 'Checkbox Control',
   control: 'checkbox',
-  defaultValue: true,
   disabledTitle: 'Not set.',
   enabledTitle: 'Value is set',
   visibleByDefault: true,
@@ -124,8 +100,6 @@ describe('parseCheckboxControlDescription', () => {
   runBaseTestSuite(
     validCheckboxControlDescriptionValue,
     ['control'],
-    ['hat'],
-    true,
     parseCheckboxControlDescription,
   )
 })
@@ -133,18 +107,11 @@ describe('parseCheckboxControlDescription', () => {
 const validColorControlDescriptionValue: ColorControlDescription = {
   label: 'Slider Control',
   control: 'color',
-  defaultValue: '#FFFFFF',
   visibleByDefault: true,
 }
 
 describe('parseColorControlDescription', () => {
-  runBaseTestSuite(
-    validColorControlDescriptionValue,
-    ['control'],
-    ['hat', 9],
-    true,
-    parseColorControlDescription,
-  )
+  runBaseTestSuite(validColorControlDescriptionValue, ['control'], parseColorControlDescription)
 })
 
 const validExpressionInputControlDescriptionValue: ExpressionInputControlDescription = {
@@ -157,8 +124,6 @@ describe('parseExpressionInputControlDescription', () => {
   runBaseTestSuite(
     validExpressionInputControlDescriptionValue,
     ['control'],
-    [],
-    false,
     parseExpressionInputControlDescription,
   )
 })
@@ -166,7 +131,6 @@ describe('parseExpressionInputControlDescription', () => {
 const validPopUpListControlDescriptionValue: PopUpListControlDescription = {
   label: 'PopUpList Control',
   control: 'popuplist',
-  defaultValue: 5,
   options: [
     {
       value: 'hat',
@@ -196,8 +160,6 @@ describe('parsePopUpListControlDescription', () => {
   runBaseTestSuite(
     validPopUpListControlDescriptionValue,
     ['control', 'options'],
-    [],
-    true,
     parsePopUpListControlDescription,
   )
 })
@@ -237,16 +199,6 @@ const validExpressionPopUpListControlDescriptionValue: ExpressionPopUpListContro
       },
     },
   ],
-  defaultValue: {
-    value: 0,
-    expression: 'THREE.Multiply',
-    label: 'Multiply',
-    requiredImport: {
-      source: 'three',
-      name: 'THREE',
-      type: 'star',
-    },
-  },
   visibleByDefault: true,
 }
 
@@ -254,8 +206,6 @@ describe('parseExpressionPopUpListControlDescription', () => {
   runBaseTestSuite(
     validExpressionPopUpListControlDescriptionValue,
     ['control', 'options'],
-    [],
-    true,
     parseExpressionPopUpListControlDescription,
   )
 })
@@ -267,19 +217,12 @@ const validNoneControlDescriptionValue: NoneControlDescription = {
 }
 
 describe('parseNoneControlDescription', () => {
-  runBaseTestSuite(
-    validNoneControlDescriptionValue,
-    ['control'],
-    [],
-    false,
-    parseNoneControlDescription,
-  )
+  runBaseTestSuite(validNoneControlDescriptionValue, ['control'], parseNoneControlDescription)
 })
 
 const validNumberInputControlDescriptionValue: NumberInputControlDescription = {
   label: 'NumberInput Control',
   control: 'number-input',
-  defaultValue: 5,
   max: 10,
   min: 2,
   unit: 'Some Unit',
@@ -292,8 +235,6 @@ describe('parseNumberInputControlDescription', () => {
   runBaseTestSuite(
     validNumberInputControlDescriptionValue,
     ['control'],
-    ['hat'],
-    true,
     parseNumberInputControlDescription,
   )
 })
@@ -301,7 +242,6 @@ describe('parseNumberInputControlDescription', () => {
 const validRadioControlDescriptionValue: RadioControlDescription = {
   label: 'Radio Control',
   control: 'radio',
-  defaultValue: 5,
   options: [
     { value: 5, label: 'Five' },
     { value: 8, label: 'Eight' },
@@ -313,8 +253,6 @@ describe('parseRadioControlDescription', () => {
   runBaseTestSuite(
     validRadioControlDescriptionValue,
     ['control', 'options'],
-    [],
-    true,
     parseRadioControlDescription,
   )
 })
@@ -322,7 +260,6 @@ describe('parseRadioControlDescription', () => {
 const validStringInputControlDescriptionValue: StringInputControlDescription = {
   label: 'String Input Control',
   control: 'string-input',
-  defaultValue: 'Some text',
   placeholder: 'Enter text',
   obscured: true,
   visibleByDefault: true,
@@ -332,8 +269,6 @@ describe('parseStringInputControlDescription', () => {
   runBaseTestSuite(
     validStringInputControlDescriptionValue,
     ['control'],
-    [9],
-    true,
     parseStringInputControlDescription,
   )
 })
@@ -341,7 +276,6 @@ describe('parseStringInputControlDescription', () => {
 const validStyleControlsControlDescriptionValue: StyleControlsControlDescription = {
   label: 'Style Controls Control',
   control: 'style-controls',
-  defaultValue: { width: 100 },
   placeholder: { height: 100 },
   visibleByDefault: true,
 }
@@ -350,8 +284,6 @@ describe('parseStyleControlsControlDescription', () => {
   runBaseTestSuite(
     validStyleControlsControlDescriptionValue,
     ['control'],
-    ['hat', 9],
-    true,
     parseStyleControlsControlDescription,
   )
 })
@@ -359,120 +291,66 @@ describe('parseStyleControlsControlDescription', () => {
 const validVector2ControlDescriptionValue: Vector2ControlDescription = {
   label: 'Vector2 Control',
   control: 'vector2',
-  defaultValue: [10, 20],
   visibleByDefault: true,
 }
 
 describe('parseVector2ControlDescription', () => {
-  runBaseTestSuite(
-    validVector2ControlDescriptionValue,
-    ['control'],
-    ['hat', 9],
-    true,
-    parseVector2ControlDescription,
-  )
+  runBaseTestSuite(validVector2ControlDescriptionValue, ['control'], parseVector2ControlDescription)
 })
 
 const validVector3ControlDescriptionValue: Vector3ControlDescription = {
   label: 'Vector3 Control',
   control: 'vector3',
-  defaultValue: [10, 20, 30],
   visibleByDefault: true,
 }
 
 describe('parseVector3ControlDescription', () => {
-  runBaseTestSuite(
-    validVector3ControlDescriptionValue,
-    ['control'],
-    ['hat', 9, true],
-    true,
-    parseVector3ControlDescription,
-  )
+  runBaseTestSuite(validVector3ControlDescriptionValue, ['control'], parseVector3ControlDescription)
 })
 
 const validVector4ControlDescriptionValue: Vector4ControlDescription = {
   label: 'Vector4 Control',
   control: 'vector4',
-  defaultValue: [10, 20, 30, 40],
   visibleByDefault: true,
 }
 
 describe('parseVector4ControlDescription', () => {
-  runBaseTestSuite(
-    validVector4ControlDescriptionValue,
-    ['control'],
-    ['hat', 9, true, 'bananas'],
-    true,
-    parseVector4ControlDescription,
-  )
+  runBaseTestSuite(validVector4ControlDescriptionValue, ['control'], parseVector4ControlDescription)
 })
 
 const validEulerControlDescriptionValue: EulerControlDescription = {
   label: 'Euler Control',
   control: 'euler',
-  defaultValue: [10, 20, 30, 'XYZ'],
   visibleByDefault: true,
 }
 
 describe('parseEulerControlDescription', () => {
-  runBaseTestSuite(
-    validEulerControlDescriptionValue,
-    ['control'],
-    ['hat', 9, true, 'bananas'],
-    true,
-    parseEulerControlDescription,
-  )
+  runBaseTestSuite(validEulerControlDescriptionValue, ['control'], parseEulerControlDescription)
 })
 
 const validMatrix3ControlDescriptionValue: Matrix3ControlDescription = {
   label: 'Matrix3 Control',
   control: 'matrix3',
-  // prettier-ignore
-  defaultValue: [
-    10, 20, 30,
-    40, 50, 60,
-    70, 80, 90,
-  ],
   visibleByDefault: true,
 }
 
 describe('parseMatrix3ControlDescription', () => {
-  runBaseTestSuite(
-    validMatrix3ControlDescriptionValue,
-    ['control'],
-    ['hat', 9, true, 'bananas'],
-    true,
-    parseMatrix3ControlDescription,
-  )
+  runBaseTestSuite(validMatrix3ControlDescriptionValue, ['control'], parseMatrix3ControlDescription)
 })
 
 const validMatrix4ControlDescriptionValue: Matrix4ControlDescription = {
   label: 'Matrix4 Control',
   control: 'matrix4',
-  // prettier-ignore
-  defaultValue: [
-    10, 20, 30, 40,
-    50, 60, 70, 80,
-    11, 21, 31, 41,
-    51, 61, 71, 81,
-  ],
   visibleByDefault: true,
 }
 
 describe('parseMatrix4ControlDescription', () => {
-  runBaseTestSuite(
-    validMatrix4ControlDescriptionValue,
-    ['control'],
-    ['hat', 9, true, 'bananas'],
-    true,
-    parseMatrix4ControlDescription,
-  )
+  runBaseTestSuite(validMatrix4ControlDescriptionValue, ['control'], parseMatrix4ControlDescription)
 })
 
 const validArrayControlDescriptionValue: ArrayControlDescription = {
   label: 'Array Control',
   control: 'array',
-  defaultValue: ['cat', 'dog'],
   propertyControl: {
     control: 'string-input',
   },
@@ -482,8 +360,6 @@ describe('parseArrayControlDescription', () => {
   runBaseTestSuite(
     validArrayControlDescriptionValue,
     ['control', 'propertyControl'],
-    ['hat', 9, true, 'bananas'],
-    true,
     parseArrayControlDescription,
   )
 })
@@ -491,9 +367,6 @@ describe('parseArrayControlDescription', () => {
 const validObjectControlDescriptionValue: ObjectControlDescription = {
   label: 'Object Control',
   control: 'object',
-  defaultValue: {
-    cat: 'dog',
-  },
   object: {
     cat: {
       control: 'string-input',
@@ -505,15 +378,12 @@ describe('parseObjectControlDescription', () => {
   runBaseTestSuite(
     validObjectControlDescriptionValue,
     ['control', 'object'],
-    ['hat', 9, true, 'bananas'],
-    true,
     parseObjectControlDescription,
   )
 })
 
 const validTupleControlDescriptionValue: TupleControlDescription = {
   control: 'tuple',
-  defaultValue: ['cat', 1, 'dog'],
   propertyControls: [
     { control: 'string-input' },
     { control: 'number-input' },
@@ -525,8 +395,6 @@ describe('parseTupleControlDescription', () => {
   runBaseTestSuite(
     validTupleControlDescriptionValue,
     ['control', 'propertyControls'],
-    ['hat', 9, true, 'bananas'],
-    true,
     parseTupleControlDescription,
   )
 })
@@ -543,8 +411,6 @@ describe('parseFolderControlDescription', () => {
   runBaseTestSuite(
     validFolderControlDescriptionValue,
     ['control', 'controls'],
-    [],
-    false,
     parseFolderControlDescription,
   )
 })
@@ -676,12 +542,12 @@ describe('parsePropertyControls', () => {
       width: validNumberInputControlDescriptionValue,
       height: {
         ...validNumberInputControlDescriptionValue,
-        defaultValue: 'hat',
+        max: 'hat',
       },
     }
     const expectedResult: ParseResult<ParsedPropertyControls> = right({
       width: right(validNumberInputControlDescriptionValue),
-      height: left(objectFieldParseError('defaultValue', descriptionParseError('Not a number.'))),
+      height: left(objectFieldParseError('max', descriptionParseError('Not a number.'))),
     })
     expect(parsePropertyControls(propertyControlsValue)).toEqual(expectedResult)
   })

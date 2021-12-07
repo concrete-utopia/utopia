@@ -99,7 +99,6 @@ import type {
   RegenerateThumbnail,
   RenameStyleSelector,
   ResetPins,
-  ResetPropToDefault,
   ResizeInterfaceDesignerCodePane,
   SaveAsset,
   SaveCurrentFile,
@@ -195,7 +194,7 @@ import type {
   UpdateFormulaBarMode,
   OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
-  InsertWithDefaults,
+  InsertInsertable,
   ToggleFocusedOmniboxTab,
   SetPropTransient,
   ClearTransientProps,
@@ -1199,17 +1198,6 @@ export function insertDroppedImage(imagePath: string, position: CanvasPoint): In
   }
 }
 
-export function resetPropToDefault(
-  target: ElementPath,
-  path: PropertyPath | null,
-): ResetPropToDefault {
-  return {
-    action: 'RESET_PROP_TO_DEFAULT',
-    target: target,
-    path: path,
-  }
-}
-
 export function updateNodeModulesContents(
   contentsToAdd: NodeModules,
   buildType: BuildType,
@@ -1416,15 +1404,15 @@ export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBar
   }
 }
 
-export function insertWithDefaults(
+export function insertInsertable(
   targetParent: ElementPath,
   toInsert: InsertableComponent,
   styleProps: StylePropOption,
   wrapContent: WrapContentOption,
   indexPosition: IndexPosition | null,
-): InsertWithDefaults {
+): InsertInsertable {
   return {
-    action: 'INSERT_WITH_DEFAULTS',
+    action: 'INSERT_INSERTABLE',
     targetParent: targetParent,
     toInsert: toInsert,
     styleProps: styleProps,

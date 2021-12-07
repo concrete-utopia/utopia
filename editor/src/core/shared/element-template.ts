@@ -648,6 +648,10 @@ export function jsxAttributesEntry(
   }
 }
 
+export function simpleAttribute(key: string, value: unknown): JSXAttributesEntry {
+  return jsxAttributesEntry(key, jsxAttributeValue(value, emptyComments), emptyComments)
+}
+
 export interface JSXAttributesSpread extends WithComments {
   type: 'JSX_ATTRIBUTES_SPREAD'
   spreadValue: JSXAttribute
