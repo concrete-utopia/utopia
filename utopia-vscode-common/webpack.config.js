@@ -31,10 +31,16 @@ module.exports = {
   performance: {
     hints: false,
   },
+  experiments: {
+    outputModule: true,
+  },
   output: {
     filename: 'index.js',
     path: path.join(__dirname, 'dist'),
-    libraryTarget: 'commonjs',
+    library: {
+      // do not specify a `name` here
+      type: 'module',
+    },
   },
   devtool: 'source-map',
 }

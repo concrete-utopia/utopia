@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    // "outDir": "./dist",
     "target": "es2019",
-    "module": "commonjs",
-    "declaration": true,
+    "module": "ES2020",
+    // "declaration": true,
     "removeComments": true,
     "noLib": false,
     "noImplicitAny": true,
@@ -15,7 +15,8 @@
     "strict": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "moduleResolution": "node"
   },
   "exclude": ["node_modules", "dist"]
 }
