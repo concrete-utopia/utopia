@@ -14,6 +14,11 @@ const CanvasActions = {
       dragState: dragState,
     }
   },
+  createDragSession: function (): CanvasAction {
+    return {
+      action: 'CREATE_DRAG_SESSION',
+    }
+  },
   setSelectionControlsVisibility: function (selectionControlsVisible: boolean): CanvasAction {
     return {
       action: 'SET_SELECTION_CONTROLS_VISIBILITY',

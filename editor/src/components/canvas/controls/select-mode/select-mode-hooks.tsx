@@ -286,25 +286,7 @@ function useStartDragState(): (
         }),
       )
 
-      dispatch([
-        CanvasActions.createDragState(
-          moveDragState(
-            start,
-            null,
-            null,
-            originalFrames,
-            selectionArea,
-            !event.metaKey,
-            event.shiftKey,
-            duplicate,
-            event.metaKey,
-            duplicateNewUIDs,
-            start,
-            componentMetadata,
-            moveTargets,
-          ),
-        ),
-      ])
+      dispatch([CanvasActions.createDragSession()])
     },
     [dispatch, entireEditorStoreRef],
   )

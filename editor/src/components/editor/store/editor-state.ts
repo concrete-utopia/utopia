@@ -156,6 +156,7 @@ import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
+import { CanvasInteractionSession } from '../../canvas/canvas-strategies'
 
 const ObjectPathImmutable: any = OPI
 
@@ -446,6 +447,7 @@ export interface EditorState {
       attributesToUpdate: MapLike<JSXAttribute>
     }> | null
     resizeOptions: ResizeOptions
+    dragSession: CanvasInteractionSession | null
   }
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
@@ -1221,6 +1223,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         propertyTargetOptions: ['Width', 'Height'],
         propertyTargetSelectedIndex: 0,
       },
+      dragSession: null,
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -1482,6 +1485,7 @@ export function editorModelFromPersistentModel(
         propertyTargetOptions: ['Width', 'Height'],
         propertyTargetSelectedIndex: 0,
       },
+      dragSession: null,
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

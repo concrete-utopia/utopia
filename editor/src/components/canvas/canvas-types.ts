@@ -633,6 +633,10 @@ type CreateDragState = {
   dragState: DragState
 }
 
+type CreateDragSession = {
+  action: 'CREATE_DRAG_SESSION'
+}
+
 type SetSelectionControlsVisibility = {
   action: 'SET_SELECTION_CONTROLS_VISIBILITY'
   selectionControlsVisible: boolean
@@ -653,6 +657,7 @@ export type CanvasAction =
   | ScrollCanvas
   | ClearDragState
   | CreateDragState
+  | CreateDragSession
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility

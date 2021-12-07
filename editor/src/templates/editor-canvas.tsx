@@ -89,6 +89,7 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
+import { pickCanvasStrategy } from '../components/canvas/canvas-strategies'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -339,6 +340,16 @@ export function runLocalCanvasAction(
           snappingThreshold: BaseSnappingThreshold / scale,
           realCanvasOffset: newCanvasOffset,
           roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
+        },
+      }
+    }
+    case 'CREATE_DRAG_SESSION': {
+      const pickedStrategy = pickCanvasStrategy(model)
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          dragSession: pickedStrategy == null ? null : { selectedStrategy: pickedStrategy },
         },
       }
     }
