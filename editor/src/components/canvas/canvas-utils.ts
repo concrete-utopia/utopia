@@ -211,6 +211,7 @@ import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
 import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
+import { applyCanvasStrategy } from './canvas-strategies/canvas-strategies'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -1435,6 +1436,8 @@ export function getCursorFromDragState(editorState: EditorState): CSSCursor | nu
         } else {
           return null
         }
+      case 'SELECT_MODE_CANVAS_SESSION':
+        return null // TODO put the cursor in the session's state
       case 'INSERT_DRAG_STATE':
         return null
       default:
@@ -1735,6 +1738,9 @@ export function produceCanvasTransientState(
                   preventAnimations,
                 )
               }
+              break
+            case 'SELECT_MODE_CANVAS_SESSION':
+              transientState = applyCanvasStrategy(editorState, dragState)
               break
             case 'INSERT_DRAG_STATE':
               throw new Error(`Unable to use insert drag state in select mode.`)
@@ -2900,6 +2906,7 @@ export function getDragStatePositions(
     switch (dragState.type) {
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
+      case 'SELECT_MODE_CANVAS_SESSION':
         return dragState
       case 'RESIZE_DRAG_STATE':
         return findResizePropertyChange(dragState, resizeOptions) ?? null
@@ -2934,6 +2941,7 @@ export function anyDragStarted(dragState: DragState | null): boolean {
     switch (dragState.type) {
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
+      case 'SELECT_MODE_CANVAS_SESSION':
         return dragState.start != null
       case 'RESIZE_DRAG_STATE':
         return dragState.properties.some((prop) => prop.start != null)
@@ -2951,6 +2959,7 @@ export function anyDragMovement(dragState: DragState | null): boolean {
     switch (dragState.type) {
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
+      case 'SELECT_MODE_CANVAS_SESSION':
         return dragState.drag != null
       case 'RESIZE_DRAG_STATE':
         return dragState.properties.some((prop) => prop.drag != null)

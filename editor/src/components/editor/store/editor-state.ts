@@ -1012,7 +1012,7 @@ export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
   if (editor.canvas.dragState == null) {
     return editor.jsxMetadata
   } else {
-    return editor.canvas.dragState.metadata
+    return editor.canvas.dragState.metadata ?? editor.jsxMetadata
   }
 }
 

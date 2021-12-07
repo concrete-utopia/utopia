@@ -16,7 +16,11 @@ import {
 import { EditorPanel } from '../common/actions/index'
 import { EditorAction } from '../editor/action-types'
 import { Mode } from '../editor/editor-modes'
-import { EditorState, OriginalCanvasAndLocalFrame } from '../editor/store/editor-state'
+import {
+  EditorState,
+  OriginalCanvasAndLocalFrame,
+  TransientCanvasState,
+} from '../editor/store/editor-state'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { xor } from '../../core/shared/utils'
 import {
@@ -24,6 +28,7 @@ import {
   LayoutFlexElementProp,
   LayoutTargetableProp,
 } from '../../core/layout/layout-helpers-new'
+import { pickDefaultCanvasStrategy } from './canvas-strategies/canvas-strategies'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -545,7 +550,40 @@ export function updateResizeDragState(
   })
 }
 
-export type DragState = InsertDragState | MoveDragState | ResizeDragState
+export type CanvasStrategy = (
+  editorState: EditorState,
+  currentSession: SelectModeCanvasSession,
+) => TransientCanvasState
+
+export interface SelectModeCanvasSession {
+  type: 'SELECT_MODE_CANVAS_SESSION'
+  activeStrategy: CanvasStrategy | null
+  start: CanvasPoint
+  drag: CanvasVector | null
+  metadata: ElementInstanceMetadataMap | null
+}
+
+export function createSelectModeCanvasSession(start: CanvasPoint): SelectModeCanvasSession {
+  return {
+    type: 'SELECT_MODE_CANVAS_SESSION',
+    start: start,
+    activeStrategy: pickDefaultCanvasStrategy(),
+    drag: null,
+    metadata: null,
+  }
+}
+
+export function updateSelectModeCanvasSession(
+  current: SelectModeCanvasSession,
+  drag: CanvasVector | null,
+): SelectModeCanvasSession {
+  return {
+    ...current,
+    drag: drag,
+  }
+}
+
+export type DragState = InsertDragState | MoveDragState | ResizeDragState | SelectModeCanvasSession
 
 export interface CanvasPositions {
   windowPosition: WindowPoint

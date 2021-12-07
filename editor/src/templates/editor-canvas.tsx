@@ -17,6 +17,7 @@ import {
   SvgFragmentControl,
   updateMoveDragState,
   updateResizeDragState,
+  updateSelectModeCanvasSession,
 } from '../components/canvas/canvas-types'
 import {
   anyDragStarted,
@@ -1073,6 +1074,10 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               centerBasedResize,
               keepAspectRatio,
             )
+            break
+          }
+          case 'SELECT_MODE_CANVAS_SESSION': {
+            newDragState = updateSelectModeCanvasSession(dragState, newDrag)
             break
           }
           case 'INSERT_DRAG_STATE':
