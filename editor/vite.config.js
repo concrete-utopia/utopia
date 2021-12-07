@@ -10,7 +10,7 @@ export default defineConfig({
   root: './vite',
   optimizeDeps: {
     esbuildOptions: {
-      plugins: [esbuildCommonjs(['utopia-vscode-common'])],
+      // plugins: [esbuildCommonjs(['utopia-vscode-common'])],
     },
   },
   server: {
