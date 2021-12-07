@@ -13,6 +13,9 @@ export default defineConfig({
       plugins: [esbuildCommonjs(['utopia-vscode-common'])],
     },
   },
+  server: {
+    port: 3005,
+  },
   // esbuild: {
   //   jsxFactory: `jsx`,
   //   jsxInject: `import { jsx } from '@emotion/react'`,
