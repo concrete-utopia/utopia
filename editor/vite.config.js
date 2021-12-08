@@ -10,6 +10,7 @@ export default defineConfig({
   // plugins: [react(), polyfill()],
   plugins: [react()],
   root: './vite',
+  publicDir: '../resources',
   optimizeDeps: {
     esbuildOptions: {
       // plugins: [esbuildCommonjs(['utopia-vscode-common'])],
@@ -29,5 +30,6 @@ export default defineConfig({
     'process.env.REACT_APP_AUTH0_ENDPOINT': undefined,
     'process.env.REACT_APP_COMMIT_HASH': undefined,
     'process.env.GOOGLE_WEB_FONTS_KEY': "''",
+    'process.env.UI_DEV': "'vite'",
   },
 })
