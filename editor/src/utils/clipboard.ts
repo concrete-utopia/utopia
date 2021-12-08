@@ -25,7 +25,7 @@ import { FileResult, ImageResult } from '../core/shared/file-utils'
 import { CanvasPoint } from '../core/shared/math-utils'
 import * as json5 from 'json5'
 import { fastForEach } from '../core/shared/utils'
-const urljoin = require('url-join')
+import urljoin from 'url-join'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
 import {
   normalisePathSuccessOrThrowError,

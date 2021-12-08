@@ -173,7 +173,7 @@ specifiers:
   moize: 5.4.7
   node-fetch: 2.6.1
   node-html-parser: 1.2.20
-  npm-package-arg: 8.0.1
+  npm-package-arg: 8.1.5
   null-loader: 4.0.1
   object-hash: 2.0.3
   object-path: 0.11.4
@@ -215,6 +215,7 @@ specifiers:
   react-windowed-select: 3.1.2
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
+  rollup-plugin-polyfill-node: ^0.8.0
   scheduler: 0.17.0
   script-ext-html-webpack-plugin: 2.1.4
   selenium-webdriver: 3.0.1
@@ -314,7 +315,7 @@ dependencies:
   mime-types: 2.1.24
   moize: 5.4.7
   node-html-parser: 1.2.20
-  npm-package-arg: 8.0.1
+  npm-package-arg: 8.1.5
   object-hash: 2.0.3
   object-path: 0.11.4
   object-path-immutable: 3.0.0
@@ -349,6 +350,7 @@ dependencies:
   react-windowed-select: 3.1.2_b9c7432b687c5eca0e0b2d49cc5d18aa
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
+  rollup-plugin-polyfill-node: 0.8.0
   scheduler: 0.17.0
   semver: 7.3.2
   settle-promise: 1.0.0
@@ -2933,6 +2935,27 @@ packages:
       java-properties: 1.0.2
     dev: true
 
+  /@rollup/plugin-inject/4.0.3:
+    resolution: {integrity: sha512-lzMXmj0LZjd67MI+M8H9dk/oCxR0TYqYAdZ6ZOejWQLSUtud+FUPu4NCMAO8KyWWAalFo8ean7yFHCMvCNsCZw==}
+    peerDependencies:
+      rollup: ^1.20.0 || ^2.0.0
+    dependencies:
+      '@rollup/pluginutils': 3.1.0
+      estree-walker: 2.0.2
+      magic-string: 0.25.7
+    dev: false
+
+  /@rollup/pluginutils/3.1.0:
+    resolution: {integrity: sha512-GksZ6pr6TpIjHm8h9lSQ8pi8BE9VeubNT0OMJ3B5uZJ8pz73NPiqOtCog/x2/QzM1ENChPKxMDhiQuRHsqc+lg==}
+    engines: {node: '>= 8.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0
+    dependencies:
+      '@types/estree': 0.0.39
+      estree-walker: 1.0.1
+      picomatch: 2.3.0
+    dev: false
+
   /@rollup/pluginutils/4.1.1:
     resolution: {integrity: sha512-clDjivHqWGXi7u+0d2r2sBi4Ie6VLEAzWMIkvJLnDmxoOhBYOTfzGbOQBA32THHm11/LiJbd01tJUpJsbshSWQ==}
     engines: {node: '>= 8.0.0'}
@@ -3269,6 +3292,10 @@ packages:
       '@types/estree': 0.0.50
       '@types/json-schema': 6.0.0
     dev: true
+
+  /@types/estree/0.0.39:
+    resolution: {integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==}
+    dev: false
 
   /@types/estree/0.0.50:
     resolution: {integrity: sha512-C6N5s2ZFtuZRj54k2/zyRhNDjJwwcViAM3Nbm8zjBpbqAdZ00mr0CFxvSKeO8Y/e03WVFLpQMdHYVfUd6SB+Hw==}
@@ -7570,9 +7597,12 @@ packages:
     resolution: {integrity: sha512-BxbNGGNm0RyRYvUdHpIwv9IWzeM9XClbOxwoATuFdOE7ZE6wHL+HQ5T8hoPM+zHvmKzzsEqhgy0GrQ5X13afiQ==}
     engines: {node: '>=4.0'}
 
+  /estree-walker/1.0.1:
+    resolution: {integrity: sha512-1fMXF3YP4pZZVozF8j/ZLfvnR8NSIljt56UhbZ5PeeDmmGHpgpdwQt7ITlGvYaQukCvuBRMLEiKiYC+oeIg4cg==}
+    dev: false
+
   /estree-walker/2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
-    dev: true
 
   /esutils/2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
@@ -8700,6 +8730,13 @@ packages:
 
   /hosted-git-info/3.0.5:
     resolution: {integrity: sha512-i4dpK6xj9BIpVOTboXIlKG9+8HMKggcrMX7WA24xZtKwX0TPelq/rbaS5rCKeNX8sJXZJGdSxpnEGtta+wismQ==}
+    engines: {node: '>=10'}
+    dependencies:
+      lru-cache: 6.0.0
+    dev: false
+
+  /hosted-git-info/4.0.2:
+    resolution: {integrity: sha512-c9OGXbZ3guC/xOlCg1Ci/VgWlwsqDv1yMQL1CWqXDL0hDjXuNcq0zuR4xqPSuasI3kqFDhqSyTjREz5gzq0fXg==}
     engines: {node: '>=10'}
     dependencies:
       lru-cache: 6.0.0
@@ -10994,6 +11031,12 @@ packages:
     dependencies:
       yallist: 4.0.0
 
+  /magic-string/0.25.7:
+    resolution: {integrity: sha512-4CrMT5DOHTDk4HYDlzmwu4FVCcIYI8gauveasrdCu2IKIFOJ3f0v/8MDGJCDL9oD2ppz/Av1b0Nj345H9M+XIA==}
+    dependencies:
+      sourcemap-codec: 1.4.8
+    dev: false
+
   /make-dir/2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
     engines: {node: '>=6'}
@@ -11536,11 +11579,11 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /npm-package-arg/8.0.1:
-    resolution: {integrity: sha512-/h5Fm6a/exByzFSTm7jAyHbgOqErl9qSNJDQF32Si/ZzgwT2TERVxRxn3Jurw1wflgyVVAxnFR4fRHPM7y1ClQ==}
+  /npm-package-arg/8.1.5:
+    resolution: {integrity: sha512-LhgZrg0n0VgvzVdSm1oiZworPbTxYHUJCgtsJW8mGvlDpxTM1vSJc3m5QZeUkhAHIzbz3VCHd/R4osi1L1Tg/Q==}
     engines: {node: '>=10'}
     dependencies:
-      hosted-git-info: 3.0.5
+      hosted-git-info: 4.0.2
       semver: 7.3.5
       validate-npm-package-name: 3.0.0
     dev: false
@@ -12107,7 +12150,6 @@ packages:
   /picomatch/2.3.0:
     resolution: {integrity: sha512-lY1Q/PiJGC2zOv/z391WOTD+Z02bCgsFfvxoXXf6h7kv9o+WmsmzYqrAwY63sNgOxE4xEdq0WyUnXfKeBrSvYw==}
     engines: {node: '>=8.6'}
-    dev: true
 
   /pify/2.3.0:
     resolution: {integrity: sha1-7RQaasBDqEnqWISY59yosVMw6Qw=}
@@ -14064,6 +14106,14 @@ packages:
       inherits: 2.0.4
     dev: true
 
+  /rollup-plugin-polyfill-node/0.8.0:
+    resolution: {integrity: sha512-C4UeKedOmOBkB3FgR+z/v9kzRwV1Q/H8xWs1u1+CNe4XOV6hINfOrcO+TredKxYvopCmr+WKUSNsFUnD1RLHgQ==}
+    peerDependencies:
+      rollup: ^1.20.0 || ^2.0.0
+    dependencies:
+      '@rollup/plugin-inject': 4.0.3
+    dev: false
+
   /rollup/2.60.2:
     resolution: {integrity: sha512-1Bgjpq61sPjgoZzuiDSGvbI1tD91giZABgjCQBKM5aYLnzjq52GoDuWVwT/cm/MCxCMPU8gqQvkj8doQ5C8Oqw==}
     engines: {node: '>=10.0.0'}
@@ -14643,6 +14693,10 @@ packages:
   /source-map/0.7.3:
     resolution: {integrity: sha512-CkCj6giN3S+n9qrYiBTX5gystlENnRW5jZeNLHpe6aue+SrHcG5VYwujhW9s4dY31mEGsxBDrHR6oI69fTXsaQ==}
     engines: {node: '>= 8'}
+
+  /sourcemap-codec/1.4.8:
+    resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
+    dev: false
 
   /space-separated-tokens/1.1.5:
     resolution: {integrity: sha512-q/JSVd1Lptzhf5bkYm4ob4iWPjx0KiRe3sRFBNrVqbJkFaBm5vbbowy1mymoPNLRa52+oadOhJ+K49wsSeSjTA==}

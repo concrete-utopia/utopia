@@ -29,12 +29,7 @@ import {
 import { betterReactMemo } from '../../uuiui-deps'
 import { last } from '../../core/shared/array-utils'
 import { FlexCol } from 'utopia-api'
-// There's some weirdness between the types and the results in the two module systems.
-// This is to effectively massage the result so that if it is loaded in the browser or in
-// node it should end up with the right thing.
-const AutoSizer = require('react-virtualized-auto-sizer')
-const AutoSizerComponent: typeof AutoSizer =
-  (AutoSizer as any)['default'] == null ? AutoSizer : (AutoSizer as any)['default']
+import AutoSizer from 'react-virtualized-auto-sizer'
 
 const NavigatorContainerId = 'navigator'
 
@@ -205,7 +200,7 @@ export const NavigatorComponent = betterReactMemo(
               overflowX: 'hidden',
             }}
           >
-            <AutoSizerComponent
+            <AutoSizer
               disableWidth={true}
               style={{
                 overscrollBehavior: 'contain',
@@ -214,7 +209,7 @@ export const NavigatorComponent = betterReactMemo(
               }}
             >
               {ItemList}
-            </AutoSizerComponent>
+            </AutoSizer>
           </FlexColumn>
         </SectionBodyArea>
       </Section>

@@ -7,7 +7,11 @@
     <title>Vite App</title>
     <script>
       window.require = () => {}
+      window.global = window
+      window.module = {}
+      window.exports = {}
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
   </head>
   <body>
     <div id="root"></div>
