@@ -18,6 +18,7 @@ export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
 export const RUN_PERFORMANCE_CHECK = false
 export const REFERENCE_EQUALITY_CHECK = false
 
+export const UI_DEV = process.env.UI_DEV === 'vite'
 export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
 export const STATIC_BASE_URL: string =
