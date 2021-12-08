@@ -78,7 +78,7 @@ import {
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import {
-  insertWithDefaults,
+  insertInsertable,
   setCanvasFrames,
   setFocusedElement,
   setProp_UNSAFE,
@@ -1138,8 +1138,8 @@ describe('UPDATE_FILE_PATH', () => {
   })
 })
 
-describe('INSERT_WITH_DEFAULTS', () => {
-  it('inserts an element into the project with the given defaults', () => {
+describe('INSERT_INSERTABLE', () => {
+  it('inserts an element into the project with the given values', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
@@ -1170,14 +1170,14 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(
+    const action = insertInsertable(
       targetPath,
       menuInsertable,
       'do-not-add',
       'do-now-wrap-content',
       null,
     )
-    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1242,7 +1242,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
     }
   })
 
-  it('inserts an element into the project with the given defaults, also adding style props', () => {
+  it('inserts an element into the project with the given values, also adding style props', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
@@ -1273,14 +1273,14 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(
+    const action = insertInsertable(
       targetPath,
       menuInsertable,
       'add-size',
       'do-now-wrap-content',
       null,
     )
-    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1375,14 +1375,14 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(
+    const action = insertInsertable(
       targetPath,
       imgInsertable,
       'add-size',
       'do-now-wrap-content',
       null,
     )
-    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1423,7 +1423,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
                 />
                 <img
                   style={{ width: 100, height: 100 }}
-                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit\\"'
+                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
                 />
               </div>
             )
@@ -1467,14 +1467,10 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(
-      targetPath,
-      imgInsertable,
-      'add-size',
-      'do-now-wrap-content',
-      { type: 'back' },
-    )
-    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const action = insertInsertable(targetPath, imgInsertable, 'add-size', 'do-now-wrap-content', {
+      type: 'back',
+    })
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1495,7 +1491,7 @@ describe('INSERT_WITH_DEFAULTS', () => {
               <div style={{ ...props.style }}>
                 <img
                   style={{ width: 100, height: 100 }}
-                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit\\"'
+                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
                 />
                 <div
                   style={{
@@ -1559,8 +1555,8 @@ describe('INSERT_WITH_DEFAULTS', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertWithDefaults(targetPath, divInsertable, 'do-not-add', 'wrap-content', null)
-    const actualResult = UPDATE_FNS.INSERT_WITH_DEFAULTS(action, editorState)
+    const action = insertInsertable(targetPath, divInsertable, 'do-not-add', 'wrap-content', null)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed

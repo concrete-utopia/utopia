@@ -336,7 +336,6 @@ import {
   SetSaveError,
   RemoveToast,
   InsertDroppedImage,
-  ResetPropToDefault,
   UpdateNodeModulesContents,
   UpdatePackageJson,
   StartCheckpointTimer,
@@ -367,7 +366,7 @@ import {
   UpdateFormulaBarMode,
   OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
-  InsertWithDefaults,
+  InsertInsertable,
   SetPropTransient,
   ClearTransientProps,
   AddTailwindConfig,
@@ -475,10 +474,7 @@ import { notice, Notice } from '../../common/notice'
 import { objectMap, objectMapDropNulls } from '../../../core/shared/object-utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
-import {
-  getDefaultPropsFromParsedControls,
-  getPropertyControlsForTargetFromEditor,
-} from '../../../core/property-controls/property-controls-utils'
+import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
@@ -4213,54 +4209,6 @@ export const UPDATE_FNS = {
       throw new Error(`Could not be found or is not a file: ${action.imagePath}`)
     }
   },
-  RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
-    const openFilePath = getOpenUIJSFileKey(editor)
-    if (openFilePath != null) {
-      const target = action.target
-      const propertyControls = getPropertyControlsForTargetFromEditor(target, editor)
-      let element: JSXElement | null = null
-      forUnderlyingTargetFromEditorState(
-        action.target,
-        editor,
-        (_underlyingSuccess, underlyingElement) => {
-          element = underlyingElement
-        },
-      )
-      if (element == null) {
-        return editor
-      }
-      const defaultProps =
-        propertyControls == null ? {} : getDefaultPropsFromParsedControls(propertyControls)
-
-      const pathToUpdate: PropertyPath | null = action.path
-
-      const propsForPath =
-        action.path == null ? defaultProps : defaultProps[PP.toString(action.path)]
-
-      if (pathToUpdate == null) {
-        return setPropertyOnTarget(editor, target, (props) => {
-          let updatedProps: JSXAttributes = jsxAttributesFromMap(
-            objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
-          )
-          const dataUID = getJSXAttribute(props, 'data-uid')
-          if (dataUID != null) {
-            updatedProps = setJSXAttributesAttribute(updatedProps, 'data-uid', dataUID)
-          }
-          return right(updatedProps)
-        })
-      } else {
-        return setPropertyOnTarget(editor, target, (props) => {
-          return setJSXValueAtPath(
-            props,
-            pathToUpdate!,
-            jsxAttributeValue(propsForPath, emptyComments),
-          )
-        })
-      }
-    } else {
-      return editor
-    }
-  },
   UPDATE_NODE_MODULES_CONTENTS: (
     action: UpdateNodeModulesContents,
     editor: EditorState,
@@ -4641,7 +4589,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  INSERT_WITH_DEFAULTS: (action: InsertWithDefaults, editor: EditorModel): EditorModel => {
+  INSERT_INSERTABLE: (action: InsertInsertable, editor: EditorModel): EditorModel => {
     const openFilename = editor.canvas.openFile?.filename
     if (openFilename == null) {
       return editor

@@ -2,9 +2,8 @@ import { ImportType, PropertyControls } from 'utopia-api'
 import { URL_HASH } from '../../common/env-vars'
 import { parsePropertyControls } from '../../core/property-controls/property-controls-parser'
 import {
-  defaultPropertiesForComponentInFile,
-  getDefaultPropsFromParsedControls,
   hasStyleControls,
+  parsedPropertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import {
@@ -23,6 +22,7 @@ import {
   jsxElementName,
   jsxElementWithoutUID,
   JSXElementWithoutUID,
+  simpleAttribute,
 } from '../../core/shared/element-template'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import {
@@ -41,7 +41,6 @@ import {
   ProjectFile,
 } from '../../core/shared/project-file-types'
 import { fastForEach } from '../../core/shared/utils'
-import { getDefaultPropsAsAttributesFromParsedControls } from '../../core/third-party/shared'
 import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
@@ -202,13 +201,13 @@ const stockHTMLPropertyControls: PropertyControls = {
 function makeHTMLDescriptor(
   tag: string,
   extraPropertyControls: PropertyControls,
+  attributes?: JSXAttributes,
 ): ComponentDescriptor {
   const propertyControls: PropertyControls = {
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
   const parsedControls = parsePropertyControls(propertyControls)
-  const defaultValues = getDefaultPropsAsAttributesFromParsedControls(parsedControls)
   return {
     propertyControls: parsePropertyControls(propertyControls),
     insertOptions: [
@@ -221,7 +220,7 @@ function makeHTMLDescriptor(
             importedWithName: null,
           },
         },
-        elementToInsert: jsxElementWithoutUID(tag, defaultValues, []),
+        elementToInsert: jsxElementWithoutUID(tag, attributes ?? [], []),
       },
     ],
   }
@@ -235,44 +234,54 @@ const basicHTMLElementsDescriptors = {
   p: makeHTMLDescriptor('p', {}),
   button: makeHTMLDescriptor('button', {}),
   input: makeHTMLDescriptor('input', {}),
-  video: makeHTMLDescriptor('video', {
-    controls: {
-      control: 'checkbox',
-      defaultValue: true,
+  video: makeHTMLDescriptor(
+    'video',
+    {
+      controls: {
+        control: 'checkbox',
+      },
+      autoPlay: {
+        control: 'checkbox',
+      },
+      loop: {
+        control: 'checkbox',
+      },
+      src: {
+        control: 'string-input',
+      },
+      style: {
+        control: 'style-controls',
+      },
     },
-    autoPlay: {
-      control: 'checkbox',
-      defaultValue: true,
-    },
-    loop: {
-      control: 'checkbox',
-      defaultValue: true,
-    },
-    src: {
-      control: 'string-input',
-      defaultValue: 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm',
-    },
-    style: {
-      control: 'style-controls',
-      defaultValue: {
+    [
+      simpleAttribute('style', {
         width: '250px',
         height: '120px',
+      }),
+      simpleAttribute('controls', true),
+      simpleAttribute('autoPlay', true),
+      simpleAttribute('loop', true),
+      simpleAttribute('src', 'https://dl8.webmfiles.org/big-buck-bunny_trailer.webm'),
+    ],
+  ),
+  img: makeHTMLDescriptor(
+    'img',
+    {
+      src: {
+        control: 'string-input',
+      },
+      style: {
+        control: 'style-controls',
       },
     },
-  }),
-  img: makeHTMLDescriptor('img', {
-    src: {
-      control: 'string-input',
-      defaultValue: `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}"`,
-    },
-    style: {
-      control: 'style-controls',
-      defaultValue: {
+    [
+      simpleAttribute('style', {
         width: '64px',
         height: '64px',
-      },
-    },
-  }),
+      }),
+      simpleAttribute('src', `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}`),
+    ],
+  ),
 }
 
 export function stylePropOptionsForPropertyControls(
@@ -305,7 +314,7 @@ export function getComponentGroups(
         let insertableComponents: Array<InsertableComponent> = []
         fastForEach(possibleExportedComponents, (exportedComponent) => {
           const pathWithoutExtension = dropFileExtension(fullPath)
-          const { defaultProps, parsedControls } = defaultPropertiesForComponentInFile(
+          const parsedControls = parsedPropertyControlsForComponentInFile(
             exportedComponent.listingName,
             pathWithoutExtension,
             propertyControlsInfo,
@@ -357,20 +366,10 @@ export function getComponentGroups(
               )
             })
           } else {
-            let attributes: JSXAttributes = []
-            for (const key of Object.keys(defaultProps)) {
-              attributes.push(
-                jsxAttributesEntry(
-                  key,
-                  jsxAttributeValue(defaultProps[key], emptyComments),
-                  emptyComments,
-                ),
-              )
-            }
             insertableComponents.push(
               insertableComponent(
                 exportedComponent.importsToAdd,
-                jsxElementWithoutUID(exportedComponent.listingName, attributes, []),
+                jsxElementWithoutUID(exportedComponent.listingName, [], []),
                 exportedComponent.listingName,
                 stylePropOptions,
               ),
