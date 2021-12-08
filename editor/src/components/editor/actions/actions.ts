@@ -473,7 +473,7 @@ import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
 import { notice, Notice } from '../../common/notice'
-import { objectMap, objectMapDropNulls } from '../../../core/shared/object-utils'
+import { objectFilter, objectMap } from '../../../core/shared/object-utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import {
@@ -1524,10 +1524,11 @@ function removeModulesFromNodeModules(
   nodeModules: NodeModules,
 ): NodeModules {
   const filePathsToRemove = modulesToRemove.map((m) => `/node_modules/${m}/`)
-  return Object.fromEntries(
-    Object.entries(nodeModules).filter((entry) => {
-      return !filePathsToRemove.some((pathToRemove) => entry[0].startsWith(pathToRemove))
-    }),
+
+  return objectFilter(
+    (_module, modulePath) =>
+      !filePathsToRemove.some((pathToRemove) => (modulePath as string).startsWith(pathToRemove)),
+    nodeModules,
   )
 }
 
