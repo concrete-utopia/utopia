@@ -10,7 +10,6 @@ import { JSXElementName, jsxElementNameEquals } from '../../../core/shared/eleme
 import { getElementsToTarget } from '../../inspector/common/inspector-utils'
 import { Imports } from '../../../core/shared/project-file-types'
 import {
-  getComponentGroups,
   getComponentGroupsAsSelectOptions,
   InsertableComponent,
 } from '../../../components/shared/project-components'

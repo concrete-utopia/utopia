@@ -22,8 +22,8 @@ import {
 } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
-  getComponentGroups,
   getInsertableGroupLabel,
+  getNonEmptyComponentGroups,
   InsertableComponent,
   InsertableComponentGroup,
   InsertableComponentGroupType,
@@ -119,7 +119,7 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
       return []
     } else {
       return convertInsertableComponentsToFlatList(
-        getComponentGroups(
+        getNonEmptyComponentGroups(
           packageStatus,
           propertyControlsInfo,
           projectContents,
