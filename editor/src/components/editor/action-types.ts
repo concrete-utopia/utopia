@@ -744,10 +744,14 @@ export interface ResetPropToDefault {
   path: PropertyPath | null
 }
 
+export interface RemoveFromNodeModulesContents {
+  action: 'REMOVE_FROM_NODE_MODULES_CONTENTS'
+  modulesToRemove: Array<string>
+}
+
 export interface UpdateNodeModulesContents {
   action: 'UPDATE_NODE_MODULES_CONTENTS'
   contentsToAdd: NodeModules
-  buildType: BuildType
 }
 
 export interface UpdatePackageJson {
@@ -1046,6 +1050,7 @@ export type EditorAction =
   | SetSaveError
   | InsertDroppedImage
   | ResetPropToDefault
+  | RemoveFromNodeModulesContents
   | UpdateNodeModulesContents
   | UpdatePackageJson
   | StartCheckpointTimer

@@ -209,6 +209,7 @@ import type {
   HideVSCodeLoadingScreen,
   SetIndexedDBFailed,
   ForceParseFile,
+  RemoveFromNodeModulesContents,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1210,14 +1211,19 @@ export function resetPropToDefault(
   }
 }
 
-export function updateNodeModulesContents(
-  contentsToAdd: NodeModules,
-  buildType: BuildType,
-): UpdateNodeModulesContents {
+export function removeFromNodeModulesContents(
+  modulesToRemove: Array<string>,
+): RemoveFromNodeModulesContents {
+  return {
+    action: 'REMOVE_FROM_NODE_MODULES_CONTENTS',
+    modulesToRemove: modulesToRemove,
+  }
+}
+
+export function updateNodeModulesContents(contentsToAdd: NodeModules): UpdateNodeModulesContents {
   return {
     action: 'UPDATE_NODE_MODULES_CONTENTS',
     contentsToAdd: contentsToAdd,
-    buildType: buildType,
   }
 }
 

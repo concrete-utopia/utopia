@@ -949,7 +949,7 @@ describe('updating node_modules', () => {
     }
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules, 'incremental')
+    const action = updateNodeModulesContents(nodeModules)
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -973,7 +973,7 @@ describe('updating node_modules', () => {
     const mockDispatch = jest.fn()
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules, 'full-build')
+    const action = updateNodeModulesContents(nodeModules)
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,

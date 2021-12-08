@@ -379,6 +379,7 @@ import {
   HideVSCodeLoadingScreen,
   SetIndexedDBFailed,
   ForceParseFile,
+  RemoveFromNodeModulesContents,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -506,6 +507,7 @@ import {
   addImports,
   setScrollAnimation,
   updatePackageJson,
+  removeFromNodeModulesContents,
 } from './action-creators'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
@@ -1515,6 +1517,18 @@ function updateSelectedComponentsFromEditorPosition(
       dispatch,
     )
   }
+}
+
+function removeModulesFromNodeModules(
+  modulesToRemove: Array<string>,
+  nodeModules: NodeModules,
+): NodeModules {
+  const filePathsToRemove = modulesToRemove.map((m) => `/node_modules/${m}/`)
+  return Object.fromEntries(
+    Object.entries(nodeModules).filter((entry) => {
+      return !filePathsToRemove.some((pathToRemove) => entry[0].startsWith(pathToRemove))
+    }),
+  )
 }
 
 // JS Editor Actions:
@@ -3649,6 +3663,7 @@ export const UPDATE_FNS = {
       file,
     )
 
+    let updatedNodeModulesFiles = editor.nodeModules.files
     let packageLoadingStatus: PackageStatusMap = {}
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
@@ -3659,18 +3674,51 @@ export const UPDATE_FNS = {
           packageStatus[dep.name] = { status: 'loading' }
           return packageStatus
         }, {})
-        let depsToLoad = deps
+        let newDeps: RequestedNpmDependency[] = []
+        let updatedDeps: RequestedNpmDependency[] = []
+        let removedDeps: RequestedNpmDependency[] = []
         const currentDepsFile = packageJsonFileFromProjectContents(editor.projectContents)
         if (isTextFile(currentDepsFile)) {
           const currentDeps = dependenciesFromPackageJsonContents(currentDepsFile.fileContents.code)
-          depsToLoad = deps.filter(
-            (dep) =>
-              !currentDeps.find(
-                (currentDep) => currentDep.name === dep.name && currentDep.version === dep.version,
-              ),
-          )
+          let foundMatchingDeps: RequestedNpmDependency[] = []
+
+          fastForEach(deps, (dep) => {
+            const matchingCurrentDep = currentDeps.find(
+              (currentDep) => dep.name === currentDep.name,
+            )
+
+            // Find the new or updated dependencies
+            if (matchingCurrentDep == null) {
+              // A new dependency has been added
+              newDeps.push(dep)
+            } else {
+              foundMatchingDeps.push(matchingCurrentDep)
+
+              if (matchingCurrentDep.version !== dep.version) {
+                // An updated dependency
+                updatedDeps.push(dep)
+              }
+            }
+
+            // Find the deleted dependencies
+            removedDeps = currentDeps.filter(
+              (currentDep) => !foundMatchingDeps.includes(currentDep),
+            )
+          })
+        } else {
+          newDeps = deps
         }
-        fetchNodeModules(depsToLoad, builtInDependencies).then((fetchNodeModulesResult) => {
+
+        const modulesToRemove = updatedDeps.concat(removedDeps).map((d) => d.name)
+
+        updatedNodeModulesFiles = removeModulesFromNodeModules(
+          modulesToRemove,
+          editor.nodeModules.files,
+        )
+
+        const depsToFetch = newDeps.concat(updatedDeps)
+
+        fetchNodeModules(depsToFetch, builtInDependencies).then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
@@ -3681,7 +3729,7 @@ export const UPDATE_FNS = {
           )
           dispatch([
             ...packageErrorActions,
-            updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+            updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
           ])
         })
       }
@@ -3699,6 +3747,7 @@ export const UPDATE_FNS = {
       },
       nodeModules: {
         ...editor.nodeModules,
+        files: updatedNodeModulesFiles,
         packageStatus: {
           ...editor.nodeModules.packageStatus,
           ...packageLoadingStatus,
@@ -4261,51 +4310,58 @@ export const UPDATE_FNS = {
       return editor
     }
   },
+  REMOVE_FROM_NODE_MODULES_CONTENTS: (
+    action: RemoveFromNodeModulesContents,
+    editor: EditorState,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorState => {
+    const updatedNodeModulesFiles = removeModulesFromNodeModules(
+      action.modulesToRemove,
+      editor.nodeModules.files,
+    )
+
+    return {
+      ...editor,
+      nodeModules: {
+        ...editor.nodeModules,
+        files: updatedNodeModulesFiles,
+      },
+      codeResultCache: generateCodeResultCache(
+        editor.projectContents,
+        codeCacheToBuildResult(editor.codeResultCache.cache),
+        editor.codeResultCache.exportsInfo,
+        updatedNodeModulesFiles,
+        dispatch,
+        editor.codeResultCache.evaluationCache,
+        builtInDependencies,
+      ),
+    }
+  },
   UPDATE_NODE_MODULES_CONTENTS: (
     action: UpdateNodeModulesContents,
     editor: EditorState,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorState => {
-    let result: EditorState
-    if (action.buildType === 'full-build') {
-      result = produce(editor, (draft) => {
-        draft.nodeModules.files = action.contentsToAdd
-      })
-    } else {
-      result = produce(editor, (draft) => {
-        draft.nodeModules.files = {
-          ...draft.nodeModules.files,
-          ...action.contentsToAdd,
-        }
-      })
-    }
+    const updatedNodeModulesFiles = { ...editor.nodeModules.files, ...action.contentsToAdd }
 
-    let onlyProjectFiles: boolean = true
-    for (const key of Object.keys(action.contentsToAdd)) {
-      if (key.startsWith('/node_modules')) {
-        onlyProjectFiles = false
-        break
-      }
-    }
-
-    result = {
-      ...result,
+    return {
+      ...editor,
+      nodeModules: {
+        ...editor.nodeModules,
+        files: updatedNodeModulesFiles,
+      },
       codeResultCache: generateCodeResultCache(
-        result.projectContents,
-        editor.codeResultCache.projectModules,
-        codeCacheToBuildResult(result.codeResultCache.cache),
-        result.codeResultCache.exportsInfo,
-        result.nodeModules.files,
+        editor.projectContents,
+        codeCacheToBuildResult(editor.codeResultCache.cache),
+        editor.codeResultCache.exportsInfo,
+        updatedNodeModulesFiles,
         dispatch,
         editor.codeResultCache.evaluationCache,
-        action.buildType,
-        onlyProjectFiles,
         builtInDependencies,
       ),
     }
-
-    return result
   },
   UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
     const dependencies = action.dependencies.reduce(
@@ -4798,7 +4854,7 @@ export const UPDATE_FNS = {
               )
               dispatch([
                 ...packageErrorActions,
-                updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+                updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
               ])
             })
 
@@ -5121,13 +5177,10 @@ export async function load(
     // TODO is this sufficient here?
     migratedModel.projectContents,
     {},
-    {},
     migratedModel.exportsInfo,
     nodeModules,
     dispatch,
     {},
-    'full-build',
-    false,
     builtInDependencies,
   )
 

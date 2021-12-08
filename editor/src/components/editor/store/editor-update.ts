@@ -261,6 +261,13 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.INSERT_DROPPED_IMAGE(action, state)
     case 'RESET_PROP_TO_DEFAULT':
       return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state)
+    case 'REMOVE_FROM_NODE_MODULES_CONTENTS':
+      return UPDATE_FNS.REMOVE_FROM_NODE_MODULES_CONTENTS(
+        action,
+        state,
+        dispatch,
+        builtInDependencies,
+      )
     case 'UPDATE_NODE_MODULES_CONTENTS':
       return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch, builtInDependencies)
     case 'UPDATE_PACKAGE_JSON':
