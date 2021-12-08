@@ -738,10 +738,14 @@ export interface InsertDroppedImage {
   position: CanvasPoint
 }
 
+export interface RemoveFromNodeModulesContents {
+  action: 'REMOVE_FROM_NODE_MODULES_CONTENTS'
+  modulesToRemove: Array<string>
+}
+
 export interface UpdateNodeModulesContents {
   action: 'UPDATE_NODE_MODULES_CONTENTS'
   contentsToAdd: NodeModules
-  buildType: BuildType
 }
 
 export interface UpdatePackageJson {
@@ -1039,6 +1043,7 @@ export type EditorAction =
   | SetSafeMode
   | SetSaveError
   | InsertDroppedImage
+  | RemoveFromNodeModulesContents
   | UpdateNodeModulesContents
   | UpdatePackageJson
   | StartCheckpointTimer

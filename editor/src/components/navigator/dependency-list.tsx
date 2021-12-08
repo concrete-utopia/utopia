@@ -185,10 +185,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
           }
           this.setState({ dependencyLoadingStatus: 'not-loading' })
           this.props.editorDispatch([
-            EditorActions.updateNodeModulesContents(
-              fetchNodeModulesResult.nodeModules,
-              'full-build',
-            ),
+            EditorActions.updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
           ])
         },
       )
@@ -354,10 +351,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
                   } else {
                     this.packagesUpdateSuccess(editedPackageName)
                     this.props.editorDispatch([
-                      EditorActions.updateNodeModulesContents(
-                        fetchNodeModulesResult.nodeModules,
-                        'incremental',
-                      ),
+                      EditorActions.updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
                     ])
                   }
                 })

@@ -123,6 +123,7 @@ export function objectMap<T, K extends keyof T, U>(
   })
   return mappedObj
 }
+
 export function objectMapDropNulls<T, K extends keyof T, U>(
   transform: (t: ValueOf<T>, key: K) => U | null,
   obj: T,
@@ -141,6 +142,19 @@ export function objectMapDropNulls<T, K extends keyof T, U>(
     }
   })
   return mappedObj
+}
+
+export function objectFilter<T>(filter: (t: ValueOf<T>, key: keyof T) => boolean, obj: T): T {
+  const keys = Object.keys(obj) as Array<keyof T>
+  let filteredResult = {} as T
+  fastForEach(keys, (key) => {
+    const value = obj[key]
+    if (filter(value, key)) {
+      filteredResult[key] = value
+    }
+  })
+
+  return filteredResult
 }
 
 export function forEachValue<T>(fn: (val: ValueOf<T>, key: keyof T) => void, obj: T): void {

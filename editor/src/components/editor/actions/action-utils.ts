@@ -72,6 +72,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RENAME_PROP_KEY':
     case 'SET_SAFE_MODE':
     case 'SET_SAVE_ERROR':
+    case 'REMOVE_FROM_NODE_MODULES_CONTENTS':
     case 'UPDATE_NODE_MODULES_CONTENTS':
     case 'START_CHECKPOINT_TIMER':
     case 'SET_PACKAGE_STATUS':

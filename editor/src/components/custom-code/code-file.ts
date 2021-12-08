@@ -22,7 +22,6 @@ import {
   EvaluationCache,
   getCurriedEditorRequireFn,
 } from '../../core/es-modules/package-manager/package-manager'
-import { updateNodeModulesContents } from '../editor/actions/action-creators'
 import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
@@ -155,34 +154,14 @@ const getCurriedEditorResolveFunction = (nodeModules: NodeModules): CurriedResol
 
 export function generateCodeResultCache(
   projectContents: ProjectContentTreeRoot,
-  existingModules: MultiFileBuildResult,
   updatedModules: MultiFileBuildResult,
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
   evaluationCache: EvaluationCache,
-  buildType: BuildType,
-  onlyProjectFiles: boolean,
   builtInDependencies: BuiltInDependencies,
 ): CodeResultCache {
-  // Makes the assumption that `fullBuild` and `updatedModules` are in line
-  // with each other.
-  let projectModules: MultiFileBuildResult
-  switch (buildType) {
-    case 'full-build':
-      projectModules = { ...updatedModules }
-      break
-    case 'incremental':
-      projectModules = {
-        ...existingModules,
-        ...updatedModules,
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = buildType
-      throw new Error(`Unhandled type ${JSON.stringify(buildType)}`)
-  }
-
+  const projectModules = { ...updatedModules }
   const updatedFileNames = Object.keys(updatedModules)
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
     projectContents,

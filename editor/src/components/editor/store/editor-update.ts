@@ -259,6 +259,13 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_SAVE_ERROR(action, state)
     case 'INSERT_DROPPED_IMAGE':
       return UPDATE_FNS.INSERT_DROPPED_IMAGE(action, state)
+    case 'REMOVE_FROM_NODE_MODULES_CONTENTS':
+      return UPDATE_FNS.REMOVE_FROM_NODE_MODULES_CONTENTS(
+        action,
+        state,
+        dispatch,
+        builtInDependencies,
+      )
     case 'UPDATE_NODE_MODULES_CONTENTS':
       return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch, builtInDependencies)
     case 'UPDATE_PACKAGE_JSON':
