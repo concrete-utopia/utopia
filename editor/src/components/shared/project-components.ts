@@ -285,6 +285,25 @@ export function stylePropOptionsForPropertyControls(
   }
 }
 
+export function getNonEmptyComponentGroups(
+  packageStatus: PackageStatusMap,
+  propertyControlsInfo: PropertyControlsInfo,
+  projectContents: ProjectContentTreeRoot,
+  dependencies: Array<PossiblyUnversionedNpmDependency>,
+  originatingPath: string,
+): Array<InsertableComponentGroup> {
+  const groups = getComponentGroups(
+    packageStatus,
+    propertyControlsInfo,
+    projectContents,
+    dependencies,
+    originatingPath,
+  )
+  return groups.filter((group) => {
+    return group.insertableComponents.length > 0
+  })
+}
+
 export function getComponentGroups(
   packageStatus: PackageStatusMap,
   propertyControlsInfo: PropertyControlsInfo,
