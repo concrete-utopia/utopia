@@ -2,6 +2,9 @@ import React from 'react'
 import * as ReactDOM from 'react-dom'
 import create from 'zustand'
 
+import { DndProvider } from 'react-dnd'
+import Backend from 'react-dnd-html5-backend'
+
 import { DesignPanelRoot } from '../src/components/canvas/design-panel-root'
 import {
   emptyUiJsxCanvasContextData,
@@ -90,7 +93,11 @@ export const EditorRoot: React.FunctionComponent = () => {
   return (
     <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-        <DesignPanelRoot />
+        <DndProvider backend={Backend}>
+          <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
+            <DesignPanelRoot />
+          </div>
+        </DndProvider>
       </UiJsxCanvasCtxAtom.Provider>
     </EditorStateContext.Provider>
   )
