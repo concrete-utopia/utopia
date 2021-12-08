@@ -16,6 +16,7 @@ import { RowOrFolderWrapper } from './row-or-folder-wrapper'
 import { RowForControl, RowForInvalidControl } from './component-section'
 import { InspectorWidthAtom } from '../../common/inspector-atoms'
 import { useAtom } from 'jotai'
+import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
 
 interface FolderSectionProps {
   isRoot: boolean
@@ -139,22 +140,26 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
       {when(
         props.isRoot,
         Object.keys(props.detectedPropsAndValuesWithoutControls).map((propName) => {
-          const propValue = props.detectedPropsAndValuesWithoutControls[propName]
-          const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
-            propValue,
-            propName,
-          )
-          return (
-            <RowForControl
-              key={propName}
-              propPath={PP.create([propName])}
-              controlDescription={controlDescription}
-              isScene={false}
-              setGlobalCursor={props.setGlobalCursor}
-              indentationLevel={props.indentationLevel + 1}
-              focusOnMount={false}
-            />
-          )
+          if (specialPropertiesToIgnore.includes(propName)) {
+            return null
+          } else {
+            const propValue = props.detectedPropsAndValuesWithoutControls[propName]
+            const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
+              propValue,
+              propName,
+            )
+            return (
+              <RowForControl
+                key={propName}
+                propPath={PP.create([propName])}
+                controlDescription={controlDescription}
+                isScene={false}
+                setGlobalCursor={props.setGlobalCursor}
+                indentationLevel={props.indentationLevel + 1}
+                focusOnMount={false}
+              />
+            )
+          }
         }),
       )}
       {when(
