@@ -259,8 +259,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_SAVE_ERROR(action, state)
     case 'INSERT_DROPPED_IMAGE':
       return UPDATE_FNS.INSERT_DROPPED_IMAGE(action, state)
-    case 'RESET_PROP_TO_DEFAULT':
-      return UPDATE_FNS.RESET_PROP_TO_DEFAULT(action, state)
     case 'REMOVE_FROM_NODE_MODULES_CONTENTS':
       return UPDATE_FNS.REMOVE_FROM_NODE_MODULES_CONTENTS(
         action,
@@ -320,8 +318,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_FORMULA_BAR_MODE(action, state)
     case 'CLOSE_FLOATING_INSERT_MENU':
       return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
-    case 'INSERT_WITH_DEFAULTS':
-      return UPDATE_FNS.INSERT_WITH_DEFAULTS(action, state)
+    case 'INSERT_INSERTABLE':
+      return UPDATE_FNS.INSERT_INSERTABLE(action, state)
     case 'SET_PROP_TRANSIENT':
       return UPDATE_FNS.SET_PROP_TRANSIENT(action, state)
     case 'CLEAR_TRANSIENT_PROPS':

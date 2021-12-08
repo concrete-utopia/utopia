@@ -229,7 +229,6 @@ describe('registered property controls', () => {
                 "type": "RIGHT",
                 "value": Object {
                   "control": "checkbox",
-                  "defaultValue": true,
                 },
               },
             },

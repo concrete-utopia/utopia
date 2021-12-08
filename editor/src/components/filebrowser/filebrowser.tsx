@@ -38,7 +38,6 @@ import { useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
-import { defaultPropertiesForComponentInFile } from '../../core/property-controls/property-controls-utils'
 import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import {
   Section,

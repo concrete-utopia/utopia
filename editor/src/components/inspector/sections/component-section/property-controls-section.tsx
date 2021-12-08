@@ -19,6 +19,7 @@ import { FolderSection } from './folder-section'
 import { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { VerySubdued } from '../../../../uuiui'
+import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
 
 function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData {
   const currentContext = useContext(InspectorPropsContext)
@@ -63,6 +64,13 @@ export const PropertyControlsSection = betterReactMemo(
       propsWithControlsButNoValue,
     } = props
 
+    // Filter out these because we don't want to include them in the unused props.
+    const filteredDetectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
+      detectedPropsWithNoValue.filter((detectedPropWithNoValue) => {
+        return !specialPropertiesToIgnore.includes(detectedPropWithNoValue)
+      }),
+    )
+
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
     const setGlobalCursor = React.useCallback(
       (cursor: CSSCursor | null) => {
@@ -99,10 +107,12 @@ export const PropertyControlsSection = betterReactMemo(
       <InspectorPropsContext.Provider value={updatedContext}>
         {rootFolder}
         {/** props set on the component instance and props used inside the component code */}
-        {detectedPropsWithNoValue.length > 0 ? (
+        {filteredDetectedPropsWithNoValue.length > 0 ? (
           <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
             <div>
-              <VerySubdued>{`Unused props: ${detectedPropsWithNoValue.join(', ')}.`}</VerySubdued>
+              <VerySubdued>{`Unused props: ${filteredDetectedPropsWithNoValue.join(
+                ', ',
+              )}.`}</VerySubdued>
             </div>
           </UIGridRow>
         ) : null}

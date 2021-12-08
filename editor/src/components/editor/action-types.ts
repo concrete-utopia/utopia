@@ -738,12 +738,6 @@ export interface InsertDroppedImage {
   position: CanvasPoint
 }
 
-export interface ResetPropToDefault {
-  action: 'RESET_PROP_TO_DEFAULT'
-  target: ElementPath
-  path: PropertyPath | null
-}
-
 export interface RemoveFromNodeModulesContents {
   action: 'REMOVE_FROM_NODE_MODULES_CONTENTS'
   modulesToRemove: Array<string>
@@ -875,8 +869,8 @@ export interface UpdateFormulaBarMode {
   value: 'css' | 'content'
 }
 
-export interface InsertWithDefaults {
-  action: 'INSERT_WITH_DEFAULTS'
+export interface InsertInsertable {
+  action: 'INSERT_INSERTABLE'
   targetParent: ElementPath
   toInsert: InsertableComponent
   styleProps: StylePropOption
@@ -1049,7 +1043,6 @@ export type EditorAction =
   | SetSafeMode
   | SetSaveError
   | InsertDroppedImage
-  | ResetPropToDefault
   | RemoveFromNodeModulesContents
   | UpdateNodeModulesContents
   | UpdatePackageJson
@@ -1076,7 +1069,7 @@ export type EditorAction =
   | FocusClassNameInput
   | FocusFormulaBar
   | UpdateFormulaBarMode
-  | InsertWithDefaults
+  | InsertInsertable
   | SetPropTransient
   | ClearTransientProps
   | AddTailwindConfig

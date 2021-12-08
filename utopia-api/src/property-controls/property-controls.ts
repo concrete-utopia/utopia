@@ -5,14 +5,12 @@ import { fastForEach } from '../utils'
 interface ControlBaseFields {
   control: RegularControlType
   label?: string
-  defaultValue?: unknown
   visibleByDefault?: boolean
 }
 function getControlSharedFields(control: RegularControlDescription): ControlBaseFields {
   return {
     control: control.control,
     label: control.label,
-    defaultValue: control.defaultValue,
     visibleByDefault: control.visibleByDefault,
   }
 }
@@ -40,7 +38,6 @@ export type BaseControlType =
 export interface CheckboxControlDescription {
   control: 'checkbox'
   label?: string
-  defaultValue?: boolean
   visibleByDefault?: boolean
   disabledTitle?: string
   enabledTitle?: string
@@ -50,7 +47,6 @@ export interface ColorControlDescription {
   control: 'color'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: string
 }
 
 export type AllowedEnumType = string | boolean | number | undefined | null
@@ -65,7 +61,6 @@ export interface PopUpListControlDescription {
   control: 'popuplist'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: unknown
   options: BasicControlOptions<unknown>
 }
 
@@ -86,7 +81,6 @@ export interface ExpressionPopUpListControlDescription {
   control: 'expression-popuplist'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: ExpressionControlOption<unknown>
   options: ExpressionControlOption<unknown>[]
 }
 
@@ -94,46 +88,30 @@ export interface EulerControlDescription {
   control: 'euler'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: [number, number, number, string]
 }
 
 export interface NoneControlDescription {
   control: 'none'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: never
 }
 
 export interface Matrix3ControlDescription {
   control: 'matrix3'
   label?: string
   visibleByDefault?: boolean
-  // prettier-ignore
-  defaultValue?: [
-    number, number, number,
-    number, number, number,
-    number, number, number,
-  ]
 }
 
 export interface Matrix4ControlDescription {
   control: 'matrix4'
   label?: string
   visibleByDefault?: boolean
-  // prettier-ignore
-  defaultValue?: [
-    number, number, number, number,
-    number, number, number, number,
-    number, number, number, number,
-    number, number, number, number,
-  ]
 }
 
 export interface NumberInputControlDescription {
   control: 'number-input'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: number | null
   max?: number
   min?: number
   unit?: string
@@ -144,7 +122,6 @@ export interface NumberInputControlDescription {
 export interface RadioControlDescription {
   control: 'radio'
   label?: string
-  defaultValue?: unknown
   visibleByDefault?: boolean
   options: BasicControlOptions<unknown>
 }
@@ -153,14 +130,12 @@ export interface ExpressionInputControlDescription {
   control: 'expression-input'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: unknown
 }
 
 export interface StringInputControlDescription {
   control: 'string-input'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: string
   placeholder?: string
   obscured?: boolean
 }
@@ -169,7 +144,6 @@ export interface StyleControlsControlDescription {
   control: 'style-controls'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: CSSProperties
   placeholder?: CSSProperties
 }
 
@@ -177,21 +151,18 @@ export interface Vector2ControlDescription {
   control: 'vector2'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: [number, number]
 }
 
 export interface Vector3ControlDescription {
   control: 'vector3'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: [number, number, number]
 }
 
 export interface Vector4ControlDescription {
   control: 'vector4'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: [number, number, number, number]
 }
 
 export type BaseControlDescription =
@@ -222,7 +193,6 @@ export interface ArrayControlDescription {
   control: 'array'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: unknown[]
   propertyControl: RegularControlDescription
   maxCount?: number
 }
@@ -231,7 +201,6 @@ export interface ObjectControlDescription {
   control: 'object'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: unknown
   object: { [prop: string]: RegularControlDescription }
 }
 
@@ -239,14 +208,12 @@ export interface UnionControlDescription {
   control: 'union'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: unknown
   controls: Array<RegularControlDescription>
 }
 export interface TupleControlDescription {
   control: 'tuple'
   label?: string
   visibleByDefault?: boolean
-  defaultValue?: unknown[]
   propertyControls: RegularControlDescription[]
 }
 
@@ -315,27 +282,6 @@ export function addPropertyControls(component: unknown, propertyControls: Proper
   if (component != null) {
     ;(component as any)['propertyControls'] = propertyControls
   }
-}
-
-export function getDefaultProps(propertyControls: PropertyControls): { [prop: string]: unknown } {
-  let defaults: { [prop: string]: unknown } = {}
-  const propKeys = Object.keys(propertyControls)
-  fastForEach(propKeys, (prop) => {
-    const control = propertyControls[prop]
-    if (control != null) {
-      if (isBaseControlDescription(control) || isHigherLevelControlDescription(control)) {
-        if (control.defaultValue != null) {
-          defaults[prop] = control.defaultValue
-        }
-      } else {
-        defaults = {
-          ...defaults,
-          ...getDefaultProps(control.controls),
-        }
-      }
-    }
-  })
-  return defaults
 }
 
 export function expression<T>(

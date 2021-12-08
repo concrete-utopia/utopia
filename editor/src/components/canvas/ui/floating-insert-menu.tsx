@@ -22,15 +22,15 @@ import {
 } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
-  getComponentGroups,
   getInsertableGroupLabel,
+  getNonEmptyComponentGroups,
   InsertableComponent,
   InsertableComponentGroup,
   InsertableComponentGroupType,
 } from '../../shared/project-components'
 import {
   closeFloatingInsertMenu,
-  insertWithDefaults,
+  insertInsertable,
   updateJSXElementName,
   wrapInView,
   wrapInElement,
@@ -119,7 +119,7 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
       return []
     } else {
       return convertInsertableComponentsToFlatList(
-        getComponentGroups(
+        getNonEmptyComponentGroups(
           packageStatus,
           propertyControlsInfo,
           projectContents,
@@ -489,7 +489,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             if (targetParent != null) {
               // TODO multiselect?
               actionsToDispatch = [
-                insertWithDefaults(
+                insertInsertable(
                   targetParent,
                   elementToInsert,
                   fixedSizeForInsertion ? 'add-size' : 'do-not-add',
