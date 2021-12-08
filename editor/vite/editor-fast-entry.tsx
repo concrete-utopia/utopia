@@ -35,6 +35,7 @@ import {
 } from '../src/core/workers/test-workers'
 import { DummyPersistenceMachine } from '../src/components/editor/persistence/persistence.test-utils'
 import { editorDispatch } from '../src/components/editor/store/dispatch'
+import { TestProject } from './test-project'
 
 const boundDispatch = (
   dispatchedActions: readonly EditorAction[],
@@ -90,6 +91,9 @@ const storeHook = create<EditorStore>((set) => storedState)
 const spyCollector = emptyUiJsxCanvasContextData()
 
 export const EditorRoot: React.FunctionComponent = () => {
+  React.useEffect(() => {
+    onCreatedOrLoadedProject('test', 'Test Project', TestProject as any)
+  }, [])
   return (
     <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>

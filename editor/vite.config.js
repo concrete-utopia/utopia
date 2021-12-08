@@ -1,23 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-// import { viteCommonjs } from '@originjs/vite-plugin-commonjs'
-// import { esbuildCommonjs } from '@originjs/vite-plugin-commonjs'
 // import polyfill from 'rollup-plugin-polyfill-node'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // plugins: [react(), viteCommonjs()],
   // plugins: [react(), polyfill()],
   plugins: [react()],
   root: './vite',
   publicDir: '../resources',
-  optimizeDeps: {
-    esbuildOptions: {
-      // plugins: [esbuildCommonjs(['utopia-vscode-common'])],
-    },
-  },
   server: {
     port: 3005,
+    proxy: { '/v1': 'http://localhost:8000/v1' },
   },
   compilerOptions: {
     types: ['vite/client'],

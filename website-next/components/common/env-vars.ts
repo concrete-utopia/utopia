@@ -24,7 +24,7 @@ export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` :
 export const STATIC_BASE_URL: string =
   PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost:8000'
     ? `https://cdn.${BARE_HOST}/`
-    : `http://${BARE_HOST}/`
+    : `http://localhost:8000/`
 
 export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
