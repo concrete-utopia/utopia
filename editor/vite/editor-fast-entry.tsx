@@ -90,10 +90,9 @@ const storeHook = create<EditorStore>((set) => storedState)
 
 const spyCollector = emptyUiJsxCanvasContextData()
 
+onCreatedOrLoadedProject('test', 'Test Project', TestProject as any)
+
 export const EditorRoot: React.FunctionComponent = () => {
-  React.useEffect(() => {
-    onCreatedOrLoadedProject('test', 'Test Project', TestProject as any)
-  }, [])
   return (
     <EditorStateContext.Provider value={{ api: storeHook, useStore: storeHook }}>
       <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
