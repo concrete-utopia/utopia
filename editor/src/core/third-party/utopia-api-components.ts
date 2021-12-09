@@ -7,7 +7,7 @@ import { jsxElementWithoutUID } from '../shared/element-template'
 
 const BasicUtopiaComponentDescriptor = (name: string): ComponentDescriptor => {
   return {
-    propertyControls: parsePropertyControls({
+    properties: parsePropertyControls({
       style: {
         control: 'style-controls',
       },

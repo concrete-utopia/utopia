@@ -1793,14 +1793,14 @@ export var storyboard = (
         '/utopia/storyboard',
         {
           App: {
-            controls: {
+            properties: {
               test: {
                 control: 'checkbox'
               }
             },
             insertOptions: [
               {
-                codeToInsert: '<App />',
+                code: '<App />',
               }
             ]
           }

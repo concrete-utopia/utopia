@@ -20,7 +20,7 @@ import {
 } from '../custom-code/code-file'
 
 const cardComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     title: right({
       control: 'string-input',
       label: 'Title',
@@ -57,7 +57,7 @@ const cardPropertyControlsInfo: PropertyControlsInfo = {
 }
 
 const modifiedCardComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     title: right({
       control: 'string-input',
       label: 'Title',
@@ -95,7 +95,7 @@ const modifiedCardControlsToCheck: ControlsToCheck = Promise.resolve(
 )
 
 const selectorComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     value: right({
       control: 'popuplist',
       label: 'Value',
@@ -230,7 +230,7 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
+                "properties": Object {
                   "type": "RIGHT",
                   "value": Object {
                     "title": Object {
@@ -335,7 +335,7 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "True False Selector",
                   },
                 ],
-                "propertyControls": Object {
+                "properties": Object {
                   "type": "RIGHT",
                   "value": Object {
                     "value": Object {
@@ -441,7 +441,7 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
+                "properties": Object {
                   "type": "RIGHT",
                   "value": Object {
                     "border": Object {
@@ -530,7 +530,7 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
+                "properties": Object {
                   "type": "RIGHT",
                   "value": Object {
                     "title": Object {
@@ -588,7 +588,7 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
+                "properties": Object {
                   "type": "RIGHT",
                   "value": Object {
                     "title": Object {

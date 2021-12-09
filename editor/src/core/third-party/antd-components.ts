@@ -31,7 +31,7 @@ function createBasicComponent(
 ): ComponentDescriptor {
   const parsedControls = parsePropertyControls(propertyControls)
   return {
-    propertyControls: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
+    properties: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
     insertOptions: [
       {
         insertMenuLabel: [baseVariable, ...propertyPathParts].join('.'),

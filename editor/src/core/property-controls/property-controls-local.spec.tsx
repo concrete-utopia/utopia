@@ -24,7 +24,7 @@ describe('registered property controls', () => {
           '/src/card',
           {
             Card: {
-              controls: {
+              properties: {
                 label: {
                   control: 'string-input',
                 },
@@ -38,13 +38,13 @@ describe('registered property controls', () => {
               },
               insertOptions: [
                 {
-                  codeToInsert: '<Card />',
-                  menuLabel: 'Card',
+                  code: '<Card />',
+                  label: 'Card',
                 },
                 {
-                  codeToInsert: '<Card person={DefaultPerson} />',
-                  menuLabel: 'ID Card',
-                  additionalRequiredImports: "import { DefaultPerson } from '/src/defaults';",
+                  code: '<Card person={DefaultPerson} />',
+                  label: 'ID Card',
+                  additionalImports: "import { DefaultPerson } from '/src/defaults';",
                 },
               ],
             },
@@ -210,7 +210,7 @@ describe('registered property controls', () => {
               "insertMenuLabel": "ID Card",
             },
           ],
-          "propertyControls": Object {
+          "properties": Object {
             "type": "RIGHT",
             "value": Object {
               "background": Object {

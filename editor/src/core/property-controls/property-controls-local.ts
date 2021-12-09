@@ -56,18 +56,18 @@ async function parseInsertOption(
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentInfo>> {
   const allRequiredImports = `import { ${componentName} } from '${moduleName}'; ${
-    insertOption.additionalRequiredImports ?? ''
+    insertOption.additionalImports ?? ''
   }`
 
   const parsedParams = await getCachedParseResultForUserStrings(
     workers,
     allRequiredImports,
-    insertOption.codeToInsert,
+    insertOption.code,
   )
 
   return mapEither(({ importsToAdd, elementToInsert }) => {
     return {
-      insertMenuLabel: insertOption.menuLabel ?? componentName,
+      insertMenuLabel: insertOption.label ?? componentName,
       elementToInsert: elementToInsert,
       importsToAdd: importsToAdd,
     }
@@ -84,8 +84,8 @@ function insertOptionsForComponentToRegister(
     // If none provided, fall back to a default insert option
     return [
       {
-        menuLabel: componentName,
-        codeToInsert: `<${componentName} />`,
+        label: componentName,
+        code: `<${componentName} />`,
       },
     ]
   }
@@ -97,7 +97,7 @@ async function componentDescriptorForComponentToRegister(
   moduleName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
-  const parsedPropertyControls = parsePropertyControls(componentToRegister.controls)
+  const parsedPropertyControls = parsePropertyControls(componentToRegister.properties)
   const unparsedInsertOptions = insertOptionsForComponentToRegister(
     componentToRegister,
     componentName,
@@ -113,7 +113,7 @@ async function componentDescriptorForComponentToRegister(
   return mapEither((insertOptions) => {
     return {
       componentName: componentName,
-      propertyControls: parsedPropertyControls,
+      properties: parsedPropertyControls,
       insertOptions: insertOptions,
     }
   }, parsedInsertOptions)
@@ -148,31 +148,31 @@ export function fullyParsePropertyControls(value: unknown): ParseResult<Property
 
 export function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
   return applicative3Either(
-    (codeToInsert, additionalRequiredImports, menuLabel) => {
+    (code, additionalImports, label) => {
       let insertOption: ComponentInsertOption = {
-        codeToInsert: codeToInsert,
+        code: code,
       }
 
-      setOptionalProp(insertOption, 'additionalRequiredImports', additionalRequiredImports)
-      setOptionalProp(insertOption, 'menuLabel', menuLabel)
+      setOptionalProp(insertOption, 'additionalImports', additionalImports)
+      setOptionalProp(insertOption, 'label', label)
 
       return insertOption
     },
-    objectKeyParser(parseString, 'codeToInsert')(value),
-    optionalObjectKeyParser(parseString, 'additionalRequiredImports')(value),
-    optionalObjectKeyParser(parseString, 'menuLabel')(value),
+    objectKeyParser(parseString, 'code')(value),
+    optionalObjectKeyParser(parseString, 'additionalImports')(value),
+    optionalObjectKeyParser(parseString, 'label')(value),
   )
 }
 
 export function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
   return applicative2Either(
-    (controls, insertOptions) => {
+    (properties, insertOptions) => {
       return {
-        controls: controls,
+        properties: properties,
         insertOptions: insertOptions,
       }
     },
-    objectKeyParser(fullyParsePropertyControls, 'controls')(value),
+    objectKeyParser(fullyParsePropertyControls, 'properties')(value),
     objectKeyParser(parseArray(parseComponentInsertOption), 'insertOptions')(value),
   )
 }
@@ -237,7 +237,7 @@ export function getThirdPartyControlsIntrinsic(
     )
   })
   if (foundPackageWithElement != null) {
-    return propertyControlsInfo[foundPackageWithElement]?.[elementName]?.propertyControls
+    return propertyControlsInfo[foundPackageWithElement]?.[elementName]?.properties
   }
   return null
 }
