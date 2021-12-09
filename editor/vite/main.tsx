@@ -6,5 +6,5 @@ ReactDOM.render(
   <React.StrictMode>
     <EditorRoot />
   </React.StrictMode>,
-  document.getElementById('root'),
+  document.getElementById('utopia-editor-root'),
 )

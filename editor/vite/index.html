@@ -20,7 +20,22 @@
     <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="portal-target"></div>
+    <div id="canvas-contextmenu-portal-target"></div>
+    <div id="text-field-placeholder"></div>
+    <div
+      id="utopia-editor-root"
+      class="body"
+      style="
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: stretch;
+        justify-content: stretch;
+      "
+    />
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>
