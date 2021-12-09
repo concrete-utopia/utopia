@@ -138,9 +138,22 @@ const selectorPropertyControlsInfo: PropertyControlsInfo = {
   },
 }
 
+const otherCardComponentDescriptorWithName: ComponentDescriptorWithName = {
+  ...cardComponentDescriptor,
+  componentName: 'Other Card',
+}
+
+const otherCardControlsToCheck: ControlsToCheck = Promise.resolve(
+  right([otherCardComponentDescriptorWithName]),
+)
+
 describe('validateControlsToCheck', () => {
   beforeEach(() => {
     // Twice because the first will leave some data in `previousModuleNamesOrPaths`.
+    resetControlsToCheck()
+    resetControlsToCheck()
+  })
+  afterAll(() => {
     resetControlsToCheck()
     resetControlsToCheck()
   })
@@ -438,6 +451,146 @@ describe('validateControlsToCheck', () => {
                         "label": "Border",
                       },
                     },
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ]
+    `)
+  })
+  it('merges multiple calls for the same module', async () => {
+    let actionsDispatched: Array<EditorAction> = []
+    const dispatch: EditorDispatch = (
+      actions: ReadonlyArray<EditorAction>,
+      priority?: DispatchPriority,
+    ) => {
+      actionsDispatched.push(...actions)
+    }
+    addControlsToCheck('/src/card', cardControlsToCheck)
+    addControlsToCheck('/src/card', otherCardControlsToCheck)
+    await validateControlsToCheck(dispatch, {})
+    expect(actionsDispatched).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "action": "UPDATE_PROPERTY_CONTROLS_INFO",
+          "moduleNamesOrPathsToDelete": Array [],
+          "propertyControlsInfo": Object {
+            "/src/card": Object {
+              "Card": Object {
+                "insertOptions": Array [
+                  Object {
+                    "elementToInsert": Object {
+                      "children": Array [],
+                      "name": Object {
+                        "baseVariable": "Card",
+                        "propertyPath": Object {
+                          "propertyElements": Array [],
+                        },
+                      },
+                      "props": Array [
+                        Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "key": "title",
+                          "type": "JSX_ATTRIBUTES_ENTRY",
+                          "value": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": "Default",
+                          },
+                        },
+                      ],
+                    },
+                    "importsToAdd": Object {
+                      "/src/card": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "Card",
+                            "name": "Card",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "insertMenuLabel": "Card Default",
+                  },
+                ],
+                "propertyControls": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+              },
+              "Other Card": Object {
+                "insertOptions": Array [
+                  Object {
+                    "elementToInsert": Object {
+                      "children": Array [],
+                      "name": Object {
+                        "baseVariable": "Card",
+                        "propertyPath": Object {
+                          "propertyElements": Array [],
+                        },
+                      },
+                      "props": Array [
+                        Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "key": "title",
+                          "type": "JSX_ATTRIBUTES_ENTRY",
+                          "value": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": "Default",
+                          },
+                        },
+                      ],
+                    },
+                    "importsToAdd": Object {
+                      "/src/card": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "Card",
+                            "name": "Card",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "insertMenuLabel": "Card Default",
+                  },
+                ],
+                "propertyControls": Object {
+                  "type": "RIGHT",
+                  "value": Object {
                     "title": Object {
                       "type": "RIGHT",
                       "value": Object {
