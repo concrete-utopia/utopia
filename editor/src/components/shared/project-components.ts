@@ -177,11 +177,12 @@ export function getDependencyStatus(
     case null:
       return defaultStatus
     case 'loaded':
-      if (dependencyName in propertyControlsInfo) {
-        return 'loaded'
-      } else {
-        return 'loading'
+      for (const infoKey of Object.keys(propertyControlsInfo)) {
+        if (infoKey.startsWith(dependencyName)) {
+          return 'loaded'
+        }
       }
+      return 'loading'
     default:
       return regularStatus
   }
@@ -450,13 +451,15 @@ export function getComponentGroups(
         dependency.name,
         'loaded',
       )
-      const propertyControlsForDependency = propertyControlsInfo[dependency.name]
-      if (propertyControlsForDependency != null) {
-        addDependencyDescriptor(
-          dependency.name,
-          insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
-          propertyControlsForDependency,
-        )
+      for (const infoKey of Object.keys(propertyControlsInfo)) {
+        if (infoKey.startsWith(dependency.name)) {
+          const propertyControlsForDependency = propertyControlsInfo[infoKey]
+          addDependencyDescriptor(
+            dependency.name,
+            insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
+            propertyControlsForDependency,
+          )
+        }
       }
     }
   }
