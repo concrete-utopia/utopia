@@ -10,6 +10,7 @@ import {
   CanvasMouseEvent,
   CanvasPositions,
   ControlOrHigherOrderControl,
+  CreateDragState,
   CSSCursor,
   DragState,
   DuplicateNewUID,
@@ -69,6 +70,7 @@ import { Modifier } from '../utils/modifiers'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import {
+  canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
@@ -275,7 +277,34 @@ function on(
   return additionalEvents
 }
 
+let dragStateTimerHandle: any = null
+
+function createOrUpdateDragState(
+  dispatch: EditorDispatch,
+  model: EditorState,
+  action: CreateDragState,
+): EditorState {
+  if (model.canvas.dragState == null) {
+    // create drag state, start setTimeout!
+    clearTimeout(dragStateTimerHandle)
+    dragStateTimerHandle = setTimeout(() => {
+      dispatch([CanvasActions.updateDragState({ globalTime: Date.now() })])
+    }, 200)
+  } else {
+    // update drag state
+  }
+
+  return {
+    ...model,
+    canvas: {
+      ...model.canvas,
+      dragState: action.dragState,
+    },
+  }
+}
+
 export function runLocalCanvasAction(
+  dispatch: EditorDispatch,
   model: EditorState,
   derivedState: DerivedState,
   action: CanvasAction,
@@ -297,14 +326,24 @@ export function runLocalCanvasAction(
       }
     }
     case 'CLEAR_DRAG_STATE':
+      clearTimeout(dragStateTimerHandle)
       return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
-      return {
-        ...model,
-        canvas: {
-          ...model.canvas,
-          dragState: action.dragState,
-        },
+      return createOrUpdateDragState(dispatch, model, action)
+    case 'UPDATE_DRAG_STATE':
+      if (model.canvas.dragState?.type === 'SELECT_MODE_CANVAS_SESSION') {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            dragState: {
+              ...model.canvas.dragState,
+              ...action.patch,
+            },
+          },
+        }
+      } else {
+        throw new Error('trying to update the wrong DragState')
       }
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
       return update(model, {

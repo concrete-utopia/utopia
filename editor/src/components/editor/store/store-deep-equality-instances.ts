@@ -127,7 +127,7 @@ import {
 } from './editor-state'
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (state) => state.selectedViews,
     ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
@@ -136,6 +136,8 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
     createCallFromIntrospectiveKeepDeep<TransientFilesState | null>(),
     (state) => state.toastsToApply,
     createCallWithShallowEquals(),
+    (state) => state.sessionStatePatch,
+    createCallFromIntrospectiveKeepDeep(),
     transientCanvasState,
   )
 }

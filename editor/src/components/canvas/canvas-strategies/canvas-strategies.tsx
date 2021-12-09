@@ -1,6 +1,7 @@
 import { foldEither } from '../../../core/shared/either'
 import { JSXElement, jsxAttributeValue, emptyComments } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import { magnitude, canvasPoint } from '../../../core/shared/math-utils'
 import * as PP from '../../../core/shared/property-path'
 import {
   EditorState,
@@ -14,9 +15,21 @@ import { CanvasStrategy, SelectModeCanvasSession } from '../canvas-types'
 function moveTransformTranslate(
   editorState: EditorState,
   activeSession: SelectModeCanvasSession,
+  previousTransientState: TransientCanvasState | null,
 ): TransientCanvasState {
-  // TODO only apply after a certain treshold
-
+  // only apply after a certain treshold IF we hadn't already passed that treshold once
+  if (
+    !previousTransientState?.sessionStatePatch?.dragDeltaMinimumPassed &&
+    magnitude(activeSession.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
+  ) {
+    return {
+      highlightedViews: [],
+      selectedViews: editorState.selectedViews,
+      filesState: {},
+      toastsToApply: [],
+      sessionStatePatch: {},
+    }
+  }
   const elementsToTarget = editorState.selectedViews
 
   let transientFilesState: TransientFilesState = {}
@@ -67,6 +80,9 @@ function moveTransformTranslate(
     selectedViews: editorState.selectedViews,
     filesState: transientFilesState,
     toastsToApply: [],
+    sessionStatePatch: {
+      dragDeltaMinimumPassed: true,
+    },
   }
 }
 
@@ -77,7 +93,8 @@ export function pickDefaultCanvasStrategy(): CanvasStrategy | null {
 export function applyCanvasStrategy(
   editorState: EditorState,
   canvasSession: SelectModeCanvasSession,
+  previousTransientState: TransientCanvasState | null,
 ): TransientCanvasState | null {
   const strategy = canvasSession.activeStrategy
-  return strategy?.(editorState, canvasSession) ?? null
+  return strategy?.(editorState, canvasSession, previousTransientState) ?? null
 }

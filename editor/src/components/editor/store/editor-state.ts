@@ -97,6 +97,7 @@ import {
   DragState,
   FrameAndTarget,
   HigherOrderControl,
+  SelectModeCanvasSession,
 } from '../../canvas/canvas-types'
 import {
   getParseSuccessOrTransientForFilePath,
@@ -992,6 +993,7 @@ export interface TransientCanvasState {
   highlightedViews: Array<ElementPath>
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
+  sessionStatePatch: Partial<SelectModeCanvasSession>
 }
 
 export function transientCanvasState(
@@ -999,12 +1001,14 @@ export function transientCanvasState(
   highlightedViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
+  sessionStatePatch: Partial<SelectModeCanvasSession>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     filesState: fileState,
     toastsToApply: toastsToApply,
+    sessionStatePatch: sessionStatePatch,
   }
 }
 
@@ -1046,7 +1050,12 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState.selectedViews, editorState, false),
+      transientState: produceCanvasTransientState(
+        editorState.selectedViews,
+        editorState,
+        false,
+        null,
+      ),
     },
     elementWarnings: emptyComplexMap(),
   }
@@ -1361,6 +1370,7 @@ export function deriveState(
         oldDerivedState?.canvas.transientState.selectedViews ?? editor.selectedViews,
         editor,
         true,
+        oldDerivedState?.canvas.transientState ?? null,
       ),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),

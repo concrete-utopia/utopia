@@ -345,6 +345,7 @@ export function clearDragState(
       derived.canvas.transientState.selectedViews,
       result,
       false,
+      derived.canvas.transientState ?? null,
     )
     const producedTransientFilesState = producedTransientCanvasState.filesState
     result = applyTransientFilesState(
@@ -1480,6 +1481,7 @@ function getTransientCanvasStateFromFrameChanges(
       return transientFileState(success.topLevelElements, success.imports)
     }, successByFilename),
     workingEditorState.toasts, // TODO filter for relevant toasts
+    {},
   )
 }
 
@@ -1506,7 +1508,13 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      dragState.draggedElements,
+      editorState.highlightedViews,
+      null,
+      [],
+      {},
+    )
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       forUnderlyingTargetFromEditorState(
@@ -1579,7 +1587,13 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      null,
+      [],
+      {},
+    )
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1652,6 +1666,7 @@ export function produceCanvasTransientState(
   previousCanvasTransientSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   preventAnimations: boolean,
+  previousTransientState: TransientCanvasState | null,
 ): TransientCanvasState {
   const currentOpenFile = editorState.canvas.openFile?.filename
   let transientState: TransientCanvasState | null = null
@@ -1702,6 +1717,7 @@ export function produceCanvasTransientState(
                   [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
                 },
                 [],
+                {},
               )
               return parseSuccess
             },
@@ -1740,7 +1756,7 @@ export function produceCanvasTransientState(
               }
               break
             case 'SELECT_MODE_CANVAS_SESSION':
-              transientState = applyCanvasStrategy(editorState, dragState)
+              transientState = applyCanvasStrategy(editorState, dragState, previousTransientState)
               break
             case 'INSERT_DRAG_STATE':
               throw new Error(`Unable to use insert drag state in select mode.`)
@@ -1758,7 +1774,13 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      null,
+      [],
+      {},
+    )
   } else {
     return transientState
   }
@@ -2322,6 +2344,7 @@ function produceMoveTransientCanvasState(
     workingEditorState.highlightedViews,
     transientFilesState,
     workingEditorState.toasts, // TODO Filter for relevant toasts
+    {},
   )
 }
 
@@ -2892,6 +2915,7 @@ function createCanvasTransientStateFromProperties(
       updatedEditor.highlightedViews,
       transientFilesState,
       [],
+      {},
     )
   }
 }

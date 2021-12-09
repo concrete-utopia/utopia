@@ -161,6 +161,7 @@ function processAction(
       working.builtInDependencies,
     )
     const editorAfterCanvas = runLocalCanvasAction(
+      dispatchEvent,
       editorAfterUpdateFunction,
       working.derived,
       action as CanvasAction,

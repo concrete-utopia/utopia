@@ -1,5 +1,5 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import type { CanvasAction, DragState } from './canvas-types'
+import type { CanvasAction, DragState, SelectModeCanvasSession } from './canvas-types'
 
 const CanvasActions = {
   scrollCanvas: function (delta: CanvasVector): CanvasAction {
@@ -12,6 +12,12 @@ const CanvasActions = {
     return {
       action: 'CREATE_DRAG_STATE',
       dragState: dragState,
+    }
+  },
+  updateDragState: function (patch: Partial<SelectModeCanvasSession>): CanvasAction {
+    return {
+      action: 'UPDATE_DRAG_STATE',
+      patch: patch,
     }
   },
   setSelectionControlsVisibility: function (selectionControlsVisible: boolean): CanvasAction {

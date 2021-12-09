@@ -553,6 +553,7 @@ export function updateResizeDragState(
 export type CanvasStrategy = (
   editorState: EditorState,
   currentSession: SelectModeCanvasSession,
+  previousTransientState: TransientCanvasState | null,
 ) => TransientCanvasState
 
 export interface SelectModeCanvasSession {
@@ -561,6 +562,8 @@ export interface SelectModeCanvasSession {
   start: CanvasPoint
   drag: CanvasVector | null
   metadata: ElementInstanceMetadataMap | null
+  globalTime: number
+  dragDeltaMinimumPassed: boolean
 }
 
 export function createSelectModeCanvasSession(start: CanvasPoint): SelectModeCanvasSession {
@@ -570,6 +573,8 @@ export function createSelectModeCanvasSession(start: CanvasPoint): SelectModeCan
     activeStrategy: pickDefaultCanvasStrategy(),
     drag: null,
     metadata: null,
+    globalTime: Date.now(),
+    dragDeltaMinimumPassed: false,
   }
 }
 
@@ -666,9 +671,14 @@ interface ClearDragState {
   applyChanges: boolean
 }
 
-type CreateDragState = {
+export type CreateDragState = {
   action: 'CREATE_DRAG_STATE'
   dragState: DragState
+}
+
+export type UpdateDragState = {
+  action: 'UPDATE_DRAG_STATE'
+  patch: Partial<SelectModeCanvasSession>
 }
 
 type SetSelectionControlsVisibility = {
@@ -691,6 +701,7 @@ export type CanvasAction =
   | ScrollCanvas
   | ClearDragState
   | CreateDragState
+  | UpdateDragState
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility
