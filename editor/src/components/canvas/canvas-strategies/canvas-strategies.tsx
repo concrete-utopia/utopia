@@ -30,6 +30,19 @@ function moveTransformTranslate(
       sessionStatePatch: {},
     }
   }
+
+  console.log('grande strategy', activeSession.globalTime - activeSession.lastTimeMouseMoved)
+  // only do something if you hadn't moved the mouse for a second
+  if (activeSession.globalTime - activeSession.lastTimeMouseMoved < 1000) {
+    return {
+      highlightedViews: [],
+      selectedViews: editorState.selectedViews,
+      filesState: {},
+      toastsToApply: [],
+      sessionStatePatch: previousTransientState?.sessionStatePatch ?? {},
+    }
+  }
+
   const elementsToTarget = editorState.selectedViews
 
   let transientFilesState: TransientFilesState = {}

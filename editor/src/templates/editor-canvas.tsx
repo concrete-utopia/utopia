@@ -286,8 +286,8 @@ function createOrUpdateDragState(
 ): EditorState {
   if (model.canvas.dragState == null) {
     // create drag state, start setTimeout!
-    clearTimeout(dragStateTimerHandle)
-    dragStateTimerHandle = setTimeout(() => {
+    clearInterval(dragStateTimerHandle)
+    dragStateTimerHandle = setInterval(() => {
       dispatch([CanvasActions.updateDragState({ globalTime: Date.now() })])
     }, 200)
   } else {
@@ -326,7 +326,7 @@ export function runLocalCanvasAction(
       }
     }
     case 'CLEAR_DRAG_STATE':
-      clearTimeout(dragStateTimerHandle)
+      clearInterval(dragStateTimerHandle)
       return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
       return createOrUpdateDragState(dispatch, model, action)

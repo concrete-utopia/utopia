@@ -563,6 +563,7 @@ export interface SelectModeCanvasSession {
   drag: CanvasVector | null
   metadata: ElementInstanceMetadataMap | null
   globalTime: number
+  lastTimeMouseMoved: number
   dragDeltaMinimumPassed: boolean
 }
 
@@ -574,6 +575,7 @@ export function createSelectModeCanvasSession(start: CanvasPoint): SelectModeCan
     drag: null,
     metadata: null,
     globalTime: Date.now(),
+    lastTimeMouseMoved: Date.now(),
     dragDeltaMinimumPassed: false,
   }
 }
@@ -585,6 +587,7 @@ export function updateSelectModeCanvasSession(
   return {
     ...current,
     drag: drag,
+    lastTimeMouseMoved: Date.now(),
   }
 }
 
