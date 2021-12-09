@@ -65,7 +65,11 @@ export async function validateControlsToCheck(
       const descriptorsChanged = !deepEqual(currentDescriptorsForFile, newDescriptorsForFile)
       if (descriptorsChanged) {
         shouldDispatch = true
-        updatedPropertyControlsInfo[toCheck.moduleNameOrPath] = newDescriptorsForFile
+        // Merge with any existing entries if there are any.
+        updatedPropertyControlsInfo[toCheck.moduleNameOrPath] = {
+          ...(updatedPropertyControlsInfo[toCheck.moduleNameOrPath] ?? {}),
+          ...newDescriptorsForFile,
+        }
       }
     })
     // There was some kind of an error with the descriptors.
