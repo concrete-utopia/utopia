@@ -21,7 +21,7 @@ const GlobalAtomMap: { [key: string]: AtomWithPubSub<any> } = {}
 export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): AtomWithPubSub<T> {
   const { key, defaultValue } = options
   if (key in GlobalAtomMap) {
-    throw new Error(`Tried to create multiple atoms with the same key: ${key}`)
+    // throw new Error(`Tried to create multiple atoms with the same key: ${key}`)
   }
   const newAtom: AtomWithPubSub<T> = {
     key: key,
