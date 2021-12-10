@@ -58,7 +58,7 @@ export async function validateControlsToCheck(
         (descriptorWithName) => {
           return {
             properties: descriptorWithName.properties,
-            insertOptions: descriptorWithName.insertOptions,
+            variants: descriptorWithName.variants,
           }
         },
       )

@@ -153,7 +153,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
       '/utopia/storyboard': {
         App: {
           properties: propertyControlsForApp,
-          insertOptions: [
+          variants: [
             {
               insertMenuLabel: 'App',
               importsToAdd: {},
@@ -163,7 +163,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
         },
         OtherComponent: {
           properties: propertyControlsForOtherComponent,
-          insertOptions: [
+          variants: [
             {
               insertMenuLabel: 'OtherComponent',
               importsToAdd: {},

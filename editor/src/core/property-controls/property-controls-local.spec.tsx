@@ -36,7 +36,7 @@ describe('registered property controls', () => {
                   defaultValue: true,
                 },
               },
-              insertOptions: [
+              variants: [
                 {
                   code: '<Card />',
                   label: 'Card',
@@ -72,7 +72,30 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
-          "insertOptions": Array [
+          "properties": Object {
+            "type": "RIGHT",
+            "value": Object {
+              "background": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "color",
+                },
+              },
+              "label": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "string-input",
+                },
+              },
+              "visible": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "checkbox",
+                },
+              },
+            },
+          },
+          "variants": Array [
             Object {
               "elementToInsert": Object {
                 "children": Array [],
@@ -210,29 +233,6 @@ describe('registered property controls', () => {
               "insertMenuLabel": "ID Card",
             },
           ],
-          "properties": Object {
-            "type": "RIGHT",
-            "value": Object {
-              "background": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "color",
-                },
-              },
-              "label": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "string-input",
-                },
-              },
-              "visible": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "checkbox",
-                },
-              },
-            },
-          },
         },
       }
     `)

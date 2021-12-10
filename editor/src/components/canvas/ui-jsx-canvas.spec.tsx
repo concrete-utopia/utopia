@@ -1798,7 +1798,7 @@ export var storyboard = (
                 control: 'checkbox'
               }
             },
-            insertOptions: [
+            variants: [
               {
                 code: '<App />',
               }

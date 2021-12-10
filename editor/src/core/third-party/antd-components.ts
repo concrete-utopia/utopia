@@ -32,7 +32,7 @@ function createBasicComponent(
   const parsedControls = parsePropertyControls(propertyControls)
   return {
     properties: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
-    insertOptions: [
+    variants: [
       {
         insertMenuLabel: [baseVariable, ...propertyPathParts].join('.'),
         importsToAdd: {

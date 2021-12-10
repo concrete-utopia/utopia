@@ -12,7 +12,7 @@ const BasicUtopiaComponentDescriptor = (name: string): ComponentDescriptor => {
         control: 'style-controls',
       },
     }),
-    insertOptions: [
+    variants: [
       {
         insertMenuLabel: name,
         importsToAdd: {

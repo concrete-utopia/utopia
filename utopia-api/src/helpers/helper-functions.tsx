@@ -8,7 +8,7 @@ export interface ComponentInsertOption {
 
 export interface ComponentToRegister {
   properties: PropertyControls
-  insertOptions: Array<ComponentInsertOption>
+  variants: Array<ComponentInsertOption>
 }
 
 export function registerModule(

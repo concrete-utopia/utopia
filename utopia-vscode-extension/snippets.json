@@ -17,7 +17,7 @@
       "          label: '${3:PropName}'",
       "        },",
       "      },",
-      "      insertOptions: [ // each option appears in the insert menu",
+      "      variants: [ // each option appears in the insert menu",
       "        {",
       "          label: '${2:ComponentName}', // label to use in the insert menu, optional",
       "          code: '<${2:ComponentName} />',",

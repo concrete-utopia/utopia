@@ -74,12 +74,12 @@ async function parseInsertOption(
   }, parsedParams)
 }
 
-function insertOptionsForComponentToRegister(
+function variantsForComponentToRegister(
   componentToRegister: ComponentToRegister,
   componentName: string,
 ): Array<ComponentInsertOption> {
-  if (componentToRegister.insertOptions.length > 0) {
-    return componentToRegister.insertOptions
+  if (componentToRegister.variants.length > 0) {
+    return componentToRegister.variants
   } else {
     // If none provided, fall back to a default insert option
     return [
@@ -98,25 +98,22 @@ async function componentDescriptorForComponentToRegister(
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
   const parsedPropertyControls = parsePropertyControls(componentToRegister.properties)
-  const unparsedInsertOptions = insertOptionsForComponentToRegister(
-    componentToRegister,
-    componentName,
-  )
+  const unparsedVariants = variantsForComponentToRegister(componentToRegister, componentName)
 
-  const parsedInsertOptionPromises = unparsedInsertOptions.map((insertOption) =>
+  const parsedInsertOptionPromises = unparsedVariants.map((insertOption) =>
     parseInsertOption(insertOption, componentName, moduleName, workers),
   )
 
-  const parsedInsertOptionsUnsequenced = await Promise.all(parsedInsertOptionPromises)
-  const parsedInsertOptions = sequenceEither(parsedInsertOptionsUnsequenced)
+  const parsedVariantsUnsequenced = await Promise.all(parsedInsertOptionPromises)
+  const parsedVariants = sequenceEither(parsedVariantsUnsequenced)
 
-  return mapEither((insertOptions) => {
+  return mapEither((variants) => {
     return {
       componentName: componentName,
       properties: parsedPropertyControls,
-      insertOptions: insertOptions,
+      variants: variants,
     }
-  }, parsedInsertOptions)
+  }, parsedVariants)
 }
 
 function registerModuleInternal(
@@ -166,14 +163,14 @@ export function parseComponentInsertOption(value: unknown): ParseResult<Componen
 
 export function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
   return applicative2Either(
-    (properties, insertOptions) => {
+    (properties, variants) => {
       return {
         properties: properties,
-        insertOptions: insertOptions,
+        variants: variants,
       }
     },
     objectKeyParser(fullyParsePropertyControls, 'properties')(value),
-    objectKeyParser(parseArray(parseComponentInsertOption), 'insertOptions')(value),
+    objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
   )
 }
 

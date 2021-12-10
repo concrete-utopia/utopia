@@ -7,7 +7,7 @@ export const utopiaApiTypings = `declare module 'utopia-api/helpers/helper-funct
   }
   export interface ComponentToRegister {
       properties: PropertyControls;
-      insertOptions: Array<ComponentInsertOption>;
+      variants: Array<ComponentInsertOption>;
   }
   export function registerModule(moduleName: string, components: {
       [componentName: string]: ComponentToRegister;
