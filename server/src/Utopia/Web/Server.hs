@@ -63,6 +63,17 @@ redirector redirections applicationToWrap request sendResponse =
       redirectTo target = sendResponse $ responseLBS temporaryRedirect307 [("Location", target)] mempty
   in  maybe passthrough redirectTo possibleRedirection
 
+viteFudgeMiddleware :: Middleware
+viteFudgeMiddleware applicationToWrap request sendResponse =
+  let rawPath = rawPathInfo request
+      rawQuery = rawQueryString request
+      shouldRewriteHeader = B.isSuffixOf ".json" rawPath && rawQuery == "?import"
+      rewriteHeaders headers = fmap (\header -> if fst header == "Content-Type" then (fst header, "application/javascript") else header) headers
+      rewriteContentType response = mapResponseHeaders rewriteHeaders response
+      withRewriteSendResponse response = sendResponse $ rewriteContentType response
+      sendResponseToUse = if shouldRewriteHeader then withRewriteSendResponse else sendResponse
+   in applicationToWrap request sendResponseToUse
+
 projectToPPath :: [Text] -> [Text]
 projectToPPath ("project" : pathRemainder) = "p" : pathRemainder
 projectToPPath path                        = path
@@ -159,6 +170,7 @@ runServerWithResources EnvironmentRuntime{..} = do
     $ requestRewriter assetsCache
     $ gzip def
     $ noCacheMiddleware
+    $ viteFudgeMiddleware
     $ monitorEndpoints apiProxy meterMap
     $ serverApplication
     $ _serverAPI resources
