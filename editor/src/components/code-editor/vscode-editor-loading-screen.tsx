@@ -10,7 +10,11 @@ const SampleCode = [
   },
   {
     indent: 0,
-    code: "import { Scene, Storyboard } from 'utopia-api''",
+    code: `import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api''`,
   },
   {
     indent: 0,

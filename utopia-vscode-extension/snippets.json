@@ -1,21 +1,13 @@
 {
-  "registerModule": {
-    "prefix": "registerModule",
-    "body": ["registerModule"],
-    "description": "Register Module Import"
-  },
-  "registerModule(...)": {
-    "prefix": "registerModule(...)",
+  "registerModule()": {
+    "prefix": "registerModule()",
     "body": [
       "registerModule(",
       "  '${1:${TM_FILEPATH/~(.*)\\..+$/$1/}}', // module name or absolute file path",
       "  {",
       "    ${2:ComponentName}: {",
       "      properties: { // property controls",
-      "        ${3:PropName}: {",
-      "          control: 'string-input',",
-      "          label: '${3:PropName}'",
-      "        },",
+      "        ${3:PropName}: Utopia.stringControl()",
       "      },",
       "      variants: [ // each option appears in the insert menu",
       "        {",
@@ -105,7 +97,7 @@
   },
   "String Prop Control": {
     "prefix": "Utopia.stringControl()",
-    "body": "Utopia.stringControl(${1:'optional placeholder'})"
+    "body": "Utopia.stringControl()"
   },
   "Style Prop Control": {
     "prefix": "Utopia.styleControl()",
