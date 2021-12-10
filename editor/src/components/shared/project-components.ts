@@ -177,11 +177,12 @@ export function getDependencyStatus(
     case null:
       return defaultStatus
     case 'loaded':
-      if (dependencyName in propertyControlsInfo) {
-        return 'loaded'
-      } else {
-        return 'loading'
+      for (const infoKey of Object.keys(propertyControlsInfo)) {
+        if (infoKey.startsWith(dependencyName)) {
+          return 'loaded'
+        }
       }
+      return 'loading'
     default:
       return regularStatus
   }
@@ -209,8 +210,8 @@ function makeHTMLDescriptor(
   }
   const parsedControls = parsePropertyControls(propertyControls)
   return {
-    propertyControls: parsePropertyControls(propertyControls),
-    insertOptions: [
+    properties: parsePropertyControls(propertyControls),
+    variants: [
       {
         insertMenuLabel: tag,
         importsToAdd: {
@@ -374,7 +375,7 @@ export function getComponentGroups(
             propertyControlsForDependency[exportedComponent.listingName] != null
           ) {
             const descriptor = propertyControlsForDependency[exportedComponent.listingName]
-            fastForEach(descriptor.insertOptions, (insertOption) => {
+            fastForEach(descriptor.variants, (insertOption) => {
               insertableComponents.push(
                 insertableComponent(
                   insertOption.importsToAdd,
@@ -414,7 +415,7 @@ export function getComponentGroups(
     fastForEach(Object.keys(components), (componentName) => {
       const component = components[componentName]
       let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
-      const propertyControls = component.propertyControls
+      const propertyControls = component.properties
       // Drill down to see if this dependency component has a style object entry
       // against style.
       if (hasStyleControls(propertyControls)) {
@@ -424,7 +425,7 @@ export function getComponentGroups(
       const probablyIntrinsicElement =
         moduleName == null || isIntrinsicElementFromString(componentName)
 
-      fastForEach(component.insertOptions, (insertOption) => {
+      fastForEach(component.variants, (insertOption) => {
         insertableComponents.push(
           insertableComponent(
             insertOption.importsToAdd,
@@ -450,13 +451,15 @@ export function getComponentGroups(
         dependency.name,
         'loaded',
       )
-      const propertyControlsForDependency = propertyControlsInfo[dependency.name]
-      if (propertyControlsForDependency != null) {
-        addDependencyDescriptor(
-          dependency.name,
-          insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
-          propertyControlsForDependency,
-        )
+      for (const infoKey of Object.keys(propertyControlsInfo)) {
+        if (infoKey.startsWith(dependency.name)) {
+          const propertyControlsForDependency = propertyControlsInfo[infoKey]
+          addDependencyDescriptor(
+            dependency.name,
+            insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
+            propertyControlsForDependency,
+          )
+        }
       }
     }
   }
