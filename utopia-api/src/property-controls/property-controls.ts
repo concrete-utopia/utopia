@@ -116,7 +116,7 @@ export interface NumberInputControlDescription {
   min?: number
   unit?: string
   step?: number
-  displayStepper?: boolean // FIXME Is this even used?
+  displayStepper?: boolean
 }
 
 export interface RadioControlDescription {
