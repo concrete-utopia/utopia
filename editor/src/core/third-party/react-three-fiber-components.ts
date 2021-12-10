@@ -32,8 +32,8 @@ function createBasicComponent(
   importsToAdd?: Imports,
 ): ComponentDescriptor {
   return {
-    propertyControls: parsePropertyControls(propertyControls),
-    insertOptions: [
+    properties: parsePropertyControls(propertyControls),
+    variants: [
       {
         insertMenuLabel: name,
         importsToAdd: importsToAdd ?? {},

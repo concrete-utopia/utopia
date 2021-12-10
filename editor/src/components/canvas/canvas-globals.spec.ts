@@ -20,13 +20,13 @@ import {
 } from '../custom-code/code-file'
 
 const cardComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     title: right({
       control: 'string-input',
       label: 'Title',
     }),
   }),
-  insertOptions: [
+  variants: [
     {
       insertMenuLabel: 'Card Default',
       elementToInsert: jsxElementWithoutUID(
@@ -57,7 +57,7 @@ const cardPropertyControlsInfo: PropertyControlsInfo = {
 }
 
 const modifiedCardComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     title: right({
       control: 'string-input',
       label: 'Title',
@@ -67,7 +67,7 @@ const modifiedCardComponentDescriptor: ComponentDescriptor = {
       label: 'Border',
     }),
   }),
-  insertOptions: [
+  variants: [
     {
       insertMenuLabel: 'Card Default',
       elementToInsert: jsxElementWithoutUID(
@@ -95,14 +95,14 @@ const modifiedCardControlsToCheck: ControlsToCheck = Promise.resolve(
 )
 
 const selectorComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     value: right({
       control: 'popuplist',
       label: 'Value',
       options: ['True', 'False', 'FileNotFound'],
     }),
   }),
-  insertOptions: [
+  variants: [
     {
       insertMenuLabel: 'True False Selector',
       elementToInsert: jsxElementWithoutUID(
@@ -186,7 +186,19 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/card": Object {
               "Card": Object {
-                "insertOptions": Array [
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
                   Object {
                     "elementToInsert": Object {
                       "children": Array [],
@@ -230,18 +242,6 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
-                  },
-                },
               },
             },
           },
@@ -291,7 +291,24 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/selector": Object {
               "Selector": Object {
-                "insertOptions": Array [
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "value": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "popuplist",
+                        "label": "Value",
+                        "options": Array [
+                          "True",
+                          "False",
+                          "FileNotFound",
+                        ],
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
                   Object {
                     "elementToInsert": Object {
                       "children": Array [],
@@ -335,23 +352,6 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "True False Selector",
                   },
                 ],
-                "propertyControls": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "value": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "popuplist",
-                        "label": "Value",
-                        "options": Array [
-                          "True",
-                          "False",
-                          "FileNotFound",
-                        ],
-                      },
-                    },
-                  },
-                },
               },
             },
           },
@@ -381,7 +381,26 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/card": Object {
               "Card": Object {
-                "insertOptions": Array [
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "border": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Border",
+                      },
+                    },
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
                   Object {
                     "elementToInsert": Object {
                       "children": Array [],
@@ -441,25 +460,6 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "border": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Border",
-                      },
-                    },
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
-                  },
-                },
               },
             },
           },
@@ -486,7 +486,19 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/card": Object {
               "Card": Object {
-                "insertOptions": Array [
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
                   Object {
                     "elementToInsert": Object {
                       "children": Array [],
@@ -530,21 +542,21 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
-                  },
-                },
               },
               "Other Card": Object {
-                "insertOptions": Array [
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
                   Object {
                     "elementToInsert": Object {
                       "children": Array [],
@@ -588,18 +600,6 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
-                  },
-                },
               },
             },
           },

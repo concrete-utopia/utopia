@@ -210,8 +210,8 @@ function makeHTMLDescriptor(
   }
   const parsedControls = parsePropertyControls(propertyControls)
   return {
-    propertyControls: parsePropertyControls(propertyControls),
-    insertOptions: [
+    properties: parsePropertyControls(propertyControls),
+    variants: [
       {
         insertMenuLabel: tag,
         importsToAdd: {
@@ -375,7 +375,7 @@ export function getComponentGroups(
             propertyControlsForDependency[exportedComponent.listingName] != null
           ) {
             const descriptor = propertyControlsForDependency[exportedComponent.listingName]
-            fastForEach(descriptor.insertOptions, (insertOption) => {
+            fastForEach(descriptor.variants, (insertOption) => {
               insertableComponents.push(
                 insertableComponent(
                   insertOption.importsToAdd,
@@ -415,7 +415,7 @@ export function getComponentGroups(
     fastForEach(Object.keys(components), (componentName) => {
       const component = components[componentName]
       let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
-      const propertyControls = component.propertyControls
+      const propertyControls = component.properties
       // Drill down to see if this dependency component has a style object entry
       // against style.
       if (hasStyleControls(propertyControls)) {
@@ -425,7 +425,7 @@ export function getComponentGroups(
       const probablyIntrinsicElement =
         moduleName == null || isIntrinsicElementFromString(componentName)
 
-      fastForEach(component.insertOptions, (insertOption) => {
+      fastForEach(component.variants, (insertOption) => {
         insertableComponents.push(
           insertableComponent(
             insertOption.importsToAdd,

@@ -33,7 +33,7 @@ export function parsedPropertyControlsForComponentInFile(
   propertyControlsInfo: PropertyControlsInfo,
 ): ParseResult<ParsedPropertyControls> {
   const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
-  const propertyControlsForComponent = propertyControlsForFile[componentName]?.propertyControls
+  const propertyControlsForComponent = propertyControlsForFile[componentName]?.properties
   return (
     propertyControlsForComponent ??
     left(descriptionParseError(`No property controls for ${componentName}.`))
@@ -122,7 +122,7 @@ export function getPropertyControlsForTarget(
         const originalName =
           importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
         const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
-        return propertyControlsInfo[trimmedPath]?.[nameAsString]?.propertyControls
+        return propertyControlsInfo[trimmedPath]?.[nameAsString]?.properties
       }
     },
   )
