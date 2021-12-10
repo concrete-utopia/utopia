@@ -580,7 +580,7 @@ export function createSelectModeCanvasSession(start: CanvasPoint): SelectModeCan
   }
 }
 
-export function updateSelectModeCanvasSession(
+export function updateSelectModeCanvasSessionDragVector(
   current: SelectModeCanvasSession,
   drag: CanvasVector | null,
 ): SelectModeCanvasSession {
