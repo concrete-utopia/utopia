@@ -80,7 +80,7 @@ const TopMenuLeftControls = betterReactMemo('TopMenuLeftControls', () => {
   )
 })
 
-const TopMenuRightControls = betterReactMemo('TopMenuRightControls', () => {
+const TopMenuRightControls = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'TopMenuRightControls dispatch')
   const canvasContentInvalidateCount = useEditorState(
     (store) => store.editor.canvas.canvasContentInvalidateCount,
@@ -151,7 +151,7 @@ const TopMenuRightControls = betterReactMemo('TopMenuRightControls', () => {
           style={{ fontSize: 9, textAlign: 'center', width: 32 }}
           onClick={zoom100pct}
         >
-          {zoomLevel}x
+          <span style={{ backgroundColor: 'hotpink' }}>{zoomLevel}x</span>
         </SquareButton>
         <Tooltip title='Zoom in' placement='left'>
           <span>

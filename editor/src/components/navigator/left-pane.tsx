@@ -767,7 +767,7 @@ const GithubPane = betterReactMemo('GithubPane', () => {
   )
 })
 
-export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
+export const InsertMenuPane = React.memo(() => {
   const { dispatch, focusedPanel } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,

@@ -21,7 +21,7 @@ import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
 
-export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstanceIndicator', () => {
+export const ComponentOrInstanceIndicator = React.memo(() => {
   const { metadata, focusedElementPath, selectedViews } = useEditorState((store) => {
     return {
       metadata: store.editor.jsxMetadata,
