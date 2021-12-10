@@ -6,6 +6,7 @@ import           Control.Exception.Base
 import           Control.Lens
 import           Control.Monad.Fail
 import           Data.Binary.Builder            (toLazyByteString)
+import qualified Data.ByteString.Char8          as B
 import qualified Data.ByteString.Lazy           as BL
 import           Network.HTTP.Client            (HttpException (HttpExceptionRequest),
                                                  HttpExceptionContent (StatusCodeException),
@@ -17,7 +18,7 @@ import           Network.Wai
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Network.Wreq                   as WR
-import           Prelude                        (String)
+import           Prelude                        (String, (!!))
 import           Protolude
 import           Utopia.Web.Exceptions
 
@@ -45,12 +46,16 @@ filteredHeaderNames =
 encodedPathSegmentsAsString :: [Text] -> IO String
 encodedPathSegmentsAsString segments = either (fail . show) (pure . toS) $ decodeUtf8' $ BL.toStrict $ toLazyByteString $ encodePathSegments segments
 
-sendProxiedRequest' :: Manager -> Int -> (Response -> IO ResponseReceived) -> Text -> RequestHeaders -> [Text] -> IO ResponseReceived
-sendProxiedRequest' webpackManager port sendResponse method headers segments = do
+sendProxiedRequest' :: Manager -> Int -> (Response -> IO ResponseReceived) -> Text -> RequestHeaders -> [Text] -> Query -> IO ResponseReceived
+sendProxiedRequest' webpackManager port sendResponse method headers segments queryParams = do
   let options = WR.defaults & WR.manager .~ Right webpackManager & WR.headers .~ headers
+  when (segments !! (length segments - 1) == "package.json") $ print (segments, headers)
   encodedPathSegments <- encodedPathSegmentsAsString segments
   let webpackUrl = "http://localhost:" <> show port <> encodedPathSegments
+  let renderedQueryParams = renderQuery True queryParams
+  let webpackUrlWithQuery = if null queryParams then webpackUrl else webpackUrl <> B.unpack renderedQueryParams
   responseToClient <- flip catch handleClientError $ do
+      print ("webpackUrlWithQuery" :: Text, webpackUrlWithQuery)
       responseFromWebpack <- WR.customMethodWith (toS method) options webpackUrl
       let headersFromServer = responseFromWebpack ^. WR.responseHeaders
       let filteredHeaders = filter (\(h, _) -> elem h filteredHeaderNames) headersFromServer
@@ -61,9 +66,9 @@ sendProxiedRequest' webpackManager port sendResponse method headers segments = d
   Takes the incoming request and repackages it as a request to webpack,
   then forwards the response from webpack back to the caller.
 -}
-sendProxiedRequest :: Manager -> Int -> (Response -> IO ResponseReceived) -> Text -> RequestHeaders -> [Text] -> IO ResponseReceived
-sendProxiedRequest webpackManager port sendResponse method headers pathElements = do
-  sendProxiedRequest' webpackManager port sendResponse method headers pathElements
+sendProxiedRequest :: Manager -> Int -> (Response -> IO ResponseReceived) -> Text -> RequestHeaders -> [Text] -> Query -> IO ResponseReceived
+sendProxiedRequest webpackManager port sendResponse method headers pathElements queryParams = do
+  sendProxiedRequest' webpackManager port sendResponse method headers pathElements queryParams
 
 {-|
   Proxy app for websockets, passes messages through to the backing server and
@@ -93,7 +98,8 @@ proxyHttpApplication webpackManager port urlPrefix request sendResponse = do
   method <- either (fail . show) (pure . toS) $ decodeUtf8' $ requestMethod request
   let pathSegments = pathInfo request
   let headers = requestHeaders request
-  sendProxiedRequest webpackManager port sendResponse method headers (urlPrefix <> pathSegments)
+  let queryParams = queryString request
+  sendProxiedRequest webpackManager port sendResponse method headers (urlPrefix <> pathSegments) queryParams
 
 proxyApplication :: Manager -> Int -> [Text] -> Application
 proxyApplication webpackManager port urlPrefix =
