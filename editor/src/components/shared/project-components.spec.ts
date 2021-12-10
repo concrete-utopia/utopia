@@ -42,8 +42,8 @@ describe('getComponentGroups', () => {
     const propertyControlsInfo: PropertyControlsInfo = {
       '@heroicons/react/solid': {
         BeakerIcon: {
-          propertyControls: right({}),
-          insertOptions: [],
+          properties: right({}),
+          variants: [],
         },
       },
     }
@@ -64,8 +64,8 @@ describe('getDependencyStatus', () => {
     const propertyControlsInfo: PropertyControlsInfo = {
       '@heroicons/react/solid': {
         BeakerIcon: {
-          propertyControls: right({}),
-          insertOptions: [],
+          properties: right({}),
+          variants: [],
         },
       },
     }
