@@ -5,36 +5,36 @@ import create from 'zustand'
 import { DndProvider } from 'react-dnd'
 import Backend from 'react-dnd-html5-backend'
 
-import { DesignPanelRoot } from '../src/components/canvas/design-panel-root'
+import { DesignPanelRoot } from '../components/canvas/design-panel-root'
 import {
   emptyUiJsxCanvasContextData,
   UiJsxCanvasContextData,
   UiJsxCanvasCtxAtom,
-} from '../src/components/canvas/ui-jsx-canvas'
-import { DispatchPriority, EditorAction } from '../src/components/editor/action-types'
-import { load } from '../src/components/editor/actions/actions'
+} from '../components/canvas/ui-jsx-canvas'
+import { DispatchPriority, EditorAction } from '../components/editor/action-types'
+import { load } from '../components/editor/actions/actions'
 import {
   createEditorState,
   defaultUserState,
   deriveState,
   EditorStore,
   PersistentModel,
-} from '../src/components/editor/store/editor-state'
+} from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
   UtopiaStoreAPI,
   UtopiaStoreHook,
-} from '../src/components/editor/store/store-hook'
-import * as History from '../src/components/editor/history'
-import { createBuiltInDependenciesList } from '../src/core/es-modules/package-manager/built-in-dependencies-list'
-import { UtopiaTsWorkersImplementation } from '../src/core/workers/workers'
+} from '../components/editor/store/store-hook'
+import * as History from '../components/editor/history'
+import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import { UtopiaTsWorkersImplementation } from '../core/workers/workers'
 import {
   FakeLinterWorker,
   FakeParserPrinterWorker,
   FakeWatchdogWorker,
-} from '../src/core/workers/test-workers'
-import { DummyPersistenceMachine } from '../src/components/editor/persistence/persistence.test-utils'
-import { editorDispatch } from '../src/components/editor/store/dispatch'
+} from '../core/workers/test-workers'
+import { DummyPersistenceMachine } from '../components/editor/persistence/persistence.test-utils'
+import { editorDispatch } from '../components/editor/store/dispatch'
 import { TestProject } from './test-project'
 
 const boundDispatch = (

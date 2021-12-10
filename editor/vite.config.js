@@ -6,12 +6,21 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   // plugins: [react(), polyfill()],
   plugins: [react()],
-  root: './vite',
+  root: './src/vite',
   publicDir: '../resources',
   server: {
-    port: 3005,
-    proxy: { '/v1': 'http://localhost:8000/v1' },
+    port: 8088,
+    host: '0.0.0.0',
+    fs: {
+      allow: [
+        '../..',
+        '../../../website-next/components/common/',
+        '../../../utopia-api/',
+        '../../../utopia-vscode-common/',
+      ],
+    },
   },
+  base: '/editor/',
   compilerOptions: {
     types: ['vite/client'],
   },
