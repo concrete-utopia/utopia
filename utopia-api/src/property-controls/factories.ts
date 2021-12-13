@@ -72,11 +72,16 @@ export function expression<T>(
   expressionString: string,
   requiredImport?: ImportType,
 ): ExpressionControlOption<T> {
-  return {
+  let result: ExpressionControlOption<T> = {
     value: value,
     expression: expressionString,
-    requiredImport: requiredImport,
   }
+
+  if (requiredImport !== undefined) {
+    result.requiredImport = requiredImport
+  }
+
+  return result
 }
 
 export function expressionPopupListControl(
@@ -113,10 +118,15 @@ export function noControl(): NoneControlDescription {
 }
 
 export function numberControl(unit?: string): NumberInputControlDescription {
-  return {
+  let result: NumberInputControlDescription = {
     control: 'number-input',
-    unit: unit,
   }
+
+  if (unit !== undefined) {
+    result.unit = unit
+  }
+
+  return result
 }
 
 export function popupListControl(
@@ -141,20 +151,30 @@ export function sliderControl(
   step: number,
   unit?: string,
 ): NumberInputControlDescription {
-  return {
+  let result: NumberInputControlDescription = {
     control: 'number-input',
     min: min,
     max: max,
     step: step,
-    unit: unit,
   }
+
+  if (unit !== undefined) {
+    result.unit = unit
+  }
+
+  return result
 }
 
 export function stringControl(placeholder?: string): StringInputControlDescription {
-  return {
+  let result: StringInputControlDescription = {
     control: 'string-input',
-    placeholder: placeholder,
   }
+
+  if (placeholder !== undefined) {
+    result.placeholder = placeholder
+  }
+
+  return result
 }
 
 export function styleControl(): StyleControlsControlDescription {

@@ -181,7 +181,7 @@ export function optionalObjectKeyParser<V>(
     if (typeof value === 'object' && !Array.isArray(value) && value != null) {
       const withErrorParser = objectValueParserWithError(parser)
       const valueAsObject: any = value
-      if (key in valueAsObject && valueAsObject[key] !== undefined) {
+      if (key in valueAsObject) {
         return withErrorParser(valueAsObject[key], key)
       } else {
         return right(undefined)
