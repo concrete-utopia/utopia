@@ -22,19 +22,19 @@
     ],
     "description": "Register Module Function Body"
   },
-  "Checkbox Prop Control": {
+  "Checkbox Property Control": {
     "prefix": "Utopia.checkboxControl()",
     "body": "Utopia.checkboxControl()"
   },
-  "Color Prop Control": {
+  "Color Property Control": {
     "prefix": "Utopia.colorControl()",
     "body": "Utopia.colorControl()"
   },
-  "Expression Prop Control": {
+  "Expression Property Control": {
     "prefix": "Utopia.expressionControl()",
     "body": "Utopia.expressionControl()"
   },
-  "Expression PopupList Prop Control": {
+  "Expression PopupList Property Control": {
     "prefix": "Utopia.expressionPopupListControl()",
     "body": [
       "Utopia.expressionPopupListControl([",
@@ -49,27 +49,27 @@
       "])"
     ]
   },
-  "Euler Prop Control": {
+  "Euler Property Control": {
     "prefix": "Utopia.eulerControl()",
     "body": "Utopia.eulerControl()"
   },
-  "Matrix3 Prop Control": {
+  "Matrix3 Property Control": {
     "prefix": "Utopia.matrix3Control()",
     "body": "Utopia.matrix3Control()"
   },
-  "Matrix4 Prop Control": {
+  "Matrix4 Property Control": {
     "prefix": "Utopia.matrix4Control()",
     "body": "Utopia.matrix4Control()"
   },
-  "No Prop Control": {
+  "No Property Control": {
     "prefix": "Utopia.noControl()",
     "body": "Utopia.noControl()"
   },
-  "Number Prop Control": {
+  "Number Property Control": {
     "prefix": "Utopia.numberControl()",
     "body": "Utopia.numberControl()"
   },
-  "PopupList Prop Control": {
+  "PopupList Property Control": {
     "prefix": "Utopia.popupListControl()",
     "body": [
       "Utopia.popupListControl([",
@@ -80,7 +80,7 @@
       "])"
     ]
   },
-  "Radio Prop Control": {
+  "Radio Property Control": {
     "prefix": "Utopia.radioControl()",
     "body": [
       "Utopia.radioControl([",
@@ -91,31 +91,31 @@
       "])"
     ]
   },
-  "Slider Prop Control": {
+  "Slider Property Control": {
     "prefix": "Utopia.sliderControl()",
     "body": "Utopia.sliderControl(${1:0 /* min */}, ${2:10 /* max */}, ${3:1 /* step */}, ${4:'optional unit'})"
   },
-  "String Prop Control": {
+  "String Property Control": {
     "prefix": "Utopia.stringControl()",
     "body": "Utopia.stringControl()"
   },
-  "Style Prop Control": {
+  "Style Property Control": {
     "prefix": "Utopia.styleControl()",
     "body": "Utopia.styleControl()"
   },
-  "Vector2 Prop Control": {
+  "Vector2 Property Control": {
     "prefix": "Utopia.vector2Control()",
     "body": "Utopia.vector2Control()"
   },
-  "Vector3 Prop Control": {
+  "Vector3 Property Control": {
     "prefix": "Utopia.vector3Control()",
     "body": "Utopia.vector3Control()"
   },
-  "Vector4 Prop Control": {
+  "Vector4 Property Control": {
     "prefix": "Utopia.vector4Control()",
     "body": "Utopia.vector4Control()"
   },
-  "Array Prop Control": {
+  "Array Property Control": {
     "prefix": "Utopia.arrayControl()",
     "body": [
       "Utopia.arrayControl(",
@@ -123,7 +123,7 @@
       ")"
     ]
   },
-  "Fixed Size Array Prop Control": {
+  "Fixed Size Array Property Control": {
     "prefix": "Utopia.fixedSizeArrayControl()",
     "body": [
       "Utopia.fixedSizeArrayControl(",
@@ -132,11 +132,11 @@
       ")"
     ]
   },
-  "Object Prop Control": {
+  "Object Property Control": {
     "prefix": "Utopia.objectControl()",
     "body": ["Utopia.objectControl({", "  ${1:key}: ${2:Utopia.stringControl()},", "})"]
   },
-  "Tuple Prop Control": {
+  "Tuple Property Control": {
     "prefix": "Utopia.tupleControl()",
     "body": [
       "Utopia.tupleControl([",
@@ -145,7 +145,7 @@
       "])"
     ]
   },
-  "Union Prop Control": {
+  "Union Property Control": {
     "prefix": "Utopia.unionControl()",
     "body": [
       "Utopia.unionControl([",
@@ -154,7 +154,7 @@
       "])"
     ]
   },
-  "Folder Prop Control": {
+  "Folder Property Control": {
     "prefix": "Utopia.folderControl()",
     "body": ["Utopia.folderControl({", "  ${1:prop}: ${2:Utopia.stringControl()}", "})"]
   }
