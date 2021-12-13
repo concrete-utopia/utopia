@@ -18,7 +18,7 @@ import           Network.Wai
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Network.Wreq                   as WR
-import           Prelude                        (String, (!!))
+import           Prelude                        (String)
 import           Protolude
 import           Utopia.Web.Exceptions
 
@@ -49,14 +49,12 @@ encodedPathSegmentsAsString segments = either (fail . show) (pure . toS) $ decod
 sendProxiedRequest' :: Manager -> Int -> (Response -> IO ResponseReceived) -> Text -> RequestHeaders -> [Text] -> Query -> IO ResponseReceived
 sendProxiedRequest' webpackManager port sendResponse method headers segments queryParams = do
   let options = WR.defaults & WR.manager .~ Right webpackManager & WR.headers .~ headers
-  when (segments !! (length segments - 1) == "package.json") $ print (segments, headers)
   encodedPathSegments <- encodedPathSegmentsAsString segments
   let webpackUrl = "http://localhost:" <> show port <> encodedPathSegments
   let renderedQueryParams = renderQuery True queryParams
   let webpackUrlWithQuery = if null queryParams then webpackUrl else webpackUrl <> B.unpack renderedQueryParams
   responseToClient <- flip catch handleClientError $ do
-      print ("webpackUrlWithQuery" :: Text, webpackUrlWithQuery)
-      responseFromWebpack <- WR.customMethodWith (toS method) options webpackUrl
+      responseFromWebpack <- WR.customMethodWith (toS method) options webpackUrlWithQuery
       let headersFromServer = responseFromWebpack ^. WR.responseHeaders
       let filteredHeaders = filter (\(h, _) -> elem h filteredHeaderNames) headersFromServer
       return $ responseLBS status200 filteredHeaders (responseFromWebpack ^. WR.responseBody)
