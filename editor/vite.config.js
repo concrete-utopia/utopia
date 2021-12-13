@@ -7,7 +7,7 @@ export default defineConfig({
   // plugins: [react(), polyfill()],
   plugins: [react()],
   root: './src/vite',
-  publicDir: '../resources',
+  publicDir: '../../resources/editor',
   server: {
     port: 8088,
     host: '0.0.0.0',
