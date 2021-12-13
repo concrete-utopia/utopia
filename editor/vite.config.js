@@ -25,6 +25,10 @@ export default defineConfig({
     types: ['vite/client'],
   },
   define: {
+    global: '{}',
+    module: '{}',
+    exports: '{}',
+    'process.cwd': 'new Function()',
     'process.env.NODE_ENV': "'development'",
     'process.env.REACT_APP_ENVIRONMENT_CONFIG': "'development'",
     'process.env.REACT_APP_AUTH0_REDIRECT_URI': undefined,
