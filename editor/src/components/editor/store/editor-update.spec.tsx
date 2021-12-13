@@ -564,7 +564,11 @@ describe('action DELETE_SELECTED', () => {
         StoryboardFilePath,
         `
   import * as React from 'react'
-  import { Scene, Storyboard } from 'utopia-api'
+  import Utopia, {
+    Scene,
+    Storyboard,
+    registerModule,
+  } from 'utopia-api'
   import { App } from '/src/app.js'
 
   export var storyboard = (

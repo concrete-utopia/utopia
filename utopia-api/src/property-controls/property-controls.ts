@@ -283,37 +283,3 @@ export function addPropertyControls(component: unknown, propertyControls: Proper
     ;(component as any)['propertyControls'] = propertyControls
   }
 }
-
-export function expression<T>(
-  value: T,
-  expressionString: string,
-  requiredImport?: ImportType,
-): ExpressionControlOption<T> {
-  return {
-    value: value,
-    expression: expressionString,
-    requiredImport: requiredImport,
-  }
-}
-
-export function importStar(source: string, name: string): ImportType {
-  return {
-    source: source,
-    name: name,
-    type: 'star',
-  }
-}
-export function importDefault(source: string, name: string): ImportType {
-  return {
-    source: source,
-    name: name,
-    type: 'default',
-  }
-}
-export function importNamed(source: string, name: string): ImportType {
-  return {
-    source: source,
-    name: name,
-    type: null,
-  }
-}

@@ -921,7 +921,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       `
       /** @jsx jsx */
       import { css, jsx } from '@emotion/react'
-      import { Scene, Storyboard } from 'utopia-api'
+      import Utopia, {
+        Scene,
+        Storyboard,
+        registerModule,
+      } from 'utopia-api'
       const MyComp = (props) => <div css={{ backgroundColor: 'blue', position: 'absolute', left: 15, top: 15, width: 50, height: 50, flex: 15 }}>Utopia</div>
       export var App = (props) => {
         return (<MyComp data-uid={'aaa'}/>)
@@ -949,7 +953,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `
-      import { Scene, Storyboard } from 'utopia-api'
+      import Utopia, {
+        Scene,
+        Storyboard,
+        registerModule,
+      } from 'utopia-api'
       import * as React from "react"
       let MyComp
       MyComp = (props) => <div>Utopia</div>
@@ -1528,7 +1536,11 @@ export var storyboard = (
     testCanvasRender(
       null,
       `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 export var A = (props) => {
   if (props.x === 0) {
@@ -1568,7 +1580,11 @@ export var storyboard = (
     testCanvasRender(
       null,
       `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -1612,7 +1628,11 @@ export var storyboard = (
     testCanvasRender(
       null,
       `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 const AppContext = React.createContext({})
 const useStoreRef = () => useContext(AppContext)
@@ -1648,7 +1668,11 @@ export var storyboard = (
       null,
       `
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 const AppContext = React.createContext({})
 const InnerContext = React.createContext({})
@@ -1690,7 +1714,11 @@ export var storyboard = (
       null,
       `
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 export var App = (props) => {
   return (
     <div

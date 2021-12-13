@@ -1,21 +1,13 @@
 {
-  "registerModule": {
-    "prefix": "registerModule",
-    "body": ["registerModule"],
-    "description": "Register Module Import"
-  },
-  "registerModule(...)": {
-    "prefix": "registerModule(...)",
+  "registerModule()": {
+    "prefix": "registerModule()",
     "body": [
       "registerModule(",
       "  '${1:${TM_FILEPATH/~(.*)\\..+$/$1/}}', // module name or absolute file path",
       "  {",
       "    ${2:ComponentName}: {",
       "      properties: { // property controls",
-      "        ${3:PropName}: {",
-      "          control: 'string-input',",
-      "          label: '${3:PropName}'",
-      "        },",
+      "        ${3:PropName}: Utopia.stringControl()",
       "      },",
       "      variants: [ // each option appears in the insert menu",
       "        {",
@@ -30,282 +22,140 @@
     ],
     "description": "Register Module Function Body"
   },
-  "registerModule:string property control": {
-    "prefix": "registerModule:String Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'string-input',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: 'string'",
-      "  //placeholder: 'string'",
-      "  //obscured: false",
-      "},"
-    ],
-    "description": "Register Module String Control"
+  "Checkbox Property Control": {
+    "prefix": "Utopia.checkboxControl()",
+    "body": "Utopia.checkboxControl()"
   },
-  "registerModule:checkbox property control": {
-    "prefix": "registerModule:Checkbox Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'checkbox',",
-      "  label: '${1:PropName}'",
-      "  //defaultValue: false",
-      "  //visibleByDefault: true",
-      "  //disabledTitle: 'Disabled Title'",
-      "  //enabledTitle: 'Enabled Title'",
-      "},"
-    ],
-    "description": "Register Module Checkbox Control"
+  "Color Property Control": {
+    "prefix": "Utopia.colorControl()",
+    "body": "Utopia.colorControl()"
   },
-  "registerModule:color property control": {
-    "prefix": "registerModule:Color Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'color',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: 'blue'",
-      "},"
-    ],
-    "description": "Register Module Color Control"
+  "Expression Property Control": {
+    "prefix": "Utopia.expressionControl()",
+    "body": "Utopia.expressionControl()"
   },
-  "registerModule:euler property control": {
-    "prefix": "registerModule:Euler Control",
+  "Expression PopupList Property Control": {
+    "prefix": "Utopia.expressionPopupListControl()",
     "body": [
-      "${1:PropName}: {",
-      "  control: 'euler',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: [0, 0, 0, 'XYZ']",
-      "},"
-    ],
-    "description": "Register Module Euler Control"
+      "Utopia.expressionPopupListControl([",
+      "  Utopia.expression(",
+      "    ${1:'value'},",
+      "    ${2:'code as string'},",
+      "    Utopia.importStar( // optional param for adding an import",
+      "      ${3:'module'},",
+      "      ${4:'imported as'}",
+      "    ),",
+      "  ),",
+      "])"
+    ]
   },
-  "registerModule:none property control": {
-    "prefix": "registerModule:None Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'none',",
-      "},"
-    ],
-    "description": "Register Module None Control"
+  "Euler Property Control": {
+    "prefix": "Utopia.eulerControl()",
+    "body": "Utopia.eulerControl()"
   },
-  "registerModule:matrix3 property control": {
-    "prefix": "registerModule:Matrix3 Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'matrix3',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: [0, 0, 0, 0, 0, 0, 0, 0, 0]",
-      "},"
-    ],
-    "description": "Register Module Matrix3 Control"
+  "Matrix3 Property Control": {
+    "prefix": "Utopia.matrix3Control()",
+    "body": "Utopia.matrix3Control()"
   },
-  "registerModule:matrix4 property control": {
-    "prefix": "registerModule:Matrix4 Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'matrix4',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]",
-      "},"
-    ],
-    "description": "Register Module Matrix4 Control"
+  "Matrix4 Property Control": {
+    "prefix": "Utopia.matrix4Control()",
+    "body": "Utopia.matrix4Control()"
   },
-  "registerModule:number property control": {
-    "prefix": "registerModule:Number Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'number-input',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: 0",
-      "  //max: 10",
-      "  //min: 0",
-      "  //unit: 'px'",
-      "  //step: 1",
-      "  //displayStepper: true",
-      "},"
-    ],
-    "description": "Register Module Number Control"
+  "No Property Control": {
+    "prefix": "Utopia.noControl()",
+    "body": "Utopia.noControl()"
   },
-  "registerModule:popup list property control": {
-    "prefix": "registerModule:Popup List Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'popuplist',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: 'A'",
-      "  //options: ['A', 'B', 'C']",
-      "},"
-    ],
-    "description": "Register Module Popup List Control"
+  "Number Property Control": {
+    "prefix": "Utopia.numberControl()",
+    "body": "Utopia.numberControl()"
   },
-  "registerModule:radio property control": {
-    "prefix": "registerModule:Radio Control",
+  "PopupList Property Control": {
+    "prefix": "Utopia.popupListControl()",
     "body": [
-      "${1:PropName}: {",
-      "  control: 'radio',",
-      "  label: '${1:PropName}'",
-      "  //defaultValue: 'A'",
-      "  //visibleByDefault: true",
-      "  //options: ['A', 'B', 'C']",
-      "},"
-    ],
-    "description": "Register Module Radio Control"
+      "Utopia.popupListControl([",
+      "  {",
+      "    label: ${1:'Option 1'}",
+      "    value: ${2:'value'}",
+      "  }",
+      "])"
+    ]
   },
-  "registerModule:style property control": {
-    "prefix": "registerModule:Style Control",
+  "Radio Property Control": {
+    "prefix": "Utopia.radioControl()",
     "body": [
-      "${1:PropName}: {",
-      "  control: 'style-controls',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: {backgroundColor: 'blue'}",
-      "  //placeholder: {backgroundColor: 'blue'}",
-      "},"
-    ],
-    "description": "Register Module Style Control"
+      "Utopia.radioControl([",
+      "  {",
+      "    label: ${1:'Option 1'}",
+      "    value: ${2:'value'}",
+      "  }",
+      "])"
+    ]
   },
-  "registerModule:vector2 property control": {
-    "prefix": "registerModule:Vector2 Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'vector2',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: [0, 0]",
-      "},"
-    ],
-    "description": "Register Module Vector2 Control"
+  "Slider Property Control": {
+    "prefix": "Utopia.sliderControl()",
+    "body": "Utopia.sliderControl(${1:0 /* min */}, ${2:10 /* max */}, ${3:1 /* step */}, ${4:'optional unit'})"
   },
-  "registerModule:vector3 property control": {
-    "prefix": "registerModule:Vector3 Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'vector3',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: [0, 0, 0]",
-      "},"
-    ],
-    "description": "Register Module Vector3 Control"
+  "String Property Control": {
+    "prefix": "Utopia.stringControl()",
+    "body": "Utopia.stringControl()"
   },
-  "registerModule:vector4 property control": {
-    "prefix": "registerModule:Vector4 Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'vector4',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: [0, 0, 0, 0]",
-      "},"
-    ],
-    "description": "Register Module Vector4 Control"
+  "Style Property Control": {
+    "prefix": "Utopia.styleControl()",
+    "body": "Utopia.styleControl()"
   },
-  "registerModule:expression property control": {
-    "prefix": "registerModule:Expression Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'expression-input',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: 'expression'",
-      "},"
-    ],
-    "description": "Register Module Expression Control"
+  "Vector2 Property Control": {
+    "prefix": "Utopia.vector2Control()",
+    "body": "Utopia.vector2Control()"
   },
-  "registerModule:expression popup list property control": {
-    "prefix": "registerModule:Expression Popup List Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'expression-popuplist',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: {value: 'expression', expression: `'expression'`}",
-      "  options: [{value: 'expression', expression: `'expression'`}]",
-      "},"
-    ],
-    "description": "Register Module Expression Control"
+  "Vector3 Property Control": {
+    "prefix": "Utopia.vector3Control()",
+    "body": "Utopia.vector3Control()"
   },
-  "registerModule:array property control": {
-    "prefix": "registerModule:Array Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'array',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: ['A', 'B']",
-      "  propertyControl: {control: 'string-input'}",
-      "  //maxCount: 5",
-      "},"
-    ],
-    "description": "Register Module Array Control"
+  "Vector4 Property Control": {
+    "prefix": "Utopia.vector4Control()",
+    "body": "Utopia.vector4Control()"
   },
-  "registerModule:object property control": {
-    "prefix": "registerModule:Object Control",
+  "Array Property Control": {
+    "prefix": "Utopia.arrayControl()",
     "body": [
-      "${1:PropName}: {",
-      "  control: 'object',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: {itemID: 10, name: 'Hat'}",
-      "  object: { itemID: {label: 'itemID', control: 'number-input'}, name: {label: 'name', control: 'string-input'} }",
-      "},"
-    ],
-    "description": "Register Module Array Control"
+      "Utopia.arrayControl(",
+      "  ${1:Utopia.stringControl()} // control to use for each value in the array",
+      ")"
+    ]
   },
-  "registerModule:union property control": {
-    "prefix": "registerModule:Union Control",
+  "Fixed Size Array Property Control": {
+    "prefix": "Utopia.fixedSizeArrayControl()",
     "body": [
-      "${1:PropName}: {",
-      "  control: 'union',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: 'Hat'",
-      "  controls: [{control: 'string-input'}, {control: 'number-input'}]",
-      "},"
-    ],
-    "description": "Register Module Union Control"
+      "Utopia.fixedSizeArrayControl(",
+      "  ${1:Utopia.stringControl()}, // control to use for each value in the array",
+      "  ${2:10 /* length */}",
+      ")"
+    ]
   },
-  "registerModule:tuple property control": {
-    "prefix": "registerModule:Tuple Control",
-    "body": [
-      "${1:PropName}: {",
-      "  control: 'tuple',",
-      "  label: '${1:PropName}'",
-      "  //visibleByDefault: true",
-      "  //defaultValue: ['Hat', 9]",
-      "  propertyControls: [{control: 'string-input'}, {control: 'number-input'}]",
-      "},"
-    ],
-    "description": "Register Module Tuple Control"
+  "Object Property Control": {
+    "prefix": "Utopia.objectControl()",
+    "body": ["Utopia.objectControl({", "  ${1:key}: ${2:Utopia.stringControl()},", "})"]
   },
-  "registerModule:folder property control": {
-    "prefix": "registerModule:Folder Control",
+  "Tuple Property Control": {
+    "prefix": "Utopia.tupleControl()",
     "body": [
-      "${1:PropName}: {",
-      "  control: 'folder',",
-      "  label: '${1:PropName}'",
-      "  controls: {title: {control: 'string-input'}, size: {control: 'number-input'}}",
-      "},"
-    ],
-    "description": "Register Module Tuple Control"
+      "Utopia.tupleControl([",
+      "  ${1:Utopia.stringControl()},",
+      "  ${2:Utopia.numberControl()},",
+      "])"
+    ]
   },
-  "registerModule:insert option": {
-    "prefix": "registerModule:Insert Option",
+  "Union Property Control": {
+    "prefix": "Utopia.unionControl()",
     "body": [
-      "{",
-      "  label: '${1:ComponentName}', // label to use in the insert menu, optional",
-      "  code: '<${1:ComponentName} />',",
-      "  // additionalImports: `import '/src/styles.css';`, // optional",
-      "},"
-    ],
-    "description": "Register Module Insert Option"
+      "Utopia.unionControl([",
+      "  ${1:Utopia.stringControl()}",
+      "  ${2:Utopia.numberControl()},",
+      "])"
+    ]
+  },
+  "Folder Property Control": {
+    "prefix": "Utopia.folderControl()",
+    "body": ["Utopia.folderControl({", "  ${1:prop}: ${2:Utopia.stringControl()}", "})"]
   }
-
 }
