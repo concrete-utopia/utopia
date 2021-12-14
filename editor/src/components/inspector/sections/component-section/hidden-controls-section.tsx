@@ -2,7 +2,6 @@
 import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { Subdued, useColorTheme, UtopiaTheme } from '../../../../uuiui'
-import { betterReactMemo } from '../../../../uuiui-deps'
 import { ControlStatus } from '../../common/control-status'
 
 interface HiddenControlsProps {
@@ -37,42 +36,39 @@ export function filterUnsetControls(
   return pathNames.filter((name) => isControlUnset(propertyControlsStatus[name]))
 }
 
-export const HiddenControls = betterReactMemo(
-  'HiddenControls',
-  (props: HiddenControlsProps): JSX.Element | null => {
-    const indentation = props.indentationLevel * 8
-    if (props.hiddenPropNames.length > 0) {
-      return (
-        <div
-          style={{
-            padding: '0px 8px',
-            paddingLeft: indentation,
-            minHeight: UtopiaTheme.layout.rowHeight.normal,
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: '0px 2px',
-            alignItems: 'center',
-          }}
-        >
-          <Subdued>Available: </Subdued>
-          {props.hiddenPropNames.map((name, index) => {
-            return (
-              <HiddenControlLabel
-                key={name}
-                propName={name}
-                showHiddenControl={props.showHiddenControl}
-                isLast={props.hiddenPropNames.length - 1 === index}
-              />
-            )
-          })}
-        </div>
-      )
-    } else {
-      return null
-    }
-  },
-)
+export const HiddenControls = React.memo((props: HiddenControlsProps): JSX.Element | null => {
+  const indentation = props.indentationLevel * 8
+  if (props.hiddenPropNames.length > 0) {
+    return (
+      <div
+        style={{
+          padding: '0px 8px',
+          paddingLeft: indentation,
+          minHeight: UtopiaTheme.layout.rowHeight.normal,
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: '0px 2px',
+          alignItems: 'center',
+        }}
+      >
+        <Subdued>Available: </Subdued>
+        {props.hiddenPropNames.map((name, index) => {
+          return (
+            <HiddenControlLabel
+              key={name}
+              propName={name}
+              showHiddenControl={props.showHiddenControl}
+              isLast={props.hiddenPropNames.length - 1 === index}
+            />
+          )
+        })}
+      </div>
+    )
+  } else {
+    return null
+  }
+})
 
 interface HiddenControlLabelProps {
   propName: string
@@ -80,28 +76,25 @@ interface HiddenControlLabelProps {
   isLast: boolean
 }
 
-const HiddenControlLabel = betterReactMemo(
-  'HiddenControlLabel',
-  (props: HiddenControlLabelProps): JSX.Element | null => {
-    const colorTheme = useColorTheme()
-    const { propName, showHiddenControl } = props
-    const labelOnClick = React.useCallback(() => showHiddenControl(propName), [
-      propName,
-      showHiddenControl,
-    ])
-    return (
-      <Subdued
-        css={{
-          ':hover': {
-            color: colorTheme.primary.value,
-          },
-        }}
-        style={{ cursor: 'pointer' }}
-        onClick={labelOnClick}
-      >
-        {propName}
-        {props.isLast ? '' : ', '}
-      </Subdued>
-    )
-  },
-)
+const HiddenControlLabel = React.memo((props: HiddenControlLabelProps): JSX.Element | null => {
+  const colorTheme = useColorTheme()
+  const { propName, showHiddenControl } = props
+  const labelOnClick = React.useCallback(() => showHiddenControl(propName), [
+    propName,
+    showHiddenControl,
+  ])
+  return (
+    <Subdued
+      css={{
+        ':hover': {
+          color: colorTheme.primary.value,
+        },
+      }}
+      style={{ cursor: 'pointer' }}
+      onClick={labelOnClick}
+    >
+      {propName}
+      {props.isLast ? '' : ', '}
+    </Subdued>
+  )
+})

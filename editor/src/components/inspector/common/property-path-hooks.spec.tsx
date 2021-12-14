@@ -49,7 +49,6 @@ import {
   useInspectorStyleInfo,
 } from './property-path-hooks'
 import { isParseSuccess, ElementPath } from '../../../core/shared/project-file-types'
-import { betterReactMemo } from '../../../utils/react-performance'
 import {
   getPropsForStyleProp,
   makeInspectorHookContextProvider,
@@ -201,7 +200,7 @@ describe('useCallbackFactory', () => {
   })
 })
 
-const WellBehavedInspectorSubsection = betterReactMemo('WellBehavedInspectorSubsection', () => {
+const WellBehavedInspectorSubsection = React.memo(() => {
   const { value, onSubmitValue } = useInspectorStyleInfo('opacity')
   onSubmitValue(cssNumber(0.9))
   return <div onClick={() => onSubmitValue(cssNumber(0.5))}>{printCSSNumber(value, null)}</div>

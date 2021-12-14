@@ -38,7 +38,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { addingChildElement, FileBrowserItem } from './fileitem'
 import { dropFileExtension } from '../../core/shared/file-utils'
 import { objectMap } from '../../core/shared/object-utils'
-import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import {
   Section,
   SectionBodyArea,
@@ -131,7 +131,7 @@ function collectFileBrowserItems(
   return fileBrowserItems
 }
 
-export const FileBrowser = betterReactMemo('FileBrowser', () => {
+export const FileBrowser = React.memo(() => {
   const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -230,7 +230,7 @@ interface FileBrowserActionSheetProps {
   setAddingFileOrFolder: (fileOrFolder: 'file' | 'folder') => void
 }
 
-const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
+const FileBrowserItems = React.memo(() => {
   const {
     dispatch,
     projectContents,
@@ -313,28 +313,25 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
   )
 })
 
-const FileBrowserActionSheet = betterReactMemo(
-  'FileBrowserActionSheet',
-  (props: FileBrowserActionSheetProps) => {
-    const { dispatch } = useEditorState(
-      (store) => ({ dispatch: store.dispatch }),
-      'FileBrowserActionSheet dispatch',
+const FileBrowserActionSheet = React.memo((props: FileBrowserActionSheetProps) => {
+  const { dispatch } = useEditorState(
+    (store) => ({ dispatch: store.dispatch }),
+    'FileBrowserActionSheet dispatch',
+  )
+  const addFolderClick = React.useCallback(() => props.setAddingFileOrFolder('folder'), [props])
+  const addTextFileClick = React.useCallback(() => props.setAddingFileOrFolder('file'), [props])
+  if (props.visible) {
+    return (
+      <ActionSheet>
+        <SquareButton highlight onClick={addFolderClick}>
+          <Icons.NewFolder tooltipText='Add New Folder' />
+        </SquareButton>
+        <SquareButton highlight onClick={addTextFileClick}>
+          <Icons.NewTextFile tooltipText='Add Code File' />
+        </SquareButton>
+      </ActionSheet>
     )
-    const addFolderClick = React.useCallback(() => props.setAddingFileOrFolder('folder'), [props])
-    const addTextFileClick = React.useCallback(() => props.setAddingFileOrFolder('file'), [props])
-    if (props.visible) {
-      return (
-        <ActionSheet>
-          <SquareButton highlight onClick={addFolderClick}>
-            <Icons.NewFolder tooltipText='Add New Folder' />
-          </SquareButton>
-          <SquareButton highlight onClick={addTextFileClick}>
-            <Icons.NewTextFile tooltipText='Add Code File' />
-          </SquareButton>
-        </ActionSheet>
-      )
-    } else {
-      return null
-    }
-  },
-)
+  } else {
+    return null
+  }
+})

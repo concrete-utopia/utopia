@@ -1,6 +1,3 @@
-import { betterReactMemo } from '../utils/react-performance'
-export { betterReactMemo }
-
 import { Resizable as _Resizable, ResizableProps as _ResizableProps } from 're-resizable'
 
 import _onClickOutside from 'react-onclickoutside'

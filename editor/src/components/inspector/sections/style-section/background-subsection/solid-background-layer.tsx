@@ -27,7 +27,6 @@ import {
   StringBackgroundColorControl,
 } from '../../../controls/background-solid-or-gradient-thumbnail-control'
 import { CheckboxInput, SimplePercentInput } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
 function getIndexedUpdateStringCSSBackgroundLayerSolidColor(index: number) {
   return function indexedUpdateStringCSSBackgroundLayerSolidColor(
@@ -77,103 +76,99 @@ interface SolidBackgroundLayerProps extends BackgroundLayerProps {
   useSubmitTransformedValuesFactory: UseSubmitTransformedValuesFactory
 }
 
-export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
-  'SolidBackgroundLayer',
-  (props) => {
-    const [onCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
-      getIndexedUpdateEnabled(props.index),
-    )
-    const [
-      onAlphaSubmitValue,
-      onAlphaTransientSubmitValue,
-    ] = props.useSubmitTransformedValuesFactory(getIndexedUpdateNewAlpha(props.index))
-    const [onStringSubmitValue] = props.useSubmitTransformedValuesFactory(
-      getIndexedUpdateStringCSSBackgroundLayerSolidColor(props.index),
-    )
+export const SolidBackgroundLayer = React.memo<SolidBackgroundLayerProps>((props) => {
+  const [onCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
+    getIndexedUpdateEnabled(props.index),
+  )
+  const [onAlphaSubmitValue, onAlphaTransientSubmitValue] = props.useSubmitTransformedValuesFactory(
+    getIndexedUpdateNewAlpha(props.index),
+  )
+  const [onStringSubmitValue] = props.useSubmitTransformedValuesFactory(
+    getIndexedUpdateStringCSSBackgroundLayerSolidColor(props.index),
+  )
 
-    const toggleCheckbox = React.useCallback(() => onCheckboxSubmitValue(!props.value.enabled), [
-      onCheckboxSubmitValue,
-      props,
-    ])
-    const [onRemoveRowSubmit] = props.useSubmitTransformedValuesFactory(
-      getIndexedSpliceArrayItem<CSSBackgroundLayer | CSSUnknownArrayItem>(props.index),
-    )
+  const toggleCheckbox = React.useCallback(() => onCheckboxSubmitValue(!props.value.enabled), [
+    onCheckboxSubmitValue,
+    props,
+  ])
+  const [onRemoveRowSubmit] = props.useSubmitTransformedValuesFactory(
+    getIndexedSpliceArrayItem<CSSBackgroundLayer | CSSUnknownArrayItem>(props.index),
+  )
 
-    const alpha = parseAlphaFromCSSColor(props.value.color)
-    return (
-      <InspectorContextMenuWrapper
-        id={`background-layer-subsection-context-menu-row-${props.index}`}
-        items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
-        data={null}
-      >
-        <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
-          <UIGridRow
-            tall
-            alignItems='start'
-            padded={false}
-            variant='<-auto-><----------1fr--------->'
-          >
-            <CheckboxInput
-              onChange={toggleCheckbox}
-              checked={props.value.enabled}
-              controlStatus={props.controlStatus}
-              onMouseDown={stopPropagation}
-            />
-            <BackgroundSolidOrGradientThumbnailControl
-              id={`background-layer-gradient-${props.index}`}
-              key={`background-layer-gradient-${props.index}`}
-              testId={`background-layer-gradient-${props.index}`}
-              value={props.value}
-              backgroundIndex={props.index}
-              useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
-              onSubmitSolidStringValue={onStringSubmitValue}
-              controlStatus={props.controlStatus}
-              controlStyles={props.controlStyles}
-              modalOffset={{ x: -45, y: 0 }}
-              showString={false}
-              popupOpen={props.popupOpen}
-              setOpenPopup={props.setOpenPopup}
-            />
-          </UIGridRow>
-          <UIGridRow
-            tall
-            alignItems='start'
-            padded={false}
-            variant='<--------auto-------->|--45px--|'
-          >
-            <StringBackgroundColorControl
-              id={`background-layer-gradient-${props.index}`}
-              key={`background-layer-gradient-${props.index}`}
-              testId={`background-layer-gradient-${props.index}`}
-              value={props.value}
-              backgroundIndex={props.index}
-              useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
-              onSubmitSolidStringValue={onStringSubmitValue}
-              controlStatus={props.controlStatus}
-              controlStyles={props.controlStyles}
-              modalOffset={{ x: -45, y: 0 }}
-              showString={true}
-              popupOpen={props.popupOpen}
-              setOpenPopup={props.setOpenPopup}
-            />
-            <SimplePercentInput
-              id={`background-layer-alpha-${props.index}`}
-              testId={`background-layer-alpha-${props.index}`}
-              value={alpha}
-              onSubmitValue={onAlphaSubmitValue}
-              onTransientSubmitValue={onAlphaTransientSubmitValue}
-              onForcedSubmitValue={onAlphaSubmitValue}
-              controlStatus={props.controlStatus}
-              DEPRECATED_labelBelow='alpha'
-              minimum={0}
-              maximum={1}
-              stepSize={0.01}
-              inputProps={{ onMouseDown: stopPropagation }}
-              defaultUnitToHide={null}
-            />
-          </UIGridRow>
+  const alpha = parseAlphaFromCSSColor(props.value.color)
+  return (
+    <InspectorContextMenuWrapper
+      id={`background-layer-subsection-context-menu-row-${props.index}`}
+      items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
+      data={null}
+    >
+      <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
+        <UIGridRow
+          tall
+          alignItems='start'
+          padded={false}
+          variant='<-auto-><----------1fr--------->'
+        >
+          <CheckboxInput
+            onChange={toggleCheckbox}
+            checked={props.value.enabled}
+            controlStatus={props.controlStatus}
+            onMouseDown={stopPropagation}
+          />
+          <BackgroundSolidOrGradientThumbnailControl
+            id={`background-layer-gradient-${props.index}`}
+            key={`background-layer-gradient-${props.index}`}
+            testId={`background-layer-gradient-${props.index}`}
+            value={props.value}
+            backgroundIndex={props.index}
+            useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
+            onSubmitSolidStringValue={onStringSubmitValue}
+            controlStatus={props.controlStatus}
+            controlStyles={props.controlStyles}
+            modalOffset={{ x: -45, y: 0 }}
+            showString={false}
+            popupOpen={props.popupOpen}
+            setOpenPopup={props.setOpenPopup}
+          />
         </UIGridRow>
-      </InspectorContextMenuWrapper>
-    )
-  },
-)
+        <UIGridRow
+          tall
+          alignItems='start'
+          padded={false}
+          variant='<--------auto-------->|--45px--|'
+        >
+          <StringBackgroundColorControl
+            id={`background-layer-gradient-${props.index}`}
+            key={`background-layer-gradient-${props.index}`}
+            testId={`background-layer-gradient-${props.index}`}
+            value={props.value}
+            backgroundIndex={props.index}
+            useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
+            onSubmitSolidStringValue={onStringSubmitValue}
+            controlStatus={props.controlStatus}
+            controlStyles={props.controlStyles}
+            modalOffset={{ x: -45, y: 0 }}
+            showString={true}
+            popupOpen={props.popupOpen}
+            setOpenPopup={props.setOpenPopup}
+          />
+          <SimplePercentInput
+            id={`background-layer-alpha-${props.index}`}
+            testId={`background-layer-alpha-${props.index}`}
+            value={alpha}
+            onSubmitValue={onAlphaSubmitValue}
+            onTransientSubmitValue={onAlphaTransientSubmitValue}
+            onForcedSubmitValue={onAlphaSubmitValue}
+            controlStatus={props.controlStatus}
+            DEPRECATED_labelBelow='alpha'
+            minimum={0}
+            maximum={1}
+            stepSize={0.01}
+            inputProps={{ onMouseDown: stopPropagation }}
+            defaultUnitToHide={null}
+          />
+        </UIGridRow>
+      </UIGridRow>
+    </InspectorContextMenuWrapper>
+  )
+})

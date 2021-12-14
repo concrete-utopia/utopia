@@ -1,6 +1,5 @@
 import React from 'react'
 import { FlexRow, FunctionIcons, StringInput } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ResourcesListGridRowConfig } from './generic-external-resources-list'
 
@@ -11,8 +10,7 @@ interface MultiStringControlProps {
   onSubmitValues: (values: { hrefValue: string; relValue: string }) => void
 }
 
-export const GenericExternalResourcesInput = betterReactMemo(
-  'GenericExternalResourcesInput',
+export const GenericExternalResourcesInput = React.memo(
   ({ hrefValueToEdit, relValueToEdit, onSubmitValues, closeField }: MultiStringControlProps) => {
     const [hrefValue, setHrefValue] = React.useState(hrefValueToEdit ?? '')
     const [relValue, setRelValue] = React.useState(relValueToEdit ?? '')

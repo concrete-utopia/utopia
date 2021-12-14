@@ -1,6 +1,5 @@
 import React from 'react'
 import { IcnColor, IcnProps } from './icn'
-import { betterReactMemo } from '../utils/react-performance'
 import { Icons } from './icons'
 
 interface WarningIconProps {
@@ -9,7 +8,7 @@ interface WarningIconProps {
   style?: React.CSSProperties
 }
 
-export const WarningIcon = betterReactMemo('Warning Icon', (props: WarningIconProps) => {
+export const WarningIcon = React.memo((props: WarningIconProps) => {
   const icnProps = getWarningIconProps(props.tooltipText, props.color, props.style)
   return <Icons.WarningTriangle {...icnProps} />
 })

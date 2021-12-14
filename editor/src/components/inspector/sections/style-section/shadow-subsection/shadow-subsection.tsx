@@ -12,7 +12,6 @@ import {
   Icn,
   InspectorSectionIcons,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
@@ -145,7 +144,7 @@ interface ShadowItemProps {
 
 const rowHeight = UtopiaTheme.layout.rowHeight.max
 
-const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
+const ShadowItem = React.memo<ShadowItemProps>((props) => {
   const [enabledSubmitValueToggle] = props.useSubmitValueFactory(
     getIndexedToggleShadowEnabled(props.index),
   )
@@ -276,7 +275,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
   )
 })
 
-export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
+export const ShadowSubsection = React.memo(() => {
   const isVisible = useIsSubSectionVisible('shadow')
   const {
     value,

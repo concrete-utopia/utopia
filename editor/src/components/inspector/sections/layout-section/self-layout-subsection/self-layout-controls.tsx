@@ -3,58 +3,54 @@ import { OptionChainControl } from '../../../controls/option-chain-control'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { SelfLayoutTab } from './self-layout-subsection'
 import { getControlStyles } from '../../../common/control-status'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface LayoutTypePickerProps {
   value: SelfLayoutTab
   setActiveTab: React.Dispatch<SelfLayoutTab>
 }
 
-export const LayoutTypePicker = betterReactMemo(
-  'LayoutTypePicker',
-  ({ value, setActiveTab }: LayoutTypePickerProps) => {
-    const { onSubmitValue, onUnsetValues, controlStatus, controlStyles } = useInspectorStyleInfo(
-      'position',
-    )
-    const changeSelectedType = React.useCallback(
-      (newValue: SelfLayoutTab) => {
-        setActiveTab(newValue)
-        switch (newValue) {
-          case 'absolute':
-          case 'sticky': {
-            onSubmitValue(newValue)
-            break
-          }
-          case 'flex':
-          case 'flow': {
-            onUnsetValues()
-            break
-          }
-          default: {
-            const _exhaustiveCheck: never = newValue
-            throw new Error(`SelfLayoutTab type ${newValue} not found`)
-          }
+export const LayoutTypePicker = React.memo(({ value, setActiveTab }: LayoutTypePickerProps) => {
+  const { onSubmitValue, onUnsetValues, controlStatus, controlStyles } = useInspectorStyleInfo(
+    'position',
+  )
+  const changeSelectedType = React.useCallback(
+    (newValue: SelfLayoutTab) => {
+      setActiveTab(newValue)
+      switch (newValue) {
+        case 'absolute':
+        case 'sticky': {
+          onSubmitValue(newValue)
+          break
         }
-      },
-      [onSubmitValue, setActiveTab, onUnsetValues],
-    )
+        case 'flex':
+        case 'flow': {
+          onUnsetValues()
+          break
+        }
+        default: {
+          const _exhaustiveCheck: never = newValue
+          throw new Error(`SelfLayoutTab type ${newValue} not found`)
+        }
+      }
+    },
+    [onSubmitValue, setActiveTab, onUnsetValues],
+  )
 
-    return (
-      <OptionChainControl
-        id='layoutSystem'
-        key='layoutSystem'
-        testId='layoutSystem'
-        onSubmitValue={changeSelectedType}
-        value={value}
-        options={layoutSystemOptions}
-        controlStatus={value === 'absolute' || value === 'sticky' ? controlStatus : 'simple'}
-        controlStyles={
-          value === 'absolute' || value === 'sticky' ? controlStyles : getControlStyles('simple')
-        }
-      />
-    )
-  },
-)
+  return (
+    <OptionChainControl
+      id='layoutSystem'
+      key='layoutSystem'
+      testId='layoutSystem'
+      onSubmitValue={changeSelectedType}
+      value={value}
+      options={layoutSystemOptions}
+      controlStatus={value === 'absolute' || value === 'sticky' ? controlStatus : 'simple'}
+      controlStyles={
+        value === 'absolute' || value === 'sticky' ? controlStyles : getControlStyles('simple')
+      }
+    />
+  )
+})
 
 const layoutSystemOptions = [
   {

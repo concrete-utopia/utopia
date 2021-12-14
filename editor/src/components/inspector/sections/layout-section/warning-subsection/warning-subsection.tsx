@@ -4,9 +4,8 @@ import { useInspectorWarningStatus } from '../../../common/property-path-hooks'
 import { WarningIcon } from '../../../../../uuiui/warning-icon'
 import { InfoBox } from '../../../../common/notices'
 import { Tooltip, FlexRow, UIRow } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
-export const WarningSubsection = betterReactMemo('WarningSubsection', (props) => {
+export const WarningSubsection = React.memo((props) => {
   const shouldShowWarning = useInspectorWarningStatus()
   if (shouldShowWarning) {
     return (

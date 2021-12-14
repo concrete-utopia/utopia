@@ -17,7 +17,7 @@ import {
   Tooltip,
   useColorTheme,
 } from '../../../../../uuiui'
-import { usePropControlledState, betterReactMemo } from '../../../../../uuiui-deps'
+import { usePropControlledState } from '../../../../../uuiui-deps'
 import { InlineIndicator, InlineLink } from '../../../../../uuiui/inline-button'
 import { useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
@@ -91,61 +91,55 @@ const useLayoutSectionInitialToggleState = (
   }
 }
 
-export const LayoutSubsection = betterReactMemo(
-  'LayoutSubsection',
-  (props: SelfLayoutSubsectionProps) => {
-    const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
+export const LayoutSubsection = React.memo((props: SelfLayoutSubsectionProps) => {
+  const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
 
-    const initialLayoutSectionOpen = useLayoutSectionInitialToggleState(
-      activeTab,
-      props.parentFlexDirection,
-    )
+  const initialLayoutSectionOpen = useLayoutSectionInitialToggleState(
+    activeTab,
+    props.parentFlexDirection,
+  )
 
-    const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] = usePropControlledStateV2(
-      initialLayoutSectionOpen,
-    )
+  const [selfLayoutSectionOpen, setSelfLayoutSectionOpen] = usePropControlledStateV2(
+    initialLayoutSectionOpen,
+  )
 
-    const toggleSection = React.useCallback(
-      () => setSelfLayoutSectionOpen(!selfLayoutSectionOpen),
-      [selfLayoutSectionOpen, setSelfLayoutSectionOpen],
-    )
-    return (
-      <>
-        <LayoutSectionHeader
+  const toggleSection = React.useCallback(() => setSelfLayoutSectionOpen(!selfLayoutSectionOpen), [
+    selfLayoutSectionOpen,
+    setSelfLayoutSectionOpen,
+  ])
+  return (
+    <>
+      <LayoutSectionHeader
+        layoutType={activeTab}
+        toggleSection={toggleSection}
+        selfLayoutSectionOpen={selfLayoutSectionOpen}
+      />
+      {when(selfLayoutSectionOpen, <LayoutSubsectionContent {...props} />)}
+    </>
+  )
+})
+
+export const LayoutSubsectionContent = React.memo((props: SelfLayoutSubsectionProps) => {
+  const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
+  return (
+    <>
+      {when(activeTab === 'flex', <FlexInfoBox />)}
+      {unless(
+        activeTab === 'flex',
+        <GiganticSizePinsSubsection
           layoutType={activeTab}
-          toggleSection={toggleSection}
-          selfLayoutSectionOpen={selfLayoutSectionOpen}
-        />
-        {when(selfLayoutSectionOpen, <LayoutSubsectionContent {...props} />)}
-      </>
-    )
-  },
-)
-
-export const LayoutSubsectionContent = betterReactMemo(
-  'LayoutSubsectionContent',
-  (props: SelfLayoutSubsectionProps) => {
-    const [activeTab, setActiveTab] = useActiveLayoutTab(props.position, props.parentLayoutSystem)
-    return (
-      <>
-        {when(activeTab === 'flex', <FlexInfoBox />)}
-        {unless(
-          activeTab === 'flex',
-          <GiganticSizePinsSubsection
-            layoutType={activeTab}
-            parentFlexDirection={props.parentFlexDirection}
-            aspectRatioLocked={props.aspectRatioLocked}
-            toggleAspectRatioLock={props.toggleAspectRatioLock}
-          />,
-        )}
-        {when(
-          activeTab === 'flex',
-          <FlexElementSubsectionExperiment parentFlexDirection={props.parentFlexDirection} />,
-        )}
-      </>
-    )
-  },
-)
+          parentFlexDirection={props.parentFlexDirection}
+          aspectRatioLocked={props.aspectRatioLocked}
+          toggleAspectRatioLock={props.toggleAspectRatioLock}
+        />,
+      )}
+      {when(
+        activeTab === 'flex',
+        <FlexElementSubsectionExperiment parentFlexDirection={props.parentFlexDirection} />,
+      )}
+    </>
+  )
+})
 
 interface LayoutSectionHeaderProps {
   layoutType: SelfLayoutTab | 'grid'
@@ -204,58 +198,55 @@ function useAddPositionAbsolute() {
   }, [onSubmitValue])
 }
 
-const LayoutSectionHeader = betterReactMemo(
-  'LayoutSectionHeader',
-  (props: LayoutSectionHeaderProps) => {
-    const colorTheme = useColorTheme()
-    const { layoutType, selfLayoutSectionOpen, toggleSection } = props
-    const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
-    const onAbsoluteButtonClick = useAddPositionAbsolute()
+const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
+  const colorTheme = useColorTheme()
+  const { layoutType, selfLayoutSectionOpen, toggleSection } = props
+  const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
+  const onAbsoluteButtonClick = useAddPositionAbsolute()
 
-    return (
-      <InspectorSubsectionHeader>
-        <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
-          <InspectorSectionIcons.Layout />
-          <span
-            style={{
-              textTransform: 'uppercase',
-              fontWeight: 600,
-              paddingRight: 8,
-              color: colorTheme.primary.value,
-              fontSize: 10,
-            }}
-          >
-            {layoutType}
-          </span>
-          <ParentIndicatorAndLink />
-          <ChildrenOrContentIndicator />
-        </div>
-        {when(
-          selfLayoutSectionOpen && layoutType !== 'absolute',
-          <Tooltip title='Use Absolute Positioning' placement='bottom'>
-            <SquareButton highlight onClick={onAbsoluteButtonClick}>
-              <div style={{ color: colorTheme.brandNeonPink.value }}>*</div>
-            </SquareButton>
-          </Tooltip>,
-        )}
-        {when(
-          selfLayoutSectionOpen,
-          <SquareButton highlight onClick={onDeleteAllConfig}>
-            <FunctionIcons.Delete />
-          </SquareButton>,
-        )}
-        <SquareButton highlight onClick={toggleSection}>
-          <ExpandableIndicator
-            testId='layout-system-expand'
-            visible
-            collapsed={!selfLayoutSectionOpen}
-            selected={false}
-          />
-        </SquareButton>
-      </InspectorSubsectionHeader>
-    )
-  },
-)
+  return (
+    <InspectorSubsectionHeader>
+      <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
+        <InspectorSectionIcons.Layout />
+        <span
+          style={{
+            textTransform: 'uppercase',
+            fontWeight: 600,
+            paddingRight: 8,
+            color: colorTheme.primary.value,
+            fontSize: 10,
+          }}
+        >
+          {layoutType}
+        </span>
+        <ParentIndicatorAndLink />
+        <ChildrenOrContentIndicator />
+      </div>
+      {when(
+        selfLayoutSectionOpen && layoutType !== 'absolute',
+        <Tooltip title='Use Absolute Positioning' placement='bottom'>
+          <SquareButton highlight onClick={onAbsoluteButtonClick}>
+            <div style={{ color: colorTheme.brandNeonPink.value }}>*</div>
+          </SquareButton>
+        </Tooltip>,
+      )}
+      {when(
+        selfLayoutSectionOpen,
+        <SquareButton highlight onClick={onDeleteAllConfig}>
+          <FunctionIcons.Delete />
+        </SquareButton>,
+      )}
+      <SquareButton highlight onClick={toggleSection}>
+        <ExpandableIndicator
+          testId='layout-system-expand'
+          visible
+          collapsed={!selfLayoutSectionOpen}
+          selected={false}
+        />
+      </SquareButton>
+    </InspectorSubsectionHeader>
+  )
+})
 
 interface ParentIndicatorAndLinkProps {
   style?: React.CSSProperties
@@ -339,7 +330,7 @@ const ChildrenOrContentIndicator = () => {
   )
 }
 
-const FlexInfoBox = betterReactMemo('FlexInfoBox', () => {
+const FlexInfoBox = React.memo(() => {
   const { hasChildren, hasContent } = useElementHasChildrenOrContent()
 
   return (

@@ -35,10 +35,7 @@ import { LinearGradientBackgroundLayer } from './linear-gradient-layer'
 import { RadialGradientBackgroundLayer } from './radial-gradient-layer'
 import { SolidBackgroundLayer } from './solid-background-layer'
 import { URLBackgroundLayer } from './url-background-layer'
-import {
-  betterReactMemo,
-  useKeepReferenceEqualityIfPossible,
-} from '../../../../../utils/react-performance'
+import { useKeepReferenceEqualityIfPossible } from '../../../../../utils/react-performance'
 import {
   UtopiaTheme,
   InspectorSubsectionHeader,
@@ -162,7 +159,7 @@ export const backgroundLonghandPaths: Array<
 
 const rowHeight = UtopiaTheme.layout.rowHeight.max
 
-export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () => {
+export const BackgroundSubsection = React.memo(() => {
   const [openPopup, setOpenPopup] = React.useState<number | undefined>(undefined)
   const {
     controlStatus,

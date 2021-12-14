@@ -8,7 +8,6 @@ import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-u
 import { eitherToMaybe, left } from '../../../core/shared/either'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
 import { LayoutTargetablePropArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
-import { betterReactMemo } from '../../../utils/react-performance'
 import { useColorTheme } from '../../../uuiui'
 import {
   decrementResizeOptionsSelectedIndex,
@@ -44,8 +43,7 @@ function labelForOption(option: LayoutTargetableProp): string {
   }
 }
 
-export const PropertyTargetSelector = betterReactMemo(
-  'PropertyTargetSelector',
+export const PropertyTargetSelector = React.memo(
   (props: PropertyTargetSelectorProps): JSX.Element => {
     const colorTheme = useColorTheme()
     const { resizeOptions, dispatch } = useEditorState((editorState) => {

@@ -14,7 +14,6 @@ import {
   FunctionIcons,
   SectionBodyArea,
 } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 import { GridRowProps } from '../../inspector/widgets/ui-grid-row'
@@ -49,7 +48,7 @@ function getIndexedUpdateGenericResource(index: number) {
   }
 }
 
-export const GenericExternalResourcesList = betterReactMemo('GenericExternalResourcesList', () => {
+export const GenericExternalResourcesList = React.memo(() => {
   const { values, useSubmitValueFactory } = useExternalResources()
 
   const [editingIndexOrInserting, setEditingIndexOrInserting] = React.useState<
