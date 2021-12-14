@@ -1725,35 +1725,11 @@ export function produceCanvasTransientState(
         }
         break
       case 'select':
-        if (
-          editorState.canvas.dragState != null &&
-          anyDragStarted(editorState.canvas.dragState) &&
-          anyDragMovement(editorState.canvas.dragState)
-        ) {
+        if (editorState.canvas.dragState != null) {
           const dragState = editorState.canvas.dragState
           switch (dragState.type) {
             case 'MOVE_DRAG_STATE':
-              transientState = produceMoveTransientCanvasState(
-                previousCanvasTransientSelectedViews,
-                editorState,
-                dragState,
-                preventAnimations,
-              )
-              break
             case 'RESIZE_DRAG_STATE':
-              if (dragState.isMultiSelect) {
-                transientState = produceResizeCanvasTransientState(
-                  editorState,
-                  dragState,
-                  preventAnimations,
-                )
-              } else {
-                transientState = produceResizeSingleSelectCanvasTransientState(
-                  editorState,
-                  dragState,
-                  preventAnimations,
-                )
-              }
               break
             case 'SELECT_MODE_CANVAS_SESSION':
               transientState = applyCanvasStrategy(editorState, dragState, previousTransientState)
