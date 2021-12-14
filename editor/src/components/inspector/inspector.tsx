@@ -62,7 +62,6 @@ import {
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import { arrayEquals } from '../../core/shared/utils'
 import {
-  betterReactMemo,
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
@@ -101,8 +100,7 @@ interface AlignDistributeButtonProps {
   disabled: boolean
 }
 
-const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
-  'AlignDistributeButton',
+const AlignDistributeButton = React.memo<AlignDistributeButtonProps>(
   (props: AlignDistributeButtonProps) => {
     return (
       <Button disabled={props.disabled} onMouseUp={props.onMouseUp}>
@@ -119,103 +117,100 @@ const AlignDistributeButton = betterReactMemo<AlignDistributeButtonProps>(
 )
 AlignDistributeButton.displayName = 'AlignDistributeButton'
 
-const AlignmentButtons = betterReactMemo(
-  'AlignmentButtons',
-  (props: { numberOfTargets: number }) => {
-    const dispatch = useEditorState((store) => store.dispatch, 'AlignmentButtons dispatch')
-    const alignSelected = React.useCallback(
-      (alignment: Alignment) => {
-        dispatch([alignSelectedViews(alignment)], 'everyone')
-      },
-      [dispatch],
-    )
+const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
+  const dispatch = useEditorState((store) => store.dispatch, 'AlignmentButtons dispatch')
+  const alignSelected = React.useCallback(
+    (alignment: Alignment) => {
+      dispatch([alignSelectedViews(alignment)], 'everyone')
+    },
+    [dispatch],
+  )
 
-    const distributeSelected = React.useCallback(
-      (distribution: Distribution) => {
-        dispatch([distributeSelectedViews(distribution)], 'everyone')
-      },
-      [dispatch],
-    )
-    const disableAlign = props.numberOfTargets === 0
-    const disableDistribute = props.numberOfTargets < 3
-    const multipleTargets = props.numberOfTargets > 1
+  const distributeSelected = React.useCallback(
+    (distribution: Distribution) => {
+      dispatch([distributeSelectedViews(distribution)], 'everyone')
+    },
+    [dispatch],
+  )
+  const disableAlign = props.numberOfTargets === 0
+  const disableDistribute = props.numberOfTargets < 3
+  const multipleTargets = props.numberOfTargets > 1
 
-    const alignLeft = React.useCallback(() => alignSelected('left'), [alignSelected])
-    const alignHCenter = React.useCallback(() => alignSelected('hcenter'), [alignSelected])
-    const alignRight = React.useCallback(() => alignSelected('right'), [alignSelected])
-    const alignTop = React.useCallback(() => alignSelected('top'), [alignSelected])
-    const alignVCenter = React.useCallback(() => alignSelected('vcenter'), [alignSelected])
-    const alignBottom = React.useCallback(() => alignSelected('bottom'), [alignSelected])
-    const distributeHorizontal = React.useCallback(() => distributeSelected('horizontal'), [
-      distributeSelected,
-    ])
-    const distributeVertical = React.useCallback(() => distributeSelected('vertical'), [
-      distributeSelected,
-    ])
-    const colorTheme = useColorTheme()
-    return (
-      <FlexRow
-        style={{
-          justifyContent: 'space-around',
-          height: UtopiaTheme.layout.rowHeight.normal,
-          position: 'sticky',
-          top: 0,
-          zIndex: 1,
-          background: colorTheme.inspectorBackground.value,
-        }}
-      >
-        <AlignDistributeButton
-          onMouseUp={alignLeft}
-          toolTip={`Align to left of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignLeft'
-          disabled={disableAlign}
-        />
-        <AlignDistributeButton
-          onMouseUp={alignHCenter}
-          toolTip={`Align to horizontal center of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignHorizontalCenter'
-          disabled={disableAlign}
-        />
-        <AlignDistributeButton
-          onMouseUp={alignRight}
-          toolTip={`Align to right of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignRight'
-          disabled={disableAlign}
-        />
-        <AlignDistributeButton
-          onMouseUp={alignTop}
-          toolTip={`Align to top of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignTop'
-          disabled={disableAlign}
-        />
-        <AlignDistributeButton
-          onMouseUp={alignVCenter}
-          toolTip={`Align to vertical center of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignVerticalCenter'
-          disabled={disableAlign}
-        />
-        <AlignDistributeButton
-          onMouseUp={alignBottom}
-          toolTip={`Align to bottom of ${multipleTargets ? 'selection' : 'parent'}`}
-          iconType='alignBottom'
-          disabled={disableAlign}
-        />
-        <AlignDistributeButton
-          onMouseUp={distributeHorizontal}
-          toolTip={`Distribute horizontally ↔`}
-          iconType='distributeHorizontal'
-          disabled={disableDistribute}
-        />
-        <AlignDistributeButton
-          onMouseUp={distributeVertical}
-          toolTip={`Distribute vertically ↕️`}
-          iconType='distributeVertical'
-          disabled={disableDistribute}
-        />
-      </FlexRow>
-    )
-  },
-)
+  const alignLeft = React.useCallback(() => alignSelected('left'), [alignSelected])
+  const alignHCenter = React.useCallback(() => alignSelected('hcenter'), [alignSelected])
+  const alignRight = React.useCallback(() => alignSelected('right'), [alignSelected])
+  const alignTop = React.useCallback(() => alignSelected('top'), [alignSelected])
+  const alignVCenter = React.useCallback(() => alignSelected('vcenter'), [alignSelected])
+  const alignBottom = React.useCallback(() => alignSelected('bottom'), [alignSelected])
+  const distributeHorizontal = React.useCallback(() => distributeSelected('horizontal'), [
+    distributeSelected,
+  ])
+  const distributeVertical = React.useCallback(() => distributeSelected('vertical'), [
+    distributeSelected,
+  ])
+  const colorTheme = useColorTheme()
+  return (
+    <FlexRow
+      style={{
+        justifyContent: 'space-around',
+        height: UtopiaTheme.layout.rowHeight.normal,
+        position: 'sticky',
+        top: 0,
+        zIndex: 1,
+        background: colorTheme.inspectorBackground.value,
+      }}
+    >
+      <AlignDistributeButton
+        onMouseUp={alignLeft}
+        toolTip={`Align to left of ${multipleTargets ? 'selection' : 'parent'}`}
+        iconType='alignLeft'
+        disabled={disableAlign}
+      />
+      <AlignDistributeButton
+        onMouseUp={alignHCenter}
+        toolTip={`Align to horizontal center of ${multipleTargets ? 'selection' : 'parent'}`}
+        iconType='alignHorizontalCenter'
+        disabled={disableAlign}
+      />
+      <AlignDistributeButton
+        onMouseUp={alignRight}
+        toolTip={`Align to right of ${multipleTargets ? 'selection' : 'parent'}`}
+        iconType='alignRight'
+        disabled={disableAlign}
+      />
+      <AlignDistributeButton
+        onMouseUp={alignTop}
+        toolTip={`Align to top of ${multipleTargets ? 'selection' : 'parent'}`}
+        iconType='alignTop'
+        disabled={disableAlign}
+      />
+      <AlignDistributeButton
+        onMouseUp={alignVCenter}
+        toolTip={`Align to vertical center of ${multipleTargets ? 'selection' : 'parent'}`}
+        iconType='alignVerticalCenter'
+        disabled={disableAlign}
+      />
+      <AlignDistributeButton
+        onMouseUp={alignBottom}
+        toolTip={`Align to bottom of ${multipleTargets ? 'selection' : 'parent'}`}
+        iconType='alignBottom'
+        disabled={disableAlign}
+      />
+      <AlignDistributeButton
+        onMouseUp={distributeHorizontal}
+        toolTip={`Distribute horizontally ↔`}
+        iconType='distributeHorizontal'
+        disabled={disableDistribute}
+      />
+      <AlignDistributeButton
+        onMouseUp={distributeVertical}
+        toolTip={`Distribute vertically ↕️`}
+        iconType='distributeVertical'
+        disabled={disableDistribute}
+      />
+    </FlexRow>
+  )
+})
 AlignmentButtons.displayName = 'AlignmentButtons'
 
 const nonDefaultPositionPaths: Array<PropertyPath> = [
@@ -223,7 +218,7 @@ const nonDefaultPositionPaths: Array<PropertyPath> = [
   createLayoutPropertyPath('PinnedBottom'),
 ]
 
-export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: InspectorProps) => {
+export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews } = props
   const {
@@ -347,26 +342,23 @@ Inspector.displayName = 'Inspector'
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
-export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
-  'InspectorEntryPoint',
-  () => {
-    const selectedViews = useEditorState(
-      (store) => store.editor.selectedViews,
-      'InspectorEntryPoint selectedViews',
-    )
+export const InspectorEntryPoint: React.FunctionComponent = React.memo(() => {
+  const selectedViews = useEditorState(
+    (store) => store.editor.selectedViews,
+    'InspectorEntryPoint selectedViews',
+  )
 
-    return (
-      <SingleInspectorEntryPoint
-        key={'inspector-entry-selected-views'}
-        selectedViews={selectedViews}
-      />
-    )
-  },
-)
+  return (
+    <SingleInspectorEntryPoint
+      key={'inspector-entry-selected-views'}
+      selectedViews={selectedViews}
+    />
+  )
+})
 
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<ElementPath>
-}> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
+}> = React.memo((props) => {
   const { selectedViews } = props
   const { dispatch, jsxMetadata, isUIJSFile } = useEditorState((store) => {
     return {
@@ -532,11 +524,11 @@ const rootComponentsSelector = createSelector(
   },
 )
 
-export const InspectorContextProvider = betterReactMemo<{
+export const InspectorContextProvider = React.memo<{
   selectedViews: Array<ElementPath>
   targetPath: Array<string>
   children: React.ReactNode
-}>('InspectorContextProvider', (props) => {
+}>((props) => {
   const { selectedViews } = props
   const { dispatch, jsxMetadata } = useEditorState((store) => {
     return {

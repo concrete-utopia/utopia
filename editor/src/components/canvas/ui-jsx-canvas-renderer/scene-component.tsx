@@ -3,7 +3,6 @@ import fastDeepEquals from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { Scene, SceneProps } from 'utopia-api'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
 import { DomWalkerInvalidateScenesCtxAtom, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { UTOPIA_SCENE_ID_KEY } from '../../../core/model/utopia-constants'
@@ -11,8 +10,7 @@ import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 type ExtendedSceneProps = SceneProps & { [UTOPIA_SCENE_ID_KEY]: string }
 
-export const SceneComponent = betterReactMemo(
-  'Scene',
+export const SceneComponent = React.memo(
   (props: React.PropsWithChildren<ExtendedSceneProps>) => {
     const colorTheme = useColorTheme()
     const canvasIsLive = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom).canvasIsLive

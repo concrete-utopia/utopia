@@ -28,7 +28,6 @@ import {
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
-import { betterReactMemo } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { EditorDispatch } from './editor/action-types'
 import { selectComponents, setHighlightedView } from './editor/actions/action-creators'
@@ -172,62 +171,59 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
   )
 }
 
-export const ElementContextMenu = betterReactMemo(
-  'ElementContextMenu',
-  ({ contextMenuInstance }: ElementContextMenuProps) => {
-    const { dispatch } = useEditorState((store) => {
-      return { dispatch: store.dispatch }
-    }, 'ElementContextMenu dispatch')
+export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
+  const { dispatch } = useEditorState((store) => {
+    return { dispatch: store.dispatch }
+  }, 'ElementContextMenu dispatch')
 
-    const editorSliceRef = useRefEditorState((store) => {
-      const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
-      return {
-        canvasOffset: store.editor.canvas.roundedCanvasOffset,
-        selectedViews: store.editor.selectedViews,
-        jsxMetadata: store.editor.jsxMetadata,
-        editorDispatch: store.dispatch,
-        projectContents: store.editor.projectContents,
-        nodeModules: store.editor.nodeModules.files,
-        transientFilesState: store.derived.canvas.transientState.filesState,
-        resolve: resolveFn,
-        hiddenInstances: store.editor.hiddenInstances,
-        scale: store.editor.canvas.scale,
-        focusedElementPath: store.editor.focusedElementPath,
-      }
-    })
-
-    const getData: () => CanvasData = React.useCallback(() => {
-      const currentEditor = editorSliceRef.current
-      return {
-        canvasOffset: currentEditor.canvasOffset,
-        selectedViews: currentEditor.selectedViews,
-        jsxMetadata: currentEditor.jsxMetadata,
-        projectContents: currentEditor.projectContents,
-        nodeModules: currentEditor.nodeModules,
-        transientFilesState: currentEditor.transientFilesState,
-        resolve: currentEditor.resolve,
-        hiddenInstances: currentEditor.hiddenInstances,
-        scale: currentEditor.scale,
-        focusedElementPath: currentEditor.focusedElementPath,
-      }
-    }, [editorSliceRef])
-
-    const contextMenuItems = useCanvasContextMenuItems(contextMenuInstance, dispatch)
-
-    const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
-    if (portalTarget == null) {
-      return null
-    } else {
-      return ReactDOM.createPortal(
-        <MomentumContextMenu
-          id={contextMenuInstance}
-          key='element-context-menu'
-          items={contextMenuItems}
-          dispatch={dispatch}
-          getData={getData}
-        />,
-        portalTarget,
-      )
+  const editorSliceRef = useRefEditorState((store) => {
+    const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
+    return {
+      canvasOffset: store.editor.canvas.roundedCanvasOffset,
+      selectedViews: store.editor.selectedViews,
+      jsxMetadata: store.editor.jsxMetadata,
+      editorDispatch: store.dispatch,
+      projectContents: store.editor.projectContents,
+      nodeModules: store.editor.nodeModules.files,
+      transientFilesState: store.derived.canvas.transientState.filesState,
+      resolve: resolveFn,
+      hiddenInstances: store.editor.hiddenInstances,
+      scale: store.editor.canvas.scale,
+      focusedElementPath: store.editor.focusedElementPath,
     }
-  },
-)
+  })
+
+  const getData: () => CanvasData = React.useCallback(() => {
+    const currentEditor = editorSliceRef.current
+    return {
+      canvasOffset: currentEditor.canvasOffset,
+      selectedViews: currentEditor.selectedViews,
+      jsxMetadata: currentEditor.jsxMetadata,
+      projectContents: currentEditor.projectContents,
+      nodeModules: currentEditor.nodeModules,
+      transientFilesState: currentEditor.transientFilesState,
+      resolve: currentEditor.resolve,
+      hiddenInstances: currentEditor.hiddenInstances,
+      scale: currentEditor.scale,
+      focusedElementPath: currentEditor.focusedElementPath,
+    }
+  }, [editorSliceRef])
+
+  const contextMenuItems = useCanvasContextMenuItems(contextMenuInstance, dispatch)
+
+  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+  if (portalTarget == null) {
+    return null
+  } else {
+    return ReactDOM.createPortal(
+      <MomentumContextMenu
+        id={contextMenuInstance}
+        key='element-context-menu'
+        items={contextMenuItems}
+        dispatch={dispatch}
+        getData={getData}
+      />,
+      portalTarget,
+    )
+  }
+})

@@ -13,14 +13,13 @@ import {
   UtopiaStyles,
   UtopiaTheme,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
 import { RenderAsRow } from '../canvas/controls/render-as'
 import { useEditorState } from './store/store-hook'
 import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { setFocusedElement } from './actions/action-creators'
 
-export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstanceIndicator', () => {
+export const ComponentOrInstanceIndicator = React.memo(() => {
   const { metadata, focusedElementPath, selectedViews } = useEditorState((store) => {
     return {
       metadata: store.editor.jsxMetadata,

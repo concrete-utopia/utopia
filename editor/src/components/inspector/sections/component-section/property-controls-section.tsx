@@ -9,7 +9,6 @@ import { InspectorPropsContext, InspectorPropsContextData } from '../../common/p
 import * as EP from '../../../../core/shared/element-path'
 import { ParseResult } from '../../../../utils/value-parser-utils'
 import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
-import { betterReactMemo } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { setCursorOverlay } from '../../../editor/actions/action-creators'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
@@ -53,70 +52,67 @@ interface PropertyControlsSectionProps {
   isScene: boolean
 }
 
-export const PropertyControlsSection = betterReactMemo(
-  'PropertyControlsSection',
-  (props: PropertyControlsSectionProps) => {
-    const {
-      targets,
-      propertyControls,
-      detectedPropsWithNoValue,
-      detectedPropsAndValuesWithoutControls,
-      propsWithControlsButNoValue,
-    } = props
+export const PropertyControlsSection = React.memo((props: PropertyControlsSectionProps) => {
+  const {
+    targets,
+    propertyControls,
+    detectedPropsWithNoValue,
+    detectedPropsAndValuesWithoutControls,
+    propsWithControlsButNoValue,
+  } = props
 
-    // Filter out these because we don't want to include them in the unused props.
-    const filteredDetectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
-      detectedPropsWithNoValue.filter((detectedPropWithNoValue) => {
-        return !specialPropertiesToIgnore.includes(detectedPropWithNoValue)
-      }),
-    )
+  // Filter out these because we don't want to include them in the unused props.
+  const filteredDetectedPropsWithNoValue = useKeepReferenceEqualityIfPossible(
+    detectedPropsWithNoValue.filter((detectedPropWithNoValue) => {
+      return !specialPropertiesToIgnore.includes(detectedPropWithNoValue)
+    }),
+  )
 
-    const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
-    const setGlobalCursor = React.useCallback(
-      (cursor: CSSCursor | null) => {
-        dispatch([setCursorOverlay(cursor)], 'everyone')
-      },
-      [dispatch],
-    )
+  const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
+  const setGlobalCursor = React.useCallback(
+    (cursor: CSSCursor | null) => {
+      dispatch([setCursorOverlay(cursor)], 'everyone')
+    },
+    [dispatch],
+  )
 
-    const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
-    const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
+  const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
+  const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
 
-    const rootFolder = foldEither(
-      (rootParseError) => {
-        return <ParseErrorControl parseError={rootParseError} />
-      },
-      (rootParseSuccess) => {
-        return (
-          <FolderSection
-            isRoot={true}
-            indentationLevel={0}
-            parsedPropertyControls={rootParseSuccess}
-            setGlobalCursor={setGlobalCursor}
-            visibleEmptyControls={visibleEmptyControls}
-            unsetPropNames={propsWithControlsButNoValue}
-            showHiddenControl={showHiddenControl}
-            detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
-          />
-        )
-      },
-      propertyControls,
-    )
+  const rootFolder = foldEither(
+    (rootParseError) => {
+      return <ParseErrorControl parseError={rootParseError} />
+    },
+    (rootParseSuccess) => {
+      return (
+        <FolderSection
+          isRoot={true}
+          indentationLevel={0}
+          parsedPropertyControls={rootParseSuccess}
+          setGlobalCursor={setGlobalCursor}
+          visibleEmptyControls={visibleEmptyControls}
+          unsetPropNames={propsWithControlsButNoValue}
+          showHiddenControl={showHiddenControl}
+          detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+        />
+      )
+    },
+    propertyControls,
+  )
 
-    return (
-      <InspectorPropsContext.Provider value={updatedContext}>
-        {rootFolder}
-        {/** props set on the component instance and props used inside the component code */}
-        {filteredDetectedPropsWithNoValue.length > 0 ? (
-          <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
-            <div>
-              <VerySubdued>{`Unused props: ${filteredDetectedPropsWithNoValue.join(
-                ', ',
-              )}.`}</VerySubdued>
-            </div>
-          </UIGridRow>
-        ) : null}
-      </InspectorPropsContext.Provider>
-    )
-  },
-)
+  return (
+    <InspectorPropsContext.Provider value={updatedContext}>
+      {rootFolder}
+      {/** props set on the component instance and props used inside the component code */}
+      {filteredDetectedPropsWithNoValue.length > 0 ? (
+        <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+          <div>
+            <VerySubdued>{`Unused props: ${filteredDetectedPropsWithNoValue.join(
+              ', ',
+            )}.`}</VerySubdued>
+          </div>
+        </UIGridRow>
+      ) : null}
+    </InspectorPropsContext.Provider>
+  )
+})

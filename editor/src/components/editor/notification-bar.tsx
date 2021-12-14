@@ -6,15 +6,14 @@ import { useEditorState } from './store/store-hook'
 
 import { NotificationBar } from '../common/notices'
 import { NoticeLevel } from '../common/notice'
-import { betterReactMemo } from '../../uuiui-deps'
 
-export const BrowserInfoBar = betterReactMemo('EditorOfflineBar', () => {
+export const BrowserInfoBar = React.memo(() => {
   return (
     <NotificationBar level='INFO' message={`Utopia works best and fastest in Chrome right now`} />
   )
 })
 
-const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
+const EditorOfflineBar = React.memo(() => {
   return (
     <NotificationBar
       level='ERROR'
@@ -23,7 +22,7 @@ const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
   )
 })
 
-export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
+export const LoginStatusBar = React.memo(() => {
   const loginState = useEditorState((store) => store.userState.loginState, 'LoginStatusBar')
   const saveError = useEditorState(
     (store) => store.editor.saveError,

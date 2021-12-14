@@ -6,40 +6,35 @@ import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 
 interface NavigatorHintProps {
   shouldBeShown: boolean
   getMarginForHint: () => number
 }
 
-export const NavigatorHintTop: React.FunctionComponent<NavigatorHintProps> = betterReactMemo(
-  'NavigatorHintTop',
-  (props) => {
-    const colorTheme = useColorTheme()
-    if (props.shouldBeShown) {
-      return (
-        <div
-          style={{
-            marginLeft: props.getMarginForHint(),
-            backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-            height: 2,
-            position: 'absolute',
-            top: 0,
-            width: '100%',
-            borderRadius: '2px',
-            overflow: 'hidden',
-          }}
-        />
-      )
-    } else {
-      return null
-    }
-  },
-)
+export const NavigatorHintTop: React.FunctionComponent<NavigatorHintProps> = React.memo((props) => {
+  const colorTheme = useColorTheme()
+  if (props.shouldBeShown) {
+    return (
+      <div
+        style={{
+          marginLeft: props.getMarginForHint(),
+          backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+          height: 2,
+          position: 'absolute',
+          top: 0,
+          width: '100%',
+          borderRadius: '2px',
+          overflow: 'hidden',
+        }}
+      />
+    )
+  } else {
+    return null
+  }
+})
 
-export const NavigatorHintBottom: React.FunctionComponent<NavigatorHintProps> = betterReactMemo(
-  'NavigatorHintBottom',
+export const NavigatorHintBottom: React.FunctionComponent<NavigatorHintProps> = React.memo(
   (props) => {
     const colorTheme = useColorTheme()
     if (props.shouldBeShown) {
@@ -70,8 +65,7 @@ interface VisiblityIndicatorProps {
   onClick: () => void
 }
 
-export const VisibilityIndicator: React.FunctionComponent<VisiblityIndicatorProps> = betterReactMemo(
-  'VisibilityIndicator',
+export const VisibilityIndicator: React.FunctionComponent<VisiblityIndicatorProps> = React.memo(
   (props) => {
     const color = props.selected ? 'on-highlight-main' : 'subdued'
 
@@ -100,8 +94,7 @@ interface OriginalComponentNameLabelProps {
   instanceOriginalComponentName: string | null
 }
 
-export const OriginalComponentNameLabel: React.FunctionComponent<OriginalComponentNameLabelProps> = betterReactMemo(
-  'OriginalComponentNameLabel',
+export const OriginalComponentNameLabel: React.FunctionComponent<OriginalComponentNameLabelProps> = React.memo(
   (props) => {
     const colorTheme = useColorTheme()
     return (
@@ -130,8 +123,7 @@ interface NavigatorItemActionSheetProps {
   dispatch: EditorDispatch
 }
 
-export const NavigatorItemActionSheet: React.FunctionComponent<NavigatorItemActionSheetProps> = betterReactMemo(
-  'NavigatorItemActionSheet',
+export const NavigatorItemActionSheet: React.FunctionComponent<NavigatorItemActionSheetProps> = React.memo(
   (props) => {
     const { elementPath, dispatch } = props
 

@@ -35,7 +35,7 @@ import {
   Icons,
   Avatar,
 } from '../../uuiui'
-import { betterReactMemo, SelectOption, User } from '../../uuiui-deps'
+import { SelectOption, User } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -71,7 +71,7 @@ export const LeftPaneComponentId = 'left-pane'
 
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
-export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
+export const LeftPaneComponent = React.memo(() => {
   const selectedTab = useEditorState(
     (store) => store.editor.leftMenu.selectedTab,
     'LeftPaneComponent selectedTab',
@@ -127,7 +127,7 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
   )
 })
 
-const ForksGiven = betterReactMemo('ForkPanel', () => {
+const ForksGiven = React.memo(() => {
   const colorTheme = useColorTheme()
 
   const { id, projectName, description, isLoggedIn, forkedFrom } = useEditorState((store) => {
@@ -250,7 +250,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
   )
 })
 
-const ForkButton = betterReactMemo('ForkButton', () => {
+const ForkButton = React.memo(() => {
   const onClickOnForkProject = useTriggerForkProject()
 
   return (
@@ -270,7 +270,7 @@ const ForkButton = betterReactMemo('ForkButton', () => {
   )
 })
 
-const LoggedOutPane = betterReactMemo('LogInPane', () => {
+const LoggedOutPane = React.memo(() => {
   const colorTheme = useColorTheme()
   return (
     <Section data-name='Storyboards' tabIndex={-1}>
@@ -337,7 +337,7 @@ const StoryboardListItem = styled.div<StoryboardListItemProps>((props) => ({
   },
 }))
 
-const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
+const StoryboardsPane = React.memo(() => {
   const { dispatch, openFile, projectContents, isCanvasVisible } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -449,7 +449,7 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
   )
 })
 
-const ContentsPane = betterReactMemo('ProjectStructurePane', () => {
+const ContentsPane = React.memo(() => {
   return (
     <FlexColumn
       id='leftPaneContents'
@@ -468,7 +468,7 @@ const ContentsPane = betterReactMemo('ProjectStructurePane', () => {
   )
 })
 
-const SettingsPane = betterReactMemo('SettingsPane', () => {
+const SettingsPane = React.memo(() => {
   const { dispatch } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -551,7 +551,7 @@ const SettingsPane = betterReactMemo('SettingsPane', () => {
   )
 })
 
-const SharingPane = betterReactMemo('SharingPane', () => {
+const SharingPane = React.memo(() => {
   const [temporaryCopySuccess, setTemporaryCopySuccess] = React.useState(false)
   const { projectId, projectName } = useEditorState((store) => {
     return {
@@ -702,7 +702,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
   )
 })
 
-const GithubPane = betterReactMemo('GithubPane', () => {
+const GithubPane = React.memo(() => {
   const [githubRepoStr, setGithubRepoStr] = React.useState('')
   const parsedRepo = parseGithubProjectString(githubRepoStr)
 
@@ -766,7 +766,7 @@ const GithubPane = betterReactMemo('GithubPane', () => {
   )
 })
 
-export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
+export const InsertMenuPane = React.memo(() => {
   const { dispatch, focusedPanel } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -811,7 +811,7 @@ const themeOptions = [
   },
 ]
 
-const ProjectPane = betterReactMemo('ProjectPane', () => {
+const ProjectPane = React.memo(() => {
   const colorTheme = useColorTheme()
   const {
     dispatch,

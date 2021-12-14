@@ -25,7 +25,6 @@ import {
   FlexColumn,
   InspectorSectionHeader,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
 import { last } from '../../core/shared/array-utils'
 import { FlexCol } from 'utopia-api'
 // There's some weirdness between the types and the results in the two module systems.
@@ -37,8 +36,11 @@ const AutoSizerComponent: typeof AutoSizer =
 
 const NavigatorContainerId = 'navigator'
 
-export const NavigatorComponent = betterReactMemo(
-  'NavigatorComponent',
+interface NavigatorComponentProps {
+  style: React.CSSProperties
+}
+
+export const NavigatorComponent = React.memo<NavigatorComponentProps>(
   ({ style: navigatorStyle }) => {
     const editorSliceRef = useRefEditorState((store) => {
       const dragSelections = createDragSelections(
@@ -133,7 +135,7 @@ export const NavigatorComponent = betterReactMemo(
       dispatch([EditorActions.togglePanel('navigator')])
     }, [dispatch])
 
-    const Item = betterReactMemo('Item', ({ index, style }: ListChildComponentProps) => {
+    const Item = React.memo(({ index, style }: ListChildComponentProps) => {
       const targetPath = visibleNavigatorTargets[index]
       const componentKey = EP.toComponentId(targetPath)
       return (

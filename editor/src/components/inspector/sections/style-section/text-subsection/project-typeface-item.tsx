@@ -5,7 +5,6 @@ import {
   GoogleFontsResource,
 } from '../../../../../printer-parsers/html/external-resources-parser'
 import { FlexRow, Icons } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import { ProjectTypeface } from './font-family-select-popup'
 
 export function updateRemoveFontFamily(
@@ -34,8 +33,7 @@ interface ProjectTypefaceItemProps {
   updateSizes: () => void
 }
 
-export const ProjectTypefaceItem = betterReactMemo<ProjectTypefaceItemProps>(
-  'ProjectTypefaceItem',
+export const ProjectTypefaceItem = React.memo<ProjectTypefaceItemProps>(
   ({ typeface, selected, updateSizes }) => {
     const [hovered, setHovered] = React.useState(false)
     const onMouseOver = React.useCallback(() => {

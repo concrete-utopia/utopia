@@ -17,7 +17,6 @@ import { VariableSizeList as List } from 'react-window'
 import { useColorTheme, UtopiaTheme } from '../../uuiui/styles/theme'
 import { FlexRow } from '../../uuiui/widgets/layout/flex-row'
 import { NO_OP } from '../../core/shared/utils'
-import { betterReactMemo } from '../../utils/react-performance'
 import { TabComponent } from '../../uuiui/tab'
 import { Icons } from '../../uuiui/icons'
 import { SimpleFlexColumn } from '../../uuiui/widgets/layout/flex-column'
@@ -150,8 +149,7 @@ const ProblemTabBarHeight = 32
 
 type OpenCodeEditorTab = 'problems' | 'console'
 
-export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
-  'CodeEditorTabPane',
+export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
   ({ errorMessages, onOpenFile, canvasConsoleLogs }) => {
     const colorTheme = useColorTheme()
     const defaultHeightWhenOpen =
@@ -381,20 +379,17 @@ interface ProblemsErrorRowProps {
 
 const ProblemsHeaderRowHeight = 25
 
-const ProblemsHeaderRow = betterReactMemo(
-  'Problems Header Row',
-  (props: ProblemsHeaderRowProps) => {
-    const { fileName } = props
-    return (
-      <FlexRow style={{ height: ProblemsHeaderRowHeight, padding: '4px 8px' }}>
-        <Icons.React />
-        <span style={{ marginLeft: 4 }}> {fileName}</span>
-      </FlexRow>
-    )
-  },
-)
+const ProblemsHeaderRow = React.memo((props: ProblemsHeaderRowProps) => {
+  const { fileName } = props
+  return (
+    <FlexRow style={{ height: ProblemsHeaderRowHeight, padding: '4px 8px' }}>
+      <Icons.React />
+      <span style={{ marginLeft: 4 }}> {fileName}</span>
+    </FlexRow>
+  )
+})
 
-const ProblemsErrorRow = betterReactMemo('Problems Error Row', (props: ProblemsErrorRowProps) => {
+const ProblemsErrorRow = React.memo((props: ProblemsErrorRowProps) => {
   const { errorMessage, onOpenFile } = props
   return <ErrorMessageRow errorMessage={errorMessage} onOpenFile={onOpenFile} />
 })
@@ -410,7 +405,7 @@ function getRowHeight(index: number, data: Array<ProblemRowData>): number {
   }
 }
 
-const ProblemsTab = betterReactMemo('Problems Tab', (props: ProblemsTabProps) => {
+const ProblemsTab = React.memo((props: ProblemsTabProps) => {
   const { errorMessages, height, onOpenFile } = props
 
   const rowData: Array<ProblemRowData> = React.useMemo(() => {

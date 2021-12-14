@@ -33,7 +33,6 @@ import {
   useColorTheme,
   UtopiaTheme,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import * as EditorActions from '../../../../editor/actions/action-creators'
 import { useInputFocusOnCountIncrease } from '../../../../editor/hook-utils'
 import {
@@ -131,40 +130,37 @@ function valueTypeAsArray<T>(valueType: ValueType<T>): ReadonlyArray<T> {
   }
 }
 
-const FooterSection = betterReactMemo(
-  'ClassNameControlFooter',
-  (props: { filter: string; options: Array<TailWindOption> }) => {
-    const theme = useColorTheme()
-    const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom)
-    const focusedOption =
-      focusedOptionValue == null ? null : props.options.find((o) => o.value === focusedOptionValue)
-    const joinedAttributes = focusedOption?.attributes?.join(', ')
-    const attributesText =
-      joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
+const FooterSection = React.memo((props: { filter: string; options: Array<TailWindOption> }) => {
+  const theme = useColorTheme()
+  const focusedOptionValue = usePubSubAtomReadOnly(focusedOptionAtom)
+  const focusedOption =
+    focusedOptionValue == null ? null : props.options.find((o) => o.value === focusedOptionValue)
+  const joinedAttributes = focusedOption?.attributes?.join(', ')
+  const attributesText =
+    joinedAttributes == null || joinedAttributes === '' ? '\u00a0' : `Sets: ${joinedAttributes}`
 
-    return (
-      <div
-        css={{
-          label: 'focusedElementMetadata',
-          overflow: 'hidden',
-          boxShadow: `inset 0px 1px 1px 0px ${theme.neutralInvertedBackground.o(10).value}`,
-          padding: '8px 8px',
-          fontSize: '10px',
-          pointerEvents: 'none',
-          color: theme.textColor.value,
-        }}
-      >
-        <FlexColumn>
-          <FlexRow>
-            <span>
-              <MatchHighlighter text={attributesText} searchString={props.filter} />
-            </span>
-          </FlexRow>
-        </FlexColumn>
-      </div>
-    )
-  },
-)
+  return (
+    <div
+      css={{
+        label: 'focusedElementMetadata',
+        overflow: 'hidden',
+        boxShadow: `inset 0px 1px 1px 0px ${theme.neutralInvertedBackground.o(10).value}`,
+        padding: '8px 8px',
+        fontSize: '10px',
+        pointerEvents: 'none',
+        color: theme.textColor.value,
+      }}
+    >
+      <FlexColumn>
+        <FlexRow>
+          <span>
+            <MatchHighlighter text={attributesText} searchString={props.filter} />
+          </span>
+        </FlexRow>
+      </FlexColumn>
+    </div>
+  )
+})
 
 const Input = (props: InputProps) => {
   const value = (props as any).value
@@ -172,7 +168,7 @@ const Input = (props: InputProps) => {
   return <components.Input {...props} isHidden={isHidden} />
 }
 
-const ClassNameControl = betterReactMemo('ClassNameControl', () => {
+const ClassNameControl = React.memo(() => {
   const editorStoreRef = useRefEditorState((store) => store)
   const theme = useColorTheme()
   const targets = useEditorState(
@@ -548,6 +544,6 @@ const ClassNameControl = betterReactMemo('ClassNameControl', () => {
   )
 })
 
-export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => {
+export const ClassNameSubsection = React.memo(() => {
   return <ClassNameControl />
 })

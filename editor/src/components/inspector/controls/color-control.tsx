@@ -10,7 +10,6 @@ import {
 import { StringControl } from './string-control'
 import { ControlStatus, ControlStyles } from '../common/control-status'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import Utils from '../../../utils/utils'
 
 export interface ColorControlProps {
@@ -43,7 +42,7 @@ export function updateStringCSSColor(newValue: string, oldValue: CSSColor) {
   }
 }
 
-export const ColorControl = betterReactMemo('ColorControl', (props: ColorControlProps) => {
+export const ColorControl = React.memo((props: ColorControlProps) => {
   const { onSubmitValue } = props
   const [popupOpen, setPopupOpen] = React.useState(false)
   const colorTheme = useColorTheme()
@@ -152,29 +151,26 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
   )
 })
 
-export const StringColorControl = betterReactMemo(
-  'StringColorControl',
-  (props: ColorControlProps) => {
-    const color = props.value
-    if (props.onSubmitSolidStringValue == null) {
-      return null
-    }
+export const StringColorControl = React.memo((props: ColorControlProps) => {
+  const color = props.value
+  if (props.onSubmitSolidStringValue == null) {
+    return null
+  }
 
-    return (
-      <StringControl
-        id={`string-${props.id}`}
-        testId={`color-picker-string-control-${props.testId}`}
-        key={'color-string'}
-        style={props.style}
-        value={cssColorToChromaColorOrDefault(color).hex('rgba').toUpperCase()}
-        readOnly={props.controlStyles.interactive}
-        onSubmitValue={props.onSubmitSolidStringValue}
-        controlStatus={props.controlStatus}
-        controlStyles={props.controlStyles}
-        DEPRECATED_controlOptions={{
-          labelBelow: 'hex',
-        }}
-      />
-    )
-  },
-)
+  return (
+    <StringControl
+      id={`string-${props.id}`}
+      testId={`color-picker-string-control-${props.testId}`}
+      key={'color-string'}
+      style={props.style}
+      value={cssColorToChromaColorOrDefault(color).hex('rgba').toUpperCase()}
+      readOnly={props.controlStyles.interactive}
+      onSubmitValue={props.onSubmitSolidStringValue}
+      controlStatus={props.controlStatus}
+      controlStyles={props.controlStyles}
+      DEPRECATED_controlOptions={{
+        labelBelow: 'hex',
+      }}
+    />
+  )
+})

@@ -16,10 +16,7 @@ import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
-import {
-  betterReactMemo,
-  useKeepReferenceEqualityIfPossible,
-} from '../../../utils/react-performance'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { IcnProps, useColorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -242,8 +239,7 @@ function useIsProbablyScene(path: ElementPath): boolean {
   )
 }
 
-export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = betterReactMemo(
-  'NavigatorItem',
+export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = React.memo(
   (props) => {
     const {
       dispatch,
@@ -386,7 +382,7 @@ interface NavigatorRowLabelProps {
   dispatch: EditorDispatch
 }
 
-const NavigatorRowLabel = betterReactMemo('NavigatorRowLabel', (props: NavigatorRowLabelProps) => {
+const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   return (
     <React.Fragment>
       <LayoutIcon

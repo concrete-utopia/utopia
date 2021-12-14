@@ -1,6 +1,5 @@
 import React from 'react'
 import { Section, FlexColumn } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { TargetSelectorPanel, CSSTarget } from './header-section/target-selector'
 
 export interface TargetSelectorSectionProps {
@@ -14,22 +13,19 @@ export interface TargetSelectorSectionProps {
   onStyleSelectorInsert: (parent: CSSTarget, label: string) => void
 }
 
-export const TargetSelectorSection = betterReactMemo(
-  'TargetSelectorSection',
-  (props: TargetSelectorSectionProps) => {
-    return (
-      <Section className={props.className}>
-        <FlexColumn className='titledSectionContentColumn'>
-          <TargetSelectorPanel
-            targets={props.targets}
-            selectedTargetPath={props.selectedTargetPath}
-            onSelect={props.onSelectTarget}
-            onStyleSelectorRename={props.onStyleSelectorRename}
-            onStyleSelectorDelete={props.onStyleSelectorDelete}
-            onStyleSelectorInsert={props.onStyleSelectorInsert}
-          />
-        </FlexColumn>
-      </Section>
-    )
-  },
-)
+export const TargetSelectorSection = React.memo((props: TargetSelectorSectionProps) => {
+  return (
+    <Section className={props.className}>
+      <FlexColumn className='titledSectionContentColumn'>
+        <TargetSelectorPanel
+          targets={props.targets}
+          selectedTargetPath={props.selectedTargetPath}
+          onSelect={props.onSelectTarget}
+          onStyleSelectorRename={props.onStyleSelectorRename}
+          onStyleSelectorDelete={props.onStyleSelectorDelete}
+          onStyleSelectorInsert={props.onStyleSelectorInsert}
+        />
+      </FlexColumn>
+    </Section>
+  )
+})

@@ -1,7 +1,6 @@
 import React from 'react'
-import { betterReactMemo } from '../../uuiui-deps'
 
-export const FatalIndexedDBErrorComponent = betterReactMemo('FatalIndexedDBErrorComponent', () => {
+export const FatalIndexedDBErrorComponent = React.memo(() => {
   return (
     <div
       style={{

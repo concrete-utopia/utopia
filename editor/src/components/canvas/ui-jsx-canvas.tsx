@@ -70,7 +70,6 @@ import {
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
 import {
-  betterReactMemo,
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
@@ -290,8 +289,7 @@ function clearSpyCollectorInvalidPaths(
   })
 }
 
-export const UiJsxCanvas = betterReactMemo(
-  'UiJsxCanvas',
+export const UiJsxCanvas = React.memo(
   React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
     const {
       offset,

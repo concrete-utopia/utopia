@@ -4,7 +4,6 @@ import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import { showToast, updateFrameDimensions } from '../../../editor/actions/action-creators'
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
-import { betterReactMemo } from '../../../../uuiui-deps'
 import { notice } from '../../../common/notice'
 
 interface ImageDensityControl {
@@ -16,8 +15,7 @@ interface ImageDensityControl {
   clientHeight: number
 }
 
-export const ImageDensityControl = betterReactMemo(
-  'ImageDensityControl',
+export const ImageDensityControl = React.memo(
   ({
     naturalWidth,
     clientWidth,

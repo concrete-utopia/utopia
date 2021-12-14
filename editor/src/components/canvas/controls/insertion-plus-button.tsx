@@ -7,7 +7,6 @@ import { IndexPosition } from '../../../utils/utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
-import { betterReactMemo } from '../../../utils/react-performance'
 import { useColorTheme } from '../../../uuiui/styles/theme'
 
 const InsertionButtonOffset = 10
@@ -24,8 +23,7 @@ interface ButtonControlProps {
   indexPosition: IndexPosition
 }
 
-export const InsertionControls: React.FunctionComponent<ControlProps> = betterReactMemo(
-  'InsertionControls',
+export const InsertionControls: React.FunctionComponent<ControlProps> = React.memo(
   (props: ControlProps): React.ReactElement | null => {
     if (props.selectedViews.length !== 1) {
       return null
@@ -196,39 +194,36 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = betterRe
   },
 )
 
-const InsertionButtonContainer = betterReactMemo(
-  'InsertionButtonContainer',
-  (props: ButtonControlProps) => {
-    const [plusVisible, setPlusVisible] = React.useState(false)
+const InsertionButtonContainer = React.memo((props: ButtonControlProps) => {
+  const [plusVisible, setPlusVisible] = React.useState(false)
 
-    const onMouseEnter = () => setPlusVisible(true)
-    const onMouseLeave = () => setPlusVisible(false)
+  const onMouseEnter = () => setPlusVisible(true)
+  const onMouseLeave = () => setPlusVisible(false)
 
-    return (
-      <div
-        key={props.key}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        style={{
-          position: 'absolute',
-          left: props.positionX,
-          top: props.positionY,
-        }}
-      >
-        {plusVisible ? (
-          <>
-            <Line {...props} />
-            <PlusButton {...props} />
-          </>
-        ) : (
-          <BlueDot {...props} />
-        )}
-      </div>
-    )
-  },
-)
+  return (
+    <div
+      key={props.key}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      style={{
+        position: 'absolute',
+        left: props.positionX,
+        top: props.positionY,
+      }}
+    >
+      {plusVisible ? (
+        <>
+          <Line {...props} />
+          <PlusButton {...props} />
+        </>
+      ) : (
+        <BlueDot {...props} />
+      )}
+    </div>
+  )
+})
 
-const BlueDot = betterReactMemo('BlueDot', (props: ButtonControlProps) => {
+const BlueDot = React.memo((props: ButtonControlProps) => {
   const colorTheme = useColorTheme()
   const BlueDotSize = 7 / props.scale
   return (
@@ -257,7 +252,7 @@ const BlueDot = betterReactMemo('BlueDot', (props: ButtonControlProps) => {
   )
 })
 
-const PlusButton = betterReactMemo('PlusButton', (props: ButtonControlProps) => {
+const PlusButton = React.memo((props: ButtonControlProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'PlusButton dispatch')
   const colorTheme = useColorTheme()
   const { parentPath, indexPosition } = props
@@ -323,7 +318,7 @@ const PlusButton = betterReactMemo('PlusButton', (props: ButtonControlProps) => 
   )
 })
 
-const Line = betterReactMemo('Line', (props: ButtonControlProps) => {
+const Line = React.memo((props: ButtonControlProps) => {
   const colorTheme = useColorTheme()
 
   const LineWidth = 1 / props.scale

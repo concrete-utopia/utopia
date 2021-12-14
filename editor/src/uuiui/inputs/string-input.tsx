@@ -9,7 +9,6 @@ import {
   getControlStyles,
 } from '../../components/inspector/common/control-status'
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
-import { betterReactMemo } from '../../uuiui-deps'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { InspectorInput, InspectorInputEmotionStyle } from './base-input'
 
@@ -29,8 +28,7 @@ export interface StringInputProps
   controlStatus?: ControlStatus
 }
 
-export const StringInput = betterReactMemo(
-  'StringInput',
+export const StringInput = React.memo(
   React.forwardRef<HTMLInputElement, StringInputProps>(
     (
       {

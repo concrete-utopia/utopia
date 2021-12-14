@@ -1,7 +1,6 @@
 import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { IcnProps, Icn } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
 import { useComponentIcon } from '../layout-element-icons'
 
@@ -10,8 +9,7 @@ interface ComponentPreviewProps {
   color: IcnProps['color']
 }
 
-export const ComponentPreview: React.FunctionComponent<ComponentPreviewProps> = betterReactMemo(
-  'ComponentPreview',
+export const ComponentPreview: React.FunctionComponent<ComponentPreviewProps> = React.memo(
   (props) => {
     const iconProps = useComponentIcon(props.path)
 
