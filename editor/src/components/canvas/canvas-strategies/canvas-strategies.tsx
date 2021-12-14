@@ -32,15 +32,15 @@ function moveTransformTranslate(
   }
 
   // only do something if you hadn't moved the mouse for a second
-  if (activeSession.globalTime - activeSession.lastTimeMouseMoved < 1000) {
-    return {
-      highlightedViews: [],
-      selectedViews: editorState.selectedViews,
-      filesState: previousTransientState?.filesState ?? {},
-      toastsToApply: [],
-      sessionStatePatch: previousTransientState?.sessionStatePatch ?? {},
-    }
-  }
+  // if (activeSession.globalTime - activeSession.lastTimeMouseMoved < 1000) {
+  //   return {
+  //     highlightedViews: [],
+  //     selectedViews: editorState.selectedViews,
+  //     filesState: previousTransientState?.filesState ?? {},
+  //     toastsToApply: [],
+  //     sessionStatePatch: previousTransientState?.sessionStatePatch ?? {},
+  //   }
+  // }
 
   const elementsToTarget = editorState.selectedViews
 
