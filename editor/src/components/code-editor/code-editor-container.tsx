@@ -15,7 +15,8 @@ const VSCodeIframeContainer = betterReactMemo(
       MONACO_EDITOR_IFRAME_BASE_URL,
       'vscode-editor-outer-iframe',
     )
-    const url = new URL(baseIframeSrc)
+    // const url = new URL(baseIframeSrc)
+    const url = new URL('http://localhost:8000/editor/vscode-outer/')
     url.searchParams.append('project_id', projectID)
 
     setBranchNameFromURL(url.searchParams)
