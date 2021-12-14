@@ -1,3 +1,4 @@
+import { sortBy } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
 import { JSXElement, jsxAttributeValue, emptyComments } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
@@ -10,7 +11,7 @@ import {
   TransientCanvasState,
   TransientFilesState,
 } from '../../editor/store/editor-state'
-import { CanvasStrategy, SelectModeCanvasSession } from '../canvas-types'
+import { CanvasStrategy, CanvasStrategyUpdateFn, SelectModeCanvasSession } from '../canvas-types'
 
 function moveTransformTranslate(
   editorState: EditorState,
@@ -98,8 +99,29 @@ function moveTransformTranslate(
   }
 }
 
-export function pickDefaultCanvasStrategy(): CanvasStrategy | null {
-  return moveTransformTranslate
+const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  {
+    name: 'Translate',
+    updateFn: moveTransformTranslate,
+    fitnessFn: (editor, currentSession, previousTransientState) => {
+      return 10
+    },
+  },
+]
+
+export function pickDefaultCanvasStrategy(
+  editorState: EditorState,
+  currentSession: SelectModeCanvasSession,
+  previousTransientState: TransientCanvasState | null,
+): CanvasStrategyUpdateFn | null {
+  sortBy(RegisteredCanvasStrategies, (l, r) => {
+    // sort by fitness, descending
+    return (
+      r.fitnessFn(editorState, currentSession, previousTransientState) -
+      l.fitnessFn(editorState, currentSession, previousTransientState)
+    )
+  })
+  return RegisteredCanvasStrategies[0].updateFn
 }
 
 export function applyCanvasStrategy(
@@ -107,6 +129,6 @@ export function applyCanvasStrategy(
   canvasSession: SelectModeCanvasSession,
   previousTransientState: TransientCanvasState | null,
 ): TransientCanvasState | null {
-  const strategy = canvasSession.activeStrategy
+  const strategy = pickDefaultCanvasStrategy(editorState, canvasSession, previousTransientState)
   return strategy?.(editorState, canvasSession, previousTransientState) ?? null
 }

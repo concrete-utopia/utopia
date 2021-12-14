@@ -550,15 +550,27 @@ export function updateResizeDragState(
   })
 }
 
-export type CanvasStrategy = (
+export interface CanvasStrategy {
+  name: string
+  updateFn: CanvasStrategyUpdateFn
+  fitnessFn: CanvasStrategyFitnessFn
+}
+
+export type CanvasStrategyUpdateFn = (
   editorState: EditorState,
   currentSession: SelectModeCanvasSession,
   previousTransientState: TransientCanvasState | null,
 ) => TransientCanvasState
 
+export type CanvasStrategyFitnessFn = (
+  editorState: EditorState,
+  currentSession: SelectModeCanvasSession,
+  previousTransientState: TransientCanvasState | null,
+) => number
+
 export interface SelectModeCanvasSession {
   type: 'SELECT_MODE_CANVAS_SESSION'
-  activeStrategy: CanvasStrategy | null
+  activeStrategy: CanvasStrategyUpdateFn | null
   start: CanvasPoint
   drag: CanvasVector | null
   metadata: ElementInstanceMetadataMap | null
@@ -571,7 +583,7 @@ export function createSelectModeCanvasSession(start: CanvasPoint): SelectModeCan
   return {
     type: 'SELECT_MODE_CANVAS_SESSION',
     start: start,
-    activeStrategy: pickDefaultCanvasStrategy(),
+    activeStrategy: null,
     drag: null,
     metadata: null,
     globalTime: Date.now(),
