@@ -34,7 +34,6 @@ export default defineConfig({
     'process.env.REACT_APP_AUTH0_REDIRECT_URI': undefined,
     'process.env.REACT_APP_AUTH0_CLIENT_ID': undefined,
     'process.env.REACT_APP_AUTH0_ENDPOINT': undefined,
-    'process.env.REACT_APP_COMMIT_HASH': undefined,
     'process.env.GOOGLE_WEB_FONTS_KEY': "''",
     'process.env.REACT_APP_COMMIT_HASH': "'4b4a9bcde35e28fcd68881cf387cc22279b2194a'", //`git rev-parse HEAD`
   },
