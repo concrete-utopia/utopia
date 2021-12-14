@@ -13,14 +13,14 @@ import {
 } from '../../editor/store/editor-state'
 import { CanvasStrategy, CanvasStrategyUpdateFn, SelectModeCanvasSession } from '../canvas-types'
 
-function moveTransformTranslate(
+function translateStrategy(
   editorState: EditorState,
   activeSession: SelectModeCanvasSession,
   previousTransientState: TransientCanvasState | null,
 ): TransientCanvasState {
   // only apply after a certain treshold IF we hadn't already passed that treshold once
   if (
-    !previousTransientState?.sessionStatePatch?.dragDeltaMinimumPassed &&
+    !previousTransientState?.sessionStatePatch.translateStrategyData?.dragDeltaMinimumPassed &&
     magnitude(activeSession.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
   ) {
     return {
@@ -94,7 +94,9 @@ function moveTransformTranslate(
     filesState: transientFilesState,
     toastsToApply: [],
     sessionStatePatch: {
-      dragDeltaMinimumPassed: true,
+      translateStrategyData: {
+        dragDeltaMinimumPassed: true,
+      },
     },
   }
 }
@@ -102,7 +104,7 @@ function moveTransformTranslate(
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   {
     name: 'Translate',
-    updateFn: moveTransformTranslate,
+    updateFn: translateStrategy,
     fitnessFn: (editor, currentSession, previousTransientState) => {
       return 10
     },

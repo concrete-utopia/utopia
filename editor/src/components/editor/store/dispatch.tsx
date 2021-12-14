@@ -597,15 +597,7 @@ function editorDispatchInner(
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
     if (metadataChanged) {
-      if (result.editor.canvas.dragState == null) {
-        result = {
-          ...result,
-          editor: {
-            ...result.editor,
-            jsxMetadata: reconstructJSXMetadata(result.editor),
-          },
-        }
-      } else {
+      if (result.editor.canvas.dragState != null && 'metadata' in result.editor.canvas.dragState) {
         result = {
           ...result,
           editor: {
@@ -617,6 +609,14 @@ function editorDispatchInner(
                 metadata: reconstructJSXMetadata(result.editor),
               },
             },
+          },
+        }
+      } else {
+        result = {
+          ...result,
+          editor: {
+            ...result.editor,
+            jsxMetadata: reconstructJSXMetadata(result.editor),
           },
         }
       }

@@ -26,7 +26,7 @@ import {
 import { EditorState } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { createSelectModeCanvasSession } from '../../canvas-types'
+import { startNewSelectModeCanvasSession } from '../../canvas-types'
 import {
   createDuplicationNewUIDs,
   getDragStateDrag,
@@ -286,7 +286,7 @@ function useStartDragState(): (
         }),
       )
 
-      dispatch([CanvasActions.createDragState(createSelectModeCanvasSession(start))])
+      dispatch([CanvasActions.createDragState(startNewSelectModeCanvasSession(start))])
     },
     [dispatch, entireEditorStoreRef],
   )

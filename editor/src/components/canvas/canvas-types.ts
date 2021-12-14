@@ -393,22 +393,21 @@ export interface SelectModeCanvasSession {
   activeStrategy: CanvasStrategyUpdateFn | null
   start: CanvasPoint
   drag: CanvasVector | null
-  metadata: ElementInstanceMetadataMap | null
   globalTime: number
   lastTimeMouseMoved: number
-  dragDeltaMinimumPassed: boolean
+  translateStrategyData?: {
+    dragDeltaMinimumPassed: boolean
+  }
 }
 
-export function createSelectModeCanvasSession(start: CanvasPoint): SelectModeCanvasSession {
+export function startNewSelectModeCanvasSession(start: CanvasPoint): SelectModeCanvasSession {
   return {
     type: 'SELECT_MODE_CANVAS_SESSION',
     start: start,
     activeStrategy: null,
     drag: null,
-    metadata: null,
     globalTime: Date.now(),
     lastTimeMouseMoved: Date.now(),
-    dragDeltaMinimumPassed: false,
   }
 }
 

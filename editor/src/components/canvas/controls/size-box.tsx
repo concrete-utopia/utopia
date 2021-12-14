@@ -19,7 +19,7 @@ import {
   DirectionHorizontal,
   DirectionAll,
   DragState,
-  createSelectModeCanvasSession,
+  startNewSelectModeCanvasSession,
 } from '../canvas-types'
 import { ResizeStatus } from './new-canvas-controls'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -119,7 +119,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
 
       this.props.dispatch(
         [
-          CanvasActions.createDragState(createSelectModeCanvasSession(start)),
+          CanvasActions.createDragState(startNewSelectModeCanvasSession(start)),
           setCanvasAnimationsEnabled(false),
           setResizeOptionsTargetOptions(
             propertyTargetOptions,

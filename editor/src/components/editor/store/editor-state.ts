@@ -1013,10 +1013,10 @@ export function transientCanvasState(
 }
 
 export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
-  if (editor.canvas.dragState == null) {
-    return editor.jsxMetadata
+  if (editor.canvas.dragState != null && 'metadata' in editor.canvas.dragState) {
+    return editor.canvas.dragState.metadata
   } else {
-    return editor.canvas.dragState.metadata ?? editor.jsxMetadata
+    return editor.jsxMetadata
   }
 }
 
