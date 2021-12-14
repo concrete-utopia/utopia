@@ -16,8 +16,6 @@ import {
   DuplicateNewUID,
   ResizeDragStatePropertyChange,
   SvgFragmentControl,
-  updateMoveDragState,
-  updateResizeDragState,
   updateSelectModeCanvasSessionDragVector,
 } from '../components/canvas/canvas-types'
 import {
@@ -867,108 +865,17 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     if (dragState != null) {
       switch (dragState.type) {
         case 'MOVE_DRAG_STATE':
-          switch (key) {
-            case 'shift':
-              fireDragStateUpdate(
-                updateMoveDragState(
-                  dragState,
-                  undefined,
-                  undefined,
-                  undefined,
-                  pressed,
-                  undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                ),
-              )
-              break
-            case 'cmd':
-              fireDragStateUpdate(
-                updateMoveDragState(
-                  dragState,
-                  undefined,
-                  undefined,
-                  !pressed,
-                  undefined,
-                  undefined,
-                  pressed,
-                  undefined,
-                  undefined,
-                ),
-              )
-              break
-            case 'alt':
-              let duplicateNewUIDs: Array<DuplicateNewUID> | null = null
-              if (pressed) {
-                duplicateNewUIDs = createDuplicationNewUIDsFromEditorState(this.props.editor)
-              }
-              fireDragStateUpdate(
-                updateMoveDragState(
-                  dragState,
-                  undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                  pressed,
-                  undefined,
-                  duplicateNewUIDs,
-                  undefined,
-                ),
-              )
-              break
-            default:
-              break
-          }
           break
         case 'RESIZE_DRAG_STATE': {
-          const resizeOptions = this.props.editor.canvas.resizeOptions
-          const dragPositions = getDragStatePositions(dragState, resizeOptions)
-          const targetProperty =
-            resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-          const propertyChange:
-            | ResizeDragStatePropertyChange
-            | undefined = dragState.properties.find((prop) => {
-            return prop.targetProperty === targetProperty
-          })
-          const keepAspectRatio =
-            (key === 'shift' ? pressed : propertyChange?.keepAspectRatio) ||
-            this.getElementAspectRatioLocked()
-          const centerBasedResize =
-            key === 'alt' ? pressed : propertyChange?.centerBasedResize ?? false
-          const enableSnapping = key === 'cmd' ? !pressed : propertyChange?.enableSnapping ?? false
-          const dragStart = dragPositions?.start ?? CanvasMousePositionRaw
-          let exceededThreshold: boolean = dragPositions?.drag != null
-          if (!exceededThreshold) {
-            exceededThreshold =
-              CanvasMousePositionRounded != null &&
-              dragStart != null &&
-              dragExceededThreshold(CanvasMousePositionRounded, dragStart)
-          }
-
-          if (dragStart != null && exceededThreshold) {
-            switch (key) {
-              case 'shift':
-              case 'alt':
-              case 'cmd':
-                fireDragStateUpdate(
-                  updateResizeDragState(
-                    dragState,
-                    dragStart,
-                    dragPositions?.drag ?? null,
-                    targetProperty,
-                    enableSnapping,
-                    centerBasedResize,
-                    keepAspectRatio,
-                  ),
-                )
-                break
-              default:
-                break
-            }
-            break
-          }
+          break
         }
+        case 'SELECT_MODE_CANVAS_SESSION':
+          // TODO update session with keyboard stuff
+          break
+        case 'INSERT_DRAG_STATE':
+          break
+        default:
+          const _exhaustiveCheck: never = dragState
       }
     }
   }
@@ -1071,48 +978,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
         let newDragState: DragState | null = null
         switch (dragState.type) {
-          case 'MOVE_DRAG_STATE': {
-            const enableSnapping = !event.metaKey
-            const constrainAxis = event.shiftKey
-            const duplicate = event.altKey
-            const reparent = event.metaKey
-            newDragState = updateMoveDragState(
-              dragState,
-              exceededThreshold ? newDrag : undefined,
-              exceededThreshold ? dragState.drag : undefined,
-              enableSnapping,
-              constrainAxis,
-              duplicate,
-              reparent,
-              undefined,
-              canvasPositions.canvasPositionRounded,
-            )
-            break
-          }
+          case 'MOVE_DRAG_STATE':
           case 'RESIZE_DRAG_STATE': {
-            const start: CanvasPoint = dragPositions?.start ?? canvasPositions.canvasPositionRaw
-            const elementAspectRatioLocked = this.getElementAspectRatioLocked()
-            const keepAspectRatio = event.shiftKey || elementAspectRatioLocked
-            const centerBasedResize = event.altKey
-            const enableSnapping = !event.metaKey
-
-            if (!exceededThreshold) {
-              exceededThreshold = dragExceededThreshold(
-                canvasPositions.canvasPositionRounded,
-                start,
-              )
-            }
-            const targetProperty =
-              resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-            newDragState = updateResizeDragState(
-              dragState,
-              start,
-              exceededThreshold ? newDrag : null,
-              targetProperty,
-              enableSnapping,
-              centerBasedResize,
-              keepAspectRatio,
-            )
             break
           }
           case 'SELECT_MODE_CANVAS_SESSION': {

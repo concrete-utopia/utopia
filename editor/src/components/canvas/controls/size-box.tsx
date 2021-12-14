@@ -12,7 +12,6 @@ import { ControlFontSize } from '../canvas-controls-frame'
 import {
   CSSCursor,
   ResizeDragState,
-  resizeDragState,
   CanvasPositions,
   EdgePosition,
   EnabledDirection,
@@ -20,7 +19,7 @@ import {
   DirectionHorizontal,
   DirectionAll,
   DragState,
-  updateResizeDragState,
+  createSelectModeCanvasSession,
 } from '../canvas-types'
 import { ResizeStatus } from './new-canvas-controls'
 import { ElementPath } from '../../../core/shared/project-file-types'
@@ -117,28 +116,10 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         propertyTargetOptions,
         this.props.propertyTargetSelectedIndex,
       )
-      const newDragState = updateResizeDragState(
-        resizeDragState(
-          this.props.measureSize,
-          originalFrames,
-          this.props.position,
-          this.props.enabledDirection,
-          this.props.metadata,
-          this.props.selectedViews,
-          isMultiSelect,
-          [],
-        ),
-        start,
-        null,
-        targetProperty,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-      )
 
       this.props.dispatch(
         [
-          CanvasActions.createDragState(newDragState),
+          CanvasActions.createDragState(createSelectModeCanvasSession(start)),
           setCanvasAnimationsEnabled(false),
           setResizeOptionsTargetOptions(
             propertyTargetOptions,

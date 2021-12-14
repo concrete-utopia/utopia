@@ -26,7 +26,7 @@ import {
 import { EditorState } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { createSelectModeCanvasSession, DragState, moveDragState } from '../../canvas-types'
+import { createSelectModeCanvasSession } from '../../canvas-types'
 import {
   createDuplicationNewUIDs,
   getDragStateDrag,

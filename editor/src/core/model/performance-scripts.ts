@@ -15,7 +15,6 @@ import {
   zeroPoint,
   zeroRectangle,
 } from '../shared/math-utils'
-import { resizeDragState, updateResizeDragState } from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
@@ -81,25 +80,7 @@ export function useTriggerResizePerformanceTest(): () => void {
     let framesPassed = 0
     async function step() {
       performance.mark(`resize_step_${framesPassed}`)
-      const dragState = updateResizeDragState(
-        resizeDragState(
-          targetFrame ?? (zeroRectangle as CanvasRectangle),
-          originalFrames,
-          { x: 1, y: 1 },
-          { x: 1, y: 1 },
-          metadata.current,
-          [target],
-          false,
-          [],
-        ),
-        targetStartPoint,
-        { x: framesPassed % 100, y: framesPassed % 100 } as CanvasVector,
-        'Width',
-        true,
-        false,
-        false,
-      )
-      await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
+      await dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 0, y: 0 }))]).entireUpdateFinished
       performance.mark(`resize_dispatch_finished_${framesPassed}`)
       performance.measure(
         `resize_frame_${framesPassed}`,
