@@ -14,7 +14,7 @@
     "url": "https://github.com/concrete-utopia/utopia"
   },
   "scripts": {
-    "build": "webpack-cli",
+    "build": "tsc",
     "production": "webpack-cli --mode production",
     "watch": "webpack-cli --mode production --watch --info-verbosity verbose",
     "watch-dev": "webpack-cli --watch --info-verbosity verbose",

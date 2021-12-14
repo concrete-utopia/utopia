@@ -14,6 +14,7 @@ export default defineConfig({
     fs: {
       allow: [
         '../..',
+        '../../../website-next/node_modules/',
         '../../../website-next/components/common/',
         '../../../utopia-api/',
         '../../../utopia-vscode-common/',
