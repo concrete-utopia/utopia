@@ -16,8 +16,8 @@
   "scripts": {
     "build": "tsc",
     "production": "tsc",
-    "watch": "tsc --watch --verbose",
-    "watch-dev": "tsc --watch --verbose",
+    "watch": "tsc --watch",
+    "watch-dev": "tsc --watch",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
