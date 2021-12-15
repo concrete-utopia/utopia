@@ -47,7 +47,8 @@ import {
 } from '../shared/either'
 import { mapArrayToDictionary } from '../shared/array-utils'
 import { setOptionalProp } from '../shared/object-utils'
-import { addControlsToCheck } from '../../components/canvas/canvas-globals'
+import { addRegisteredControls } from '../../components/canvas/canvas-globals'
+import { getGlobalEvaluatedFileName } from '../shared/code-exec-utils'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -136,7 +137,7 @@ function registerModuleInternal(
   const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
     sequenceEither(unsequenced),
   )
-  addControlsToCheck(moduleNameOrPath, componentDescriptors)
+  addRegisteredControls(getGlobalEvaluatedFileName(), moduleNameOrPath, componentDescriptors)
 }
 
 export function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControls> {
