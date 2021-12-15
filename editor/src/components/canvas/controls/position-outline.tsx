@@ -7,7 +7,6 @@ import { isJSXElement } from '../../../core/shared/element-template'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState } from '../../editor/store/store-hook'
 
 interface PositionOutlineProps {
@@ -17,7 +16,7 @@ interface PositionOutlineProps {
   scale: number
 }
 
-export const PositionOutline = betterReactMemo('PositionOutline', (props: PositionOutlineProps) => {
+export const PositionOutline = React.memo((props: PositionOutlineProps) => {
   const containingFrame = useContainingFrameForElement(props.path)
   const attributes = usePropsOrJSXAttributes(props.path)
   if (containingFrame != null) {
@@ -126,8 +125,7 @@ interface PinOutlineProps {
   scale: number
 }
 
-const PinOutline = betterReactMemo(
-  'PinOutline',
+const PinOutline = React.memo(
   (props: PinOutlineProps): JSX.Element => {
     const colorTheme = useColorTheme()
     const width = props.isHorizontalLine ? props.size : 0

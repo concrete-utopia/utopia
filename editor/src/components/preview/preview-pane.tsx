@@ -25,7 +25,6 @@ import {
   Icn,
   UIRow,
 } from '../../uuiui'
-import { betterReactMemo } from '../../utils/react-performance'
 import { setBranchNameFromURL } from '../../utils/branches'
 
 export const PreviewIframeId = 'preview-column-container'
@@ -82,7 +81,7 @@ export interface PreviewColumnState {
   height: number
 }
 
-export const PreviewColumn = betterReactMemo('PreviewColumn', () => {
+export const PreviewColumn = React.memo(() => {
   const { id, projectName, connected, mainJSFilename } = useEditorState((store) => {
     return {
       id: store.editor.id,

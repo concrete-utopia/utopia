@@ -1,6 +1,5 @@
 import { Placement } from 'tippy.js'
 import React from 'react'
-import { betterReactMemo } from '../utils/react-performance'
 import { getPossiblyHashedURL } from '../utils/hashed-assets'
 import { Tooltip } from './tooltip'
 import { useEditorState } from '../components/editor/store/store-hook'
@@ -125,8 +124,7 @@ export function UNSAFE_getIconURL(
   )
 }
 
-export const Icn = betterReactMemo(
-  'Icn',
+export const Icn = React.memo(
   ({
     width = defaultIcnWidth,
     height = defaultIcnHeight,
@@ -184,8 +182,7 @@ export const Icn = betterReactMemo(
 )
 Icn.displayName = 'Icon'
 
-export const IcnSpacer = betterReactMemo(
-  'Icn Spacer',
+export const IcnSpacer = React.memo(
   ({ width = 16, height = 16 }: { width?: number; height?: number }) => {
     return <div style={{ width, height }} />
   },

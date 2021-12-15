@@ -19,8 +19,6 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useColorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { KeysPressed } from '../../../utils/keyboard'
-
-import { betterReactMemo } from '../../../uuiui-deps'
 import { PositionOutline } from './position-outline'
 import { stripNulls, uniqBy } from '../../../core/shared/array-utils'
 
@@ -66,44 +64,41 @@ interface CenteredCrossSVGProps {
   centerY: number
 }
 
-const CenteredCrossSVG = betterReactMemo(
-  'centeredCross',
-  ({ id, centerX, centerY, scale }: CenteredCrossSVGProps) => {
-    const colorTheme = useColorTheme()
-    return (
-      <svg
-        id={id}
-        style={{
-          left: centerX,
-          top: centerY,
-          position: 'absolute',
-          width: 6,
-          height: 6,
-          transformOrigin: 'center center',
-          transform: `translateX(-50%) translateY(-50%) scale(${1 / scale})`,
-        }}
-        width='4px'
-        height='4px'
-        viewBox='0 0 4 4'
-        version='1.1'
+const CenteredCrossSVG = React.memo(({ id, centerX, centerY, scale }: CenteredCrossSVGProps) => {
+  const colorTheme = useColorTheme()
+  return (
+    <svg
+      id={id}
+      style={{
+        left: centerX,
+        top: centerY,
+        position: 'absolute',
+        width: 6,
+        height: 6,
+        transformOrigin: 'center center',
+        transform: `translateX(-50%) translateY(-50%) scale(${1 / scale})`,
+      }}
+      width='4px'
+      height='4px'
+      viewBox='0 0 4 4'
+      version='1.1'
+    >
+      <g
+        stroke='none'
+        strokeWidth='1'
+        fill='none'
+        fillRule='evenodd'
+        strokeLinecap='round'
+        strokeLinejoin='round'
       >
-        <g
-          stroke='none'
-          strokeWidth='1'
-          fill='none'
-          fillRule='evenodd'
-          strokeLinecap='round'
-          strokeLinejoin='round'
-        >
-          <g id='cross_svg' stroke={colorTheme.primary.value}>
-            <line x1='0.5' y1='0.5' x2='3.5' y2='3.5'></line>
-            <line x1='0.5' y1='3.5' x2='3.5' y2='0.5'></line>
-          </g>
+        <g id='cross_svg' stroke={colorTheme.primary.value}>
+          <line x1='0.5' y1='0.5' x2='3.5' y2='3.5'></line>
+          <line x1='0.5' y1='3.5' x2='3.5' y2='0.5'></line>
         </g>
-      </svg>
-    )
-  },
-)
+      </g>
+    </svg>
+  )
+})
 
 export const OutlineControls = (props: OutlineControlsProps) => {
   const colorTheme = useColorTheme()

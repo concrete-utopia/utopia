@@ -441,22 +441,6 @@ export function useFlasher<T extends HTMLElement>() {
   return ref
 }
 
-export function betterReactMemo<P extends Record<string, any>>(
-  displayName: string,
-  componentToMemo: React.FunctionComponent<P>,
-  propsAreEqual?: (
-    prevProps: Readonly<React.PropsWithChildren<P>>,
-    nextProps: Readonly<React.PropsWithChildren<P>>,
-  ) => boolean,
-  whyDidYouRender: boolean = false,
-) {
-  componentToMemo.displayName = displayName
-  ;(componentToMemo as any).whyDidYouRender = whyDidYouRender
-  const memoized = React.memo(componentToMemo, propsAreEqual)
-  memoized.displayName = displayName
-  return memoized
-}
-
 export function createCallFromIntrospectiveKeepDeep<T>(): KeepDeepEqualityCall<T> {
   return (oldValue, newValue) => {
     const value = keepDeepReferenceEqualityIfPossible(oldValue, newValue)

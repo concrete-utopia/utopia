@@ -5,7 +5,6 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, NumberInput } from '../../../../../uuiui'
 import {
-  betterReactMemo,
   CSSUtils,
   InspectorContextMenuItems,
   InspectorContextMenuWrapper,
@@ -23,7 +22,7 @@ const sliderControlOptions = {
 // TODO: path should match target
 const opacityProp = [PP.create(['style', 'opacity'])]
 
-export const OpacityRow = betterReactMemo('OpacityRow', () => {
+export const OpacityRow = React.memo(() => {
   const opacityMetadata = useInspectorStyleInfo('opacity')
 
   const opacity = opacityMetadata.value

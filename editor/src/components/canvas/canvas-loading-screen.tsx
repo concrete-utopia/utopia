@@ -1,10 +1,9 @@
 import React from 'react'
 import { Global, css } from '@emotion/react'
-import { betterReactMemo } from '../../uuiui-deps'
 import { BaseCanvasOffsetLeftPane } from '../editor/store/editor-state'
 import { useColorTheme } from '../../uuiui'
 
-export const CanvasLoadingScreen = betterReactMemo('CanvasLoadingScreen', () => {
+export const CanvasLoadingScreen = React.memo(() => {
   const colorTheme = useColorTheme()
   return (
     <React.Fragment>

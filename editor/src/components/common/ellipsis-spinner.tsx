@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { jsx, css, keyframes } from '@emotion/react'
 import React from 'react'
-import { betterReactMemo } from '../../uuiui-deps'
 
 const ellipsis1Anim = keyframes`{
   0% {
@@ -48,7 +47,7 @@ const Ellipsis = (props: any) => (
   />
 )
 
-export const EllipsisSpinner = betterReactMemo('Ellipsis Spinner', () => {
+export const EllipsisSpinner = React.memo(() => {
   return (
     <div
       id='spinner'

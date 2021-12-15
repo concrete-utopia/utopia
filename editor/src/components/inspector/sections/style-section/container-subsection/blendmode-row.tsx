@@ -5,7 +5,6 @@ import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PopupList } from '../../../../../uuiui'
 import {
-  betterReactMemo,
   SelectOption,
   InspectorContextMenuItems,
   InspectorContextMenuWrapper,
@@ -20,7 +19,7 @@ const blendModeOptions = [
 
 const blendModeProp = [PP.create(['style', 'mixBlendMode'])]
 
-export const BlendModeRow = betterReactMemo('BlendModeRow', () => {
+export const BlendModeRow = React.memo(() => {
   const blendModeMetadata = useInspectorStyleInfo('mixBlendMode')
   const [onSubmitBlendModeOption] = blendModeMetadata.useSubmitValueFactory(
     (selectedOption: SelectOption) => selectedOption.value,

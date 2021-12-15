@@ -19,7 +19,6 @@ import { getOriginalFrames } from '../canvas-utils'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { useColorTheme } from '../../../uuiui'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 
@@ -126,7 +125,7 @@ export interface YogaControlsProps extends ControlProps {
   dragState: ResizeDragState | null
 }
 
-export const YogaControls = betterReactMemo('YogaControls', (props: YogaControlsProps) => {
+export const YogaControls = React.memo((props: YogaControlsProps) => {
   const colorTheme = useColorTheme()
   const targets = props.selectedViews
   const everyThingIsYogaLayouted = targets.every((selectedView) => {

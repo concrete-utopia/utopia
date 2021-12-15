@@ -3,14 +3,13 @@ import { usePopper } from 'react-popper'
 import { identity } from '../../../../../core/shared/utils'
 import utils from '../../../../../utils/utils'
 import { FlexRow, UtopiaTheme, Icons } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import { stylePropPathMappingFn, useInspectorInfo } from '../../../common/property-path-hooks'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelectPopup } from './font-family-select-popup'
 
-export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
+export const FontFamilySelect = React.memo(() => {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const { styles, attributes } = usePopper(referenceElement, popperElement, {

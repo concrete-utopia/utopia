@@ -8,7 +8,6 @@ import {
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import { ProjectFile } from '../../core/shared/project-file-types'
-import { betterReactMemo } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
 import { EditorPanel, setFocus } from '../common/actions'
 import { EditorDispatch } from '../editor/action-types'
@@ -90,7 +89,7 @@ function packageDetailsFromDependencies(
   return userAddedPackages
 }
 
-export const DependencyList = betterReactMemo('DependencyList', () => {
+export const DependencyList = React.memo(() => {
   const props = useEditorState((store) => {
     return {
       editorDispatch: store.dispatch,

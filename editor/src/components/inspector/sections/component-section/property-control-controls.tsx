@@ -1,6 +1,6 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
-import { betterReactMemo, CSSCursor, SliderControl } from '../../../../uuiui-deps'
+import { CSSCursor, SliderControl } from '../../../../uuiui-deps'
 import {
   AllowedEnumType,
   BaseControlDescription,
@@ -66,8 +66,7 @@ export interface ControlForPropProps<T extends BaseControlDescription> {
   focusOnMount: boolean
 }
 
-export const CheckboxPropertyControl = betterReactMemo(
-  'CheckboxPropertyControl',
+export const CheckboxPropertyControl = React.memo(
   (props: ControlForPropProps<CheckboxControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
@@ -89,8 +88,7 @@ export const CheckboxPropertyControl = betterReactMemo(
   },
 )
 
-export const ColorPropertyControl = betterReactMemo(
-  'ColorPropertyControl',
+export const ColorPropertyControl = React.memo(
   (props: ControlForPropProps<ColorControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
@@ -115,8 +113,7 @@ export const ColorPropertyControl = betterReactMemo(
   },
 )
 
-export const ExpressionInputPropertyControl = betterReactMemo(
-  'ExpressionInputPropertyControl',
+export const ExpressionInputPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
     const dispatch = useEditorState(
@@ -191,8 +188,7 @@ function labelForIndividualOption(option: IndividualOption): string {
   }
 }
 
-export const PopUpListPropertyControl = betterReactMemo(
-  'PopUpListPropertyControl',
+export const PopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<PopUpListControlDescription>) => {
     const { propMetadata, controlDescription } = props
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
@@ -229,8 +225,7 @@ export const PopUpListPropertyControl = betterReactMemo(
   },
 )
 
-export const ExpressionPopUpListPropertyControl = betterReactMemo(
-  'ExpressionPopUpListPropertyControl',
+export const ExpressionPopUpListPropertyControl = React.memo(
   (props: ControlForPropProps<ExpressionPopUpListControlDescription>) => {
     const dispatch = useEditorState(
       (store) => store.dispatch,
@@ -314,8 +309,7 @@ export const ExpressionPopUpListPropertyControl = betterReactMemo(
   },
 )
 
-export const NumberInputPropertyControl = betterReactMemo(
-  'NumberInputPropertyControl',
+export const NumberInputPropertyControl = React.memo(
   (props: ControlForPropProps<NumberInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
@@ -330,14 +324,18 @@ export const NumberInputPropertyControl = betterReactMemo(
 
     const controlId = `${propName}-number-input-property-control`
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
-
-    if (controlDescription.min != null && controlDescription.max != null) {
-      const controlOptions: DEPRECATEDSliderControlOptions = useKeepReferenceEqualityIfPossible({
-        minimum: controlDescription.min,
-        maximum: controlDescription.max,
-        stepSize: controlDescription.step,
-      })
-      return <NumberWithSliderControl {...props} controlOptions={controlOptions} />
+    const controlOptions = useKeepReferenceEqualityIfPossible({
+      minimum: controlDescription.min,
+      maximum: controlDescription.max,
+      stepSize: controlDescription.step,
+    })
+    if (controlOptions.minimum != null && controlOptions.maximum != null) {
+      return (
+        <NumberWithSliderControl
+          {...props}
+          controlOptions={controlOptions as DEPRECATEDSliderControlOptions}
+        />
+      )
     } else {
       return (
         <SimpleNumberInput
@@ -361,8 +359,7 @@ export const NumberInputPropertyControl = betterReactMemo(
   },
 )
 
-export const RadioPropertyControl = betterReactMemo(
-  'RadioPropertyControl',
+export const RadioPropertyControl = React.memo(
   (props: ControlForPropProps<RadioControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
@@ -403,8 +400,7 @@ export const RadioPropertyControl = betterReactMemo(
   },
 )
 
-const NumberWithSliderControl = betterReactMemo(
-  'NumberWithSliderControl',
+const NumberWithSliderControl = React.memo(
   (
     props: ControlForPropProps<NumberInputControlDescription> & {
       controlOptions: DEPRECATEDSliderControlOptions
@@ -449,8 +445,7 @@ const NumberWithSliderControl = betterReactMemo(
   },
 )
 
-export const StringInputPropertyControl = betterReactMemo(
-  'StringInputPropertyControl',
+export const StringInputPropertyControl = React.memo(
   (props: ControlForPropProps<StringInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
 
@@ -521,8 +516,7 @@ function propsArrayForCSSNumberArray(
   })
 }
 
-export const VectorPropertyControl = betterReactMemo(
-  'VectorPropertyControl',
+export const VectorPropertyControl = React.memo(
   (
     props: ControlForPropProps<
       Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription
@@ -549,8 +543,7 @@ export const VectorPropertyControl = betterReactMemo(
   },
 )
 
-export const EulerPropertyControl = betterReactMemo(
-  'EulerPropertyControl',
+export const EulerPropertyControl = React.memo(
   (props: ControlForPropProps<EulerControlDescription>) => {
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
@@ -598,8 +591,7 @@ export const EulerPropertyControl = betterReactMemo(
   },
 )
 
-export const Matrix3PropertyControl = betterReactMemo(
-  'Matrix3PropertyControl',
+export const Matrix3PropertyControl = React.memo(
   (props: ControlForPropProps<Matrix3ControlDescription>) => {
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 
@@ -643,8 +635,7 @@ export const Matrix3PropertyControl = betterReactMemo(
   },
 )
 
-export const Matrix4PropertyControl = betterReactMemo(
-  'Matrix4PropertyControl',
+export const Matrix4PropertyControl = React.memo(
   (props: ControlForPropProps<Matrix4ControlDescription>) => {
     const { propPath, propMetadata, controlDescription, setGlobalCursor } = props
 

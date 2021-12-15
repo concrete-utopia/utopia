@@ -3,7 +3,6 @@ import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { betterReactMemo, InspectorContextMenuWrapper } from '../../../uuiui-deps'
 import { optionalAddOnUnsetValues } from '../common/context-menu-items'
 import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
 import { ControlStyles } from '../common/control-status'
@@ -24,7 +23,7 @@ function useMetadataInfoForDomain(target: ReadonlyArray<PropertyPath>) {
   )
 }
 
-export const PropertyLabel = betterReactMemo('PropertyLabel', (props: PropertyLabelProps) => {
+export const PropertyLabel = React.memo((props: PropertyLabelProps) => {
   const metadata = useMetadataInfoForDomain(props.target)
   const propsToUnset = props.propNamesToUnset ?? props.target.map(PP.lastPart)
   const contextMenuItems = optionalAddOnUnsetValues(

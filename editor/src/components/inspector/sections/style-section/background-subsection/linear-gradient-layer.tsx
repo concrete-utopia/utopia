@@ -30,7 +30,6 @@ import {
   PopupList,
   NumberInput,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
 export function getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(index: number) {
   return function updateCSSBackgroundLayersLinearGradientAngle(
@@ -56,8 +55,7 @@ interface LinearGradientBackgroundLayerProps extends BackgroundLayerProps {
   value: CSSLinearGradientBackgroundLayer
 }
 
-export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackgroundLayerProps>(
-  'LinearGradientBackgroundLayer',
+export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackgroundLayerProps>(
   (props) => {
     const [gradientCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
       getIndexedUpdateEnabled(props.index),

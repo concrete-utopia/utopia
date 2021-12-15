@@ -7,7 +7,6 @@ import {
   InspectorSectionIcons,
   InspectorSubsectionHeader,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { SeeMoreButton, SeeMoreHOC, useToggle } from '../../../widgets/see-more'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
@@ -20,7 +19,7 @@ import { OpacityRow } from './opacity-row'
 import { OverflowRow } from './overflow-row'
 import { RadiusRow } from './radius-row'
 
-export const ContainerSubsection = betterReactMemo('ContainerSubsection', () => {
+export const ContainerSubsection = React.memo(() => {
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
   return (
     <>
