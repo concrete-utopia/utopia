@@ -17,7 +17,6 @@ declare module '@babel/plugin-proposal-export-namespace-from'
 
 declare module 'lodash.clamp' {
   export default clamp = (number: number, lower: number, upper: number) => number
-  export const clamp = (number: number, upper: number) => number
 }
 
 declare module 'resize-observer-polyfill'
