@@ -76,3 +76,16 @@ declare var __webpack_public_path__: string
 interface Window {
   KarmaTestEnvironment: boolean | undefined
 }
+
+declare module 'eslint-plugin-react' {
+  export const rules: { [key: string]: any } = {}
+}
+declare module 'eslint-plugin-react-hooks' {
+  export const rules: { [key: string]: any } = {}
+}
+declare module 'eslint-plugin-jsx-a11y' {
+  export const rules: { [key: string]: any } = {}
+}
+declare module 'eslint-plugin-import/lib/rules/first'
+declare module 'eslint-plugin-import/lib/rules/no-amd'
+declare module 'eslint-plugin-import/lib/rules/no-webpack-loader-syntax'
