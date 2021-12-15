@@ -370,6 +370,17 @@ export interface ResizeDragState {
   properties: Array<ResizeDragStatePropertyChange>
 }
 
+type BoundingArea = {
+  type: 'BOUNDING_AREA'
+}
+
+type ResizeHandle = {
+  type: 'RESIZE_HANDLE'
+  edgePosition: EdgePosition
+}
+
+type CanvasControlType = BoundingArea | ResizeHandle
+
 export interface CanvasStrategy {
   name: string
   updateFn: CanvasStrategyUpdateFn
@@ -393,6 +404,7 @@ export interface SelectModeCanvasSession {
   activeStrategy: CanvasStrategyUpdateFn | null
   start: CanvasPoint
   drag: CanvasVector | null
+  activeControl: CanvasControlType
   globalTime: number
   lastTimeMouseMoved: number
   translateStrategyData?: {
@@ -400,10 +412,14 @@ export interface SelectModeCanvasSession {
   }
 }
 
-export function startNewSelectModeCanvasSession(start: CanvasPoint): SelectModeCanvasSession {
+export function startNewSelectModeCanvasSession(
+  start: CanvasPoint,
+  activeControl: CanvasControlType,
+): SelectModeCanvasSession {
   return {
     type: 'SELECT_MODE_CANVAS_SESSION',
     start: start,
+    activeControl: activeControl,
     activeStrategy: null,
     drag: null,
     globalTime: Date.now(),

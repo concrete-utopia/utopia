@@ -119,7 +119,12 @@ class ResizeControl extends React.Component<ResizeControlProps> {
 
       this.props.dispatch(
         [
-          CanvasActions.createDragState(startNewSelectModeCanvasSession(start)),
+          CanvasActions.createDragState(
+            startNewSelectModeCanvasSession(start, {
+              type: 'RESIZE_HANDLE',
+              edgePosition: this.props.position,
+            }),
+          ),
           setCanvasAnimationsEnabled(false),
           setResizeOptionsTargetOptions(
             propertyTargetOptions,

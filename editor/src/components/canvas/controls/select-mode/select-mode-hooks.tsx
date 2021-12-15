@@ -286,7 +286,11 @@ function useStartDragState(): (
         }),
       )
 
-      dispatch([CanvasActions.createDragState(startNewSelectModeCanvasSession(start))])
+      dispatch([
+        CanvasActions.createDragState(
+          startNewSelectModeCanvasSession(start, { type: 'BOUNDING_AREA' }),
+        ),
+      ])
     },
     [dispatch, entireEditorStoreRef],
   )
