@@ -200,7 +200,7 @@ export const SafeFunctionCurriedErrorHandler = {
   },
 }[UTOPIA_FUNCTION_ROOT_NAME]
 
-export function SafeFunction(
+export function safeFunction(
   async: boolean,
   cacheableContext: any,
   filePath: string,

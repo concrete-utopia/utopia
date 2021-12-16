@@ -136,7 +136,7 @@ import {
   keepReferenceIfShallowEqual,
 } from '../core/shared/equality-utils'
 import {
-  SafeFunction,
+  safeFunction,
   SafeFunctionCurriedErrorHandler,
   processErrorWithSourceMap,
 } from '../core/shared/code-exec-utils'
@@ -926,7 +926,7 @@ export default {
   colorToRGBAWithoutOpacity: colorToRGBAWithoutOpacity,
   colorToReactNativeColor: colorToReactNativeColor,
   nullIfTransparent: nullIfTransparent,
-  SafeFunction: SafeFunction,
+  SafeFunction: safeFunction,
   SafeFunctionCurriedErrorHandler: SafeFunctionCurriedErrorHandler,
   TRANSPARENT_IMAGE_SRC: TRANSPARENT_IMAGE_SRC,
   get: get,
