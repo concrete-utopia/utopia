@@ -1,8 +1,14 @@
 import { sortBy } from '../../../core/shared/array-utils'
 import { foldEither } from '../../../core/shared/either'
-import { JSXElement, jsxAttributeValue, emptyComments } from '../../../core/shared/element-template'
+import {
+  JSXElement,
+  jsxAttributeValue,
+  emptyComments,
+  ElementInstanceMetadata,
+} from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { magnitude, canvasPoint } from '../../../core/shared/math-utils'
+import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
   EditorState,
@@ -11,7 +17,13 @@ import {
   TransientCanvasState,
   TransientFilesState,
 } from '../../editor/store/editor-state'
-import { CanvasStrategy, CanvasStrategyUpdateFn, SelectModeCanvasSession } from '../canvas-types'
+import {
+  CanvasStrategy,
+  CanvasStrategyUpdateFn,
+  FlexAlignControlRectProps,
+  SelectModeCanvasSession,
+} from '../canvas-types'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 function translateStrategy(
   editorState: EditorState,
@@ -20,7 +32,7 @@ function translateStrategy(
 ): TransientCanvasState {
   // only apply after a certain treshold IF we hadn't already passed that treshold once
   if (
-    !previousTransientState?.sessionStatePatch.translateStrategyData?.dragDeltaMinimumPassed &&
+    !previousTransientState?.sessionStatePatch.dragDeltaMinimumPassed &&
     magnitude(activeSession.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
   ) {
     return {
@@ -95,21 +107,97 @@ function translateStrategy(
     filesState: transientFilesState,
     toastsToApply: [],
     sessionStatePatch: {
-      translateStrategyData: {
-        dragDeltaMinimumPassed: true,
-      },
+      dragDeltaMinimumPassed: true,
     },
     editorStatePatch: {},
   }
 }
 
+function calcualteFlexAlignIndicatorBoxes(
+  targetMetadata: ElementInstanceMetadata | null,
+): Array<FlexAlignControlRectProps> {
+  const BoxHeight = 10
+  if (targetMetadata?.globalFrame == null) {
+    return []
+  }
+  return [
+    {
+      x: targetMetadata.globalFrame?.x,
+      y: targetMetadata.globalFrame?.y,
+      width: targetMetadata.globalFrame?.width,
+      height: BoxHeight,
+    },
+    {
+      x: targetMetadata.globalFrame?.x,
+      y: targetMetadata.globalFrame?.y + targetMetadata.globalFrame.height - BoxHeight,
+      width: targetMetadata.globalFrame?.width,
+      height: BoxHeight,
+    },
+  ]
+}
+
+const flexAlignParentStrategy: CanvasStrategyUpdateFn = (
+  editorState: EditorState,
+  activeSession: SelectModeCanvasSession,
+  previousTransientState: TransientCanvasState | null,
+): TransientCanvasState => {
+  // only apply after a certain treshold IF we hadn't already passed that treshold once
+  if (
+    !previousTransientState?.sessionStatePatch.dragDeltaMinimumPassed &&
+    magnitude(activeSession.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
+  ) {
+    return {
+      highlightedViews: [],
+      selectedViews: editorState.selectedViews,
+      filesState: {},
+      toastsToApply: [],
+      sessionStatePatch: {},
+      editorStatePatch: {},
+    }
+  }
+
+  const draggedElement = editorState.selectedViews[0]
+  const targetParent = MetadataUtils.getParent(editorState.jsxMetadata, draggedElement)
+  const indicatorBoxes = calcualteFlexAlignIndicatorBoxes(targetParent)
+
+  return {
+    highlightedViews: [],
+    selectedViews: editorState.selectedViews,
+    filesState: {},
+    toastsToApply: [],
+    sessionStatePatch: {
+      dragDeltaMinimumPassed: true,
+    },
+    editorStatePatch: {
+      canvas: {
+        controls: {
+          flexAlignDropTargets: indicatorBoxes,
+        },
+      },
+    },
+  }
+}
+
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   {
-    name: 'Translate',
-    updateFn: translateStrategy,
+    name: "Change Parent's Flex Align and Justify",
     fitnessFn: (editor, currentSession, previousTransientState) => {
-      return 10
+      if (editor.selectedViews.length === 1) {
+        const selectedView = editor.selectedViews[0]
+
+        const isFlexLayouted = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
+          MetadataUtils.findElementByElementPath(editor.jsxMetadata, selectedView),
+        )
+        const hasNoSiblings =
+          MetadataUtils.getSiblings(editor.jsxMetadata, selectedView).length === 1
+
+        if (isFlexLayouted && hasNoSiblings) {
+          return 10 // fit!
+        }
+      }
+      return 0 // not fit
     },
+    updateFn: flexAlignParentStrategy,
   },
 ]
 
@@ -125,7 +213,7 @@ export function pickDefaultCanvasStrategy(
       l.fitnessFn(editorState, currentSession, previousTransientState)
     )
   })
-  return RegisteredCanvasStrategies[0].updateFn
+  return RegisteredCanvasStrategies[0]?.updateFn ?? null
 }
 
 export function applyCanvasStrategy(

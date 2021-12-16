@@ -407,9 +407,7 @@ export interface SelectModeCanvasSession {
   activeControl: CanvasControlType
   globalTime: number
   lastTimeMouseMoved: number
-  translateStrategyData?: {
-    dragDeltaMinimumPassed: boolean
-  }
+  dragDeltaMinimumPassed: boolean
 }
 
 export function startNewSelectModeCanvasSession(
@@ -424,6 +422,7 @@ export function startNewSelectModeCanvasSession(
     drag: null,
     globalTime: Date.now(),
     lastTimeMouseMoved: Date.now(),
+    dragDeltaMinimumPassed: false,
   }
 }
 
@@ -599,3 +598,10 @@ export type EnabledDirection = EdgePosition
 export const DirectionAll: EnabledDirection = { x: 1, y: 1 }
 export const DirectionHorizontal: EnabledDirection = { x: 1, y: 0 }
 export const DirectionVertical: EnabledDirection = { x: 0, y: 1 }
+
+export interface FlexAlignControlRectProps {
+  x: number
+  y: number
+  width: number
+  height: number
+}

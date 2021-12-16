@@ -95,6 +95,7 @@ import {
   CanvasModel,
   CSSCursor,
   DragState,
+  FlexAlignControlRectProps,
   FrameAndTarget,
   HigherOrderControl,
   SelectModeCanvasSession,
@@ -447,6 +448,9 @@ export interface EditorState {
       attributesToUpdate: MapLike<JSXAttribute>
     }> | null
     resizeOptions: ResizeOptions
+    controls: {
+      flexAlignDropTargets: Array<FlexAlignControlRectProps>
+    }
   }
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
@@ -988,13 +992,20 @@ export function transientFileState(
 
 export type TransientFilesState = { [filepath: string]: TransientFileState }
 
+// make all properties optional recursively including nested objects.
+// keep in mind that this should be used on json / plain objects only.
+// otherwise, it will make class methods optional as well.
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends Array<infer I> ? Array<DeepPartial<I>> : DeepPartial<T[P]>
+}
+
 export interface TransientCanvasState {
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
-  sessionStatePatch: Partial<SelectModeCanvasSession>
-  editorStatePatch: Partial<EditorState>
+  sessionStatePatch: DeepPartial<SelectModeCanvasSession>
+  editorStatePatch: DeepPartial<EditorState>
 }
 
 export function transientCanvasState(
@@ -1002,8 +1013,8 @@ export function transientCanvasState(
   highlightedViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
-  sessionStatePatch: Partial<SelectModeCanvasSession>,
-  editorStatePatch: Partial<EditorState>,
+  sessionStatePatch: DeepPartial<SelectModeCanvasSession>,
+  editorStatePatch: DeepPartial<EditorState>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
@@ -1232,6 +1243,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       resizeOptions: {
         propertyTargetOptions: ['Width', 'Height'],
         propertyTargetSelectedIndex: 0,
+      },
+      controls: {
+        flexAlignDropTargets: [],
       },
     },
     floatingInsertMenu: {
@@ -1494,6 +1508,9 @@ export function editorModelFromPersistentModel(
       resizeOptions: {
         propertyTargetOptions: ['Width', 'Height'],
         propertyTargetSelectedIndex: 0,
+      },
+      controls: {
+        flexAlignDropTargets: [],
       },
     },
     floatingInsertMenu: {

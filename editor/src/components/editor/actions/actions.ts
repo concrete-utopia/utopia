@@ -1014,6 +1014,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       scrollAnimation: currentEditor.canvas.scrollAnimation,
       transientProperties: null,
       resizeOptions: currentEditor.canvas.resizeOptions,
+      controls: {
+        flexAlignDropTargets: currentEditor.canvas.controls.flexAlignDropTargets,
+      },
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
@@ -1094,7 +1097,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
         poppedDerived.canvas.transientState.selectedViews,
         history.current.editor,
         true,
-        poppedDerived.canvas.transientState ?? null
+        poppedDerived.canvas.transientState ?? null,
       ),
     },
     elementWarnings: poppedDerived.elementWarnings,

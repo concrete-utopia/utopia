@@ -57,6 +57,7 @@ import { KeysPressed } from '../../../utils/keyboard'
 import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
+import { FlexAlignControls } from './select-mode/flex-align-controls'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -403,6 +404,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       <LayoutParentControl />
+      <FlexAlignControls />
     </div>
   )
 }
