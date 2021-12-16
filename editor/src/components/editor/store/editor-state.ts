@@ -994,6 +994,7 @@ export interface TransientCanvasState {
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
   sessionStatePatch: Partial<SelectModeCanvasSession>
+  editorStatePatch: Partial<EditorState>
 }
 
 export function transientCanvasState(
@@ -1002,6 +1003,7 @@ export function transientCanvasState(
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
   sessionStatePatch: Partial<SelectModeCanvasSession>,
+  editorStatePatch: Partial<EditorState>,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
@@ -1009,6 +1011,7 @@ export function transientCanvasState(
     filesState: fileState,
     toastsToApply: toastsToApply,
     sessionStatePatch: sessionStatePatch,
+    editorStatePatch: editorStatePatch,
   }
 }
 

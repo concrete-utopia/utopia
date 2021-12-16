@@ -1482,6 +1482,7 @@ function getTransientCanvasStateFromFrameChanges(
     }, successByFilename),
     workingEditorState.toasts, // TODO filter for relevant toasts
     {},
+    {},
   )
 }
 
@@ -1513,6 +1514,7 @@ export function produceResizeCanvasTransientState(
       editorState.highlightedViews,
       null,
       [],
+      {},
       {},
     )
   } else {
@@ -1592,6 +1594,7 @@ export function produceResizeSingleSelectCanvasTransientState(
       editorState.highlightedViews,
       null,
       [],
+      {},
       {},
     )
   }
@@ -1718,6 +1721,7 @@ export function produceCanvasTransientState(
                 },
                 [],
                 {},
+                {},
               )
               return parseSuccess
             },
@@ -1755,6 +1759,7 @@ export function produceCanvasTransientState(
       editorState.highlightedViews,
       null,
       [],
+      {},
       {},
     )
   } else {
@@ -2320,6 +2325,7 @@ function produceMoveTransientCanvasState(
     workingEditorState.highlightedViews,
     transientFilesState,
     workingEditorState.toasts, // TODO Filter for relevant toasts
+    {},
     {},
   )
 }
@@ -2891,6 +2897,7 @@ function createCanvasTransientStateFromProperties(
       updatedEditor.highlightedViews,
       transientFilesState,
       [],
+      {},
       {},
     )
   }

@@ -29,6 +29,7 @@ function translateStrategy(
       filesState: {},
       toastsToApply: [],
       sessionStatePatch: {},
+      editorStatePatch: {},
     }
   }
 
@@ -98,6 +99,7 @@ function translateStrategy(
         dragDeltaMinimumPassed: true,
       },
     },
+    editorStatePatch: {},
   }
 }
 
