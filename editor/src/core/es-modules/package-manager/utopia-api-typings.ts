@@ -46,14 +46,6 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/layout/frame';
   export * from 'utopia-api/layout/layout';
   export * from 'utopia-api/layout/flex';
-  export * from 'utopia-api/primitives/common';
-  export * from 'utopia-api/primitives/view';
-  export * from 'utopia-api/primitives/flex-views';
-  export * from 'utopia-api/primitives/text';
-  export * from 'utopia-api/primitives/rectangle';
-  export * from 'utopia-api/primitives/ellipse';
-  export * from 'utopia-api/primitives/scene';
-  export * from 'utopia-api/primitives/storyboard';
   export * from 'utopia-api/helpers/helper-functions';
   export * from 'utopia-api/property-controls/property-controls';
 
@@ -316,6 +308,17 @@ declare module 'utopia-api/primitives/flex-views' {
   type FlexColProps = FlexRowProps;
   export const FlexCol: React.FunctionComponent<FlexColProps>;
   export {};
+
+}
+declare module 'utopia-api/primitives/index' {
+  export * from 'utopia-api/primitives/common';
+  export * from 'utopia-api/primitives/view';
+  export * from 'utopia-api/primitives/flex-views';
+  export * from 'utopia-api/primitives/text';
+  export * from 'utopia-api/primitives/rectangle';
+  export * from 'utopia-api/primitives/ellipse';
+  export * from 'utopia-api/primitives/scene';
+  export * from 'utopia-api/primitives/storyboard';
 
 }
 declare module 'utopia-api/primitives/rectangle' {
