@@ -5,6 +5,10 @@
   "main": "src/index.ts",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "src/index.ts",
+    "./components": "./src/primitives/index.ts"
+  },
   "scripts": {
     "clean": "rm -rf dist/",
     "test": "jest",

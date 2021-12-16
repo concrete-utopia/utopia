@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/** @jsxRuntime classic */
 import { jsx, Interpolation, Theme } from '@emotion/react'
 import React from 'react'
 import { UtopiaComponentProps, addEventHandlersToDivProps } from './common'

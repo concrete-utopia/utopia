@@ -1,7 +1,7 @@
 import React from 'react'
 import fastDeepEquals from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
-import { Scene, SceneProps } from 'utopia-api'
+import { Scene, SceneProps } from 'utopia-api/components'
 import { useColorTheme, UtopiaStyles } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { RerenderUtopiaCtxAtom } from './ui-jsx-canvas-contexts'

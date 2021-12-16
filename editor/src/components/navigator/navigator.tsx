@@ -28,7 +28,6 @@ import {
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { last } from '../../core/shared/array-utils'
-import { FlexCol } from 'utopia-api'
 import AutoSizer from 'react-virtualized-auto-sizer'
 
 const NavigatorContainerId = 'navigator'

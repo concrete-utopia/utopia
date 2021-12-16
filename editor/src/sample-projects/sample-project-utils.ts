@@ -75,7 +75,7 @@ export function createComplexDefaultProjectContents(): ProjectContents {
     [StoryboardFilePath]: createCodeFile(
       StoryboardFilePath,
       `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api/components'
 import { App } from '/src/app.js'
 
 export var SameFileApp = (props) => {
@@ -119,7 +119,7 @@ export var App = (props) => {
     '/src/card.js': createCodeFile(
       '/src/card.js',
       `import * as React from 'react'
-import { Rectangle } from 'utopia-api'
+import { Rectangle } from 'utopia-api/components'
 export var Card = (props) => {
   return <div data-uid='card-outer-div' style={{...props.style}}>
     <div data-uid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />

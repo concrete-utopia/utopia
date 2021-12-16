@@ -41,7 +41,7 @@ import { OptionControl } from '../../../controls/option-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
-import { FlexRow } from 'utopia-api'
+import { FlexRow } from 'utopia-api/components'
 import { getControlStyles } from '../../../common/control-status'
 import { Utils } from '../../../../../uuiui-deps'
 
