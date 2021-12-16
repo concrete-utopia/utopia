@@ -20,7 +20,13 @@ import { importAlias, importDetails, Imports } from '../shared/project-file-type
 function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
   return jsxAttributesEntry(
     key,
-    jsxAttributeOtherJavaScript(fromThree, `return ${fromThree}`, ['THREE'], null, {}),
+    jsxAttributeOtherJavaScript(
+      `THREE.${fromThree}`,
+      `return THREE.${fromThree}`,
+      ['THREE'],
+      null,
+      {},
+    ),
     emptyComments,
   )
 }

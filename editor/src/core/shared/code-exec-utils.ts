@@ -13,6 +13,27 @@ import parseError from '../../third-party/react-error-overlay/utils/parser'
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
 
+let CurrentEvaluatedFileName = 'unknown'
+
+export function setGlobalEvaluatedFileName(fileName: string) {
+  CurrentEvaluatedFileName = fileName
+  EvaluatedFiles.push(fileName)
+}
+
+export function getGlobalEvaluatedFileName(): string {
+  return CurrentEvaluatedFileName
+}
+
+let EvaluatedFiles: Array<string> = []
+
+export function clearListOfEvaluatedFiles() {
+  EvaluatedFiles = []
+}
+
+export function getListOfEvaluatedFiles(): Array<string> {
+  return [...EvaluatedFiles]
+}
+
 export interface FancyError extends Error {
   stackFrames?: StackFrame[]
 }
@@ -175,7 +196,8 @@ export const SafeFunctionCurriedErrorHandler = {
 
     let sourceMapBase64 = strToBase64(JSON.stringify(sourceMap))
 
-    const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}(${sourceMap?.sources?.[0]})`
+    const sourceFile = sourceMap?.sources?.[0]
+    const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}(${sourceFile})`
 
     const codeWithSourceMapAttached = `${code}
 
@@ -190,6 +212,7 @@ export const SafeFunctionCurriedErrorHandler = {
     fn.displayName = UTOPIA_FUNCTION_ROOT_NAME
     const safeFn = (onError: ErrorHandler) => (...params: Array<unknown>) => {
       try {
+        setGlobalEvaluatedFileName(sourceFile ?? 'unknown')
         const [boundThis, ...otherParams] = params
         return fn.bind(boundThis)(...contextValues, ...otherParams)
       } catch (e) {

@@ -3,12 +3,9 @@ import { renderTestEditorWithCode, TestAppUID } from '../../components/canvas/ui
 import { BakedInStoryboardUID } from '../model/scene-utils'
 import { TestScene0UID } from '../model/test-ui-js-file.test-utils'
 import * as Prettier from 'prettier/standalone'
-import { StoryboardFilePath } from '../../components/editor/store/editor-state'
-import { dropFileExtension } from '../shared/file-utils'
 
 describe('registered property controls', () => {
   it('registered controls are in editor state', async () => {
-    const storyboardPath = dropFileExtension(StoryboardFilePath)
     const testCode = Prettier.format(
       `
         import * as React from 'react'
