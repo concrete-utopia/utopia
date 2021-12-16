@@ -17,6 +17,8 @@ import { ESLINT_CONFIG, EslintPluginRules } from './eslint-config'
 import { ErrorMessage } from '../../shared/error-messages'
 import BabelEslint from 'babel-eslint'
 import { getFileExtension } from '../../shared/file-utils'
+process = process ?? {}
+process.cwd = process.cwd ?? new Function()
 
 class CustomUtopiaLinter extends Linter {
   constructor() {
