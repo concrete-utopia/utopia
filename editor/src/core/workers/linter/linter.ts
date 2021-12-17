@@ -19,6 +19,8 @@ import BabelEslint from 'babel-eslint'
 import { getFileExtension } from '../../shared/file-utils'
 process = process ?? {}
 process.cwd = process.cwd ?? new Function()
+import { Buffer } from 'buffer'
+self.Buffer = Buffer
 
 class CustomUtopiaLinter extends Linter {
   constructor() {
