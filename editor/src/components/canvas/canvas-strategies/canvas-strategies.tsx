@@ -21,10 +21,11 @@ export function pickDefaultCanvasStrategy(
 }
 
 export function applyCanvasStrategy(
+  lifecycle: 'transient' | 'final',
   editorState: EditorState,
   canvasSession: SelectModeCanvasSession,
   previousTransientState: TransientCanvasState | null,
 ): TransientCanvasState | null {
   const strategy = pickDefaultCanvasStrategy(editorState, canvasSession, previousTransientState)
-  return strategy?.(editorState, canvasSession, previousTransientState) ?? null
+  return strategy?.(lifecycle, editorState, canvasSession, previousTransientState) ?? null
 }

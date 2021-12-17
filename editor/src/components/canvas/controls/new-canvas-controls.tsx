@@ -58,6 +58,7 @@ import { usePrevious } from '../../editor/hook-utils'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { getDragStateStart } from '../canvas-utils'
 import { FlexAlignControls } from './select-mode/flex-align-controls'
+import { AnimatedPlaceholderBoxes } from './select-mode/animated-placeholder-boxes'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -401,6 +402,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
     >
+      <AnimatedPlaceholderBoxes />
       {renderModeControlContainer()}
       {renderHighlightControls()}
       <LayoutParentControl />

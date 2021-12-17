@@ -451,6 +451,7 @@ export interface EditorState {
     controls: {
       flexAlignDropTargets: Array<FlexAlignControlRectProps>
     }
+    animatedPlaceholderTargetUids: Array<string>
   }
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
@@ -1069,6 +1070,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
         editorState,
         false,
         null,
+        'transient',
       ),
     },
     elementWarnings: emptyComplexMap(),
@@ -1247,6 +1249,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       controls: {
         flexAlignDropTargets: [],
       },
+      animatedPlaceholderTargetUids: [],
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -1388,6 +1391,7 @@ export function deriveState(
         editor,
         true,
         oldDerivedState?.canvas.transientState ?? null,
+        'transient',
       ),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),
@@ -1512,6 +1516,7 @@ export function editorModelFromPersistentModel(
       controls: {
         flexAlignDropTargets: [],
       },
+      animatedPlaceholderTargetUids: [],
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',

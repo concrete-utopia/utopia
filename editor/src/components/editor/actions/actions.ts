@@ -1017,6 +1017,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       controls: {
         flexAlignDropTargets: currentEditor.canvas.controls.flexAlignDropTargets,
       },
+      animatedPlaceholderTargetUids: currentEditor.canvas.animatedPlaceholderTargetUids,
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
@@ -1098,6 +1099,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
         history.current.editor,
         true,
         poppedDerived.canvas.transientState ?? null,
+        'transient',
       ),
     },
     elementWarnings: poppedDerived.elementWarnings,

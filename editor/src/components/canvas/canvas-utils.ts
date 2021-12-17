@@ -346,6 +346,7 @@ export function clearDragState(
       result,
       false,
       derived.canvas.transientState ?? null,
+      'final',
     )
     const producedTransientFilesState = producedTransientCanvasState.filesState
     result = applyTransientFilesState(
@@ -1670,6 +1671,7 @@ export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
   previousTransientState: TransientCanvasState | null,
+  lifecycle: 'transient' | 'final',
 ): TransientCanvasState {
   const currentOpenFile = editorState.canvas.openFile?.filename
   let transientState: TransientCanvasState | null = null
@@ -1736,7 +1738,12 @@ export function produceCanvasTransientState(
             case 'RESIZE_DRAG_STATE':
               break
             case 'SELECT_MODE_CANVAS_SESSION':
-              transientState = applyCanvasStrategy(editorState, dragState, previousTransientState)
+              transientState = applyCanvasStrategy(
+                lifecycle,
+                editorState,
+                dragState,
+                previousTransientState,
+              )
               break
             case 'INSERT_DRAG_STATE':
               throw new Error(`Unable to use insert drag state in select mode.`)

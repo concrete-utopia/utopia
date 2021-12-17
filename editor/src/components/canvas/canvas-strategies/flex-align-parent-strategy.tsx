@@ -1,4 +1,5 @@
 import React from 'react'
+import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { foldEither } from '../../../core/shared/either'
@@ -8,7 +9,11 @@ import {
   jsxAttributeValue,
   JSXElement,
 } from '../../../core/shared/element-template'
-import { setJSXValueAtPath, setJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
+import {
+  setJSXValueAtPath,
+  setJSXValuesAtPaths,
+  ValueAtPath,
+} from '../../../core/shared/jsx-attributes'
 import {
   canvasPoint,
   CanvasPoint,
@@ -30,6 +35,7 @@ import {
   SelectModeCanvasSession,
 } from '../canvas-types'
 import { objectMap } from '../../../core/shared/object-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 
 export const flexAlignParentStrategy: CanvasStrategy = {
   name: "Change Parent's Flex Align and Justify",
@@ -49,11 +55,14 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     return 0 // not fit
   },
   updateFn: (
+    lifecycle: 'transient' | 'final',
     editorState: EditorState,
     activeSession: SelectModeCanvasSession,
     previousTransientState: TransientCanvasState | null,
   ): TransientCanvasState => {
     // only apply after a certain treshold IF we hadn't already passed that treshold once
+    const draggedElement = editorState.selectedViews[0]
+
     if (
       !previousTransientState?.sessionStatePatch.dragDeltaMinimumPassed &&
       magnitude(activeSession.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
@@ -64,11 +73,15 @@ export const flexAlignParentStrategy: CanvasStrategy = {
         filesState: {},
         toastsToApply: [],
         sessionStatePatch: {},
-        editorStatePatch: {},
+        editorStatePatch: {
+          canvas: {
+            animatedPlaceholderTargetUids:
+              lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+          },
+        },
       }
     }
 
-    const draggedElement = editorState.selectedViews[0]
     const targetParent = MetadataUtils.getParent(editorState.jsxMetadata, draggedElement)
     const indicatorBoxes = calcualteFlexAlignIndicatorBoxes(
       targetParent,
@@ -91,6 +104,8 @@ export const flexAlignParentStrategy: CanvasStrategy = {
             controls: {
               flexAlignDropTargets: indicatorBoxes,
             },
+            animatedPlaceholderTargetUids:
+              lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
           },
         },
       }
@@ -100,47 +115,46 @@ export const flexAlignParentStrategy: CanvasStrategy = {
       let workingEditorState = { ...editorState }
       let transientFilesState: TransientFilesState = {}
 
-      workingEditorState = modifyUnderlyingForOpenFile(
+      // Change Parent Props
+
+      const parentPropsToUpdate: Array<ValueAtPath> = [
+        ...Object.entries(flexPropToChange).map(([key, value]) => ({
+          path: PP.create(['style', key]),
+          value: jsxAttributeValue(value, emptyComments),
+        })),
+      ]
+
+      const {
+        editorState: editorStateAfterParent,
+        transientFilesState: transientFilesStateAfterParent,
+      } = applyValuesAtPath(
+        workingEditorState,
+        transientFilesState,
         targetParent.elementPath,
-        editorState,
-        (element: JSXElement) => {
-          return foldEither(
-            () => {
-              return element
-            },
-            (updatedProps) => {
-              return {
-                ...element,
-                props: updatedProps,
-              }
-            },
-            setJSXValuesAtPaths(
-              element.props,
-              Object.entries(flexPropToChange).map(([key, value]) => ({
-                path: PP.create(['style', key]),
-                value: jsxAttributeValue(value, emptyComments),
-              })),
-            ),
-          )
-        },
+        parentPropsToUpdate,
       )
 
-      forUnderlyingTargetFromEditorState(
-        targetParent.elementPath,
-        workingEditorState,
-        (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-          transientFilesState[underlyingFilePath] = {
-            topLevelElementsIncludingScenes: success.topLevelElements,
-            imports: success.imports,
-          }
-          return success
-        },
+      // Make child invisible
+
+      const childOpacity0: Array<ValueAtPath> =
+        lifecycle === 'transient'
+          ? [{ path: PP.create(['style', 'opacity']), value: jsxAttributeValue(0, emptyComments) }]
+          : []
+
+      const {
+        editorState: editorStateAfterChild,
+        transientFilesState: transientFilesStateAfterChild,
+      } = applyValuesAtPath(
+        editorStateAfterParent,
+        transientFilesStateAfterParent,
+        draggedElement,
+        childOpacity0,
       )
 
       return {
         highlightedViews: [],
         selectedViews: editorState.selectedViews,
-        filesState: transientFilesState,
+        filesState: transientFilesStateAfterChild,
         toastsToApply: [],
         sessionStatePatch: {
           dragDeltaMinimumPassed: true,
@@ -150,6 +164,8 @@ export const flexAlignParentStrategy: CanvasStrategy = {
             controls: {
               flexAlignDropTargets: indicatorBoxes,
             },
+            animatedPlaceholderTargetUids:
+              lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
           },
         },
       }
@@ -160,6 +176,44 @@ export const flexAlignParentStrategy: CanvasStrategy = {
 type AssociatedFlexProp = {
   justifyContent?: React.CSSProperties['justifyContent']
   alignItems?: React.CSSProperties['alignItems']
+}
+
+function applyValuesAtPath(
+  editorState: EditorState,
+  filesState: TransientFilesState,
+  target: ElementPath,
+  jsxValuesAndPathsToSet: ValueAtPath[],
+): { editorState: EditorState; transientFilesState: TransientFilesState } {
+  let workingEditorState = { ...editorState }
+  let transientFilesState = { ...filesState }
+
+  workingEditorState = modifyUnderlyingForOpenFile(target, editorState, (element: JSXElement) => {
+    return foldEither(
+      () => {
+        return element
+      },
+      (updatedProps) => {
+        return {
+          ...element,
+          props: updatedProps,
+        }
+      },
+      setJSXValuesAtPaths(element.props, jsxValuesAndPathsToSet),
+    )
+  })
+
+  forUnderlyingTargetFromEditorState(
+    target,
+    workingEditorState,
+    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
+      transientFilesState[underlyingFilePath] = {
+        topLevelElementsIncludingScenes: success.topLevelElements,
+        imports: success.imports,
+      }
+      return success
+    },
+  )
+  return { editorState: workingEditorState, transientFilesState: transientFilesState }
 }
 
 function flexIndicatorBox(

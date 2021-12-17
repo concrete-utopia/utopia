@@ -388,6 +388,7 @@ export interface CanvasStrategy {
 }
 
 export type CanvasStrategyUpdateFn = (
+  lifecycle: 'transient' | 'final',
   editorState: EditorState,
   currentSession: SelectModeCanvasSession,
   previousTransientState: TransientCanvasState | null,
