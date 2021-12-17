@@ -14,7 +14,7 @@ import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
-import { Size } from 'react-virtualized-auto-sizer'
+import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
 import {
   UtopiaTheme,
   Section,
@@ -28,12 +28,6 @@ import {
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
 import { FlexCol } from 'utopia-api'
-// There's some weirdness between the types and the results in the two module systems.
-// This is to effectively massage the result so that if it is loaded in the browser or in
-// node it should end up with the right thing.
-const AutoSizer = require('react-virtualized-auto-sizer')
-const AutoSizerComponent: typeof AutoSizer =
-  (AutoSizer as any)['default'] == null ? AutoSizer : (AutoSizer as any)['default']
 
 const NavigatorContainerId = 'navigator'
 
@@ -207,7 +201,7 @@ export const NavigatorComponent = React.memo<NavigatorComponentProps>(
               overflowX: 'hidden',
             }}
           >
-            <AutoSizerComponent
+            <AutoSizer
               disableWidth={true}
               style={{
                 overscrollBehavior: 'contain',
@@ -216,7 +210,7 @@ export const NavigatorComponent = React.memo<NavigatorComponentProps>(
               }}
             >
               {ItemList}
-            </AutoSizerComponent>
+            </AutoSizer>
           </FlexColumn>
         </SectionBodyArea>
       </Section>

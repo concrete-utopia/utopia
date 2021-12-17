@@ -11,7 +11,7 @@ import {
 } from './user'
 // Stupid style of import because the website and editor are different
 // and so there's no style of import which works with both projects.
-const urljoin = require('url-join')
+import urljoin from 'url-join'
 
 export const PROJECT_ENDPOINT = UTOPIA_BACKEND + 'project/'
 export const PROJECT_EDITOR = BASE_URL + 'project'

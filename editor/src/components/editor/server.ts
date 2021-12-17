@@ -12,7 +12,7 @@ import { assetFile, imageFile, isImageFile } from '../../core/model/project-file
 import { AssetFile, ImageFile, isAssetFile } from '../../core/shared/project-file-types'
 import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
 import { LoginState } from '../../uuiui-deps'
-const urljoin = require('url-join')
+import urljoin from 'url-join'
 import JSZip from 'jszip'
 import { addFileToProjectContents, AssetFileWithFileName, walkContentsTree } from '../assets'
 import { isLoginLost, isNotLoggedIn } from '../../common/user'
