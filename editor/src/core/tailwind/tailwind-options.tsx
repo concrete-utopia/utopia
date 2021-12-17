@@ -1,5 +1,4 @@
 import React from 'react'
-import { betterReactMemo } from '../../uuiui-deps'
 import { filterDuplicates, flatMapArray, last, stripNulls } from '../shared/array-utils'
 import { mapToArray, mapValues } from '../shared/object-utils'
 import { NO_OP } from '../shared/utils'
@@ -343,12 +342,11 @@ export function useGetSelectedClasses(): {
   }
 }
 
-const Bold = betterReactMemo('Bold', ({ children }: { children: React.ReactNode }) => {
+const Bold = React.memo(({ children }: { children: React.ReactNode }) => {
   return <strong>{children}</strong>
 })
 
-export const MatchHighlighter = betterReactMemo(
-  'MatchHighlighter',
+export const MatchHighlighter = React.memo(
   ({ text, searchString }: { text: string; searchString: string | null | undefined }) => {
     const sanitisedFilter = searchString?.trim().toLowerCase() ?? ''
     const individualTerms = searchStringToIndividualTerms(sanitisedFilter)
@@ -397,7 +395,7 @@ const getColorForCategory = (category: AttributeCategory): string => {
   }
 }
 
-const AngledStripe = betterReactMemo('AngledStripe', (props: { category: AttributeCategory }) => {
+const AngledStripe = React.memo((props: { category: AttributeCategory }) => {
   return (
     <div
       style={{
@@ -411,8 +409,7 @@ const AngledStripe = betterReactMemo('AngledStripe', (props: { category: Attribu
   )
 })
 
-export const LabelWithStripes = betterReactMemo(
-  'LabelWithStripes',
+export const LabelWithStripes = React.memo(
   (props: { label: string; categories: Array<AttributeCategory> }) => {
     const { label, categories } = props
 

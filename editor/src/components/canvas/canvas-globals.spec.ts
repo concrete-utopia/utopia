@@ -8,9 +8,9 @@ import {
 import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import { DispatchPriority, EditorAction, EditorDispatch } from '../editor/action-types'
 import {
-  addControlsToCheck,
+  addRegisteredControls,
   ControlsToCheck,
-  resetControlsToCheck,
+  clearAllRegisteredControls,
   validateControlsToCheck,
 } from './canvas-globals'
 import {
@@ -20,13 +20,13 @@ import {
 } from '../custom-code/code-file'
 
 const cardComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     title: right({
       control: 'string-input',
       label: 'Title',
     }),
   }),
-  insertOptions: [
+  variants: [
     {
       insertMenuLabel: 'Card Default',
       elementToInsert: jsxElementWithoutUID(
@@ -57,7 +57,7 @@ const cardPropertyControlsInfo: PropertyControlsInfo = {
 }
 
 const modifiedCardComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     title: right({
       control: 'string-input',
       label: 'Title',
@@ -67,7 +67,7 @@ const modifiedCardComponentDescriptor: ComponentDescriptor = {
       label: 'Border',
     }),
   }),
-  insertOptions: [
+  variants: [
     {
       insertMenuLabel: 'Card Default',
       elementToInsert: jsxElementWithoutUID(
@@ -95,14 +95,14 @@ const modifiedCardControlsToCheck: ControlsToCheck = Promise.resolve(
 )
 
 const selectorComponentDescriptor: ComponentDescriptor = {
-  propertyControls: right({
+  properties: right({
     value: right({
       control: 'popuplist',
       label: 'Value',
       options: ['True', 'False', 'FileNotFound'],
     }),
   }),
-  insertOptions: [
+  variants: [
     {
       insertMenuLabel: 'True False Selector',
       elementToInsert: jsxElementWithoutUID(
@@ -138,11 +138,21 @@ const selectorPropertyControlsInfo: PropertyControlsInfo = {
   },
 }
 
+const otherCardComponentDescriptorWithName: ComponentDescriptorWithName = {
+  ...cardComponentDescriptor,
+  componentName: 'Other Card',
+}
+
+const otherCardControlsToCheck: ControlsToCheck = Promise.resolve(
+  right([otherCardComponentDescriptorWithName]),
+)
+
 describe('validateControlsToCheck', () => {
   beforeEach(() => {
-    // Twice because the first will leave some data in `previousModuleNamesOrPaths`.
-    resetControlsToCheck()
-    resetControlsToCheck()
+    clearAllRegisteredControls()
+  })
+  afterAll(() => {
+    clearAllRegisteredControls()
   })
   it('does nothing if no controls are added', async () => {
     let actionsDispatched: Array<EditorAction> = []
@@ -152,7 +162,7 @@ describe('validateControlsToCheck', () => {
     ) => {
       actionsDispatched.push(...actions)
     }
-    await validateControlsToCheck(dispatch, {})
+    await validateControlsToCheck(dispatch, {}, [], [])
     expect(actionsDispatched).toMatchInlineSnapshot(`Array []`)
   })
   it('includes some controls added', async () => {
@@ -163,8 +173,8 @@ describe('validateControlsToCheck', () => {
     ) => {
       actionsDispatched.push(...actions)
     }
-    addControlsToCheck('/src/card', cardControlsToCheck)
-    await validateControlsToCheck(dispatch, {})
+    addRegisteredControls('test.js', '/src/card', cardControlsToCheck)
+    await validateControlsToCheck(dispatch, {}, ['test.js'], ['test.js'])
     expect(actionsDispatched).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -173,7 +183,19 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/card": Object {
               "Card": Object {
-                "insertOptions": Array [
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
                   Object {
                     "elementToInsert": Object {
                       "children": Array [],
@@ -217,18 +239,6 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
-                  },
-                },
               },
             },
           },
@@ -236,7 +246,7 @@ describe('validateControlsToCheck', () => {
       ]
     `)
   })
-  it('deletes the controls removed', async () => {
+  it('deletes the controls removed from a file', async () => {
     let actionsDispatched: Array<EditorAction> = []
     const dispatch: EditorDispatch = (
       actions: ReadonlyArray<EditorAction>,
@@ -244,9 +254,16 @@ describe('validateControlsToCheck', () => {
     ) => {
       actionsDispatched.push(...actions)
     }
-    addControlsToCheck('/src/card', cardControlsToCheck)
-    resetControlsToCheck()
-    await validateControlsToCheck(dispatch, cardPropertyControlsInfo)
+    // First add the controls
+    addRegisteredControls('test.js', '/src/card', cardControlsToCheck)
+    await validateControlsToCheck(dispatch, {}, ['test.js'], ['test.js'])
+
+    // Clear the captured actions because we only care about actions dispatched by the next call
+    actionsDispatched = []
+
+    // As the second "evaluation" of 'test.js' didn't register controls, controls registered by the previous
+    // evaluation will be removed
+    await validateControlsToCheck(dispatch, cardPropertyControlsInfo, ['test.js'], ['test.js'])
     expect(actionsDispatched).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -259,6 +276,146 @@ describe('validateControlsToCheck', () => {
       ]
     `)
   })
+  it('deletes the controls no longer imported', async () => {
+    let actionsDispatched: Array<EditorAction> = []
+    const dispatch: EditorDispatch = (
+      actions: ReadonlyArray<EditorAction>,
+      priority?: DispatchPriority,
+    ) => {
+      actionsDispatched.push(...actions)
+    }
+    // First add the controls
+    addRegisteredControls('test.js', '/src/card', cardControlsToCheck)
+    await validateControlsToCheck(dispatch, {}, ['test.js'], ['test.js'])
+
+    // Clear the captured actions because we only care about actions dispatched by the next call
+    actionsDispatched = []
+
+    // As 'test.js' is no longer imported, it removes the controls registered by 'test.js' previously
+    await validateControlsToCheck(dispatch, cardPropertyControlsInfo, [], [])
+    expect(actionsDispatched).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "action": "UPDATE_PROPERTY_CONTROLS_INFO",
+          "moduleNamesOrPathsToDelete": Array [
+            "/src/card",
+          ],
+          "propertyControlsInfo": Object {},
+        },
+      ]
+    `)
+  })
+  it('not evaluating a file will not remove the controls registered by it', async () => {
+    let actionsDispatched: Array<EditorAction> = []
+    const dispatch: EditorDispatch = (
+      actions: ReadonlyArray<EditorAction>,
+      priority?: DispatchPriority,
+    ) => {
+      actionsDispatched.push(...actions)
+    }
+    // First add the controls
+    addRegisteredControls('test.js', '/src/card', cardControlsToCheck)
+    await validateControlsToCheck(dispatch, {}, ['test.js'], ['test.js'])
+
+    // Clear the captured actions because we only care about actions dispatched by the next call
+    actionsDispatched = []
+
+    // 'test.js' is still imported, but not evaluated this time
+    await validateControlsToCheck(dispatch, cardPropertyControlsInfo, ['test.js'], [])
+    expect(actionsDispatched).toMatchInlineSnapshot(`Array []`)
+  }),
+    it('importing a file, then removing that import, then adding it again will register the controls even if not evaluated', async () => {
+      let actionsDispatched: Array<EditorAction> = []
+      const dispatch: EditorDispatch = (
+        actions: ReadonlyArray<EditorAction>,
+        priority?: DispatchPriority,
+      ) => {
+        actionsDispatched.push(...actions)
+      }
+      // First add the controls
+      addRegisteredControls('test.js', '/src/card', cardControlsToCheck)
+      await validateControlsToCheck(dispatch, {}, ['test.js'], ['test.js'])
+
+      // As 'test.js' is no longer imported, it removes the controls registered by 'test.js' previously
+      await validateControlsToCheck(dispatch, cardPropertyControlsInfo, [], [])
+
+      // Clear the captured actions because we only care about actions dispatched by the next call
+      actionsDispatched = []
+
+      // 'test.js' is now imported again, but not evaluated this time as it hasn't changed
+      await validateControlsToCheck(dispatch, {}, ['test.js'], [])
+
+      expect(actionsDispatched).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "action": "UPDATE_PROPERTY_CONTROLS_INFO",
+            "moduleNamesOrPathsToDelete": Array [],
+            "propertyControlsInfo": Object {
+              "/src/card": Object {
+                "Card": Object {
+                  "properties": Object {
+                    "type": "RIGHT",
+                    "value": Object {
+                      "title": Object {
+                        "type": "RIGHT",
+                        "value": Object {
+                          "control": "string-input",
+                          "label": "Title",
+                        },
+                      },
+                    },
+                  },
+                  "variants": Array [
+                    Object {
+                      "elementToInsert": Object {
+                        "children": Array [],
+                        "name": Object {
+                          "baseVariable": "Card",
+                          "propertyPath": Object {
+                            "propertyElements": Array [],
+                          },
+                        },
+                        "props": Array [
+                          Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
+                            "key": "title",
+                            "type": "JSX_ATTRIBUTES_ENTRY",
+                            "value": Object {
+                              "comments": Object {
+                                "leadingComments": Array [],
+                                "trailingComments": Array [],
+                              },
+                              "type": "ATTRIBUTE_VALUE",
+                              "value": "Default",
+                            },
+                          },
+                        ],
+                      },
+                      "importsToAdd": Object {
+                        "/src/card": Object {
+                          "importedAs": null,
+                          "importedFromWithin": Array [
+                            Object {
+                              "alias": "Card",
+                              "name": "Card",
+                            },
+                          ],
+                          "importedWithName": null,
+                        },
+                      },
+                      "insertMenuLabel": "Card Default",
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        ]
+      `)
+    })
   it('includes newly added controls', async () => {
     let actionsDispatched: Array<EditorAction> = []
     const dispatch: EditorDispatch = (
@@ -267,9 +424,9 @@ describe('validateControlsToCheck', () => {
     ) => {
       actionsDispatched.push(...actions)
     }
-    addControlsToCheck('/src/card', cardControlsToCheck)
-    addControlsToCheck('/src/selector', selectorControlsToCheck)
-    await validateControlsToCheck(dispatch, cardPropertyControlsInfo)
+    addRegisteredControls('test.js', '/src/card', cardControlsToCheck)
+    addRegisteredControls('test.js', '/src/selector', selectorControlsToCheck)
+    await validateControlsToCheck(dispatch, cardPropertyControlsInfo, ['test.js'], ['test.js'])
     expect(actionsDispatched).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -278,7 +435,24 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/selector": Object {
               "Selector": Object {
-                "insertOptions": Array [
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "value": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "popuplist",
+                        "label": "Value",
+                        "options": Array [
+                          "True",
+                          "False",
+                          "FileNotFound",
+                        ],
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
                   Object {
                     "elementToInsert": Object {
                       "children": Array [],
@@ -322,23 +496,6 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "True False Selector",
                   },
                 ],
-                "propertyControls": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "value": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "popuplist",
-                        "label": "Value",
-                        "options": Array [
-                          "True",
-                          "False",
-                          "FileNotFound",
-                        ],
-                      },
-                    },
-                  },
-                },
               },
             },
           },
@@ -354,12 +511,17 @@ describe('validateControlsToCheck', () => {
     ) => {
       actionsDispatched.push(...actions)
     }
-    addControlsToCheck('/src/card', modifiedCardControlsToCheck)
-    addControlsToCheck('/src/selector', selectorControlsToCheck)
-    await validateControlsToCheck(dispatch, {
-      ...cardPropertyControlsInfo,
-      ...selectorPropertyControlsInfo,
-    })
+    addRegisteredControls('test.js', '/src/card', modifiedCardControlsToCheck)
+    addRegisteredControls('test.js', '/src/selector', selectorControlsToCheck)
+    await validateControlsToCheck(
+      dispatch,
+      {
+        ...cardPropertyControlsInfo,
+        ...selectorPropertyControlsInfo,
+      },
+      ['test.js'],
+      ['test.js'],
+    )
     expect(actionsDispatched).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -368,7 +530,26 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/card": Object {
               "Card": Object {
-                "insertOptions": Array [
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "border": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Border",
+                      },
+                    },
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
                   Object {
                     "elementToInsert": Object {
                       "children": Array [],
@@ -428,16 +609,35 @@ describe('validateControlsToCheck', () => {
                     "insertMenuLabel": "Card Default",
                   },
                 ],
-                "propertyControls": Object {
+              },
+            },
+          },
+        },
+      ]
+    `)
+  })
+  it('merges multiple calls for the same module', async () => {
+    let actionsDispatched: Array<EditorAction> = []
+    const dispatch: EditorDispatch = (
+      actions: ReadonlyArray<EditorAction>,
+      priority?: DispatchPriority,
+    ) => {
+      actionsDispatched.push(...actions)
+    }
+    addRegisteredControls('test.js', '/src/card', cardControlsToCheck)
+    addRegisteredControls('test.js', '/src/card', otherCardControlsToCheck)
+    await validateControlsToCheck(dispatch, {}, ['test.js'], ['test.js'])
+    expect(actionsDispatched).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "action": "UPDATE_PROPERTY_CONTROLS_INFO",
+          "moduleNamesOrPathsToDelete": Array [],
+          "propertyControlsInfo": Object {
+            "/src/card": Object {
+              "Card": Object {
+                "properties": Object {
                   "type": "RIGHT",
                   "value": Object {
-                    "border": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Border",
-                      },
-                    },
                     "title": Object {
                       "type": "RIGHT",
                       "value": Object {
@@ -447,6 +647,108 @@ describe('validateControlsToCheck', () => {
                     },
                   },
                 },
+                "variants": Array [
+                  Object {
+                    "elementToInsert": Object {
+                      "children": Array [],
+                      "name": Object {
+                        "baseVariable": "Card",
+                        "propertyPath": Object {
+                          "propertyElements": Array [],
+                        },
+                      },
+                      "props": Array [
+                        Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "key": "title",
+                          "type": "JSX_ATTRIBUTES_ENTRY",
+                          "value": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": "Default",
+                          },
+                        },
+                      ],
+                    },
+                    "importsToAdd": Object {
+                      "/src/card": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "Card",
+                            "name": "Card",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "insertMenuLabel": "Card Default",
+                  },
+                ],
+              },
+              "Other Card": Object {
+                "properties": Object {
+                  "type": "RIGHT",
+                  "value": Object {
+                    "title": Object {
+                      "type": "RIGHT",
+                      "value": Object {
+                        "control": "string-input",
+                        "label": "Title",
+                      },
+                    },
+                  },
+                },
+                "variants": Array [
+                  Object {
+                    "elementToInsert": Object {
+                      "children": Array [],
+                      "name": Object {
+                        "baseVariable": "Card",
+                        "propertyPath": Object {
+                          "propertyElements": Array [],
+                        },
+                      },
+                      "props": Array [
+                        Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
+                          "key": "title",
+                          "type": "JSX_ATTRIBUTES_ENTRY",
+                          "value": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
+                            "type": "ATTRIBUTE_VALUE",
+                            "value": "Default",
+                          },
+                        },
+                      ],
+                    },
+                    "importsToAdd": Object {
+                      "/src/card": Object {
+                        "importedAs": null,
+                        "importedFromWithin": Array [
+                          Object {
+                            "alias": "Card",
+                            "name": "Card",
+                          },
+                        ],
+                        "importedWithName": null,
+                      },
+                    },
+                    "insertMenuLabel": "Card Default",
+                  },
+                ],
               },
             },
           },

@@ -7,7 +7,6 @@
 
 /* @flow */
 
-// const Anser = require('anser') // TODO does this work?
 import Anser from 'anser'
 import { AllHtmlEntities as Entities } from 'html-entities'
 

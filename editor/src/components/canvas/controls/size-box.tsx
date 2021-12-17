@@ -39,7 +39,6 @@ import { colorTheme as fixmeColorTheme, useColorTheme } from '../../../uuiui'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { PropertyTargetSelector } from './property-target-selector'
 import { unless, when } from '../../../utils/react-conditionals'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { isZeroSizedElement } from './outline-utils'
 import { ZeroSizeResizeControl } from './zero-sized-element-controls'
 import {
@@ -317,7 +316,7 @@ interface ResizeLinesProps {
 }
 
 const LineOffset = 6
-const ResizeLines = betterReactMemo('ResizeLines', (props: ResizeLinesProps) => {
+const ResizeLines = React.memo((props: ResizeLinesProps) => {
   const reference = React.createRef<HTMLDivElement>()
   const LineSVGComponent =
     props.position.y === 0.5 ? DimensionableControlVertical : DimensionableControlHorizontal

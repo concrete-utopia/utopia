@@ -78,13 +78,14 @@ import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 import { setPanelVisibility, switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
-import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
+import { clearListOfEvaluatedFiles, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
 import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
 import {
   BuiltInDependencies,
   createBuiltInDependenciesList,
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { clearAllRegisteredControls } from './canvas-globals'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -174,6 +175,10 @@ export async function renderTestEditorWithModel(
   }
 
   const spyCollector = emptyUiJsxCanvasContextData()
+
+  // Reset canvas globals
+  clearAllRegisteredControls()
+  clearListOfEvaluatedFiles()
 
   const asyncTestDispatch = async (
     actions: ReadonlyArray<EditorAction>,

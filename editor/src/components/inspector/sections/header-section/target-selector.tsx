@@ -17,7 +17,7 @@ import {
   OnClickOutsideHOC,
   UIRow,
 } from '../../../../uuiui'
-import { betterReactMemo, ContextMenuWrapper } from '../../../../uuiui-deps'
+import { ContextMenuWrapper } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 
@@ -45,133 +45,127 @@ interface TargetSelectorPanelProps {
   onStyleSelectorInsert: (parent: CSSTarget, label: string) => void
 }
 
-export const TargetSelectorPanel = betterReactMemo(
-  'TargetSelectorPanel',
-  (props: TargetSelectorPanelProps) => {
-    const colorTheme = useColorTheme()
-    const {
-      targets,
-      onSelect,
-      selectedTargetPath,
-      onStyleSelectorRename,
-      onStyleSelectorDelete,
-      onStyleSelectorInsert,
-    } = props
-    const [addingIndex, setAddingIndex] = React.useState<number | null>(null)
-    const [addingIndentLevel, setAddingIndentLevel] = React.useState<number | null>(null)
-    const exitAdding = React.useCallback(() => {
-      setAddingIndex(null)
-      setAddingIndentLevel(null)
-    }, [])
+export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) => {
+  const colorTheme = useColorTheme()
+  const {
+    targets,
+    onSelect,
+    selectedTargetPath,
+    onStyleSelectorRename,
+    onStyleSelectorDelete,
+    onStyleSelectorInsert,
+  } = props
+  const [addingIndex, setAddingIndex] = React.useState<number | null>(null)
+  const [addingIndentLevel, setAddingIndentLevel] = React.useState<number | null>(null)
+  const exitAdding = React.useCallback(() => {
+    setAddingIndex(null)
+    setAddingIndentLevel(null)
+  }, [])
 
-    const onRenameByIndex = React.useCallback(
-      (index: number, label: string) => {
-        onStyleSelectorRename(targets[index], label)
-      },
-      [targets, onStyleSelectorRename],
-    )
+  const onRenameByIndex = React.useCallback(
+    (index: number, label: string) => {
+      onStyleSelectorRename(targets[index], label)
+    },
+    [targets, onStyleSelectorRename],
+  )
 
-    const [isOpen, setIsOpen] = React.useState<boolean>(false)
+  const [isOpen, setIsOpen] = React.useState<boolean>(false)
 
-    const onDeleteByIndex = React.useCallback(
-      (index: number) => onStyleSelectorDelete(targets[index]),
-      [targets, onStyleSelectorDelete],
-    )
-    const onSelectByIndex = React.useCallback((index: number) => onSelect(targets[index].path), [
-      targets,
-      onSelect,
-    ])
-    const onInsertByIndex = React.useCallback(
-      (index: number, label: string) => {
-        onStyleSelectorInsert(targets[index], label)
-      },
-      [targets, onStyleSelectorInsert],
-    )
-    const targetIndex = getCSSTargetIndex(selectedTargetPath, targets)
+  const onDeleteByIndex = React.useCallback(
+    (index: number) => onStyleSelectorDelete(targets[index]),
+    [targets, onStyleSelectorDelete],
+  )
+  const onSelectByIndex = React.useCallback((index: number) => onSelect(targets[index].path), [
+    targets,
+    onSelect,
+  ])
+  const onInsertByIndex = React.useCallback(
+    (index: number, label: string) => {
+      onStyleSelectorInsert(targets[index], label)
+    },
+    [targets, onStyleSelectorInsert],
+  )
+  const targetIndex = getCSSTargetIndex(selectedTargetPath, targets)
 
-    const slicedTargetsAdding = React.useMemo(() => targets.slice(0, addingIndex ?? undefined), [
-      addingIndex,
-      targets,
-    ])
+  const slicedTargetsAdding = React.useMemo(() => targets.slice(0, addingIndex ?? undefined), [
+    addingIndex,
+    targets,
+  ])
 
-    const slicedTargets = React.useMemo(
-      () => (addingIndex != null ? targets.slice(addingIndex, targets.length) : targets),
-      [targets, addingIndex],
-    )
+  const slicedTargets = React.useMemo(
+    () => (addingIndex != null ? targets.slice(addingIndex, targets.length) : targets),
+    [targets, addingIndex],
+  )
 
-    return (
-      <FlexColumn
-        style={{
-          position: 'relative',
-          paddingTop: '8px',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-        }}
-      >
-        <TargetListHeader
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          setAddingIndex={setAddingIndex}
-          selectedTargetPath={selectedTargetPath}
-          isAdding={addingIndex != null}
-          targetIndex={targetIndex}
-        />
-        {/* outer flexColumn takes a fixed height (or can grow to fill space, this way addable row can
+  return (
+    <FlexColumn
+      style={{
+        position: 'relative',
+        paddingTop: '8px',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+      }}
+    >
+      <TargetListHeader
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        setAddingIndex={setAddingIndex}
+        selectedTargetPath={selectedTargetPath}
+        isAdding={addingIndex != null}
+        targetIndex={targetIndex}
+      />
+      {/* outer flexColumn takes a fixed height (or can grow to fill space, this way addable row can
       be at the top without being included in scrollable list */}
-        {isOpen ? (
+      {isOpen ? (
+        <FlexColumn className='label-fixedHeightList' style={{ height: 100, overflowY: 'scroll' }}>
           <FlexColumn
-            className='label-fixedHeightList'
-            style={{ height: 100, overflowY: 'scroll' }}
+            className='label-scrollableList'
+            style={{
+              borderTop: `1px solid ${colorTheme.secondaryBorder.value}`,
+              borderBottom: `1px solid ${colorTheme.secondaryBorder.value}`,
+              paddingTop: 5,
+              paddingBottom: 8,
+              backgroundColor: colorTheme.emphasizedBackground.value,
+              flexGrow: 1,
+              overflowY: 'scroll',
+            }}
           >
-            <FlexColumn
-              className='label-scrollableList'
-              style={{
-                borderTop: `1px solid ${colorTheme.secondaryBorder.value}`,
-                borderBottom: `1px solid ${colorTheme.secondaryBorder.value}`,
-                paddingTop: 5,
-                paddingBottom: 8,
-                backgroundColor: colorTheme.emphasizedBackground.value,
-                flexGrow: 1,
-                overflowY: 'scroll',
-              }}
-            >
-              {addingIndex != null ? (
-                <React.Fragment>
-                  <TargetList
-                    targets={slicedTargetsAdding}
-                    selectionOffset={0}
-                    selectedItemIndex={targetIndex}
-                    setAddingIndex={setAddingIndex}
-                    setAddingIndentLevel={setAddingIndentLevel}
-                    onSelect={onSelectByIndex}
-                    onRenameByIndex={onRenameByIndex}
-                    onDeleteByIndex={onDeleteByIndex}
-                  />
-                  <AddingRow
-                    onInsert={onInsertByIndex}
-                    addingIndex={addingIndex}
-                    addingIndentLevel={addingIndentLevel}
-                    finishAdding={exitAdding}
-                  />
-                </React.Fragment>
-              ) : null}
-              <TargetList
-                targets={slicedTargets}
-                selectionOffset={addingIndex != null ? addingIndex : 0}
-                selectedItemIndex={targetIndex}
-                setAddingIndex={setAddingIndex}
-                setAddingIndentLevel={setAddingIndentLevel}
-                onSelect={onSelectByIndex}
-                onRenameByIndex={onRenameByIndex}
-                onDeleteByIndex={onDeleteByIndex}
-              />
-            </FlexColumn>
+            {addingIndex != null ? (
+              <React.Fragment>
+                <TargetList
+                  targets={slicedTargetsAdding}
+                  selectionOffset={0}
+                  selectedItemIndex={targetIndex}
+                  setAddingIndex={setAddingIndex}
+                  setAddingIndentLevel={setAddingIndentLevel}
+                  onSelect={onSelectByIndex}
+                  onRenameByIndex={onRenameByIndex}
+                  onDeleteByIndex={onDeleteByIndex}
+                />
+                <AddingRow
+                  onInsert={onInsertByIndex}
+                  addingIndex={addingIndex}
+                  addingIndentLevel={addingIndentLevel}
+                  finishAdding={exitAdding}
+                />
+              </React.Fragment>
+            ) : null}
+            <TargetList
+              targets={slicedTargets}
+              selectionOffset={addingIndex != null ? addingIndex : 0}
+              selectedItemIndex={targetIndex}
+              setAddingIndex={setAddingIndex}
+              setAddingIndentLevel={setAddingIndentLevel}
+              onSelect={onSelectByIndex}
+              onRenameByIndex={onRenameByIndex}
+              onDeleteByIndex={onDeleteByIndex}
+            />
           </FlexColumn>
-        ) : null}
-      </FlexColumn>
-    )
-  },
-)
+        </FlexColumn>
+      ) : null}
+    </FlexColumn>
+  )
+})
 
 interface TargetListProps {
   targets: Array<CSSTarget>
@@ -184,7 +178,7 @@ interface TargetListProps {
   onDeleteByIndex: (index: number) => void
 }
 
-const TargetList = betterReactMemo('TargetList', (props: TargetListProps) => {
+const TargetList = React.memo((props: TargetListProps) => {
   const {
     targets,
     selectionOffset,
@@ -231,7 +225,7 @@ interface TargetListItemProps {
 }
 TargetList.displayName = 'TargetList'
 
-const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemProps) => {
+const TargetListItem = React.memo((props: TargetListItemProps) => {
   const colorTheme = useColorTheme()
   const {
     itemIndex,
@@ -394,7 +388,7 @@ interface TargetListHeaderProps {
   targetIndex: number
 }
 
-const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListHeaderProps) => {
+const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
   const colorTheme = useColorTheme()
   const { isOpen, setIsOpen, setAddingIndex, selectedTargetPath, isAdding, targetIndex } = props
 
@@ -447,7 +441,7 @@ interface AddingRowProps {
   finishAdding: () => void
 }
 
-const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
+const AddingRow = React.memo((props: AddingRowProps) => {
   const { addingIndex, finishAdding, addingIndentLevel, onInsert } = props
   const [value, setValue] = React.useState<string>('')
 

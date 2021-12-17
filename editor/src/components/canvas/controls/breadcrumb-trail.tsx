@@ -1,9 +1,6 @@
 import React from 'react'
 import { useEditorState } from '../../../components/editor/store/store-hook'
-import {
-  betterReactMemo,
-  useKeepReferenceEqualityIfPossible,
-} from '../../../utils/react-performance'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -16,7 +13,7 @@ interface ElementPathElement {
   path: ElementPath
 }
 
-export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
+export const BreadcrumbTrail = React.memo(() => {
   const { dispatch, jsxMetadata, selectedViews } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,

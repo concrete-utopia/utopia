@@ -38,7 +38,6 @@ import {
   SimpleNumberInput,
   useColorTheme,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
   InspectorInfoWithPropKeys,
   useInspectorInfoLonghandShorthand,
@@ -62,42 +61,39 @@ export const pinLabels: { [key in LayoutPinnedProp]: string } = {
   Height: 'H',
 }
 
-export const PinsLayoutNumberControl = betterReactMemo(
-  'PinsLayoutNumberControl',
-  (props: PinsLayoutNumberControlProps) => {
-    const framePoint = framePointForPinnedProp(props.prop)
-    const pointInfo = useInspectorLayoutInfo(props.prop)
+export const PinsLayoutNumberControl = React.memo((props: PinsLayoutNumberControlProps) => {
+  const framePoint = framePointForPinnedProp(props.prop)
+  const pointInfo = useInspectorLayoutInfo(props.prop)
 
-    const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-      pointInfo.onSubmitValue,
-      pointInfo.onUnsetValues,
-    )
-    const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-      pointInfo.onTransientSubmitValue,
-      pointInfo.onUnsetValues,
-    )
+  const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+    pointInfo.onSubmitValue,
+    pointInfo.onUnsetValues,
+  )
+  const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
+    pointInfo.onTransientSubmitValue,
+    pointInfo.onUnsetValues,
+  )
 
-    return (
-      <InspectorContextMenuWrapper
-        id={`position-${props.prop}-context-menu`}
-        items={[unsetPropertyMenuItem(framePoint, pointInfo.onUnsetValues)]}
-        data={{}}
-      >
-        <NumberInput
-          value={pointInfo.value}
-          id={`position-${props.prop}-number-input`}
-          testId={`position-${props.prop}-number-input`}
-          labelInner={props.label}
-          onSubmitValue={wrappedOnSubmit}
-          onTransientSubmitValue={wrappedOnTransientSubmit}
-          controlStatus={pointInfo.controlStatus}
-          numberType={'LengthPercent'}
-          defaultUnitToHide={'px'}
-        />
-      </InspectorContextMenuWrapper>
-    )
-  },
-)
+  return (
+    <InspectorContextMenuWrapper
+      id={`position-${props.prop}-context-menu`}
+      items={[unsetPropertyMenuItem(framePoint, pointInfo.onUnsetValues)]}
+      data={{}}
+    >
+      <NumberInput
+        value={pointInfo.value}
+        id={`position-${props.prop}-number-input`}
+        testId={`position-${props.prop}-number-input`}
+        labelInner={props.label}
+        onSubmitValue={wrappedOnSubmit}
+        onTransientSubmitValue={wrappedOnTransientSubmit}
+        controlStatus={pointInfo.controlStatus}
+        numberType={'LengthPercent'}
+        defaultUnitToHide={'px'}
+      />
+    </InspectorContextMenuWrapper>
+  )
+})
 
 export type StyleLayoutNumberProp =
   | 'paddingTop'
@@ -124,95 +120,88 @@ interface FlexStyleNumberControlProps {
   styleProp: StyleLayoutNumberProp
 }
 
-export const FlexStyleNumberControl = betterReactMemo(
-  'FlexStyleNumberControl',
-  (props: FlexStyleNumberControlProps) => {
-    const layoutPropInfo = useInspectorLayoutInfo(props.styleProp)
-    const value =
-      isCSSNumber(layoutPropInfo.value) || layoutPropInfo.value == null
-        ? layoutPropInfo.value
-        : undefined
+export const FlexStyleNumberControl = React.memo((props: FlexStyleNumberControlProps) => {
+  const layoutPropInfo = useInspectorLayoutInfo(props.styleProp)
+  const value =
+    isCSSNumber(layoutPropInfo.value) || layoutPropInfo.value == null
+      ? layoutPropInfo.value
+      : undefined
 
-    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      layoutPropInfo.onSubmitValue,
-      layoutPropInfo.onUnsetValues,
-    )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      layoutPropInfo.onTransientSubmitValue,
-      layoutPropInfo.onUnsetValues,
-    )
-    return (
-      <InspectorContextMenuWrapper
-        id={`position-${props.styleProp}-context-menu`}
-        items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
-        data={{}}
-      >
-        <NumberInput
-          id={`position-${props.styleProp}-number-input`}
-          testId={`position-${props.styleProp}-number-input`}
-          value={value}
-          onSubmitValue={wrappedOnSubmitValue}
-          onTransientSubmitValue={wrappedOnTransientSubmitValue}
-          controlStatus={layoutPropInfo.controlStatus}
-          numberType={'UnitlessPercent'}
-          labelInner={props.label}
-          defaultUnitToHide={'px'}
-        />
-      </InspectorContextMenuWrapper>
-    )
-  },
-)
+  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    layoutPropInfo.onSubmitValue,
+    layoutPropInfo.onUnsetValues,
+  )
+  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    layoutPropInfo.onTransientSubmitValue,
+    layoutPropInfo.onUnsetValues,
+  )
+  return (
+    <InspectorContextMenuWrapper
+      id={`position-${props.styleProp}-context-menu`}
+      items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
+      data={{}}
+    >
+      <NumberInput
+        id={`position-${props.styleProp}-number-input`}
+        testId={`position-${props.styleProp}-number-input`}
+        value={value}
+        onSubmitValue={wrappedOnSubmitValue}
+        onTransientSubmitValue={wrappedOnTransientSubmitValue}
+        controlStatus={layoutPropInfo.controlStatus}
+        numberType={'UnitlessPercent'}
+        labelInner={props.label}
+        defaultUnitToHide={'px'}
+      />
+    </InspectorContextMenuWrapper>
+  )
+})
 
 interface FlexShorthandNumberControlProps {
   label: string
   styleProp: 'flexGrow' | 'flexShrink'
 }
 
-export const FlexShorthandNumberControl = betterReactMemo(
-  'FlexShorthandNumberControl',
-  (props: FlexShorthandNumberControlProps) => {
-    const layoutPropInfo = useInspectorInfoLonghandShorthand(
-      ['flexGrow', 'flexShrink', 'flexBasis'],
-      'flex',
-      createLayoutPropertyPath,
-    )[props.styleProp] as InspectorInfoWithPropKeys<'flexGrow' | 'flexShrink', 'flex'>
-    const value = typeof layoutPropInfo.value === 'number' ? layoutPropInfo.value : undefined
+export const FlexShorthandNumberControl = React.memo((props: FlexShorthandNumberControlProps) => {
+  const layoutPropInfo = useInspectorInfoLonghandShorthand(
+    ['flexGrow', 'flexShrink', 'flexBasis'],
+    'flex',
+    createLayoutPropertyPath,
+  )[props.styleProp] as InspectorInfoWithPropKeys<'flexGrow' | 'flexShrink', 'flex'>
+  const value = typeof layoutPropInfo.value === 'number' ? layoutPropInfo.value : undefined
 
-    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      layoutPropInfo.onSubmitValue,
-      layoutPropInfo.onUnsetValues,
-    )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      layoutPropInfo.onTransientSubmitValue,
-      layoutPropInfo.onUnsetValues,
-    )
-    return (
-      <InspectorContextMenuWrapper
-        id={`position-${props.styleProp}-context-menu`}
-        items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
-        data={{}}
-      >
-        <SimpleNumberInput
-          id={`position-${props.styleProp}-number-input`}
-          testId={`position-${props.styleProp}-number-input`}
-          value={value}
-          onForcedSubmitValue={wrappedOnSubmitValue}
-          onSubmitValue={wrappedOnSubmitValue}
-          onTransientSubmitValue={wrappedOnTransientSubmitValue}
-          controlStatus={layoutPropInfo.controlStatus}
-          labelInner={props.label}
-          defaultUnitToHide={'px'}
-        />
-      </InspectorContextMenuWrapper>
-    )
-  },
-)
+  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    layoutPropInfo.onSubmitValue,
+    layoutPropInfo.onUnsetValues,
+  )
+  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    layoutPropInfo.onTransientSubmitValue,
+    layoutPropInfo.onUnsetValues,
+  )
+  return (
+    <InspectorContextMenuWrapper
+      id={`position-${props.styleProp}-context-menu`}
+      items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
+      data={{}}
+    >
+      <SimpleNumberInput
+        id={`position-${props.styleProp}-number-input`}
+        testId={`position-${props.styleProp}-number-input`}
+        value={value}
+        onForcedSubmitValue={wrappedOnSubmitValue}
+        onSubmitValue={wrappedOnSubmitValue}
+        onTransientSubmitValue={wrappedOnTransientSubmitValue}
+        controlStatus={layoutPropInfo.controlStatus}
+        labelInner={props.label}
+        defaultUnitToHide={'px'}
+      />
+    </InspectorContextMenuWrapper>
+  )
+})
 
 interface FlexShorthandCSSNumberControlProps {
   label: string
 }
-export const FlexBasisShorthandCSSNumberControl = betterReactMemo(
-  'FlexStyleNumberControl',
+export const FlexBasisShorthandCSSNumberControl = React.memo(
   (props: FlexShorthandCSSNumberControlProps) => {
     const layoutPropInfo = useInspectorInfoLonghandShorthand(
       ['flexBasis', 'flexGrow', 'flexShrink'],
@@ -254,41 +243,38 @@ interface FlexLayoutNumberControlProps {
   layoutProp: LayoutFlexElementNumericProp
 }
 
-export const FlexLayoutNumberControl = betterReactMemo(
-  'FlexLayoutNumberControl',
-  (props: FlexLayoutNumberControlProps) => {
-    const layoutPropInfo = useInspectorLayoutInfo(props.layoutProp)
+export const FlexLayoutNumberControl = React.memo((props: FlexLayoutNumberControlProps) => {
+  const layoutPropInfo = useInspectorLayoutInfo(props.layoutProp)
 
-    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      layoutPropInfo.onSubmitValue,
-      layoutPropInfo.onUnsetValues,
-    )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      layoutPropInfo.onTransientSubmitValue,
-      layoutPropInfo.onUnsetValues,
-    )
+  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    layoutPropInfo.onSubmitValue,
+    layoutPropInfo.onUnsetValues,
+  )
+  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    layoutPropInfo.onTransientSubmitValue,
+    layoutPropInfo.onUnsetValues,
+  )
 
-    return (
-      <InspectorContextMenuWrapper
-        id={`position-${props.layoutProp}-context-menu`}
-        items={[unsetPropertyMenuItem(props.layoutProp, layoutPropInfo.onUnsetValues)]}
-        data={{}}
-      >
-        <NumberInput
-          id={`position-${props.layoutProp}-number-input`}
-          testId={`position-${props.layoutProp}-number-input`}
-          value={layoutPropInfo.value}
-          onSubmitValue={wrappedOnSubmitValue}
-          onTransientSubmitValue={wrappedOnTransientSubmitValue}
-          controlStatus={layoutPropInfo.controlStatus}
-          numberType={'LengthPercent'}
-          labelInner={props.label}
-          defaultUnitToHide={'px'}
-        />
-      </InspectorContextMenuWrapper>
-    )
-  },
-)
+  return (
+    <InspectorContextMenuWrapper
+      id={`position-${props.layoutProp}-context-menu`}
+      items={[unsetPropertyMenuItem(props.layoutProp, layoutPropInfo.onUnsetValues)]}
+      data={{}}
+    >
+      <NumberInput
+        id={`position-${props.layoutProp}-number-input`}
+        testId={`position-${props.layoutProp}-number-input`}
+        value={layoutPropInfo.value}
+        onSubmitValue={wrappedOnSubmitValue}
+        onTransientSubmitValue={wrappedOnTransientSubmitValue}
+        controlStatus={layoutPropInfo.controlStatus}
+        numberType={'LengthPercent'}
+        labelInner={props.label}
+        defaultUnitToHide={'px'}
+      />
+    </InspectorContextMenuWrapper>
+  )
+})
 
 interface PinControlsProps {
   resetPins: () => void
@@ -296,7 +282,7 @@ interface PinControlsProps {
   togglePin: (prop: LayoutPinnedProp) => void
 }
 
-const PinControls = betterReactMemo('PinControls', (props: PinControlsProps) => {
+const PinControls = React.memo((props: PinControlsProps) => {
   const resetPinsItem = {
     name: 'Reset positioning',
     enabled: true,
@@ -339,7 +325,7 @@ interface WidthHeightRowProps {
   toggleAspectRatioLock: () => void
 }
 
-const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowProps) => {
+const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
   const colorTheme = useColorTheme()
   const {
     layoutType,
@@ -422,7 +408,7 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
 
 const minimumsProps = [createLayoutPropertyPath('minWidth'), createLayoutPropertyPath('minHeight')]
 
-const MinimumsRow = betterReactMemo('MinimumsRow', () => {
+const MinimumsRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={minimumsProps}>Minimum</PropertyLabel>
@@ -438,7 +424,7 @@ const MinimumsRow = betterReactMemo('MinimumsRow', () => {
 
 const maximumsProps = [createLayoutPropertyPath('maxWidth'), createLayoutPropertyPath('maxHeight')]
 
-const MaximumsRow = betterReactMemo('MaximumsRow', () => {
+const MaximumsRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={maximumsProps}>Maximum</PropertyLabel>
@@ -454,7 +440,7 @@ const MaximumsRow = betterReactMemo('MaximumsRow', () => {
 
 const flexWidthHeightProps = [createLayoutPropertyPath('Width'), createLayoutPropertyPath('Height')]
 
-const FlexWidthHeightRow = betterReactMemo('FixedWidthHeightRow', () => {
+const FlexWidthHeightRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexWidthHeightProps}>Size</PropertyLabel>
@@ -473,7 +459,7 @@ const flexGrowShrinkProps = [
   createLayoutPropertyPath('flexShrink'),
 ]
 
-const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
+const FlexGrowShrinkRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>
@@ -487,7 +473,7 @@ const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
   )
 })
 
-const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) => {
+const OtherPinsRow = React.memo((props: PinControlsProps) => {
   const { resetPins: resetPinsFn, framePins, togglePin } = props
   let firstXAxisControl: React.ReactElement = <div />
   let secondXAxisControl: React.ReactElement = <div />
@@ -560,55 +546,52 @@ interface GiganticSizePinsSubsectionProps {
   toggleAspectRatioLock: () => void
 }
 
-export const GiganticSizePinsSubsection = betterReactMemo(
-  'GiganticSizePinsSubsection',
-  (props: GiganticSizePinsSubsectionProps) => {
-    const { layoutType, parentFlexDirection, aspectRatioLocked, toggleAspectRatioLock } = props
+export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSubsectionProps) => {
+  const { layoutType, parentFlexDirection, aspectRatioLocked, toggleAspectRatioLock } = props
 
-    const minWidth = useInspectorLayoutInfo('minWidth')
-    const maxWidth = useInspectorLayoutInfo('maxWidth')
-    const minHeight = useInspectorLayoutInfo('minHeight')
-    const maxHeight = useInspectorLayoutInfo('maxHeight')
+  const minWidth = useInspectorLayoutInfo('minWidth')
+  const maxWidth = useInspectorLayoutInfo('maxWidth')
+  const minHeight = useInspectorLayoutInfo('minHeight')
+  const maxHeight = useInspectorLayoutInfo('maxHeight')
 
-    const hasMinMaxValues =
-      isNotUnsetOrDefault(minWidth.controlStatus) ||
-      isNotUnsetOrDefault(maxWidth.controlStatus) ||
-      isNotUnsetOrDefault(minHeight.controlStatus) ||
-      isNotUnsetOrDefault(maxHeight.controlStatus)
-    const [minMaxToggled, setMinMaxToggled] = usePropControlledStateV2(hasMinMaxValues)
-    const toggleMinMax = React.useCallback(() => {
-      setMinMaxToggled(!minMaxToggled)
-    }, [minMaxToggled, setMinMaxToggled])
+  const hasMinMaxValues =
+    isNotUnsetOrDefault(minWidth.controlStatus) ||
+    isNotUnsetOrDefault(maxWidth.controlStatus) ||
+    isNotUnsetOrDefault(minHeight.controlStatus) ||
+    isNotUnsetOrDefault(maxHeight.controlStatus)
+  const [minMaxToggled, setMinMaxToggled] = usePropControlledStateV2(hasMinMaxValues)
+  const toggleMinMax = React.useCallback(() => {
+    setMinMaxToggled(!minMaxToggled)
+  }, [minMaxToggled, setMinMaxToggled])
 
-    const { resetAllPins, framePins, togglePin } = usePinToggling()
+  const { resetAllPins, framePins, togglePin } = usePinToggling()
 
-    return (
-      <>
-        <WidthHeightRow
-          layoutType={layoutType}
-          togglePin={togglePin}
-          framePins={framePins}
-          toggleMinMax={toggleMinMax}
-          parentFlexDirection={parentFlexDirection}
-          aspectRatioLocked={aspectRatioLocked}
-          toggleAspectRatioLock={toggleAspectRatioLock}
-        />
-        {minMaxToggled ? (
-          <>
-            <MinimumsRow />
-            <MaximumsRow />
-          </>
-        ) : null}
-        {layoutType === 'flex' ? (
-          <>
-            <FlexGrowShrinkRow />
-            <FlexWidthHeightRow />
-          </>
-        ) : null}
-        {layoutType === 'absolute' ? (
-          <OtherPinsRow resetPins={resetAllPins} framePins={framePins} togglePin={togglePin} />
-        ) : null}
-      </>
-    )
-  },
-)
+  return (
+    <>
+      <WidthHeightRow
+        layoutType={layoutType}
+        togglePin={togglePin}
+        framePins={framePins}
+        toggleMinMax={toggleMinMax}
+        parentFlexDirection={parentFlexDirection}
+        aspectRatioLocked={aspectRatioLocked}
+        toggleAspectRatioLock={toggleAspectRatioLock}
+      />
+      {minMaxToggled ? (
+        <>
+          <MinimumsRow />
+          <MaximumsRow />
+        </>
+      ) : null}
+      {layoutType === 'flex' ? (
+        <>
+          <FlexGrowShrinkRow />
+          <FlexWidthHeightRow />
+        </>
+      ) : null}
+      {layoutType === 'absolute' ? (
+        <OtherPinsRow resetPins={resetAllPins} framePins={framePins} togglePin={togglePin} />
+      ) : null}
+    </>
+  )
+})

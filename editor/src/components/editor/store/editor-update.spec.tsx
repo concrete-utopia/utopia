@@ -564,7 +564,11 @@ describe('action DELETE_SELECTED', () => {
         StoryboardFilePath,
         `
   import * as React from 'react'
-  import { Scene, Storyboard } from 'utopia-api'
+  import Utopia, {
+    Scene,
+    Storyboard,
+    registerModule,
+  } from 'utopia-api'
   import { App } from '/src/app.js'
 
   export var storyboard = (
@@ -949,7 +953,7 @@ describe('updating node_modules', () => {
     }
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules, 'incremental')
+    const action = updateNodeModulesContents(nodeModules)
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,
@@ -973,7 +977,7 @@ describe('updating node_modules', () => {
     const mockDispatch = jest.fn()
 
     const nodeModules = createNodeModules(fileWithImports.contents)
-    const action = updateNodeModulesContents(nodeModules, 'full-build')
+    const action = updateNodeModulesContents(nodeModules)
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,

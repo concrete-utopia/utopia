@@ -23,7 +23,7 @@ import {
   UtopiaTheme,
   useColorTheme,
 } from '../../uuiui'
-import { betterReactMemo, User } from '../../uuiui-deps'
+import { User } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { LeftMenuTab } from '../editor/store/editor-state'
@@ -103,7 +103,7 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   )
 }
 
-export const Menubar = betterReactMemo('Menubar', () => {
+export const Menubar = React.memo(() => {
   const {
     dispatch,
     selectedTab,

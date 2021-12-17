@@ -22,7 +22,6 @@ import {
   ValidKeywords,
 } from '../../components/inspector/controls/keyword-control'
 import { isRight } from '../../core/shared/either'
-import { betterReactMemo } from '../../uuiui-deps'
 import { NumberInput, NumberInputOptions } from './number-input'
 
 function parseUnknownInputValueAsNumberOrKeyword(
@@ -51,8 +50,7 @@ interface NumberOrKeywordControlProps extends InspectorControlProps {
   keywordControlOptions: KeywordControlOptions
 }
 
-export const NumberOrKeywordControl = betterReactMemo<NumberOrKeywordControlProps>(
-  'NumberOrKeywordControl',
+export const NumberOrKeywordControl = React.memo<NumberOrKeywordControlProps>(
   ({
     value,
     numberInputOptions,

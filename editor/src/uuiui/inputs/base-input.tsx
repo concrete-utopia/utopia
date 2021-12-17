@@ -1,7 +1,7 @@
 import type { CSSObject } from '@emotion/styled'
 import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
-import { ControlStyles, betterReactMemo, ControlStatus } from '../../uuiui-deps'
+import { ControlStyles, ControlStatus } from '../../uuiui-deps'
 import { UtopiaTheme } from '../styles/theme'
 import React from 'react'
 
@@ -154,8 +154,7 @@ export const InspectorInputEmotionStyle = ({
 
 const StyledInput = styled.input<InspectorInputProps>(InspectorInputEmotionStyle)
 
-export const InspectorInput = betterReactMemo(
-  'InspectorInput',
+export const InspectorInput = React.memo(
   React.forwardRef<HTMLInputElement, InspectorInputProps>((props, ref) => {
     return (
       <StyledInput

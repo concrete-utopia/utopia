@@ -22,13 +22,7 @@ import { Icn, IcnProps, IcnSpacer } from '../../icn'
 import { colorTheme, UtopiaStyles, UtopiaTheme } from '../../styles/theme'
 import { FlexRow } from '../layout/flex-row'
 import { isOptionType } from '../../../utils/utils'
-import {
-  betterReactMemo,
-  CommonUtils,
-  ControlStyles,
-  getControlStyles,
-  SelectOption,
-} from '../../../uuiui-deps'
+import { CommonUtils, ControlStyles, getControlStyles, SelectOption } from '../../../uuiui-deps'
 import { Icons, SmallerIcons } from '../../../uuiui/icons'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
@@ -518,8 +512,7 @@ const Input = (props: InputProps) => {
   )
 }
 
-export const PopupList = betterReactMemo<PopupListProps>(
-  'PopupList',
+export const PopupList = React.memo<PopupListProps>(
   React.forwardRef(
     (
       {

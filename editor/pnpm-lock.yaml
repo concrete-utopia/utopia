@@ -86,7 +86,7 @@ specifiers:
   '@vitejs/plugin-react': ^1.0.7
   '@welldone-software/why-did-you-render': 5.0.0-rc.1
   ajv: 6.4.0
-  anser: 1.4.8
+  anser: 2.1.0
   antd: 4.3.5
   babel-eslint: 10.0.1
   babel-jest: ^27.2.4
@@ -278,7 +278,7 @@ dependencies:
   '@types/react-syntax-highlighter': 11.0.4
   '@use-it/interval': 0.1.3_utopia-react@17.0.0-rc.1
   ajv: 6.4.0
-  anser: 1.4.8
+  anser: 2.1.0
   antd: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
   babel-eslint: 10.0.1_eslint@6.8.0
   babel-plugin-syntax-jsx: 6.18.0
@@ -4284,8 +4284,8 @@ packages:
     resolution: {integrity: sha1-l6ERlkmyEa0zaR2fn0hqjsn74KM=}
     dev: true
 
-  /anser/1.4.8:
-    resolution: {integrity: sha512-tVHucTCKIt9VRrpQKzPtOlwm/3AmyQ7J+QE29ixFnvuE2hm83utEVrN7jJapYkHV6hI0HOHkEX9TOMCzHtwvuA==}
+  /anser/2.1.0:
+    resolution: {integrity: sha512-zqC6MjuKg2ASofHsYE4orC7uGZQVbfJT1NiDDAzPtwc8XkWsAOSPAfqGFB/SG/PLybgeZ+LjVXvwfAWAEPXzuQ==}
     dev: false
 
   /ansi-align/3.0.1:

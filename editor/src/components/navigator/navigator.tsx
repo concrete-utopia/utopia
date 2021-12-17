@@ -14,7 +14,7 @@ import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { ElementContextMenu } from '../element-context-menu'
 import { createDragSelections } from '../../templates/editor-navigator'
 import { FixedSizeList, ListChildComponentProps } from 'react-window'
-import { Size } from 'react-virtualized-auto-sizer'
+import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
 import {
   UtopiaTheme,
   Section,
@@ -26,14 +26,15 @@ import {
   FlexColumn,
   InspectorSectionHeader,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
 import { last } from '../../core/shared/array-utils'
-import AutoSizer from 'react-virtualized-auto-sizer'
 
 const NavigatorContainerId = 'navigator'
 
-export const NavigatorComponent = betterReactMemo(
-  'NavigatorComponent',
+interface NavigatorComponentProps {
+  style: React.CSSProperties
+}
+
+export const NavigatorComponent = React.memo<NavigatorComponentProps>(
   ({ style: navigatorStyle }) => {
     const editorSliceRef = useRefEditorState((store) => {
       const dragSelections = createDragSelections(
@@ -128,7 +129,7 @@ export const NavigatorComponent = betterReactMemo(
       dispatch([EditorActions.togglePanel('navigator')])
     }, [dispatch])
 
-    const Item = betterReactMemo('Item', ({ index, style }: ListChildComponentProps) => {
+    const Item = React.memo(({ index, style }: ListChildComponentProps) => {
       const targetPath = visibleNavigatorTargets[index]
       const componentKey = EP.toComponentId(targetPath)
       return (

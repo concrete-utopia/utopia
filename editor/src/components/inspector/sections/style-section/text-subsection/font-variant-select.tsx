@@ -9,7 +9,6 @@ import {
 } from '../../../../../printer-parsers/html/external-resources-parser'
 import utils from '../../../../../utils/utils'
 import { Tooltip, PopupList } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import {
   defaultWebFontWeightsAndStyles,
@@ -90,7 +89,7 @@ interface FontWeightAndStyleSelectOption {
   value: WebFontFamilyVariant
 }
 
-export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
+export const FontVariantSelect = React.memo(() => {
   const { value, controlStyles, onUnsetValues, useSubmitValueFactory } = useInspectorInfo(
     weightAndStylePaths,
     identity,

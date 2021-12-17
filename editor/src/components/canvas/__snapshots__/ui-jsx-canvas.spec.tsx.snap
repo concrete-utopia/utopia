@@ -23197,7 +23197,7 @@ Object {
                   "javascript": "<div data-uid={'ccc'}>test</div>",
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAWsCA;AAAAA;AAAAA",
+                    "mappings": "OAesCA;AAAAA;AAAAA",
                     "names": Array [
                       "<",
                     ],
@@ -23207,7 +23207,11 @@ Object {
                     "sourcesContent": Array [
                       "
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 export var App = (props) => {
   return (
     <div
@@ -23448,7 +23452,7 @@ export var storyboard = (
               "javascript": "<div data-uid={'ccc'}>test</div>",
               "sourceMap": Object {
                 "file": "code.tsx",
-                "mappings": "OAWsCA;AAAAA;AAAAA",
+                "mappings": "OAesCA;AAAAA;AAAAA",
                 "names": Array [
                   "<",
                 ],
@@ -23458,7 +23462,11 @@ export var storyboard = (
                 "sourcesContent": Array [
                   "
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 export var App = (props) => {
   return (
     <div
@@ -34755,7 +34763,7 @@ Object {
               "javascript": "storeRef",
               "sourceMap": Object {
                 "file": "code.tsx",
-                "mappings": "OASiCA",
+                "mappings": "OAaiCA",
                 "names": Array [
                   "storeRef",
                 ],
@@ -34764,7 +34772,11 @@ Object {
                 ],
                 "sourcesContent": Array [
                   "import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 const AppContext = React.createContext({})
 const useStoreRef = () => useContext(AppContext)
@@ -36371,7 +36383,11 @@ Object {
               ],
               "sourcesContent": Array [
                 "import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -36439,7 +36455,11 @@ export var storyboard = (
               ],
               "sourcesContent": Array [
                 "import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {

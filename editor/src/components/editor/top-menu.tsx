@@ -11,7 +11,7 @@ import {
 } from '../../uuiui'
 import { useEditorState } from './store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
-import { betterReactMemo, Utils } from '../../uuiui-deps'
+import { Utils } from '../../uuiui-deps'
 import { FormulaBar } from '../canvas/controls/formula-bar'
 import CanvasActions from '../canvas/canvas-actions'
 import { EditorAction } from './action-types'
@@ -33,7 +33,7 @@ function useShouldResetCanvas(invalidateCount: number): [boolean, (value: boolea
   return [shouldResetCanvas, setShouldResetCanvas]
 }
 
-const TopMenuLeftControls = betterReactMemo('TopMenuLeftControls', () => {
+const TopMenuLeftControls = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'TopMenuLeftControls dispatch')
   const navigatorVisible = useEditorState(
     (store) => !store.editor.navigator.minimised,
@@ -188,7 +188,7 @@ const TopMenuRightControls = React.memo(() => {
   )
 })
 
-export const TopMenu = betterReactMemo('TopMenu', () => {
+export const TopMenu = React.memo(() => {
   return (
     <SimpleFlexRow
       style={{

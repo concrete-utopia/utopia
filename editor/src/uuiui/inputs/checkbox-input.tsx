@@ -9,7 +9,6 @@ import {
   ControlStyles,
 } from '../../components/inspector/common/control-status'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
-import { betterReactMemo } from '../../uuiui-deps'
 
 export interface CheckboxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   controlStatus?: ControlStatus
@@ -17,8 +16,7 @@ export interface CheckboxInputProps extends React.InputHTMLAttributes<HTMLInputE
 }
 
 // TODO FIX MY REFs
-export const CheckboxInput = betterReactMemo(
-  'CheckboxInput',
+export const CheckboxInput = React.memo(
   React.forwardRef<HTMLInputElement, CheckboxInputProps>(
     ({ controlStatus = 'simple', focusOnMount = false, style, ...props }, propsRef) => {
       const ref = React.useRef<HTMLInputElement>(null)

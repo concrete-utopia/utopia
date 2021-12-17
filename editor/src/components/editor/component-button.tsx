@@ -14,7 +14,6 @@ import {
   UtopiaStyles,
   UtopiaTheme,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
 import { RenderAsRow } from '../canvas/controls/render-as'
 import { useEditorState } from './store/store-hook'
 import * as EP from '../../core/shared/element-path'

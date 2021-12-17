@@ -1,6 +1,6 @@
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { ParsedPropertyControls } from './property-controls-parser'
-import { PropertyControls, getDefaultProps, ImportType } from 'utopia-api'
+import { PropertyControls, ImportType } from 'utopia-api'
 import { isRight, foldEither, left, maybeEitherToMaybe, eitherToMaybe } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
@@ -27,52 +27,17 @@ import { importedFromWhere } from '../../components/editor/import-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 
-function parsedPropertyControlsForComponentInFile(
+export function parsedPropertyControlsForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
   propertyControlsInfo: PropertyControlsInfo,
 ): ParseResult<ParsedPropertyControls> {
   const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
-  const propertyControlsForComponent = propertyControlsForFile[componentName]?.propertyControls
+  const propertyControlsForComponent = propertyControlsForFile[componentName]?.properties
   return (
     propertyControlsForComponent ??
     left(descriptionParseError(`No property controls for ${componentName}.`))
   )
-}
-
-interface DefaultPropertiesForComponentInFileResult {
-  defaultProps: { [prop: string]: unknown }
-  parsedControls: ParseResult<ParsedPropertyControls>
-}
-
-export function defaultPropertiesForComponentInFile(
-  componentName: string,
-  filePathNoExtension: string,
-  propertyControlsInfo: PropertyControlsInfo,
-): DefaultPropertiesForComponentInFileResult {
-  const parsedPropertyControls = parsedPropertyControlsForComponentInFile(
-    componentName,
-    filePathNoExtension,
-    propertyControlsInfo,
-  )
-  return {
-    defaultProps: getDefaultPropsFromParsedControls(parsedPropertyControls),
-    parsedControls: parsedPropertyControls,
-  }
-}
-
-export function getDefaultPropsFromParsedControls(
-  parsedControls: ParseResult<ParsedPropertyControls>,
-): { [prop: string]: unknown } {
-  let safePropertyControls: PropertyControls = {}
-  if (isRight(parsedControls)) {
-    forEachValue((parsedControl, propKey) => {
-      if (isRight(parsedControl)) {
-        safePropertyControls[propKey] = parsedControl.value
-      }
-    }, parsedControls.value)
-  }
-  return getDefaultProps(safePropertyControls)
 }
 
 export function getPropertyControlsForTargetFromEditor(
@@ -157,7 +122,7 @@ export function getPropertyControlsForTarget(
         const originalName =
           importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
         const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
-        return propertyControlsInfo[trimmedPath]?.[nameAsString]?.propertyControls
+        return propertyControlsInfo[trimmedPath]?.[nameAsString]?.properties
       }
     },
   )
@@ -181,3 +146,5 @@ export function hasStyleControls(propertyControls: ParseResult<ParsedPropertyCon
     propertyControls,
   )
 }
+
+export const specialPropertiesToIgnore: Array<string> = ['style', 'children']

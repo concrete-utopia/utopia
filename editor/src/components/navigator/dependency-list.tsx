@@ -9,7 +9,6 @@ import {
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
 import { ProjectFile } from '../../core/shared/project-file-types'
-import { betterReactMemo } from '../../utils/react-performance'
 import Utils from '../../utils/utils'
 import { EditorPanel, setFocus } from '../common/actions'
 import { EditorDispatch } from '../editor/action-types'
@@ -91,7 +90,7 @@ function packageDetailsFromDependencies(
   return userAddedPackages
 }
 
-export const DependencyList = betterReactMemo('DependencyList', () => {
+export const DependencyList = React.memo(() => {
   const props = useEditorState((store) => {
     return {
       editorDispatch: store.dispatch,
@@ -186,10 +185,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
           }
           this.setState({ dependencyLoadingStatus: 'not-loading' })
           this.props.editorDispatch([
-            EditorActions.updateNodeModulesContents(
-              fetchNodeModulesResult.nodeModules,
-              'full-build',
-            ),
+            EditorActions.updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
           ])
         },
       )
@@ -355,10 +351,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
                   } else {
                     this.packagesUpdateSuccess(editedPackageName)
                     this.props.editorDispatch([
-                      EditorActions.updateNodeModulesContents(
-                        fetchNodeModulesResult.nodeModules,
-                        'incremental',
-                      ),
+                      EditorActions.updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
                     ])
                   }
                 })

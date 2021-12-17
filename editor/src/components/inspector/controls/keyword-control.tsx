@@ -5,7 +5,7 @@ import classNames from 'classnames'
 import React from 'react'
 import { Either, isRight, left, right } from '../../../core/shared/either'
 import { StringInput } from '../../../uuiui'
-import { betterReactMemo, getControlStyles } from '../../../uuiui-deps'
+import { getControlStyles } from '../../../uuiui-deps'
 import { cssKeyword, CSSKeyword, emptyInputValue, unknownInputValue } from '../common/css-utils'
 import { usePropControlledState } from '../common/inspector-utils'
 import { InspectorControlProps, OnSubmitValueOrUnknownOrEmpty } from './control'
@@ -33,8 +33,7 @@ export function parseValidKeyword(
   }
 }
 
-export const KeywordControl = betterReactMemo<KeywordControlProps>(
-  'KeywordControl',
+export const KeywordControl = React.memo<KeywordControlProps>(
   ({
     value,
     id,

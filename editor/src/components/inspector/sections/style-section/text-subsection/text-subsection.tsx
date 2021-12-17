@@ -9,10 +9,7 @@ import {
 } from '../../../../../core/shared/element-template'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
-import {
-  betterReactMemo,
-  useKeepShallowReferenceEquality,
-} from '../../../../../utils/react-performance'
+import { useKeepShallowReferenceEquality } from '../../../../../utils/react-performance'
 import utils from '../../../../../utils/utils'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
@@ -58,7 +55,7 @@ function updateUnderlinedTextDecoration(newValue: boolean): CSSTextDecorationLin
 const normalLetterSpacingAsCSSNumber = cssNumber(0, 'px')
 const normalLineHeightAsCSSNumber = cssNumber(0, 'px')
 
-export const TextSubsection = betterReactMemo('TextSubsection', () => {
+export const TextSubsection = React.memo(() => {
   const [expanded, setExpanded] = React.useState(false)
 
   const colorMetadata = useInspectorStyleInfo('color')

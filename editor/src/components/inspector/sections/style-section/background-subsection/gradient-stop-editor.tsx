@@ -23,7 +23,6 @@ import {
 import { inspectorEdgePadding } from './background-picker'
 import { clampValue } from '../../../../../core/shared/math-utils'
 import { useColorTheme, FlexColumn, UtopiaTheme } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface GradientStopProps {
   stop: CSSGradientStop
@@ -35,8 +34,7 @@ interface GradientStopProps {
   indexedDeleteStop: () => void
 }
 
-const GradientStop = betterReactMemo<GradientStopProps>(
-  'GradientStop',
+const GradientStop = React.memo<GradientStopProps>(
   ({
     stop,
     selected,
@@ -360,8 +358,7 @@ function deleteStopAndUpdateIndex(
   }
 }
 
-export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
-  'GradientStopsEditor',
+export const GradientStopsEditor = React.memo<GradientControlProps>(
   ({
     selectedStopUnorderedIndex,
     setSelectedStopUnorderedIndex,

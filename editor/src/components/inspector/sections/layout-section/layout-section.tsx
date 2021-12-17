@@ -1,7 +1,6 @@
 import React from 'react'
 import { LayoutSystemSubsection } from './layout-system-subsection/layout-system-subsection'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
-import { betterReactMemo } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { fastForEach } from '../../../../core/shared/utils'
 import * as EP from '../../../../core/shared/element-path'
@@ -17,7 +16,7 @@ interface LayoutSectionProps {
   toggleAspectRatioLock: () => void
 }
 
-export const LayoutSection = betterReactMemo('LayoutSection', (props: LayoutSectionProps) => {
+export const LayoutSection = React.memo((props: LayoutSectionProps) => {
   const specialSizeMeasurements = useEditorState(
     (state) => {
       let foundSpecialSizeMeasurements = emptySpecialSizeMeasurements

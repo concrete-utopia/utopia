@@ -14,7 +14,6 @@ import { resetCanvas, saveDOMReport } from '../editor/actions/action-creators'
 import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { CurriedUtopiaRequireFn, UtopiaRequireFn } from '../custom-code/code-file'
-import { betterReactMemo } from '../../uuiui-deps'
 import { ElementPath } from '../../core/shared/project-file-types'
 import {
   useWriteOnlyConsoleLogs,
@@ -29,92 +28,86 @@ import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
 
 interface CanvasComponentEntryProps {}
 
-export const CanvasComponentEntry = betterReactMemo(
-  'CanvasComponentEntry',
-  (props: CanvasComponentEntryProps) => {
-    const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
-    const onDomReport = React.useCallback(
-      (
-        elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-        cachedPaths: Array<ElementPath>,
-      ) => {
-        dispatch([saveDOMReport(elementMetadata, cachedPaths)])
-      },
-      [dispatch],
+export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps) => {
+  const dispatch = useEditorState((store) => store.dispatch, 'CanvasComponentEntry dispatch')
+  const onDomReport = React.useCallback(
+    (elementMetadata: ReadonlyArray<ElementInstanceMetadata>, cachedPaths: Array<ElementPath>) => {
+      dispatch([saveDOMReport(elementMetadata, cachedPaths)])
+    },
+    [dispatch],
+  )
+  const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
+  const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
+
+  const canvasProps = useEditorState((store) => {
+    return pickUiJsxCanvasProps(
+      store.editor,
+      store.derived,
+      store.dispatch,
+      true,
+      onDomReport,
+      clearConsoleLogs,
+      addToConsoleLogs,
     )
-    const { addToRuntimeErrors, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
-    const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
+  }, 'CanvasComponentEntry canvasProps')
 
-    const canvasProps = useEditorState((store) => {
-      return pickUiJsxCanvasProps(
-        store.editor,
-        store.derived,
-        store.dispatch,
-        true,
-        onDomReport,
-        clearConsoleLogs,
-        addToConsoleLogs,
-      )
-    }, 'CanvasComponentEntry canvasProps')
+  const canvasEditOrSelect = React.useMemo(() => {
+    // Explicitly target the case where the canvas is not live, needs to handle `undefined`.
+    return canvasProps?.canvasIsLive === false
+  }, [canvasProps?.canvasIsLive])
 
-    const canvasEditOrSelect = React.useMemo(() => {
-      // Explicitly target the case where the canvas is not live, needs to handle `undefined`.
-      return canvasProps?.canvasIsLive === false
-    }, [canvasProps?.canvasIsLive])
+  const [lastRenderReactHookError, setLastRenderReactHookError] = React.useState(false)
 
-    const [lastRenderReactHookError, setLastRenderReactHookError] = React.useState(false)
+  const onRuntimeError = React.useCallback(
+    (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
+      addToRuntimeErrors(editedFile, error, errorInfo)
+      // Reset the canvas if we get a hooks error while the canvas is in edit/select modes.
+      if (canvasEditOrSelect && isHooksErrorMessage(error.message) && !lastRenderReactHookError) {
+        setLastRenderReactHookError(true)
+        dispatch([resetCanvas()], 'everyone')
+      }
+    },
+    [addToRuntimeErrors, canvasEditOrSelect, dispatch, lastRenderReactHookError],
+  )
 
-    const onRuntimeError = React.useCallback(
-      (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
-        addToRuntimeErrors(editedFile, error, errorInfo)
-        // Reset the canvas if we get a hooks error while the canvas is in edit/select modes.
-        if (canvasEditOrSelect && isHooksErrorMessage(error.message) && !lastRenderReactHookError) {
-          setLastRenderReactHookError(true)
-          dispatch([resetCanvas()], 'everyone')
-        }
-      },
-      [addToRuntimeErrors, canvasEditOrSelect, dispatch, lastRenderReactHookError],
-    )
+  const localClearRuntimeErrors = React.useCallback(() => {
+    setLastRenderReactHookError(false)
+    clearRuntimeErrors()
+  }, [clearRuntimeErrors])
 
-    const localClearRuntimeErrors = React.useCallback(() => {
-      setLastRenderReactHookError(false)
-      clearRuntimeErrors()
-    }, [clearRuntimeErrors])
-
-    if (canvasProps == null) {
-      return <CanvasLoadingScreen />
-    } else {
-      return (
-        <div
-          id='canvas-container-outer'
-          style={{
-            position: 'absolute',
-            zoom: canvasProps.scale >= 1 ? `${canvasProps.scale * 100}%` : 1,
-            transform:
-              (canvasProps.scale < 1 ? `scale(${canvasProps.scale})` : '') +
-              ` translate3d(${canvasProps.offset.x}px, ${canvasProps.offset.y}px, 0)`,
-            transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
-          }}
+  if (canvasProps == null) {
+    return <CanvasLoadingScreen />
+  } else {
+    return (
+      <div
+        id='canvas-container-outer'
+        style={{
+          position: 'absolute',
+          zoom: canvasProps.scale >= 1 ? `${canvasProps.scale * 100}%` : 1,
+          transform:
+            (canvasProps.scale < 1 ? `scale(${canvasProps.scale})` : '') +
+            ` translate3d(${canvasProps.offset.x}px, ${canvasProps.offset.y}px, 0)`,
+          transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
+        }}
+      >
+        <CanvasErrorBoundary
+          filePath={canvasProps.uiFilePath}
+          projectContents={canvasProps.projectContents}
+          reportError={onRuntimeError}
+          requireFn={canvasProps.curriedRequireFn}
+          key={`canvas-error-boundary-${canvasProps.mountCount}`}
         >
-          <CanvasErrorBoundary
-            filePath={canvasProps.uiFilePath}
+          <RemoteDependencyBoundary
             projectContents={canvasProps.projectContents}
-            reportError={onRuntimeError}
             requireFn={canvasProps.curriedRequireFn}
-            key={`canvas-error-boundary-${canvasProps.mountCount}`}
           >
-            <RemoteDependencyBoundary
-              projectContents={canvasProps.projectContents}
-              requireFn={canvasProps.curriedRequireFn}
-            >
-              <DomWalkerWrapper {...canvasProps} clearErrors={localClearRuntimeErrors} />
-            </RemoteDependencyBoundary>
-          </CanvasErrorBoundary>
-        </div>
-      )
-    }
-  },
-)
+            <DomWalkerWrapper {...canvasProps} clearErrors={localClearRuntimeErrors} />
+          </RemoteDependencyBoundary>
+        </CanvasErrorBoundary>
+      </div>
+    )
+  }
+})
 
 function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
   const selectedViews = useEditorState(

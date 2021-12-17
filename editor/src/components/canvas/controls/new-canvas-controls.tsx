@@ -38,7 +38,6 @@ import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo, ResolveFn } from '../../custom-code/code-file'
 import { useColorTheme } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import {
   isDragging,
   isResizing,
@@ -117,107 +116,104 @@ interface NewCanvasControlsProps {
   cursor: CSSCursor
 }
 
-export const NewCanvasControls = betterReactMemo(
-  'NewCanvasControls',
-  (props: NewCanvasControlsProps) => {
-    const canvasControlProps = useEditorState(
-      (store) => ({
-        dispatch: store.dispatch,
-        editor: store.editor,
-        derived: store.derived,
-        canvasOffset: store.editor.canvas.roundedCanvasOffset,
-        animationEnabled:
-          (store.editor.canvas.dragState == null ||
-            getDragStateStart(store.editor.canvas.dragState, store.editor.canvas.resizeOptions) ==
-              null) &&
-          store.editor.canvas.animationsEnabled,
+export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
+  const canvasControlProps = useEditorState(
+    (store) => ({
+      dispatch: store.dispatch,
+      editor: store.editor,
+      derived: store.derived,
+      canvasOffset: store.editor.canvas.roundedCanvasOffset,
+      animationEnabled:
+        (store.editor.canvas.dragState == null ||
+          getDragStateStart(store.editor.canvas.dragState, store.editor.canvas.resizeOptions) ==
+            null) &&
+        store.editor.canvas.animationsEnabled,
 
-        controls: store.derived.canvas.controls,
-        scale: store.editor.canvas.scale,
-        focusedPanel: store.editor.focusedPanel,
-        transientCanvasState: store.derived.canvas.transientState,
-      }),
-      'NewCanvasControls',
-    )
+      controls: store.derived.canvas.controls,
+      scale: store.editor.canvas.scale,
+      focusedPanel: store.editor.focusedPanel,
+      transientCanvasState: store.derived.canvas.transientState,
+    }),
+    'NewCanvasControls',
+  )
 
-    const {
-      localSelectedViews,
-      localHighlightedViews,
-      setSelectedViewsLocally,
-    } = useLocalSelectedHighlightedViews(canvasControlProps.transientCanvasState)
+  const {
+    localSelectedViews,
+    localHighlightedViews,
+    setSelectedViewsLocally,
+  } = useLocalSelectedHighlightedViews(canvasControlProps.transientCanvasState)
 
-    const canvasScrollAnimation = useEditorState(
-      (store) => store.editor.canvas.scrollAnimation,
-      'NewCanvasControls scrollAnimation',
-    )
+  const canvasScrollAnimation = useEditorState(
+    (store) => store.editor.canvas.scrollAnimation,
+    'NewCanvasControls scrollAnimation',
+  )
 
-    // Somehow this being setup and hooked into the div makes the `onDrop` call
-    // work properly in `editor-canvas.ts`. I blame React DnD for this.
-    const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
-      accept: 'filebrowser',
-      canDrop: () => true,
-    }
+  // Somehow this being setup and hooked into the div makes the `onDrop` call
+  // work properly in `editor-canvas.ts`. I blame React DnD for this.
+  const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
+    accept: 'filebrowser',
+    canDrop: () => true,
+  }
 
-    const [_, drop] = useDrop(dropSpec)
+  const [_, drop] = useDrop(dropSpec)
 
-    const forwardedRef = React.useCallback(
-      (node: ConnectableElement) => {
-        return drop(node)
-      },
-      [drop],
-    )
+  const forwardedRef = React.useCallback(
+    (node: ConnectableElement) => {
+      return drop(node)
+    },
+    [drop],
+  )
 
-    if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
-      return null
-    } else {
-      return (
+  if (isLiveMode(canvasControlProps.editor.mode) && !canvasControlProps.editor.keysPressed.cmd) {
+    return null
+  } else {
+    return (
+      <div
+        key='canvas-controls'
+        ref={forwardedRef}
+        className={
+          canvasControlProps.focusedPanel === 'canvas'
+            ? '  canvas-controls focused '
+            : ' canvas-controls '
+        }
+        id='canvas-controls'
+        style={{
+          pointerEvents: 'initial',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: 'translate3d(0, 0, 0)',
+          width: `100%`,
+          height: `100%`,
+          zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+          cursor: props.cursor,
+          visibility: canvasScrollAnimation ? 'hidden' : 'initial',
+        }}
+      >
         <div
-          key='canvas-controls'
-          ref={forwardedRef}
-          className={
-            canvasControlProps.focusedPanel === 'canvas'
-              ? '  canvas-controls focused '
-              : ' canvas-controls '
-          }
-          id='canvas-controls'
           style={{
-            pointerEvents: 'initial',
             position: 'absolute',
             top: 0,
             left: 0,
-            transform: 'translate3d(0, 0, 0)',
-            width: `100%`,
-            height: `100%`,
-            zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
-            cursor: props.cursor,
-            visibility: canvasScrollAnimation ? 'hidden' : 'initial',
+            width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+            height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+            transformOrigin: 'top left',
+            transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
           }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-              height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
-              transformOrigin: 'top left',
-              transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
-            }}
-          >
-            <NewCanvasControlsInner
-              windowToCanvasPosition={props.windowToCanvasPosition}
-              localSelectedViews={localSelectedViews}
-              localHighlightedViews={localHighlightedViews}
-              setLocalSelectedViews={setSelectedViewsLocally}
-              {...canvasControlProps}
-            />
-          </div>
-          <ElementContextMenu contextMenuInstance='context-menu-canvas' />
+          <NewCanvasControlsInner
+            windowToCanvasPosition={props.windowToCanvasPosition}
+            localSelectedViews={localSelectedViews}
+            localHighlightedViews={localHighlightedViews}
+            setLocalSelectedViews={setSelectedViewsLocally}
+            {...canvasControlProps}
+          />
         </div>
-      )
-    }
-  },
-)
+        <ElementContextMenu contextMenuInstance='context-menu-canvas' />
+      </div>
+    )
+  }
+})
 NewCanvasControls.displayName = 'NewCanvasControls'
 
 interface NewCanvasControlsInnerProps {

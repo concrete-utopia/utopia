@@ -33,12 +33,7 @@ import {
 import { Either, foldEither, isRight, mapEither, right } from '../../core/shared/either'
 import { clampValue } from '../../core/shared/math-utils'
 import { memoize } from '../../core/shared/memoize'
-import {
-  betterReactMemo,
-  getControlStyles,
-  usePropControlledState,
-  CSSCursor,
-} from '../../uuiui-deps'
+import { getControlStyles, usePropControlledState, CSSCursor } from '../../uuiui-deps'
 import { Icn, IcnProps } from '../icn'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
@@ -152,8 +147,7 @@ export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
 
 const ScrubThreshold = 3
 
-export const NumberInput = betterReactMemo<NumberInputProps>(
-  'NumberInput',
+export const NumberInput = React.memo<NumberInputProps>(
   ({
     value: propsValue,
     style,
@@ -828,8 +822,7 @@ function wrappedSimpleOnSubmitValue(
   }
 }
 
-export const SimpleNumberInput = betterReactMemo(
-  'SimpleNumberInput',
+export const SimpleNumberInput = React.memo(
   ({
     value,
     onSubmitValue,
@@ -865,8 +858,7 @@ function wrappedPercentOnSubmitValue(
   }
 }
 
-export const SimplePercentInput = betterReactMemo(
-  'SimplePercentInput',
+export const SimplePercentInput = React.memo(
   ({
     value,
     onSubmitValue,
@@ -893,8 +885,7 @@ interface ChainedNumberControlProps {
   setGlobalCursor?: (cursor: CSSCursor | null) => void
 }
 
-export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlProps> = betterReactMemo(
-  'ChainedNumberInput',
+export const ChainedNumberInput: React.FunctionComponent<ChainedNumberControlProps> = React.memo(
   ({ propsArray, idPrefix, style, setGlobalCursor }) => {
     return (
       <FlexRow style={style}>

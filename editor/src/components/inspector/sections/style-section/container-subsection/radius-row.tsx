@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import React from 'react'
 import { OptionsType } from 'react-select'
 import { FramePin } from 'utopia-api'
 import { isLeft, isRight, left, right } from '../../../../../core/shared/either'
@@ -28,7 +29,7 @@ import {
   ChainedNumberInput,
   NumberInput,
 } from '../../../../../uuiui'
-import { betterReactMemo, InspectorContextMenuItems } from '../../../../../uuiui-deps'
+import { InspectorContextMenuItems } from '../../../../../uuiui-deps'
 
 function updateRadiusType(
   newRadiusTypeValue: SelectOption,
@@ -169,7 +170,7 @@ function getSliderMax(widthPin: CSSNumber | undefined, heightPin: CSSNumber | un
   return Math.min(width, height)
 }
 
-export const RadiusRow = betterReactMemo('RadiusControls', () => {
+export const RadiusRow = React.memo(() => {
   const {
     value: borderRadiusValue,
     controlStatus,

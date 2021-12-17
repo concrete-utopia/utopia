@@ -26,14 +26,12 @@ import {
   PopupList,
   ChainedNumberInput,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface RadialGradientBackgroundLayerProps extends BackgroundLayerProps {
   value: CSSRadialGradientBackgroundLayer
 }
 
-export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackgroundLayerProps>(
-  'RadialGradientBackgroundLayer',
+export const RadialGradientBackgroundLayer = React.memo<RadialGradientBackgroundLayerProps>(
   (props) => {
     const [gradientCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
       getIndexedUpdateEnabled(props.index),

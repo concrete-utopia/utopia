@@ -5,7 +5,6 @@ import { FramePoint } from 'utopia-api'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { FramePinsInfo } from '../common/layout-property-path-hooks'
 import { UtopiaTheme, SquareButton } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 
 interface PinControlProps {
   handlePinMouseDown: (frameProp: LayoutPinnedProp) => void
@@ -240,7 +239,7 @@ interface PinWidthControlProps {
   toggleWidth: () => void
 }
 
-export const PinWidthControl = betterReactMemo('PinWidthControl', (props: PinWidthControlProps) => {
+export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
     <SquareButton onClick={props.toggleWidth} outline={true}>
@@ -285,42 +284,39 @@ interface PinHeightControlProps {
   toggleHeight: () => void
 }
 
-export const PinHeightControl = betterReactMemo(
-  'PinHeightControl',
-  (props: PinHeightControlProps) => {
-    const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
-    return (
-      <SquareButton onClick={props.toggleHeight} outline={true}>
-        <svg width='20' height='20'>
-          <g
-            id='dimensioncontrols-pin-height'
-            stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
-          >
-            <path
-              d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
-              id='dimensioncontrols-pin-height-EdgeEnd-t'
-              strokeLinecap='round'
-            />
-            <path
-              d={`M${HorizontalDimensionButtStart},${VerticalDimensionEnd} l${DimensionButt},0`}
-              id='dimensioncontrols-pin-height-EdgeEnd-b'
-              strokeLinecap='round'
-            />
-            <path
-              d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
-              id='dimensioncontrols-pin-height-line'
-              strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Height)}
-              strokeLinecap='round'
-            />
-            <path
-              d={`M 0,0 ${DimensionWidth},0 0,${DimensionHeight} ${DimensionWidth},${DimensionHeight} z`}
-              id='dimensioncontrols-pin-width-transparent'
-              stroke='transparent'
-              fill='transparent'
-            />
-          </g>
-        </svg>
-      </SquareButton>
-    )
-  },
-)
+export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
+  const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
+  return (
+    <SquareButton onClick={props.toggleHeight} outline={true}>
+      <svg width='20' height='20'>
+        <g
+          id='dimensioncontrols-pin-height'
+          stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
+        >
+          <path
+            d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
+            id='dimensioncontrols-pin-height-EdgeEnd-t'
+            strokeLinecap='round'
+          />
+          <path
+            d={`M${HorizontalDimensionButtStart},${VerticalDimensionEnd} l${DimensionButt},0`}
+            id='dimensioncontrols-pin-height-EdgeEnd-b'
+            strokeLinecap='round'
+          />
+          <path
+            d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
+            id='dimensioncontrols-pin-height-line'
+            strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Height)}
+            strokeLinecap='round'
+          />
+          <path
+            d={`M 0,0 ${DimensionWidth},0 0,${DimensionHeight} ${DimensionWidth},${DimensionHeight} z`}
+            id='dimensioncontrols-pin-width-transparent'
+            stroke='transparent'
+            fill='transparent'
+          />
+        </g>
+      </svg>
+    </SquareButton>
+  )
+})

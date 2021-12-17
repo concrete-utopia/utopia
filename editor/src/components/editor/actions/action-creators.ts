@@ -99,7 +99,6 @@ import type {
   RegenerateThumbnail,
   RenameStyleSelector,
   ResetPins,
-  ResetPropToDefault,
   ResizeInterfaceDesignerCodePane,
   SaveAsset,
   SaveCurrentFile,
@@ -195,7 +194,7 @@ import type {
   UpdateFormulaBarMode,
   OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
-  InsertWithDefaults,
+  InsertInsertable,
   ToggleFocusedOmniboxTab,
   SetPropTransient,
   ClearTransientProps,
@@ -209,6 +208,7 @@ import type {
   HideVSCodeLoadingScreen,
   SetIndexedDBFailed,
   ForceParseFile,
+  RemoveFromNodeModulesContents,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1199,25 +1199,19 @@ export function insertDroppedImage(imagePath: string, position: CanvasPoint): In
   }
 }
 
-export function resetPropToDefault(
-  target: ElementPath,
-  path: PropertyPath | null,
-): ResetPropToDefault {
+export function removeFromNodeModulesContents(
+  modulesToRemove: Array<string>,
+): RemoveFromNodeModulesContents {
   return {
-    action: 'RESET_PROP_TO_DEFAULT',
-    target: target,
-    path: path,
+    action: 'REMOVE_FROM_NODE_MODULES_CONTENTS',
+    modulesToRemove: modulesToRemove,
   }
 }
 
-export function updateNodeModulesContents(
-  contentsToAdd: NodeModules,
-  buildType: BuildType,
-): UpdateNodeModulesContents {
+export function updateNodeModulesContents(contentsToAdd: NodeModules): UpdateNodeModulesContents {
   return {
     action: 'UPDATE_NODE_MODULES_CONTENTS',
     contentsToAdd: contentsToAdd,
-    buildType: buildType,
   }
 }
 
@@ -1416,15 +1410,15 @@ export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBar
   }
 }
 
-export function insertWithDefaults(
+export function insertInsertable(
   targetParent: ElementPath,
   toInsert: InsertableComponent,
   styleProps: StylePropOption,
   wrapContent: WrapContentOption,
   indexPosition: IndexPosition | null,
-): InsertWithDefaults {
+): InsertInsertable {
   return {
-    action: 'INSERT_WITH_DEFAULTS',
+    action: 'INSERT_INSERTABLE',
     targetParent: targetParent,
     toInsert: toInsert,
     styleProps: styleProps,

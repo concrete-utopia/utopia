@@ -1,7 +1,7 @@
 import React from 'react'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
-import { betterReactMemo, getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
+import { getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
@@ -10,14 +10,13 @@ import { JSXElementName, jsxElementNameEquals } from '../../../core/shared/eleme
 import { getElementsToTarget } from '../../inspector/common/inspector-utils'
 import { Imports } from '../../../core/shared/project-file-types'
 import {
-  getComponentGroups,
   getComponentGroupsAsSelectOptions,
   InsertableComponent,
 } from '../../../components/shared/project-components'
 import { usePossiblyResolvedPackageDependencies } from '../../../components/editor/npm-dependency/npm-dependency'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
-export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
+export const RenderAsRow = React.memo(() => {
   const dispatch = useEditorState((store) => {
     return store.dispatch
   }, 'RenderAsRow dispatch')

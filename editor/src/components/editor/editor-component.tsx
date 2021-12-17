@@ -48,7 +48,6 @@ import {
   Subdued,
   FlexColumn,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
 import { createIframeUrl, projectURLForProject } from '../../core/shared/utils'
 import { setBranchNameFromURL } from '../../utils/branches'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
@@ -87,256 +86,248 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
   return returnValue
 }
 
-export const EditorComponentInner = betterReactMemo(
-  'EditorComponentInner',
-  (props: EditorProps) => {
-    const editorStoreRef = useRefEditorState((store) => store)
-    const colorTheme = useColorTheme()
-    const onWindowMouseDown = React.useCallback(
-      (event: MouseEvent) => {
-        const popupId = editorStoreRef.current.editor.openPopupId
-        if (popupId != null) {
-          const popupElement = document.getElementById(popupId)
-          const triggerElement = document.getElementById(`trigger-${popupId}`)
-          const clickOutsidePopup =
-            popupElement != null && !popupElement.contains(event.target as Node)
-          const clickOutsideTrigger =
-            triggerElement != null && !triggerElement.contains(event.target as Node)
-          if (
-            (clickOutsidePopup && triggerElement == null) ||
-            (clickOutsidePopup && clickOutsideTrigger)
-          ) {
-            editorStoreRef.current.dispatch([EditorActions.closePopup()], 'everyone')
-          }
-        }
-        const activeElement = document.activeElement
+export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const editorStoreRef = useRefEditorState((store) => store)
+  const colorTheme = useColorTheme()
+  const onWindowMouseDown = React.useCallback(
+    (event: MouseEvent) => {
+      const popupId = editorStoreRef.current.editor.openPopupId
+      if (popupId != null) {
+        const popupElement = document.getElementById(popupId)
+        const triggerElement = document.getElementById(`trigger-${popupId}`)
+        const clickOutsidePopup =
+          popupElement != null && !popupElement.contains(event.target as Node)
+        const clickOutsideTrigger =
+          triggerElement != null && !triggerElement.contains(event.target as Node)
         if (
-          event.target !== activeElement &&
-          activeElement != null &&
-          activeElement.getAttribute('data-inspector-input') != null &&
-          (activeElement as any).blur != null
+          (clickOutsidePopup && triggerElement == null) ||
+          (clickOutsidePopup && clickOutsideTrigger)
         ) {
-          // OMG what a nightmare! This is the only way of keeping the Inspector fast and ensuring the blur handler for inputs
-          // is called before triggering a change that might change the selection
-          ;(activeElement as any).blur()
+          editorStoreRef.current.dispatch([EditorActions.closePopup()], 'everyone')
         }
-      },
-      [editorStoreRef],
-    )
-
-    const namesByKey = React.useMemo(() => {
-      return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
-    }, [editorStoreRef])
-
-    const onWindowKeyDown = React.useCallback(
-      (event: KeyboardEvent) => {
-        handleKeyDown(
-          event,
-          editorStoreRef.current.editor,
-          editorStoreRef.current.derived,
-          namesByKey,
-          editorStoreRef.current.dispatch,
-        )
-      },
-      [editorStoreRef, namesByKey],
-    )
-
-    const onWindowKeyUp = React.useCallback(
-      (event) => {
-        handleKeyUp(
-          event,
-          editorStoreRef.current.editor,
-          namesByKey,
-          editorStoreRef.current.dispatch,
-        )
-      },
-      [editorStoreRef, namesByKey],
-    )
-
-    const preventDefault = React.useCallback((event: MouseEvent) => {
-      event.preventDefault()
-    }, [])
-
-    React.useEffect(() => {
-      window.addEventListener('mousedown', onWindowMouseDown, true)
-      window.addEventListener('keydown', onWindowKeyDown)
-      window.addEventListener('keyup', onWindowKeyUp)
-      window.addEventListener('contextmenu', preventDefault)
-      return function cleanup() {
-        window.removeEventListener('mousedown', onWindowMouseDown, true)
-        window.removeEventListener('keydown', onWindowKeyDown)
-        window.removeEventListener('keyup', onWindowKeyUp)
-        window.removeEventListener('contextmenu', preventDefault)
       }
-    }, [onWindowMouseDown, onWindowKeyDown, onWindowKeyUp, preventDefault])
-
-    const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
-    const projectName = useEditorState(
-      (store) => store.editor.projectName,
-      'EditorComponentInner projectName',
-    )
-    const projectId = useEditorState((store) => store.editor.id, 'EditorComponentInner projectId')
-    const previewVisible = useEditorState(
-      (store) => store.editor.preview.visible,
-      'EditorComponentInner previewVisible',
-    )
-    const leftMenuExpanded = useEditorState(
-      (store) => store.editor.leftMenu.expanded,
-      'EditorComponentInner leftMenuExpanded',
-    )
-
-    const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
-
-    React.useEffect(() => {
-      document.title = projectName + ' - Utopia'
-    }, [projectName])
-
-    React.useEffect(() => {
-      if (projectId) {
-        pushProjectURLToBrowserHistory(projectId, projectName)
+      const activeElement = document.activeElement
+      if (
+        event.target !== activeElement &&
+        activeElement != null &&
+        activeElement.getAttribute('data-inspector-input') != null &&
+        (activeElement as any).blur != null
+      ) {
+        // OMG what a nightmare! This is the only way of keeping the Inspector fast and ensuring the blur handler for inputs
+        // is called before triggering a change that might change the selection
+        ;(activeElement as any).blur()
       }
-    }, [projectName, projectId])
+    },
+    [editorStoreRef],
+  )
 
-    const onClosePreview = React.useCallback(
-      () => dispatch([EditorActions.setPanelVisibility('preview', false)]),
-      [dispatch],
-    )
+  const namesByKey = React.useMemo(() => {
+    return applyShortcutConfigurationToDefaults(editorStoreRef.current.userState.shortcutConfig)
+  }, [editorStoreRef])
 
-    const startDragInsertion = React.useCallback(
-      (event: React.DragEvent<HTMLDivElement>) => {
-        const draggedTypes = event.nativeEvent?.dataTransfer?.types
-        const isDraggedFile =
-          draggedTypes != null && draggedTypes.length === 1 && draggedTypes[0] === 'Files'
-        if (isDraggedFile) {
-          const actions = [
-            EditorActions.setPanelVisibility('leftmenu', true),
-            EditorActions.setLeftMenuTab(LeftMenuTab.Contents),
-          ]
-          dispatch(actions, 'everyone')
-        }
-      },
-      [dispatch],
-    )
+  const onWindowKeyDown = React.useCallback(
+    (event: KeyboardEvent) => {
+      handleKeyDown(
+        event,
+        editorStoreRef.current.editor,
+        editorStoreRef.current.derived,
+        namesByKey,
+        editorStoreRef.current.dispatch,
+      )
+    },
+    [editorStoreRef, namesByKey],
+  )
 
-    const vscodeBridgeReady = useEditorState((store) => {
-      return store.editor.vscodeBridgeReady
-    }, 'EditorComponentInner vscodeBridgeReady')
+  const onWindowKeyUp = React.useCallback(
+    (event) => {
+      handleKeyUp(event, editorStoreRef.current.editor, namesByKey, editorStoreRef.current.dispatch)
+    },
+    [editorStoreRef, namesByKey],
+  )
 
-    return (
-      <SimpleFlexRow
-        className='editor-main-vertical-and-modals'
+  const preventDefault = React.useCallback((event: MouseEvent) => {
+    event.preventDefault()
+  }, [])
+
+  React.useEffect(() => {
+    window.addEventListener('mousedown', onWindowMouseDown, true)
+    window.addEventListener('keydown', onWindowKeyDown)
+    window.addEventListener('keyup', onWindowKeyUp)
+    window.addEventListener('contextmenu', preventDefault)
+    return function cleanup() {
+      window.removeEventListener('mousedown', onWindowMouseDown, true)
+      window.removeEventListener('keydown', onWindowKeyDown)
+      window.removeEventListener('keyup', onWindowKeyUp)
+      window.removeEventListener('contextmenu', preventDefault)
+    }
+  }, [onWindowMouseDown, onWindowKeyDown, onWindowKeyUp, preventDefault])
+
+  const dispatch = useEditorState((store) => store.dispatch, 'EditorComponentInner dispatch')
+  const projectName = useEditorState(
+    (store) => store.editor.projectName,
+    'EditorComponentInner projectName',
+  )
+  const projectId = useEditorState((store) => store.editor.id, 'EditorComponentInner projectId')
+  const previewVisible = useEditorState(
+    (store) => store.editor.preview.visible,
+    'EditorComponentInner previewVisible',
+  )
+  const leftMenuExpanded = useEditorState(
+    (store) => store.editor.leftMenu.expanded,
+    'EditorComponentInner leftMenuExpanded',
+  )
+
+  const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
+
+  React.useEffect(() => {
+    document.title = projectName + ' - Utopia'
+  }, [projectName])
+
+  React.useEffect(() => {
+    if (projectId) {
+      pushProjectURLToBrowserHistory(projectId, projectName)
+    }
+  }, [projectName, projectId])
+
+  const onClosePreview = React.useCallback(
+    () => dispatch([EditorActions.setPanelVisibility('preview', false)]),
+    [dispatch],
+  )
+
+  const startDragInsertion = React.useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      const draggedTypes = event.nativeEvent?.dataTransfer?.types
+      const isDraggedFile =
+        draggedTypes != null && draggedTypes.length === 1 && draggedTypes[0] === 'Files'
+      if (isDraggedFile) {
+        const actions = [
+          EditorActions.setPanelVisibility('leftmenu', true),
+          EditorActions.setLeftMenuTab(LeftMenuTab.Contents),
+        ]
+        dispatch(actions, 'everyone')
+      }
+    },
+    [dispatch],
+  )
+
+  const vscodeBridgeReady = useEditorState((store) => {
+    return store.editor.vscodeBridgeReady
+  }, 'EditorComponentInner vscodeBridgeReady')
+
+  return (
+    <SimpleFlexRow
+      className='editor-main-vertical-and-modals'
+      style={{
+        height: '100%',
+        width: '100%',
+        overscrollBehaviorX: 'contain',
+      }}
+      onDragEnter={startDragInsertion}
+    >
+      <SimpleFlexColumn
+        className='editor-main-vertical'
         style={{
           height: '100%',
           width: '100%',
-          overscrollBehaviorX: 'contain',
         }}
-        onDragEnter={startDragInsertion}
       >
-        <SimpleFlexColumn
-          className='editor-main-vertical'
+        {(isChrome as boolean) ? null : <BrowserInfoBar />}
+        <LoginStatusBar />
+
+        <SimpleFlexRow
+          className='editor-main-horizontal'
           style={{
-            height: '100%',
             width: '100%',
+            flexGrow: 1,
+            overflowY: 'hidden',
+            alignItems: 'stretch',
           }}
         >
-          {(isChrome as boolean) ? null : <BrowserInfoBar />}
-          <LoginStatusBar />
-
-          <SimpleFlexRow
-            className='editor-main-horizontal'
+          <SimpleFlexColumn
             style={{
-              width: '100%',
-              flexGrow: 1,
-              overflowY: 'hidden',
-              alignItems: 'stretch',
+              height: '100%',
+              width: 44,
+              backgroundColor: colorTheme.leftMenuBackground.value,
             }}
           >
-            <SimpleFlexColumn
-              style={{
-                height: '100%',
-                width: 44,
-                backgroundColor: colorTheme.leftMenuBackground.value,
-              }}
-            >
-              <Menubar />
-            </SimpleFlexColumn>
-            <div
-              className='LeftPaneShell'
-              style={{
-                height: '100%',
-                flexShrink: 0,
-                transition: 'all .1s ease-in-out',
-                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
-                overflowX: 'scroll',
-                backgroundColor: colorTheme.leftPaneBackground.value,
-              }}
-            >
-              {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
-            </div>
+            <Menubar />
+          </SimpleFlexColumn>
+          <div
+            className='LeftPaneShell'
+            style={{
+              height: '100%',
+              flexShrink: 0,
+              transition: 'all .1s ease-in-out',
+              width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
+              overflowX: 'scroll',
+              backgroundColor: colorTheme.leftPaneBackground.value,
+            }}
+          >
+            {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
+          </div>
+          <SimpleFlexRow
+            className='editor-shell'
+            style={{
+              flexGrow: 1,
+              alignItems: 'stretch',
+              borderRight: `1px solid ${colorTheme.neutralBorder.value}`,
+              backgroundColor: colorTheme.neutralBackground.value,
+            }}
+          >
             <SimpleFlexRow
-              className='editor-shell'
+              className='openTabShell'
               style={{
                 flexGrow: 1,
                 alignItems: 'stretch',
-                borderRight: `1px solid ${colorTheme.neutralBorder.value}`,
-                backgroundColor: colorTheme.neutralBackground.value,
+                justifyContent: 'stretch',
+                overflowX: 'hidden',
               }}
             >
-              <SimpleFlexRow
-                className='openTabShell'
-                style={{
-                  flexGrow: 1,
-                  alignItems: 'stretch',
-                  justifyContent: 'stretch',
-                  overflowX: 'hidden',
+              <DesignPanelRoot />
+            </SimpleFlexRow>
+            {/* insert more columns here */}
+
+            {previewVisible ? (
+              <ResizableFlexColumn
+                style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
+                enable={{
+                  left: true,
+                  right: false,
+                }}
+                defaultSize={{
+                  width: 350,
+                  height: '100%',
                 }}
               >
-                <DesignPanelRoot />
-              </SimpleFlexRow>
-              {/* insert more columns here */}
-
-              {previewVisible ? (
-                <ResizableFlexColumn
-                  style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
-                  enable={{
-                    left: true,
-                    right: false,
-                  }}
-                  defaultSize={{
-                    width: 350,
-                    height: '100%',
+                <SimpleFlexRow
+                  id='PreviewTabRail'
+                  style={{
+                    height: UtopiaTheme.layout.rowHeight.smaller,
+                    borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+                    alignItems: 'stretch',
                   }}
                 >
-                  <SimpleFlexRow
-                    id='PreviewTabRail'
-                    style={{
-                      height: UtopiaTheme.layout.rowHeight.smaller,
-                      borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
-                      alignItems: 'stretch',
-                    }}
-                  >
-                    <TabComponent
-                      label='Preview'
-                      selected
-                      icon={<LargerIcons.PreviewPane color='primary' />}
-                      onClose={onClosePreview}
-                    />
-                  </SimpleFlexRow>
-                  <PreviewColumn />
-                </ResizableFlexColumn>
-              ) : null}
-            </SimpleFlexRow>
+                  <TabComponent
+                    label='Preview'
+                    selected
+                    icon={<LargerIcons.PreviewPane color='primary' />}
+                    onClose={onClosePreview}
+                  />
+                </SimpleFlexRow>
+                <PreviewColumn />
+              </ResizableFlexColumn>
+            ) : null}
           </SimpleFlexRow>
-        </SimpleFlexColumn>
-        <ModalComponent />
-        <ToastRenderer />
-        <EditorCursorComponent />
-      </SimpleFlexRow>
-    )
-  },
-)
+        </SimpleFlexRow>
+      </SimpleFlexColumn>
+      <ModalComponent />
+      <ToastRenderer />
+      <EditorCursorComponent />
+    </SimpleFlexRow>
+  )
+})
 
-const ModalComponent = betterReactMemo('ModalComponent', (): React.ReactElement<any> | null => {
+const ModalComponent = React.memo((): React.ReactElement<any> | null => {
   const { modal, dispatch } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -366,7 +357,7 @@ export function EditorComponent(props: EditorProps) {
   )
 }
 
-const EditorCursorComponent = betterReactMemo('EditorCursorComponent', () => {
+const EditorCursorComponent = React.memo(() => {
   const cursor = useEditorState((store) => {
     return Utils.defaultIfNull(store.editor.canvas.cursor, getCursorFromDragState(store.editor))
   }, 'EditorCursorComponent cursor')
@@ -391,7 +382,7 @@ const EditorCursorComponent = betterReactMemo('EditorCursorComponent', () => {
   return <div key='cursor-area' id='cursor-overlay' style={styleProps} />
 })
 
-const ToastRenderer = betterReactMemo('ToastRenderer', () => {
+const ToastRenderer = React.memo(() => {
   const toasts = useEditorState((store) => store.editor.toasts, 'ToastRenderer')
 
   return (
