@@ -21,6 +21,11 @@ export const AnimatedPlaceholderBoxes = () => {
       if (container != null && foundTarget != null && foundPlaceholder != null) {
         const targetPosition = foundTarget.getBoundingClientRect()
         const containerPosition = container.getBoundingClientRect()
+        const currentPosition = foundPlaceholder.getBoundingClientRect()
+        if (currentPosition.width !== 0 || currentPosition.height !== 0) {
+          // if the width and height are 0, we are still running the initial placement – we don't want to animate that.
+          foundPlaceholder.style.transition = 'all 0.4s'
+        }
         foundPlaceholder.style.left = `${targetPosition.x - containerPosition.x}px`
         foundPlaceholder.style.top = `${targetPosition.y - containerPosition.y}px`
         foundPlaceholder.style.width = `${targetPosition.width}px`
@@ -46,7 +51,6 @@ export const AnimatedPlaceholderBoxes = () => {
               width: 0,
               height: 0,
               backgroundColor: 'pink',
-              transition: 'all 0.4s',
             }}
           />
         )
