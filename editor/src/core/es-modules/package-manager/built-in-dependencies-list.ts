@@ -1,4 +1,5 @@
 import * as UtopiaAPI from 'utopia-api'
+import * as UtopiaAPIComponents from 'utopia-api/components'
 import * as UUIUI from '../../../uuiui'
 import * as UUIUIDeps from '../../../uuiui-deps'
 import * as ReactJsxRuntime from 'react/jsx-runtime'
@@ -63,6 +64,7 @@ export function createBuiltInDependenciesList(
   // server/src/Utopia/Web/Packager/NPM.hs
   return [
     builtInDependency('utopia-api', UtopiaAPISpecial, utopiaAPIPackageJSON.version),
+    builtInDependency('utopia-api/components', UtopiaAPIComponents, utopiaAPIPackageJSON.version),
     builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
     builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
     builtInDependency('react/jsx-runtime', ReactJsxRuntime, editorPackageJSON.dependencies.react),
