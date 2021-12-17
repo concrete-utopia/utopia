@@ -175,11 +175,10 @@ export function getSelectableViews(
 
     const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
       // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now
-      const isGroup = MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, view)
       const isAncestorOfSelected = selectedViews.some((selectedView) =>
         EP.isDescendantOf(selectedView, view),
       )
-      if (isGroup && isAncestorOfSelected) {
+      if (isAncestorOfSelected) {
         return false
       } else {
         return true

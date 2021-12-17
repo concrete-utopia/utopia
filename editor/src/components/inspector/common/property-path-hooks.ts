@@ -35,11 +35,7 @@ import {
   cssNumber,
   isTrivialDefaultValue,
 } from '../../../components/inspector/common/css-utils'
-import {
-  createLayoutPropertyPath,
-  LayoutProp,
-  StyleLayoutProp,
-} from '../../../core/layout/layout-helpers-new'
+import { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   getFilePathForImportedComponent,
@@ -684,13 +680,14 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
       InspectorPropsContext,
       (contextData) => {
         const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P) =>
-          contextData.editedMultiSelectedProps.map((props) => {
+        const mapFn = (propKey: P) => {
+          return contextData.editedMultiSelectedProps.map((props) => {
             return getModifiableJSXAttributeAtPath(
               props,
               pathMappingFn(propKey, contextData.targetPath),
             )
           })
+        }
         return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
       },
       deepEqual,
@@ -922,7 +919,7 @@ export function useInspectorInfoSimpleUntyped(
   }
 }
 
-export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
+export function useInspectorLayoutInfo<P extends StyleLayoutProp>(
   property: P,
 ): InspectorInfo<ParsedProperties[P]> {
   function transformValue(parsedValues: ParsedValues<P>): ParsedProperties[P] {
@@ -936,7 +933,7 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
     [property],
     transformValue,
     untransformValue,
-    createLayoutPropertyPath,
+    stylePropPathMappingFn,
   )
   return inspectorInfo
 }

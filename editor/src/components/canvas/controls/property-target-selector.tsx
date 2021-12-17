@@ -1,9 +1,6 @@
 import React from 'react'
-import {
-  createLayoutPropertyPath,
-  LayoutTargetableProp,
-  StyleLayoutProp,
-} from '../../../core/layout/layout-helpers-new'
+import { useContextSelector } from 'use-context-selector'
+import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { eitherToMaybe, left } from '../../../core/shared/either'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
@@ -16,6 +13,10 @@ import {
 } from '../../editor/actions/action-creators'
 import { usePrevious } from '../../editor/hook-utils'
 import { useEditorState } from '../../editor/store/store-hook'
+import {
+  InspectorPropsContext,
+  stylePropPathMappingFn,
+} from '../../inspector/common/property-path-hooks'
 
 interface PropertyTargetSelectorProps {
   targetComponentMetadata: ElementInstanceMetadata | null
@@ -26,17 +27,17 @@ interface PropertyTargetSelectorProps {
 
 function labelForOption(option: LayoutTargetableProp): string {
   switch (option) {
-    case 'Width':
+    case 'width':
       return 'width'
-    case 'Height':
+    case 'height':
       return 'height'
-    case 'PinnedLeft':
+    case 'left':
       return 'left'
-    case 'PinnedTop':
+    case 'top':
       return 'top'
-    case 'PinnedRight':
+    case 'right':
       return 'right'
-    case 'PinnedBottom':
+    case 'bottom':
       return 'bottom'
     default:
       return option
@@ -53,6 +54,9 @@ export const PropertyTargetSelector = React.memo(
       }
     }, 'PropertyTargetSelector resizeOptions')
 
+    const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+      return contextData.targetPath
+    })
     const onKeyDown = React.useCallback(
       (event: KeyboardEvent) => {
         if (event.key === 'Tab') {
@@ -79,11 +83,11 @@ export const PropertyTargetSelector = React.memo(
         eitherToMaybe(
           getSimpleAttributeAtPath(
             left(props.targetComponentMetadata?.props ?? {}),
-            createLayoutPropertyPath(option),
+            stylePropPathMappingFn(option, targetPath),
           ),
         ),
       )
-    }, [resizeOptions.propertyTargetOptions, props.targetComponentMetadata?.props])
+    }, [resizeOptions.propertyTargetOptions, props.targetComponentMetadata?.props, targetPath])
 
     const defaultSelectedOptionIndex = React.useMemo(() => {
       const indexOfFirstWithValue = valuesForProp.findIndex((value) => value != null)

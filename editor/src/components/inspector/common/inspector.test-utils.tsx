@@ -26,7 +26,7 @@ import { InspectorInfo } from './property-path-hooks'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
 import { Frame } from 'utopia-api'
 import { PinsInfo } from './layout-property-path-hooks'
-import { CSSNumber } from './css-utils'
+import { cssNumber, CSSNumber } from './css-utils'
 import { mapValues } from '../../../core/shared/object-utils'
 import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
@@ -157,51 +157,68 @@ export function pinsInfoForPins(pins: SimplePinsInfo): PinsInfo {
   return mapValues((pin) => testInspectorInfo(pin), pins) as PinsInfo
 }
 
+function getDimensionCenter(
+  start: CSSNumber | undefined,
+  end: CSSNumber | undefined,
+  gap: CSSNumber | undefined,
+): CSSNumber | undefined {
+  if (start == null) {
+    if (end == null) {
+      return undefined
+    } else {
+      if (gap == null) {
+        return undefined
+      } else {
+        return cssNumber(end.value - gap.value / 2)
+      }
+    }
+  } else {
+    if (end == null) {
+      if (gap == null) {
+        return undefined
+      } else {
+        return cssNumber(start.value + gap.value / 2)
+      }
+    } else {
+      if (gap == null) {
+        return cssNumber(start.value + (end.value - start.value) / 2)
+      } else {
+        return cssNumber(start.value + gap.value / 2)
+      }
+    }
+  }
+}
+
 export function frameForPins(pins: SimplePinsInfo): Frame {
   return {
-    left: pins.PinnedLeft?.value,
-    centerX: pins.PinnedCenterX?.value,
-    right: pins.PinnedRight?.value,
-    width: pins.Width?.value,
-    top: pins.PinnedTop?.value,
-    centerY: pins.PinnedCenterY?.value,
-    bottom: pins.PinnedBottom?.value,
-    height: pins.Height?.value,
+    left: pins.left?.value,
+    centerX: getDimensionCenter(pins.left, pins.right, pins.width)?.value,
+    right: pins.right?.value,
+    width: pins.width?.value,
+    top: pins.top?.value,
+    centerY: getDimensionCenter(pins.top, pins.bottom, pins.height)?.value,
+    bottom: pins.bottom?.value,
+    height: pins.height?.value,
   }
 }
 
 export const TLWHSimplePins: SimplePinsInfo = {
-  PinnedLeft: {
+  left: {
     value: SimpleRect.x,
     unit: null,
   },
-  Width: { value: SimpleRect.width, unit: null },
-  PinnedTop: { value: SimpleRect.y, unit: null },
-  Height: { value: SimpleRect.height, unit: null },
-  PinnedBottom: undefined,
-  PinnedRight: undefined,
-  PinnedCenterX: undefined,
-  PinnedCenterY: undefined,
+  width: { value: SimpleRect.width, unit: null },
+  top: { value: SimpleRect.y, unit: null },
+  height: { value: SimpleRect.height, unit: null },
+  bottom: undefined,
+  right: undefined,
 }
 
 export const TLBRSimplePins: SimplePinsInfo = {
-  PinnedLeft: { value: SimpleRect.x, unit: null },
-  Width: undefined,
-  PinnedTop: { value: SimpleRect.y, unit: null },
-  Height: undefined,
-  PinnedBottom: { value: SimpleRect.y + SimpleRect.height, unit: null },
-  PinnedRight: { value: SimpleRect.x + SimpleRect.width, unit: null },
-  PinnedCenterX: undefined,
-  PinnedCenterY: undefined,
-}
-
-export const CxCyWHSimplePins: SimplePinsInfo = {
-  PinnedLeft: undefined,
-  Width: { value: SimpleRect.width, unit: null },
-  PinnedTop: undefined,
-  Height: { value: SimpleRect.height, unit: null },
-  PinnedBottom: undefined,
-  PinnedRight: undefined,
-  PinnedCenterX: { value: SimpleRect.x, unit: null }, // Offset by 10 since both parent and element frames are the same width
-  PinnedCenterY: { value: SimpleRect.y, unit: null }, // Offset by 10 since both parent and element frames are the same height
+  left: { value: SimpleRect.x, unit: null },
+  width: undefined,
+  top: { value: SimpleRect.y, unit: null },
+  height: undefined,
+  bottom: { value: SimpleRect.y + SimpleRect.height, unit: null },
+  right: { value: SimpleRect.x + SimpleRect.width, unit: null },
 }

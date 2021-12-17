@@ -23,7 +23,6 @@ import {
   useColorTheme,
 } from '../../../../../uuiui'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
-import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import { isNotUnsetOrDefault } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 

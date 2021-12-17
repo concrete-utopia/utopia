@@ -34,8 +34,7 @@ export function collectParentAndSiblingGuidelines(
         const notSelectedOrDescendantOfSelected = targets.every(
           (view) => !EP.isDescendantOfOrEqualTo(maybeTarget, view),
         )
-        const isGroup = MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, parent)
-        if ((isSibling || (isParent && !isGroup)) && notSelectedOrDescendantOfSelected) {
+        if ((isSibling || isParent) && notSelectedOrDescendantOfSelected) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
           if (frame != null) {
             result.push(...Guidelines.guidelinesForFrame(frame, true))

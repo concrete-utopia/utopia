@@ -4,12 +4,16 @@ import { SelectOption, SelectControl } from '../../../controls/select-control'
 import { OptionChainOption, OptionChainControl } from '../../../controls/option-chain-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import { stylePropPathMappingFn, useInspectorLayoutInfo } from '../../../common/property-path-hooks'
+import {
+  InspectorPropsContext,
+  stylePropPathMappingFn,
+  useInspectorLayoutInfo,
+} from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, ChainedNumberInput } from '../../../../../uuiui'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import { GridRowProps, UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
+import { useContextSelector } from 'use-context-selector'
 
 export const PositionControl = React.memo(() => {
   const position = useInspectorLayoutInfo('position')
@@ -62,14 +66,18 @@ export const PositionControl = React.memo(() => {
   )
 })
 
-const alignSelfProp = [createLayoutPropertyPath('alignSelf')]
-
 interface AlignSelfControlProps {
   variant: GridRowProps['variant']
 }
 
 export const AlignSelfControl = React.memo((props: AlignSelfControlProps) => {
   const alignSelf = useInspectorLayoutInfo('alignSelf')
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
+  const alignSelfProp = React.useMemo(() => {
+    return [stylePropPathMappingFn('alignSelf', targetPath)]
+  }, [targetPath])
 
   return (
     <InspectorContextMenuWrapper

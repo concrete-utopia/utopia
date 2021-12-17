@@ -1,6 +1,5 @@
 import * as ObjectPath from 'object-path'
 import React from 'react'
-import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
   findElementAtPath,
   getSimpleAttributeAtPath,
@@ -41,7 +40,11 @@ import {
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
+import {
+  InspectorCallbackContext,
+  InspectorPropsContext,
+  stylePropPathMappingFn,
+} from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
 import {
@@ -213,10 +216,12 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
 })
 AlignmentButtons.displayName = 'AlignmentButtons'
 
-const nonDefaultPositionPaths: Array<PropertyPath> = [
-  createLayoutPropertyPath('PinnedRight'),
-  createLayoutPropertyPath('PinnedBottom'),
-]
+function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<PropertyPath> {
+  return [
+    stylePropPathMappingFn('right', propertyTarget),
+    stylePropPathMappingFn('bottom', propertyTarget),
+  ]
+}
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
@@ -256,7 +261,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           const elem = possibleElement.element.value
           if (isJSXElement(elem)) {
             if (!hasNonDefaultPositionAttributesInner) {
-              for (const nonDefaultPositionPath of nonDefaultPositionPaths) {
+              for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(['style'])) {
                 const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
                 if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
                   hasNonDefaultPositionAttributesInner = true

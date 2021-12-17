@@ -6,6 +6,7 @@ import {
   FlexAlignment,
   FlexDirection,
   FlexJustifyContent,
+  FlexLength,
   FlexWrap,
   FramePin,
   isPercentPin,
@@ -4035,10 +4036,10 @@ export interface ParsedCSSProperties {
   justifyContent: FlexJustifyContent
   alignSelf: FlexAlignment
   position: CSSPosition
-  left: CSSNumber
-  top: CSSNumber
-  right: CSSNumber
-  bottom: CSSNumber
+  left: CSSNumber | undefined
+  top: CSSNumber | undefined
+  right: CSSNumber | undefined
+  bottom: CSSNumber | undefined
   minWidth: CSSNumber | undefined
   maxWidth: CSSNumber | undefined
   minHeight: CSSNumber | undefined
@@ -4047,6 +4048,10 @@ export interface ParsedCSSProperties {
   flexGrow: number
   flexShrink: number
   display: string
+  width: CSSNumber | undefined
+  height: CSSNumber | undefined
+  flexBasis: CSSNumber | undefined
+  flexGap: number
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4220,13 +4225,26 @@ export const cssEmptyValues: ParsedCSSProperties = {
   flexGrow: 0,
   flexShrink: 1,
   display: 'block',
+  flexGap: 0,
+  width: {
+    value: 0,
+    unit: null,
+  },
+  height: {
+    value: 0,
+    unit: null,
+  },
+  flexBasis: {
+    value: 0,
+    unit: null,
+  },
 }
 
 type CSSParsers = {
   [key in keyof ParsedCSSProperties]: Parser<ParsedCSSProperties[key]>
 }
 
-const cssParsers: CSSParsers = {
+export const cssParsers: CSSParsers = {
   backgroundColor: parseBackgroundColor,
   backgroundImage: parseBackgroundImage,
   backgroundSize: parseBackgroundSize,
@@ -4283,6 +4301,10 @@ const cssParsers: CSSParsers = {
   flexGrow: parseCSSUnitlessAsNumber,
   flexShrink: parseCSSUnitlessAsNumber,
   display: parseDisplay,
+  flexGap: parseCSSUnitlessAsNumber,
+  width: parseCSSLengthPercent,
+  height: parseCSSLengthPercent,
+  flexBasis: parseCSSLengthPercent,
 }
 
 type CSSPrinters = {
@@ -4348,6 +4370,10 @@ const cssPrinters: CSSPrinters = {
   flexGrow: jsxAttributeValueWithNoComments,
   flexShrink: jsxAttributeValueWithNoComments,
   display: printStringAsAttributeValue,
+  width: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  height: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  flexGap: jsxAttributeValueWithNoComments,
 }
 
 export interface UtopianElementProperties {
@@ -4580,7 +4606,6 @@ const elementPropertiesPrinters: MetadataPrinters = {
 }
 
 interface ParsedLayoutProperties {
-  layoutSystem: LayoutSystem | undefined
   pinLeft: CSSNumber | undefined
   pinRight: CSSNumber | undefined
   centerX: CSSNumber | undefined
@@ -4591,11 +4616,9 @@ interface ParsedLayoutProperties {
   height: CSSNumber | undefined
   gapMain: number
   flexBasis: CSSNumber | undefined
-  crossBasis: CSSNumber | undefined
 }
 
 export const layoutEmptyValues: ParsedLayoutProperties = {
-  layoutSystem: undefined,
   pinLeft: undefined,
   pinRight: undefined,
   centerX: undefined,
@@ -4606,7 +4629,6 @@ export const layoutEmptyValues: ParsedLayoutProperties = {
   height: undefined,
   gapMain: 0,
   flexBasis: undefined,
-  crossBasis: undefined,
 }
 
 type LayoutParsers = {
@@ -4614,7 +4636,6 @@ type LayoutParsers = {
 }
 
 const layoutParsers: LayoutParsers = {
-  layoutSystem: layoutSystemParser,
   pinLeft: parseFramePin,
   pinRight: parseFramePin,
   centerX: parseFramePin,
@@ -4625,7 +4646,6 @@ const layoutParsers: LayoutParsers = {
   height: parseFramePin,
   gapMain: isNumberParser,
   flexBasis: parseFramePin,
-  crossBasis: parseFramePin,
 }
 
 type LayoutPrinters = {
@@ -4633,7 +4653,6 @@ type LayoutPrinters = {
 }
 
 const layoutPrinters: LayoutPrinters = {
-  layoutSystem: jsxAttributeValueWithNoComments,
   pinLeft: jsxAttributeValueWithNoComments,
   pinRight: jsxAttributeValueWithNoComments,
   centerX: jsxAttributeValueWithNoComments,
@@ -4644,25 +4663,19 @@ const layoutPrinters: LayoutPrinters = {
   height: jsxAttributeValueWithNoComments,
   gapMain: jsxAttributeValueWithNoComments,
   flexBasis: jsxAttributeValueWithNoComments,
-  crossBasis: jsxAttributeValueWithNoComments,
 }
 
 const layoutEmptyValuesNew: LayoutPropertyTypes = {
-  LayoutSystem: undefined,
+  width: undefined,
+  height: undefined,
 
-  Width: undefined,
-  Height: undefined,
-
-  FlexGap: 0,
+  flexGap: 0,
   flexBasis: undefined,
-  FlexCrossBasis: undefined,
 
-  PinnedLeft: undefined,
-  PinnedTop: undefined,
-  PinnedRight: undefined,
-  PinnedBottom: undefined,
-  PinnedCenterX: undefined,
-  PinnedCenterY: undefined,
+  left: undefined,
+  top: undefined,
+  right: undefined,
+  bottom: undefined,
 }
 
 type LayoutParsersNew = {
@@ -4670,21 +4683,16 @@ type LayoutParsersNew = {
 }
 
 const layoutParsersNew: LayoutParsersNew = {
-  LayoutSystem: layoutSystemParser,
+  width: parseFramePin,
+  height: parseFramePin,
 
-  Width: parseFramePin,
-  Height: parseFramePin,
-
-  FlexGap: isNumberParser,
+  flexGap: isNumberParser,
   flexBasis: parseFramePin,
-  FlexCrossBasis: parseFramePin,
 
-  PinnedLeft: parseFramePin,
-  PinnedTop: parseFramePin,
-  PinnedRight: parseFramePin,
-  PinnedBottom: parseFramePin,
-  PinnedCenterX: parseFramePin,
-  PinnedCenterY: parseFramePin,
+  left: parseFramePin,
+  top: parseFramePin,
+  right: parseFramePin,
+  bottom: parseFramePin,
 }
 
 type LayoutPrintersNew = {
@@ -4692,21 +4700,16 @@ type LayoutPrintersNew = {
 }
 
 const layoutPrintersNew: LayoutPrintersNew = {
-  LayoutSystem: jsxAttributeValueWithNoComments,
+  width: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  height: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
-  Width: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  Height: printCSSNumberOrUndefinedAsAttributeValue('px'),
-
-  FlexGap: jsxAttributeValueWithNoComments,
+  flexGap: jsxAttributeValueWithNoComments,
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  FlexCrossBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
-  PinnedLeft: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  PinnedTop: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  PinnedRight: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  PinnedBottom: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  PinnedCenterX: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  PinnedCenterY: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  left: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  top: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  right: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  bottom: printCSSNumberOrUndefinedAsAttributeValue('px'),
 }
 
 export interface ParsedProperties
@@ -5027,7 +5030,6 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   className: '',
 
   // ParsedLayoutProperties
-  layoutSystem: undefined,
   pinLeft: undefined,
   pinRight: undefined,
   centerX: undefined,
@@ -5038,20 +5040,8 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   height: undefined,
   gapMain: 0,
   flexBasis: undefined,
-  crossBasis: undefined,
 
-  // LayoutPropertyTypes
-  LayoutSystem: undefined,
-  Width: undefined,
-  Height: undefined,
-  FlexGap: 0,
-  FlexCrossBasis: undefined,
-  PinnedLeft: undefined,
-  PinnedTop: undefined,
-  PinnedRight: undefined,
-  PinnedBottom: undefined,
-  PinnedCenterX: undefined,
-  PinnedCenterY: undefined,
+  flexGap: 0,
 }
 
 export function isTrivialDefaultValue(
