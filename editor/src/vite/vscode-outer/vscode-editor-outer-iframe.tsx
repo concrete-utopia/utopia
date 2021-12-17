@@ -10,7 +10,7 @@ function VSCodeOuterIframe(): React.ReactElement {
   const urlParams = new URLSearchParams(window.location.search)
   const projectID = urlParams.get('project_id')!
   // const baseIframeSrc = createIframeUrl(VSCODE_EDITOR_IFRAME_BASE_URL, 'vscode-editor-inner-iframe')
-  const baseIframeSrc = 'http://localhost:8000/editor/vscode-inner/'
+  const baseIframeSrc = 'http://localhost:8000/editor/vscode-inner.html'
   const url = new URL(baseIframeSrc)
   url.searchParams.append('project_id', projectID)
   setBranchNameFromURL(url.searchParams)

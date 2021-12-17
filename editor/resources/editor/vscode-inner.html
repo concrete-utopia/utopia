@@ -12,9 +12,9 @@
     <link
       data-name="vs/workbench/workbench.web.api"
       rel="stylesheet"
-      href="http://localhost:8000/vscode/vscode/vs/workbench/workbench.web.api.css?hash=%UTOPIA_SHA%"
+      href="/vscode/vscode/vs/workbench/workbench.web.api.css?hash=%UTOPIA_SHA%"
     />
-    <script src="http://localhost:8000/vscode/extensions.js?hash=%UTOPIA_SHA%"></script>
+    <script src="/vscode/extensions.js?hash=%UTOPIA_SHA%"></script>
   </head>
 
   <body aria-label=""></body>
@@ -23,7 +23,7 @@
     const extElement = document.getElementById('vscode-workbench-builtin-extensions')
     extElement.attributes['data-settings'].value = JSON.stringify([...extensions])
 
-    let baseUri = `http://localhost:8000/vscode`
+    let baseUri = `${window.location.origin}/vscode`
     self.require = {
       baseUrl: `${baseUri}/vscode/`,
       paths: {
@@ -33,9 +33,9 @@
       },
     }
   </script>
-  <script src="http://localhost:8000/vscode/vscode/vs/loader.js?hash=%UTOPIA_SHA%"></script>
+  <script src="/vscode/vscode/vs/loader.js?hash=%UTOPIA_SHA%"></script>
 
-  <script src="http://localhost:8000/vscode/vscode/vs/workbench/workbench.web.api.nls.js?hash=%UTOPIA_SHA%"></script>
-  <script src="http://localhost:8000/vscode/vscode/vs/workbench/workbench.web.api.js?hash=%UTOPIA_SHA%"></script>
-  <script src="http://localhost:8000/vscode/vscode/vs/code/browser/workbench/workbench.js?hash=%UTOPIA_SHA%"></script>
+  <script src="/vscode/vscode/vs/workbench/workbench.web.api.nls.js?hash=%UTOPIA_SHA%"></script>
+  <script src="/vscode/vscode/vs/workbench/workbench.web.api.js?hash=%UTOPIA_SHA%"></script>
+  <script src="/vscode/vscode/vs/code/browser/workbench/workbench.js?hash=%UTOPIA_SHA%"></script>
 </html>
