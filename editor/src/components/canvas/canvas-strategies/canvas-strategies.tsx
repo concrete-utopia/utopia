@@ -7,7 +7,15 @@ import {
   ElementInstanceMetadata,
 } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { magnitude, canvasPoint } from '../../../core/shared/math-utils'
+import {
+  magnitude,
+  canvasPoint,
+  CanvasPoint,
+  CanvasRectangle,
+  rectangleIntersection,
+  rectContainsPoint,
+  SimpleRectangle,
+} from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import {
@@ -113,26 +121,43 @@ function translateStrategy(
   }
 }
 
+function flexIndicatorBox(
+  mousePosition: CanvasPoint,
+  canvasFrame: CanvasRectangle,
+): FlexAlignControlRectProps {
+  const mouseInRect = rectContainsPoint(canvasFrame, mousePosition)
+  return {
+    x: canvasFrame.x,
+    y: canvasFrame.y,
+    width: canvasFrame.width,
+    height: canvasFrame.height,
+    highlighted: mouseInRect,
+  }
+}
+
 function calcualteFlexAlignIndicatorBoxes(
   targetMetadata: ElementInstanceMetadata | null,
+  mousePosition: CanvasPoint,
 ): Array<FlexAlignControlRectProps> {
-  const BoxHeight = 10
+  const BoxHeight = 20
+
   if (targetMetadata?.globalFrame == null) {
     return []
   }
+
   return [
-    {
-      x: targetMetadata.globalFrame?.x,
-      y: targetMetadata.globalFrame?.y,
-      width: targetMetadata.globalFrame?.width,
+    flexIndicatorBox(mousePosition, {
+      x: targetMetadata.globalFrame.x,
+      y: targetMetadata.globalFrame.y,
+      width: targetMetadata.globalFrame.width,
       height: BoxHeight,
-    },
-    {
+    } as CanvasRectangle),
+    flexIndicatorBox(mousePosition, {
       x: targetMetadata.globalFrame?.x,
       y: targetMetadata.globalFrame?.y + targetMetadata.globalFrame.height - BoxHeight,
       width: targetMetadata.globalFrame?.width,
       height: BoxHeight,
-    },
+    } as CanvasRectangle),
   ]
 }
 
@@ -158,7 +183,7 @@ const flexAlignParentStrategy: CanvasStrategyUpdateFn = (
 
   const draggedElement = editorState.selectedViews[0]
   const targetParent = MetadataUtils.getParent(editorState.jsxMetadata, draggedElement)
-  const indicatorBoxes = calcualteFlexAlignIndicatorBoxes(targetParent)
+  const indicatorBoxes = calcualteFlexAlignIndicatorBoxes(targetParent, activeSession.mousePosition)
 
   return {
     highlightedViews: [],

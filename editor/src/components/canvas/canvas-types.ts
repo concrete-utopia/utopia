@@ -403,6 +403,7 @@ export interface SelectModeCanvasSession {
   type: 'SELECT_MODE_CANVAS_SESSION'
   activeStrategy: CanvasStrategyUpdateFn | null
   start: CanvasPoint
+  mousePosition: CanvasPoint
   drag: CanvasVector | null
   activeControl: CanvasControlType
   globalTime: number
@@ -417,6 +418,7 @@ export function startNewSelectModeCanvasSession(
   return {
     type: 'SELECT_MODE_CANVAS_SESSION',
     start: start,
+    mousePosition: start, // TODO maybe this should be independent of start?
     activeControl: activeControl,
     activeStrategy: null,
     drag: null,
@@ -428,10 +430,12 @@ export function startNewSelectModeCanvasSession(
 
 export function updateSelectModeCanvasSessionDragVector(
   current: SelectModeCanvasSession,
+  mousePosition: CanvasPoint,
   drag: CanvasVector | null,
 ): SelectModeCanvasSession {
   return {
     ...current,
+    mousePosition: mousePosition,
     drag: drag,
     lastTimeMouseMoved: Date.now(),
   }
@@ -604,4 +608,5 @@ export interface FlexAlignControlRectProps {
   y: number
   width: number
   height: number
+  highlighted: boolean
 }

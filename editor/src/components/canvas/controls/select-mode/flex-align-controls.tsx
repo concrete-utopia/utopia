@@ -27,7 +27,7 @@ export const FlexAlignControls = React.memo(() => {
               top: canvasOffset.y + rect.y,
               width: rect.width,
               height: rect.height,
-              backgroundColor: 'red',
+              backgroundColor: rect.highlighted ? 'red' : 'blue',
             }}
           />
         )

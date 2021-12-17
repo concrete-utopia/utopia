@@ -983,7 +983,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             break
           }
           case 'SELECT_MODE_CANVAS_SESSION': {
-            newDragState = updateSelectModeCanvasSessionDragVector(dragState, newDrag)
+            newDragState = updateSelectModeCanvasSessionDragVector(
+              dragState,
+              canvasPositions.canvasPositionRounded,
+              newDrag,
+            )
             break
           }
           case 'INSERT_DRAG_STATE':
