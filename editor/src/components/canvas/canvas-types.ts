@@ -609,4 +609,5 @@ export interface FlexAlignControlRectProps {
   width: number
   height: number
   highlighted: boolean
+  associatedFlexProp: any // TODO
 }

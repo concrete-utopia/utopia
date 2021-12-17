@@ -1,5 +1,14 @@
+import React from 'react'
+import * as PP from '../../../core/shared/property-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { foldEither } from '../../../core/shared/either'
+import {
+  ElementInstanceMetadata,
+  emptyComments,
+  jsxAttributeValue,
+  JSXElement,
+} from '../../../core/shared/element-template'
+import { setJSXValueAtPath, setJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
 import {
   canvasPoint,
   CanvasPoint,
@@ -7,13 +16,20 @@ import {
   magnitude,
   rectContainsPoint,
 } from '../../../core/shared/math-utils'
-import { EditorState, TransientCanvasState } from '../../editor/store/editor-state'
+import {
+  EditorState,
+  forUnderlyingTargetFromEditorState,
+  modifyUnderlyingForOpenFile,
+  TransientCanvasState,
+  TransientFilesState,
+} from '../../editor/store/editor-state'
 import {
   CanvasStrategy,
   CanvasStrategyUpdateFn,
   FlexAlignControlRectProps,
   SelectModeCanvasSession,
 } from '../canvas-types'
+import { objectMap } from '../../../core/shared/object-utils'
 
 export const flexAlignParentStrategy: CanvasStrategy = {
   name: "Change Parent's Flex Align and Justify",
@@ -59,28 +75,97 @@ export const flexAlignParentStrategy: CanvasStrategy = {
       activeSession.mousePosition,
     )
 
-    return {
-      highlightedViews: [],
-      selectedViews: editorState.selectedViews,
-      filesState: {},
-      toastsToApply: [],
-      sessionStatePatch: {
-        dragDeltaMinimumPassed: true,
-      },
-      editorStatePatch: {
-        canvas: {
-          controls: {
-            flexAlignDropTargets: indicatorBoxes,
+    // if any indicator box is highlighted, we also want to change the parent's style too
+    const higlightedIndicator = indicatorBoxes.filter((b) => b.highlighted === true)[0]
+    if (higlightedIndicator == null || targetParent == null) {
+      return {
+        highlightedViews: [],
+        selectedViews: editorState.selectedViews,
+        filesState: {},
+        toastsToApply: [],
+        sessionStatePatch: {
+          dragDeltaMinimumPassed: true,
+        },
+        editorStatePatch: {
+          canvas: {
+            controls: {
+              flexAlignDropTargets: indicatorBoxes,
+            },
           },
         },
-      },
+      }
+    } else {
+      const flexPropToChange: AssociatedFlexProp = higlightedIndicator.associatedFlexProp
+
+      let workingEditorState = { ...editorState }
+      let transientFilesState: TransientFilesState = {}
+
+      workingEditorState = modifyUnderlyingForOpenFile(
+        targetParent.elementPath,
+        editorState,
+        (element: JSXElement) => {
+          return foldEither(
+            () => {
+              return element
+            },
+            (updatedProps) => {
+              return {
+                ...element,
+                props: updatedProps,
+              }
+            },
+            setJSXValuesAtPaths(
+              element.props,
+              Object.entries(flexPropToChange).map(([key, value]) => ({
+                path: PP.create(['style', key]),
+                value: jsxAttributeValue(value, emptyComments),
+              })),
+            ),
+          )
+        },
+      )
+
+      forUnderlyingTargetFromEditorState(
+        targetParent.elementPath,
+        workingEditorState,
+        (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
+          transientFilesState[underlyingFilePath] = {
+            topLevelElementsIncludingScenes: success.topLevelElements,
+            imports: success.imports,
+          }
+          return success
+        },
+      )
+
+      return {
+        highlightedViews: [],
+        selectedViews: editorState.selectedViews,
+        filesState: transientFilesState,
+        toastsToApply: [],
+        sessionStatePatch: {
+          dragDeltaMinimumPassed: true,
+        },
+        editorStatePatch: {
+          canvas: {
+            controls: {
+              flexAlignDropTargets: indicatorBoxes,
+            },
+          },
+        },
+      }
     }
   },
+}
+
+type AssociatedFlexProp = {
+  justifyContent?: React.CSSProperties['justifyContent']
+  alignItems?: React.CSSProperties['alignItems']
 }
 
 function flexIndicatorBox(
   mousePosition: CanvasPoint,
   canvasFrame: CanvasRectangle,
+  associatedFlexProp: AssociatedFlexProp,
 ): FlexAlignControlRectProps {
   const mouseInRect = rectContainsPoint(canvasFrame, mousePosition)
   return {
@@ -89,6 +174,7 @@ function flexIndicatorBox(
     width: canvasFrame.width,
     height: canvasFrame.height,
     highlighted: mouseInRect,
+    associatedFlexProp: associatedFlexProp,
   }
 }
 
@@ -103,17 +189,25 @@ function calcualteFlexAlignIndicatorBoxes(
   }
 
   return [
-    flexIndicatorBox(mousePosition, {
-      x: targetMetadata.globalFrame.x,
-      y: targetMetadata.globalFrame.y,
-      width: targetMetadata.globalFrame.width,
-      height: BoxHeight,
-    } as CanvasRectangle),
-    flexIndicatorBox(mousePosition, {
-      x: targetMetadata.globalFrame?.x,
-      y: targetMetadata.globalFrame?.y + targetMetadata.globalFrame.height - BoxHeight,
-      width: targetMetadata.globalFrame?.width,
-      height: BoxHeight,
-    } as CanvasRectangle),
+    flexIndicatorBox(
+      mousePosition,
+      {
+        x: targetMetadata.globalFrame.x,
+        y: targetMetadata.globalFrame.y,
+        width: targetMetadata.globalFrame.width,
+        height: BoxHeight,
+      } as CanvasRectangle,
+      { alignItems: 'flex-start' },
+    ),
+    flexIndicatorBox(
+      mousePosition,
+      {
+        x: targetMetadata.globalFrame?.x,
+        y: targetMetadata.globalFrame?.y + targetMetadata.globalFrame.height - BoxHeight,
+        width: targetMetadata.globalFrame?.width,
+        height: BoxHeight,
+      } as CanvasRectangle,
+      { alignItems: 'flex-end' },
+    ),
   ]
 }
