@@ -19,6 +19,7 @@ import {
   MutableUtopiaCtxRefData,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
+  UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
@@ -68,6 +69,10 @@ function tryToGetInstancePath(
   } else {
     return null
   }
+}
+
+function useIsActiveCanvasDrag() {
+  return usePubSubAtomReadOnly(UtopiaProjectCtxAtom).transientFilesState != null
 }
 
 export function createComponentRendererComponent(params: {
@@ -140,6 +145,11 @@ export function createComponentRendererComponent(params: {
       (path) => EP.appendNewElementPath(path, getUtopiaID(utopiaJsxComponent.rootElement)),
       instancePath,
     )
+
+    const activeCanvasDrag = useIsActiveCanvasDrag()
+
+    const previousJsxComponent = React.useRef<JSXElementChild>()
+    const memoizedComponentResult = React.useRef<React.ReactElement>()
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
@@ -215,10 +225,35 @@ export function createComponentRendererComponent(params: {
       }
     }
 
-    return buildComponentRenderResult(utopiaJsxComponent.rootElement)
+    if (
+      activeCanvasDrag &&
+      memoizedComponentResult.current != null &&
+      previousJsxComponent.current != null &&
+      previousJsxComponent.current === utopiaJsxComponent.rootElement
+    ) {
+      return memoizedComponentResult.current
+    } else {
+      previousJsxComponent.current = utopiaJsxComponent.rootElement
+      memoizedComponentResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
+      return memoizedComponentResult.current
+    }
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName
   Component.utopiaType = 'UTOPIA_COMPONENT_RENDERER_COMPONENT' as const
   return Component
+}
+
+function useMaybeRerender(rerender: () => React.ReactElement): React.ReactElement {
+  const cachedResultRef = React.useRef<React.ReactElement>()
+
+  const useCache = false
+
+  if (useCache && cachedResultRef.current != null) {
+    return cachedResultRef.current
+  } else {
+    const result = rerender()
+    cachedResultRef.current = result
+    return cachedResultRef.current
+  }
 }
