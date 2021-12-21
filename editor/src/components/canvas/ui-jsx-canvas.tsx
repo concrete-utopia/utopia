@@ -468,6 +468,14 @@ export const UiJsxCanvas = React.memo(
       resolve,
     )
 
+    const storyboardRootComponentRef = React.useRef<any>()
+    if (StoryboardRootComponent != null && storyboardRootComponentRef.current == null) {
+      // we only create this element once
+      storyboardRootComponentRef.current = (
+        <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
+      )
+    }
+
     clearSpyCollectorInvalidPaths(rootValidPaths, metadataContext)
 
     const sceneLevelUtopiaContextValue = useKeepReferenceEqualityIfPossible({
@@ -510,9 +518,7 @@ export const UiJsxCanvas = React.memo(
               canvasInteractionHappening={props.transientFilesState != null}
             >
               <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-                {StoryboardRootComponent == null ? null : (
-                  <StoryboardRootComponent {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }} />
-                )}
+                {storyboardRootComponentRef.current}
               </SceneLevelUtopiaCtxAtom.Provider>
             </CanvasContainer>
           </UtopiaProjectCtxAtom.Provider>
