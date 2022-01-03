@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 // import polyfill from 'rollup-plugin-polyfill-node'
+import { injectHtml } from 'vite-plugin-html'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   // plugins: [react(), polyfill()],
-  plugins: [react()],
+  plugins: [react(), injectHtml({ data: { UTOPIA_SHA: process.env.REACT_APP_COMMIT_HASH } })],
   root: './src/vite',
   publicDir: '../../resources/editor',
   server: {

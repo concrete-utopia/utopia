@@ -2,13 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
-    <!-- <link rel="stylesheet" href="/css/initial-load.css" />
-    <link rel="stylesheet" href="/css/canvas.css" />
-    <link rel="stylesheet" href="/css/ReactContexify.css" />
-    <link rel="stylesheet" href="/css/codicons.css" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
     <script>
       window.require = () => {}
       window.exports = {}
@@ -16,8 +10,58 @@
       window.process.cwd = new Function()
     </script>
     <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
+    <!--ogTags-->
+
+    <link
+      rel="icon"
+      type="image/png"
+      href="/icons/favicons/favicon-192.png?hash=<%- UTOPIA_SHA %>"
+    />
+    <link
+      rel="preload"
+      type="image/png"
+      href="/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
+      as="image"
+    />
+
+    <!--editorScript-->
+
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="use-credentials" />
+
+    <!--preloadVSCode-->
+
+    <!--preloadProjectDependencies-->
+
+    <style>
+      body {
+        margin: 0;
+        font-size: 11px !important;
+        overflow: hidden;
+        cursor: default;
+        outline: none;
+        overscroll-behavior-x: contain;
+        --loadscreen-accent: rgba(46, 255, 109, 0.5);
+      }
+
+      @keyframes animation-keyframes {
+        from {
+          transform: translateX(-212px);
+        }
+        to {
+          transform: translateX(0px);
+        }
+      }
+
+      .animation-progress {
+        animation-name: animation-keyframes;
+        animation-duration: 10s;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+      }
+    </style>
   </head>
   <body>
+    <!--projectIDScript-->
     <div id="portal-target"></div>
     <div id="canvas-contextmenu-portal-target"></div>
     <div id="text-field-placeholder"></div>
@@ -39,6 +83,7 @@
         "
       />
     </div>
+
     <script type="module" src="/main.tsx"></script>
   </body>
 </html>

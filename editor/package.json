@@ -333,6 +333,7 @@
     "tsify": "3.0.1",
     "val-loader": "2.1.0",
     "vite": "^2.7.0",
+    "vite-plugin-html": "^2.1.2",
     "webpack": "5.52.0",
     "webpack-bundle-analyzer": "4.4.1",
     "webpack-cli": "4.8.0",
