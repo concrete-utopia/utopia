@@ -1094,6 +1094,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
         poppedDerived.canvas.transientState.selectedViews,
         history.current.editor,
         true,
+        'transient',
       ),
     },
     elementWarnings: poppedDerived.elementWarnings,

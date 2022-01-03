@@ -1061,7 +1061,12 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState.selectedViews, editorState, false),
+      transientState: produceCanvasTransientState(
+        editorState.selectedViews,
+        editorState,
+        false,
+        'transient',
+      ),
     },
     elementWarnings: emptyComplexMap(),
   }
@@ -1370,6 +1375,7 @@ export function deriveState(
         oldDerivedState?.canvas.transientState.selectedViews ?? editor.selectedViews,
         editor,
         true,
+        'transient',
       ),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),

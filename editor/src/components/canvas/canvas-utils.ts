@@ -211,6 +211,7 @@ import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
 import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
+import { applyCanvasStrategy } from './canvas-strategies/canvas-strategies'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -344,6 +345,7 @@ export function clearDragStateAndInteractionSession(
       derived.canvas.transientState.selectedViews,
       result,
       false,
+      'final',
     )
     const producedTransientFilesState = producedTransientCanvasState.filesState
     result = applyTransientFilesState(
@@ -1664,6 +1666,7 @@ export function produceCanvasTransientState(
   previousCanvasTransientSelectedViews: Array<ElementPath> | null,
   editorState: EditorState,
   preventAnimations: boolean,
+  lifecycle: 'transient' | 'final',
 ): TransientCanvasState {
   const currentOpenFile = editorState.canvas.openFile?.filename
   let transientState: TransientCanvasState | null = null
@@ -1722,7 +1725,13 @@ export function produceCanvasTransientState(
         }
         break
       case 'select':
-        if (
+        if (editorState.canvas.interactionSession != null) {
+          transientState = applyCanvasStrategy(
+            lifecycle,
+            editorState,
+            editorState.canvas.interactionSession,
+          )
+        } else if (
           editorState.canvas.dragState != null &&
           anyDragStarted(editorState.canvas.dragState) &&
           anyDragMovement(editorState.canvas.dragState)
