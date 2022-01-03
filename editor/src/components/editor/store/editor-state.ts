@@ -156,7 +156,10 @@ import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
-import type { FlexAlignControlRectProps } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import type {
+  CanvasInteractionSession,
+  FlexAlignControlRectProps,
+} from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { Spec } from 'immutability-helper'
 
 const ObjectPathImmutable: any = OPI
@@ -425,6 +428,7 @@ export interface EditorState {
   canvas: {
     visible: boolean
     dragState: DragState | null
+    interactionSession: CanvasInteractionSession | null
     scale: number
     snappingThreshold: number
     realCanvasOffset: CanvasVector
@@ -1197,6 +1201,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
+      interactionSession: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
@@ -1456,6 +1461,7 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
+      interactionSession: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,

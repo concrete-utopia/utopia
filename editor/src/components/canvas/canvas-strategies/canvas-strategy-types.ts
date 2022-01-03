@@ -53,6 +53,8 @@ export type CanvasStrategyFitnessFn = (
   currentSession: SelectModeCanvasSession,
 ) => number
 
+export type CanvasInteractionSession = SelectModeCanvasSession
+
 export interface SelectModeCanvasSession {
   type: 'SELECT_MODE_CANVAS_SESSION'
   activeStrategy: CanvasStrategyUpdateFn | null
