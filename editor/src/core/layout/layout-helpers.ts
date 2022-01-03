@@ -6,8 +6,8 @@ import {
   FramePoint,
   getUnstretchedWidthHeight,
   LayoutSystem,
-  UtopiaComponentProps,
 } from 'utopia-api'
+import { UtopiaComponentProps } from 'utopia-api/components'
 import { FullFrame } from '../../components/frame'
 import {
   applicative2Either,
