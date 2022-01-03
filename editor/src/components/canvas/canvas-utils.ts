@@ -359,9 +359,10 @@ export function clearDragState(
       ...result.canvas,
       dragState: null,
     },
-    selectedViews: applyChanges
-      ? derived.canvas.transientState.selectedViews
-      : result.selectedViews,
+    selectedViews:
+      applyChanges && derived.canvas.transientState.selectedViews != null
+        ? derived.canvas.transientState.selectedViews
+        : result.selectedViews,
   }
 }
 
@@ -1477,6 +1478,7 @@ function getTransientCanvasStateFromFrameChanges(
       return transientFileState(success.topLevelElements, success.imports)
     }, successByFilename),
     workingEditorState.toasts, // TODO filter for relevant toasts
+    null,
   )
 }
 
@@ -1503,7 +1505,13 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      dragState.draggedElements,
+      editorState.highlightedViews,
+      null,
+      [],
+      null,
+    )
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       forUnderlyingTargetFromEditorState(
@@ -1576,7 +1584,13 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      null,
+      [],
+      null,
+    )
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1646,7 +1660,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 }
 
 export function produceCanvasTransientState(
-  previousCanvasTransientSelectedViews: Array<ElementPath>,
+  previousCanvasTransientSelectedViews: Array<ElementPath> | null,
   editorState: EditorState,
   preventAnimations: boolean,
 ): TransientCanvasState {
@@ -1699,6 +1713,7 @@ export function produceCanvasTransientState(
                   [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
                 },
                 [],
+                null,
               )
               return parseSuccess
             },
@@ -1752,7 +1767,13 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      null,
+      [],
+      null,
+    )
   } else {
     return transientState
   }
@@ -2201,7 +2222,7 @@ function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPa
 }
 
 function produceMoveTransientCanvasState(
-  previousCanvasTransientSelectedViews: Array<ElementPath>,
+  previousCanvasTransientSelectedViews: Array<ElementPath> | null,
   editorState: EditorState,
   dragState: MoveDragState,
   preventAnimations: boolean,
@@ -2224,7 +2245,7 @@ function produceMoveTransientCanvasState(
 
   if (dragState.reparent) {
     const reparentTarget = getReparentTarget(
-      previousCanvasTransientSelectedViews,
+      previousCanvasTransientSelectedViews ?? editorState.selectedViews,
       workingEditorState,
       elementsToTarget,
       dragState.canvasPosition,
@@ -2316,6 +2337,7 @@ function produceMoveTransientCanvasState(
     workingEditorState.highlightedViews,
     transientFilesState,
     workingEditorState.toasts, // TODO Filter for relevant toasts
+    null,
   )
 }
 
@@ -2886,6 +2908,7 @@ function createCanvasTransientStateFromProperties(
       updatedEditor.highlightedViews,
       transientFilesState,
       [],
+      null,
     )
   }
 }

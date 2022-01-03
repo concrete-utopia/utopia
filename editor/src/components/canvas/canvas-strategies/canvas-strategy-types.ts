@@ -2,6 +2,7 @@ import type { Spec } from 'immutability-helper'
 import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
 import type {
   EditorState,
+  EditorStatePatch,
   TransientCanvasState,
   TransientFilesState,
 } from '../../editor/store/editor-state'
@@ -33,7 +34,6 @@ export interface CanvasStrategy {
   fitnessFn: CanvasStrategyFitnessFn
 }
 
-export type EditorStatePatch = Spec<EditorState>
 export type CanvasSessionPatch = Spec<SelectModeCanvasSession>
 
 export type CanvasStrategyUpdateFnResult = {

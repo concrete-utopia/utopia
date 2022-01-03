@@ -157,6 +157,7 @@ import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 import type { FlexAlignControlRectProps } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { Spec } from 'immutability-helper'
 
 const ObjectPathImmutable: any = OPI
 
@@ -237,6 +238,7 @@ export const defaultUserState: UserState = {
 }
 
 export type EditorStore = {
+  unpatchedEditor: EditorState
   editor: EditorState
   derived: DerivedState
   history: StateHistory
@@ -991,25 +993,29 @@ export function transientFileState(
 }
 
 export type TransientFilesState = { [filepath: string]: TransientFileState }
+export type EditorStatePatch = Spec<EditorState>
 
 export interface TransientCanvasState {
-  selectedViews: Array<ElementPath>
-  highlightedViews: Array<ElementPath>
+  selectedViews: Array<ElementPath> | null
+  highlightedViews: Array<ElementPath> | null
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
+  editorStatePatch: EditorStatePatch | null
 }
 
 export function transientCanvasState(
-  selectedViews: Array<ElementPath>,
-  highlightedViews: Array<ElementPath>,
+  selectedViews: Array<ElementPath> | null,
+  highlightedViews: Array<ElementPath> | null,
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
+  editorStatePatch: EditorStatePatch | null,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
     filesState: fileState,
     toastsToApply: toastsToApply,
+    editorStatePatch: editorStatePatch,
   }
 }
 

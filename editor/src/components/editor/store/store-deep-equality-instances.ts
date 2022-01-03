@@ -124,18 +124,21 @@ import {
   TransientFilesState,
   transientCanvasState,
   DerivedState,
+  EditorStatePatch,
 } from './editor-state'
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (state) => state.selectedViews,
-    ElementPathArrayKeepDeepEquality,
+    nullableDeepEquality(ElementPathArrayKeepDeepEquality),
     (state) => state.highlightedViews,
-    ElementPathArrayKeepDeepEquality,
+    nullableDeepEquality(ElementPathArrayKeepDeepEquality),
     (state) => state.filesState,
     createCallFromIntrospectiveKeepDeep<TransientFilesState | null>(),
     (state) => state.toastsToApply,
     createCallWithShallowEquals(),
+    (state) => state.editorStatePatch,
+    createCallFromIntrospectiveKeepDeep<EditorStatePatch | null>(),
     transientCanvasState,
   )
 }

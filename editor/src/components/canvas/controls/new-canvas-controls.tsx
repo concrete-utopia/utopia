@@ -63,6 +63,8 @@ export const CanvasControlsContainerID = 'new-canvas-controls-container'
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
 function useLocalSelectedHighlightedViews(
+  editorSelectedViews: ElementPath[],
+  editorHighlightedViews: ElementPath[],
   transientCanvasState: TransientCanvasState,
 ): {
   localSelectedViews: ElementPath[]
@@ -70,10 +72,10 @@ function useLocalSelectedHighlightedViews(
   setSelectedViewsLocally: (newSelectedViews: Array<ElementPath>) => void
 } {
   const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
-    transientCanvasState.selectedViews,
+    transientCanvasState.selectedViews ?? editorSelectedViews,
   )
   const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
-    transientCanvasState.highlightedViews,
+    transientCanvasState.highlightedViews ?? editorHighlightedViews,
   )
 
   const setSelectedViewsLocally = React.useCallback(
@@ -141,7 +143,11 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
     localSelectedViews,
     localHighlightedViews,
     setSelectedViewsLocally,
-  } = useLocalSelectedHighlightedViews(canvasControlProps.transientCanvasState)
+  } = useLocalSelectedHighlightedViews(
+    canvasControlProps.editor.selectedViews,
+    canvasControlProps.editor.highlightedViews,
+    canvasControlProps.transientCanvasState,
+  )
 
   const canvasScrollAnimation = useEditorState(
     (store) => store.editor.canvas.scrollAnimation,
