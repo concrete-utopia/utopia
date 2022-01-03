@@ -1726,6 +1726,7 @@ export function produceCanvasTransientState(
         break
       case 'select':
         if (editorState.canvas.interactionSession != null) {
+          // Entry point for the new Canvas Strategy that supersedes DragState
           transientState = applyCanvasStrategy(
             lifecycle,
             editorState,
