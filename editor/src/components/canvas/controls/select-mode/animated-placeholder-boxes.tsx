@@ -7,9 +7,7 @@ function placeholderId(uid: string): string {
 
 export const AnimatedPlaceholderBoxes = () => {
   const animatedPlaceholderTargetUids = useEditorState(
-    (store) =>
-      store.derived.canvas.transientState.editorStatePatch.canvas?.animatedPlaceholderTargetUids ??
-      [],
+    (store) => store.editor.canvas.animatedPlaceholderTargetUids,
     'AnimatedPlaceholderBoxes animatedPlaceholderTargetUids',
   )
 

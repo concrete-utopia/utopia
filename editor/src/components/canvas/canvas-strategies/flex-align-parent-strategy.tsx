@@ -75,8 +75,9 @@ export const flexAlignParentStrategy: CanvasStrategy = {
         sessionStatePatch: {},
         editorStatePatch: {
           canvas: {
-            animatedPlaceholderTargetUids:
-              lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+            animatedPlaceholderTargetUids: {
+              $set: lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+            },
           },
         },
       }
@@ -102,10 +103,11 @@ export const flexAlignParentStrategy: CanvasStrategy = {
         editorStatePatch: {
           canvas: {
             controls: {
-              flexAlignDropTargets: indicatorBoxes,
+              flexAlignDropTargets: { $set: indicatorBoxes },
             },
-            animatedPlaceholderTargetUids:
-              lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+            animatedPlaceholderTargetUids: {
+              $set: lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+            },
           },
         },
       }
@@ -162,10 +164,11 @@ export const flexAlignParentStrategy: CanvasStrategy = {
         editorStatePatch: {
           canvas: {
             controls: {
-              flexAlignDropTargets: indicatorBoxes,
+              flexAlignDropTargets: { $set: indicatorBoxes },
             },
-            animatedPlaceholderTargetUids:
-              lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+            animatedPlaceholderTargetUids: {
+              $set: lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+            },
           },
         },
       }

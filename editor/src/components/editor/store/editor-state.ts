@@ -1,4 +1,5 @@
 import * as json5 from 'json5'
+import { Spec } from 'immutability-helper'
 import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
@@ -238,6 +239,7 @@ export const defaultUserState: UserState = {
 }
 
 export type EditorStore = {
+  unpatchedEditor: EditorState
   editor: EditorState
   derived: DerivedState
   history: StateHistory
@@ -1000,13 +1002,15 @@ type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Array<infer I> ? Array<DeepPartial<I>> : DeepPartial<T[P]>
 }
 
+type EditorStatePatch = Spec<EditorState>
+
 export interface TransientCanvasState {
   selectedViews: Array<ElementPath>
   highlightedViews: Array<ElementPath>
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
   sessionStatePatch: DeepPartial<SelectModeCanvasSession>
-  editorStatePatch: DeepPartial<EditorState>
+  editorStatePatch: EditorStatePatch
 }
 
 export function transientCanvasState(
@@ -1015,7 +1019,7 @@ export function transientCanvasState(
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
   sessionStatePatch: DeepPartial<SelectModeCanvasSession>,
-  editorStatePatch: DeepPartial<EditorState>,
+  editorStatePatch: EditorStatePatch,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,

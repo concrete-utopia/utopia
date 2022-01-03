@@ -95,6 +95,7 @@ import {
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
+import update from 'immutability-helper'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -149,7 +150,7 @@ function processAction(
   } else {
     // Process action on the JS side.
     const editorAfterUpdateFunction = runLocalEditorAction(
-      working.editor,
+      working.unpatchedEditor,
       working.derived,
       working.userState,
       working.workers,
@@ -190,6 +191,7 @@ function processAction(
     }
 
     return {
+      unpatchedEditor: editorAfterNavigator,
       editor: editorAfterNavigator,
       derived: working.derived,
       history: newStateHistory,
@@ -454,8 +456,14 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
+  const patchedEditorState = update(
+    frozenEditorState,
+    frozenDerivedState.canvas.transientState.editorStatePatch,
+  )
+
   const finalStore = {
-    editor: frozenEditorState,
+    unpatchedEditor: frozenEditorState,
+    editor: patchedEditorState,
     derived: frozenDerivedState,
     history: newHistory,
     userState: result.userState,
@@ -658,6 +666,7 @@ function editorDispatchInner(
     }
 
     return {
+      unpatchedEditor: frozenEditorState,
       editor: frozenEditorState,
       derived: frozenDerivedState,
       history: result.history,

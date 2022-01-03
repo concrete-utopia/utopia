@@ -8,11 +8,7 @@ export const FlexAlignControls = React.memo(() => {
     'FlexAlignControls canvasOffset',
   )
   const flexAlignDropTargets = useEditorState((store) => {
-    return (
-      (store.derived.canvas.transientState.editorStatePatch.canvas?.controls
-        ?.flexAlignDropTargets as Array<FlexAlignControlRectProps>) ??
-      store.editor.canvas.controls.flexAlignDropTargets
-    )
+    return store.editor.canvas.controls.flexAlignDropTargets
   }, 'FlexAlignControls flexAlignDropTargets')
 
   return (
