@@ -36,8 +36,6 @@ import CanvasActions from './canvas-actions'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
-import { when } from '../../utils/react-conditionals'
-import { UI_DEV } from '../../common/env-vars'
 
 interface NumberSize {
   width: number
@@ -199,8 +197,6 @@ export const DesignPanelRoot = React.memo(() => {
     [setNavigatorWidth, dispatch],
   )
 
-  const showCodeEditor = !UI_DEV
-
   return (
     <SimpleFlexRow
       className='OpenFileEditorShell'
@@ -274,7 +270,7 @@ export const DesignPanelRoot = React.memo(() => {
               borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
             }}
           >
-            {when(showCodeEditor, <CodeEditorWrapper />)}
+            <CodeEditorWrapper />
             <ConsoleAndErrorsPane />
           </Resizable>
         </SimpleFlexColumn>
