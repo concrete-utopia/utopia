@@ -1260,9 +1260,6 @@ function updateNavigatorCollapsedState(
         (path) => !EP.containsPath(path, collapsedWithChildrenSelected),
       ),
     },
-    temporaryExpandedViews: {
-      $set: collapsedWithChildrenSelected,
-    },
   })
 }
 
