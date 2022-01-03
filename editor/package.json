@@ -40,7 +40,7 @@
     "parse-debug": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/parse-debug.ts",
     "fetch-tailwind-classes": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/fetch-and-parse-tailwind-classes.ts && npx prettier --write ./src/core/third-party/tailwind-defaults.ts",
     "lint-editor": "lint-staged",
-    "dev-fast": "vite"
+    "dev-fast": "APP_ENV=development REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` vite"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
