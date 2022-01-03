@@ -21,7 +21,7 @@ import {
 } from '../components/canvas/canvas-types'
 import {
   anyDragStarted,
-  clearDragState,
+  clearDragStateAndInteractionSession,
   createDuplicationNewUIDsFromEditorState,
   dragExceededThreshold,
   getCanvasOffset,
@@ -324,7 +324,7 @@ export function runLocalCanvasAction(
     }
     case 'CLEAR_DRAG_STATE':
       clearInterval(dragStateTimerHandle)
-      return clearDragState(model, derivedState, action.applyChanges)
+      return clearDragStateAndInteractionSession(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
       return {
         ...model,

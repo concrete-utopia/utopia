@@ -329,7 +329,7 @@ function applyTransientFilesState(
   }
 }
 
-export function clearDragState(
+export function clearDragStateAndInteractionSession(
   model: EditorState,
   derived: DerivedState,
   applyChanges: boolean,
