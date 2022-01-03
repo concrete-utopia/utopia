@@ -18,13 +18,12 @@ export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
 export const RUN_PERFORMANCE_CHECK = false
 export const REFERENCE_EQUALITY_CHECK = false
 
-export const UI_DEV = process.env.UI_DEV === 'vite'
 export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
 export const STATIC_BASE_URL: string =
   PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost:8000'
     ? `https://cdn.${BARE_HOST}/`
-    : `http://localhost:8000/`
+    : `http://${BARE_HOST}/`
 
 export const FLOATING_PREVIEW_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
