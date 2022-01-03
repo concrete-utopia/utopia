@@ -10,6 +10,7 @@ import {
   CanvasMouseEvent,
   CanvasPositions,
   ControlOrHigherOrderControl,
+  CreateInteractionSession,
   CSSCursor,
   DragState,
   DuplicateNewUID,
@@ -274,6 +275,32 @@ function on(
   return additionalEvents
 }
 
+let dragStateTimerHandle: any = null
+
+function createOrUpdateSession(
+  dispatch: EditorDispatch,
+  model: EditorState,
+  action: CreateInteractionSession,
+): EditorState {
+  if (model.canvas.dragState == null) {
+    // create drag state, start setTimeout!
+    clearInterval(dragStateTimerHandle)
+    dragStateTimerHandle = setInterval(() => {
+      dispatch([CanvasActions.updateInteractionSession({ globalTime: Date.now() })])
+    }, 200)
+  } else {
+    // update drag state
+  }
+
+  return {
+    ...model,
+    canvas: {
+      ...model.canvas,
+      interactionSession: action.interactionSession,
+    },
+  }
+}
+
 export function runLocalCanvasAction(
   model: EditorState,
   derivedState: DerivedState,
@@ -296,6 +323,7 @@ export function runLocalCanvasAction(
       }
     }
     case 'CLEAR_DRAG_STATE':
+      clearInterval(dragStateTimerHandle)
       return clearDragState(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
       return {
@@ -342,6 +370,30 @@ export function runLocalCanvasAction(
         },
       }
     }
+    case 'CREATE_INTERACTION_SECTION': {
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          interactionSession: action.interactionSession,
+        },
+      }
+    }
+    case 'UPDATE_INTERACTION_SECTION':
+      if (model.canvas.interactionSession != null) {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            interactionSession: {
+              ...model.canvas.interactionSession,
+              ...action.interactionSession,
+            },
+          },
+        }
+      } else {
+        throw new Error('trying to update a nonexistent CanvasInteractionSession')
+      }
     default:
       const _exhaustiveCheck: never = action
       return model

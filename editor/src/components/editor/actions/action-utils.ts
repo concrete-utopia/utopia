@@ -107,6 +107,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'HIDE_VSCODE_LOADING_SCREEN':
     case 'SET_INDEXED_DB_FAILED':
     case 'FORCE_PARSE_FILE':
+    case 'CREATE_INTERACTION_SECTION':
+    case 'UPDATE_INTERACTION_SECTION':
       return true
 
     case 'NEW':

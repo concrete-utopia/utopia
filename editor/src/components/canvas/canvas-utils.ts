@@ -358,6 +358,7 @@ export function clearDragState(
     canvas: {
       ...result.canvas,
       dragState: null,
+      interactionSession: null,
     },
     selectedViews:
       applyChanges && derived.canvas.transientState.selectedViews != null
