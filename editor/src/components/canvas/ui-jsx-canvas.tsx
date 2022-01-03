@@ -23,6 +23,7 @@ import {
   Either,
   flatMapEither,
   foldEither,
+  forEachRight,
   isRight,
   left,
   mapEither,
@@ -70,7 +71,6 @@ import {
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
 import {
-  betterReactMemo,
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
@@ -89,8 +89,12 @@ import { fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
 import { atomWithPubSub, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import { omit } from '../../core/shared/object-utils'
-import { resetControlsToCheck, validateControlsToCheck } from './canvas-globals'
+import { validateControlsToCheck } from './canvas-globals'
 import { EditorDispatch } from '../editor/action-types'
+import {
+  clearListOfEvaluatedFiles,
+  getListOfEvaluatedFiles,
+} from '../../core/shared/code-exec-utils'
 
 applyUIDMonkeyPatch()
 
@@ -290,8 +294,7 @@ function clearSpyCollectorInvalidPaths(
   })
 }
 
-export const UiJsxCanvas = betterReactMemo(
-  'UiJsxCanvas',
+export const UiJsxCanvas = React.memo(
   React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
     const {
       offset,
@@ -316,9 +319,18 @@ export const UiJsxCanvas = betterReactMemo(
       dispatch,
     } = props
 
-    resetControlsToCheck()
+    clearListOfEvaluatedFiles()
+    let resolvedFileNames = React.useRef<Array<string>>([]) // resolved (i.e. imported) files this render
+    resolvedFileNames.current = [uiFilePath]
+    let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
+    evaluatedFileNames.current = [uiFilePath]
     React.useEffect(() => {
-      validateControlsToCheck(dispatch, propertyControlsInfo)
+      validateControlsToCheck(
+        dispatch,
+        propertyControlsInfo,
+        resolvedFileNames.current,
+        evaluatedFileNames.current,
+      )
     })
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -372,6 +384,8 @@ export const UiJsxCanvas = betterReactMemo(
         const filePathResolveResult = alreadyResolved
           ? left<string, string>('Already resolved')
           : resolve(importOrigin, toImport)
+
+        forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.current.push(filepath))
 
         const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
           resolvedFromThisOrigin,
@@ -430,6 +444,8 @@ export const UiJsxCanvas = betterReactMemo(
       updateInvalidatedPaths,
       props.shouldIncludeCanvasRootInTheSpy,
     )
+
+    evaluatedFileNames.current = getListOfEvaluatedFiles()
 
     const executionScope = scope
 

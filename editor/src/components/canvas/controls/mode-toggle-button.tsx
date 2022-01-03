@@ -4,10 +4,9 @@ import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { useEditorState } from '../../editor/store/store-hook'
 import { updateFormulaBarMode } from '../../editor/actions/action-creators'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { useColorTheme } from '../../../uuiui'
 
-export const ModeToggleButton = betterReactMemo('ModeToggleButton', () => {
+export const ModeToggleButton = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedMode = useEditorState(
     (store) => store.editor.topmenu.formulaBarMode,

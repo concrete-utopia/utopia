@@ -1,8 +1,8 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { useColorTheme, SimpleFlexRow, UtopiaTheme, HeadlessStringInput } from '../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -23,7 +23,11 @@ import {
 } from '../../editor/shortcut-definitions'
 import { useInputFocusOnCountIncrease } from '../../editor/hook-utils'
 
-export const FormulaBar = betterReactMemo('FormulaBar', () => {
+interface FormulaBarProps {
+  style: React.CSSProperties
+}
+
+export const FormulaBar = React.memo<FormulaBarProps>((props) => {
   const saveTimerRef = React.useRef<any>(null)
   const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
 

@@ -15,103 +15,99 @@ import {
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
-export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }>(
-  'FlexContainerControls',
-  (props) => {
-    // Right now flex layout isn't supported on groups, so just don't show the controls if a group is selected
-    const flexWrap = useInspectorLayoutInfo('flexWrap')
-    const flexDirection = useInspectorLayoutInfo('flexDirection')
-    const alignItems = useInspectorLayoutInfo('alignItems')
-    const alignContent = useInspectorLayoutInfo('alignContent')
-    const justifyContent = useInspectorLayoutInfo('justifyContent')
-    const flexGap = useInspectorLayoutInfo('FlexGap')
+export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((props) => {
+  // Right now flex layout isn't supported on groups, so just don't show the controls if a group is selected
+  const flexWrap = useInspectorLayoutInfo('flexWrap')
+  const flexDirection = useInspectorLayoutInfo('flexDirection')
+  const alignItems = useInspectorLayoutInfo('alignItems')
+  const alignContent = useInspectorLayoutInfo('alignContent')
+  const justifyContent = useInspectorLayoutInfo('justifyContent')
+  const flexGap = useInspectorLayoutInfo('FlexGap')
 
-    const {
-      justifyFlexStart,
-      justifyFlexEnd,
-      alignDirection,
-      alignItemsFlexStart,
-      alignItemsFlexEnd,
-      alignContentFlexStart,
-      alignContentFlexEnd,
-    } = getDirectionAwareLabels(flexWrap.value, flexDirection.value)
+  const {
+    justifyFlexStart,
+    justifyFlexEnd,
+    alignDirection,
+    alignItemsFlexStart,
+    alignItemsFlexEnd,
+    alignContentFlexStart,
+    alignContentFlexEnd,
+  } = getDirectionAwareLabels(flexWrap.value, flexDirection.value)
 
-    const alignItemsControlStatus: ControlStatus =
-      flexWrap.value === FlexWrap.NoWrap ? 'disabled' : alignItems.controlStatus
-    const alignItemsControlStyles: ControlStyles =
-      flexWrap.value === FlexWrap.NoWrap ? getControlStyles('disabled') : alignItems.controlStyles
+  const alignItemsControlStatus: ControlStatus =
+    flexWrap.value === FlexWrap.NoWrap ? 'disabled' : alignItems.controlStatus
+  const alignItemsControlStyles: ControlStyles =
+    flexWrap.value === FlexWrap.NoWrap ? getControlStyles('disabled') : alignItems.controlStyles
 
-    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexGap.onSubmitValue,
-      flexGap.onUnsetValues,
-    )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      flexGap.onSubmitValue,
-      flexGap.onUnsetValues,
-    )
+  const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexGap.onSubmitValue,
+    flexGap.onUnsetValues,
+  )
+  const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+    flexGap.onSubmitValue,
+    flexGap.onUnsetValues,
+  )
 
-    return (
-      <>
-        <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
-          <FlexDirectionControl
-            value={flexDirection.value}
-            controlStatus={flexDirection.controlStatus}
-            controlStyles={flexDirection.controlStyles}
-            onSubmitValue={flexDirection.onSubmitValue}
-            onUnset={flexDirection.onUnsetValues}
-            flexWrap={flexWrap.value}
-          />
-          <FlexJustifyContentControl
-            value={justifyContent.value}
-            onSubmitValue={justifyContent.onSubmitValue}
-            onUnset={justifyContent.onUnsetValues}
-            controlStatus={justifyContent.controlStatus}
-            controlStyles={justifyContent.controlStyles}
-            flexDirection={flexDirection.value}
-            justifyFlexStart={justifyFlexStart}
-            justifyFlexEnd={justifyFlexEnd}
-          />
-        </UIGridRow>
-        <FlexGapControl
-          value={flexGap.value}
-          onSubmitValue={wrappedOnSubmitValue}
-          onTransientSubmitValue={wrappedOnTransientSubmitValue}
-          onUnset={flexGap.onUnsetValues}
-          controlStatus={flexGap.controlStatus}
-          controlStyles={flexGap.controlStyles}
+  return (
+    <>
+      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
+        <FlexDirectionControl
+          value={flexDirection.value}
+          controlStatus={flexDirection.controlStatus}
+          controlStyles={flexDirection.controlStyles}
+          onSubmitValue={flexDirection.onSubmitValue}
+          onUnset={flexDirection.onUnsetValues}
+          flexWrap={flexWrap.value}
         />
-        <FlexAlignItemsControl
-          value={alignItems.value}
-          controlStatus={alignItems.controlStatus}
-          controlStyles={alignItems.controlStyles}
-          onSubmitValue={alignItems.onSubmitValue}
-          onUnset={alignItems.onUnsetValues}
+        <FlexJustifyContentControl
+          value={justifyContent.value}
+          onSubmitValue={justifyContent.onSubmitValue}
+          onUnset={justifyContent.onUnsetValues}
+          controlStatus={justifyContent.controlStatus}
+          controlStyles={justifyContent.controlStyles}
+          flexDirection={flexDirection.value}
+          justifyFlexStart={justifyFlexStart}
+          justifyFlexEnd={justifyFlexEnd}
+        />
+      </UIGridRow>
+      <FlexGapControl
+        value={flexGap.value}
+        onSubmitValue={wrappedOnSubmitValue}
+        onTransientSubmitValue={wrappedOnTransientSubmitValue}
+        onUnset={flexGap.onUnsetValues}
+        controlStatus={flexGap.controlStatus}
+        controlStyles={flexGap.controlStyles}
+      />
+      <FlexAlignItemsControl
+        value={alignItems.value}
+        controlStatus={alignItems.controlStatus}
+        controlStyles={alignItems.controlStyles}
+        onSubmitValue={alignItems.onSubmitValue}
+        onUnset={alignItems.onUnsetValues}
+        alignDirection={alignDirection}
+        alignItemsFlexStart={alignItemsFlexStart}
+        alignItemsFlexEnd={alignItemsFlexEnd}
+      />
+      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+        <FlexWrapControl
+          value={flexWrap.value}
+          onSubmitValue={flexWrap.onSubmitValue}
+          onUnset={flexWrap.onUnsetValues}
+          controlStatus={flexWrap.controlStatus}
+          controlStyles={flexWrap.controlStyles}
+        />
+        <FlexAlignContentControl
+          value={alignContent.value}
+          onSubmitValue={alignContent.onSubmitValue}
+          onUnset={alignContent.onUnsetValues}
+          controlStatus={alignItemsControlStatus}
+          controlStyles={alignItemsControlStyles}
           alignDirection={alignDirection}
-          alignItemsFlexStart={alignItemsFlexStart}
-          alignItemsFlexEnd={alignItemsFlexEnd}
+          alignContentFlexStart={alignContentFlexStart}
+          alignContentFlexEnd={alignContentFlexEnd}
         />
-        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-          <FlexWrapControl
-            value={flexWrap.value}
-            onSubmitValue={flexWrap.onSubmitValue}
-            onUnset={flexWrap.onUnsetValues}
-            controlStatus={flexWrap.controlStatus}
-            controlStyles={flexWrap.controlStyles}
-          />
-          <FlexAlignContentControl
-            value={alignContent.value}
-            onSubmitValue={alignContent.onSubmitValue}
-            onUnset={alignContent.onUnsetValues}
-            controlStatus={alignItemsControlStatus}
-            controlStyles={alignItemsControlStyles}
-            alignDirection={alignDirection}
-            alignContentFlexStart={alignContentFlexStart}
-            alignContentFlexEnd={alignContentFlexEnd}
-          />
-        </UIGridRow>
-      </>
-    )
-  },
-)
+      </UIGridRow>
+    </>
+  )
+})

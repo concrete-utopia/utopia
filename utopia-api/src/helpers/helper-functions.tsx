@@ -1,14 +1,14 @@
 import { PropertyControls, ImportType } from '../property-controls/property-controls'
 
 export interface ComponentInsertOption {
-  codeToInsert: string
-  additionalRequiredImports?: string
-  menuLabel?: string
+  code: string
+  additionalImports?: string
+  label?: string
 }
 
 export interface ComponentToRegister {
-  controls: PropertyControls
-  insertOptions: Array<ComponentInsertOption>
+  properties: PropertyControls
+  variants: Array<ComponentInsertOption>
 }
 
 export function registerModule(

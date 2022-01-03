@@ -3,12 +3,11 @@ import { setFocus } from '../../../components/common/actions'
 import { isRight } from '../../../core/shared/either'
 import { useExternalResources } from '../../../printer-parsers/html/external-resources-parser'
 import { SectionTitleRow, FlexRow, Title, SectionBodyArea } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 import { GoogleFontsResourcesListSearch } from './google-fonts-resources-list-search'
 
-export const GoogleFontsResourcesList = betterReactMemo('GoogleFontsResourcesList', () => {
+export const GoogleFontsResourcesList = React.memo(() => {
   const { values, useSubmitValueFactory } = useExternalResources()
   const { dispatch, minimised, focusedPanel } = useEditorState((store) => {
     return {

@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
@@ -22,7 +23,7 @@ import {
   StringInput,
   HeadlessStringInput,
 } from '../../../../uuiui'
-import { betterReactMemo, getControlStyles } from '../../../../uuiui-deps'
+import { getControlStyles } from '../../../../uuiui-deps'
 import { load } from '../../../editor/actions/actions'
 import json5 from 'json5'
 import { NO_OP } from '../../../../core/shared/utils'
@@ -34,7 +35,7 @@ const StyledFlexRow = styled(FlexRow)({
   paddingRight: 12,
 })
 
-const FeatureSwitchesSection = betterReactMemo('Feature Switches', () => {
+const FeatureSwitchesSection = React.memo(() => {
   if (AllFeatureNames.length > 0) {
     return (
       <React.Fragment>
@@ -51,7 +52,7 @@ const FeatureSwitchesSection = betterReactMemo('Feature Switches', () => {
   }
 })
 
-const FeatureSwitchRow = betterReactMemo('Feature Switch Row', (props: { name: FeatureName }) => {
+const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
   const name = props.name
   const id = `toggle-${name}`
   const [changeCount, setChangeCount] = React.useState(0)
@@ -73,7 +74,7 @@ const FeatureSwitchRow = betterReactMemo('Feature Switch Row', (props: { name: F
   )
 })
 
-export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
+export const SettingsPanel = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useEditorState((store) => store.dispatch, 'SettingsPanel dispatch')
   const interfaceDesigner = useEditorState(

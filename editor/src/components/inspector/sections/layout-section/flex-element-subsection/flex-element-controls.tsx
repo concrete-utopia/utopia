@@ -6,13 +6,12 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { stylePropPathMappingFn, useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, ChainedNumberInput } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import { GridRowProps, UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 
-export const PositionControl = betterReactMemo('PositionControl', () => {
+export const PositionControl = React.memo(() => {
   const position = useInspectorLayoutInfo('position')
 
   return (
@@ -69,59 +68,56 @@ interface AlignSelfControlProps {
   variant: GridRowProps['variant']
 }
 
-export const AlignSelfControl = betterReactMemo(
-  'AlignSelfControl',
-  (props: AlignSelfControlProps) => {
-    const alignSelf = useInspectorLayoutInfo('alignSelf')
+export const AlignSelfControl = React.memo((props: AlignSelfControlProps) => {
+  const alignSelf = useInspectorLayoutInfo('alignSelf')
 
-    return (
-      <InspectorContextMenuWrapper
-        id={`align-self-context-menu`}
-        items={[unsetPropertyMenuItem('Align Self', alignSelf.onUnsetValues)]}
-        data={{}}
-      >
-        <UIGridRow padded={true} variant={props.variant}>
-          <PropertyLabel target={alignSelfProp}>Align Self</PropertyLabel>
-          <SelectControl
-            id='flex.element.alignSelf'
-            key='flex.element.alignSelf'
-            testId='flex.element.alignSelf'
-            options={
-              [
-                {
-                  value: 'auto',
-                  label: 'Auto',
-                },
-                {
-                  value: 'flex-start',
-                  label: 'Flex Start',
-                },
-                {
-                  value: 'center',
-                  label: 'Center',
-                },
-                {
-                  value: 'flex-end',
-                  label: 'Flex End',
-                },
-                {
-                  value: 'stretch',
-                  label: 'Stretch',
-                },
-              ] as Array<SelectOption>
-            }
-            value={alignSelf.value}
-            onSubmitValue={alignSelf.onSubmitValue}
-            controlStatus={alignSelf.controlStatus}
-            controlStyles={alignSelf.controlStyles}
-          />
-        </UIGridRow>
-      </InspectorContextMenuWrapper>
-    )
-  },
-)
+  return (
+    <InspectorContextMenuWrapper
+      id={`align-self-context-menu`}
+      items={[unsetPropertyMenuItem('Align Self', alignSelf.onUnsetValues)]}
+      data={{}}
+    >
+      <UIGridRow padded={true} variant={props.variant}>
+        <PropertyLabel target={alignSelfProp}>Align Self</PropertyLabel>
+        <SelectControl
+          id='flex.element.alignSelf'
+          key='flex.element.alignSelf'
+          testId='flex.element.alignSelf'
+          options={
+            [
+              {
+                value: 'auto',
+                label: 'Auto',
+              },
+              {
+                value: 'flex-start',
+                label: 'Flex Start',
+              },
+              {
+                value: 'center',
+                label: 'Center',
+              },
+              {
+                value: 'flex-end',
+                label: 'Flex End',
+              },
+              {
+                value: 'stretch',
+                label: 'Stretch',
+              },
+            ] as Array<SelectOption>
+          }
+          value={alignSelf.value}
+          onSubmitValue={alignSelf.onSubmitValue}
+          controlStatus={alignSelf.controlStatus}
+          controlStyles={alignSelf.controlStyles}
+        />
+      </UIGridRow>
+    </InspectorContextMenuWrapper>
+  )
+})
 
-export const MarginControl = betterReactMemo('MarginControl', () => {
+export const MarginControl = React.memo(() => {
   const { marginTop, marginRight, marginBottom, marginLeft } = useInspectorInfoLonghandShorthand(
     ['marginTop', 'marginRight', 'marginBottom', 'marginLeft'],
     'margin',

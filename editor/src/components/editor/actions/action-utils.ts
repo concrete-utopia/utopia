@@ -72,6 +72,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'RENAME_PROP_KEY':
     case 'SET_SAFE_MODE':
     case 'SET_SAVE_ERROR':
+    case 'REMOVE_FROM_NODE_MODULES_CONTENTS':
     case 'UPDATE_NODE_MODULES_CONTENTS':
     case 'START_CHECKPOINT_TIMER':
     case 'SET_PACKAGE_STATUS':
@@ -156,13 +157,12 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_IMPORTS':
     case 'SET_ASPECT_RATIO_LOCK':
     case 'INSERT_DROPPED_IMAGE':
-    case 'RESET_PROP_TO_DEFAULT':
     case 'UPDATE_PACKAGE_JSON':
     case 'FINISH_CHECKPOINT_TIMER':
     case 'ADD_MISSING_DIMENSIONS':
     case 'ADD_STORYBOARD_FILE':
     case 'UPDATE_CHILD_TEXT':
-    case 'INSERT_WITH_DEFAULTS':
+    case 'INSERT_INSERTABLE':
     case 'ADD_TAILWIND_CONFIG':
       return false
     case 'SAVE_ASSET':

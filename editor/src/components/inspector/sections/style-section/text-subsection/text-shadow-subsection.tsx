@@ -31,7 +31,6 @@ import {
   Icons,
   InspectorSectionIcons,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
 function getIndexedToggleTextShadowEnabled(index: number) {
   return function indexedToggleTextShadowEnabled(
@@ -133,7 +132,7 @@ type TextShadowItemProps = {
 
 const zeroBlurRadius = cssNumber(0, 'px')
 
-const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (props) => {
+const TextShadowItem = React.memo<TextShadowItemProps>((props) => {
   const [enabledSubmitValue] = props.useSubmitValueFactory(
     getIndexedToggleTextShadowEnabled(props.index),
   )
@@ -247,7 +246,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
   )
 })
 
-export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () => {
+export const TextShadowSubsection = React.memo(() => {
   const {
     value: textShadowsValue,
     controlStatus,

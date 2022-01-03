@@ -4,7 +4,6 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PositionControl, MarginControl, AlignSelfControl } from './flex-element-controls'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
   FunctionIcons,
   Icons,
@@ -37,7 +36,7 @@ const marginProps = [
   createLayoutPropertyPath('marginBottom'),
 ]
 
-export const FlexElementSubsection = betterReactMemo('FlexElementSubsection', () => {
+export const FlexElementSubsection = React.memo(() => {
   return (
     <>
       <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
@@ -59,17 +58,14 @@ interface FlexElementSubsectionProps {
   parentFlexDirection: string | null
 }
 
-export const FlexElementSubsectionExperiment = betterReactMemo(
-  'FlexElementSubsectionExperiment',
-  (props: FlexElementSubsectionProps) => {
-    return (
-      <>
-        <MainAxisControls {...props} />
-        <CrossAxisControls {...props} />
-      </>
-    )
-  },
-)
+export const FlexElementSubsectionExperiment = React.memo((props: FlexElementSubsectionProps) => {
+  return (
+    <>
+      <MainAxisControls {...props} />
+      <CrossAxisControls {...props} />
+    </>
+  )
+})
 
 export function useInitialFixedSectionState(parentFlexDirection: string | null): boolean {
   const isRowLayouted = parentFlexDirection === 'row' || parentFlexDirection === 'row-reverse'
@@ -106,66 +102,61 @@ export function useInitialSizeSectionState(): boolean {
   )
 }
 
-const MainAxisControls = betterReactMemo(
-  'MainAxisControls',
-  (props: FlexElementSubsectionProps) => {
-    const initialIsFixedSectionVisible = useInitialFixedSectionState(props.parentFlexDirection)
-    const initialIsAdvancedSectionVisible = useInitialAdvancedSectionState()
+const MainAxisControls = React.memo((props: FlexElementSubsectionProps) => {
+  const initialIsFixedSectionVisible = useInitialFixedSectionState(props.parentFlexDirection)
+  const initialIsAdvancedSectionVisible = useInitialAdvancedSectionState()
 
-    const [fixedControlsOpen, setFixedControlsOpen] = usePropControlledStateV2(
-      initialIsFixedSectionVisible,
-    )
-    const toggleFixedSection = React.useCallback(() => setFixedControlsOpen(!fixedControlsOpen), [
-      fixedControlsOpen,
-      setFixedControlsOpen,
-    ])
-    const [advancedControlsOpen, setAdvancedControlsOpen] = usePropControlledStateV2(
-      initialIsAdvancedSectionVisible,
-    )
-    const toggleAdvancedSection = React.useCallback(
-      () => setAdvancedControlsOpen(!advancedControlsOpen),
-      [advancedControlsOpen, setAdvancedControlsOpen],
-    )
-    return (
-      <>
-        <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span>Main Axis</span>
-          <div
-            style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 4 }}
+  const [fixedControlsOpen, setFixedControlsOpen] = usePropControlledStateV2(
+    initialIsFixedSectionVisible,
+  )
+  const toggleFixedSection = React.useCallback(() => setFixedControlsOpen(!fixedControlsOpen), [
+    fixedControlsOpen,
+    setFixedControlsOpen,
+  ])
+  const [advancedControlsOpen, setAdvancedControlsOpen] = usePropControlledStateV2(
+    initialIsAdvancedSectionVisible,
+  )
+  const toggleAdvancedSection = React.useCallback(
+    () => setAdvancedControlsOpen(!advancedControlsOpen),
+    [advancedControlsOpen, setAdvancedControlsOpen],
+  )
+  return (
+    <>
+      <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span>Main Axis</span>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 4 }}>
+          <InlineToggleButton
+            toggleValue={fixedControlsOpen}
+            onClick={toggleFixedSection}
+            style={{
+              fontSize: 10,
+            }}
           >
-            <InlineToggleButton
-              toggleValue={fixedControlsOpen}
-              onClick={toggleFixedSection}
-              style={{
-                fontSize: 10,
-              }}
-            >
-              Fixed
-            </InlineToggleButton>
-            <InlineToggleButton
-              toggleValue={advancedControlsOpen}
-              onClick={toggleAdvancedSection}
-              style={{
-                fontSize: 10,
-              }}
-            >
-              Advanced
-            </InlineToggleButton>
-            <SquareButton highlight>
-              <Icons.Cross />
-            </SquareButton>
-          </div>
-        </InspectorSubsectionHeader>
-        <FlexGrowShrinkRow />
-        <UIGridRow padded={true} variant='<-------------1fr------------->'>
-          <FlexBasisShorthandCSSNumberControl label='B' />
-        </UIGridRow>
-        {when(fixedControlsOpen, <FixedSubsectionControls {...props} />)}
-        {when(advancedControlsOpen, <AdvancedSubsectionControls {...props} />)}
-      </>
-    )
-  },
-)
+            Fixed
+          </InlineToggleButton>
+          <InlineToggleButton
+            toggleValue={advancedControlsOpen}
+            onClick={toggleAdvancedSection}
+            style={{
+              fontSize: 10,
+            }}
+          >
+            Advanced
+          </InlineToggleButton>
+          <SquareButton highlight>
+            <Icons.Cross />
+          </SquareButton>
+        </div>
+      </InspectorSubsectionHeader>
+      <FlexGrowShrinkRow />
+      <UIGridRow padded={true} variant='<-------------1fr------------->'>
+        <FlexBasisShorthandCSSNumberControl label='B' />
+      </UIGridRow>
+      {when(fixedControlsOpen, <FixedSubsectionControls {...props} />)}
+      {when(advancedControlsOpen, <AdvancedSubsectionControls {...props} />)}
+    </>
+  )
+})
 
 const mainAxisFixedProps = (parentFlexDirection: string | null): PropertyPath[] => {
   if (parentFlexDirection === 'row' || parentFlexDirection === 'row-reverse') {
@@ -184,59 +175,51 @@ const mainAxisFixedProps = (parentFlexDirection: string | null): PropertyPath[] 
 }
 const mainAxisAdvancedProps: PropertyPath[] = [createLayoutPropertyPath('alignSelf')]
 
-const FixedSubsectionControls = betterReactMemo(
-  'FixedSubsectionControls',
-  (props: FlexElementSubsectionProps) => {
-    const widthOrHeightControls =
-      props.parentFlexDirection === 'row' || props.parentFlexDirection === 'row-reverse' ? (
-        <FlexWidthControls />
-      ) : (
-        <FlexHeightControls />
-      )
-
-    const colorTheme = useColorTheme()
-    const { onUnsetValue } = React.useContext(InspectorCallbackContext)
-    const deleteFixedProps = React.useCallback(() => {
-      onUnsetValue(mainAxisFixedProps(props.parentFlexDirection), false)
-    }, [props.parentFlexDirection, onUnsetValue])
-
-    return (
-      <>
-        <InspectorSubsectionHeader>
-          <span style={{ color: colorTheme.primary.value, fontSize: 10, flexGrow: 1 }}>Fixed</span>
-          <SquareButton highlight onClick={deleteFixedProps}>
-            <FunctionIcons.Delete />
-          </SquareButton>
-        </InspectorSubsectionHeader>
-        {widthOrHeightControls}
-      </>
+const FixedSubsectionControls = React.memo((props: FlexElementSubsectionProps) => {
+  const widthOrHeightControls =
+    props.parentFlexDirection === 'row' || props.parentFlexDirection === 'row-reverse' ? (
+      <FlexWidthControls />
+    ) : (
+      <FlexHeightControls />
     )
-  },
-)
 
-const AdvancedSubsectionControls = betterReactMemo(
-  'AdvancedSubsectionControls',
-  (props: FlexElementSubsectionProps) => {
-    const { onUnsetValue } = React.useContext(InspectorCallbackContext)
-    const deleteAdvancedProps = React.useCallback(() => {
-      onUnsetValue(mainAxisAdvancedProps, false)
-    }, [onUnsetValue])
-    const colorTheme = useColorTheme()
-    return (
-      <>
-        <InspectorSubsectionHeader>
-          <span style={{ color: colorTheme.primary.value, fontSize: 10, flexGrow: 1 }}>
-            Advanced
-          </span>
-          <SquareButton highlight onClick={deleteAdvancedProps}>
-            <FunctionIcons.Delete />
-          </SquareButton>
-        </InspectorSubsectionHeader>
-        <AlignSelfControl variant='<--1fr--><--1fr-->' />
-      </>
-    )
-  },
-)
+  const colorTheme = useColorTheme()
+  const { onUnsetValue } = React.useContext(InspectorCallbackContext)
+  const deleteFixedProps = React.useCallback(() => {
+    onUnsetValue(mainAxisFixedProps(props.parentFlexDirection), false)
+  }, [props.parentFlexDirection, onUnsetValue])
+
+  return (
+    <>
+      <InspectorSubsectionHeader>
+        <span style={{ color: colorTheme.primary.value, fontSize: 10, flexGrow: 1 }}>Fixed</span>
+        <SquareButton highlight onClick={deleteFixedProps}>
+          <FunctionIcons.Delete />
+        </SquareButton>
+      </InspectorSubsectionHeader>
+      {widthOrHeightControls}
+    </>
+  )
+})
+
+const AdvancedSubsectionControls = React.memo((props: FlexElementSubsectionProps) => {
+  const { onUnsetValue } = React.useContext(InspectorCallbackContext)
+  const deleteAdvancedProps = React.useCallback(() => {
+    onUnsetValue(mainAxisAdvancedProps, false)
+  }, [onUnsetValue])
+  const colorTheme = useColorTheme()
+  return (
+    <>
+      <InspectorSubsectionHeader>
+        <span style={{ color: colorTheme.primary.value, fontSize: 10, flexGrow: 1 }}>Advanced</span>
+        <SquareButton highlight onClick={deleteAdvancedProps}>
+          <FunctionIcons.Delete />
+        </SquareButton>
+      </InspectorSubsectionHeader>
+      <AlignSelfControl variant='<--1fr--><--1fr-->' />
+    </>
+  )
+})
 
 export function useInitialCrossSectionState(parentFlexDirection: string | null): boolean {
   const isColumnLayouted =
@@ -258,44 +241,41 @@ export function useInitialCrossSectionState(parentFlexDirection: string | null):
         isNotUnsetDefaultOrDetected(maxHeight.controlStatus)
 }
 
-const CrossAxisControls = betterReactMemo(
-  'CrossAxisControls',
-  (props: FlexElementSubsectionProps) => {
-    const isCrossAxisVisible = useInitialCrossSectionState(props.parentFlexDirection)
+const CrossAxisControls = React.memo((props: FlexElementSubsectionProps) => {
+  const isCrossAxisVisible = useInitialCrossSectionState(props.parentFlexDirection)
 
-    const [crossAxisControlsOpen, setCrossAxisControlsOpen] = usePropControlledStateV2(
-      isCrossAxisVisible,
-    )
-    const toggleSection = React.useCallback(
-      () => setCrossAxisControlsOpen(!crossAxisControlsOpen),
-      [crossAxisControlsOpen, setCrossAxisControlsOpen],
-    )
-    const isColumnLayouted =
-      props.parentFlexDirection === 'column' || props.parentFlexDirection === 'column-reverse'
-    const widthOrHeightControls = isColumnLayouted ? <FlexWidthControls /> : <FlexHeightControls />
-    return (
-      <>
-        <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div style={{ justifySelf: 'flex-start' }}>Cross Axis</div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <InlineLink>+</InlineLink>
-            <SquareButton highlight onClick={toggleSection}>
-              <ExpandableIndicator
-                testId='flex-element-subsection'
-                visible
-                collapsed={!crossAxisControlsOpen}
-                selected={false}
-              />
-            </SquareButton>
-          </div>
-        </InspectorSubsectionHeader>
-        {when(crossAxisControlsOpen, widthOrHeightControls)}
-      </>
-    )
-  },
-)
+  const [crossAxisControlsOpen, setCrossAxisControlsOpen] = usePropControlledStateV2(
+    isCrossAxisVisible,
+  )
+  const toggleSection = React.useCallback(() => setCrossAxisControlsOpen(!crossAxisControlsOpen), [
+    crossAxisControlsOpen,
+    setCrossAxisControlsOpen,
+  ])
+  const isColumnLayouted =
+    props.parentFlexDirection === 'column' || props.parentFlexDirection === 'column-reverse'
+  const widthOrHeightControls = isColumnLayouted ? <FlexWidthControls /> : <FlexHeightControls />
+  return (
+    <>
+      <InspectorSubsectionHeader style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ justifySelf: 'flex-start' }}>Cross Axis</div>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <InlineLink>+</InlineLink>
+          <SquareButton highlight onClick={toggleSection}>
+            <ExpandableIndicator
+              testId='flex-element-subsection'
+              visible
+              collapsed={!crossAxisControlsOpen}
+              selected={false}
+            />
+          </SquareButton>
+        </div>
+      </InspectorSubsectionHeader>
+      {when(crossAxisControlsOpen, widthOrHeightControls)}
+    </>
+  )
+})
 
-const FlexWidthControls = betterReactMemo('FlexWidthControls', () => {
+const FlexWidthControls = React.memo(() => {
   return (
     <>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
@@ -308,7 +288,7 @@ const FlexWidthControls = betterReactMemo('FlexWidthControls', () => {
     </>
   )
 })
-const FlexHeightControls = betterReactMemo('FlexWidthControls', () => {
+const FlexHeightControls = React.memo(() => {
   return (
     <>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
@@ -321,7 +301,7 @@ const FlexHeightControls = betterReactMemo('FlexWidthControls', () => {
     </>
   )
 })
-const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
+const FlexGrowShrinkRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
       <FlexShorthandNumberControl label='G' styleProp='flexGrow' />

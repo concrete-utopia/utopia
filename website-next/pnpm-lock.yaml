@@ -10,6 +10,7 @@ specifiers:
   '@types/facepaint': 1.2.1
   '@types/react': ^17.0.11
   '@types/react-select': 3.0.15
+  '@types/url-join': 4.0.1
   autoprefixer: ^10.2.6
   facepaint: 1.2.1
   localforage: 1.7.3
@@ -47,6 +48,7 @@ devDependencies:
   '@types/facepaint': 1.2.1
   '@types/react': 17.0.24
   '@types/react-select': 3.0.15
+  '@types/url-join': 4.0.1
   autoprefixer: 10.3.5_postcss@8.3.7
   postcss: 8.3.7
   tailwindcss: 2.2.15_dd4850c39760d2665af3f9e21d00faf4
@@ -475,6 +477,10 @@ packages:
 
   /@types/scheduler/0.16.2:
     resolution: {integrity: sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==}
+    dev: true
+
+  /@types/url-join/4.0.1:
+    resolution: {integrity: sha512-wDXw9LEEUHyV+7UWy7U315nrJGJ7p1BzaCxDpEoLr789Dk1WDVMMlf3iBfbG2F8NdWnYyFbtTxUn2ZNbm1Q4LQ==}
     dev: true
 
   /acorn-node/1.8.2:

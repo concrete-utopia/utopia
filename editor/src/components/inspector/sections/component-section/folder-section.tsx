@@ -1,10 +1,10 @@
-/**@jsx jsx */
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
 import { eitherToMaybe, foldEither } from '../../../../core/shared/either'
 import { unless, when } from '../../../../utils/react-conditionals'
-import { betterReactMemo } from '../../../../uuiui-deps'
 import { CSSCursor } from '../../../canvas/canvas-types'
 import { ControlDescription } from 'utopia-api'
 import { inferControlTypeBasedOnValue } from './component-section-utils'
@@ -16,6 +16,7 @@ import { RowOrFolderWrapper } from './row-or-folder-wrapper'
 import { RowForControl, RowForInvalidControl } from './component-section'
 import { InspectorWidthAtom } from '../../common/inspector-atoms'
 import { useAtom } from 'jotai'
+import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
 
 interface FolderSectionProps {
   isRoot: boolean
@@ -29,7 +30,7 @@ interface FolderSectionProps {
   title?: string
 }
 
-export const FolderSection = betterReactMemo('FolderSection', (props: FolderSectionProps) => {
+export const FolderSection = React.memo((props: FolderSectionProps) => {
   const showIndentation = useAtom(InspectorWidthAtom)[0] === 'wide'
   const [open, setOpen] = React.useState(true)
   const colorTheme = useColorTheme()
@@ -139,22 +140,26 @@ export const FolderSection = betterReactMemo('FolderSection', (props: FolderSect
       {when(
         props.isRoot,
         Object.keys(props.detectedPropsAndValuesWithoutControls).map((propName) => {
-          const propValue = props.detectedPropsAndValuesWithoutControls[propName]
-          const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
-            propValue,
-            propName,
-          )
-          return (
-            <RowForControl
-              key={propName}
-              propPath={PP.create([propName])}
-              controlDescription={controlDescription}
-              isScene={false}
-              setGlobalCursor={props.setGlobalCursor}
-              indentationLevel={props.indentationLevel + 1}
-              focusOnMount={false}
-            />
-          )
+          if (specialPropertiesToIgnore.includes(propName)) {
+            return null
+          } else {
+            const propValue = props.detectedPropsAndValuesWithoutControls[propName]
+            const controlDescription: ControlDescription = inferControlTypeBasedOnValue(
+              propValue,
+              propName,
+            )
+            return (
+              <RowForControl
+                key={propName}
+                propPath={PP.create([propName])}
+                controlDescription={controlDescription}
+                isScene={false}
+                setGlobalCursor={props.setGlobalCursor}
+                indentationLevel={props.indentationLevel + 1}
+                focusOnMount={false}
+              />
+            )
+          }
         }),
       )}
       {when(
@@ -181,7 +186,7 @@ interface FolderLabelProps {
   showIndentation: boolean
 }
 
-const FolderLabel = betterReactMemo('FolderLabel', (props: FolderLabelProps) => {
+const FolderLabel = React.memo((props: FolderLabelProps) => {
   const { toggleOpen } = props
   const indentation = props.showIndentation ? props.indentationLevel * 8 : 0
   const handleOnClick = React.useCallback(() => toggleOpen(), [toggleOpen])
@@ -214,7 +219,7 @@ interface ExpansionArrowSVGProps {
   style: React.CSSProperties
 }
 
-const ExpansionArrowSVG = betterReactMemo('ExpansionArrowSVG', (props: ExpansionArrowSVGProps) => {
+const ExpansionArrowSVG = React.memo((props: ExpansionArrowSVGProps) => {
   const colorTheme = useColorTheme()
   return (
     <svg width='7px' height='5px' viewBox='0 0 7 5' version='1.1' style={props.style}>

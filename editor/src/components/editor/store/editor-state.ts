@@ -1173,18 +1173,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     domMetadata: [],
     jsxMetadata: emptyJsxMetadata,
     projectContents: {},
-    codeResultCache: generateCodeResultCache(
-      {},
-      {},
-      {},
-      [],
-      {},
-      dispatch,
-      {},
-      'full-build',
-      true,
-      [],
-    ),
+    codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, {}, []),
     propertyControlsInfo: { ...DefaultThirdPartyControlDefinitions },
     nodeModules: {
       skipDeepFreeze: true,
@@ -1424,9 +1413,6 @@ export function editorModelFromPersistentModel(
   persistentModel: PersistentModel,
   dispatch: EditorDispatch,
 ): EditorState {
-  const npmDependencies = immediatelyResolvableDependenciesWithEditorRequirements(
-    persistentModel.projectContents,
-  )
   const editor: EditorState = {
     id: null,
     vscodeBridgeId: vsCodeBridgeIdDefault(UUID()),
@@ -1442,13 +1428,10 @@ export function editorModelFromPersistentModel(
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
-      {},
       [],
       {},
       dispatch,
       {},
-      'full-build',
-      true,
       [],
     ),
     projectContents: persistentModel.projectContents,

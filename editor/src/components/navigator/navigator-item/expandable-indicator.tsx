@@ -1,6 +1,5 @@
 import React from 'react'
 import { Icn, Icons } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 
 export const ExpansionArrowWidth = 8
 export const ExpansionArrowHeight = 8
@@ -15,8 +14,7 @@ interface ExpandableIndicatorProps {
   style?: React.CSSProperties
 }
 
-export const ExpandableIndicator: React.FunctionComponent<ExpandableIndicatorProps> = betterReactMemo(
-  'ExpandableIndicator',
+export const ExpandableIndicator: React.FunctionComponent<ExpandableIndicatorProps> = React.memo(
   (props) => {
     return (
       <div data-testid={props.testId} style={{ width: 16, height: 16, ...props.style }}>

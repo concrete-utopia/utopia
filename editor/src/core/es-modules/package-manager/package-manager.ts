@@ -56,7 +56,7 @@ export const getCurriedEditorRequireFn = (
 ): CurriedUtopiaRequireFn => {
   const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
     moduleDownload.then((modulesToAdd: NodeModules) =>
-      dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
+      dispatch([updateNodeModulesContents(modulesToAdd)]),
     )
   }
   return (projectContents: ProjectContentTreeRoot) =>

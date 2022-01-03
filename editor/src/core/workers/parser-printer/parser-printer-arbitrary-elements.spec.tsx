@@ -977,7 +977,11 @@ return { arr: arr };`
   it('circularly referenced arbitrary blocks parse and produce a combined block', () => {
     const code = `
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -1022,7 +1026,11 @@ export var storyboard = (
   it('Correctly maps elements within arbitrary blocks including combined blocks', () => {
     const code = `
 import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
 
 export class RenderPropsFunctionChild extends React.Component {
   render() {

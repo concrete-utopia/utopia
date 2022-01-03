@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
@@ -9,7 +10,7 @@ import WindowedSelect, {
   ValueType,
 } from 'react-windowed-select'
 
-import { betterReactMemo, getControlStyles } from '../../../uuiui-deps'
+import { getControlStyles } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 
 import {
@@ -22,15 +23,15 @@ import {
 } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import {
-  getComponentGroups,
   getInsertableGroupLabel,
+  getNonEmptyComponentGroups,
   InsertableComponent,
   InsertableComponentGroup,
   InsertableComponentGroupType,
 } from '../../shared/project-components'
 import {
   closeFloatingInsertMenu,
-  insertWithDefaults,
+  insertInsertable,
   updateJSXElementName,
   wrapInView,
   wrapInElement,
@@ -119,7 +120,7 @@ function useGetInsertableComponents(): InsertableComponentFlatList {
       return []
     } else {
       return convertInsertableComponentsToFlatList(
-        getComponentGroups(
+        getNonEmptyComponentGroups(
           packageStatus,
           propertyControlsInfo,
           projectContents,
@@ -316,8 +317,7 @@ interface CheckboxRowProps {
   onChange: (value: boolean) => void
 }
 
-const CheckboxRow = betterReactMemo<React.PropsWithChildren<CheckboxRowProps>>(
-  'CheckboxRow',
+const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(
   ({ id, checked, onChange, children }) => {
     const colorTheme = useColorTheme()
 
@@ -364,7 +364,7 @@ function getMenuTitle(insertMenuMode: 'closed' | 'insert' | 'convert' | 'wrap'):
   }
 }
 
-export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
+export var FloatingMenu = React.memo(() => {
   const colorTheme = useColorTheme()
 
   // This is a ref so that changing the highlighted element does not trigger a re-render loop
@@ -489,7 +489,7 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
             if (targetParent != null) {
               // TODO multiselect?
               actionsToDispatch = [
-                insertWithDefaults(
+                insertInsertable(
                   targetParent,
                   elementToInsert,
                   fixedSizeForInsertion ? 'add-size' : 'do-not-add',
@@ -657,34 +657,31 @@ export var FloatingMenu = betterReactMemo('FloatingMenu', () => {
 
 interface FloatingInsertMenuProps {}
 
-export const FloatingInsertMenu = betterReactMemo(
-  'FloatingInsertMenu',
-  (props: FloatingInsertMenuProps) => {
-    const dispatch = useEditorState((store) => store.dispatch, 'FloatingInsertMenu dispatch')
-    const isVisible = useEditorState(
-      (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
-      'FloatingInsertMenu insertMenuOpen',
-    )
-    const onClickOutside = React.useCallback(() => {
-      dispatch([closeFloatingInsertMenu()])
-    }, [dispatch])
+export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) => {
+  const dispatch = useEditorState((store) => store.dispatch, 'FloatingInsertMenu dispatch')
+  const isVisible = useEditorState(
+    (store) => store.editor.floatingInsertMenu.insertMenuMode !== 'closed',
+    'FloatingInsertMenu insertMenuOpen',
+  )
+  const onClickOutside = React.useCallback(() => {
+    dispatch([closeFloatingInsertMenu()])
+  }, [dispatch])
 
-    return isVisible ? (
-      <OnClickOutsideHOC onClickOutside={onClickOutside}>
-        <div
-          style={{
-            pointerEvents: 'initial',
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            transform: 'translateX(-50%) translateY(-50%)',
-            zIndex: 30,
-            // ^ above navigator
-          }}
-        >
-          <FloatingMenu />
-        </div>
-      </OnClickOutsideHOC>
-    ) : null
-  },
-)
+  return isVisible ? (
+    <OnClickOutsideHOC onClickOutside={onClickOutside}>
+      <div
+        style={{
+          pointerEvents: 'initial',
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translateX(-50%) translateY(-50%)',
+          zIndex: 30,
+          // ^ above navigator
+        }}
+      >
+        <FloatingMenu />
+      </div>
+    </OnClickOutsideHOC>
+  ) : null
+})

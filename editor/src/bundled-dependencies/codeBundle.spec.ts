@@ -68,7 +68,7 @@ function createCodeBundleFileTs(
   const printedSanitizedExportsInfo = JSON.stringify(exportsInfo, null, 2).replace(/\\/g, '\\\\')
   const printedSanitizedBuildResult = JSON.stringify(buildResult, null, 2).replace(/\\/g, '\\\\')
 
-  return `import { ExportsInfo } from '../core/workers/ts/ts-worker'
+  return `import { ExportsInfo } from '../core/workers/common/worker-types'
 
 // If you wish to update this auto-generated file, go to codeBundle.spec.ts and find the test called
 // 'Update Saved Bundle' and change the test function from xit(... to it(... to enable it

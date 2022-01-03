@@ -1,9 +1,9 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import classNames from 'classnames'
 import React from 'react'
 import { StringInput } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import { usePropControlledState } from '../common/inspector-utils'
 import { DEPRECATEDControlProps } from './control'
 
@@ -11,8 +11,7 @@ export interface StringControlOptions {
   DEPRECATED_labelBelow?: React.ReactChild
 }
 
-export const StringControl = betterReactMemo(
-  'StringControl',
+export const StringControl = React.memo(
   React.forwardRef<HTMLInputElement, DEPRECATEDControlProps<string>>(
     ({ value: propsValue, controlStyles, onBlur, onSubmitValue, ...props }, ref) => {
       const [mixed, setMixed] = usePropControlledState<boolean>(controlStyles.mixed)

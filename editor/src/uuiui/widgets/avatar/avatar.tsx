@@ -1,5 +1,5 @@
 import React from 'react'
-import { betterReactMemo, LoginState, User } from '../../../uuiui-deps'
+import { LoginState, User } from '../../../uuiui-deps'
 
 import { useColorTheme } from '../../styles/theme'
 
@@ -9,7 +9,7 @@ interface AvatarProps {
   size?: number
 }
 
-export const Avatar = betterReactMemo('Avatar', (props: AvatarProps) => {
+export const Avatar = React.memo((props: AvatarProps) => {
   const colorTheme = useColorTheme()
   const size: string = (props.size ?? '24') + 'px'
 

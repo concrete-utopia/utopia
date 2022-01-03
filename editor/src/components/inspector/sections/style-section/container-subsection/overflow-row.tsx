@@ -4,11 +4,7 @@ import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
-import {
-  betterReactMemo,
-  InspectorContextMenuItems,
-  InspectorContextMenuWrapper,
-} from '../../../../../uuiui-deps'
+import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
 
 const overflowProp = [PP.create(['style', 'overflow'])]
 
@@ -25,7 +21,7 @@ const OverflowControlOptions: Array<OptionChainOption<boolean>> = [
   },
 ]
 
-export const OverflowRow = betterReactMemo('OverflowRow', () => {
+export const OverflowRow = React.memo(() => {
   const {
     value,
     controlStatus,

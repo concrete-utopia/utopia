@@ -20,7 +20,6 @@ import {
 import { BackgroundPicker } from '../sections/style-section/background-subsection/background-picker'
 import { StringControl } from './string-control'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import Utils from '../../../utils/utils'
 
 export interface BackgroundThumbnailControlProps {
@@ -83,8 +82,7 @@ export const backgroundControlContainerStyle = {
   margin: 1,
 }
 
-export const BackgroundSolidOrGradientThumbnailControl = betterReactMemo(
-  'BackgroundControl',
+export const BackgroundSolidOrGradientThumbnailControl = React.memo(
   (props: BackgroundSolidOrGradientThumbnailControlProps) => {
     const colorTheme = useColorTheme()
     const setOpenPopup = props.setOpenPopup
@@ -207,8 +205,7 @@ export const BackgroundSolidOrGradientThumbnailControl = betterReactMemo(
   },
 )
 
-export const StringBackgroundColorControl = betterReactMemo(
-  'StringBackgroundColorControl',
+export const StringBackgroundColorControl = React.memo(
   (props: BackgroundSolidOrGradientThumbnailControlProps) => {
     const value = props.value
     if (isCSSGradientBackgroundLayer(value) || props.onSubmitSolidStringValue == null) {

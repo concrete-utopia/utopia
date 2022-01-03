@@ -1,5 +1,400 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`getComponentGroups handles a sub-dependency correctly 1`] = `
+Array [
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "App",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {},
+        "name": "App",
+        "stylePropOptions": Array [
+          "do-not-add",
+        ],
+      },
+    ],
+    "source": Object {
+      "path": "/src/app.js",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [],
+    "source": Object {
+      "path": "/src/index.js",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [],
+    "source": Object {
+      "path": "/utopia/storyboard.js",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "div",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "div",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "span",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "span",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "h1",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "h1",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "h2",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "h2",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "p",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "p",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "button",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "button",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "input",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "input",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "video",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "height": "120px",
+                  "width": "250px",
+                },
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "controls",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": true,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "autoPlay",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": true,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "loop",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": true,
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "src",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "https://dl8.webmfiles.org/big-buck-bunny_trailer.webm",
+              },
+            },
+          ],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "video",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "img",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "height": "64px",
+                  "width": "64px",
+                },
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "src",
+              "type": "JSX_ATTRIBUTES_ENTRY",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit",
+              },
+            },
+          ],
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "img",
+        "stylePropOptions": Array [
+          "do-not-add",
+          "add-size",
+        ],
+      },
+    ],
+    "source": Object {
+      "type": "HTML_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [],
+    "source": Object {
+      "dependencyName": "@heroicons/react",
+      "dependencyStatus": "loaded",
+      "type": "PROJECT_DEPENDENCY_GROUP",
+    },
+  },
+]
+`;
+
 exports[`getComponentGroups returns all the various default groups 1`] = `
 Array [
   Object {
@@ -361,7 +756,7 @@ Array [
                   "trailingComments": Array [],
                 },
                 "type": "ATTRIBUTE_VALUE",
-                "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit\\"",
+                "value": "/editor/icons/favicons/favicon-128.png?hash=nocommit",
               },
             },
           ],
