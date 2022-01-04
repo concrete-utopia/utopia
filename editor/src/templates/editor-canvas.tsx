@@ -282,14 +282,14 @@ function createOrUpdateSession(
   model: EditorState,
   action: CreateInteractionSession,
 ): EditorState {
-  if (model.canvas.dragState == null) {
-    // create drag state, start setTimeout!
+  if (model.canvas.interactionSession == null) {
+    // create session, start setTimeout!
     clearInterval(dragStateTimerHandle)
     dragStateTimerHandle = setInterval(() => {
       dispatch([CanvasActions.updateInteractionSession({ globalTime: Date.now() })])
     }, 200)
   } else {
-    // update drag state
+    // update session, leave timeout as is
   }
 
   return {
@@ -302,6 +302,7 @@ function createOrUpdateSession(
 }
 
 export function runLocalCanvasAction(
+  dispatch: EditorDispatch,
   model: EditorState,
   derivedState: DerivedState,
   action: CanvasAction,
@@ -371,13 +372,7 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SECTION': {
-      return {
-        ...model,
-        canvas: {
-          ...model.canvas,
-          interactionSession: action.interactionSession,
-        },
-      }
+      return createOrUpdateSession(dispatch, model, action)
     }
     case 'UPDATE_INTERACTION_SECTION':
       if (model.canvas.interactionSession != null) {
@@ -876,6 +871,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     function fireDragStateUpdate(updateFn: DragState): void {
       dispatch([CanvasActions.createDragState(updateFn)], 'canvas')
     }
+    // TODO insert update functions for canvas interaction session
     if (dragState != null) {
       switch (dragState.type) {
         case 'MOVE_DRAG_STATE':
