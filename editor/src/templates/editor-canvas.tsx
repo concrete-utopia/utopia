@@ -968,7 +968,16 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             }
             break
           }
+          break
         }
+        case 'INSERT_DRAG_STATE':
+          break
+        case 'SELECT_MODE_CANVAS_SESSION':
+          // TODO add keyboard stuff to canvas session!
+          break
+        default:
+          const _exhaustiveCheck: never = dragState
+          break
       }
     }
   }
