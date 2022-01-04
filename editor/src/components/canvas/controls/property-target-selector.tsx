@@ -25,25 +25,6 @@ interface PropertyTargetSelectorProps {
   options: Array<LayoutTargetableProp>
 }
 
-function labelForOption(option: LayoutTargetableProp): string {
-  switch (option) {
-    case 'width':
-      return 'width'
-    case 'height':
-      return 'height'
-    case 'left':
-      return 'left'
-    case 'top':
-      return 'top'
-    case 'right':
-      return 'right'
-    case 'bottom':
-      return 'bottom'
-    default:
-      return option
-  }
-}
-
 export const PropertyTargetSelector = React.memo(
   (props: PropertyTargetSelectorProps): JSX.Element => {
     const colorTheme = useColorTheme()
@@ -131,7 +112,7 @@ export const PropertyTargetSelector = React.memo(
                 borderRadius: 5,
               }}
             >
-              {labelForOption(option)}: <span style={{ float: 'right' }}>{valueForProp}</span>
+              {option}: <span style={{ float: 'right' }}>{valueForProp}</span>
             </div>
           )
         })}
