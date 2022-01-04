@@ -13,6 +13,7 @@ import {
   FileContent,
   createParsePrintFilesRequest,
   ParseOrPrint,
+  ParsePrintFilesRequest,
 } from './common/worker-types'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
@@ -27,8 +28,8 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
     this.linterWorker.sendLinterRequestMessage(filename, content)
   }
 
-  sendParsePrintMessage(files: Array<ParseOrPrint>): void {
-    this.parserPrinterWorker.sendParsePrintMessage(files)
+  sendParsePrintMessage(request: ParsePrintFilesRequest): void {
+    this.parserPrinterWorker.sendParsePrintMessage(request)
   }
 
   addParserPrinterEventListener(handler: (e: MessageEvent) => void): void {
@@ -61,7 +62,7 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
 }
 
 export interface ParserPrinterWorker {
-  sendParsePrintMessage: (files: Array<ParseOrPrint>) => void
+  sendParsePrintMessage: (request: ParsePrintFilesRequest) => void
 
   addParseFileResultEventListener(handler: (e: MessageEvent) => void): void
 
@@ -74,8 +75,8 @@ export class RealParserPrinterWorker implements ParserPrinterWorker {
     this.worker = createParserPrinterWorker()
   }
 
-  sendParsePrintMessage(files: Array<ParseOrPrint>): void {
-    this.worker.postMessage(createParsePrintFilesRequest(files))
+  sendParsePrintMessage(request: ParsePrintFilesRequest): void {
+    this.worker.postMessage(request)
   }
 
   addParseFileResultEventListener(handler: (e: MessageEvent) => void): void {
@@ -193,7 +194,7 @@ export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
     // empty
   }
 
-  sendParsePrintMessage(files: Array<ParseOrPrint>): void {
+  sendParsePrintMessage(request: ParsePrintFilesRequest): void {
     // empty
   }
 

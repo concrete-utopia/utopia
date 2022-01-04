@@ -74,7 +74,6 @@ import {
   getTransitiveReverseDependencies,
   identifyFilesThatHaveChanged,
 } from '../../../core/shared/project-contents-dependencies'
-import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code-file'
 import {
   reduxDevtoolsLogMessage,
   reduxDevtoolsSendActions,

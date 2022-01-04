@@ -8,7 +8,7 @@ import {
   googleFontsResource,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { StringInput } from '../../../uuiui'
-import { betterReactMemo, Utils } from '../../../uuiui-deps'
+import { Utils } from '../../../uuiui-deps'
 import { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
 import {
   fontFamilyData,
@@ -105,8 +105,7 @@ export function updateRemoveFontFamilyVariant(
 
 export const GoogleFontsResourcesListItemHeight = 26
 
-export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourcesListSearchProps>(
-  'GoogleFontsResourcesListSearch',
+export const GoogleFontsResourcesListSearch = React.memo<GoogleFontsResourcesListSearchProps>(
   ({ linkedResources, useSubmitValueFactory }) => {
     const [searchTerm, setSearchTerm] = React.useState('')
     const lowerCaseSearchTerm = searchTerm.toLowerCase()

@@ -1,5 +1,5 @@
 // @flow
-const Anser = require('anser')
+import Anser from 'anser'
 
 export type ErrorLocation = {
   fileName: string

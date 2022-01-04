@@ -1,7 +1,7 @@
+import { ExportsInfo } from '../core/workers/common/worker-types'
+
 // If you wish to update this auto-generated file, go to codeBundle.spec.ts and find the test called
 // 'Update Saved Bundle' and change the test function from xit(... to it(... to enable it
-
-import { ExportsInfo } from '../core/workers/common/worker-types'
 
 export const SampleFileBuildResult = JSON.parse(`{
   "/src/app.js": {
@@ -47,9 +47,9 @@ export const SampleFileBuildResult = JSON.parse(`{
         "../../utopia/storyboard.js"
       ],
       "names": [],
-      "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AACA,IAAA,QAAA,GAAA,OAAA,CAAA,aAAA,CAAA;;AACW,OAAA,CAAA,UAAA,GACT,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,UAAD,EAAW;AAAA,EAAA,QAAA,EACT,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,KAAD,EAAM,MAAA,CAAA,MAAA,CAAA;AACJ,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,UAAZ;AAAwB,MAAA,IAAI,EAAE,CAA9B;AAAiC,MAAA,GAAG,EAAE,CAAtC;AAAyC,MAAA,KAAK,EAAE,GAAhD;AAAqD,MAAA,MAAM,EAAE;AAA7D;AADH,GAAA,EACqE;AAAA,IAAA,QAAA,EAEzE,aAAA,CAAA,GAAA,CAAC,QAAA,CAAA,GAAD,EAAI,EAAJ,EAAI,KAAA,CAAJ;AAFyE,GADrE,CAAN,EAGS,KAAA,CAHT;AADS,CAAX,EAKU,KAAA,CALV,CADS,C",
+      "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAKA,IAAA,QAAA,GAAA,OAAA,CAAA,aAAA,CAAA;;AACW,OAAA,CAAA,UAAA,GACT,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,UAAD,EAAW;AAAA,EAAA,QAAA,EACT,aAAA,CAAA,GAAA,CAAC,YAAA,CAAA,KAAD,EAAM,MAAA,CAAA,MAAA,CAAA;AACJ,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,UAAZ;AAAwB,MAAA,IAAI,EAAE,CAA9B;AAAiC,MAAA,GAAG,EAAE,CAAtC;AAAyC,MAAA,KAAK,EAAE,GAAhD;AAAqD,MAAA,MAAM,EAAE;AAA7D;AADH,GAAA,EACqE;AAAA,IAAA,QAAA,EAEzE,aAAA,CAAA,GAAA,CAAC,QAAA,CAAA,GAAD,EAAI,EAAJ,EAAI,KAAA,CAAJ;AAFyE,GADrE,CAAN,EAGS,KAAA,CAHT;AADS,CAAX,EAKU,KAAA,CALV,CADS,C",
       "sourcesContent": [
-        "\\nimport * as React from 'react'\\nimport { Scene, Storyboard } from 'utopia-api'\\nimport { App } from '/src/app.js'\\nexport var storyboard = (\\n  <Storyboard>\\n    <Scene\\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\\n    >\\n      <App />\\n    </Scene>\\n  </Storyboard>\\n)\\n\\n"
+        "\\nimport * as React from 'react'\\nimport Utopia, {\\n  Scene,\\n  Storyboard,\\n  registerModule,\\n} from 'utopia-api'\\nimport { App } from '/src/app.js'\\nexport var storyboard = (\\n  <Storyboard>\\n    <Scene\\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\\n    >\\n      <App />\\n    </Scene>\\n  </Storyboard>\\n)\\n\\n"
       ],
       "sourceRoot": "",
       "file": "storyboard.js"
@@ -84,7 +84,7 @@ export const SampleFileBundledExportsInfo: Array<ExportsInfo> = JSON.parse(`[
   },
   {
     "filename": "/utopia/storyboard.js",
-    "code": "\\nimport * as React from 'react'\\nimport { Scene, Storyboard } from 'utopia-api'\\nimport { App } from '/src/app.js'\\nexport var storyboard = (\\n  <Storyboard>\\n    <Scene\\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\\n    >\\n      <App />\\n    </Scene>\\n  </Storyboard>\\n)\\n\\n",
+    "code": "\\nimport * as React from 'react'\\nimport Utopia, {\\n  Scene,\\n  Storyboard,\\n  registerModule,\\n} from 'utopia-api'\\nimport { App } from '/src/app.js'\\nexport var storyboard = (\\n  <Storyboard>\\n    <Scene\\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\\n    >\\n      <App />\\n    </Scene>\\n  </Storyboard>\\n)\\n\\n",
     "exportTypes": {
       "storyboard": {
         "type": "Element",

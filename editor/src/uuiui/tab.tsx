@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
@@ -11,7 +12,6 @@ import { useColorTheme, UtopiaTheme } from './styles/theme'
 import { CSSObject } from '@emotion/serialize'
 import { defaultIfNull } from '../core/shared/optional-utils'
 import { NO_OP } from '../core/shared/utils'
-import { betterReactMemo } from '../uuiui-deps'
 
 interface TabComponentProps {
   modified?: boolean
@@ -28,99 +28,96 @@ interface TabComponentProps {
   className?: string
 }
 
-export const TabComponent: React.FunctionComponent<TabComponentProps> = betterReactMemo(
-  'TabComponent',
-  (props) => {
-    const colorTheme = useColorTheme()
-    const [tabIsHovered, setTabIsHovered] = React.useState(false)
-    const [indicatorIsHovered, setIndicatorIsHovered] = React.useState(false)
+export const TabComponent: React.FunctionComponent<TabComponentProps> = React.memo((props) => {
+  const colorTheme = useColorTheme()
+  const [tabIsHovered, setTabIsHovered] = React.useState(false)
+  const [indicatorIsHovered, setIndicatorIsHovered] = React.useState(false)
 
-    const modified = defaultIfNull<boolean>(false, props.showModifiedIndicator)
-    const showModifiedIndicator = defaultIfNull<boolean>(true, props.showModifiedIndicator)
-    const showCloseIndicator = defaultIfNull<boolean>(true, props.showCloseIndicator)
-    const selected = defaultIfNull<boolean>(false, props.selected)
-    const hasErrorMessages = defaultIfNull<boolean>(false, props.hasErrorMessages)
-    const label = defaultIfNull<React.ReactElement | string>('', props.label)
-    const icon = defaultIfNull<React.ReactElement | string>('', props.icon)
-    const onClose = defaultIfNull(NO_OP, props.onClose)
+  const modified = defaultIfNull<boolean>(false, props.showModifiedIndicator)
+  const showModifiedIndicator = defaultIfNull<boolean>(true, props.showModifiedIndicator)
+  const showCloseIndicator = defaultIfNull<boolean>(true, props.showCloseIndicator)
+  const selected = defaultIfNull<boolean>(false, props.selected)
+  const hasErrorMessages = defaultIfNull<boolean>(false, props.hasErrorMessages)
+  const label = defaultIfNull<React.ReactElement | string>('', props.label)
+  const icon = defaultIfNull<React.ReactElement | string>('', props.icon)
+  const onClose = defaultIfNull(NO_OP, props.onClose)
 
-    const baseStyle = {
-      paddingLeft: 4,
-      paddingRight: 4,
-      transition: 'all .05s ease-in-out',
-      '&:hover': {
-        backgroundColor: colorTheme.tabHoveredBackground.value,
-      },
-      cursor: 'pointer',
-    }
+  const baseStyle = {
+    paddingLeft: 4,
+    paddingRight: 4,
+    transition: 'all .05s ease-in-out',
+    '&:hover': {
+      backgroundColor: colorTheme.tabHoveredBackground.value,
+    },
+    cursor: 'pointer',
+  }
 
-    const selectionHandlingStyle = {
-      boxShadow: selected ? `inset 0px 2px 0px 0px ${colorTheme.primary.value}` : undefined,
-      color: hasErrorMessages
-        ? colorTheme.errorForeground.value
-        : colorTheme.tabSelectedForeground.value,
+  const selectionHandlingStyle = {
+    boxShadow: selected ? `inset 0px 2px 0px 0px ${colorTheme.primary.value}` : undefined,
+    color: hasErrorMessages
+      ? colorTheme.errorForeground.value
+      : colorTheme.tabSelectedForeground.value,
 
-      fontWeight: selected ? 500 : undefined,
-    }
+    fontWeight: selected ? 500 : undefined,
+  }
 
-    const modifiedIndicator = showModifiedIndicator ? <Icons.CircleSmall /> : null
-    const closeIndicator = showCloseIndicator ? <Icons.CrossSmall /> : null
-    const closeIndicatorHovered = showCloseIndicator ? <Icons.CrossInTranslucentCircle /> : null
+  const modifiedIndicator = showModifiedIndicator ? <Icons.CircleSmall /> : null
+  const closeIndicator = showCloseIndicator ? <Icons.CrossSmall /> : null
+  const closeIndicatorHovered = showCloseIndicator ? <Icons.CrossInTranslucentCircle /> : null
 
-    const tabUnhoveredIndicator = modified ? modifiedIndicator : selected ? closeIndicator : null
-    const tabHoveredIndicator = indicatorIsHovered ? closeIndicatorHovered : closeIndicator
+  const tabUnhoveredIndicator = modified ? modifiedIndicator : selected ? closeIndicator : null
+  const tabHoveredIndicator = indicatorIsHovered ? closeIndicatorHovered : closeIndicator
 
-    const setTabHoveredTrue = React.useCallback(() => setTabIsHovered(true), [setTabIsHovered])
-    const setTabHoveredFalse = React.useCallback(() => setTabIsHovered(false), [setTabIsHovered])
+  const setTabHoveredTrue = React.useCallback(() => setTabIsHovered(true), [setTabIsHovered])
+  const setTabHoveredFalse = React.useCallback(() => setTabIsHovered(false), [setTabIsHovered])
 
-    const setIndicatorHoveredTrue = React.useCallback(() => setIndicatorIsHovered(true), [
-      setIndicatorIsHovered,
-    ])
-    const setIndicatorHoveredFalse = React.useCallback(() => setIndicatorIsHovered(false), [
-      setIndicatorIsHovered,
-    ])
+  const setIndicatorHoveredTrue = React.useCallback(() => setIndicatorIsHovered(true), [
+    setIndicatorIsHovered,
+  ])
+  const setIndicatorHoveredFalse = React.useCallback(() => setIndicatorIsHovered(false), [
+    setIndicatorIsHovered,
+  ])
 
-    const close = React.useCallback(
-      (e) => {
-        onClose()
-        e.stopPropagation()
-      },
-      [onClose],
-    )
+  const close = React.useCallback(
+    (e) => {
+      onClose()
+      e.stopPropagation()
+    },
+    [onClose],
+  )
 
-    return (
-      <SimpleFlexRow
-        onMouseEnter={setTabHoveredTrue}
-        onMouseLeave={setTabHoveredFalse}
-        onClick={props.onClick}
-        onDoubleClick={props.onDoubleClick}
-        onMouseDown={props.onMouseDown}
-        style={{
-          ...baseStyle,
-          ...selectionHandlingStyle,
-        }}
-        className={props.className}
-      >
-        <SimpleFlexRow style={{ flexGrow: 1, marginRight: 32 }}>
-          <SimpleFlexRow style={{ marginLeft: 4 }}>{icon}</SimpleFlexRow>
-          <SimpleFlexRow style={{ marginLeft: 8 }}>{label}</SimpleFlexRow>
-        </SimpleFlexRow>
-        <Button
-          css={{
-            label: 'indicatorContainer',
-            width: 18,
-            height: 18,
-            '&:active': {
-              transform: 'scale(.92)',
-            },
-          }}
-          onMouseEnter={setIndicatorHoveredTrue}
-          onMouseLeave={setIndicatorHoveredFalse}
-          onClick={close}
-        >
-          {showCloseIndicator ? (tabIsHovered ? tabHoveredIndicator : tabUnhoveredIndicator) : null}
-        </Button>
+  return (
+    <SimpleFlexRow
+      onMouseEnter={setTabHoveredTrue}
+      onMouseLeave={setTabHoveredFalse}
+      onClick={props.onClick}
+      onDoubleClick={props.onDoubleClick}
+      onMouseDown={props.onMouseDown}
+      style={{
+        ...baseStyle,
+        ...selectionHandlingStyle,
+      }}
+      className={props.className}
+    >
+      <SimpleFlexRow style={{ flexGrow: 1, marginRight: 32 }}>
+        <SimpleFlexRow style={{ marginLeft: 4 }}>{icon}</SimpleFlexRow>
+        <SimpleFlexRow style={{ marginLeft: 8 }}>{label}</SimpleFlexRow>
       </SimpleFlexRow>
-    )
-  },
-)
+      <Button
+        css={{
+          label: 'indicatorContainer',
+          width: 18,
+          height: 18,
+          '&:active': {
+            transform: 'scale(.92)',
+          },
+        }}
+        onMouseEnter={setIndicatorHoveredTrue}
+        onMouseLeave={setIndicatorHoveredFalse}
+        onClick={close}
+      >
+        {showCloseIndicator ? (tabIsHovered ? tabHoveredIndicator : tabUnhoveredIndicator) : null}
+      </Button>
+    </SimpleFlexRow>
+  )
+})

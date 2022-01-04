@@ -10,7 +10,6 @@ import {
   InspectorSubsectionHeader,
   InspectorSectionIcons,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import {
   NumberInput,
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
@@ -285,7 +284,7 @@ function getIndexedUpdateSingleLengthValue(
   }
 }
 
-const SingleLengthItem = betterReactMemo<SingleLengthItemProps>('SingleLengthItem', (props) => {
+const SingleLengthItem = React.memo<SingleLengthItemProps>((props) => {
   const [enabledSubmitValue] = props.useSubmitValueFactory(
     getIndexedToggleTransformItemEnabled(props.index),
   )
@@ -404,7 +403,7 @@ interface DoubleLengthItemProps extends TransformItemProps {
   emptyValue: CSSTransformDoubleLengthItem
 }
 
-const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthItem', (props) => {
+const DoubleLengthItem = React.memo<DoubleLengthItemProps>((props) => {
   const [enabledSubmitValue] = props.useSubmitValueFactory(
     getIndexedToggleTransformItemEnabled(props.index),
   )
@@ -534,7 +533,7 @@ const CSSTransformsToTransform = (transformedType: CSSTransforms) => {
 
 const rowHeight = UtopiaTheme.layout.rowHeight.normal
 
-export const TransformSubsection = betterReactMemo('TransformSubsection', () => {
+export const TransformSubsection = React.memo(() => {
   const {
     value,
     onSubmitValue,

@@ -12,30 +12,26 @@ import { ControlStatus, ControlStyles } from '../common/control-status'
 import { PropertyRow } from '../widgets/property-row'
 import { StringControl } from './string-control'
 import { CheckboxInput, FlexRow, Tooltip } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 
 interface FakeUnknownArrayItemProps {
   controlStatus: ControlStatus
 }
 
-export const FakeUnknownArrayItem = betterReactMemo<FakeUnknownArrayItemProps>(
-  'FakeUnknownArrayItem',
-  (props) => (
-    <PropertyRow
-      style={{
-        gridTemplateColumns: '12px 1fr',
-        gridColumnGap: 8,
-      }}
-    >
-      <CheckboxInput
-        disabled={true}
-        controlStatus={props.controlStatus}
-        onMouseDown={stopPropagation}
-      />
-      <FlexRow style={{ height: 22 }}>Unknown</FlexRow>
-    </PropertyRow>
-  ),
-)
+export const FakeUnknownArrayItem = React.memo<FakeUnknownArrayItemProps>((props) => (
+  <PropertyRow
+    style={{
+      gridTemplateColumns: '12px 1fr',
+      gridColumnGap: 8,
+    }}
+  >
+    <CheckboxInput
+      disabled={true}
+      controlStatus={props.controlStatus}
+      onMouseDown={stopPropagation}
+    />
+    <FlexRow style={{ height: 22 }}>Unknown</FlexRow>
+  </PropertyRow>
+))
 
 function getIndexedUpdateUnknownArrayItemValue<T>(index: number) {
   return function updateUnknownArrayItemValue(

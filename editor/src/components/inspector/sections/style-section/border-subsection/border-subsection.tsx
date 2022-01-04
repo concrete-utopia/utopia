@@ -10,7 +10,6 @@ import {
   CheckboxInput,
   InspectorSectionIcons,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
 import {
@@ -81,7 +80,7 @@ function insertBorder(_: null, oldValue: CSSBorder): CSSBorder {
   return { ...defaultCSSBorder }
 }
 
-export const BorderSubsection: React.FunctionComponent = betterReactMemo('BorderSubsection', () => {
+export const BorderSubsection: React.FunctionComponent = React.memo(() => {
   const isVisible = useIsSubSectionVisible('border')
 
   const {

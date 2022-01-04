@@ -16,8 +16,7 @@ declare module '@babel/plugin-transform-modules-commonjs'
 declare module '@babel/plugin-proposal-export-namespace-from'
 
 declare module 'lodash.clamp' {
-  export const clamp = (number: number, lower: number, upper: number) => number
-  export const clamp = (number: number, upper: number) => number
+  export default clamp = (number: number, lower: number, upper: number) => number
 }
 
 declare module 'resize-observer-polyfill'
@@ -76,3 +75,16 @@ declare var __webpack_public_path__: string
 interface Window {
   KarmaTestEnvironment: boolean | undefined
 }
+
+declare module 'eslint-plugin-react' {
+  export const rules: { [key: string]: any } = {}
+}
+declare module 'eslint-plugin-react-hooks' {
+  export const rules: { [key: string]: any } = {}
+}
+declare module 'eslint-plugin-jsx-a11y' {
+  export const rules: { [key: string]: any } = {}
+}
+declare module 'eslint-plugin-import/lib/rules/first'
+declare module 'eslint-plugin-import/lib/rules/no-amd'
+declare module 'eslint-plugin-import/lib/rules/no-webpack-loader-syntax'

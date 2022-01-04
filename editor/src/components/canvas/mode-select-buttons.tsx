@@ -3,7 +3,6 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { useColorTheme, FlexRow, UtopiaStyles } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
 import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isLiveMode, isSelectLiteMode, isSelectMode } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
@@ -14,7 +13,7 @@ interface ModeSelectButtonProps {
   onMouseDown: () => void
 }
 
-const ModeSelectButton = betterReactMemo('ModeSelectButton', (props: ModeSelectButtonProps) => {
+const ModeSelectButton = React.memo((props: ModeSelectButtonProps) => {
   const colorTheme = useColorTheme()
   return props.selected ? (
     <div
@@ -52,7 +51,7 @@ const ModeSelectButton = betterReactMemo('ModeSelectButton', (props: ModeSelectB
   )
 })
 
-export const ModeSelectButtons = betterReactMemo('ModeSelectButtons', () => {
+export const ModeSelectButtons = React.memo(() => {
   const colorTheme = useColorTheme()
   const currentMode = useEditorState((store) => store.editor.mode, 'ModeSelectButtons editor.mode')
   const dispatch = useEditorState((store) => store.dispatch, 'ModeSelectButtons dispatch')

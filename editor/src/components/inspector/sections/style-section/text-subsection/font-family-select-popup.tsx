@@ -4,7 +4,7 @@ import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
 import { FlexColumn, UtopiaTheme, FlexRow, StringInput, useColorTheme } from '../../../../../uuiui'
-import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
+import { ControlStyles, Utils } from '../../../../../uuiui-deps'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
 import {
   cssFontStyleToWebFontStyle,
@@ -303,8 +303,7 @@ function filterData(
   }
 }
 
-export const FontFamilySelectPopup = betterReactMemo(
-  'FontFamilySelectPopup',
+export const FontFamilySelectPopup = React.memo(
   React.forwardRef<HTMLDivElement, FontFamilySelectPopupProps>(
     (
       {

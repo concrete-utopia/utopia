@@ -336,7 +336,6 @@ import {
   SetSaveError,
   RemoveToast,
   InsertDroppedImage,
-  ResetPropToDefault,
   UpdateNodeModulesContents,
   UpdatePackageJson,
   StartCheckpointTimer,
@@ -367,7 +366,7 @@ import {
   UpdateFormulaBarMode,
   OpenFloatingInsertMenu,
   CloseFloatingInsertMenu,
-  InsertWithDefaults,
+  InsertInsertable,
   SetPropTransient,
   ClearTransientProps,
   AddTailwindConfig,
@@ -379,6 +378,7 @@ import {
   HideVSCodeLoadingScreen,
   SetIndexedDBFailed,
   ForceParseFile,
+  RemoveFromNodeModulesContents,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -472,13 +472,10 @@ import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
 import { notice, Notice } from '../../common/notice'
-import { objectMap, objectMapDropNulls } from '../../../core/shared/object-utils'
+import { objectFilter, objectMap } from '../../../core/shared/object-utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
-import {
-  getDefaultPropsFromParsedControls,
-  getPropertyControlsForTargetFromEditor,
-} from '../../../core/property-controls/property-controls-utils'
+import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
@@ -506,6 +503,7 @@ import {
   addImports,
   setScrollAnimation,
   updatePackageJson,
+  removeFromNodeModulesContents,
 } from './action-creators'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import {
@@ -1515,6 +1513,19 @@ function updateSelectedComponentsFromEditorPosition(
       dispatch,
     )
   }
+}
+
+function removeModulesFromNodeModules(
+  modulesToRemove: Array<string>,
+  nodeModules: NodeModules,
+): NodeModules {
+  const filePathsToRemove = modulesToRemove.map((m) => `/node_modules/${m}/`)
+
+  return objectFilter(
+    (_module, modulePath) =>
+      !filePathsToRemove.some((pathToRemove) => (modulePath as string).startsWith(pathToRemove)),
+    nodeModules,
+  )
 }
 
 // JS Editor Actions:
@@ -3649,6 +3660,7 @@ export const UPDATE_FNS = {
       file,
     )
 
+    let updatedNodeModulesFiles = editor.nodeModules.files
     let packageLoadingStatus: PackageStatusMap = {}
 
     // Ensure dependencies are updated if the `package.json` file has been changed.
@@ -3659,18 +3671,51 @@ export const UPDATE_FNS = {
           packageStatus[dep.name] = { status: 'loading' }
           return packageStatus
         }, {})
-        let depsToLoad = deps
+        let newDeps: RequestedNpmDependency[] = []
+        let updatedDeps: RequestedNpmDependency[] = []
+        let removedDeps: RequestedNpmDependency[] = []
         const currentDepsFile = packageJsonFileFromProjectContents(editor.projectContents)
         if (isTextFile(currentDepsFile)) {
           const currentDeps = dependenciesFromPackageJsonContents(currentDepsFile.fileContents.code)
-          depsToLoad = deps.filter(
-            (dep) =>
-              !currentDeps.find(
-                (currentDep) => currentDep.name === dep.name && currentDep.version === dep.version,
-              ),
-          )
+          let foundMatchingDeps: RequestedNpmDependency[] = []
+
+          fastForEach(deps, (dep) => {
+            const matchingCurrentDep = currentDeps.find(
+              (currentDep) => dep.name === currentDep.name,
+            )
+
+            // Find the new or updated dependencies
+            if (matchingCurrentDep == null) {
+              // A new dependency has been added
+              newDeps.push(dep)
+            } else {
+              foundMatchingDeps.push(matchingCurrentDep)
+
+              if (matchingCurrentDep.version !== dep.version) {
+                // An updated dependency
+                updatedDeps.push(dep)
+              }
+            }
+
+            // Find the deleted dependencies
+            removedDeps = currentDeps.filter(
+              (currentDep) => !foundMatchingDeps.includes(currentDep),
+            )
+          })
+        } else {
+          newDeps = deps
         }
-        fetchNodeModules(depsToLoad, builtInDependencies).then((fetchNodeModulesResult) => {
+
+        const modulesToRemove = updatedDeps.concat(removedDeps).map((d) => d.name)
+
+        updatedNodeModulesFiles = removeModulesFromNodeModules(
+          modulesToRemove,
+          editor.nodeModules.files,
+        )
+
+        const depsToFetch = newDeps.concat(updatedDeps)
+
+        fetchNodeModules(depsToFetch, builtInDependencies).then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
@@ -3681,7 +3726,7 @@ export const UPDATE_FNS = {
           )
           dispatch([
             ...packageErrorActions,
-            updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+            updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
           ])
         })
       }
@@ -3699,6 +3744,7 @@ export const UPDATE_FNS = {
       },
       nodeModules: {
         ...editor.nodeModules,
+        files: updatedNodeModulesFiles,
         packageStatus: {
           ...editor.nodeModules.packageStatus,
           ...packageLoadingStatus,
@@ -4213,52 +4259,32 @@ export const UPDATE_FNS = {
       throw new Error(`Could not be found or is not a file: ${action.imagePath}`)
     }
   },
-  RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
-    const openFilePath = getOpenUIJSFileKey(editor)
-    if (openFilePath != null) {
-      const target = action.target
-      const propertyControls = getPropertyControlsForTargetFromEditor(target, editor)
-      let element: JSXElement | null = null
-      forUnderlyingTargetFromEditorState(
-        action.target,
-        editor,
-        (_underlyingSuccess, underlyingElement) => {
-          element = underlyingElement
-        },
-      )
-      if (element == null) {
-        return editor
-      }
-      const defaultProps =
-        propertyControls == null ? {} : getDefaultPropsFromParsedControls(propertyControls)
+  REMOVE_FROM_NODE_MODULES_CONTENTS: (
+    action: RemoveFromNodeModulesContents,
+    editor: EditorState,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorState => {
+    const updatedNodeModulesFiles = removeModulesFromNodeModules(
+      action.modulesToRemove,
+      editor.nodeModules.files,
+    )
 
-      const pathToUpdate: PropertyPath | null = action.path
-
-      const propsForPath =
-        action.path == null ? defaultProps : defaultProps[PP.toString(action.path)]
-
-      if (pathToUpdate == null) {
-        return setPropertyOnTarget(editor, target, (props) => {
-          let updatedProps: JSXAttributes = jsxAttributesFromMap(
-            objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
-          )
-          const dataUID = getJSXAttribute(props, 'data-uid')
-          if (dataUID != null) {
-            updatedProps = setJSXAttributesAttribute(updatedProps, 'data-uid', dataUID)
-          }
-          return right(updatedProps)
-        })
-      } else {
-        return setPropertyOnTarget(editor, target, (props) => {
-          return setJSXValueAtPath(
-            props,
-            pathToUpdate!,
-            jsxAttributeValue(propsForPath, emptyComments),
-          )
-        })
-      }
-    } else {
-      return editor
+    return {
+      ...editor,
+      nodeModules: {
+        ...editor.nodeModules,
+        files: updatedNodeModulesFiles,
+      },
+      codeResultCache: generateCodeResultCache(
+        editor.projectContents,
+        codeCacheToBuildResult(editor.codeResultCache.cache),
+        editor.codeResultCache.exportsInfo,
+        updatedNodeModulesFiles,
+        dispatch,
+        editor.codeResultCache.evaluationCache,
+        builtInDependencies,
+      ),
     }
   },
   UPDATE_NODE_MODULES_CONTENTS: (
@@ -4267,45 +4293,24 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorState => {
-    let result: EditorState
-    if (action.buildType === 'full-build') {
-      result = produce(editor, (draft) => {
-        draft.nodeModules.files = action.contentsToAdd
-      })
-    } else {
-      result = produce(editor, (draft) => {
-        draft.nodeModules.files = {
-          ...draft.nodeModules.files,
-          ...action.contentsToAdd,
-        }
-      })
-    }
+    const updatedNodeModulesFiles = { ...editor.nodeModules.files, ...action.contentsToAdd }
 
-    let onlyProjectFiles: boolean = true
-    for (const key of Object.keys(action.contentsToAdd)) {
-      if (key.startsWith('/node_modules')) {
-        onlyProjectFiles = false
-        break
-      }
-    }
-
-    result = {
-      ...result,
+    return {
+      ...editor,
+      nodeModules: {
+        ...editor.nodeModules,
+        files: updatedNodeModulesFiles,
+      },
       codeResultCache: generateCodeResultCache(
-        result.projectContents,
-        editor.codeResultCache.projectModules,
-        codeCacheToBuildResult(result.codeResultCache.cache),
-        result.codeResultCache.exportsInfo,
-        result.nodeModules.files,
+        editor.projectContents,
+        codeCacheToBuildResult(editor.codeResultCache.cache),
+        editor.codeResultCache.exportsInfo,
+        updatedNodeModulesFiles,
         dispatch,
         editor.codeResultCache.evaluationCache,
-        action.buildType,
-        onlyProjectFiles,
         builtInDependencies,
       ),
     }
-
-    return result
   },
   UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
     const dependencies = action.dependencies.reduce(
@@ -4381,12 +4386,16 @@ export const UPDATE_FNS = {
     action: UpdatePropertyControlsInfo,
     editor: EditorState,
   ): EditorState => {
+    let updatedPropertyControlsInfo: PropertyControlsInfo = {
+      ...editor.propertyControlsInfo,
+      ...action.propertyControlsInfo,
+    }
+    for (const moduleNameOrPathToDelete of action.moduleNamesOrPathsToDelete) {
+      delete updatedPropertyControlsInfo[moduleNameOrPathToDelete]
+    }
     return {
       ...editor,
-      propertyControlsInfo: {
-        ...editor.propertyControlsInfo,
-        ...action.propertyControlsInfo,
-      },
+      propertyControlsInfo: updatedPropertyControlsInfo,
     }
   },
   ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
@@ -4637,7 +4646,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  INSERT_WITH_DEFAULTS: (action: InsertWithDefaults, editor: EditorModel): EditorModel => {
+  INSERT_INSERTABLE: (action: InsertInsertable, editor: EditorModel): EditorModel => {
     const openFilename = editor.canvas.openFile?.filename
     if (openFilename == null) {
       return editor
@@ -4794,7 +4803,7 @@ export const UPDATE_FNS = {
               )
               dispatch([
                 ...packageErrorActions,
-                updateNodeModulesContents(fetchNodeModulesResult.nodeModules, 'full-build'),
+                updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
               ])
             })
 
@@ -5117,13 +5126,10 @@ export async function load(
     // TODO is this sufficient here?
     migratedModel.projectContents,
     {},
-    {},
     migratedModel.exportsInfo,
     nodeModules,
     dispatch,
     {},
-    'full-build',
-    false,
     builtInDependencies,
   )
 

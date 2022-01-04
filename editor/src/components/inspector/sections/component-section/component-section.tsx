@@ -1,4 +1,5 @@
-/**@jsx jsx */
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { OptionsType } from 'react-select'
@@ -21,10 +22,7 @@ import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  betterReactMemo,
-  useKeepReferenceEqualityIfPossible,
-} from '../../../../utils/react-performance'
+import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import { getParseErrorDetails, ParseError, ParseResult } from '../../../../utils/value-parser-utils'
 import {
@@ -86,62 +84,54 @@ function useComponentPropsInspectorInfo(
   return useInspectorInfoForPropertyControl(propertyPath, control)
 }
 
-const ControlForProp = betterReactMemo(
-  'ControlForProp',
-  (props: ControlForPropProps<BaseControlDescription>) => {
-    const { controlDescription } = props
-    if (controlDescription == null) {
-      return null
-    } else {
-      switch (controlDescription.control) {
-        case 'checkbox':
-          return <CheckboxPropertyControl {...props} controlDescription={controlDescription} />
-        case 'color':
-          return <ColorPropertyControl {...props} controlDescription={controlDescription} />
-        case 'euler':
-          return <EulerPropertyControl {...props} controlDescription={controlDescription} />
-        case 'expression-input':
-          return (
-            <ExpressionInputPropertyControl {...props} controlDescription={controlDescription} />
-          )
-        case 'expression-popuplist':
-          return (
-            <ExpressionPopUpListPropertyControl
-              {...props}
-              controlDescription={controlDescription}
-            />
-          )
-        case 'none':
-          return null
-        case 'matrix3':
-          return <Matrix3PropertyControl {...props} controlDescription={controlDescription} />
-        case 'matrix4':
-          return <Matrix4PropertyControl {...props} controlDescription={controlDescription} />
-        case 'number-input':
-          return <NumberInputPropertyControl {...props} controlDescription={controlDescription} />
-        case 'popuplist':
-          return <PopUpListPropertyControl {...props} controlDescription={controlDescription} />
-        case 'radio':
-          return <RadioPropertyControl {...props} controlDescription={controlDescription} />
-        case 'string-input':
-          return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
-        case 'style-controls':
-          return null
-        case 'vector2':
-        case 'vector3':
-        case 'vector4':
-          return <VectorPropertyControl {...props} controlDescription={controlDescription} />
-        default:
-          return null
-      }
+const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescription>) => {
+  const { controlDescription } = props
+  if (controlDescription == null) {
+    return null
+  } else {
+    switch (controlDescription.control) {
+      case 'checkbox':
+        return <CheckboxPropertyControl {...props} controlDescription={controlDescription} />
+      case 'color':
+        return <ColorPropertyControl {...props} controlDescription={controlDescription} />
+      case 'euler':
+        return <EulerPropertyControl {...props} controlDescription={controlDescription} />
+      case 'expression-input':
+        return <ExpressionInputPropertyControl {...props} controlDescription={controlDescription} />
+      case 'expression-popuplist':
+        return (
+          <ExpressionPopUpListPropertyControl {...props} controlDescription={controlDescription} />
+        )
+      case 'none':
+        return null
+      case 'matrix3':
+        return <Matrix3PropertyControl {...props} controlDescription={controlDescription} />
+      case 'matrix4':
+        return <Matrix4PropertyControl {...props} controlDescription={controlDescription} />
+      case 'number-input':
+        return <NumberInputPropertyControl {...props} controlDescription={controlDescription} />
+      case 'popuplist':
+        return <PopUpListPropertyControl {...props} controlDescription={controlDescription} />
+      case 'radio':
+        return <RadioPropertyControl {...props} controlDescription={controlDescription} />
+      case 'string-input':
+        return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
+      case 'style-controls':
+        return null
+      case 'vector2':
+      case 'vector3':
+      case 'vector4':
+        return <VectorPropertyControl {...props} controlDescription={controlDescription} />
+      default:
+        return null
     }
-  },
-)
+  }
+})
 interface ParseErrorProps {
   parseError: ParseError
 }
 
-export const ParseErrorControl = betterReactMemo('ParseErrorControl', (props: ParseErrorProps) => {
+export const ParseErrorControl = React.memo((props: ParseErrorProps) => {
   const details = getParseErrorDetails(props.parseError)
   return (
     <div>
@@ -152,7 +142,7 @@ export const ParseErrorControl = betterReactMemo('ParseErrorControl', (props: Pa
   )
 })
 
-const WarningTooltip = betterReactMemo('WarningTooltip', ({ warning }: { warning: string }) => {
+const WarningTooltip = React.memo(({ warning }: { warning: string }) => {
   const colorTheme = useColorTheme()
   return (
     <Tooltip title={warning}>
@@ -176,23 +166,20 @@ interface RowForInvalidControlProps {
   warningTooltip?: string
 }
 
-export const RowForInvalidControl = betterReactMemo(
-  'RowForInvalidControl',
-  (props: RowForInvalidControlProps) => {
-    const propPath = [PP.create([props.propName])]
-    const warning =
-      props.warningTooltip == null ? null : <WarningTooltip warning={props.warningTooltip} />
-    return (
-      <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-        <PropertyLabel target={propPath}>
-          {warning}
-          {props.title}
-        </PropertyLabel>
-        <ParseErrorControl parseError={props.propertyError} />
-      </UIGridRow>
-    )
-  },
-)
+export const RowForInvalidControl = React.memo((props: RowForInvalidControlProps) => {
+  const propPath = [PP.create([props.propName])]
+  const warning =
+    props.warningTooltip == null ? null : <WarningTooltip warning={props.warningTooltip} />
+  return (
+    <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
+      <PropertyLabel target={propPath}>
+        {warning}
+        {props.title}
+      </PropertyLabel>
+      <ParseErrorControl parseError={props.propertyError} />
+    </UIGridRow>
+  )
+})
 
 interface AbstractRowForControlProps {
   propPath: PropertyPath
@@ -226,7 +213,7 @@ interface RowForBaseControlProps extends AbstractRowForControlProps {
   controlDescription: BaseControlDescription
 }
 
-const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBaseControlProps) => {
+const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
   const propName = `${PP.lastPart(propPath)}`
@@ -302,91 +289,83 @@ interface RowForArrayControlProps extends AbstractRowForControlProps {
   controlDescription: ArrayControlDescription
 }
 
-const RowForArrayControl = betterReactMemo(
-  'RowForArrayControl',
-  (props: RowForArrayControlProps) => {
-    const { propPath, controlDescription, isScene } = props
-    const title = labelForControl(propPath, controlDescription)
-    const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
-      propPath,
-      isScene,
-      controlDescription,
-    )
+const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
+  const { propPath, controlDescription, isScene } = props
+  const title = labelForControl(propPath, controlDescription)
+  const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+    propPath,
+    isScene,
+    controlDescription,
+  )
 
-    const rowHeight = UtopiaTheme.layout.rowHeight.normal
-    const transformedValue = Array.isArray(value) ? value : [value]
-    const { springs, bind } = useArraySuperControl(
-      transformedValue,
-      onSubmitValue,
-      rowHeight,
-      false,
-    )
-    const [insertingRow, setInsertingRow] = React.useState(false)
-    const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
+  const rowHeight = UtopiaTheme.layout.rowHeight.normal
+  const transformedValue = Array.isArray(value) ? value : [value]
+  const { springs, bind } = useArraySuperControl(transformedValue, onSubmitValue, rowHeight, false)
+  const [insertingRow, setInsertingRow] = React.useState(false)
+  const toggleInsertRow = React.useCallback(() => setInsertingRow((current) => !current), [])
 
-    React.useEffect(() => setInsertingRow(false), [springs.length])
+  React.useEffect(() => setInsertingRow(false), [springs.length])
 
-    return (
-      <React.Fragment>
-        <InspectorSectionHeader>
-          <SimpleFlexRow style={{ flexGrow: 1 }}>
-            <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-              {title}
-            </PropertyLabel>
-            {propertyStatus.overwritable ? (
-              <SquareButton highlight onMouseDown={toggleInsertRow}>
-                {insertingRow ? (
-                  <Icons.Minus
-                    style={{ paddingTop: 1 }}
-                    color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                    width={16}
-                    height={16}
-                  />
-                ) : (
-                  <Icons.Plus
-                    style={{ paddingTop: 1 }}
-                    color={propertyStatus.controlled ? 'primary' : 'secondary'}
-                    width={16}
-                    height={16}
-                  />
-                )}
-              </SquareButton>
-            ) : null}
-          </SimpleFlexRow>
-        </InspectorSectionHeader>
-        <div
-          style={{
-            height: rowHeight * springs.length,
-          }}
-        >
-          {springs.map((springStyle, index) => (
-            <ArrayControlItem
-              springStyle={springStyle}
-              bind={bind}
-              key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
-              index={index}
-              propPath={propPath}
-              isScene={props.isScene}
-              controlDescription={controlDescription}
-              focusOnMount={props.focusOnMount}
-              setGlobalCursor={props.setGlobalCursor}
-            />
-          ))}
-        </div>
-        {insertingRow ? (
-          <RowForControl
-            controlDescription={controlDescription.propertyControl}
-            isScene={isScene}
-            propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
+  return (
+    <React.Fragment>
+      <InspectorSectionHeader>
+        <SimpleFlexRow style={{ flexGrow: 1 }}>
+          <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+            {title}
+          </PropertyLabel>
+          {propertyStatus.overwritable ? (
+            <SquareButton highlight onMouseDown={toggleInsertRow}>
+              {insertingRow ? (
+                <Icons.Minus
+                  style={{ paddingTop: 1 }}
+                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                  width={16}
+                  height={16}
+                />
+              ) : (
+                <Icons.Plus
+                  style={{ paddingTop: 1 }}
+                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                  width={16}
+                  height={16}
+                />
+              )}
+            </SquareButton>
+          ) : null}
+        </SimpleFlexRow>
+      </InspectorSectionHeader>
+      <div
+        style={{
+          height: rowHeight * springs.length,
+        }}
+      >
+        {springs.map((springStyle, index) => (
+          <ArrayControlItem
+            springStyle={springStyle}
+            bind={bind}
+            key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
+            index={index}
+            propPath={propPath}
+            isScene={props.isScene}
+            controlDescription={controlDescription}
+            focusOnMount={props.focusOnMount}
             setGlobalCursor={props.setGlobalCursor}
-            indentationLevel={1}
-            focusOnMount={false}
           />
-        ) : null}
-      </React.Fragment>
-    )
-  },
-)
+        ))}
+      </div>
+      {insertingRow ? (
+        <RowForControl
+          controlDescription={controlDescription.propertyControl}
+          isScene={isScene}
+          propPath={PP.appendPropertyPathElems(propPath, [springs.length])}
+          setGlobalCursor={props.setGlobalCursor}
+          indentationLevel={1}
+          focusOnMount={false}
+        />
+      ) : null}
+    </React.Fragment>
+  )
+})
 interface ArrayControlItemProps {
   springStyle: { [x: string]: any; [x: number]: any }
   bind: (...args: any[]) => ReactEventHandlers
@@ -398,7 +377,7 @@ interface ArrayControlItemProps {
   setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
-const ArrayControlItem = betterReactMemo('ArrayControlItem', (props: ArrayControlItemProps) => {
+const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
   const colorTheme = useColorTheme()
   const { bind, propPath, index, isScene, springStyle, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
@@ -474,53 +453,50 @@ interface RowForTupleControlProps extends AbstractRowForControlProps {
   controlDescription: TupleControlDescription
 }
 
-const RowForTupleControl = betterReactMemo(
-  'RowForTupleControl',
-  (props: RowForTupleControlProps) => {
-    const { propPath, controlDescription, isScene } = props
-    const title = labelForControl(propPath, controlDescription)
-    const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
-      propPath,
-      isScene,
-      controlDescription,
-    )
+const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
+  const { propPath, controlDescription, isScene } = props
+  const title = labelForControl(propPath, controlDescription)
+  const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
+    propPath,
+    isScene,
+    controlDescription,
+  )
 
-    const rowHeight = UtopiaTheme.layout.rowHeight.normal
-    const transformedValue = Array.isArray(value) ? value : [value]
-    const boundedTransformedValue = transformedValue.slice(
-      0,
-      controlDescription.propertyControls.length,
-    )
+  const rowHeight = UtopiaTheme.layout.rowHeight.normal
+  const transformedValue = Array.isArray(value) ? value : [value]
+  const boundedTransformedValue = transformedValue.slice(
+    0,
+    controlDescription.propertyControls.length,
+  )
 
-    return (
-      <React.Fragment>
-        <InspectorSectionHeader>
-          <SimpleFlexRow style={{ flexGrow: 1 }}>
-            <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
-              {title}
-            </PropertyLabel>
-          </SimpleFlexRow>
-        </InspectorSectionHeader>
-        <div
-          style={{
-            height: rowHeight * boundedTransformedValue.length,
-          }}
-        >
-          {boundedTransformedValue.map((_, index) => (
-            <TupleControlItem
-              key={index}
-              index={index}
-              propPath={propPath}
-              isScene={props.isScene}
-              controlDescription={controlDescription}
-              setGlobalCursor={props.setGlobalCursor}
-            />
-          ))}
-        </div>
-      </React.Fragment>
-    )
-  },
-)
+  return (
+    <React.Fragment>
+      <InspectorSectionHeader>
+        <SimpleFlexRow style={{ flexGrow: 1 }}>
+          <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+            {title}
+          </PropertyLabel>
+        </SimpleFlexRow>
+      </InspectorSectionHeader>
+      <div
+        style={{
+          height: rowHeight * boundedTransformedValue.length,
+        }}
+      >
+        {boundedTransformedValue.map((_, index) => (
+          <TupleControlItem
+            key={index}
+            index={index}
+            propPath={propPath}
+            isScene={props.isScene}
+            controlDescription={controlDescription}
+            setGlobalCursor={props.setGlobalCursor}
+          />
+        ))}
+      </div>
+    </React.Fragment>
+  )
+})
 
 interface TupleControlItemProps {
   propPath: PropertyPath
@@ -530,7 +506,7 @@ interface TupleControlItemProps {
   setGlobalCursor: (cursor: CSSCursor | null) => void
 }
 
-const TupleControlItem = betterReactMemo('TupleControlItem', (props: TupleControlItemProps) => {
+const TupleControlItem = React.memo((props: TupleControlItemProps) => {
   const { propPath, index, isScene, controlDescription } = props
   const propPathWithIndex = PP.appendPropertyPathElems(propPath, [index])
   const propMetadata = useComponentPropsInspectorInfo(
@@ -587,164 +563,158 @@ interface RowForObjectControlProps extends AbstractRowForControlProps {
   controlDescription: ObjectControlDescription
 }
 
-const RowForObjectControl = betterReactMemo(
-  'RowForObjectControl',
-  (props: RowForObjectControlProps) => {
-    const [open, setOpen] = React.useState(true)
-    const handleOnClick = React.useCallback(() => setOpen(!open), [setOpen, open])
-    const { propPath, controlDescription, isScene } = props
-    const title = labelForControl(propPath, controlDescription)
-    const indentation = props.indentationLevel * 8
+const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
+  const [open, setOpen] = React.useState(true)
+  const handleOnClick = React.useCallback(() => setOpen(!open), [setOpen, open])
+  const { propPath, controlDescription, isScene } = props
+  const title = labelForControl(propPath, controlDescription)
+  const indentation = props.indentationLevel * 8
 
-    const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
-    const contextMenuItems = Utils.stripNulls([
-      addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
-    ])
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+  const contextMenuItems = Utils.stripNulls([
+    addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
+  ])
 
-    return (
-      <div
-        css={{
-          marginTop: 8,
-          marginBottom: 8,
-          '&:hover': {
-            boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-            background: 'hsl(0,0%,0%,1%)',
-          },
-          '&:focus-within': {
-            boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-            background: 'hsl(0,0%,0%,1%)',
-          },
-        }}
-      >
-        <div onClick={handleOnClick}>
-          <InspectorContextMenuWrapper
-            id={`context-menu-for-${PP.toString(propPath)}`}
-            items={contextMenuItems}
-            data={null}
-          >
-            <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }}>
-              <PropertyLabel
-                target={[propPath]}
-                style={{
-                  textTransform: 'capitalize',
-                  paddingLeft: indentation,
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: 34,
-                  fontWeight: 500,
-                  gap: 4,
-                  cursor: 'pointer',
-                }}
-              >
-                {title}
-                <ObjectIndicator open={open} />
-              </PropertyLabel>
-            </SimpleFlexRow>
-          </InspectorContextMenuWrapper>
-        </div>
-        {when(
-          open,
-          mapToArray((innerControl: RegularControlDescription, prop: string, index: number) => {
-            const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
-            return (
-              <RowForControl
-                key={`object-control-row-${PP.toString(innerPropPath)}`}
-                controlDescription={innerControl}
-                isScene={isScene}
-                propPath={innerPropPath}
-                setGlobalCursor={props.setGlobalCursor}
-                indentationLevel={props.indentationLevel + 1}
-                focusOnMount={props.focusOnMount && index === 0}
-              />
-            )
-          }, controlDescription.object),
-        )}
+  return (
+    <div
+      css={{
+        marginTop: 8,
+        marginBottom: 8,
+        '&:hover': {
+          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+          background: 'hsl(0,0%,0%,1%)',
+        },
+        '&:focus-within': {
+          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+          background: 'hsl(0,0%,0%,1%)',
+        },
+      }}
+    >
+      <div onClick={handleOnClick}>
+        <InspectorContextMenuWrapper
+          id={`context-menu-for-${PP.toString(propPath)}`}
+          items={contextMenuItems}
+          data={null}
+        >
+          <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }}>
+            <PropertyLabel
+              target={[propPath]}
+              style={{
+                textTransform: 'capitalize',
+                paddingLeft: indentation,
+                display: 'flex',
+                alignItems: 'center',
+                height: 34,
+                fontWeight: 500,
+                gap: 4,
+                cursor: 'pointer',
+              }}
+            >
+              {title}
+              <ObjectIndicator open={open} />
+            </PropertyLabel>
+          </SimpleFlexRow>
+        </InspectorContextMenuWrapper>
       </div>
-    )
-  },
-)
+      {when(
+        open,
+        mapToArray((innerControl: RegularControlDescription, prop: string, index: number) => {
+          const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
+          return (
+            <RowForControl
+              key={`object-control-row-${PP.toString(innerPropPath)}`}
+              controlDescription={innerControl}
+              isScene={isScene}
+              propPath={innerPropPath}
+              setGlobalCursor={props.setGlobalCursor}
+              indentationLevel={props.indentationLevel + 1}
+              focusOnMount={props.focusOnMount && index === 0}
+            />
+          )
+        }, controlDescription.object),
+      )}
+    </div>
+  )
+})
 
 interface RowForUnionControlProps extends AbstractRowForControlProps {
   controlDescription: UnionControlDescription
 }
 
-const RowForUnionControl = betterReactMemo(
-  'RowForUnionControl',
-  (props: RowForUnionControlProps) => {
-    const { propPath, controlDescription } = props
-    const title = labelForControl(propPath, controlDescription)
+const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
+  const { propPath, controlDescription } = props
+  const title = labelForControl(propPath, controlDescription)
 
-    const suitableControl = useControlForUnionControl(propPath, controlDescription)
-    const [controlToUse, setControlToUse] = React.useState(suitableControl)
+  const suitableControl = useControlForUnionControl(propPath, controlDescription)
+  const [controlToUse, setControlToUse] = React.useState(suitableControl)
 
-    const labelOptions: OptionsType<SelectOption> = controlDescription.controls.map((control) => {
-      const label = control.label ?? control.control
-      return {
-        value: control,
-        label: label,
-      }
-    })
-
-    const onLabelChangeValue = React.useCallback(
-      (option: SelectOption) => {
-        if (option.value !== controlToUse) {
-          setControlToUse(option.value)
-        }
-      },
-      [controlToUse, setControlToUse],
-    )
-
-    const simpleControlStyles = getControlStyles('simple')
-
-    const label = React.useMemo(
-      () => (
-        <PopupList
-          value={{
-            value: controlToUse,
-            label: title,
-          }}
-          options={labelOptions}
-          onSubmitValue={onLabelChangeValue}
-          containerMode='showBorderOnHover'
-          controlStyles={simpleControlStyles}
-          style={{
-            maxWidth: '100%',
-            overflow: 'hidden',
-          }}
-        />
-      ),
-      [controlToUse, labelOptions, onLabelChangeValue, simpleControlStyles, title],
-    )
-
-    const labelAsRenderProp = React.useCallback(() => label, [label])
-
-    if (controlToUse == null) {
-      return null
-    } else if (isBaseControlDescription(controlToUse)) {
-      return (
-        <RowForBaseControl
-          {...props}
-          label={labelAsRenderProp}
-          controlDescription={controlToUse}
-          focusOnMount={false}
-        />
-      )
-    } else {
-      return (
-        <React.Fragment>
-          {label}
-          <RowForControl {...props} controlDescription={controlToUse} focusOnMount={false} />
-        </React.Fragment>
-      )
+  const labelOptions: OptionsType<SelectOption> = controlDescription.controls.map((control) => {
+    const label = control.label ?? control.control
+    return {
+      value: control,
+      label: label,
     }
-  },
-)
+  })
+
+  const onLabelChangeValue = React.useCallback(
+    (option: SelectOption) => {
+      if (option.value !== controlToUse) {
+        setControlToUse(option.value)
+      }
+    },
+    [controlToUse, setControlToUse],
+  )
+
+  const simpleControlStyles = getControlStyles('simple')
+
+  const label = React.useMemo(
+    () => (
+      <PopupList
+        value={{
+          value: controlToUse,
+          label: title,
+        }}
+        options={labelOptions}
+        onSubmitValue={onLabelChangeValue}
+        containerMode='showBorderOnHover'
+        controlStyles={simpleControlStyles}
+        style={{
+          maxWidth: '100%',
+          overflow: 'hidden',
+        }}
+      />
+    ),
+    [controlToUse, labelOptions, onLabelChangeValue, simpleControlStyles, title],
+  )
+
+  const labelAsRenderProp = React.useCallback(() => label, [label])
+
+  if (controlToUse == null) {
+    return null
+  } else if (isBaseControlDescription(controlToUse)) {
+    return (
+      <RowForBaseControl
+        {...props}
+        label={labelAsRenderProp}
+        controlDescription={controlToUse}
+        focusOnMount={false}
+      />
+    )
+  } else {
+    return (
+      <React.Fragment>
+        {label}
+        <RowForControl {...props} controlDescription={controlToUse} focusOnMount={false} />
+      </React.Fragment>
+    )
+  }
+})
 
 interface RowForControlProps extends AbstractRowForControlProps {
   controlDescription: RegularControlDescription
 }
 
-export const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProps) => {
+export const RowForControl = React.memo((props: RowForControlProps) => {
   const { controlDescription } = props
   if (isBaseControlDescription(controlDescription)) {
     return <RowForBaseControl {...props} controlDescription={controlDescription} />
@@ -769,61 +739,58 @@ export interface ComponentSectionProps {
   isScene: boolean
 }
 
-export const ComponentSectionInner = betterReactMemo(
-  'ComponentSectionInner',
-  (props: ComponentSectionProps) => {
-    const colorTheme = useColorTheme()
+export const ComponentSectionInner = React.memo((props: ComponentSectionProps) => {
+  const colorTheme = useColorTheme()
 
-    const propertyControlsAndTargets = useKeepReferenceEqualityIfPossible(
-      useGetPropertyControlsForSelectedComponents(),
-    )
+  const propertyControlsAndTargets = useKeepReferenceEqualityIfPossible(
+    useGetPropertyControlsForSelectedComponents(),
+  )
 
-    const [sectionExpanded, setSectionExpanded] = React.useState(true)
-    const toggleSection = React.useCallback(() => {
-      setSectionExpanded((currentlyExpanded) => !currentlyExpanded)
-    }, [setSectionExpanded])
+  const [sectionExpanded, setSectionExpanded] = React.useState(true)
+  const toggleSection = React.useCallback(() => {
+    setSectionExpanded((currentlyExpanded) => !currentlyExpanded)
+  }, [setSectionExpanded])
 
-    return (
-      <React.Fragment>
-        <InspectorSectionHeader>
-          <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
-            <Icons.Component color='primary' />
-            <span>Component </span>
-          </FlexRow>
-          <SquareButton highlight onClick={toggleSection}>
-            <ExpandableIndicator
-              testId='component-section-expand'
-              visible
-              collapsed={!sectionExpanded}
-              selected={false}
+  return (
+    <React.Fragment>
+      <InspectorSectionHeader>
+        <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
+          <Icons.Component color='primary' />
+          <span>Component </span>
+        </FlexRow>
+        <SquareButton highlight onClick={toggleSection}>
+          <ExpandableIndicator
+            testId='component-section-expand'
+            visible
+            collapsed={!sectionExpanded}
+            selected={false}
+          />
+        </SquareButton>
+      </InspectorSectionHeader>
+      {when(
+        sectionExpanded,
+        <React.Fragment>
+          {/* Information about the component as a whole */}
+          <ComponentInfoBox />
+          {/* List of component props with controls */}
+          {propertyControlsAndTargets.map((controlsAndTargets) => (
+            <PropertyControlsSection
+              key={EP.toString(controlsAndTargets.targets[0])}
+              propertyControls={controlsAndTargets.controls}
+              targets={controlsAndTargets.targets}
+              isScene={props.isScene}
+              detectedPropsAndValuesWithoutControls={
+                controlsAndTargets.detectedPropsAndValuesWithoutControls
+              }
+              detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
+              propsWithControlsButNoValue={controlsAndTargets.propsWithControlsButNoValue}
             />
-          </SquareButton>
-        </InspectorSectionHeader>
-        {when(
-          sectionExpanded,
-          <React.Fragment>
-            {/* Information about the component as a whole */}
-            <ComponentInfoBox />
-            {/* List of component props with controls */}
-            {propertyControlsAndTargets.map((controlsAndTargets) => (
-              <PropertyControlsSection
-                key={EP.toString(controlsAndTargets.targets[0])}
-                propertyControls={controlsAndTargets.controls}
-                targets={controlsAndTargets.targets}
-                isScene={props.isScene}
-                detectedPropsAndValuesWithoutControls={
-                  controlsAndTargets.detectedPropsAndValuesWithoutControls
-                }
-                detectedPropsWithNoValue={controlsAndTargets.detectedPropsWithNoValue}
-                propsWithControlsButNoValue={controlsAndTargets.propsWithControlsButNoValue}
-              />
-            ))}
-          </React.Fragment>,
-        )}
-      </React.Fragment>
-    )
-  },
-)
+          ))}
+        </React.Fragment>,
+      )}
+    </React.Fragment>
+  )
+})
 
 export interface ComponentSectionState {
   errorOccurred: boolean

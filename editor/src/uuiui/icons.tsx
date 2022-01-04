@@ -1,9 +1,8 @@
 import React from 'react'
 import { Icn, IcnProps } from './icn'
-import { betterReactMemo } from '../utils/react-performance'
 
 const makeIcon = (appliedProps: IcnProps): React.FunctionComponent<Omit<IcnProps, 'type'>> =>
-  betterReactMemo(`icon-${appliedProps.type}`, (props) => <Icn {...appliedProps} {...props} />)
+  React.memo((props) => <Icn {...appliedProps} {...props} />)
 
 /**
  * Provides a set of Icon components with overrideable props

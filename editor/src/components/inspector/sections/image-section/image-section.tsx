@@ -22,12 +22,11 @@ import {
   FunctionIcons,
   InspectorSectionIcons,
 } from '../../../../uuiui'
-import { betterReactMemo } from '../../../../uuiui-deps'
 
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
 
-export const ImgSection = betterReactMemo('ImgSection', () => {
+export const ImgSection = React.memo(() => {
   const colorTheme = useColorTheme()
   const selectedViews = useSelectedViews()
 

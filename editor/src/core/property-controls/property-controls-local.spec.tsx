@@ -3,12 +3,9 @@ import { renderTestEditorWithCode, TestAppUID } from '../../components/canvas/ui
 import { BakedInStoryboardUID } from '../model/scene-utils'
 import { TestScene0UID } from '../model/test-ui-js-file.test-utils'
 import * as Prettier from 'prettier/standalone'
-import { StoryboardFilePath } from '../../components/editor/store/editor-state'
-import { dropFileExtension } from '../shared/file-utils'
 
 describe('registered property controls', () => {
   it('registered controls are in editor state', async () => {
-    const storyboardPath = dropFileExtension(StoryboardFilePath)
     const testCode = Prettier.format(
       `
         import * as React from 'react'
@@ -24,7 +21,7 @@ describe('registered property controls', () => {
           '/src/card',
           {
             Card: {
-              controls: {
+              properties: {
                 label: {
                   control: 'string-input',
                 },
@@ -36,15 +33,15 @@ describe('registered property controls', () => {
                   defaultValue: true,
                 },
               },
-              insertOptions: [
+              variants: [
                 {
-                  codeToInsert: '<Card />',
-                  menuLabel: 'Card',
+                  code: '<Card />',
+                  label: 'Card',
                 },
                 {
-                  codeToInsert: '<Card person={DefaultPerson} />',
-                  menuLabel: 'ID Card',
-                  additionalRequiredImports: "import { DefaultPerson } from '/src/defaults';",
+                  code: '<Card person={DefaultPerson} />',
+                  label: 'ID Card',
+                  additionalImports: "import { DefaultPerson } from '/src/defaults';",
                 },
               ],
             },
@@ -72,7 +69,30 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
-          "insertOptions": Array [
+          "properties": Object {
+            "type": "RIGHT",
+            "value": Object {
+              "background": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "color",
+                },
+              },
+              "label": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "string-input",
+                },
+              },
+              "visible": Object {
+                "type": "RIGHT",
+                "value": Object {
+                  "control": "checkbox",
+                },
+              },
+            },
+          },
+          "variants": Array [
             Object {
               "elementToInsert": Object {
                 "children": Array [],
@@ -210,30 +230,6 @@ describe('registered property controls', () => {
               "insertMenuLabel": "ID Card",
             },
           ],
-          "propertyControls": Object {
-            "type": "RIGHT",
-            "value": Object {
-              "background": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "color",
-                },
-              },
-              "label": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "string-input",
-                },
-              },
-              "visible": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "checkbox",
-                  "defaultValue": true,
-                },
-              },
-            },
-          },
         },
       }
     `)

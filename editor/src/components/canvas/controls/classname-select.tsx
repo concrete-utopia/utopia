@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 
 import { jsx } from '@emotion/react'
@@ -28,25 +29,19 @@ import {
   useGetSelectedClasses,
 } from '../../../core/tailwind/tailwind-options'
 import { colorTheme, FlexColumn, FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 
-const DropdownIndicator = betterReactMemo(
-  'DropdownIndicator',
-  (props: IndicatorProps<TailWindOption, true>) => (
-    <components.DropdownIndicator {...props}>
-      <span style={{ lineHeight: '20px', opacity: props.isDisabled ? 0 : 1 }}> ↓ </span>
-    </components.DropdownIndicator>
-  ),
-)
+const DropdownIndicator = React.memo((props: IndicatorProps<TailWindOption, true>) => (
+  <components.DropdownIndicator {...props}>
+    <span style={{ lineHeight: '20px', opacity: props.isDisabled ? 0 : 1 }}> ↓ </span>
+  </components.DropdownIndicator>
+))
 
 const ClearIndicator = () => null
 const IndicatorSeparator = () => null
 
-const NoOptionsMessage = betterReactMemo('NoOptionsMessage', (props: any) => (
-  <span {...props}>No results found</span>
-))
+const NoOptionsMessage = React.memo((props: any) => <span {...props}>No results found</span>)
 
 const getOptionColors = (
   theme: typeof colorTheme,
@@ -93,7 +88,7 @@ function formatOptionLabel(
   )
 }
 
-const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) => {
+const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
   const theme = useColorTheme()
   const focusedOption = usePubSubAtomReadOnly(focusedOptionAtom)
   const showFooter = props.options.length > 0
@@ -134,16 +129,13 @@ const Menu = betterReactMemo('Menu', (props: MenuProps<TailWindOption, true>) =>
   )
 })
 
-const ValueContainer = betterReactMemo(
-  'ValueContainer',
-  (props: ValueContainerProps<TailWindOption, true>) => {
-    return (
-      <div style={{ overflowX: 'scroll', flex: 1 }}>
-        <components.ValueContainer {...props} />
-      </div>
-    )
-  },
-)
+const ValueContainer = React.memo((props: ValueContainerProps<TailWindOption, true>) => {
+  return (
+    <div style={{ overflowX: 'scroll', flex: 1 }}>
+      <components.ValueContainer {...props} />
+    </div>
+  )
+})
 
 const filterOption = () => true
 const MaxResults = 500
@@ -155,8 +147,7 @@ const Input = (props: InputProps) => {
 }
 let queuedDispatchTimeout: number | undefined = undefined
 
-export const ClassNameSelect = betterReactMemo(
-  'ClassNameSelect',
+export const ClassNameSelect = React.memo(
   React.forwardRef<HTMLInputElement>((_, ref) => {
     const theme = useColorTheme()
     const targets = useEditorState((store) => store.editor.selectedViews, 'ClassNameSelect targets')

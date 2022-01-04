@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
@@ -67,12 +68,11 @@ import {
   UtopiaStyles,
   UIRow,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
 import {
-  getComponentGroups,
   getDependencyStatus,
   getInsertableGroupLabel,
   getInsertableGroupPackageStatus,
+  getNonEmptyComponentGroups,
 } from '../shared/project-components'
 import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
@@ -90,7 +90,7 @@ interface InsertMenuProps {
   projectContents: ProjectContentTreeRoot
 }
 
-export const InsertMenu = betterReactMemo('InsertMenu', () => {
+export const InsertMenu = React.memo(() => {
   const props = useEditorState((store) => {
     const openFileFullPath = getOpenFilename(store.editor)
 
@@ -282,7 +282,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     const insertableGroups =
       this.props.currentlyOpenFilename == null
         ? []
-        : getComponentGroups(
+        : getNonEmptyComponentGroups(
             this.props.packageStatus,
             this.props.propertyControlsInfo,
             this.props.projectContents,
@@ -363,35 +363,32 @@ interface InsertGroupProps {
   dependencyVersion: string | null
 }
 
-export const InsertGroup: React.FunctionComponent<InsertGroupProps> = betterReactMemo(
-  'InsertGroup',
-  (props) => {
-    const colorTheme = useColorTheme()
-    return (
-      <div style={{ paddingBottom: 12 }}>
-        <UIRow rowHeight={'normal'}>
-          <InspectorSubsectionHeader>
-            <div style={{ color: colorTheme.emphasizedForeground.value, fontWeight: 500 }}>
-              {props.label}
-            </div>
-            {props.subLabel == null ? null : (
-              <div style={{ color: colorTheme.subduedForeground.value, paddingLeft: 10 }}>
-                {props.subLabel}
-              </div>
-            )}
-          </InspectorSubsectionHeader>
-          <div style={{ flexGrow: 1, textAlign: 'right' }}>
-            <NpmDependencyVersionAndStatusIndicator
-              status={props.dependencyStatus}
-              version={props.dependencyVersion}
-            />
+export const InsertGroup: React.FunctionComponent<InsertGroupProps> = React.memo((props) => {
+  const colorTheme = useColorTheme()
+  return (
+    <div style={{ paddingBottom: 12 }}>
+      <UIRow rowHeight={'normal'}>
+        <InspectorSubsectionHeader>
+          <div style={{ color: colorTheme.emphasizedForeground.value, fontWeight: 500 }}>
+            {props.label}
           </div>
-        </UIRow>
-        <div style={{ padding: 8 }}>{props.children}</div>
-      </div>
-    )
-  },
-)
+          {props.subLabel == null ? null : (
+            <div style={{ color: colorTheme.subduedForeground.value, paddingLeft: 10 }}>
+              {props.subLabel}
+            </div>
+          )}
+        </InspectorSubsectionHeader>
+        <div style={{ flexGrow: 1, textAlign: 'right' }}>
+          <NpmDependencyVersionAndStatusIndicator
+            status={props.dependencyStatus}
+            version={props.dependencyVersion}
+          />
+        </div>
+      </UIRow>
+      <div style={{ padding: 8 }}>{props.children}</div>
+    </div>
+  )
+})
 
 interface InsertItemProps {
   label: string

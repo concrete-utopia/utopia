@@ -1,13 +1,13 @@
 export const utopiaApiTypings = `declare module 'utopia-api/helpers/helper-functions' {
   import { PropertyControls } from 'utopia-api/property-controls/property-controls';
   export interface ComponentInsertOption {
-      codeToInsert: string;
-      additionalRequiredImports?: string;
-      menuLabel?: string;
+      code: string;
+      additionalImports?: string;
+      label?: string;
   }
   export interface ComponentToRegister {
-      controls: PropertyControls;
-      insertOptions: Array<ComponentInsertOption>;
+      properties: PropertyControls;
+      variants: Array<ComponentInsertOption>;
   }
   export function registerModule(moduleName: string, components: {
       [componentName: string]: ComponentToRegister;
@@ -56,6 +56,7 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/primitives/storyboard';
   export * from 'utopia-api/helpers/helper-functions';
   export * from 'utopia-api/property-controls/property-controls';
+  export * from 'utopia-api/property-controls/factories';
 
 }
 declare module 'utopia-api/layout/flex' {
@@ -357,13 +358,45 @@ declare module 'utopia-api/primitives/view' {
   export const View: React.FunctionComponent<ViewProps>;
 
 }
+declare module 'utopia-api/property-controls/factories' {
+  import { ArrayControlDescription, BasicControlOptions, CheckboxControlDescription, ColorControlDescription, EulerControlDescription, ExpressionControlOption, ExpressionInputControlDescription, ExpressionPopUpListControlDescription, FolderControlDescription, ImportType, Matrix3ControlDescription, Matrix4ControlDescription, NoneControlDescription, NumberInputControlDescription, ObjectControlDescription, PopUpListControlDescription, PropertyControls, RadioControlDescription, RegularControlDescription, StringInputControlDescription, StyleControlsControlDescription, TupleControlDescription, UnionControlDescription, Vector2ControlDescription, Vector3ControlDescription, Vector4ControlDescription } from 'utopia-api/property-controls/property-controls';
+  export function checkboxControl(): CheckboxControlDescription;
+  export function colorControl(): ColorControlDescription;
+  export function expressionControl(): ExpressionInputControlDescription;
+  export function importStar(source: string, name: string): ImportType;
+  export function importDefault(source: string, name: string): ImportType;
+  export function importNamed(source: string, name: string): ImportType;
+  export function expression<T>(value: T, expressionString: string, requiredImport?: ImportType): ExpressionControlOption<T>;
+  export function expressionPopupListControl(options: ExpressionControlOption<unknown>[]): ExpressionPopUpListControlDescription;
+  export function eulerControl(): EulerControlDescription;
+  export function matrix3Control(): Matrix3ControlDescription;
+  export function matrix4Control(): Matrix4ControlDescription;
+  export function noControl(): NoneControlDescription;
+  export function numberControl(unit?: string): NumberInputControlDescription;
+  export function popupListControl(options: BasicControlOptions<unknown>): PopUpListControlDescription;
+  export function radioControl(options: BasicControlOptions<unknown>): RadioControlDescription;
+  export function sliderControl(min: number, max: number, step: number, unit?: string): NumberInputControlDescription;
+  export function stringControl(placeholder?: string): StringInputControlDescription;
+  export function styleControl(): StyleControlsControlDescription;
+  export function vector2Control(): Vector2ControlDescription;
+  export function vector3Control(): Vector3ControlDescription;
+  export function vector4Control(): Vector4ControlDescription;
+  export function arrayControl(propertyControl: RegularControlDescription): ArrayControlDescription;
+  export function fixedSizeArrayControl(propertyControl: RegularControlDescription, maxCount: number): ArrayControlDescription;
+  export function objectControl(object: {
+      [prop: string]: RegularControlDescription;
+  }): ObjectControlDescription;
+  export function tupleControl(propertyControls: RegularControlDescription[]): TupleControlDescription;
+  export function unionControl(controls: Array<RegularControlDescription>): UnionControlDescription;
+  export function folderControl(controls: PropertyControls): FolderControlDescription;
+
+}
 declare module 'utopia-api/property-controls/property-controls' {
   import type { CSSProperties } from 'react';
   export type BaseControlType = 'checkbox' | 'color' | 'euler' | 'expression-input' | 'expression-popuplist' | 'matrix3' | 'matrix4' | 'none' | 'number-input' | 'popuplist' | 'radio' | 'string-input' | 'style-controls' | 'vector2' | 'vector3' | 'vector4';
   export interface CheckboxControlDescription {
       control: 'checkbox';
       label?: string;
-      defaultValue?: boolean;
       visibleByDefault?: boolean;
       disabledTitle?: string;
       enabledTitle?: string;
@@ -372,7 +405,6 @@ declare module 'utopia-api/property-controls/property-controls' {
       control: 'color';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: string;
   }
   export type AllowedEnumType = string | boolean | number | undefined | null;
   export interface BasicControlOption<T> {
@@ -384,7 +416,6 @@ declare module 'utopia-api/property-controls/property-controls' {
       control: 'popuplist';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: unknown;
       options: BasicControlOptions<unknown>;
   }
   export interface ImportType {
@@ -402,65 +433,32 @@ declare module 'utopia-api/property-controls/property-controls' {
       control: 'expression-popuplist';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: ExpressionControlOption<unknown>;
       options: ExpressionControlOption<unknown>[];
   }
   export interface EulerControlDescription {
       control: 'euler';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: [number, number, number, string];
   }
   export interface NoneControlDescription {
       control: 'none';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: never;
   }
   export interface Matrix3ControlDescription {
       control: 'matrix3';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: [
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number
-      ];
   }
   export interface Matrix4ControlDescription {
       control: 'matrix4';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: [
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number,
-          number
-      ];
   }
   export interface NumberInputControlDescription {
       control: 'number-input';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: number | null;
       max?: number;
       min?: number;
       unit?: string;
@@ -470,7 +468,6 @@ declare module 'utopia-api/property-controls/property-controls' {
   export interface RadioControlDescription {
       control: 'radio';
       label?: string;
-      defaultValue?: unknown;
       visibleByDefault?: boolean;
       options: BasicControlOptions<unknown>;
   }
@@ -478,13 +475,11 @@ declare module 'utopia-api/property-controls/property-controls' {
       control: 'expression-input';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: unknown;
   }
   export interface StringInputControlDescription {
       control: 'string-input';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: string;
       placeholder?: string;
       obscured?: boolean;
   }
@@ -492,26 +487,22 @@ declare module 'utopia-api/property-controls/property-controls' {
       control: 'style-controls';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: CSSProperties;
       placeholder?: CSSProperties;
   }
   export interface Vector2ControlDescription {
       control: 'vector2';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: [number, number];
   }
   export interface Vector3ControlDescription {
       control: 'vector3';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: [number, number, number];
   }
   export interface Vector4ControlDescription {
       control: 'vector4';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: [number, number, number, number];
   }
   export type BaseControlDescription = CheckboxControlDescription | ColorControlDescription | ExpressionInputControlDescription | ExpressionPopUpListControlDescription | EulerControlDescription | NoneControlDescription | Matrix3ControlDescription | Matrix4ControlDescription | NumberInputControlDescription | RadioControlDescription | PopUpListControlDescription | StringInputControlDescription | StyleControlsControlDescription | Vector2ControlDescription | Vector3ControlDescription | Vector4ControlDescription;
   export type HigherLevelControlType = 'array' | 'tuple' | 'object' | 'union';
@@ -521,7 +512,6 @@ declare module 'utopia-api/property-controls/property-controls' {
       control: 'array';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: unknown[];
       propertyControl: RegularControlDescription;
       maxCount?: number;
   }
@@ -529,7 +519,6 @@ declare module 'utopia-api/property-controls/property-controls' {
       control: 'object';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: unknown;
       object: {
           [prop: string]: RegularControlDescription;
       };
@@ -538,14 +527,12 @@ declare module 'utopia-api/property-controls/property-controls' {
       control: 'union';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: unknown;
       controls: Array<RegularControlDescription>;
   }
   export interface TupleControlDescription {
       control: 'tuple';
       label?: string;
       visibleByDefault?: boolean;
-      defaultValue?: unknown[];
       propertyControls: RegularControlDescription[];
   }
   export interface FolderControlDescription {
@@ -562,13 +549,6 @@ declare module 'utopia-api/property-controls/property-controls' {
       [key: string]: ControlDescription;
   };
   export function addPropertyControls(component: unknown, propertyControls: PropertyControls): void;
-  export function getDefaultProps(propertyControls: PropertyControls): {
-      [prop: string]: unknown;
-  };
-  export function expression<T>(value: T, expressionString: string, requiredImport?: ImportType): ExpressionControlOption<T>;
-  export function importStar(source: string, name: string): ImportType;
-  export function importDefault(source: string, name: string): ImportType;
-  export function importNamed(source: string, name: string): ImportType;
 
 }
 declare module 'utopia-api/tests/test-utils' {

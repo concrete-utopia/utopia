@@ -58,6 +58,10 @@ export function createParseFile(
   }
 }
 
+export interface ParsePrintBase {
+  messageID: number
+}
+
 export type ParseOrPrint = PrintCode | ParseFile
 
 export interface PrintCodeResult {
@@ -104,67 +108,80 @@ export function createParseFileResult(
 }
 export type ParseOrPrintResult = PrintCodeResult | ParseFileResult
 
-export interface ParsePrintFilesResult {
+export interface ParsePrintFilesResult extends ParsePrintBase {
   type: 'parseprintfilesresult'
   files: Array<ParseOrPrintResult>
 }
 
 export function createParsePrintFilesResult(
   files: Array<ParseOrPrintResult>,
+  messageID: number,
 ): ParsePrintFilesResult {
   return {
     type: 'parseprintfilesresult',
     files: files,
+    messageID: messageID,
   }
 }
 
-export interface ParsePrintFailedMessage {
+export interface ParsePrintFailedMessage extends ParsePrintBase {
   type: 'parseprintfailed'
 }
 
-export function createParsePrintFailedMessage(): ParsePrintFailedMessage {
+export function createParsePrintFailedMessage(messageID: number): ParsePrintFailedMessage {
   return {
     type: 'parseprintfailed',
+    messageID: messageID,
   }
 }
 
 export type ParsePrintResultMessage = ParsePrintFilesResult | ParsePrintFailedMessage
 
-export interface ParsePrintFilesRequest {
+export interface ParsePrintFilesRequest extends ParsePrintBase {
   type: 'parseprintfiles'
   files: Array<ParseOrPrint>
 }
 
-export function createParsePrintFilesRequest(files: Array<ParseOrPrint>): ParsePrintFilesRequest {
+export function createParsePrintFilesRequest(
+  files: Array<ParseOrPrint>,
+  messageID: number,
+): ParsePrintFilesRequest {
   return {
     type: 'parseprintfiles',
     files: files,
+    messageID: messageID,
   }
 }
+
+let PARSE_PRINT_MESSAGE_COUNTER: number = 0
 
 export function getParseResult(
   workers: UtopiaTsWorkers,
   files: Array<ParseOrPrint>,
 ): Promise<Array<ParseOrPrintResult>> {
+  const messageIDForThisRequest = PARSE_PRINT_MESSAGE_COUNTER++
   return new Promise((resolve, reject) => {
     const handleMessage = (e: MessageEvent) => {
       const data = e.data as ParsePrintResultMessage
-      switch (data.type) {
-        case 'parseprintfilesresult': {
-          resolve(data.files)
-          workers.removeParserPrinterEventListener(handleMessage)
-          break
-        }
-        case 'parseprintfailed': {
-          reject()
-          workers.removeParserPrinterEventListener(handleMessage)
-          break
+      // Ensure that rapidly fired requests are distinguished between the handlers.
+      if (data.messageID === messageIDForThisRequest) {
+        switch (data.type) {
+          case 'parseprintfilesresult': {
+            resolve(data.files)
+            workers.removeParserPrinterEventListener(handleMessage)
+            break
+          }
+          case 'parseprintfailed': {
+            reject()
+            workers.removeParserPrinterEventListener(handleMessage)
+            break
+          }
         }
       }
     }
 
     workers.addParserPrinterEventListener(handleMessage)
-    workers.sendParsePrintMessage(files)
+    workers.sendParsePrintMessage(createParsePrintFilesRequest(files, messageIDForThisRequest))
   })
 }
 
@@ -264,7 +281,7 @@ export function createInitTSWorkerMessage(
 }
 
 export interface UtopiaTsWorkers {
-  sendParsePrintMessage: (files: Array<ParseOrPrint>) => void
+  sendParsePrintMessage: (request: ParsePrintFilesRequest) => void
   sendLinterRequestMessage: (filename: string, content: string) => void
   addParserPrinterEventListener: (handler: (e: MessageEvent) => void) => void
   removeParserPrinterEventListener: (handler: (e: MessageEvent) => void) => void

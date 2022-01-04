@@ -26,14 +26,12 @@ import {
   PopupList,
   ChainedNumberInput,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface ConicGradientBackgroundLayerProps extends BackgroundLayerProps {
   value: CSSConicGradientBackgroundLayer
 }
 
-export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgroundLayerProps>(
-  'ConicGradientBackgroundLayer',
+export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLayerProps>(
   (props) => {
     const [gradientCheckboxSubmitValue] = props.useSubmitTransformedValuesFactory(
       getIndexedUpdateEnabled(props.index),

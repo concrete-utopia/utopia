@@ -34,7 +34,6 @@ import {
   SquareButton,
   FunctionIcons,
 } from '../../../../../uuiui'
-import { betterReactMemo } from '../../../../../uuiui-deps'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 
 function useDefaultedLayoutSystemInfo(): {
@@ -109,25 +108,22 @@ interface LayoutSystemControlProps {
   providesCoordinateSystemForChildren: boolean
 }
 
-export const LayoutSystemControl = betterReactMemo(
-  'LayoutSystemControl',
-  (props: LayoutSystemControlProps) => {
-    const layoutSystemData = useLayoutSystemData()
-    const detectedLayoutSystem = props.layoutSystem ?? layoutSystemData.value
-    return (
-      <OptionChainControl
-        id={'layoutSystem'}
-        key={'layoutSystem'}
-        testId={'layoutSystem'}
-        onSubmitValue={layoutSystemData.onSubmitValue}
-        value={detectedLayoutSystem}
-        options={layoutSystemOptions}
-        controlStatus={layoutSystemData.controlStatus}
-        controlStyles={layoutSystemData.controlStyles}
-      />
-    )
-  },
-)
+export const LayoutSystemControl = React.memo((props: LayoutSystemControlProps) => {
+  const layoutSystemData = useLayoutSystemData()
+  const detectedLayoutSystem = props.layoutSystem ?? layoutSystemData.value
+  return (
+    <OptionChainControl
+      id={'layoutSystem'}
+      key={'layoutSystem'}
+      testId={'layoutSystem'}
+      onSubmitValue={layoutSystemData.onSubmitValue}
+      value={detectedLayoutSystem}
+      options={layoutSystemOptions}
+      controlStatus={layoutSystemData.controlStatus}
+      controlStyles={layoutSystemData.controlStyles}
+    />
+  )
+})
 
 const layoutSystemOptions = [
   {
@@ -151,7 +147,7 @@ export const paddingPropsToUnset = [
   createLayoutPropertyPath('paddingBottom'),
 ]
 
-export const PaddingControl = betterReactMemo('PaddingControl', () => {
+export const PaddingControl = React.memo(() => {
   const {
     paddingTop,
     paddingRight,
@@ -275,15 +271,12 @@ function useDeleteAllLayoutConfig() {
   }, [onUnsetValue])
 }
 
-export const DeleteAllLayoutSystemConfigButton = betterReactMemo(
-  'DeleteAllLayoutSystemConfigButton',
-  () => {
-    const onDeleteAllConfig = useDeleteAllLayoutConfig()
+export const DeleteAllLayoutSystemConfigButton = React.memo(() => {
+  const onDeleteAllConfig = useDeleteAllLayoutConfig()
 
-    return (
-      <SquareButton highlight onClick={onDeleteAllConfig}>
-        <FunctionIcons.Remove />
-      </SquareButton>
-    )
-  },
-)
+  return (
+    <SquareButton highlight onClick={onDeleteAllConfig}>
+      <FunctionIcons.Remove />
+    </SquareButton>
+  )
+})

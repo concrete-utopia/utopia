@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
@@ -27,7 +28,6 @@ import { createSelector } from 'reselect'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import {
-  betterReactMemo,
   useHookUpdateAnalysisStrictEquals,
   useKeepDeepEqualityCall,
 } from '../../../utils/react-performance'
@@ -125,8 +125,7 @@ const nullableJSXElementNameKeepDeepEquality = nullableDeepEquality(
   JSXElementNameKeepDeepEqualityCall(),
 )
 
-export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = betterReactMemo(
-  'NavigatorItemWrapper',
+export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = React.memo(
   (props) => {
     const selector = React.useMemo(() => navigatorItemWrapperSelectorFactory(props.elementPath), [
       props.elementPath,

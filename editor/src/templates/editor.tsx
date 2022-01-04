@@ -127,12 +127,7 @@ export class Editor {
       watchdogWorker,
     )
 
-    const getEditorState = () => this.storedState.editor
-    const builtInDependencies = createBuiltInDependenciesList(
-      this.boundDispatch,
-      getEditorState,
-      workers,
-    )
+    const builtInDependencies = createBuiltInDependenciesList(workers)
     const onCreatedOrLoadedProject = (
       projectId: string,
       projectName: string,

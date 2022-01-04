@@ -59,9 +59,9 @@ export function handleMessage(
               throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
           }
         })
-        sendMessage(createParsePrintFilesResult(results))
+        sendMessage(createParsePrintFilesResult(results, workerMessage.messageID))
       } catch (e) {
-        sendMessage(createParsePrintFailedMessage())
+        sendMessage(createParsePrintFailedMessage(workerMessage.messageID))
         throw e
       }
       break
