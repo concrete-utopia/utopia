@@ -1,6 +1,7 @@
 import * as PubSub from 'pubsub-js'
 import React from 'react'
 import { unstable_batchedUpdates } from 'react-dom'
+import { PRODUCTION_ENV } from '../../common/env-vars'
 import { useForceUpdate } from '../../components/editor/hook-utils'
 
 // From https://github.com/dai-shi/use-context-selector/blob/2dd334d727fc3b4cbadf7876b6ce64e0c633fd25/src/index.ts#L25
@@ -20,8 +21,8 @@ const GlobalAtomMap: { [key: string]: AtomWithPubSub<any> } = {}
 
 export function atomWithPubSub<T>(options: { key: string; defaultValue: T }): AtomWithPubSub<T> {
   const { key, defaultValue } = options
-  if (key in GlobalAtomMap) {
-    // throw new Error(`Tried to create multiple atoms with the same key: ${key}`)
+  if (key in GlobalAtomMap && PRODUCTION_ENV) {
+    throw new Error(`Tried to create multiple atoms with the same key: ${key}`)
   }
   const newAtom: AtomWithPubSub<T> = {
     key: key,
