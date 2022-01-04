@@ -360,7 +360,6 @@ export function clearDragStateAndInteractionSession(
     canvas: {
       ...result.canvas,
       dragState: null,
-      interactionSession: null,
     },
     selectedViews:
       applyChanges && derived.canvas.transientState.selectedViews != null
@@ -1439,6 +1438,9 @@ export function getCursorFromDragState(editorState: EditorState): CSSCursor | nu
         } else {
           return null
         }
+      case 'SELECT_MODE_CANVAS_SESSION':
+        // TODO Cursor
+        return null
       case 'INSERT_DRAG_STATE':
         return null
       default:
@@ -1725,20 +1727,16 @@ export function produceCanvasTransientState(
         }
         break
       case 'select':
-        if (editorState.canvas.interactionSession != null) {
-          // Entry point for the new Canvas Strategy that supersedes DragState
-          transientState = applyCanvasStrategy(
-            lifecycle,
-            editorState,
-            editorState.canvas.interactionSession,
-          )
-        } else if (
+        if (
           editorState.canvas.dragState != null &&
           anyDragStarted(editorState.canvas.dragState) &&
           anyDragMovement(editorState.canvas.dragState)
         ) {
           const dragState = editorState.canvas.dragState
           switch (dragState.type) {
+            case 'SELECT_MODE_CANVAS_SESSION':
+              transientState = applyCanvasStrategy(lifecycle, editorState, dragState)
+              break
             case 'MOVE_DRAG_STATE':
               transientState = produceMoveTransientCanvasState(
                 previousCanvasTransientSelectedViews,
@@ -2935,6 +2933,8 @@ export function getDragStatePositions(
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
         return dragState
+      case 'SELECT_MODE_CANVAS_SESSION':
+        return dragState
       case 'RESIZE_DRAG_STATE':
         return findResizePropertyChange(dragState, resizeOptions) ?? null
       default:
@@ -2969,6 +2969,8 @@ export function anyDragStarted(dragState: DragState | null): boolean {
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
         return dragState.start != null
+      case 'SELECT_MODE_CANVAS_SESSION':
+        return dragState.start != null
       case 'RESIZE_DRAG_STATE':
         return dragState.properties.some((prop) => prop.start != null)
       default:
@@ -2985,6 +2987,8 @@ export function anyDragMovement(dragState: DragState | null): boolean {
     switch (dragState.type) {
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
+        return dragState.drag != null
+      case 'SELECT_MODE_CANVAS_SESSION':
         return dragState.drag != null
       case 'RESIZE_DRAG_STATE':
         return dragState.properties.some((prop) => prop.drag != null)

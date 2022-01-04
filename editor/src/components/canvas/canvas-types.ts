@@ -546,7 +546,7 @@ export function updateResizeDragState(
   })
 }
 
-export type DragState = InsertDragState | MoveDragState | ResizeDragState
+export type DragState = InsertDragState | MoveDragState | ResizeDragState | CanvasInteractionSession
 
 export interface CanvasPositions {
   windowPosition: WindowPoint
@@ -629,18 +629,13 @@ interface ClearDragState {
   applyChanges: boolean
 }
 
-type CreateDragState = {
+export type CreateDragState = {
   action: 'CREATE_DRAG_STATE'
   dragState: DragState
 }
 
-export type CreateInteractionSession = {
-  action: 'CREATE_INTERACTION_SECTION'
-  interactionSession: CanvasInteractionSession
-}
-
 export type UpdateInteractionSession = {
-  action: 'UPDATE_INTERACTION_SECTION'
+  action: 'UPDATE_INTERACTION_SESSION'
   interactionSession: Partial<CanvasInteractionSession>
 }
 
@@ -667,7 +662,6 @@ export type CanvasAction =
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility
-  | CreateInteractionSession
   | UpdateInteractionSession
 
 export type CanvasModel = {

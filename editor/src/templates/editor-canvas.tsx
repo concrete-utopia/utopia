@@ -10,7 +10,7 @@ import {
   CanvasMouseEvent,
   CanvasPositions,
   ControlOrHigherOrderControl,
-  CreateInteractionSession,
+  CreateDragState,
   CSSCursor,
   DragState,
   DuplicateNewUID,
@@ -90,6 +90,7 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
+import { updateSelectModeCanvasSessionDragVector } from '../components/canvas/canvas-strategies/canvas-strategy-types'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -277,12 +278,12 @@ function on(
 
 let dragStateTimerHandle: any = null
 
-function createOrUpdateSession(
+function createOrUpdateDragState(
   dispatch: EditorDispatch,
   model: EditorState,
-  action: CreateInteractionSession,
+  action: CreateDragState,
 ): EditorState {
-  if (model.canvas.interactionSession == null) {
+  if (model.canvas.dragState == null) {
     // create session, start setTimeout!
     clearInterval(dragStateTimerHandle)
     dragStateTimerHandle = setInterval(() => {
@@ -296,7 +297,7 @@ function createOrUpdateSession(
     ...model,
     canvas: {
       ...model.canvas,
-      interactionSession: action.interactionSession,
+      dragState: action.dragState,
     },
   }
 }
@@ -327,12 +328,21 @@ export function runLocalCanvasAction(
       clearInterval(dragStateTimerHandle)
       return clearDragStateAndInteractionSession(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
-      return {
-        ...model,
-        canvas: {
-          ...model.canvas,
-          dragState: action.dragState,
-        },
+      return createOrUpdateDragState(dispatch, model, action)
+    case 'UPDATE_INTERACTION_SESSION':
+      if (model.canvas.dragState?.type === 'SELECT_MODE_CANVAS_SESSION') {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            dragState: {
+              ...model.canvas.dragState,
+              ...action.interactionSession,
+            },
+          },
+        }
+      } else {
+        throw new Error('trying to update a nonexistent CanvasInteractionSession')
       }
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
       return update(model, {
@@ -371,24 +381,6 @@ export function runLocalCanvasAction(
         },
       }
     }
-    case 'CREATE_INTERACTION_SECTION': {
-      return createOrUpdateSession(dispatch, model, action)
-    }
-    case 'UPDATE_INTERACTION_SECTION':
-      if (model.canvas.interactionSession != null) {
-        return {
-          ...model,
-          canvas: {
-            ...model.canvas,
-            interactionSession: {
-              ...model.canvas.interactionSession,
-              ...action.interactionSession,
-            },
-          },
-        }
-      } else {
-        throw new Error('trying to update a nonexistent CanvasInteractionSession')
-      }
     default:
       const _exhaustiveCheck: never = action
       return model
@@ -1120,6 +1112,14 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               enableSnapping,
               centerBasedResize,
               keepAspectRatio,
+            )
+            break
+          }
+          case 'SELECT_MODE_CANVAS_SESSION': {
+            newDragState = updateSelectModeCanvasSessionDragVector(
+              dragState,
+              canvasPositions.canvasPositionRounded,
+              newDrag,
             )
             break
           }

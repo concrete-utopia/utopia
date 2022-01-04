@@ -428,7 +428,6 @@ export interface EditorState {
   canvas: {
     visible: boolean
     dragState: DragState | null
-    interactionSession: CanvasInteractionSession | null
     scale: number
     snappingThreshold: number
     realCanvasOffset: CanvasVector
@@ -1024,7 +1023,10 @@ export function transientCanvasState(
 }
 
 export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
-  if (editor.canvas.dragState == null) {
+  if (
+    editor.canvas.dragState == null ||
+    editor.canvas.dragState.type === 'SELECT_MODE_CANVAS_SESSION'
+  ) {
     return editor.jsxMetadata
   } else {
     return editor.canvas.dragState.metadata
@@ -1206,7 +1208,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
-      interactionSession: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
@@ -1467,7 +1468,6 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
-      interactionSession: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,

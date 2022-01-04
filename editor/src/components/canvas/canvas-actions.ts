@@ -15,17 +15,11 @@ const CanvasActions = {
       dragState: dragState,
     }
   },
-  createInteractionSession: function (interactionSession: CanvasInteractionSession): CanvasAction {
-    return {
-      action: 'CREATE_INTERACTION_SECTION',
-      interactionSession: interactionSession,
-    }
-  },
   updateInteractionSession: function (
     interactionSession: Partial<CanvasInteractionSession>,
   ): CanvasAction {
     return {
-      action: 'UPDATE_INTERACTION_SECTION',
+      action: 'UPDATE_INTERACTION_SESSION',
       interactionSession: interactionSession,
     }
   },
