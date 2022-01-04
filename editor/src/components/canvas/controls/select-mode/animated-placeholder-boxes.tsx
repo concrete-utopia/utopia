@@ -31,7 +31,6 @@ export const AnimatedPlaceholderBoxes = () => {
       }
     })
 
-    return function cleanup() {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   })
 
