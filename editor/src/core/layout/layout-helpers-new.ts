@@ -6,7 +6,7 @@ import { CSSNumber, ParsedCSSProperties } from '../../components/inspector/commo
 
 export type LayoutDimension = 'width' | 'height'
 
-export type LayoutFlexContainerProp = LayoutDimension | 'flexGap'
+export type LayoutFlexContainerProp = LayoutDimension | 'gap'
 
 export type LayoutFlexElementNumericProp = 'width' | 'height' | 'flexBasis'
 
@@ -60,7 +60,7 @@ export type StyleLayoutProp =
   | 'flexDirection'
   | 'flexGrow'
   | 'flexShrink'
-  | 'flexGap'
+  | 'gap'
   | 'alignItems'
   | 'alignContent'
   | 'justifyContent'
@@ -133,7 +133,7 @@ export interface LayoutPropertyTypes {
   width: CSSNumber | undefined
   height: CSSNumber | undefined
 
-  flexGap: number
+  gap: number
   flexBasis: CSSNumber | undefined
 
   left: CSSNumber | undefined
