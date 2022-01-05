@@ -68,10 +68,10 @@ const collectPinOutlines = (
   canvasOffset: CanvasPoint,
   scale: number,
 ): PinOutlineProps[] => {
-  const pinLeft = eitherToMaybe(getLayoutProperty('PinnedLeft', attributes))
-  const pinTop = eitherToMaybe(getLayoutProperty('PinnedTop', attributes))
-  const pinRight = eitherToMaybe(getLayoutProperty('PinnedRight', attributes))
-  const pinBottom = eitherToMaybe(getLayoutProperty('PinnedBottom', attributes))
+  const pinLeft = eitherToMaybe(getLayoutProperty('left', attributes, ['style']))
+  const pinTop = eitherToMaybe(getLayoutProperty('top', attributes, ['style']))
+  const pinRight = eitherToMaybe(getLayoutProperty('right', attributes, ['style']))
+  const pinBottom = eitherToMaybe(getLayoutProperty('bottom', attributes, ['style']))
   let pins: PinOutlineProps[] = []
   if (pinLeft != null) {
     pins.push({

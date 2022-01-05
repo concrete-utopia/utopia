@@ -3,7 +3,6 @@ import React from 'react'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PositionControl, MarginControl, AlignSelfControl } from './flex-element-controls'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import {
   FunctionIcons,
   Icons,
@@ -22,21 +21,32 @@ import { InlineLink, InlineToggleButton } from '../../../../../uuiui/inline-butt
 import { when } from '../../../../../utils/react-conditionals'
 import {
   InspectorCallbackContext,
+  InspectorPropsContext,
+  stylePropPathMappingFn,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
 import { isNotUnsetDefaultOrDetected } from '../../../common/control-status'
 import { useEditorState } from '../../../../editor/store/store-hook'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
+import { useContextSelector } from 'use-context-selector'
 
-const marginProps = [
-  createLayoutPropertyPath('marginLeft'),
-  createLayoutPropertyPath('marginTop'),
-  createLayoutPropertyPath('marginRight'),
-  createLayoutPropertyPath('marginBottom'),
-]
+function buildMarginProps(propertyTarget: ReadonlyArray<string>): Array<PropertyPath> {
+  return [
+    stylePropPathMappingFn('marginLeft', propertyTarget),
+    stylePropPathMappingFn('marginTop', propertyTarget),
+    stylePropPathMappingFn('marginRight', propertyTarget),
+    stylePropPathMappingFn('marginBottom', propertyTarget),
+  ]
+}
 
 export const FlexElementSubsection = React.memo(() => {
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
+  const marginProps = React.useMemo(() => {
+    return buildMarginProps(targetPath)
+  }, [targetPath])
   return (
     <>
       <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
@@ -70,10 +80,10 @@ export const FlexElementSubsectionExperiment = React.memo((props: FlexElementSub
 export function useInitialFixedSectionState(parentFlexDirection: string | null): boolean {
   const isRowLayouted = parentFlexDirection === 'row' || parentFlexDirection === 'row-reverse'
 
-  const width = useInspectorLayoutInfo('Width')
+  const width = useInspectorLayoutInfo('width')
   const minWidth = useInspectorLayoutInfo('minWidth')
   const maxWidth = useInspectorLayoutInfo('maxWidth')
-  const height = useInspectorLayoutInfo('Height')
+  const height = useInspectorLayoutInfo('height')
   const minHeight = useInspectorLayoutInfo('minHeight')
   const maxHeight = useInspectorLayoutInfo('maxHeight')
 
@@ -158,24 +168,36 @@ const MainAxisControls = React.memo((props: FlexElementSubsectionProps) => {
   )
 })
 
-const mainAxisFixedProps = (parentFlexDirection: string | null): PropertyPath[] => {
+function buildMainAxisFixedProps(
+  propertyTarget: ReadonlyArray<string>,
+  parentFlexDirection: string | null,
+): PropertyPath[] {
   if (parentFlexDirection === 'row' || parentFlexDirection === 'row-reverse') {
     return [
-      createLayoutPropertyPath('Width'),
-      createLayoutPropertyPath('minWidth'),
-      createLayoutPropertyPath('maxWidth'),
+      stylePropPathMappingFn('width', propertyTarget),
+      stylePropPathMappingFn('minWidth', propertyTarget),
+      stylePropPathMappingFn('maxWidth', propertyTarget),
     ]
   } else {
     return [
-      createLayoutPropertyPath('Height'),
-      createLayoutPropertyPath('minHeight'),
-      createLayoutPropertyPath('maxHeight'),
+      stylePropPathMappingFn('height', propertyTarget),
+      stylePropPathMappingFn('minHeight', propertyTarget),
+      stylePropPathMappingFn('maxHeight', propertyTarget),
     ]
   }
 }
-const mainAxisAdvancedProps: PropertyPath[] = [createLayoutPropertyPath('alignSelf')]
+
+function buildMainAxisAdvancedProps(propertyTarget: ReadonlyArray<string>): PropertyPath[] {
+  return [stylePropPathMappingFn('alignSelf', propertyTarget)]
+}
 
 const FixedSubsectionControls = React.memo((props: FlexElementSubsectionProps) => {
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
+  const mainAxisFixedProps = React.useMemo(() => {
+    return buildMainAxisFixedProps(targetPath, props.parentFlexDirection)
+  }, [targetPath, props.parentFlexDirection])
   const widthOrHeightControls =
     props.parentFlexDirection === 'row' || props.parentFlexDirection === 'row-reverse' ? (
       <FlexWidthControls />
@@ -186,8 +208,8 @@ const FixedSubsectionControls = React.memo((props: FlexElementSubsectionProps) =
   const colorTheme = useColorTheme()
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
   const deleteFixedProps = React.useCallback(() => {
-    onUnsetValue(mainAxisFixedProps(props.parentFlexDirection), false)
-  }, [props.parentFlexDirection, onUnsetValue])
+    onUnsetValue(mainAxisFixedProps, false)
+  }, [onUnsetValue, mainAxisFixedProps])
 
   return (
     <>
@@ -203,10 +225,16 @@ const FixedSubsectionControls = React.memo((props: FlexElementSubsectionProps) =
 })
 
 const AdvancedSubsectionControls = React.memo((props: FlexElementSubsectionProps) => {
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
+  const mainAxisAdvancedProps = React.useMemo(() => {
+    return buildMainAxisAdvancedProps(targetPath)
+  }, [targetPath])
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
   const deleteAdvancedProps = React.useCallback(() => {
     onUnsetValue(mainAxisAdvancedProps, false)
-  }, [onUnsetValue])
+  }, [onUnsetValue, mainAxisAdvancedProps])
   const colorTheme = useColorTheme()
   return (
     <>
@@ -225,10 +253,10 @@ export function useInitialCrossSectionState(parentFlexDirection: string | null):
   const isColumnLayouted =
     parentFlexDirection === 'column' || parentFlexDirection === 'column-reverse'
 
-  const width = useInspectorLayoutInfo('Width')
+  const width = useInspectorLayoutInfo('width')
   const minWidth = useInspectorLayoutInfo('minWidth')
   const maxWidth = useInspectorLayoutInfo('maxWidth')
-  const height = useInspectorLayoutInfo('Height')
+  const height = useInspectorLayoutInfo('height')
   const minHeight = useInspectorLayoutInfo('minHeight')
   const maxHeight = useInspectorLayoutInfo('maxHeight')
 
@@ -279,7 +307,7 @@ const FlexWidthControls = React.memo(() => {
   return (
     <>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-        <PinsLayoutNumberControl label='W' prop='Width' />
+        <PinsLayoutNumberControl label='W' prop='width' />
       </UIGridRow>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
         <FlexStyleNumberControl label='min' styleProp='minWidth' />
@@ -292,7 +320,7 @@ const FlexHeightControls = React.memo(() => {
   return (
     <>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-        <PinsLayoutNumberControl label='H' prop='Height' />
+        <PinsLayoutNumberControl label='H' prop='height' />
       </UIGridRow>
       <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
         <FlexStyleNumberControl label='min' styleProp='minHeight' />

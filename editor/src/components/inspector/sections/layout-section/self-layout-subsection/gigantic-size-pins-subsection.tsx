@@ -1,10 +1,7 @@
 import React from 'react'
 import {
-  createLayoutPropertyPath,
-  framePointForPinnedProp,
   LayoutFlexElementNumericProp,
   LayoutPinnedProp,
-  LayoutProp,
   StyleLayoutProp,
 } from '../../../../../core/layout/layout-helpers-new'
 import { LocalRectangle } from '../../../../../core/shared/math-utils'
@@ -13,6 +10,7 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { FullFrame, getFullFrame } from '../../../../frame'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import {
+  cssNumber,
   CSSNumber,
   cssNumberToFramePin,
   framePinToCSSNumber,
@@ -22,6 +20,7 @@ import {
 import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
 import {
   InspectorInfo,
+  InspectorPropsContext,
   stylePropPathMappingFn,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
@@ -44,6 +43,7 @@ import {
 } from '../../../common/longhand-shorthand-hooks'
 import { isNotUnsetOrDefault } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
+import { useContextSelector } from 'use-context-selector'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -51,18 +51,15 @@ interface PinsLayoutNumberControlProps {
 }
 
 export const pinLabels: { [key in LayoutPinnedProp]: string } = {
-  PinnedLeft: 'L',
-  PinnedTop: 'T',
-  PinnedRight: 'R',
-  PinnedBottom: 'B',
-  PinnedCenterX: 'cX',
-  PinnedCenterY: 'cY',
-  Width: 'W',
-  Height: 'H',
+  left: 'L',
+  top: 'T',
+  right: 'R',
+  bottom: 'B',
+  width: 'W',
+  height: 'H',
 }
 
 export const PinsLayoutNumberControl = React.memo((props: PinsLayoutNumberControlProps) => {
-  const framePoint = framePointForPinnedProp(props.prop)
   const pointInfo = useInspectorLayoutInfo(props.prop)
 
   const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
@@ -77,7 +74,7 @@ export const PinsLayoutNumberControl = React.memo((props: PinsLayoutNumberContro
   return (
     <InspectorContextMenuWrapper
       id={`position-${props.prop}-context-menu`}
-      items={[unsetPropertyMenuItem(framePoint, pointInfo.onUnsetValues)]}
+      items={[unsetPropertyMenuItem(props.prop, pointInfo.onUnsetValues)]}
       data={{}}
     >
       <NumberInput
@@ -162,11 +159,14 @@ interface FlexShorthandNumberControlProps {
 }
 
 export const FlexShorthandNumberControl = React.memo((props: FlexShorthandNumberControlProps) => {
+  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
   const layoutPropInfo = useInspectorInfoLonghandShorthand(
     ['flexGrow', 'flexShrink', 'flexBasis'],
     'flex',
-    createLayoutPropertyPath,
-  )[props.styleProp] as InspectorInfoWithPropKeys<'flexGrow' | 'flexShrink', 'flex'>
+    stylePropPathMappingFn,
+  )[props.styleProp]
   const value = typeof layoutPropInfo.value === 'number' ? layoutPropInfo.value : undefined
 
   const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
@@ -203,11 +203,19 @@ interface FlexShorthandCSSNumberControlProps {
 }
 export const FlexBasisShorthandCSSNumberControl = React.memo(
   (props: FlexShorthandCSSNumberControlProps) => {
+    const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
+      return contextData.targetPath
+    })
     const layoutPropInfo = useInspectorInfoLonghandShorthand(
-      ['flexBasis', 'flexGrow', 'flexShrink'],
+      ['flexGrow', 'flexShrink', 'flexBasis'],
       'flex',
-      createLayoutPropertyPath,
-    ).flexBasis as InspectorInfoWithPropKeys<'flexBasis', 'flex'>
+      stylePropPathMappingFn,
+    ).flexBasis
+    const value = React.useMemo(() => {
+      return typeof layoutPropInfo.value === 'number'
+        ? cssNumber(layoutPropInfo.value)
+        : layoutPropInfo.value
+    }, [layoutPropInfo.value])
     const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       layoutPropInfo.onSubmitValue,
       layoutPropInfo.onUnsetValues,
@@ -225,7 +233,7 @@ export const FlexBasisShorthandCSSNumberControl = React.memo(
         <NumberInput
           id={`position-flexBasis-number-input`}
           testId={`position-flexBasis-number-input`}
-          value={layoutPropInfo.value}
+          value={value}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           controlStatus={layoutPropInfo.controlStatus}
@@ -354,16 +362,16 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
         break
     }
   } else {
-    widthControl = pinsLayoutNumberControl('Width')
-    heightControl = pinsLayoutNumberControl('Height')
+    widthControl = pinsLayoutNumberControl('width')
+    heightControl = pinsLayoutNumberControl('height')
   }
 
   const toggleWidth = React.useCallback(() => {
-    togglePin('Width')
+    togglePin('width')
   }, [togglePin])
 
   const toggleHeight = React.useCallback(() => {
-    togglePin('Height')
+    togglePin('height')
   }, [togglePin])
 
   return (
@@ -406,9 +414,14 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
   )
 })
 
-const minimumsProps = [createLayoutPropertyPath('minWidth'), createLayoutPropertyPath('minHeight')]
-
 const MinimumsRow = React.memo(() => {
+  const minimumsProps = useContextSelector(InspectorPropsContext, (contextData) => {
+    return [
+      stylePropPathMappingFn('minWidth', contextData.targetPath),
+      stylePropPathMappingFn('minHeight', contextData.targetPath),
+    ]
+  })
+
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={minimumsProps}>Minimum</PropertyLabel>
@@ -422,9 +435,14 @@ const MinimumsRow = React.memo(() => {
   )
 })
 
-const maximumsProps = [createLayoutPropertyPath('maxWidth'), createLayoutPropertyPath('maxHeight')]
-
 const MaximumsRow = React.memo(() => {
+  const maximumsProps = useContextSelector(InspectorPropsContext, (contextData) => {
+    return [
+      stylePropPathMappingFn('maxWidth', contextData.targetPath),
+      stylePropPathMappingFn('maxHeight', contextData.targetPath),
+    ]
+  })
+
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={maximumsProps}>Maximum</PropertyLabel>
@@ -438,28 +456,35 @@ const MaximumsRow = React.memo(() => {
   )
 })
 
-const flexWidthHeightProps = [createLayoutPropertyPath('Width'), createLayoutPropertyPath('Height')]
-
 const FlexWidthHeightRow = React.memo(() => {
+  const flexWidthHeightProps = useContextSelector(InspectorPropsContext, (contextData) => {
+    return [
+      stylePropPathMappingFn('maxWidth', contextData.targetPath),
+      stylePropPathMappingFn('maxHeight', contextData.targetPath),
+    ]
+  })
+
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexWidthHeightProps}>Size</PropertyLabel>
       <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
-        {flexLayoutNumberControl('W', 'Width')}
+        {flexLayoutNumberControl('W', 'width')}
         {spacingButton}
-        {flexLayoutNumberControl('H', 'Height')}
+        {flexLayoutNumberControl('H', 'height')}
         {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
 })
 
-const flexGrowShrinkProps = [
-  createLayoutPropertyPath('flexGrow'),
-  createLayoutPropertyPath('flexShrink'),
-]
-
 const FlexGrowShrinkRow = React.memo(() => {
+  const flexGrowShrinkProps = useContextSelector(InspectorPropsContext, (contextData) => {
+    return [
+      stylePropPathMappingFn('flexGrow', contextData.targetPath),
+      stylePropPathMappingFn('flexShrink', contextData.targetPath),
+    ]
+  })
+
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>
@@ -481,35 +506,35 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
   let secondYAxisControl: React.ReactElement = <div />
   // TODO LAYOUT update these when there are new ways to set centerX/centerY
   // const centerXInfo = useInspectorLayoutInfo('PinnedCenterX')
-  // const topInfo = useInspectorLayoutInfo('PinnedTop')
+  // const topInfo = useInspectorLayoutInfo('top')
   // if (centerXInfo.value == null) {
   // No CenterX value, just show top and bottom.
-  firstXAxisControl = pinsLayoutNumberControl('PinnedTop')
-  secondXAxisControl = pinsLayoutNumberControl('PinnedBottom')
+  firstXAxisControl = pinsLayoutNumberControl('top')
+  secondXAxisControl = pinsLayoutNumberControl('bottom')
   // } else {
   //   // We have a CenterX value, so put that first and then top or bottom after it.
   //   firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterX')
   //   if (topInfo.value == null) {
-  //     secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedBottom')
+  //     secondXAxisControl = pinsLayoutNumberControl(frame, 'bottom')
   //   } else {
-  //     secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedTop')
+  //     secondXAxisControl = pinsLayoutNumberControl(frame, 'top')
   //   }
   // }
 
   // TODO LAYOUT update these when there are new ways to set centerX/centerY
   // const centerYInfo = useInspectorLayoutInfo('PinnedCenterY')
-  // const leftInfo = useInspectorLayoutInfo('PinnedLeft')
+  // const leftInfo = useInspectorLayoutInfo('left')
   // if (centerYInfo.value == null) {
   // No CenterY value, just show left and right.
-  firstYAxisControl = pinsLayoutNumberControl('PinnedLeft')
-  secondYAxisControl = pinsLayoutNumberControl('PinnedRight')
+  firstYAxisControl = pinsLayoutNumberControl('left')
+  secondYAxisControl = pinsLayoutNumberControl('right')
   // } else {
   //   // We have a CenterY value, so put that first and then left or right after it.
   //   firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterY')
   //   if (leftInfo.value == null) {
-  //     secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedRight')
+  //     secondYAxisControl = pinsLayoutNumberControl(frame, 'right')
   //   } else {
-  //     secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedLeft')
+  //     secondYAxisControl = pinsLayoutNumberControl(frame, 'left')
   //   }
   // }
 

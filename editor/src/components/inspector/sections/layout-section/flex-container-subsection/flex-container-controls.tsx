@@ -6,6 +6,8 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import { SliderControl, DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
 import {
+  InspectorPropsContext,
+  stylePropPathMappingFn,
   useInspectorInfoSimpleUntyped,
   useInspectorLayoutInfo,
   useInspectorStyleInfo,
@@ -15,7 +17,6 @@ import { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import {
   PopupList,
   useWrappedEmptyOrUnknownOnSubmitValue,
@@ -23,6 +24,7 @@ import {
 } from '../../../../../uuiui'
 import { OnSubmitValueOrEmpty } from '../../../controls/control'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import { useContextSelector } from 'use-context-selector'
 
 type uglyLabel =
   | 'left'
@@ -106,9 +108,13 @@ interface FlexAlignItemsControlProps extends FlexFieldControlProps<FlexAlignment
   alignItemsFlexEnd: uglyLabel
 }
 
-const alignItemsProp = [createLayoutPropertyPath('alignItems')]
-
 export const FlexAlignItemsControl = React.memo((props: FlexAlignItemsControlProps) => {
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
+  const alignItemsProp = React.useMemo(() => {
+    return [stylePropPathMappingFn('alignItems', targetPath)]
+  }, [targetPath])
   return (
     <InspectorContextMenuWrapper
       id={`alignItems-context-menu`}
@@ -236,8 +242,6 @@ interface FlexGapControlProps extends FlexFieldControlProps<number> {
   onTransientSubmitValue: OnSubmitValueOrEmpty<number>
 }
 
-const flexGapProp = [createLayoutPropertyPath('FlexGap')]
-
 export const FlexGapControl = React.memo((props: FlexGapControlProps) => {
   const menuItems = [unsetPropertyMenuItem('Flex Gap', props.onUnset)]
   const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(props.onSubmitValue, props.onUnset)
@@ -245,6 +249,12 @@ export const FlexGapControl = React.memo((props: FlexGapControlProps) => {
     props.onTransientSubmitValue,
     props.onUnset,
   )
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
+  const flexGapProp = React.useMemo(() => {
+    return [stylePropPathMappingFn('flexGap', targetPath)]
+  }, [targetPath])
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
       <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>

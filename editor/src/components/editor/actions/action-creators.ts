@@ -1128,10 +1128,14 @@ export function toggleProperty(
   }
 }
 
-export function switchLayoutSystem(layoutSystem: SettableLayoutSystem): SwitchLayoutSystem {
+export function switchLayoutSystem(
+  layoutSystem: SettableLayoutSystem,
+  propertyTarget: ReadonlyArray<string>,
+): SwitchLayoutSystem {
   return {
     action: 'SWITCH_LAYOUT_SYSTEM',
     layoutSystem: layoutSystem,
+    propertyTarget: propertyTarget,
   }
 }
 
