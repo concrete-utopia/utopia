@@ -21,9 +21,6 @@ export default defineConfig({
     },
   },
   base: '/editor/',
-  compilerOptions: {
-    types: ['vite/client'],
-  },
   define: {
     global: '{}',
     module: '{}',
