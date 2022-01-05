@@ -70,26 +70,14 @@ describe('registered property controls', () => {
       Object {
         "Card": Object {
           "properties": Object {
-            "type": "RIGHT",
-            "value": Object {
-              "background": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "color",
-                },
-              },
-              "label": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "string-input",
-                },
-              },
-              "visible": Object {
-                "type": "RIGHT",
-                "value": Object {
-                  "control": "checkbox",
-                },
-              },
+            "background": Object {
+              "control": "color",
+            },
+            "label": Object {
+              "control": "string-input",
+            },
+            "visible": Object {
+              "control": "checkbox",
             },
           },
           "variants": Array [
