@@ -307,14 +307,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
-          <LayoutSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
-          <StyleSection />
-          <WarningSubsection />
-          <ImgSection />
           <TargetSelectorSection
             targets={props.targets}
             selectedTargetPath={props.selectedTargetPath}
@@ -323,6 +315,14 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
+          <LayoutSection
+            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+            aspectRatioLocked={aspectRatioLocked}
+            toggleAspectRatioLock={toggleAspectRatioLock}
+          />
+          <StyleSection />
+          <WarningSubsection />
+          <ImgSection />
           <EventHandlersSection />
         </React.Fragment>
       )
