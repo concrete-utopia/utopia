@@ -173,19 +173,7 @@ export function getSelectableViews(
     const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
     const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
 
-    const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
-      // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now
-      const isGroup = MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, view)
-      const isAncestorOfSelected = selectedViews.some((selectedView) =>
-        EP.isDescendantOf(selectedView, view),
-      )
-      if (isGroup && isAncestorOfSelected) {
-        return false
-      } else {
-        return true
-      }
-    })
-    candidateViews = selectableViewsFiltered
+    candidateViews = uniqueSelectableViews
   }
 
   return filterHiddenInstances(hiddenInstances, candidateViews)

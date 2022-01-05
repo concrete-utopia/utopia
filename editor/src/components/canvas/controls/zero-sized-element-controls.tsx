@@ -20,8 +20,8 @@ import {
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
-import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 
 const EmptyChildren: ElementInstanceMetadata[] = []
 export const ZeroSizedElementControls = React.memo((props: ControlProps) => {
@@ -202,12 +202,12 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
             element.specialSizeMeasurements.parentFlexDirection === 'row-reverse')
         ) {
           propsToSet.push({
-            path: createLayoutPropertyPath('flexBasis'),
+            path: stylePropPathMappingFn('flexBasis', ['style']),
             value: 100,
           })
         } else {
           propsToSet.push({
-            path: createLayoutPropertyPath('Width'),
+            path: stylePropPathMappingFn('width', ['style']),
             value: 100,
           })
         }
@@ -219,19 +219,19 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
             element.specialSizeMeasurements.parentFlexDirection === 'column-reverse')
         ) {
           propsToSet.push({
-            path: createLayoutPropertyPath('flexBasis'),
+            path: stylePropPathMappingFn('flexBasis', ['style']),
             value: 100,
           })
         } else {
           propsToSet.push({
-            path: createLayoutPropertyPath('Height'),
+            path: stylePropPathMappingFn('height', ['style']),
             value: 100,
           })
         }
       }
       if (!isFlexParent && element.specialSizeMeasurements.display === 'inline') {
         propsToSet.push({
-          path: createLayoutPropertyPath('position'),
+          path: stylePropPathMappingFn('position', ['style']),
           value: 'absolute',
         })
       }

@@ -14,7 +14,6 @@ import {
 import Utils, { IndexPosition } from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
-import { LayoutProp } from '../layout/layout-helpers-new'
 import {
   flattenArray,
   mapDropNulls,
@@ -263,21 +262,6 @@ export const MetadataUtils = {
   isParentYogaLayoutedContainerForElement(element: ElementInstanceMetadata): boolean {
     return element.specialSizeMeasurements.parentLayoutSystem === 'flex'
   },
-  isGroup(path: ElementPath | null, metadata: ElementInstanceMetadataMap): boolean {
-    if (path == null) {
-      return false
-    } else {
-      const instance = MetadataUtils.findElementByElementPath(metadata, path)
-      if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
-        return (
-          LayoutHelpers.getLayoutSystemFromProps(right(instance.element.value.props)) ===
-          LayoutSystem.Group
-        )
-      } else {
-        return false
-      }
-    }
-  },
   isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.layoutSystemForChildren === 'flex'
   },
@@ -316,7 +300,11 @@ export const MetadataUtils = {
       return instance?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
     }
   },
-  getYogaSizeProps(target: ElementPath, metadata: ElementInstanceMetadataMap): Partial<Size> {
+  getYogaSizeProps(
+    target: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    propertyTarget: Array<string>,
+  ): Partial<Size> {
     const parentInstance = this.getParent(metadata, target)
     if (parentInstance == null) {
       return {}
@@ -331,16 +319,16 @@ export const MetadataUtils = {
           MetadataUtils.findElementByElementPath(metadata, target)?.element,
         )
         if (element != null && isJSXElement(element)) {
-          const widthLookupAxis: LayoutProp = flexDirection === 'horizontal' ? 'flexBasis' : 'Width'
-          const heightLookupAxis: LayoutProp = flexDirection === 'vertical' ? 'flexBasis' : 'Height'
+          const widthLookupAxis = flexDirection === 'horizontal' ? 'flexBasis' : 'width'
+          const heightLookupAxis = flexDirection === 'vertical' ? 'flexBasis' : 'height'
           let result: Partial<Size> = {}
           const width: Either<string, FlexLength> = alternativeEither(
-            getLayoutProperty(widthLookupAxis, right(element.props)),
-            getLayoutProperty('Width', right(element.props)),
+            getLayoutProperty(widthLookupAxis, right(element.props), propertyTarget),
+            getLayoutProperty('width', right(element.props), propertyTarget),
           )
           const height: Either<string, FlexLength> = alternativeEither(
-            getLayoutProperty(heightLookupAxis, right(element.props)),
-            getLayoutProperty('Height', right(element.props)),
+            getLayoutProperty(heightLookupAxis, right(element.props), propertyTarget),
+            getLayoutProperty('height', right(element.props), propertyTarget),
           )
           // FIXME We should really be supporting string values here
           forEachRight(width, (w) => {
@@ -384,49 +372,15 @@ export const MetadataUtils = {
   },
   getFlexWrap: function (
     instance: ElementInstanceMetadata | null,
+    propertyTarget: Array<string>,
   ): 'wrap' | 'wrap-reverse' | 'nowrap' {
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
-      return FlexLayoutHelpers.getFlexWrap(instance.element.value.props)
+      return FlexLayoutHelpers.getFlexWrap(instance.element.value.props, propertyTarget)
     } else {
       return 'nowrap' // TODO read this value from spy
     }
   },
-  isAutoSizingView(
-    metadata: ElementInstanceMetadataMap,
-    element: ElementInstanceMetadata | null,
-  ): boolean {
-    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
-      // TODO NEW Property Path
-      const isAutoSizing =
-        LayoutHelpers.getLayoutSystemFromProps(right(element.element.value.props)) === 'group'
-      const isYogaLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
-      const childrenPaths = MetadataUtils.getChildrenPaths(metadata, element.elementPath)
-      const hasChildren = childrenPaths.length > 0
-      const parentIsYoga = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
-        element,
-      )
-      return isAutoSizing && !isYogaLayoutedContainer && hasChildren && !parentIsYoga
-    } else {
-      return false
-    }
-  },
-  isAutoSizingViewFromComponents(
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath | null,
-  ): boolean {
-    if (target == null) {
-      return false
-    }
-    const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return MetadataUtils.isAutoSizingView(metadata, instance)
-  },
-  isAutoSizingText(instance: ElementInstanceMetadata): boolean {
-    return MetadataUtils.isTextAgainstImports(instance) && instance.props.textSizing === 'auto'
-  },
-  findNonGroupParent(
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): ElementPath | null {
+  findParent(metadata: ElementInstanceMetadataMap, target: ElementPath): ElementPath | null {
     const parentPath = EP.parentPath(target)
 
     if (parentPath == null) {
@@ -435,57 +389,8 @@ export const MetadataUtils = {
       // we've reached the top
       return parentPath
     } else {
-      const parent = MetadataUtils.findElementByElementPath(metadata, parentPath)
-      if (MetadataUtils.isAutoSizingView(metadata, parent)) {
-        return MetadataUtils.findNonGroupParent(metadata, parentPath)
-      } else {
-        return parentPath
-      }
+      return parentPath
     }
-  },
-  shiftGroupFrame(
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath,
-    originalFrame: CanvasRectangle | null,
-    addOn: boolean,
-  ): CanvasRectangle | null {
-    if (originalFrame == null) {
-      // if the originalFrame is null, we have nothing to shift
-      return null
-    }
-    if (EP.isStoryboardChild(target)) {
-      // If it's a scene we don't need to shift
-      return originalFrame
-    }
-
-    const shiftMultiplier = addOn ? 1 : -1
-    let workingFrame: CanvasRectangle = originalFrame
-    // If this is held within a group, then we need to add on the frames of the parent groups.
-    let ancestorPath = EP.parentPath(target)
-    while (!EP.isStoryboardChild(ancestorPath) && !EP.isEmptyPath(ancestorPath)) {
-      const ancestorElement = MetadataUtils.findElementByElementPath(metadata, ancestorPath)
-
-      const ancestorParentPath = EP.parentPath(ancestorPath)
-      if (ancestorElement == null) {
-        break
-      } else {
-        if (
-          MetadataUtils.isAutoSizingView(metadata, ancestorElement) &&
-          ancestorElement.localFrame != null
-        ) {
-          // if the ancestorElement is a group, it better have a measurable frame, too,
-          // TODO check with Sean if there are implications of this nullcheck
-          workingFrame = Utils.offsetRect(workingFrame, {
-            x: shiftMultiplier * ancestorElement.localFrame.x,
-            y: shiftMultiplier * ancestorElement.localFrame.y,
-          } as CanvasPoint)
-        }
-      }
-
-      ancestorPath = ancestorParentPath
-    }
-
-    return workingFrame
   },
   setPropertyDirectlyIntoMetadata(
     metadata: ElementInstanceMetadataMap,
@@ -563,32 +468,6 @@ export const MetadataUtils = {
   ): Array<ElementInstanceMetadata> {
     const childrenPaths = MetadataUtils.getImmediateChildrenPaths(metadata, target)
     return MetadataUtils.findElementsByElementPath(metadata, childrenPaths ?? [])
-  },
-  getChildrenHandlingGroups(
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath,
-    includeGroups: boolean,
-  ): Array<ElementInstanceMetadata> {
-    const immediateChildren = MetadataUtils.getImmediateChildren(metadata, target)
-
-    const getChildrenInner = (
-      childInstance: ElementInstanceMetadata,
-    ): Array<ElementInstanceMetadata> => {
-      // autoSizing views are the new groups
-      if (this.isAutoSizingViewFromComponents(metadata, childInstance.elementPath)) {
-        const rawChildren = MetadataUtils.getChildren(metadata, childInstance.elementPath)
-        const children = Utils.flatMapArray(getChildrenInner, rawChildren)
-        if (includeGroups) {
-          return [childInstance, ...children]
-        } else {
-          return children
-        }
-      } else {
-        return [childInstance]
-      }
-    }
-
-    return Utils.flatMapArray(getChildrenInner, immediateChildren)
   },
   getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
     return Object.values(metadata).find((e) => EP.isStoryboardPath(e.elementPath)) ?? null
