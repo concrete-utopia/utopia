@@ -1,3 +1,4 @@
+import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { injectHtml } from 'vite-plugin-html'
@@ -34,5 +35,16 @@ export default defineConfig({
     'process.env.REACT_APP_AUTH0_ENDPOINT': `"${process.env.REACT_APP_AUTH0_ENDPOINT}"`,
     'process.env.GOOGLE_WEB_FONTS_KEY': `"${process.env.GOOGLE_WEB_FONTS_KEY}"`,
     'process.env.REACT_APP_COMMIT_HASH': `"${process.env.REACT_APP_COMMIT_HASH}"`,
+  },
+  build: {
+    target: 'esnext',
+    outDir: resolve(__dirname, 'lib2/editor'),
+    rollupOptions: {
+      // https://rollupjs.org/guide/en/#big-list-of-options
+      input: {
+        index: resolve(__dirname, 'src/vite/main.tsx'),
+        'vscode-outer': resolve(__dirname, 'src/vite/vscode-outer/vscode-editor-outer-iframe.tsx'),
+      },
+    },
   },
 })
