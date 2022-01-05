@@ -98,10 +98,9 @@ async function componentDescriptorForComponentToRegister(
   moduleName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
-  const parsedPropertyControls = parsePropertyControls(componentToRegister.properties)
-  const unparsedVariants = variantsForComponentToRegister(componentToRegister, componentName)
+  const insertOptionsToParse = variantsForComponentToRegister(componentToRegister, componentName)
 
-  const parsedInsertOptionPromises = unparsedVariants.map((insertOption) =>
+  const parsedInsertOptionPromises = insertOptionsToParse.map((insertOption) =>
     parseInsertOption(insertOption, componentName, moduleName, workers),
   )
 
@@ -111,7 +110,7 @@ async function componentDescriptorForComponentToRegister(
   return mapEither((variants) => {
     return {
       componentName: componentName,
-      properties: parsedPropertyControls,
+      properties: componentToRegister.properties,
       variants: variants,
     }
   }, parsedVariants)
@@ -225,7 +224,7 @@ export function getThirdPartyControlsIntrinsic(
   elementName: string,
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
-): ParseResult<ParsedPropertyControls> | null {
+): PropertyControls | null {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
   const foundPackageWithElement = Object.keys(propertyControlsInfo).find((key) => {

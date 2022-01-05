@@ -37,11 +37,8 @@ import {
   isRight,
   flatMapEither,
   unwrapEither,
-  sequenceEither,
   isLeft,
   reduceWithEither,
-  mapEither,
-  forEachRight,
 } from '../shared/either'
 import { compose } from '../shared/function-utils'
 import {
@@ -63,10 +60,7 @@ import {
 } from '../shared/jsx-attributes'
 import { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
-import { fastForEach } from '../shared/utils'
 import { forEachValue, mapToArray, objectValues } from '../shared/object-utils'
-import { ParsedPropertyControls } from './property-controls-parser'
-
 type Printer<T> = (value: T) => JSXAttribute
 
 export function parseColorValue(value: unknown): ParseResult<CSSColor> {
@@ -372,7 +366,7 @@ export function controlToUseForUnion(
 }
 
 export function walkRegularControlDescriptions(
-  parsedPropertyControls: ParsedPropertyControls,
+  propertyControls: PropertyControls,
   walkWith: (propertyName: string, propertyControl: RegularControlDescription) => void,
 ): void {
   function addPropertyControl(
@@ -397,18 +391,14 @@ export function walkRegularControlDescriptions(
     }, folder.controls)
   }
 
-  forEachValue((parsedPropertyControl, propertyName) => {
-    forEachRight(parsedPropertyControl, (propertyControl) => {
-      addPropertyControl(propertyName, propertyControl)
-    })
-  }, parsedPropertyControls)
+  forEachValue((propertyControl, propertyName) => {
+    addPropertyControl(propertyName, propertyControl)
+  }, propertyControls)
 }
 
-export function getPropertyControlNames(
-  parsedPropertyControls: ParsedPropertyControls,
-): Array<string> {
+export function getPropertyControlNames(propertyControls: PropertyControls): Array<string> {
   let result: Array<string> = []
-  walkRegularControlDescriptions(parsedPropertyControls, (propertyName) => {
+  walkRegularControlDescriptions(propertyControls, (propertyName) => {
     result.push(propertyName)
   })
   return result

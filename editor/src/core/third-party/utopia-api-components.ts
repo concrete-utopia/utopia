@@ -2,16 +2,15 @@ import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
-import { parsePropertyControls } from '../property-controls/property-controls-parser'
 import { jsxElementWithoutUID } from '../shared/element-template'
 
 const BasicUtopiaComponentDescriptor = (name: string): ComponentDescriptor => {
   return {
-    properties: parsePropertyControls({
+    properties: {
       style: {
         control: 'style-controls',
       },
-    }),
+    },
     variants: [
       {
         insertMenuLabel: name,
