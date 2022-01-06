@@ -110,22 +110,6 @@ Array [
             },
           },
         },
-        Object {
-          "comments": Object {
-            "leadingComments": Array [],
-            "trailingComments": Array [],
-          },
-          "key": "layout",
-          "type": "JSX_ATTRIBUTES_ENTRY",
-          "value": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {},
-          },
-        },
       ],
       "type": "JSX_ELEMENT",
       "uid": "aaa",
@@ -335,22 +319,6 @@ Array [
               "backgroundColor": "#FFFFFF",
               "display": "flex",
             },
-          },
-        },
-        Object {
-          "comments": Object {
-            "leadingComments": Array [],
-            "trailingComments": Array [],
-          },
-          "key": "layout",
-          "type": "JSX_ATTRIBUTES_ENTRY",
-          "value": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
-            "value": Object {},
           },
         },
       ],

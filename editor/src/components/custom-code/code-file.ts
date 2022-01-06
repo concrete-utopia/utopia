@@ -87,7 +87,7 @@ export type ComponentInfo = {
 }
 
 export type ComponentDescriptor = {
-  properties: ParseResult<ParsedPropertyControls>
+  properties: PropertyControls
   variants: ComponentInfo[]
 }
 

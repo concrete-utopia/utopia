@@ -20,12 +20,12 @@ import {
 } from '../custom-code/code-file'
 
 const cardComponentDescriptor: ComponentDescriptor = {
-  properties: right({
-    title: right({
+  properties: {
+    title: {
       control: 'string-input',
       label: 'Title',
-    }),
-  }),
+    },
+  },
   variants: [
     {
       insertMenuLabel: 'Card Default',
@@ -57,16 +57,16 @@ const cardPropertyControlsInfo: PropertyControlsInfo = {
 }
 
 const modifiedCardComponentDescriptor: ComponentDescriptor = {
-  properties: right({
-    title: right({
+  properties: {
+    title: {
       control: 'string-input',
       label: 'Title',
-    }),
-    border: right({
+    },
+    border: {
       control: 'string-input',
       label: 'Border',
-    }),
-  }),
+    },
+  },
   variants: [
     {
       insertMenuLabel: 'Card Default',
@@ -95,13 +95,13 @@ const modifiedCardControlsToCheck: ControlsToCheck = Promise.resolve(
 )
 
 const selectorComponentDescriptor: ComponentDescriptor = {
-  properties: right({
-    value: right({
+  properties: {
+    value: {
       control: 'popuplist',
       label: 'Value',
       options: ['True', 'False', 'FileNotFound'],
-    }),
-  }),
+    },
+  },
   variants: [
     {
       insertMenuLabel: 'True False Selector',
@@ -184,15 +184,9 @@ describe('validateControlsToCheck', () => {
             "/src/card": Object {
               "Card": Object {
                 "properties": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
+                  "title": Object {
+                    "control": "string-input",
+                    "label": "Title",
                   },
                 },
                 "variants": Array [
@@ -354,15 +348,9 @@ describe('validateControlsToCheck', () => {
               "/src/card": Object {
                 "Card": Object {
                   "properties": Object {
-                    "type": "RIGHT",
-                    "value": Object {
-                      "title": Object {
-                        "type": "RIGHT",
-                        "value": Object {
-                          "control": "string-input",
-                          "label": "Title",
-                        },
-                      },
+                    "title": Object {
+                      "control": "string-input",
+                      "label": "Title",
                     },
                   },
                   "variants": Array [
@@ -436,20 +424,14 @@ describe('validateControlsToCheck', () => {
             "/src/selector": Object {
               "Selector": Object {
                 "properties": Object {
-                  "type": "RIGHT",
                   "value": Object {
-                    "value": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "popuplist",
-                        "label": "Value",
-                        "options": Array [
-                          "True",
-                          "False",
-                          "FileNotFound",
-                        ],
-                      },
-                    },
+                    "control": "popuplist",
+                    "label": "Value",
+                    "options": Array [
+                      "True",
+                      "False",
+                      "FileNotFound",
+                    ],
                   },
                 },
                 "variants": Array [
@@ -531,22 +513,13 @@ describe('validateControlsToCheck', () => {
             "/src/card": Object {
               "Card": Object {
                 "properties": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "border": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Border",
-                      },
-                    },
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
+                  "border": Object {
+                    "control": "string-input",
+                    "label": "Border",
+                  },
+                  "title": Object {
+                    "control": "string-input",
+                    "label": "Title",
                   },
                 },
                 "variants": Array [
@@ -636,15 +609,9 @@ describe('validateControlsToCheck', () => {
             "/src/card": Object {
               "Card": Object {
                 "properties": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
+                  "title": Object {
+                    "control": "string-input",
+                    "label": "Title",
                   },
                 },
                 "variants": Array [
@@ -694,15 +661,9 @@ describe('validateControlsToCheck', () => {
               },
               "Other Card": Object {
                 "properties": Object {
-                  "type": "RIGHT",
-                  "value": Object {
-                    "title": Object {
-                      "type": "RIGHT",
-                      "value": Object {
-                        "control": "string-input",
-                        "label": "Title",
-                      },
-                    },
+                  "title": Object {
+                    "control": "string-input",
+                    "label": "Title",
                   },
                 },
                 "variants": Array [

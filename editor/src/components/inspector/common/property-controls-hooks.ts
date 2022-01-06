@@ -54,8 +54,6 @@ import {
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import { addUniquely, mapArrayToDictionary, mapDropNulls } from '../../../core/shared/array-utils'
-import { ParseError, ParseResult } from '../../../utils/value-parser-utils'
-import { ParsedPropertyControls } from '../../../core/property-controls/property-controls-parser'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
@@ -67,6 +65,7 @@ import {
 } from '../../editor/store/store-deep-equality-instances'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import { omit } from '../../../core/shared/object-utils'
+import { PropertyControls } from 'utopia-api'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -196,47 +195,46 @@ export function useControlForUnionControl(
   return controlToUseForUnion(control, firstRawValue, firstRealValue)
 }
 
-type ParsedPropertyControlsAndTargets = {
-  controls: ParseResult<ParsedPropertyControls>
+type PropertyControlsAndTargets = {
+  controls: PropertyControls
   targets: ElementPath[]
 }
 
-type PropertyControlsAndTargets = {
-  controls: ParseResult<ParsedPropertyControls>
+type FullPropertyControlsAndTargets = {
+  controls: PropertyControls
   targets: ElementPath[]
   propsWithControlsButNoValue: string[]
   detectedPropsWithNoValue: string[]
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
 }
 
-const emptyControls: ParseResult<ParsedPropertyControls> = right({})
+const emptyControls: PropertyControls = {}
 
-export function useGetPropertyControlsForSelectedComponents(): Array<PropertyControlsAndTargets> {
+export function useGetPropertyControlsForSelectedComponents(): Array<
+  FullPropertyControlsAndTargets
+> {
   const selectedViews = useRefSelectedViews()
 
   const selectedPropertyControls = useEditorState(
     (store) => {
-      let parsedPropertyControls: Array<ParsedPropertyControlsAndTargets> = []
+      let propertyControlsAndTargets: Array<PropertyControlsAndTargets> = []
       fastForEach(selectedViews.current, (path) => {
         const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor)
         if (propertyControls == null) {
-          parsedPropertyControls.push({
+          propertyControlsAndTargets.push({
             controls: emptyControls,
             targets: [path],
           })
         } else {
-          const withFilteredProps = mapEither(
-            (parsedControls) => omit(propsToOmit, parsedControls),
-            propertyControls,
-          )
+          const withFilteredProps = omit(propsToOmit, propertyControls)
 
-          const foundMatch = parsedPropertyControls.findIndex((existing) =>
+          const foundMatch = propertyControlsAndTargets.findIndex((existing) =>
             areMatchingPropertyControls(existing.controls, withFilteredProps),
           )
           if (foundMatch > -1) {
-            parsedPropertyControls[foundMatch].targets.push(path)
+            propertyControlsAndTargets[foundMatch].targets.push(path)
           } else {
-            parsedPropertyControls.push({
+            propertyControlsAndTargets.push({
               controls: withFilteredProps,
               targets: [path],
             })
@@ -244,7 +242,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
         }
       })
 
-      return parsedPropertyControls
+      return propertyControlsAndTargets
     },
     'useSelectedPropertyControls',
     (oldResult, newResult) => {
@@ -297,18 +295,12 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
   return selectedPropertyControls.map(({ controls, targets }, index) => {
     ////////////////////////
     // useGivenPropsWithoutControls
-    const parsedPropertyControls = controls
     const selectedElements = selectedElementsFIXME[index]
     const selectedComponents = selectedComponentsFIXME[index]
 
-    const propertiesWithControls = foldEither(
-      () => [],
-      (success) =>
-        filterSpecialProps(
-          // TODO fix having to rely on getPropertyControlNames
-          getPropertyControlNames(success),
-        ),
-      parsedPropertyControls,
+    const propertiesWithControls = filterSpecialProps(
+      // TODO fix having to rely on getPropertyControlNames
+      getPropertyControlNames(controls),
     )
     let detectedPropsWithoutControls: Array<string> = []
     let definedControlsWithoutValues: Set<string> = new Set(propertiesWithControls)
@@ -329,9 +321,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
     ////////////////////////
     // useUsedPropsWithoutControls
 
-    const propertiesWithControlsKeys_MAYBE_KILLME: Array<string> = Object.keys(
-      eitherToMaybe(parsedPropertyControls) ?? {},
-    )
+    const propertiesWithControlsKeys_MAYBE_KILLME: Array<string> = Object.keys(controls ?? {})
     let detectedPropsWithNoValue: Array<string> = []
     fastForEach(selectedComponents, (component) => {
       if (isJSXElement(component.rootElement)) {
@@ -371,10 +361,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<PropertyCon
   })
 }
 
-function areMatchingPropertyControls(
-  a: ParseResult<ParsedPropertyControls>,
-  b: ParseResult<ParsedPropertyControls>,
-): boolean {
+function areMatchingPropertyControls(a: PropertyControls, b: PropertyControls): boolean {
   // TODO create equality call
   return deepEqual(a, b)
 }

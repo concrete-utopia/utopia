@@ -13,7 +13,6 @@ import {
   getDirectionAwareLabels,
 } from './flex-container-controls'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 
 export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((props) => {
@@ -23,7 +22,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   const alignItems = useInspectorLayoutInfo('alignItems')
   const alignContent = useInspectorLayoutInfo('alignContent')
   const justifyContent = useInspectorLayoutInfo('justifyContent')
-  const flexGap = useInspectorLayoutInfo('FlexGap')
+  const flexGap = useInspectorLayoutInfo('flexGap')
 
   const {
     justifyFlexStart,

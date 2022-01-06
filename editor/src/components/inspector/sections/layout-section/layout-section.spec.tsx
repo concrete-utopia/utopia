@@ -2,7 +2,6 @@ import { act, render } from '@testing-library/react'
 import React from 'react'
 import { PropertyPath } from 'src/core/shared/project-file-types'
 import { LayoutSystem } from 'utopia-api'
-import { createLayoutPropertyPath } from '../../../../core/layout/layout-helpers-new'
 import {
   enableWhyDidYouRenderOnComponent,
   setupReactWhyDidYouRender,
@@ -17,6 +16,7 @@ import {
 import { LayoutSection } from './layout-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'
+import { stylePropPathMappingFn } from '../../common/property-path-hooks'
 
 describe('Layout Section', () => {
   enableWhyDidYouRenderOnComponent(LayoutSection)
@@ -28,7 +28,7 @@ describe('Layout Section', () => {
     const storeHookForTest = getStoreHook(utils.NO_OP)
 
     storeHookForTest.updateStore((store) => {
-      return editPropOfSelectedView(store, createLayoutPropertyPath('Width'), 198)
+      return editPropOfSelectedView(store, stylePropPathMappingFn('width', ['style']), 198)
     })
 
     const [getUpdateCount] = setupReactWhyDidYouRender(true)

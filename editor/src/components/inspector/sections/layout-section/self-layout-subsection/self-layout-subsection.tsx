@@ -34,13 +34,15 @@ import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
 import { selectComponents } from '../../../../editor/actions/action-creators'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { unless, when } from '../../../../../utils/react-conditionals'
-import { InspectorCallbackContext } from '../../../common/property-path-hooks'
 import {
-  createLayoutPropertyPath,
-  LayoutProp,
-  StyleLayoutProp,
-} from '../../../../../core/layout/layout-helpers-new'
+  InspectorCallbackContext,
+  InspectorPropsContext,
+  stylePropPathMappingFn,
+} from '../../../common/property-path-hooks'
+import { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
+import { useContextSelector } from 'use-context-selector'
+import { PropertyPath } from '../../../../../core/shared/project-file-types'
 
 export type SelfLayoutTab = 'absolute' | 'flex' | 'flow' | 'sticky'
 
@@ -147,7 +149,7 @@ interface LayoutSectionHeaderProps {
   toggleSection: () => void
 }
 
-const selfLayoutProperties: Array<LayoutProp | StyleLayoutProp> = [
+const selfLayoutProperties: Array<StyleLayoutProp> = [
   'alignSelf',
   'bottom',
   'flex',
@@ -171,31 +173,40 @@ const selfLayoutProperties: Array<LayoutProp | StyleLayoutProp> = [
   'position',
   'right',
   'top',
-  'PinnedLeft',
-  'PinnedTop',
-  'PinnedRight',
-  'PinnedBottom',
+  'left',
+  'top',
+  'right',
+  'bottom',
 ]
 
-const selfLayoutConfigPropertyPaths = selfLayoutProperties.map((name) =>
-  createLayoutPropertyPath(name),
-)
+function selfLayoutConfigPropertyPaths(propertyTarget: ReadonlyArray<string>): Array<PropertyPath> {
+  return selfLayoutProperties.map((name) => {
+    return stylePropPathMappingFn(name, propertyTarget)
+  })
+}
 
 function useDeleteAllSelfLayoutConfig() {
+  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
   return React.useCallback(() => {
-    onUnsetValue(selfLayoutConfigPropertyPaths, false)
-  }, [onUnsetValue])
+    onUnsetValue(selfLayoutConfigPropertyPaths(propertyTarget), false)
+  }, [onUnsetValue, propertyTarget])
 }
+
 function useAddPositionAbsolute() {
+  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
   const { onSubmitValue } = React.useContext(InspectorCallbackContext)
   return React.useCallback(() => {
     onSubmitValue(
       jsxAttributeValue('absolute', emptyComments),
-      createLayoutPropertyPath('position'),
+      stylePropPathMappingFn('position', propertyTarget),
       false,
     )
-  }, [onSubmitValue])
+  }, [onSubmitValue, propertyTarget])
 }
 
 const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {

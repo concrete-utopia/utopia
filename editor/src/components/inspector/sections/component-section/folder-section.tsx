@@ -2,25 +2,23 @@
 /** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
-import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
-import { eitherToMaybe, foldEither } from '../../../../core/shared/either'
 import { unless, when } from '../../../../utils/react-conditionals'
 import { CSSCursor } from '../../../canvas/canvas-types'
 import { ControlDescription } from 'utopia-api'
 import { inferControlTypeBasedOnValue } from './component-section-utils'
 import { HiddenControls } from './hidden-controls-section'
 import * as PP from '../../../../core/shared/property-path'
-import * as EP from '../../../../core/shared/element-path'
 import { useColorTheme } from '../../../../uuiui'
 import { RowOrFolderWrapper } from './row-or-folder-wrapper'
-import { RowForControl, RowForInvalidControl } from './component-section'
+import { RowForControl } from './component-section'
 import { InspectorWidthAtom } from '../../common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
+import { PropertyControls } from 'utopia-api'
 
 interface FolderSectionProps {
   isRoot: boolean
-  parsedPropertyControls: ParsedPropertyControls
+  propertyControls: PropertyControls
   indentationLevel: number
   visibleEmptyControls: string[]
   unsetPropNames: string[]
@@ -36,35 +34,32 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
   const colorTheme = useColorTheme()
   const hiddenPropsList = React.useMemo(
     () =>
-      Object.keys(props.parsedPropertyControls).filter((prop) => {
-        const parsedControl = props.parsedPropertyControls[prop]
-        const isVisibleByDefault = foldEither(
-          (_) => false,
-          (r) => r.control === 'folder' || (r.visibleByDefault ?? false),
-          parsedControl,
-        )
+      Object.keys(props.propertyControls).filter((prop) => {
+        const control = props.propertyControls[prop]
+        const isVisibleByDefault =
+          control.control === 'folder' || (control.visibleByDefault ?? false)
         return (
           !isVisibleByDefault &&
           props.unsetPropNames.includes(prop) &&
           !props.visibleEmptyControls.includes(prop)
         )
       }),
-    [props.unsetPropNames, props.visibleEmptyControls, props.parsedPropertyControls],
+    [props.unsetPropNames, props.visibleEmptyControls, props.propertyControls],
   )
 
   const controlsWithValue = React.useMemo(
     () =>
-      Object.keys(props.parsedPropertyControls).filter((prop) => {
+      Object.keys(props.propertyControls).filter((prop) => {
         return !hiddenPropsList.includes(prop) && !props.visibleEmptyControls.includes(prop)
       }),
-    [props.parsedPropertyControls, props.visibleEmptyControls, hiddenPropsList],
+    [props.propertyControls, props.visibleEmptyControls, hiddenPropsList],
   )
   const emptyControls = React.useMemo(
     () =>
       props.visibleEmptyControls.filter((prop) => {
-        return Object.keys(props.parsedPropertyControls).includes(prop)
+        return Object.keys(props.propertyControls).includes(prop)
       }),
-    [props.parsedPropertyControls, props.visibleEmptyControls],
+    [props.propertyControls, props.visibleEmptyControls],
   )
 
   const toggleOpen = React.useCallback(() => {
@@ -89,35 +84,20 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
   )
 
   const createRowForControl = (propName: string, focusOnMount: boolean) => {
-    const controlDescription = props.parsedPropertyControls[propName]
-    return foldEither(
-      (propertyError) => {
-        return (
-          <RowForInvalidControl
-            key={propName}
-            title={propName}
-            propName={propName}
-            propertyError={propertyError}
-          />
-        )
-      },
-      (propertySuccess) => {
-        return (
-          <RowOrFolderWrapper
-            key={`section-row-${propName}`}
-            propPath={PP.create([propName])}
-            controlDescription={propertySuccess}
-            isScene={false}
-            setGlobalCursor={props.setGlobalCursor}
-            indentationLevel={props.indentationLevel + 1}
-            visibleEmptyControls={props.visibleEmptyControls}
-            unsetPropNames={props.unsetPropNames}
-            showHiddenControl={props.showHiddenControl}
-            focusOnMount={focusOnMount}
-          />
-        )
-      },
-      controlDescription,
+    const controlDescription = props.propertyControls[propName]
+    return (
+      <RowOrFolderWrapper
+        key={`section-row-${propName}`}
+        propPath={PP.create([propName])}
+        controlDescription={controlDescription}
+        isScene={false}
+        setGlobalCursor={props.setGlobalCursor}
+        indentationLevel={props.indentationLevel + 1}
+        visibleEmptyControls={props.visibleEmptyControls}
+        unsetPropNames={props.unsetPropNames}
+        showHiddenControl={props.showHiddenControl}
+        focusOnMount={focusOnMount}
+      />
     )
   }
 

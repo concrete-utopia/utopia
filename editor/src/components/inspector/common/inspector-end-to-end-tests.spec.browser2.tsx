@@ -129,22 +129,22 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const bottomControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedBottom-number-input',
+      'position-bottom-number-input',
     )) as HTMLInputElement
     const rightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedRight-number-input',
+      'position-right-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
@@ -223,22 +223,22 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const bottomControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedBottom-number-input',
+      'position-bottom-number-input',
     )) as HTMLInputElement
     const rightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedRight-number-input',
+      'position-right-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"335"`)
@@ -317,22 +317,22 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const bottomControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedBottom-number-input',
+      'position-bottom-number-input',
     )) as HTMLInputElement
     const rightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedRight-number-input',
+      'position-right-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
@@ -410,16 +410,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"10vw"`)
@@ -483,10 +483,10 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -571,16 +571,16 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -701,16 +701,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -803,16 +803,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -904,16 +904,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1005,16 +1005,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1138,16 +1138,16 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedTop-number-input',
+      'position-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-PinnedLeft-number-input',
+      'position-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1246,6 +1246,56 @@ describe('inspector tests with real metadata', () => {
       await dispatchDone
     })
 
+    const earlyMetadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+
+    const earlyWidthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-width-number-input',
+    )) as HTMLInputElement
+    const earlyHeightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-height-number-input',
+    )) as HTMLInputElement
+    const earlyPaddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-L',
+    )) as HTMLInputElement
+    const earlyPaddingRightControl = (await renderResult.renderedDOM.findByTestId(
+      'padding-R',
+    )) as HTMLInputElement
+    const earlyOpacityControl = (await renderResult.renderedDOM.findByTestId(
+      'opacity-number-control',
+    )) as HTMLInputElement
+
+    matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(earlyWidthControl.value, `"203"`)
+    matchInlineSnapshotBrowser(
+      earlyWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
+
+    matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(earlyHeightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(
+      earlyHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
+
+    matchInlineSnapshotBrowser(earlyPaddingLeftControl.value, `"16"`)
+    matchInlineSnapshotBrowser(
+      earlyPaddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
+
+    matchInlineSnapshotBrowser(earlyPaddingRightControl.value, `"12"`)
+    matchInlineSnapshotBrowser(
+      earlyPaddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
+
+    matchInlineSnapshotBrowser(earlyOpacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(
+      earlyOpacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"detected-fromcss"`,
+    )
+
     await act(async () => {
       await screen.findByTestId('target-selector-style')
       fireEvent.click(screen.getByTestId('target-selector'))
@@ -1254,53 +1304,53 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('target-selector-css')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
+    const laterMetadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
-    const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+    const laterWidthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-width-number-input',
     )) as HTMLInputElement
-    const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+    const laterHeightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-height-number-input',
     )) as HTMLInputElement
-    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+    const laterPaddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
     )) as HTMLInputElement
-    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
+    const laterPaddingRightControl = (await renderResult.renderedDOM.findByTestId(
       'padding-R',
     )) as HTMLInputElement
-    const opacityControl = (await renderResult.renderedDOM.findByTestId(
+    const laterOpacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-control',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
-    matchInlineSnapshotBrowser(widthControl.value, `"203"`)
+    matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['width'], `"203px"`)
+    matchInlineSnapshotBrowser(laterWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
-      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"102px"`)
-    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
+    matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
+    matchInlineSnapshotBrowser(laterHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
-      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(paddingLeftControl.value, `"16"`)
+    matchInlineSnapshotBrowser(laterPaddingLeftControl.value, `"16"`)
     matchInlineSnapshotBrowser(
-      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      laterPaddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(paddingRightControl.value, `"12"`)
+    matchInlineSnapshotBrowser(laterPaddingRightControl.value, `"12"`)
     matchInlineSnapshotBrowser(
-      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      laterPaddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(opacityControl.value, `"0.5"`)
+    matchInlineSnapshotBrowser(laterOpacityControl.value, `"0.5"`)
     matchInlineSnapshotBrowser(
-      opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      laterOpacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
   })
@@ -1351,10 +1401,10 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1372,25 +1422,25 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"simple-unknown-css"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"simple-unknown-css"`,
     )
 
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(paddingRightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(radiusControl.value, `"0"`)
@@ -1469,10 +1519,10 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-height-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',

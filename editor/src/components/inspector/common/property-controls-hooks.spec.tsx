@@ -20,26 +20,24 @@ import {
   ElementInstanceMetadataMap,
   jsxElementWithoutUID,
 } from '../../../core/shared/element-template'
-import { parsePropertyControls } from '../../../core/property-controls/property-controls-parser'
+import { PropertyControls } from 'utopia-api'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'
 
-const propertyControlsForApp = parsePropertyControls({
+const propertyControlsForApp: PropertyControls = {
   propWithControlButNoValue: {
     control: 'string-input',
     label: 'No Value',
-    defaultValue: 'doggie',
   },
-})
+}
 
-const propertyControlsForOtherComponent = parsePropertyControls({
+const propertyControlsForOtherComponent: PropertyControls = {
   propWithOtherKey: {
     control: 'number-input',
     label: 'Katz',
-    defaultValue: 5,
   },
-})
+}
 
 function callPropertyControlsHook(selectedViews: ElementPath[]) {
   const persistentModel = createTestProjectWithCode(`

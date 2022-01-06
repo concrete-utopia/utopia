@@ -1229,7 +1229,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       scrollAnimation: false,
       transientProperties: null,
       resizeOptions: {
-        propertyTargetOptions: ['Width', 'Height'],
+        propertyTargetOptions: ['width', 'height'],
         propertyTargetSelectedIndex: 0,
       },
       controls: {
@@ -1489,7 +1489,7 @@ export function editorModelFromPersistentModel(
       scrollAnimation: false,
       transientProperties: null,
       resizeOptions: {
-        propertyTargetOptions: ['Width', 'Height'],
+        propertyTargetOptions: ['width', 'height'],
         propertyTargetSelectedIndex: 0,
       },
       controls: {

@@ -1,24 +1,22 @@
 import React from 'react'
 import { useContext } from 'use-context-selector'
 import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../../../../core/model/utopia-constants'
-import { eitherToMaybe, foldEither } from '../../../../core/shared/either'
+import { eitherToMaybe } from '../../../../core/shared/either'
 import { getJSXAttribute } from '../../../../core/shared/element-template'
 import { jsxSimpleAttributeToValue } from '../../../../core/shared/jsx-attributes'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { InspectorPropsContext, InspectorPropsContextData } from '../../common/property-path-hooks'
 import * as EP from '../../../../core/shared/element-path'
-import { ParseResult } from '../../../../utils/value-parser-utils'
-import { ParsedPropertyControls } from '../../../../core/property-controls/property-controls-parser'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { setCursorOverlay } from '../../../editor/actions/action-creators'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import { useHiddenElements } from './hidden-controls-section'
-import { ParseErrorControl } from './component-section'
 import { FolderSection } from './folder-section'
 import { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { VerySubdued } from '../../../../uuiui'
 import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
+import { PropertyControls } from 'utopia-api'
 
 function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData {
   const currentContext = useContext(InspectorPropsContext)
@@ -45,7 +43,7 @@ function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData 
 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
-  propertyControls: ParseResult<ParsedPropertyControls>
+  propertyControls: PropertyControls
   detectedPropsWithNoValue: string[]
   detectedPropsAndValuesWithoutControls: Record<string, unknown>
   propsWithControlsButNoValue: string[]
@@ -79,25 +77,17 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
   const updatedContext = useKeepReferenceEqualityIfPossible(useFilterPropsContext(targets))
   const [visibleEmptyControls, showHiddenControl] = useHiddenElements()
 
-  const rootFolder = foldEither(
-    (rootParseError) => {
-      return <ParseErrorControl parseError={rootParseError} />
-    },
-    (rootParseSuccess) => {
-      return (
-        <FolderSection
-          isRoot={true}
-          indentationLevel={0}
-          parsedPropertyControls={rootParseSuccess}
-          setGlobalCursor={setGlobalCursor}
-          visibleEmptyControls={visibleEmptyControls}
-          unsetPropNames={propsWithControlsButNoValue}
-          showHiddenControl={showHiddenControl}
-          detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
-        />
-      )
-    },
-    propertyControls,
+  const rootFolder = (
+    <FolderSection
+      isRoot={true}
+      indentationLevel={0}
+      propertyControls={propertyControls}
+      setGlobalCursor={setGlobalCursor}
+      visibleEmptyControls={visibleEmptyControls}
+      unsetPropNames={propsWithControlsButNoValue}
+      showHiddenControl={showHiddenControl}
+      detectedPropsAndValuesWithoutControls={detectedPropsAndValuesWithoutControls}
+    />
   )
 
   return (

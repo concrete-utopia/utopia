@@ -1,9 +1,6 @@
 import React from 'react'
-import {
-  createLayoutPropertyPath,
-  LayoutTargetableProp,
-  StyleLayoutProp,
-} from '../../../core/layout/layout-helpers-new'
+import { useContextSelector } from 'use-context-selector'
+import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { eitherToMaybe, left } from '../../../core/shared/either'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
@@ -16,31 +13,16 @@ import {
 } from '../../editor/actions/action-creators'
 import { usePrevious } from '../../editor/hook-utils'
 import { useEditorState } from '../../editor/store/store-hook'
+import {
+  InspectorPropsContext,
+  stylePropPathMappingFn,
+} from '../../inspector/common/property-path-hooks'
 
 interface PropertyTargetSelectorProps {
   targetComponentMetadata: ElementInstanceMetadata | null
   top: number
   left: number
   options: Array<LayoutTargetableProp>
-}
-
-function labelForOption(option: LayoutTargetableProp): string {
-  switch (option) {
-    case 'Width':
-      return 'width'
-    case 'Height':
-      return 'height'
-    case 'PinnedLeft':
-      return 'left'
-    case 'PinnedTop':
-      return 'top'
-    case 'PinnedRight':
-      return 'right'
-    case 'PinnedBottom':
-      return 'bottom'
-    default:
-      return option
-  }
 }
 
 export const PropertyTargetSelector = React.memo(
@@ -53,6 +35,9 @@ export const PropertyTargetSelector = React.memo(
       }
     }, 'PropertyTargetSelector resizeOptions')
 
+    const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+      return contextData.targetPath
+    })
     const onKeyDown = React.useCallback(
       (event: KeyboardEvent) => {
         if (event.key === 'Tab') {
@@ -79,11 +64,11 @@ export const PropertyTargetSelector = React.memo(
         eitherToMaybe(
           getSimpleAttributeAtPath(
             left(props.targetComponentMetadata?.props ?? {}),
-            createLayoutPropertyPath(option),
+            stylePropPathMappingFn(option, targetPath),
           ),
         ),
       )
-    }, [resizeOptions.propertyTargetOptions, props.targetComponentMetadata?.props])
+    }, [resizeOptions.propertyTargetOptions, props.targetComponentMetadata?.props, targetPath])
 
     const defaultSelectedOptionIndex = React.useMemo(() => {
       const indexOfFirstWithValue = valuesForProp.findIndex((value) => value != null)
@@ -127,7 +112,7 @@ export const PropertyTargetSelector = React.memo(
                 borderRadius: 5,
               }}
             >
-              {labelForOption(option)}: <span style={{ float: 'right' }}>{valueForProp}</span>
+              {option}: <span style={{ float: 'right' }}>{valueForProp}</span>
             </div>
           )
         })}

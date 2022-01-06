@@ -1,4 +1,3 @@
-import { right } from '../../core/shared/either'
 import {
   PackageStatusMap,
   PossiblyUnversionedNpmDependency,
@@ -42,7 +41,7 @@ describe('getComponentGroups', () => {
     const propertyControlsInfo: PropertyControlsInfo = {
       '@heroicons/react/solid': {
         BeakerIcon: {
-          properties: right({}),
+          properties: {},
           variants: [],
         },
       },
@@ -64,7 +63,7 @@ describe('getDependencyStatus', () => {
     const propertyControlsInfo: PropertyControlsInfo = {
       '@heroicons/react/solid': {
         BeakerIcon: {
-          properties: right({}),
+          properties: {},
           variants: [],
         },
       },

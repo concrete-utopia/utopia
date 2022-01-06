@@ -94,7 +94,7 @@ export function useTriggerResizePerformanceTest(): () => void {
         ),
         targetStartPoint,
         { x: framesPassed % 100, y: framesPassed % 100 } as CanvasVector,
-        'Width',
+        'width',
         true,
         false,
         false,

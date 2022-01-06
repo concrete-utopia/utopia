@@ -5,7 +5,7 @@ import {
   testPrintCodeFromEditorState,
   getEditorState,
 } from './ui-jsx.test-utils'
-import { singleResizeChange, EdgePosition, pinMoveChange } from './canvas-types'
+import { singleResizeChange, EdgePosition, pinMoveChange, pinFrameChange } from './canvas-types'
 import { CanvasVector, canvasRectangle } from '../../core/shared/math-utils'
 import { updateFramesOfScenesAndComponents } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
@@ -339,6 +339,41 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       ),
     )
   })
+  it('a simple TLWH pin change with values in percentages', async () => {
+    const testProject = getEditorState(
+      makeTestProjectCodeWithSnippet(`
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '30%', height: '40%' }}
+        data-uid='bbb'
+      />
+    </View>
+    `),
+    )
+
+    const pinChange = singleResizeChange(
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      { x: 1, y: 1 } as EdgePosition,
+      { x: 60, y: 40 } as CanvasVector,
+    )
+
+    const updatedProject = updateFramesOfScenesAndComponents(
+      testProject,
+      [pinChange],
+      canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    )
+
+    expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '45%', height: '50%' }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
   it('a simple TLWH pin change with expression, the expression is not changed', async () => {
     const testProject = getEditorState(
       makeTestProjectCodeWithSnippet(`
@@ -403,6 +438,44 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
         `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50pt', top: '5em', width: '50vw', height: '10cm' }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+})
+
+describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
+  it('a simple TLWH pin change with values in percentages', async () => {
+    const testProject = getEditorState(
+      makeTestProjectCodeWithSnippet(`
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '30%', height: '40%' }}
+        data-uid='bbb'
+      />
+    </View>
+    `),
+    )
+
+    const pinChange = pinFrameChange(
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      canvasRectangle({ x: 50, y: 50, width: 200, height: 300 }),
+      { x: 1, y: 1 } as EdgePosition,
+    )
+
+    const updatedProject = updateFramesOfScenesAndComponents(
+      testProject,
+      [pinChange],
+      canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    )
+
+    expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: '50%', height: '75%' }}
           data-uid='bbb'
         />
       </View>`,
