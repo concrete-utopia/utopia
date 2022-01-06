@@ -24,6 +24,8 @@ specifiers:
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 7.0.1
   '@relative-ci/agent': ^2.1.0
+  '@rollup/plugin-commonjs': ^21.0.1
+  '@rollup/plugin-replace': ^3.0.1
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': ^1.0.4
   '@svgr/plugin-jsx': 5.5.0
@@ -193,12 +195,12 @@ specifiers:
   rc-slider: git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
   rc-table: 7.8.6
   re-resizable: 6.9.1
-  react: npm:utopia-react@17.0.0-rc.1
+  react: 17.0.2
   react-contexify: 5.0.0
   react-dev-utils: 10.2.1
   react-dnd: 10.0.2
   react-dnd-html5-backend: 10.0.2
-  react-dom: npm:utopia-react-dom@17.0.0-rc.1
+  react-dom: 17.0.2
   react-error-overlay: git://github.com/concrete-utopia/react-error-overlay.git#201980990d653e821f36ab4f921a4f83588a8a42
   react-helmet: 6.1.0
   react-highlight-words: 0.17.0
@@ -246,7 +248,7 @@ specifiers:
   utopia-vscode-common: file:../utopia-vscode-common
   uuid: 8.3.2
   val-loader: 2.1.0
-  vite: ^2.7.0
+  vite: ^2.7.2
   vite-plugin-html: ^2.1.2
   webpack: 5.52.0
   webpack-bundle-analyzer: 4.4.1
@@ -267,21 +269,21 @@ dependencies:
   '@babel/standalone': 7.15.7
   '@babel/types': 7.15.6
   '@emotion/cache': 10.0.29
-  '@emotion/react': 11.1.2_99e561a191e65003b22d8f0510df39a9
+  '@emotion/react': 11.1.2_cc6baefcf4bc24a5c9760e85f28ce9d5
   '@emotion/serialize': 1.0.2
-  '@emotion/styled': 11.0.0_0ded4bf226a322a5840dc66c9d820008
+  '@emotion/styled': 11.0.0_841630f2641650e15a7650daae16f75a
   '@emotion/styled-base': 11.0.0
   '@popperjs/core': 2.4.4
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': 1.0.6
   '@svgr/plugin-jsx': 5.5.0
-  '@tippyjs/react': 4.1.0_d9cccff7df39c9a08a2a815f75fb6cbc
+  '@tippyjs/react': 4.1.0_react-dom@17.0.2+react@17.0.2
   '@types/fontfaceobserver': 0.0.6
   '@types/react-syntax-highlighter': 11.0.4
-  '@use-it/interval': 0.1.3_utopia-react@17.0.0-rc.1
+  '@use-it/interval': 0.1.3_react@17.0.2
   ajv: 6.4.0
   anser: 2.1.0
-  antd: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+  antd: 4.3.5_react-dom@17.0.2+react@17.0.2
   babel-eslint: 10.0.1_eslint@6.8.0
   babel-plugin-syntax-jsx: 6.18.0
   babel-plugin-transform-react-jsx: 6.24.1
@@ -290,7 +292,7 @@ dependencies:
   chroma-js: 2.1.0
   classnames: 2.2.6
   clipboard-polyfill: 2.4.6
-  console-feed: 2.8.8_120e34cc879668f8c581a0795dcbac51
+  console-feed: 2.8.8_de126fcd90ffc2bc7551262c6897e190
   create-react-class: 15.6.3
   css-tree: 1.1.3
   dom-to-image-improved: 2.8.0
@@ -305,12 +307,12 @@ dependencies:
   graphlib: 2.1.1
   hosted-git-info: 3.0.5
   html-entities: 1.2.1
-  html-react-parser: 0.13.0_utopia-react@17.0.0-rc.1
+  html-react-parser: 0.13.0_react@17.0.2
   immer: 3.2.0
   immutability-helper: 2.4.0
   istextorbinary: 5.11.0
   jest-fetch-mock: 3.0.1
-  jotai: 1.4.2_505e9a4a4bca713d56f1d49dedb15ff7
+  jotai: 1.4.2_47735191ee03d3a99d59ec79a120468a
   json5: 0.5.1
   jszip: 3.5.0
   localforage: 1.7.3
@@ -331,28 +333,28 @@ dependencies:
   prop-types: 15.6.2
   pubsub-js: 1.9.3
   rc-slider: github.com/momentumworks/slider/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f
-  rc-table: 7.8.6_d9cccff7df39c9a08a2a815f75fb6cbc
-  re-resizable: 6.9.1_d9cccff7df39c9a08a2a815f75fb6cbc
-  react: /utopia-react/17.0.0-rc.1
-  react-contexify: 5.0.0_d9cccff7df39c9a08a2a815f75fb6cbc
-  react-dnd: 10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
+  rc-table: 7.8.6_react-dom@17.0.2+react@17.0.2
+  re-resizable: 6.9.1_react-dom@17.0.2+react@17.0.2
+  react: 17.0.2
+  react-contexify: 5.0.0_react-dom@17.0.2+react@17.0.2
+  react-dnd: 10.0.2_react-dom@17.0.2+react@17.0.2
   react-dnd-html5-backend: 10.0.2
-  react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+  react-dom: 17.0.2_react@17.0.2
   react-error-overlay: github.com/concrete-utopia/react-error-overlay/201980990d653e821f36ab4f921a4f83588a8a42
-  react-helmet: 6.1.0_utopia-react@17.0.0-rc.1
-  react-highlight-words: 0.17.0_utopia-react@17.0.0-rc.1
-  react-hot-loader: 4.12.12_d9cccff7df39c9a08a2a815f75fb6cbc
+  react-helmet: 6.1.0_react@17.0.2
+  react-highlight-words: 0.17.0_react@17.0.2
+  react-hot-loader: 4.12.12_react-dom@17.0.2+react@17.0.2
   react-merge-refs: 1.0.0
-  react-onclickoutside: 6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc
-  react-popper: 2.2.3_1d5a61f63a74b6fe21fa53c9ee4391e1
-  react-select: 3.1.0_d9cccff7df39c9a08a2a815f75fb6cbc
-  react-spring: 9.0.0-rc.3_fb240f2ddf3ca4b47c2b562802d6427d
-  react-syntax-highlighter: 12.2.1_utopia-react@17.0.0-rc.1
-  react-use-gesture: 6.0.2_utopia-react@17.0.0-rc.1
-  react-virtualized-auto-sizer: 1.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
-  react-vtree: 2.0.0_255ea23c1365d9cdd0d891903b4d6c66
-  react-window: 1.8.5_d9cccff7df39c9a08a2a815f75fb6cbc
-  react-windowed-select: 3.1.2_b9c7432b687c5eca0e0b2d49cc5d18aa
+  react-onclickoutside: 6.9.0_react-dom@17.0.2+react@17.0.2
+  react-popper: 2.2.3_c9bebfdbf3a6095aaa44b0ca88edc6e1
+  react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+  react-spring: 9.0.0-rc.3_1ef32a1cd619627163803910d78d9d17
+  react-syntax-highlighter: 12.2.1_react@17.0.2
+  react-use-gesture: 6.0.2_react@17.0.2
+  react-virtualized-auto-sizer: 1.0.2_react-dom@17.0.2+react@17.0.2
+  react-vtree: 2.0.0_207e0528bc88aac76fcca2adfaa56e82
+  react-window: 1.8.5_react-dom@17.0.2+react@17.0.2
+  react-windowed-select: 3.1.2_e9e8607403d716bb60536b8b19941e71
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
   rollup-plugin-polyfill-node: 0.8.0
@@ -367,12 +369,12 @@ dependencies:
   twind: 0.16.16_typescript@4.1.3
   typescript: 4.1.3
   url-join: 4.0.1
-  use-context-selector: 1.3.9_658050d9619fb945721b0766f6ed00e6
+  use-context-selector: 1.3.9_00b679fb216b1c8cb6c33b09994586b1
   utopia-api: link:../utopia-api
   utopia-vscode-common: link:../utopia-vscode-common
   uuid: 8.3.2
   xstate: 4.23.1
-  zustand: 3.1.3_utopia-react@17.0.0-rc.1
+  zustand: 3.1.3_react@17.0.2
 
 optionalDependencies:
   fsevents: 2.1.2
@@ -383,12 +385,14 @@ devDependencies:
   '@babel/preset-env': 7.15.6_@babel+core@7.15.5
   '@babel/preset-react': 7.14.5_@babel+core@7.15.5
   '@babel/preset-typescript': 7.15.0_@babel+core@7.15.5
-  '@hot-loader/react-dom': 16.13.0_utopia-react@17.0.0-rc.1
+  '@hot-loader/react-dom': 16.13.0_react@17.0.2
   '@originjs/vite-plugin-commonjs': 1.0.1
-  '@react-three/fiber': 7.0.1_fb240f2ddf3ca4b47c2b562802d6427d
+  '@react-three/fiber': 7.0.1_1ef32a1cd619627163803910d78d9d17
   '@relative-ci/agent': 2.1.0_webpack@5.52.0
-  '@testing-library/react': 9.1.4_d9cccff7df39c9a08a2a815f75fb6cbc
-  '@testing-library/react-hooks': 5.1.2_dde3fa6c6ce2f58e39e177699e67aa1b
+  '@rollup/plugin-commonjs': 21.0.1
+  '@rollup/plugin-replace': 3.0.1
+  '@testing-library/react': 9.1.4_react-dom@17.0.2+react@17.0.2
+  '@testing-library/react-hooks': 5.1.2_eecd09c2c29072ca1ab87f38643c3c2b
   '@types/chai': 3.5.1
   '@types/chroma-js': 2.0.0
   '@types/classnames': 2.2.4
@@ -423,7 +427,7 @@ devDependencies:
   '@types/ramda': github.com/types/npm-ramda/9529aa3c8ff70ff84afcbc0be83443c00f30ea90
   '@types/rc-slider': 8.2.2
   '@types/react': 16.9.49
-  '@types/react-dnd': 3.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
+  '@types/react-dnd': 3.0.2_react-dom@17.0.2+react@17.0.2
   '@types/react-dom': 16.9.8
   '@types/react-helmet': 6.1.0
   '@types/react-highlight-words': 0.16.3
@@ -440,7 +444,7 @@ devDependencies:
   '@typescript-eslint/eslint-plugin': 4.24.0_d722183cf3439456233a2142a3db9ede
   '@typescript-eslint/parser': 4.24.0_eslint@6.8.0+typescript@4.1.3
   '@vitejs/plugin-react': 1.1.1
-  '@welldone-software/why-did-you-render': 5.0.0-rc.1_utopia-react@17.0.0-rc.1
+  '@welldone-software/why-did-you-render': 5.0.0-rc.1_react@17.0.2
   babel-jest: 27.2.4_@babel+core@7.15.5
   babel-loader: 8.2.2_02ab79faf18a98050fd2cd956ffa58f7
   browserify: 13.1.0
@@ -495,7 +499,7 @@ devDependencies:
   pegjs: 0.10.0
   pretty-format: 26.1.0
   react-dev-utils: 10.2.1
-  react-test-renderer: 16.9.0_utopia-react@17.0.0-rc.1
+  react-test-renderer: 16.9.0_react@17.0.2
   script-ext-html-webpack-plugin: 2.1.4_d0775fc9e9778f8067265599ff567f52
   selenium-webdriver: 3.0.1
   shuffle-array: 1.0.1
@@ -509,8 +513,8 @@ devDependencies:
   ts-loader: 5.3.3_typescript@4.1.3
   tsify: 3.0.1_4d1d6c3d4616bac72c1ac1866fa71933
   val-loader: 2.1.0_webpack@5.52.0
-  vite: 2.7.0
-  vite-plugin-html: 2.1.2_vite@2.7.0
+  vite: 2.7.10
+  vite-plugin-html: 2.1.2_vite@2.7.10
   webpack: 5.52.0_webpack-cli@4.8.0
   webpack-bundle-analyzer: 4.4.1
   webpack-cli: 4.8.0_5538dd9d11938d6440a99fc24d98090c
@@ -538,7 +542,7 @@ packages:
     resolution: {integrity: sha512-EB0iwlKDGpG93hW8f85CTJTs4SvMX7tt5ceupvhALp1IF44SeUFOMhKUOYqpsoYWQKAOuTRDMqn75rEaKDp0Xw==}
     dev: false
 
-  /@ant-design/icons/4.7.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /@ant-design/icons/4.7.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-aoB4Z7JA431rt6d4u+8xcNPPCrdufSRMUOpxa1ab6mz1JCQZOEVolj2WVs/tDFmN62zzK30mNelEsprLYsSF3g==}
     engines: {node: '>=8'}
     peerDependencies:
@@ -549,12 +553,12 @@ packages:
       '@ant-design/icons-svg': 4.2.1
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /@ant-design/react-slick/0.26.3_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /@ant-design/react-slick/0.26.3_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-FhaFfS+oea0P5WvhaM7BC2/P9r4F0yMoewBpDqVkOq+JxEiKRHJ7iBYJsenv2WEymnWeO3eCuMrz/Eez7pHpGg==}
     peerDependencies:
       react: ^0.14.0 || ^15.0.1 || ^16.0.0
@@ -564,8 +568,8 @@ packages:
       classnames: 2.2.6
       json2mq: 0.2.0
       lodash: 4.17.21
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       resize-observer-polyfill: 1.5.1
     dev: false
 
@@ -2278,7 +2282,7 @@ packages:
       stylis: 4.0.10
     dev: false
 
-  /@emotion/core/10.1.1_utopia-react@17.0.0-rc.1:
+  /@emotion/core/10.1.1_react@17.0.2:
     resolution: {integrity: sha512-ZMLG6qpXR8x031NXD8HJqugy/AZSkAuMxxqB46pmAR7ze47MhNJ56cdoX243QPZdGctrdfo+s08yZTiwaUcRKA==}
     peerDependencies:
       react: '>=16.3.0'
@@ -2289,7 +2293,7 @@ packages:
       '@emotion/serialize': 0.11.16
       '@emotion/sheet': 0.9.4
       '@emotion/utils': 0.11.3
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
   /@emotion/css/10.0.27:
@@ -2332,31 +2336,7 @@ packages:
     resolution: {integrity: sha512-igX9a37DR2ZPGYtV6suZ6whr8pTFtyHL3K/oLUotxpSVO2ASaprmAe2Dkq7tBo7CRY7MMDrAa9nuQP9/YG8FxQ==}
     dev: false
 
-  /@emotion/react/11.1.2_99e561a191e65003b22d8f0510df39a9:
-    resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
-    peerDependencies:
-      '@babel/core': ^7.0.0
-      '@types/react': '*'
-      react: '>=16.8.0'
-    peerDependenciesMeta:
-      '@babel/core':
-        optional: true
-      '@types/react':
-        optional: true
-    dependencies:
-      '@babel/core': 7.15.5
-      '@babel/runtime': 7.15.4
-      '@emotion/cache': 11.4.0
-      '@emotion/serialize': 1.0.2
-      '@emotion/sheet': 1.0.2
-      '@emotion/utils': 1.0.0
-      '@emotion/weak-memoize': 0.2.5
-      '@types/react': 16.9.49
-      hoist-non-react-statics: 3.3.2
-      react: /utopia-react/17.0.0-rc.1
-    dev: false
-
-  /@emotion/react/11.1.2_e1f9689cf4c61979dadc2b0518bb1ca4:
+  /@emotion/react/11.1.2_6d9240b801beafe2a46bc0b02fe8ea73:
     resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -2377,7 +2357,31 @@ packages:
       '@emotion/weak-memoize': 0.2.5
       '@types/react': 17.0.25
       hoist-non-react-statics: 3.3.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
+    dev: false
+
+  /@emotion/react/11.1.2_cc6baefcf4bc24a5c9760e85f28ce9d5:
+    resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
+    peerDependencies:
+      '@babel/core': ^7.0.0
+      '@types/react': '*'
+      react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@types/react':
+        optional: true
+    dependencies:
+      '@babel/core': 7.15.5
+      '@babel/runtime': 7.15.4
+      '@emotion/cache': 11.4.0
+      '@emotion/serialize': 1.0.2
+      '@emotion/sheet': 1.0.2
+      '@emotion/utils': 1.0.0
+      '@emotion/weak-memoize': 0.2.5
+      '@types/react': 16.9.49
+      hoist-non-react-statics: 3.3.2
+      react: 17.0.2
     dev: false
 
   /@emotion/serialize/0.11.16:
@@ -2421,7 +2425,7 @@ packages:
     resolution: {integrity: sha512-/NY/PXrQkl/wI0+0E3QWd+m9kMg7h4THmjbPEe0VVnplNtdJC6db0VHDqmaC2tsEDcda6zvy3b8giM9DHa6BLw==}
     dev: false
 
-  /@emotion/styled/11.0.0_0ded4bf226a322a5840dc66c9d820008:
+  /@emotion/styled/11.0.0_841630f2641650e15a7650daae16f75a:
     resolution: {integrity: sha512-498laccxJlBiJqrr2r/fx9q+Pr55D0URP2UyOkoSGLjevb8LLAFWueqthsQ5XijE66iGo7y3rzzEYdA7CHmZEQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -2438,11 +2442,11 @@ packages:
       '@babel/runtime': 7.15.4
       '@emotion/babel-plugin': 11.3.0_@babel+core@7.15.5
       '@emotion/is-prop-valid': 1.1.0
-      '@emotion/react': 11.1.2_99e561a191e65003b22d8f0510df39a9
+      '@emotion/react': 11.1.2_cc6baefcf4bc24a5c9760e85f28ce9d5
       '@emotion/serialize': 1.0.2
       '@emotion/utils': 1.0.0
       '@types/react': 16.9.49
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
   /@emotion/stylis/0.7.1:
@@ -2477,7 +2481,7 @@ packages:
     resolution: {integrity: sha512-6U71C2Wp7r5XtFtQzYrW5iKFT67OixrSxjI4MptCHzdSVlgabczzqLe0ZSgnub/5Kp4hSbpDB1tMytZY9pwxxA==}
     dev: false
 
-  /@hot-loader/react-dom/16.13.0_utopia-react@17.0.0-rc.1:
+  /@hot-loader/react-dom/16.13.0_react@17.0.2:
     resolution: {integrity: sha512-lJZrmkucz2MrQJTQtJobx5MICXcfQvKihszqv655p557HPi0hMOWxrNpiHv3DWD8ugNWjtWcVWqRnFvwsHq1mQ==}
     peerDependencies:
       react: ^16.0.0
@@ -2485,7 +2489,7 @@ packages:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       prop-types: 15.6.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       scheduler: 0.19.1
     dev: true
 
@@ -2788,30 +2792,30 @@ packages:
   /@react-dnd/shallowequal/2.0.0:
     resolution: {integrity: sha512-Pc/AFTdwZwEKJxFJvlxrSmGe/di+aAOBn60sremrpLo6VI/6cmiUYNNwlI5KNYttg7uypzA3ILPMPgxB2GYZEg==}
 
-  /@react-spring/animated/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
+  /@react-spring/animated/9.0.0-rc.3_react@17.0.2:
     resolution: {integrity: sha512-dAvgtKhkYpzzr+EkmZ4ZuJ5CujxCW0LaT109DvO/2MQNk3EWIxcgl+ik4tSulSbgau1GN8RlkRKyDp0wISdQ3Q==}
     dependencies:
       '@babel/runtime': 7.16.5
       '@react-spring/shared': 9.0.0-rc.3
-      react-layout-effect: 1.0.5_utopia-react@17.0.0-rc.1
+      react-layout-effect: 1.0.5_react@17.0.2
     transitivePeerDependencies:
       - react
     dev: false
 
-  /@react-spring/core/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
+  /@react-spring/core/9.0.0-rc.3_react@17.0.2:
     resolution: {integrity: sha512-3OzsVFxpfMJNkkQj8TwAH3NhUAX76AXu6WkslQF4EgBeEoG5eY3m+VvM9RsAsGWDuBKpscZ/wBpFt5Ih6KdGHA==}
     requiresBuild: true
     dependencies:
       '@babel/runtime': 7.16.5
-      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_react@17.0.2
       '@react-spring/shared': 9.0.0-rc.3
-      react-layout-effect: 1.0.5_utopia-react@17.0.0-rc.1
-      use-memo-one: 1.1.2_utopia-react@17.0.0-rc.1
+      react-layout-effect: 1.0.5_react@17.0.2
+      use-memo-one: 1.1.2_react@17.0.2
     transitivePeerDependencies:
       - react
     dev: false
 
-  /@react-spring/konva/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
+  /@react-spring/konva/9.0.0-rc.3_react@17.0.2:
     resolution: {integrity: sha512-uampLRgrHIqA3ilnheePUVEUE+fdeipXORI4XZJFsORP01CUJeJCxBwMagaxvsHJAtuNErMI/IebE1T2W8i5qA==}
     peerDependencies:
       konva: '>=2.6'
@@ -2819,23 +2823,23 @@ packages:
       react-konva: '>=16.8'
     dependencies:
       '@babel/runtime': 7.16.5
-      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_react@17.0.2
+      '@react-spring/core': 9.0.0-rc.3_react@17.0.2
       '@react-spring/shared': 9.0.0-rc.3
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
-  /@react-spring/native/9.0.0-rc.3_utopia-react@17.0.0-rc.1:
+  /@react-spring/native/9.0.0-rc.3_react@17.0.2:
     resolution: {integrity: sha512-7JSixJLfzg8V0IrgyGS3gGr2v8CGh4Kym15Htp3CJq74GFBJMyaQS0KaMjieXnw5alTpQoeGBESfA3v5dPlPYg==}
     peerDependencies:
       react: '>=16.8'
       react-native: '>=0.58'
     dependencies:
       '@babel/runtime': 7.16.5
-      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_react@17.0.2
+      '@react-spring/core': 9.0.0-rc.3_react@17.0.2
       '@react-spring/shared': 9.0.0-rc.3
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
   /@react-spring/shared/9.0.0-rc.3:
@@ -2847,7 +2851,7 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /@react-spring/three/9.0.0-rc.3_24b06abb525ed3fd7bdb483525615d30:
+  /@react-spring/three/9.0.0-rc.3_react@17.0.2+three@0.129.0:
     resolution: {integrity: sha512-H55T+Dnck+hsJ8WgE+tb89ngX1E1lDOpMBG4mGzNLGok6XgGqN0VBsHRN3QDl+aPfmJI1BPFPR6b6WbhwqRNbw==}
     peerDependencies:
       react: '>=16.11'
@@ -2855,28 +2859,28 @@ packages:
       three: '>=0.115'
     dependencies:
       '@babel/runtime': 7.16.5
-      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_react@17.0.2
+      '@react-spring/core': 9.0.0-rc.3_react@17.0.2
       '@react-spring/shared': 9.0.0-rc.3
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       three: 0.129.0
     dev: false
 
-  /@react-spring/web/9.0.0-rc.3_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /@react-spring/web/9.0.0-rc.3_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-rEvipblmihiz8+Eo01zDp5dqWn6XfYk8q2rlN9c18YIOL4o6nuY/VplDoocUMHYfH4liurpO4o1QudKOO1nAiQ==}
     peerDependencies:
       react: '>=16.8'
       react-dom: '>=16.8'
     dependencies:
       '@babel/runtime': 7.16.5
-      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_react@17.0.2
+      '@react-spring/core': 9.0.0-rc.3_react@17.0.2
       '@react-spring/shared': 9.0.0-rc.3
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /@react-spring/zdog/9.0.0-rc.3_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /@react-spring/zdog/9.0.0-rc.3_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-fl2JI098sfOJ+BaS9xCrnz8NSimL8yPrVwO0lHSpXLn/q3o3MYmRAeJnZQv8yDtT6isTHua6Tfb9vWuZWEXSmA==}
     peerDependencies:
       react: '>=16.8'
@@ -2885,14 +2889,14 @@ packages:
       zdog: '>=1.0'
     dependencies:
       '@babel/runtime': 7.16.5
-      '@react-spring/animated': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
-      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
+      '@react-spring/animated': 9.0.0-rc.3_react@17.0.2
+      '@react-spring/core': 9.0.0-rc.3_react@17.0.2
       '@react-spring/shared': 9.0.0-rc.3
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /@react-three/fiber/7.0.1_fb240f2ddf3ca4b47c2b562802d6427d:
+  /@react-three/fiber/7.0.1_1ef32a1cd619627163803910d78d9d17:
     resolution: {integrity: sha512-UrC5wVywYAHIvcfHEreJXqDZJvQTFSuB737MBv1VliI4d1S0MbSLG9hOCDaWWgX9Wq+6jvVxG2JNfGXvZK1ATQ==}
     peerDependencies:
       react: '>=17.0'
@@ -2903,18 +2907,18 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.15.4
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       react-merge-refs: 1.1.0
-      react-reconciler: 0.26.2_utopia-react@17.0.0-rc.1
+      react-reconciler: 0.26.2_react@17.0.2
       react-three-fiber: 0.0.0-deprecated
-      react-use-measure: 2.0.4_d9cccff7df39c9a08a2a815f75fb6cbc
+      react-use-measure: 2.0.4_react-dom@17.0.2+react@17.0.2
       resize-observer-polyfill: 1.5.1
       scheduler: 0.20.2
       three: 0.129.0
-      use-asset: 1.0.4_utopia-react@17.0.0-rc.1
+      use-asset: 1.0.4_react@17.0.2
       utility-types: 3.10.0
-      zustand: 3.5.11_utopia-react@17.0.0-rc.1
+      zustand: 3.5.11_react@17.0.2
     dev: true
 
   /@relative-ci/agent/2.1.0_webpack@5.52.0:
@@ -2947,6 +2951,21 @@ packages:
       java-properties: 1.0.2
     dev: true
 
+  /@rollup/plugin-commonjs/21.0.1:
+    resolution: {integrity: sha512-EA+g22lbNJ8p5kuZJUYyhhDK7WgJckW5g4pNN7n4mAFUM96VuwUnNT3xr2Db2iCZPI1pJPbGyfT5mS9T1dHfMg==}
+    engines: {node: '>= 8.0.0'}
+    peerDependencies:
+      rollup: ^2.38.3
+    dependencies:
+      '@rollup/pluginutils': 3.1.0
+      commondir: 1.0.1
+      estree-walker: 2.0.2
+      glob: 7.2.0
+      is-reference: 1.2.1
+      magic-string: 0.25.7
+      resolve: 1.20.0
+    dev: true
+
   /@rollup/plugin-inject/4.0.3:
     resolution: {integrity: sha512-lzMXmj0LZjd67MI+M8H9dk/oCxR0TYqYAdZ6ZOejWQLSUtud+FUPu4NCMAO8KyWWAalFo8ean7yFHCMvCNsCZw==}
     peerDependencies:
@@ -2957,6 +2976,15 @@ packages:
       magic-string: 0.25.7
     dev: false
 
+  /@rollup/plugin-replace/3.0.1:
+    resolution: {integrity: sha512-989J5oRzf3mm0pO/0djTijdfEh9U3n63BIXN5X7T4U9BP+fN4oxQ6DvDuBvFaHA6scaHQRclqmKQEkBhB7k7Hg==}
+    peerDependencies:
+      rollup: ^1.20.0 || ^2.0.0
+    dependencies:
+      '@rollup/pluginutils': 3.1.0
+      magic-string: 0.25.7
+    dev: true
+
   /@rollup/pluginutils/3.1.0:
     resolution: {integrity: sha512-GksZ6pr6TpIjHm8h9lSQ8pi8BE9VeubNT0OMJ3B5uZJ8pz73NPiqOtCog/x2/QzM1ENChPKxMDhiQuRHsqc+lg==}
     engines: {node: '>= 8.0.0'}
@@ -2966,7 +2994,6 @@ packages:
       '@types/estree': 0.0.39
       estree-walker: 1.0.1
       picomatch: 2.3.0
-    dev: false
 
   /@rollup/pluginutils/4.1.1:
     resolution: {integrity: sha512-clDjivHqWGXi7u+0d2r2sBi4Ie6VLEAzWMIkvJLnDmxoOhBYOTfzGbOQBA32THHm11/LiJbd01tJUpJsbshSWQ==}
@@ -3122,7 +3149,7 @@ packages:
       wait-for-expect: 3.0.2
     dev: true
 
-  /@testing-library/react-hooks/5.1.2_dde3fa6c6ce2f58e39e177699e67aa1b:
+  /@testing-library/react-hooks/5.1.2_eecd09c2c29072ca1ab87f38643c3c2b:
     resolution: {integrity: sha512-jwhtDYZ5gQUIX8cmVCVdtwNvuF5EiCOWjokRlTV+o/V0GdtRZDykUllL1OXq5PS4+J33wGLNQeeWzEHcWrH7tg==}
     peerDependencies:
       react: '>=16.9.0'
@@ -3139,13 +3166,13 @@ packages:
       '@types/react-dom': 16.9.8
       '@types/react-test-renderer': 17.0.1
       filter-console: 0.1.1
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
-      react-error-boundary: 3.1.3_utopia-react@17.0.0-rc.1
-      react-test-renderer: 16.9.0_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-error-boundary: 3.1.3_react@17.0.2
+      react-test-renderer: 16.9.0_react@17.0.2
     dev: true
 
-  /@testing-library/react/9.1.4_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /@testing-library/react/9.1.4_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-fQ/PXZoLcmnS1W5ZiM3P7XBy2x6Hm9cJAT/ZDuZKzJ1fS1rN3j31p7ReAqUe3N1kJ46sNot0n1oiGbz7FPU+FA==}
     engines: {node: '>=8'}
     peerDependencies:
@@ -3155,18 +3182,18 @@ packages:
       '@babel/runtime': 7.15.4
       '@testing-library/dom': 6.16.0
       '@types/testing-library__react': 9.1.3
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: true
 
-  /@tippyjs/react/4.1.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /@tippyjs/react/4.1.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-g6Dpm46edr9T9z+BYxd/eJZa6QMFc4T4z5xrztxVlkti7AhNYf7OaE6b3Nh+boUZZ9wn8xkNq9VrQM5K4huwnQ==}
     peerDependencies:
       react: '>=16.8'
       react-dom: '>=16.8'
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       tippy.js: 6.2.6
     dev: false
 
@@ -3315,7 +3342,6 @@ packages:
 
   /@types/estree/0.0.39:
     resolution: {integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==}
-    dev: false
 
   /@types/estree/0.0.50:
     resolution: {integrity: sha512-C6N5s2ZFtuZRj54k2/zyRhNDjJwwcViAM3Nbm8zjBpbqAdZ00mr0CFxvSKeO8Y/e03WVFLpQMdHYVfUd6SB+Hw==}
@@ -3528,11 +3554,11 @@ packages:
       '@types/react': 16.9.49
     dev: true
 
-  /@types/react-dnd/3.0.2_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /@types/react-dnd/3.0.2_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-Z1BqHYGFtfSPfWs+kgX4b6wQmwwtqq4/pLo4zdO9xcDUB1ZQP8iWTAYNf3EJ2f0WiVQpSLN8UytP+ILzZHDLYw==}
     deprecated: This is a stub types definition. react-dnd provides its own type definitions, so you don't need this installed.
     dependencies:
-      react-dnd: 10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
+      react-dnd: 10.0.2_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - react
       - react-dom
@@ -3915,12 +3941,12 @@ packages:
     resolution: {integrity: sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==}
     dev: true
 
-  /@use-it/interval/0.1.3_utopia-react@17.0.0-rc.1:
+  /@use-it/interval/0.1.3_react@17.0.2:
     resolution: {integrity: sha512-chshdtDZTFoWA9aszBz1Cc04Ca9NBD2JTi/GMjdJ+HGm4q7Vy1v71+2mm22r7Kfb2nYW+lTRsPcEHdB/VFVHsQ==}
     peerDependencies:
       react: ^16.8.0
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
   /@vitejs/plugin-react/1.1.1:
@@ -4077,13 +4103,13 @@ packages:
       webpack-dev-server: 4.1.0_webpack-cli@4.8.0+webpack@5.52.0
     dev: true
 
-  /@welldone-software/why-did-you-render/5.0.0-rc.1_utopia-react@17.0.0-rc.1:
+  /@welldone-software/why-did-you-render/5.0.0-rc.1_react@17.0.2:
     resolution: {integrity: sha512-LksaD/9/q11cNn07iorxtBAJk3MPLULV48TTf6sMw/33YpCWNzOvLUEaWb6Ai1ob2BgUAwLkOh69MaE0winLqQ==}
     peerDependencies:
       react: '>=16.13'
     dependencies:
       lodash: 4.17.21
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: true
 
   /@xtuc/ieee754/1.2.0:
@@ -4386,15 +4412,15 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /antd/4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /antd/4.3.5_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-C1qILCKh+G7q06wtm4uqmyvqzAzAaDKKzuTO0BO+rtUbSATjzbUg2Bp5byDEw0ThUGTWfJEQ0J7HZHh0FgiaJA==}
     peerDependencies:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
       '@ant-design/css-animation': 1.7.3
-      '@ant-design/icons': 4.7.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      '@ant-design/react-slick': 0.26.3_d9cccff7df39c9a08a2a815f75fb6cbc
+      '@ant-design/icons': 4.7.0_react-dom@17.0.2+react@17.0.2
+      '@ant-design/react-slick': 0.26.3_react-dom@17.0.2+react@17.0.2
       array-tree-filter: 2.1.0
       classnames: 2.2.6
       copy-to-clipboard: 3.3.1
@@ -4403,36 +4429,36 @@ packages:
       omit.js: 1.0.2
       raf: 3.4.1
       rc-animate: 3.1.1
-      rc-cascader: 1.2.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-cascader: 1.2.0_react-dom@17.0.2+react@17.0.2
       rc-checkbox: 2.2.0
-      rc-collapse: 2.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-dialog: 8.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-drawer: 4.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-dropdown: 3.1.3_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-field-form: 1.4.4_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-input-number: 5.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-mentions: 1.2.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-menu: 8.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-notification: 4.4.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-pagination: 2.2.5_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-picker: 1.6.4_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-collapse: 2.0.1_react-dom@17.0.2+react@17.0.2
+      rc-dialog: 8.0.1_react-dom@17.0.2+react@17.0.2
+      rc-drawer: 4.0.1_react-dom@17.0.2+react@17.0.2
+      rc-dropdown: 3.1.3_react-dom@17.0.2+react@17.0.2
+      rc-field-form: 1.4.4_react-dom@17.0.2+react@17.0.2
+      rc-input-number: 5.0.1_react-dom@17.0.2+react@17.0.2
+      rc-mentions: 1.2.0_react-dom@17.0.2+react@17.0.2
+      rc-menu: 8.3.1_react-dom@17.0.2+react@17.0.2
+      rc-notification: 4.4.0_react-dom@17.0.2+react@17.0.2
+      rc-pagination: 2.2.5_react-dom@17.0.2+react@17.0.2
+      rc-picker: 1.6.4_react-dom@17.0.2+react@17.0.2
       rc-progress: 3.0.0
-      rc-rate: 2.7.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-resize-observer: 0.2.6_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-select: 11.0.13_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-slider: 9.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-steps: 4.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-switch: 3.2.2_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-table: 7.8.6_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-tabs: 11.4.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-tooltip: 4.2.3_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-tree: 3.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-tree-select: 4.0.3_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-rate: 2.7.0_react-dom@17.0.2+react@17.0.2
+      rc-resize-observer: 0.2.6_react-dom@17.0.2+react@17.0.2
+      rc-select: 11.0.13_react-dom@17.0.2+react@17.0.2
+      rc-slider: 9.3.1_react-dom@17.0.2+react@17.0.2
+      rc-steps: 4.0.1_react-dom@17.0.2+react@17.0.2
+      rc-switch: 3.2.2_react-dom@17.0.2+react@17.0.2
+      rc-table: 7.8.6_react-dom@17.0.2+react@17.0.2
+      rc-tabs: 11.4.1_react-dom@17.0.2+react@17.0.2
+      rc-tooltip: 4.2.3_react-dom@17.0.2+react@17.0.2
+      rc-tree: 3.3.1_react-dom@17.0.2+react@17.0.2
+      rc-tree-select: 4.0.3_react-dom@17.0.2+react@17.0.2
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
       rc-upload: 3.2.1
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       scroll-into-view-if-needed: 2.2.28
       warning: 4.0.3
     transitivePeerDependencies:
@@ -5973,17 +5999,17 @@ packages:
     resolution: {integrity: sha512-ZMkYO/LkF17QvCPqM0gxw8yUzigAOZOSWSHg91FH6orS7vcEj5dVZTidN2fQ14yBSdg97RqhSNwLUXInd52OTA==}
     dev: true
 
-  /console-feed/2.8.8_120e34cc879668f8c581a0795dcbac51:
+  /console-feed/2.8.8_de126fcd90ffc2bc7551262c6897e190:
     resolution: {integrity: sha512-tqONbPYrolH9Gn8yMc+7sBZG9F9FkNJM68ziG5dInznBOHbHNua+Mq0S70EgvkhEpE9AifvV9d7EX2Jm5yDw2w==}
     peerDependencies:
       react: ^15.x || ^16.x
     dependencies:
       emotion: 9.2.12
-      emotion-theming: 9.2.9_1010e16b243af32a19f0cf9a2c1ac6e6
-      linkifyjs: 2.1.9_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-emotion: 9.2.12_199862f3a34dd9afef4fd8fbf7ffe670
-      react-inspector: 2.3.1_utopia-react@17.0.0-rc.1
+      emotion-theming: 9.2.9_prop-types@15.6.2+react@17.0.2
+      linkifyjs: 2.1.9_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-emotion: 9.2.12_ad4969537c0098b85c1d28a8a52c9652
+      react-inspector: 2.3.1_react@17.0.2
     transitivePeerDependencies:
       - jquery
       - prop-types
@@ -6977,7 +7003,7 @@ packages:
     resolution: {integrity: sha512-/kyM18EfinwXZbno9FyUGeFh87KC8HRQBQGildHZbEuRyWFOmv1U10o9BBp8XVZDVNNuQKyIGIu5ZYAAXJ0V2Q==}
     engines: {node: '>= 4'}
 
-  /emotion-theming/9.2.9_1010e16b243af32a19f0cf9a2c1ac6e6:
+  /emotion-theming/9.2.9_prop-types@15.6.2+react@17.0.2:
     resolution: {integrity: sha512-Ncyr1WocmDDrTbuYAzklIUC5iKiGtHy3e5ymoFXcka6SuvZl/EDMawegk4wVp72Agrcm1xemab3QOHfnOkpoMA==}
     peerDependencies:
       prop-types: 15.x
@@ -6985,7 +7011,7 @@ packages:
     dependencies:
       hoist-non-react-statics: 2.5.5
       prop-types: 15.6.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
   /emotion/9.2.12:
@@ -7653,7 +7679,6 @@ packages:
 
   /estree-walker/1.0.1:
     resolution: {integrity: sha512-1fMXF3YP4pZZVozF8j/ZLfvnR8NSIljt56UhbZ5PeeDmmGHpgpdwQt7ITlGvYaQukCvuBRMLEiKiYC+oeIg4cg==}
-    dev: false
 
   /estree-walker/2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
@@ -8870,14 +8895,14 @@ packages:
       - acorn
     dev: true
 
-  /html-react-parser/0.13.0_utopia-react@17.0.0-rc.1:
+  /html-react-parser/0.13.0_react@17.0.2:
     resolution: {integrity: sha512-hU94hE2p9xhMM61EOoiY3Kr+DfzH/uY7hGeVXQpGFRjgbYRUeyuSKORDNMIaY8IAcuHQ6Ov9pJ3x94Wvso/OmQ==}
     peerDependencies:
       react: ^0.14 || ^15 || ^16
     dependencies:
       '@types/htmlparser2': 3.10.1
       html-dom-parser: 0.3.0
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       react-property: 1.0.1
       style-to-object: 0.3.0
     dev: false
@@ -9608,6 +9633,12 @@ packages:
 
   /is-promise/2.2.2:
     resolution: {integrity: sha512-+lP4/6lKUBfQjZ2pdxThZvLUAafmZb8OAxFb8XXtiQmS35INgr85hdOGoEs124ez1FCnZJt6jau/T+alh58QFQ==}
+    dev: true
+
+  /is-reference/1.2.1:
+    resolution: {integrity: sha512-U82MsXXiFIrjCK4otLT+o2NA2Cd2g5MLoOVXUZjIOhLurrRxpEXzI8O0KZHr3IjLvlAH1kTPYSuqer5T9ZVBKQ==}
+    dependencies:
+      '@types/estree': 0.0.50
     dev: true
 
   /is-regex/1.1.4:
@@ -10368,7 +10399,7 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jotai/1.4.2_505e9a4a4bca713d56f1d49dedb15ff7:
+  /jotai/1.4.2_47735191ee03d3a99d59ec79a120468a:
     resolution: {integrity: sha512-/NcK8DGvfGcVCqoOvjWIo8/KaUYtadXEl+6uxLiQJUxbyiqCtXkhAdrugk5jmpAFXXD2y6fNDw2Ln7h0EuY+ng==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
@@ -10404,7 +10435,7 @@ packages:
     dependencies:
       '@babel/core': 7.15.5
       immer: 3.2.0
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       xstate: 4.23.1
     dev: false
 
@@ -10797,15 +10828,15 @@ packages:
   /lines-and-columns/1.1.6:
     resolution: {integrity: sha1-HADHQ7QzzQpOgHWPe2SldEDZ/wA=}
 
-  /linkifyjs/2.1.9_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /linkifyjs/2.1.9_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-74ivurkK6WHvHFozVaGtQWV38FzBwSTGNmJolEgFp7QgR2bl6ArUWlvT4GcHKbPe1z3nWYi+VUdDZk16zDOVug==}
     peerDependencies:
       jquery: '>= 1.11.0'
       react: '>= 0.14.0'
       react-dom: '>= 0.14.0'
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
   /lint-staged/8.1.7:
@@ -11113,7 +11144,6 @@ packages:
     resolution: {integrity: sha512-4CrMT5DOHTDk4HYDlzmwu4FVCcIYI8gauveasrdCu2IKIFOJ3f0v/8MDGJCDL9oD2ppz/Av1b0Nj345H9M+XIA==}
     dependencies:
       sourcemap-codec: 1.4.8
-    dev: false
 
   /make-dir/2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
@@ -11326,15 +11356,15 @@ packages:
     dependencies:
       dom-walk: 0.1.2
 
-  /mini-store/3.0.6_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /mini-store/3.0.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-YzffKHbYsMQGUWQRKdsearR79QsMzzJcDDmZKlJBqt5JNkqpyJHYlK6gP61O36X+sLf76sO9G6mhKBe83gIZIQ==}
     peerDependencies:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
       hoist-non-react-statics: 3.3.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       shallowequal: 1.1.0
     dev: false
 
@@ -12556,8 +12586,8 @@ packages:
       supports-color: 5.5.0
     dev: true
 
-  /postcss/8.4.4:
-    resolution: {integrity: sha512-joU6fBsN6EIer28Lj6GDFoC/5yOZzLCfn0zHAn/MYXI7aPt4m4hK5KC5ovEZXy+lnCjmYIbQWngvju2ddyEr8Q==}
+  /postcss/8.4.5:
+    resolution: {integrity: sha512-jBDboWM8qpaqwkMwItqTQTiFikhs/67OYVvblFFTM7MrZjt6yMKd6r2kgXizEbTTljacm4NldIlZnhbjr84QYg==}
     engines: {node: ^10 || ^12 || >=14}
     dependencies:
       nanoid: 3.1.30
@@ -12867,7 +12897,7 @@ packages:
       rc-util: 4.21.1
     dev: false
 
-  /rc-align/4.0.11_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-align/4.0.11_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-n9mQfIYQbbNTbefyQnRHZPWuTEwG1rY4a9yKlIWHSTbgwI+XUMGRYd0uJ5pE2UbrNX0WvnMBA1zJ3Lrecpra/A==}
     peerDependencies:
       react: '>=16.9.0'
@@ -12877,9 +12907,9 @@ packages:
       classnames: 2.2.6
       dom-align: 1.12.2
       lodash: 4.17.21
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       resize-observer-polyfill: 1.5.1
     dev: false
 
@@ -12904,12 +12934,12 @@ packages:
       rc-util: 4.21.1
     dev: false
 
-  /rc-cascader/1.2.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-cascader/1.2.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-exJ6qvaZddARXOjxYQzD0oYrOhNS/WC3E0+xUtAA6yP3RA6PRtzTBWCI4Il4y58X3C+wTjkQq5q1vKxHD76QOA==}
     dependencies:
       array-tree-filter: 2.1.0
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
       warning: 4.0.3
     transitivePeerDependencies:
       - react
@@ -12923,44 +12953,44 @@ packages:
       classnames: 2.2.6
     dev: false
 
-  /rc-collapse/2.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-collapse/2.0.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-sRNqwQovzQoptTh7dCwj3kfxrdor2oNXrGSBz+QJxSFS7N3Ujgf8X/KlN2ElCkwBKf7nNv36t9dwH0HEku4wJg==}
     dependencies:
       '@ant-design/css-animation': 1.7.3
       classnames: 2.2.6
       rc-animate: 3.1.1
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
       shallowequal: 1.1.0
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-dialog/8.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-dialog/8.0.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-ZOO2F8KHN4Dkpf1KiXNPKFWaLZutIuAhQw+YCafcFrigDv50AxGivoMSC//k4yjcJr3XRQTQMlMsmdAff4dEhw==}
     dependencies:
       babel-runtime: 6.26.0
       rc-animate: 3.1.1
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-drawer/4.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-drawer/4.0.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-sQCMV7W5hBjptdHXXKC+YOvZ6sNChDN9Nudd9dA5kJ2ld83yLa54IkEYs4FIb3Ana7yl4kkrgU0B1k2baSsnzw==}
     peerDependencies:
       react: '*'
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
     transitivePeerDependencies:
       - react-dom
     dev: false
 
-  /rc-dropdown/3.1.3_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-dropdown/3.1.3_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-sqVMDZcyV32y2YIEUBfxzgRzOLXqi/v5JB1GPe0CMyGMadPvbi+YIRF8toKdQf26tcHZobZUOyFk8OOV2BRusw==}
     peerDependencies:
       react: '*'
@@ -12968,12 +12998,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-field-form/1.4.4_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-field-form/1.4.4_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-1LwZ/I3fRUDzj2JGyfwur4nZqgwybrHy3kf6aKbGeWfYkpNbZaUNkIPfjBBmCdpN6lVPKI7ftRnYtjdBaXzyaw==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -12981,46 +13011,46 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       async-validator: 3.5.2
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
     transitivePeerDependencies:
       - react-dom
     dev: false
 
-  /rc-input-number/5.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-input-number/5.0.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-4GgnJCjllAVNsZ9fPA+3LnoIgwUqM8QAWpyoKiTkPDN1UWapXYsPiKJCXOhnmiR0X8xpEoYHiobUaiquMliWiQ==}
     dependencies:
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-mentions/1.2.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-mentions/1.2.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-9d4AYMuKN4o/ND5r/82rJHMp+R+rn1b+f8ZmWsI/1NlWtMqVn9Q7yxofqbX78zgV6+nppsMvMqtduJhgQkVl0Q==}
     peerDependencies:
       react: '*'
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-menu: 8.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
+      rc-menu: 8.3.1_react-dom@17.0.2+react@17.0.2
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
     transitivePeerDependencies:
       - react-dom
     dev: false
 
-  /rc-menu/8.3.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-menu/8.3.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-4LNQ0zIL27yayQu9Xi3QOUB2yEqm5qSFwD9MzB1XnTo1JeLTLy3+D8Bm94rykvnhV6z5MYtalUTnM7ETfjExXQ==}
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      mini-store: 3.0.6_d9cccff7df39c9a08a2a815f75fb6cbc
+      mini-store: 3.0.6_react-dom@17.0.2+react@17.0.2
       rc-animate: 3.1.1
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
       resize-observer-polyfill: 1.5.1
       shallowequal: 1.1.0
     transitivePeerDependencies:
@@ -13028,7 +13058,7 @@ packages:
       - react-dom
     dev: false
 
-  /rc-motion/1.1.2_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-motion/1.1.2_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-YC/E7SSWKBFakYg4PENhSRWD4ZLDqkI7FKmutJcrMewZ91/ZIWfoZSDvPaBdKO0hsFrrzWepFhXQIq0FNnCMWA==}
     peerDependencies:
       react: ^16.0.0
@@ -13037,12 +13067,12 @@ packages:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
       raf: 3.4.1
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-motion/2.4.4_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-motion/2.4.4_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-ms7n1+/TZQBS0Ydd2Q5P4+wJTSOrhIrwNxLXCZpR7Fa3/oac7Yi803HDALc2hLAKaCTQtw9LmQeB58zcwOsqlQ==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13050,12 +13080,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-notification/4.4.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-notification/4.4.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-IDeNAFGVeOsy1tv4zNVqMAXB9tianR80ewQbtObaAQfjwAjWfONdqdyjFkEU6nc6UQhSUYA5OcTGb7kwwbnh0g==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13065,12 +13095,12 @@ packages:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
       rc-animate: 3.1.1
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-pagination/2.2.5_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-pagination/2.2.5_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-7hMFNi8R7C/4cLKgmSpUb3BfMFdt4DLrjTixSRMpMBR5jwGfwRyoV9g9Tm6gCuCaAlVAX1QNtlM1T2UqEOW5lw==}
     peerDependencies:
       react: ^16.0.0
@@ -13078,11 +13108,11 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-picker/1.6.4_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-picker/1.6.4_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-F3ahAtKEI1DgKIfH7likOOEZeKs21xTXVshtD7hO3StrkGrSeK0+HzAG80nP8AAc6wMJE667d4+Bo093G0mCHA==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13093,10 +13123,10 @@ packages:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
       moment: 2.29.1
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       shallowequal: 1.1.0
     dev: false
 
@@ -13106,19 +13136,19 @@ packages:
       classnames: 2.2.6
     dev: false
 
-  /rc-rate/2.7.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-rate/2.7.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-XD+1tnmKa3Ykm6jVX2ZiwIWdv+DG1t7LDK3dojeFoS8GgA7W3oqW5R/UpJ66qrLYpPHw9N4pYJKWySiPKtPsLQ==}
     engines: {node: '>=8.x'}
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-resize-observer/0.2.6_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-resize-observer/0.2.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-YX6nYnd6fk7zbuvT6oSDMKiZjyngjHoy+fz+vL3Tez38d/G5iGdaDJa2yE7345G6sc4Mm1IGRUIwclvltddhmA==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13126,13 +13156,13 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       resize-observer-polyfill: 1.5.1
     dev: false
 
-  /rc-resize-observer/1.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-resize-observer/1.0.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-OxO2mJI9e8610CAWBFfm52SPvWib0eNKjaSsRbbKHmLaJIxw944P+D61DlLJ/w2vuOjGNcalJu8VdqyNm/XCRg==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13140,13 +13170,13 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       resize-observer-polyfill: 1.5.1
     dev: false
 
-  /rc-select/11.0.13_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-select/11.0.13_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-4/GDmBkGnDhYre3Dvq5UkIRXQJW8hbGdpdH8SjquSbCktAVitYV+opd/lKI28qMcBxCgjOHgYXwZ18TF+kP2VQ==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13155,16 +13185,16 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-motion: 1.1.2_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-virtual-list: 1.1.6_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-motion: 1.1.2_react-dom@17.0.2+react@17.0.2
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      rc-virtual-list: 1.1.6_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       warning: 4.0.3
     dev: false
 
-  /rc-slider/9.3.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-slider/9.3.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-c52PWPyrfJWh28K6dixAm0906L3/4MUIxqrNQA4TLnC/Z+cBNycWJUZoJerpwSOE1HdM3XDwixCsmtFc/7aWlQ==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13173,14 +13203,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-tooltip: 4.2.3_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-tooltip: 4.2.3_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       shallowequal: 1.1.0
     dev: false
 
-  /rc-steps/4.0.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-steps/4.0.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-6MuqunJDIZexZj7v5EcHiOF6Q7Xg53+mcxELiIROhvXatssfLxDESpRZJ3zLquecxRjq5epYt92X8xBJ653itg==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13189,12 +13219,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-switch/3.2.2_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-switch/3.2.2_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-+gUJClsZZzvAHGy1vZfnwySxj+MjLlGRyXKXScrtCTcmiYNPzxDFOxdQ/3pK1Kt/0POvwJ/6ALOR8gwdXGhs+A==}
     peerDependencies:
       react: '>=16.9.0'
@@ -13202,12 +13232,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-table/7.8.6_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-table/7.8.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-rHRStVTO6FYlxs5Bk9S56Vo/Jn7pX3hOtHTHP+Vu++i9SF7DroOReMIi+OJ7RA9n3jVBxyT/9+NESXgTFvPbYA==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13217,25 +13247,25 @@ packages:
       '@babel/runtime': 7.15.4
       classnames: 2.2.6
       raf: 3.4.1
-      rc-resize-observer: 0.2.6_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-resize-observer: 0.2.6_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       shallowequal: 1.1.0
     dev: false
 
-  /rc-tabs/11.4.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-tabs/11.4.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-gp3VW58VnMypSWV+sSeDPgKcOs1uUjZphf4olsFyPB2DRzRfyXoZ2i6CM3QVWKw4E052CgiPCKHCzK9LuSKKCg==}
     engines: {node: '>=8.x'}
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
       raf: 3.4.1
-      rc-dropdown: 3.1.3_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-menu: 8.3.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-resize-observer: 0.2.6_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-dropdown: 3.1.3_react-dom@17.0.2+react@17.0.2
+      rc-menu: 8.3.1_react-dom@17.0.2+react@17.0.2
+      rc-resize-observer: 0.2.6_react-dom@17.0.2+react@17.0.2
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - react
       - react-dom
@@ -13249,17 +13279,17 @@ packages:
       rc-trigger: 2.6.5
     dev: false
 
-  /rc-tooltip/4.2.3_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-tooltip/4.2.3_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-7ySkaPGeqLLM4a/QYrKQ280aDthPxyvjJqQMstWX/AWX7/b1p23HIdHXdjBkziuvcnvXkW4lgZdFTVsylDiX1w==}
     dependencies:
       '@babel/runtime': 7.16.5
-      rc-trigger: 4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-trigger: 4.3.5_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - react
       - react-dom
     dev: false
 
-  /rc-tree-select/4.0.3_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-tree-select/4.0.3_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-C2me2AgNYTSXtuybzde2QC82P5yJEZ5gb3SglEOizKvOJM8bJ0hAk8VLK55Xi+a0PO3QvcLLDnJGXEEEB8E/tA==}
     peerDependencies:
       react: '*'
@@ -13267,14 +13297,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-select: 11.0.13_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-tree: 3.11.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-select: 11.0.13_react-dom@17.0.2+react@17.0.2
+      rc-tree: 3.11.0_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-tree/3.11.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-tree/3.11.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-3RxA6fckbzX7WOk7g4gvO6AOad0znc8QW2nsv1IXSiljQaIMiyx1AK0zhzIEtABgWKbIs9QkhnBvIAHS4Rn9LA==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13283,14 +13313,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
-      rc-motion: 2.4.4_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-virtual-list: 3.4.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-motion: 2.4.4_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      rc-virtual-list: 3.4.1_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-tree/3.3.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-tree/3.3.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-DGyVZN4HRSrmFErn68KOISIl3z0R9EjeNyZE0sgAaa5oqpQDAEK78/lYf5k3rot1N/iFAEJKaTRJfM7eIdWGwg==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13300,10 +13330,10 @@ packages:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
       rc-animate: 3.1.1
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-virtual-list: 1.1.6_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      rc-virtual-list: 1.1.6_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
   /rc-trigger/2.6.5:
@@ -13318,16 +13348,16 @@ packages:
       react-lifecycles-compat: 3.0.4
     dev: false
 
-  /rc-trigger/4.3.5_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-trigger/4.3.5_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-OKIrgGVHnpQ16H/nuOjANrnufHx/tw4cvCuiWSM+XflahUlcqJu6UtlQzNTZ2BoNinC/9Eopx5I38jVD+xLvew==}
     engines: {node: '>=8.x'}
     dependencies:
       '@babel/runtime': 7.16.5
       classnames: 2.2.6
       raf: 3.4.1
-      rc-align: 4.0.11_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-align: 4.0.11_react-dom@17.0.2+react@17.0.2
       rc-animate: 3.1.1
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - react
       - react-dom
@@ -13349,20 +13379,20 @@ packages:
       shallowequal: 1.1.0
     dev: false
 
-  /rc-util/5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-util/5.14.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-2vy6/Z1BJUcwLjm/UEJb/htjUTQPigITUIemCcFEo1fQevAumc9sA32x2z5qyWoa9uhrXbiAjSDpPIUqyg65sA==}
     peerDependencies:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
     dependencies:
       '@babel/runtime': 7.16.5
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       react-is: 16.13.1
       shallowequal: 1.1.0
     dev: false
 
-  /rc-virtual-list/1.1.6_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-virtual-list/1.1.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-u3+izqWL8p8bQy8nYH48qWpiGyxR/ye8D2k0zJlXmfYeL55/xh83YrzHqiDzO78uj0Ewag3nXDA0JTVrYO7ygQ==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13371,12 +13401,12 @@ packages:
     dependencies:
       classnames: 2.2.6
       raf: 3.4.1
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /rc-virtual-list/3.4.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /rc-virtual-list/3.4.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-YexJy+Cx8qjnQdV8+0JBeM65VF2kvO9lnsfrIvHsL3lIH1adMZ85HqmePGUzKkKMZC+CRAJc2K4g2iJS1dOjPw==}
     engines: {node: '>=8.x'}
     peerDependencies:
@@ -13384,24 +13414,24 @@ packages:
       react-dom: '*'
     dependencies:
       classnames: 2.2.6
-      rc-resize-observer: 1.0.1_d9cccff7df39c9a08a2a815f75fb6cbc
-      rc-util: 5.14.0_d9cccff7df39c9a08a2a815f75fb6cbc
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      rc-resize-observer: 1.0.1_react-dom@17.0.2+react@17.0.2
+      rc-util: 5.14.0_react-dom@17.0.2+react@17.0.2
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /re-resizable/6.9.1_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /re-resizable/6.9.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-KRYAgr9/j1PJ3K+t+MBhlQ+qkkoLDJ1rs0z1heIWvYbCW/9Vq4djDU+QumJ3hQbwwtzXF6OInla6rOx6hhgRhQ==}
     peerDependencies:
       react: ^16.13.1 || ^17.0.0
       react-dom: ^16.13.1 || ^17.0.0
     dependencies:
       fast-memoize: 2.5.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /react-contexify/5.0.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-contexify/5.0.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-2FIp7lxJ6dtfGr8EZ4uVV5p5TQjd0n2h/JU7PrejNIMiCeZWvSVPFh4lj1ZvjXosglBvP7q5JQQ8yUCdSaMSaw==}
     engines: {node: '>=10'}
     peerDependencies:
@@ -13409,8 +13439,8 @@ packages:
       react-dom: '>=16'
     dependencies:
       clsx: 1.1.1
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
   /react-dev-utils/10.2.1:
@@ -13449,7 +13479,7 @@ packages:
       dnd-core: 10.0.2
     dev: false
 
-  /react-dnd/10.0.2_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-dnd/10.0.2_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-SC2Ymvntynhoqtf5zaFhZscm9xenCoMofilxPdlwUlaelAzmbl9fw82C4ZJ//+lNm3kWAKXjGDZg2/aWjKEAtg==}
     peerDependencies:
       react: '>= 16.8'
@@ -13459,10 +13489,21 @@ packages:
       '@types/hoist-non-react-statics': 3.3.1
       dnd-core: 10.0.2
       hoist-non-react-statics: 3.3.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
 
-  /react-emotion/9.2.12_199862f3a34dd9afef4fd8fbf7ffe670:
+  /react-dom/17.0.2_react@17.0.2:
+    resolution: {integrity: sha512-s4h96KtLDUQlsENhMn1ar8t2bEa+q/YAtj8pPPdIjPDGBDIVNsrD9aXNWqspUe6AzKCIG0C1HZZLqLV7qpOBGA==}
+    peerDependencies:
+      react: 17.0.2
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react: 17.0.2
+      scheduler: 0.20.2
+    dev: false
+
+  /react-emotion/9.2.12_ad4969537c0098b85c1d28a8a52c9652:
     resolution: {integrity: sha512-qt7XbxnEKX5sZ73rERJ92JMbEOoyOwG3BuCRFRkXrsJhEe+rFBRTljRw7yOLHZUCQC4GBObZhjXIduQ8S0ZpYw==}
     peerDependencies:
       emotion: ^9.1.3
@@ -13471,19 +13512,19 @@ packages:
       babel-plugin-emotion: 9.2.11
       create-emotion-styled: 9.2.8_prop-types@15.6.2
       emotion: 9.2.12
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     transitivePeerDependencies:
       - prop-types
     dev: false
 
-  /react-error-boundary/3.1.3_utopia-react@17.0.0-rc.1:
+  /react-error-boundary/3.1.3_react@17.0.2:
     resolution: {integrity: sha512-A+F9HHy9fvt9t8SNDlonq01prnU8AmkjvGKV4kk8seB9kU3xMEO8J/PQlLVmoOIDODl5U2kufSBs4vrWIqhsAA==}
     engines: {node: '>=10', npm: '>=6'}
     peerDependencies:
       react: '>=16.13.1'
     dependencies:
       '@babel/runtime': 7.16.5
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: true
 
   /react-error-overlay/6.0.9:
@@ -13494,19 +13535,19 @@ packages:
     resolution: {integrity: sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==}
     dev: false
 
-  /react-helmet/6.1.0_utopia-react@17.0.0-rc.1:
+  /react-helmet/6.1.0_react@17.0.2:
     resolution: {integrity: sha512-4uMzEY9nlDlgxr61NL3XbKRy1hEkXmKNXhjbAIOVw5vcFrsdYbH2FEwcNyWvWinl103nXgzYNlns9ca+8kFiWw==}
     peerDependencies:
       react: '>=16.3.0'
     dependencies:
       object-assign: 4.1.1
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       react-fast-compare: 3.2.0
-      react-side-effect: 2.1.1_utopia-react@17.0.0-rc.1
+      react-side-effect: 2.1.1_react@17.0.2
     dev: false
 
-  /react-highlight-words/0.17.0_utopia-react@17.0.0-rc.1:
+  /react-highlight-words/0.17.0_react@17.0.2:
     resolution: {integrity: sha512-uX1Qh5IGjnLuJT0Zok234QDwRC8h4hcVMnB99Cb7aquB1NlPPDiWKm0XpSZOTdSactvnClCk8LOmVlP+75dgHA==}
     peerDependencies:
       react: ^0.14.0 || ^15.0.0 || ^16.0.0-0 || ^17.0.0-0
@@ -13514,10 +13555,10 @@ packages:
       highlight-words-core: 1.2.2
       memoize-one: 4.0.3
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
-  /react-hot-loader/4.12.12_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-hot-loader/4.12.12_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-Tkd412j5yPKHoTRsJzZb+5UJNFKkPszm7QGKGYvt+jnzTkDS+qK0u3AYPlB0MmBlwzUKVHICqq5KH9Srzda7XA==}
     engines: {node: '>= 6'}
     peerDependencies:
@@ -13529,32 +13570,32 @@ packages:
       hoist-non-react-statics: 3.3.2
       loader-utils: 1.4.0
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       react-lifecycles-compat: 3.0.4
       shallowequal: 1.1.0
       source-map: 0.7.3
     dev: false
 
-  /react-input-autosize/2.2.2_utopia-react@17.0.0-rc.1:
+  /react-input-autosize/2.2.2_react@17.0.2:
     resolution: {integrity: sha512-jQJgYCA3S0j+cuOwzuCd1OjmBmnZLdqQdiLKRYrsMMzbjUrVDS5RvJUDwJqA7sKuksDuzFtm6hZGKFu7Mjk5aw==}
     peerDependencies:
       react: ^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0
     dependencies:
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
-  /react-input-autosize/3.0.0_utopia-react@17.0.0-rc.1:
+  /react-input-autosize/3.0.0_react@17.0.2:
     resolution: {integrity: sha512-nL9uS7jEs/zu8sqwFE5MAPx6pPkNAriACQ2rGLlqmKr2sPGtN7TXTyDdQt4lbNXVx7Uzadb40x8qotIuru6Rhg==}
     peerDependencies:
       react: ^16.3.0 || ^17.0.0
     dependencies:
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
-  /react-inspector/2.3.1_utopia-react@17.0.0-rc.1:
+  /react-inspector/2.3.1_react@17.0.2:
     resolution: {integrity: sha512-tUUK7t3KWgZEIUktOYko5Ic/oYwvjEvQUFAGC1UeMeDaQ5za2yZFtItJa2RTwBJB//NxPr000WQK6sEbqC6y0Q==}
     peerDependencies:
       react: ^0.14.0 || ^15.0.0 || ^16.0.0
@@ -13562,7 +13603,7 @@ packages:
       babel-runtime: 6.26.0
       is-dom: 1.1.0
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
   /react-is/16.13.1:
@@ -13572,12 +13613,12 @@ packages:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
     dev: true
 
-  /react-layout-effect/1.0.5_utopia-react@17.0.0-rc.1:
+  /react-layout-effect/1.0.5_react@17.0.2:
     resolution: {integrity: sha512-zdRXHuch+OBHU6bvjTelOGUCM+UDr/iCY+c0wXLEAc+G4/FlcJruD/hUOzlKH5XgO90Y/BUJPNhI/g9kl+VAsA==}
     peerDependencies:
       react: '>=16.8'
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
   /react-lifecycles-compat/3.0.4:
@@ -13592,24 +13633,24 @@ packages:
     resolution: {integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==}
     dev: true
 
-  /react-onclickoutside/6.9.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-onclickoutside/6.9.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-8ltIY3bC7oGhj2nPAvWOGi+xGFybPNhJM0V1H8hY/whNcXgmDeaeoCMPPd8VatrpTsUWjb/vGzrmu6SrXVty3A==}
     peerDependencies:
       react: ^15.5.x || ^16.x
       react-dom: ^15.5.x || ^16.x
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /react-popper/2.2.3_1d5a61f63a74b6fe21fa53c9ee4391e1:
+  /react-popper/2.2.3_c9bebfdbf3a6095aaa44b0ca88edc6e1:
     resolution: {integrity: sha512-mOEiMNT1249js0jJvkrOjyHsGvqcJd3aGW/agkiMoZk3bZ1fXN1wQszIQSjHIai48fE67+zwF8Cs+C4fWqlfjw==}
     peerDependencies:
       '@popperjs/core': ^2.0.0
       react: ^16.8.0
     dependencies:
       '@popperjs/core': 2.4.4
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       react-fast-compare: 3.2.0
       warning: 4.0.3
     dev: false
@@ -13618,7 +13659,7 @@ packages:
     resolution: {integrity: sha512-1tKOwxFn3dXVomH6pM9IkLkq2Y8oh+fh/lYW3MJ/B03URswUTqttgckOlbxY2XHF3vPG6uanSc4dVsLW/wk3wQ==}
     dev: false
 
-  /react-reconciler/0.26.2_utopia-react@17.0.0-rc.1:
+  /react-reconciler/0.26.2_react@17.0.2:
     resolution: {integrity: sha512-nK6kgY28HwrMNwDnMui3dvm3rCFjZrcGiuwLc5COUipBK5hWHLOxMJhSnSomirqWwjPBJKV1QcbkI0VJr7Gl1Q==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
@@ -13626,7 +13667,7 @@ packages:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       scheduler: 0.20.2
     dev: true
 
@@ -13635,7 +13676,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /react-select/3.1.0_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-select/3.1.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}
     peerDependencies:
       react: ^16.8.0
@@ -13643,17 +13684,17 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       '@emotion/cache': 10.0.29
-      '@emotion/core': 10.1.1_utopia-react@17.0.0-rc.1
+      '@emotion/core': 10.1.1_react@17.0.2
       '@emotion/css': 10.0.27
       memoize-one: 5.2.1
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
-      react-input-autosize: 2.2.2_utopia-react@17.0.0-rc.1
-      react-transition-group: 4.4.2_d9cccff7df39c9a08a2a815f75fb6cbc
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-input-autosize: 2.2.2_react@17.0.2
+      react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /react-select/4.3.1_dcaee367192b523b28d2156eaca37232:
+  /react-select/4.3.1_665b2fc177f7e9273bba6f75ec309aad:
     resolution: {integrity: sha512-HBBd0dYwkF5aZk1zP81Wx5UsLIIT2lSvAY2JiJo199LjoLHoivjn9//KsmvQMEFGNhe58xyuOITjfxKCcGc62Q==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0
@@ -13661,36 +13702,36 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       '@emotion/cache': 11.4.0
-      '@emotion/react': 11.1.2_e1f9689cf4c61979dadc2b0518bb1ca4
+      '@emotion/react': 11.1.2_6d9240b801beafe2a46bc0b02fe8ea73
       memoize-one: 5.2.1
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
-      react-input-autosize: 3.0.0_utopia-react@17.0.0-rc.1
-      react-transition-group: 4.4.2_d9cccff7df39c9a08a2a815f75fb6cbc
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-input-autosize: 3.0.0_react@17.0.2
+      react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@types/react'
     dev: false
 
-  /react-side-effect/2.1.1_utopia-react@17.0.0-rc.1:
+  /react-side-effect/2.1.1_react@17.0.2:
     resolution: {integrity: sha512-2FoTQzRNTncBVtnzxFOk2mCpcfxQpenBMbk5kSVBg5UcPqV9fRbgY2zhb7GTWWOlpFmAxhClBDlIq8Rsubz1yQ==}
     peerDependencies:
       react: ^16.3.0 || ^17.0.0
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
-  /react-spring/9.0.0-rc.3_fb240f2ddf3ca4b47c2b562802d6427d:
+  /react-spring/9.0.0-rc.3_1ef32a1cd619627163803910d78d9d17:
     resolution: {integrity: sha512-VX5Gi6svgRzjGvJ7qVRQBhFN+O2IuPvkSWepIg838LNIMqlc42xdIYtoGJYSqYjNO3IocSfkHlh49WVw6hHMUg==}
     dependencies:
       '@babel/runtime': 7.15.4
-      '@react-spring/core': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
-      '@react-spring/konva': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
-      '@react-spring/native': 9.0.0-rc.3_utopia-react@17.0.0-rc.1
-      '@react-spring/three': 9.0.0-rc.3_24b06abb525ed3fd7bdb483525615d30
-      '@react-spring/web': 9.0.0-rc.3_d9cccff7df39c9a08a2a815f75fb6cbc
-      '@react-spring/zdog': 9.0.0-rc.3_d9cccff7df39c9a08a2a815f75fb6cbc
+      '@react-spring/core': 9.0.0-rc.3_react@17.0.2
+      '@react-spring/konva': 9.0.0-rc.3_react@17.0.2
+      '@react-spring/native': 9.0.0-rc.3_react@17.0.2
+      '@react-spring/three': 9.0.0-rc.3_react@17.0.2+three@0.129.0
+      '@react-spring/web': 9.0.0-rc.3_react-dom@17.0.2+react@17.0.2
+      '@react-spring/zdog': 9.0.0-rc.3_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - konva
       - react
@@ -13703,7 +13744,7 @@ packages:
       - zdog
     dev: false
 
-  /react-syntax-highlighter/12.2.1_utopia-react@17.0.0-rc.1:
+  /react-syntax-highlighter/12.2.1_react@17.0.2:
     resolution: {integrity: sha512-CTsp0ZWijwKRYFg9xhkWD4DSpQqE4vb2NKVMdPAkomnILSmsNBHE0n5GuI5zB+PU3ySVvXvdt9jo+ViD9XibCA==}
     peerDependencies:
       react: '>= 0.14.0'
@@ -13712,18 +13753,18 @@ packages:
       highlight.js: 9.15.10
       lowlight: 1.12.1
       prismjs: 1.25.0
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       refractor: 2.10.1
     dev: false
 
-  /react-test-renderer/16.9.0_utopia-react@17.0.0-rc.1:
+  /react-test-renderer/16.9.0_react@17.0.2:
     resolution: {integrity: sha512-R62stB73qZyhrJo7wmCW9jgl/07ai+YzvouvCXIJLBkRlRqLx4j9RqcLEAfNfU3OxTGucqR2Whmn3/Aad6L3hQ==}
     peerDependencies:
       react: ^16.0.0
     dependencies:
       object-assign: 4.1.1
       prop-types: 15.6.2
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
       react-is: 16.13.1
       scheduler: 0.15.0
     dev: true
@@ -13732,7 +13773,7 @@ packages:
     resolution: {integrity: sha512-EblIqTAsIpkYeM8bZtC4lcpTE0A2zCEGipFB52RgcQq/q+0oryrk7Sxt+sqhIjUu6xMNEVywV8dr74lz5yWO6A==}
     dev: true
 
-  /react-transition-group/4.4.2_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-transition-group/4.4.2_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg==}
     peerDependencies:
       react: '>=16.6.0'
@@ -13742,42 +13783,42 @@ packages:
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /react-use-gesture/6.0.2_utopia-react@17.0.0-rc.1:
+  /react-use-gesture/6.0.2_react@17.0.2:
     resolution: {integrity: sha512-zzKWtIjQFzEfwJAxo0JNveXHhehVj6ybfJVlRY5zbfvME6aY8QlZCR7vFF3jnBsJFLRySWYGfjD6WwpyYnS5Cg==}
     deprecated: This package is no longer maintained. Please use @use-gesture/react instead
     peerDependencies:
       react: '>= 16.8.0'
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
-  /react-use-measure/2.0.4_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-use-measure/2.0.4_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-7K2HIGaPMl3Q9ZQiEVjen3tRXl4UDda8LiTPy/QxP8dP2rl5gPBhf7mMH6MVjjRNv3loU7sNzey/ycPNnHVTxQ==}
     peerDependencies:
       react: '>=16.13'
       react-dom: '>=16.13'
     dependencies:
       debounce: 1.2.1
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: true
 
-  /react-virtualized-auto-sizer/1.0.2_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-virtualized-auto-sizer/1.0.2_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-MYXhTY1BZpdJFjUovvYHVBmkq79szK/k7V3MO+36gJkWGkrXKtyr4vCPtpphaTLRAdDNoYEYFZWE8LjN+PIHNg==}
     engines: {node: '>8.0.0'}
     peerDependencies:
       react: ^15.3.0 || ^16.0.0-alpha
       react-dom: ^15.3.0 || ^16.0.0-alpha
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /react-vtree/2.0.0_255ea23c1365d9cdd0d891903b4d6c66:
+  /react-vtree/2.0.0_207e0528bc88aac76fcca2adfaa56e82:
     resolution: {integrity: sha512-UuPGZMBYoH0E9bklJxtSP2/SeMGNg1yQrfIb+G7YjfXXiilxMUSzgW2tv6agB5TvASS3HqzxnYhUHsFumiwQcQ==}
     peerDependencies:
       '@types/react-window': ^1.8.2
@@ -13787,12 +13828,12 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       '@types/react-window': 1.8.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
-      react-window: 1.8.5_d9cccff7df39c9a08a2a815f75fb6cbc
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-window: 1.8.5_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /react-window/1.8.5_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-window/1.8.5_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-HeTwlNa37AFa8MDZFZOKcNEkuF2YflA0hpGPiTT9vR7OawEt+GZbfM6wqkBahD3D3pUjIabQYzsnY/BSJbgq6Q==}
     engines: {node: '>8.0.0'}
     peerDependencies:
@@ -13801,11 +13842,11 @@ packages:
     dependencies:
       '@babel/runtime': 7.15.4
       memoize-one: 5.2.1
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /react-window/1.8.6_d9cccff7df39c9a08a2a815f75fb6cbc:
+  /react-window/1.8.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==}
     engines: {node: '>8.0.0'}
     peerDependencies:
@@ -13814,11 +13855,11 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.5
       memoize-one: 5.2.1
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
-  /react-windowed-select/3.1.2_b9c7432b687c5eca0e0b2d49cc5d18aa:
+  /react-windowed-select/3.1.2_e9e8607403d716bb60536b8b19941e71:
     resolution: {integrity: sha512-XY+ds5y3+Pitz8p/kU2MXArKyMkUGJETE0TTTp9g1fi3F4qfd+rq/zWF5Rtq+6YcuysvXenFGetSmgLixOO2xQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0
@@ -13828,12 +13869,20 @@ packages:
       '@types/react-dom': 17.0.9
       '@types/react-select': 4.0.18
       '@types/react-window': 1.8.2
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
-      react-select: 4.3.1_dcaee367192b523b28d2156eaca37232
-      react-window: 1.8.6_d9cccff7df39c9a08a2a815f75fb6cbc
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-select: 4.3.1_665b2fc177f7e9273bba6f75ec309aad
+      react-window: 1.8.6_react-dom@17.0.2+react@17.0.2
     transitivePeerDependencies:
       - '@babel/core'
+    dev: false
+
+  /react/17.0.2:
+    resolution: {integrity: sha512-gnhPt75i/dq/z3/6q/0asP78D0u592D5L1pd7M8P+dck6Fu/jJeL6iVVK23fptSUZj8Vjf++7wXA8UNclGQcbA==}
+    engines: {node: '>=0.10.0'}
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
     dev: false
 
   /read-only-stream/2.0.0:
@@ -14260,13 +14309,6 @@ packages:
       object-assign: 4.1.1
     dev: false
 
-  /scheduler/0.18.0:
-    resolution: {integrity: sha512-agTSHR1Nbfi6ulI0kYNK0203joW2Y5W4po4l+v03tOoiJKpTBbxpNhWDvqc/4IcOw+KLmSiQLTasZ4cab2/UWQ==}
-    dependencies:
-      loose-envify: 1.4.0
-      object-assign: 4.1.1
-    dev: false
-
   /scheduler/0.19.1:
     resolution: {integrity: sha512-n/zwRWRYSUj0/3g/otKDRPMh6qv2SYMWNq85IEa8iZyAv8od9zDYpGSnpBEjNgcMNq6Scbu5KfIPxNF72R/2EA==}
     dependencies:
@@ -14279,7 +14321,6 @@ packages:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
-    dev: true
 
   /schema-utils/0.3.0:
     resolution: {integrity: sha1-9YdyIs4+kx7a4DnxfrNxbnE3+M8=}
@@ -14759,7 +14800,6 @@ packages:
 
   /sourcemap-codec/1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
-    dev: false
 
   /space-separated-tokens/1.1.5:
     resolution: {integrity: sha512-q/JSVd1Lptzhf5bkYm4ob4iWPjx0KiRe3sRFBNrVqbJkFaBm5vbbowy1mymoPNLRa52+oadOhJ+K49wsSeSjTA==}
@@ -15825,16 +15865,16 @@ packages:
       querystring: 0.2.0
     dev: true
 
-  /use-asset/1.0.4_utopia-react@17.0.0-rc.1:
+  /use-asset/1.0.4_react@17.0.2:
     resolution: {integrity: sha512-7/hqDrWa0iMnCoET9W1T07EmD4Eg/Wmoj/X8TGBc++ECRK4m5yTsjP4O6s0yagbxfqIOuUkIxe2/sA+VR2GxZA==}
     peerDependencies:
       react: '>=17.0'
     dependencies:
       fast-deep-equal: 3.1.3
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: true
 
-  /use-context-selector/1.3.9_658050d9619fb945721b0766f6ed00e6:
+  /use-context-selector/1.3.9_00b679fb216b1c8cb6c33b09994586b1:
     resolution: {integrity: sha512-YgzRyeFjoJXwFn2qLVAuIbV6EQ8DOuzu3SS/eiCxyAyvBhcn02jYSz8c5v22QQU3LW6Ez/Iyo62kKvS7Kdqt3A==}
     peerDependencies:
       react: '>=16.8.0'
@@ -15847,17 +15887,17 @@ packages:
       react-native:
         optional: true
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
-      react-dom: /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
       scheduler: 0.17.0
     dev: false
 
-  /use-memo-one/1.1.2_utopia-react@17.0.0-rc.1:
+  /use-memo-one/1.1.2_react@17.0.2:
     resolution: {integrity: sha512-u2qFKtxLsia/r8qG0ZKkbytbztzRb317XCkT7yP8wxL0tZ/CzK2G+WWie5vWvpyeP7+YoPIwbJoIHJ4Ba4k0oQ==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
   /use/3.1.1:
@@ -15892,22 +15932,6 @@ packages:
     resolution: {integrity: sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=}
     engines: {node: '>= 0.4.0'}
     dev: true
-
-  /utopia-react-dom/17.0.0-rc.1_utopia-react@17.0.0-rc.1:
-    resolution: {integrity: sha512-Ay7N+izSxk4Qvpi8omYpX0bLQ1a2XDTL+TN8npTBXq9mN5TyOcFDuCE+P/oBVChQ0elQVzmHGrJfP3do1nfidg==}
-    peerDependencies:
-      react: ^17.0.0-rc.1
-    dependencies:
-      loose-envify: 1.4.0
-      object-assign: 4.1.1
-      prop-types: 15.7.2
-      react: /utopia-react/17.0.0-rc.1
-      scheduler: 0.18.0
-    dev: false
-
-  /utopia-react/17.0.0-rc.1:
-    resolution: {integrity: sha512-3IFdWHB//0To5Pqc+STTm850aZDkNS7dgnAa6Vv8Etge3e9uxhbNjwLwKH3FKaj9RW83blo4PMlzU91JL7LayA==}
-    dev: false
 
   /uuid/3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
@@ -15959,7 +15983,7 @@ packages:
     resolution: {integrity: sha512-/juG65kTL4Cy2su4P8HjtkTxk6VmJDiOPBufWniqQ6wknac6jNiXS9vU+hO3wgusiyqWlzTbVHi0dyJqRONg3w==}
     dev: true
 
-  /vite-plugin-html/2.1.2_vite@2.7.0:
+  /vite-plugin-html/2.1.2_vite@2.7.10:
     resolution: {integrity: sha512-7HXkL6n7M2qDEaUV4Vnz8yM2glW4gV36d5HSBIM5gOoAG1PkuQb4Vv9FTPgPiQxq4sPRf/6IgABX0MeLVW+CyQ==}
     peerDependencies:
       vite: '>=2.0.0'
@@ -15970,13 +15994,13 @@ packages:
       ejs: 3.1.6
       fs-extra: 10.0.0
       html-minifier-terser: 6.1.0
-      vite: 2.7.0
+      vite: 2.7.10
     transitivePeerDependencies:
       - acorn
     dev: true
 
-  /vite/2.7.0:
-    resolution: {integrity: sha512-ZM629j9n6f1Gcr2KsfpLhJ0FRkift4SsTLSvExmNpGJYzyi1JyLOFybz85ShqFP5f4oCfJSblWAma9X8lZg/vA==}
+  /vite/2.7.10:
+    resolution: {integrity: sha512-KEY96ntXUid1/xJihJbgmLZx7QSC2D4Tui0FdS0Old5OokYzFclcofhtxtjDdGOk/fFpPbHv9yw88+rB93Tb8w==}
     engines: {node: '>=12.2.0'}
     hasBin: true
     peerDependencies:
@@ -15992,7 +16016,7 @@ packages:
         optional: true
     dependencies:
       esbuild: 0.13.15
-      postcss: 8.4.4
+      postcss: 8.4.5
       resolve: 1.20.0
       rollup: 2.60.2
     optionalDependencies:
@@ -16539,15 +16563,15 @@ packages:
       toposort: 2.0.2
     dev: true
 
-  /zustand/3.1.3_utopia-react@17.0.0-rc.1:
+  /zustand/3.1.3_react@17.0.2:
     resolution: {integrity: sha512-Otuzh3r0GsatvsUWeXEwdYjZEw1TItWcAXwDGEHdXE4/k6WbAdVDxC21t/Poq4ZMB+2VaQNKICWu7eCBUJ65tQ==}
     peerDependencies:
       react: '>=16.8'
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: false
 
-  /zustand/3.5.11_utopia-react@17.0.0-rc.1:
+  /zustand/3.5.11_react@17.0.2:
     resolution: {integrity: sha512-V3Ys0ik2flOnWr0h9D4ZTCdcpK4feg71vLWaxjw+D+PLxM0+6KITdLedgDa97yAS6YDQTBD0Gw+NbsdAiMCqfA==}
     engines: {node: '>=12'}
     peerDependencies:
@@ -16556,7 +16580,7 @@ packages:
       react:
         optional: true
     dependencies:
-      react: /utopia-react/17.0.0-rc.1
+      react: 17.0.2
     dev: true
 
   github.com/concrete-utopia/react-error-overlay/201980990d653e821f36ab4f921a4f83588a8a42:
