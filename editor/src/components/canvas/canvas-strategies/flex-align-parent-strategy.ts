@@ -28,7 +28,7 @@ import {
   CanvasStrategy,
   CanvasStrategyUpdateFnResult,
   FlexAlignControlRectProps,
-  SelectModeCanvasSession,
+  SelectModeCanvasSessionProps,
   SelectModeCanvasSessionState,
 } from './canvas-strategy-types'
 
@@ -52,7 +52,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
   updateFn: (
     lifecycle: 'transient' | 'final',
     editorState: EditorState,
-    activeSession: SelectModeCanvasSession,
+    sessionProps: SelectModeCanvasSessionProps,
     sessionState: SelectModeCanvasSessionState,
   ): CanvasStrategyUpdateFnResult => {
     // only apply after a certain treshold IF we hadn't already passed that treshold once
@@ -60,7 +60,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
 
     if (
       !sessionState.dragDeltaMinimumPassed &&
-      magnitude(activeSession.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
+      magnitude(sessionProps.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
     ) {
       return {
         newSessionState: sessionState,
@@ -80,7 +80,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     const targetParent = MetadataUtils.getParent(editorState.jsxMetadata, draggedElement)
     const indicatorBoxes = calcualteFlexAlignIndicatorBoxes(
       targetParent,
-      activeSession.mousePosition,
+      sessionProps.mousePosition,
     )
 
     // if any indicator box is highlighted, we also want to change the parent's style too

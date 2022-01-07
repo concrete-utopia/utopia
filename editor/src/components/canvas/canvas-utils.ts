@@ -2974,7 +2974,7 @@ export function getDragStatePositions(
       case 'INSERT_DRAG_STATE':
         return dragState
       case 'SELECT_MODE_CANVAS_SESSION':
-        return dragState
+        return dragState.sessionProps
       case 'RESIZE_DRAG_STATE':
         return findResizePropertyChange(dragState, resizeOptions) ?? null
       default:
@@ -3010,7 +3010,7 @@ export function anyDragStarted(dragState: DragState | null): boolean {
       case 'INSERT_DRAG_STATE':
         return dragState.start != null
       case 'SELECT_MODE_CANVAS_SESSION':
-        return dragState.start != null
+        return dragState.sessionProps.start != null
       case 'RESIZE_DRAG_STATE':
         return dragState.properties.some((prop) => prop.start != null)
       default:
@@ -3029,7 +3029,7 @@ export function anyDragMovement(dragState: DragState | null): boolean {
       case 'INSERT_DRAG_STATE':
         return dragState.drag != null
       case 'SELECT_MODE_CANVAS_SESSION':
-        return dragState.drag != null
+        return dragState.sessionProps.drag != null
       case 'RESIZE_DRAG_STATE':
         return dragState.properties.some((prop) => prop.drag != null)
       default:

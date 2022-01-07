@@ -45,13 +45,13 @@ export type CanvasStrategyUpdateFnResult = {
 export type CanvasStrategyUpdateFn = (
   lifecycle: 'transient' | 'final',
   editorState: EditorState,
-  sessionProps: SelectModeCanvasSession,
+  sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
 ) => CanvasStrategyUpdateFnResult
 
 export type CanvasStrategyFitnessFn = (
   editorState: EditorState,
-  sessionProps: SelectModeCanvasSession,
+  sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
 ) => number
 
@@ -59,7 +59,11 @@ export type CanvasInteractionSession = SelectModeCanvasSession
 
 export interface SelectModeCanvasSession {
   type: 'SELECT_MODE_CANVAS_SESSION'
-  activeStrategy: CanvasStrategyUpdateFn | null
+  activeStrategy: CanvasStrategyUpdateFn | null // should this live here, or inside sessionProps? or inside SelectModeCanvasSessionState? should it exist at all?
+  sessionProps: SelectModeCanvasSessionProps
+}
+
+export interface SelectModeCanvasSessionProps {
   start: CanvasPoint
   mousePosition: CanvasPoint
   drag: CanvasVector | null
@@ -82,13 +86,15 @@ export function startNewSelectModeCanvasSession(
 ): SelectModeCanvasSession {
   return {
     type: 'SELECT_MODE_CANVAS_SESSION',
-    start: start,
-    mousePosition: start, // TODO maybe this should be independent of start?
-    activeControl: activeControl,
     activeStrategy: null,
-    drag: null,
-    globalTime: Date.now(),
-    lastTimeMouseMoved: Date.now(),
+    sessionProps: {
+      start: start,
+      mousePosition: start, // TODO maybe this should be independent of start?
+      activeControl: activeControl,
+      drag: null,
+      globalTime: Date.now(),
+      lastTimeMouseMoved: Date.now(),
+    },
   }
 }
 
@@ -99,8 +105,11 @@ export function updateSelectModeCanvasSessionDragVector(
 ): SelectModeCanvasSession {
   return {
     ...current,
-    mousePosition: mousePosition,
-    drag: drag,
-    lastTimeMouseMoved: Date.now(),
+    sessionProps: {
+      ...current.sessionProps,
+      mousePosition: mousePosition,
+      drag: drag,
+      lastTimeMouseMoved: Date.now(),
+    },
   }
 }

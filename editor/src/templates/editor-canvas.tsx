@@ -287,7 +287,7 @@ function createOrUpdateDragState(
     // create session, start setTimeout!
     clearInterval(dragStateTimerHandle)
     dragStateTimerHandle = setInterval(() => {
-      dispatch([CanvasActions.updateInteractionSession({ globalTime: Date.now() })])
+      dispatch([CanvasActions.updateCanvasSessionProps({ globalTime: Date.now() })])
     }, 200)
   } else {
     // update session, leave timeout as is
@@ -329,7 +329,7 @@ export function runLocalCanvasAction(
       return clearDragStateAndInteractionSession(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
       return createOrUpdateDragState(dispatch, model, action)
-    case 'UPDATE_INTERACTION_SESSION':
+    case 'UPDATE_CANVAS_SESSION_PROPS':
       if (model.canvas.dragState?.type === 'SELECT_MODE_CANVAS_SESSION') {
         return {
           ...model,
@@ -337,7 +337,10 @@ export function runLocalCanvasAction(
             ...model.canvas,
             dragState: {
               ...model.canvas.dragState,
-              ...action.interactionSession,
+              sessionProps: {
+                ...model.canvas.dragState.sessionProps,
+                ...action.newCanvasSessionProps,
+              },
             },
           },
         }

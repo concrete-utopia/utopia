@@ -10,6 +10,7 @@ import {
   CanvasStrategyUpdateFn,
   emptySelectModeCanvasSessionState,
   SelectModeCanvasSession,
+  SelectModeCanvasSessionProps,
   SelectModeCanvasSessionState,
 } from './canvas-strategy-types'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
@@ -18,7 +19,7 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexAlignParentStrate
 
 export function pickDefaultCanvasStrategy(
   editorState: EditorState,
-  sessionProps: SelectModeCanvasSession,
+  sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
 ): CanvasStrategyUpdateFn | null {
   sortBy(RegisteredCanvasStrategies, (l, r) => {
@@ -34,14 +35,19 @@ export function pickDefaultCanvasStrategy(
 export function applyCanvasStrategy(
   lifecycle: 'transient' | 'final',
   editorState: EditorState,
-  canvasSessionProps: SelectModeCanvasSession,
+  canvasSession: SelectModeCanvasSession,
   canvasSessionState: SelectModeCanvasSessionState | null,
 ): TransientCanvasState | null {
   const sessionStateToUse = canvasSessionState ?? emptySelectModeCanvasSessionState
 
-  const strategy = pickDefaultCanvasStrategy(editorState, canvasSessionProps, sessionStateToUse)
+  const strategy = pickDefaultCanvasStrategy(
+    editorState,
+    canvasSession.sessionProps,
+    sessionStateToUse,
+  )
 
-  const result = strategy?.(lifecycle, editorState, canvasSessionProps, sessionStateToUse) ?? null
+  const result =
+    strategy?.(lifecycle, editorState, canvasSession.sessionProps, sessionStateToUse) ?? null
 
   if (result != null) {
     // TODO BEFORE MERGE APPLY result?.newSessionState !!!!

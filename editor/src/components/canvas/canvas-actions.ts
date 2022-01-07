@@ -1,5 +1,9 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
-import { CanvasInteractionSession } from './canvas-strategies/canvas-strategy-types'
+import {
+  CanvasInteractionSession,
+  SelectModeCanvasSessionProps,
+  SelectModeCanvasSessionState,
+} from './canvas-strategies/canvas-strategy-types'
 import type { CanvasAction, DragState } from './canvas-types'
 
 const CanvasActions = {
@@ -15,12 +19,12 @@ const CanvasActions = {
       dragState: dragState,
     }
   },
-  updateInteractionSession: function (
-    interactionSession: Partial<CanvasInteractionSession>,
+  updateCanvasSessionProps: function (
+    newCanvasSessionProps: Partial<SelectModeCanvasSessionProps>,
   ): CanvasAction {
     return {
-      action: 'UPDATE_INTERACTION_SESSION',
-      interactionSession: interactionSession,
+      action: 'UPDATE_CANVAS_SESSION_PROPS',
+      newCanvasSessionProps: newCanvasSessionProps,
     }
   },
   setSelectionControlsVisibility: function (selectionControlsVisible: boolean): CanvasAction {
