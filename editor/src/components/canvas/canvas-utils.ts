@@ -163,6 +163,7 @@ import {
   singleResizeChange,
   ResizeDragStatePropertyChange,
   CanvasPositions,
+  CreateDragState,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
@@ -209,6 +210,8 @@ import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equa
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { applyCanvasStrategy } from './canvas-strategies/canvas-strategies'
 import { SelectModeCanvasSessionState } from './canvas-strategies/canvas-strategy-types'
+import { EditorDispatch } from '../editor/action-types'
+import CanvasActions from './canvas-actions'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -317,11 +320,39 @@ function applyTransientFilesState(
   }
 }
 
+let dragStateTimerHandle: any = null
+
+export function createOrUpdateDragState(
+  dispatch: EditorDispatch,
+  model: EditorState,
+  action: CreateDragState,
+): EditorState {
+  if (model.canvas.dragState == null && action.dragState.type === 'SELECT_MODE_CANVAS_SESSION') {
+    // create canavs session session, start setInterval to keep globalTime updated
+    clearInterval(dragStateTimerHandle)
+    dragStateTimerHandle = setInterval(() => {
+      dispatch([CanvasActions.updateCanvasSessionProps({ globalTime: Date.now() })])
+    }, 200)
+  } else {
+    // update session, leave timeout as is
+  }
+
+  return {
+    ...model,
+    canvas: {
+      ...model.canvas,
+      dragState: action.dragState,
+    },
+  }
+}
+
 export function clearDragStateAndInteractionSession(
   model: EditorState,
   derived: DerivedState,
   applyChanges: boolean,
 ): EditorState {
+  clearInterval(dragStateTimerHandle)
+
   let result: EditorState = model
   if (
     applyChanges &&

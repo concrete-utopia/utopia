@@ -23,6 +23,7 @@ import {
   anyDragStarted,
   clearDragStateAndInteractionSession,
   createDuplicationNewUIDsFromEditorState,
+  createOrUpdateDragState,
   dragExceededThreshold,
   getCanvasOffset,
   getDragStateDrag,
@@ -276,32 +277,6 @@ function on(
   return additionalEvents
 }
 
-let dragStateTimerHandle: any = null
-
-function createOrUpdateDragState(
-  dispatch: EditorDispatch,
-  model: EditorState,
-  action: CreateDragState,
-): EditorState {
-  if (model.canvas.dragState == null) {
-    // create session, start setTimeout!
-    clearInterval(dragStateTimerHandle)
-    dragStateTimerHandle = setInterval(() => {
-      dispatch([CanvasActions.updateCanvasSessionProps({ globalTime: Date.now() })])
-    }, 200)
-  } else {
-    // update session, leave timeout as is
-  }
-
-  return {
-    ...model,
-    canvas: {
-      ...model.canvas,
-      dragState: action.dragState,
-    },
-  }
-}
-
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -325,7 +300,6 @@ export function runLocalCanvasAction(
       }
     }
     case 'CLEAR_DRAG_STATE':
-      clearInterval(dragStateTimerHandle)
       return clearDragStateAndInteractionSession(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
       return createOrUpdateDragState(dispatch, model, action)
