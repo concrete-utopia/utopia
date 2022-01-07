@@ -208,6 +208,7 @@ import { uniqToasts } from '../editor/actions/toast-helpers'
 import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 import { applyCanvasStrategy } from './canvas-strategies/canvas-strategies'
+import { SelectModeCanvasSessionState } from './canvas-strategies/canvas-strategy-types'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -329,6 +330,7 @@ export function clearDragStateAndInteractionSession(
   ) {
     const producedTransientCanvasState = produceCanvasTransientState(
       derived.canvas.transientState.selectedViews,
+      derived.canvas.transientState.canvasSessionState,
       result,
       false,
       'final',
@@ -1697,6 +1699,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 
 export function produceCanvasTransientState(
   previousCanvasTransientSelectedViews: Array<ElementPath> | null,
+  previousSessionState: SelectModeCanvasSessionState | null,
   editorState: EditorState,
   preventAnimations: boolean,
   lifecycle: 'transient' | 'final',
@@ -1766,7 +1769,12 @@ export function produceCanvasTransientState(
           const dragState = editorState.canvas.dragState
           switch (dragState.type) {
             case 'SELECT_MODE_CANVAS_SESSION':
-              transientState = applyCanvasStrategy(lifecycle, editorState, dragState)
+              transientState = applyCanvasStrategy(
+                lifecycle,
+                editorState,
+                dragState,
+                previousSessionState,
+              )
               break
             case 'MOVE_DRAG_STATE':
               transientState = produceMoveTransientCanvasState(

@@ -159,6 +159,7 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import type {
   CanvasInteractionSession,
   FlexAlignControlRectProps,
+  SelectModeCanvasSessionState,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { Spec } from 'immutability-helper'
 
@@ -1004,6 +1005,7 @@ export interface TransientCanvasState {
   filesState: TransientFilesState | null
   toastsToApply: ReadonlyArray<Notice>
   editorStatePatch: EditorStatePatch | null
+  canvasSessionState: SelectModeCanvasSessionState | null
 }
 
 export function transientCanvasState(
@@ -1019,6 +1021,22 @@ export function transientCanvasState(
     filesState: fileState,
     toastsToApply: toastsToApply,
     editorStatePatch: editorStatePatch,
+    canvasSessionState: null,
+  }
+}
+
+export function transientCanvasStateForSession(
+  canvasSessionState: SelectModeCanvasSessionState | null,
+  fileState: TransientFilesState | null,
+  editorStatePatch: EditorStatePatch | null,
+): TransientCanvasState {
+  return {
+    selectedViews: null,
+    highlightedViews: null,
+    toastsToApply: [],
+    filesState: fileState,
+    editorStatePatch: editorStatePatch,
+    canvasSessionState: canvasSessionState,
   }
 }
 
@@ -1065,6 +1083,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
       controls: [],
       transientState: produceCanvasTransientState(
         editorState.selectedViews,
+        null,
         editorState,
         false,
         'transient',
@@ -1374,6 +1393,7 @@ export function deriveState(
       controls: derivedState.canvas.controls,
       transientState: produceCanvasTransientState(
         oldDerivedState?.canvas.transientState.selectedViews ?? editor.selectedViews,
+        oldDerivedState?.canvas.transientState.canvasSessionState ?? null,
         editor,
         true,
         'transient',

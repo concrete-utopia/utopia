@@ -37,7 +37,7 @@ export interface CanvasStrategy {
 export type CanvasSessionPatch = Spec<SelectModeCanvasSession>
 
 export type CanvasStrategyUpdateFnResult = {
-  newSessionState: SelectModeCanvasSession
+  newSessionState: SelectModeCanvasSessionState
   transientFilesState: TransientFilesState
   editorStatePatch: EditorStatePatch
 }
@@ -45,12 +45,14 @@ export type CanvasStrategyUpdateFnResult = {
 export type CanvasStrategyUpdateFn = (
   lifecycle: 'transient' | 'final',
   editorState: EditorState,
-  currentSession: SelectModeCanvasSession,
+  sessionProps: SelectModeCanvasSession,
+  sessionState: SelectModeCanvasSessionState,
 ) => CanvasStrategyUpdateFnResult
 
 export type CanvasStrategyFitnessFn = (
   editorState: EditorState,
-  currentSession: SelectModeCanvasSession,
+  sessionProps: SelectModeCanvasSession,
+  sessionState: SelectModeCanvasSessionState,
 ) => number
 
 export type CanvasInteractionSession = SelectModeCanvasSession
@@ -64,7 +66,14 @@ export interface SelectModeCanvasSession {
   activeControl: CanvasControlType
   globalTime: number
   lastTimeMouseMoved: number
+}
+
+export interface SelectModeCanvasSessionState {
   dragDeltaMinimumPassed: boolean
+}
+
+export const emptySelectModeCanvasSessionState: SelectModeCanvasSessionState = {
+  dragDeltaMinimumPassed: false,
 }
 
 export function startNewSelectModeCanvasSession(
@@ -80,7 +89,6 @@ export function startNewSelectModeCanvasSession(
     drag: null,
     globalTime: Date.now(),
     lastTimeMouseMoved: Date.now(),
-    dragDeltaMinimumPassed: false,
   }
 }
 

@@ -1061,6 +1061,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
       controls: [],
       transientState: produceCanvasTransientState(
         poppedDerived.canvas.transientState.selectedViews,
+        poppedDerived.canvas.transientState.canvasSessionState,
         history.current.editor,
         true,
         'transient',

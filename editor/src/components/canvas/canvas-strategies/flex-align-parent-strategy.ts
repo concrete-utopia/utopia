@@ -29,6 +29,7 @@ import {
   CanvasStrategyUpdateFnResult,
   FlexAlignControlRectProps,
   SelectModeCanvasSession,
+  SelectModeCanvasSessionState,
 } from './canvas-strategy-types'
 
 export const flexAlignParentStrategy: CanvasStrategy = {
@@ -52,16 +53,17 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     lifecycle: 'transient' | 'final',
     editorState: EditorState,
     activeSession: SelectModeCanvasSession,
+    sessionState: SelectModeCanvasSessionState,
   ): CanvasStrategyUpdateFnResult => {
     // only apply after a certain treshold IF we hadn't already passed that treshold once
     const draggedElement = editorState.selectedViews[0]
 
     if (
-      !activeSession.dragDeltaMinimumPassed &&
+      !sessionState.dragDeltaMinimumPassed &&
       magnitude(activeSession.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
     ) {
       return {
-        newSessionState: activeSession,
+        newSessionState: sessionState,
         transientFilesState: {},
         editorStatePatch: {
           canvas: {
@@ -86,7 +88,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     if (higlightedIndicator == null || targetParent == null) {
       return {
         newSessionState: {
-          ...activeSession,
+          ...sessionState,
           dragDeltaMinimumPassed: true,
         },
         transientFilesState: {},
@@ -145,7 +147,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
 
       return {
         newSessionState: {
-          ...activeSession,
+          ...sessionState,
           dragDeltaMinimumPassed: true,
         },
         transientFilesState: transientFilesStateAfterChild,
