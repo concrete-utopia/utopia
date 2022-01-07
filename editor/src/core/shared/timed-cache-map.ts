@@ -29,32 +29,42 @@ export class TimedCacheMap<K, V> {
     return this.innerMap.has(k)
   }
 
+  private updateLastAccessTimeForAllKeys() {
+    const now = Date.now()
+    for (const key of this.lastAccessTimes.keys()) {
+      this.lastAccessTimes.set(key, now)
+    }
+  }
+
   keys(): IterableIterator<K> {
-    // TODO Should this update lastAccessTimes?
     this.optionallyClean()
 
+    this.updateLastAccessTimeForAllKeys()
     return this.innerMap.keys()
   }
 
   values(): IterableIterator<V> {
-    // TODO Should this update lastAccessTimes?
     this.optionallyClean()
 
+    this.updateLastAccessTimeForAllKeys()
     return this.innerMap.values()
   }
 
   entries(): IterableIterator<[K, V]> {
-    // TODO Should this update lastAccessTimes?
     this.optionallyClean()
 
+    this.updateLastAccessTimeForAllKeys()
     return this.innerMap.entries()
   }
 
   forEach(callback: (value: V, key: K) => void) {
-    // TODO Should this update lastAccessTimes?
     this.optionallyClean()
 
-    this.innerMap.forEach(callback)
+    const now = Date.now()
+    this.innerMap.forEach((v, k) => {
+      this.lastAccessTimes.set(k, now)
+      callback(v, k)
+    })
   }
 
   get(k: K): V | undefined {
@@ -88,8 +98,9 @@ export class TimedCacheMap<K, V> {
   }
 
   private optionallyClean() {
-    if (Date.now() - this.timeSinceLastClean > this.timeToCleanInMs) {
-      this.timeSinceLastClean = Date.now()
+    const now = Date.now()
+    if (now - this.timeSinceLastClean > this.timeToCleanInMs) {
+      this.timeSinceLastClean = now
       const staleKeys = this.getStaleKeys()
       fastForEach(staleKeys, (k) => {
         this.innerMap.delete(k)

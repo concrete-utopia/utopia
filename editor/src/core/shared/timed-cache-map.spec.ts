@@ -15,7 +15,7 @@ describe('Adding values to a TimedCacheMap', () => {
       cache.set(k, v)
     })
 
-    await delay(timeToClean + 1)
+    await delay(timeToClean + 10)
 
     const result = Array.from(cache.entries())
     expect(result).toEqual(input)
@@ -34,16 +34,18 @@ describe('Adding values to a TimedCacheMap', () => {
       cache.set(k, v)
     })
 
-    await delay(timeToClean + 1)
+    await delay(timeToClean + 10)
 
     // All still there
     const result1 = Array.from(cache.entries())
     expect(result1).toEqual(input)
 
+    await delay(timeToClean + 10)
+
     // Ensure one specific value remains
     cache.get('b')
 
-    await delay(timeToClean + 1)
+    await delay(timeToClean + 10)
 
     // All others have gone
     const result2 = Array.from(cache.entries())
@@ -57,13 +59,13 @@ describe('Adding values to a TimedCacheMap', () => {
     cache.set('a', 'first')
     cache.set('b', 'second')
 
-    await delay(timeToClean + 1)
+    await delay(timeToClean + 10)
 
     // Still there
     const result1 = cache.get('a')
     expect(result1).toEqual('first')
 
-    await delay(timeToClean + 1)
+    await delay(timeToClean + 10)
 
     // Still there after the other value has gone stale
     const result2 = cache.get('a')
@@ -80,12 +82,12 @@ describe('Adding values to a TimedCacheMap', () => {
     cache.set('a', 'first')
     cache.set('b', 'second')
 
-    await delay(timeToClean + 1)
+    await delay(timeToClean + 10)
 
     // Update the value
     cache.set('a', 'third')
 
-    await delay(timeToClean + 1)
+    await delay(timeToClean + 10)
 
     // Still there after the other value has gone stale
     const result = cache.get('a')
@@ -133,7 +135,7 @@ describe('Adding values to a TimedCacheMap', () => {
     const result1 = Array.from(cache.entries())
     expect(result1).toEqual(input)
 
-    await delay(timeToStale + 1)
+    await delay(timeToStale + 10)
 
     const result2 = Array.from(cache.entries())
     expect(result2).toEqual([])
@@ -155,7 +157,7 @@ describe('Adding values to a TimedCacheMap', () => {
     const result1 = Array.from(cache.keys())
     expect(result1).toEqual(['a', 'b', 'c'])
 
-    await delay(timeToStale + 1)
+    await delay(timeToStale + 10)
 
     const result2 = Array.from(cache.keys())
     expect(result2).toEqual([])
@@ -177,7 +179,7 @@ describe('Adding values to a TimedCacheMap', () => {
     const result1 = Array.from(cache.values())
     expect(result1).toEqual(['first', 'second', 'third'])
 
-    await delay(timeToStale + 1)
+    await delay(timeToStale + 10)
 
     const result2 = Array.from(cache.values())
     expect(result2).toEqual([])
