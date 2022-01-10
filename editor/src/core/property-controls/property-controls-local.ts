@@ -39,6 +39,7 @@ import { addRegisteredControls, ControlsToCheck } from '../../components/canvas/
 import { getGlobalEvaluatedFileName } from '../shared/code-exec-utils'
 import { memoize } from '../shared/memoize'
 import fastDeepEqual from 'fast-deep-equal'
+import { TimedCacheMap } from '../shared/timed-cache-map'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -215,10 +216,10 @@ const partiallyParseAndPrepareComponents = (
 export function createRegisterModuleFunction(
   workers: UtopiaTsWorkers | null,
 ): typeof registerModuleAPI {
-  let cachedParseAndPrepareComponentsMap: Map<
+  let cachedParseAndPrepareComponentsMap = new TimedCacheMap<
     string,
     PartiallyAppliedParseAndPrepareComponents
-  > = new Map()
+  >()
 
   // create a function with a signature that matches utopia-api/registerModule
   return function registerModule(
