@@ -4051,7 +4051,7 @@ export interface ParsedCSSProperties {
   width: CSSNumber | undefined
   height: CSSNumber | undefined
   flexBasis: CSSNumber | undefined
-  flexGap: number
+  gap: number
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4225,7 +4225,7 @@ export const cssEmptyValues: ParsedCSSProperties = {
   flexGrow: 0,
   flexShrink: 1,
   display: 'block',
-  flexGap: 0,
+  gap: 0,
   width: {
     value: 0,
     unit: null,
@@ -4301,7 +4301,7 @@ export const cssParsers: CSSParsers = {
   flexGrow: parseCSSUnitlessAsNumber,
   flexShrink: parseCSSUnitlessAsNumber,
   display: parseDisplay,
-  flexGap: parseCSSUnitlessAsNumber,
+  gap: parseCSSUnitlessAsNumber,
   width: parseCSSLengthPercent,
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
@@ -4373,7 +4373,7 @@ const cssPrinters: CSSPrinters = {
   width: printCSSNumberOrUndefinedAsAttributeValue('px'),
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
-  flexGap: jsxAttributeValueWithNoComments,
+  gap: jsxAttributeValueWithNoComments,
 }
 
 export interface UtopianElementProperties {
@@ -4669,7 +4669,7 @@ const layoutEmptyValuesNew: LayoutPropertyTypes = {
   width: undefined,
   height: undefined,
 
-  flexGap: 0,
+  gap: 0,
   flexBasis: undefined,
 
   left: undefined,
@@ -4686,7 +4686,7 @@ const layoutParsersNew: LayoutParsersNew = {
   width: parseFramePin,
   height: parseFramePin,
 
-  flexGap: isNumberParser,
+  gap: isNumberParser,
   flexBasis: parseFramePin,
 
   left: parseFramePin,
@@ -4703,7 +4703,7 @@ const layoutPrintersNew: LayoutPrintersNew = {
   width: printCSSNumberOrUndefinedAsAttributeValue('px'),
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
-  flexGap: jsxAttributeValueWithNoComments,
+  gap: jsxAttributeValueWithNoComments,
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
   left: printCSSNumberOrUndefinedAsAttributeValue('px'),
@@ -5041,7 +5041,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   gapMain: 0,
   flexBasis: undefined,
 
-  flexGap: 0,
+  gap: 0,
 }
 
 export function isTrivialDefaultValue(

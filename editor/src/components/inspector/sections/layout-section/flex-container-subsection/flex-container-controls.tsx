@@ -253,7 +253,7 @@ export const FlexGapControl = React.memo((props: FlexGapControlProps) => {
     return contextData.targetPath
   })
   const flexGapProp = React.useMemo(() => {
-    return [stylePropPathMappingFn('flexGap', targetPath)]
+    return [stylePropPathMappingFn('gap', targetPath)]
   }, [targetPath])
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
