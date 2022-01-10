@@ -22,7 +22,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   const alignItems = useInspectorLayoutInfo('alignItems')
   const alignContent = useInspectorLayoutInfo('alignContent')
   const justifyContent = useInspectorLayoutInfo('justifyContent')
-  const flexGap = useInspectorLayoutInfo('flexGap')
+  const gap = useInspectorLayoutInfo('gap')
 
   const {
     justifyFlexStart,
@@ -40,12 +40,12 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
     flexWrap.value === FlexWrap.NoWrap ? getControlStyles('disabled') : alignItems.controlStyles
 
   const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    flexGap.onSubmitValue,
-    flexGap.onUnsetValues,
+    gap.onSubmitValue,
+    gap.onUnsetValues,
   )
   const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-    flexGap.onSubmitValue,
-    flexGap.onUnsetValues,
+    gap.onSubmitValue,
+    gap.onUnsetValues,
   )
 
   return (
@@ -71,12 +71,12 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
         />
       </UIGridRow>
       <FlexGapControl
-        value={flexGap.value}
+        value={gap.value}
         onSubmitValue={wrappedOnSubmitValue}
         onTransientSubmitValue={wrappedOnTransientSubmitValue}
-        onUnset={flexGap.onUnsetValues}
-        controlStatus={flexGap.controlStatus}
-        controlStyles={flexGap.controlStyles}
+        onUnset={gap.onUnsetValues}
+        controlStatus={gap.controlStatus}
+        controlStyles={gap.controlStyles}
       />
       <FlexAlignItemsControl
         value={alignItems.value}
