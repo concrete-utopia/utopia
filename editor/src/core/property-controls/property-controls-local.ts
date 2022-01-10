@@ -29,6 +29,7 @@ import {
   applicative3Either,
   bimapEither,
   Either,
+  foldEither,
   isLeft,
   mapEither,
   sequenceEither,
@@ -227,39 +228,45 @@ export function createRegisterModuleFunction(
   ): void {
     const parsedModuleName = parseString(unparsedModuleName)
 
-    if (isLeft(parsedModuleName)) {
-      const errorDetails = getParseErrorDetails(parsedModuleName.value)
-      throw new Error(`registerModule first param (moduleName): ${errorDetails.description}`)
-    } else {
-      if (workers != null) {
-        const moduleName = parsedModuleName.value
-        let parseAndPrepareComponentsFn = cachedParseAndPrepareComponentsMap.get(moduleName)
-        if (parseAndPrepareComponentsFn == null) {
-          // Create a memoized function for the handling of component descriptors for the specified module name
-          parseAndPrepareComponentsFn = memoize(
-            partiallyParseAndPrepareComponents(workers, moduleName),
-            {
-              equals: fastDeepEqual,
-              maxSize: 5,
-            },
-          )
-          cachedParseAndPrepareComponentsMap.set(moduleName, parseAndPrepareComponentsFn)
-        }
+    foldEither(
+      (parseFailure) => {
+        const errorDetails = getParseErrorDetails(parseFailure)
+        throw new Error(`registerModule first param (moduleName): ${errorDetails.description}`)
+      },
+      (moduleName) => {
+        if (workers != null) {
+          let parseAndPrepareComponentsFn = cachedParseAndPrepareComponentsMap.get(moduleName)
+          if (parseAndPrepareComponentsFn == null) {
+            // Create a memoized function for the handling of component descriptors for the specified module name
+            parseAndPrepareComponentsFn = memoize(
+              partiallyParseAndPrepareComponents(workers, moduleName),
+              {
+                equals: fastDeepEqual,
+                maxSize: 5,
+              },
+            )
+            cachedParseAndPrepareComponentsMap.set(moduleName, parseAndPrepareComponentsFn)
+          }
 
-        const parsedPreparedDescriptors = parseAndPrepareComponentsFn(unparsedComponents)
-        if (isLeft(parsedPreparedDescriptors)) {
-          throw new Error(parsedPreparedDescriptors.value)
-        } else {
-          const preparedDescriptors = parsedPreparedDescriptors.value
-          // Fires off asynchronously.
-          addRegisteredControls(
-            preparedDescriptors.sourceFile,
-            preparedDescriptors.moduleNameOrPath,
-            preparedDescriptors.componentDescriptors,
+          const parsedPreparedDescriptors = parseAndPrepareComponentsFn(unparsedComponents)
+          foldEither(
+            (parseFailureErrorMessage) => {
+              throw new Error(parseFailureErrorMessage)
+            },
+            (preparedDescriptors) => {
+              // Fires off asynchronously.
+              addRegisteredControls(
+                preparedDescriptors.sourceFile,
+                preparedDescriptors.moduleNameOrPath,
+                preparedDescriptors.componentDescriptors,
+              )
+            },
+            parsedPreparedDescriptors,
           )
         }
-      }
-    }
+      },
+      parsedModuleName,
+    )
   }
 }
 
