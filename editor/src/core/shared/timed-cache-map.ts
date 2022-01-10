@@ -3,7 +3,7 @@ import { fastForEach } from './utils'
 export class TimedCacheMap<K, V> {
   private innerMap: Map<K, V>
   private lastAccessTimes: Map<K, number>
-  private timeSinceLastClean: number
+  private timeOfLastClean: number
 
   constructor(
     private timeToStaleInMs: number = 60000,
@@ -11,13 +11,13 @@ export class TimedCacheMap<K, V> {
   ) {
     this.innerMap = new Map<K, V>()
     this.lastAccessTimes = new Map<K, number>()
-    this.timeSinceLastClean = Date.now()
+    this.timeOfLastClean = Date.now()
   }
 
   clear() {
     this.innerMap.clear()
     this.lastAccessTimes.clear()
-    this.timeSinceLastClean = Date.now()
+    this.timeOfLastClean = Date.now()
   }
 
   delete(k: K) {
@@ -99,8 +99,8 @@ export class TimedCacheMap<K, V> {
 
   private optionallyClean() {
     const now = Date.now()
-    if (now - this.timeSinceLastClean > this.timeToCleanInMs) {
-      this.timeSinceLastClean = now
+    if (now - this.timeOfLastClean > this.timeToCleanInMs) {
+      this.timeOfLastClean = now
       const staleKeys = this.getStaleKeys()
       fastForEach(staleKeys, (k) => {
         this.innerMap.delete(k)
