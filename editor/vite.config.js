@@ -37,6 +37,9 @@ export default defineConfig(({ mode }) => {
       'process.env.GOOGLE_WEB_FONTS_KEY': `"${process.env.GOOGLE_WEB_FONTS_KEY}"`,
       'process.env.REACT_APP_COMMIT_HASH': `"${process.env.REACT_APP_COMMIT_HASH}"`,
     },
+    optimizeDeps: {
+      include: ['react/jsx-runtime'],
+    },
     build: {
       target: 'esnext',
       outDir: resolve(__dirname, 'lib2/editor'),

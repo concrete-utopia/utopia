@@ -9,6 +9,9 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
     throw e
   }
 })
+if (typeof (globalThis as any).global === 'undefined') {
+  ;(globalThis as any).global = globalThis
+}
 ;(global as any).BrowserFS = BrowserFS
 
 // worker polyfills
