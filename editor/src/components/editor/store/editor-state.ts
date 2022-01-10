@@ -160,6 +160,7 @@ import type {
   CanvasInteractionSession,
   FlexAlignControlRectProps,
   SelectModeCanvasSessionState,
+  FlexGapControlRectProps,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { Spec } from 'immutability-helper'
 

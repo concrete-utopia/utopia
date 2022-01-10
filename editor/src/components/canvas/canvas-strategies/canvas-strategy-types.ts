@@ -17,6 +17,10 @@ type ResizeHandle = {
   edgePosition: EdgePosition
 }
 
+type FlexGapHandle = {
+  type: 'FLEX_GAP_HANDLE'
+}
+
 export interface FlexAlignControlRectProps {
   x: number
   y: number
@@ -26,7 +30,14 @@ export interface FlexAlignControlRectProps {
   associatedFlexProp: any // TODO
 }
 
-type CanvasControlType = BoundingArea | ResizeHandle
+export interface FlexGapControlRectProps {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle
 
 export interface CanvasStrategy {
   name: string

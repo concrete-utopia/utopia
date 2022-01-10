@@ -14,8 +14,9 @@ import {
   SelectModeCanvasSessionState,
 } from './canvas-strategy-types'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
+import { flexGapStrategy } from './flex-gap-strategy'
 
-const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexAlignParentStrategy]
+const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy, flexAlignParentStrategy]
 
 export function pickDefaultCanvasStrategy(
   editorState: EditorState,

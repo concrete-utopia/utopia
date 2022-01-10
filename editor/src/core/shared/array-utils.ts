@@ -366,3 +366,11 @@ export function reverse<T>(array: Array<T>): Array<T> {
   result.reverse()
   return result
 }
+
+export function aperture<T>(n: number, array: Array<T>): Array<Array<T>> {
+  let result: Array<Array<T>> = []
+  for (let arrayIndex: number = 0; arrayIndex < array.length - n + 1; arrayIndex++) {
+    result.push(array.slice(arrayIndex, arrayIndex + n))
+  }
+  return result
+}
