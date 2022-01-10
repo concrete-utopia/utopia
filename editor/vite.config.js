@@ -69,7 +69,7 @@ export default defineConfig(({ mode }) => {
           'vscode-outer': resolve(__dirname, 'src/vite/vscode-outer/index.html'),
         },
         output: {
-          manualChunks: createManualChunks,
+          // manualChunks: createManualChunks,
         },
       },
     },
