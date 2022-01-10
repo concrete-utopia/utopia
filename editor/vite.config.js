@@ -3,9 +3,17 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { injectHtml } from 'vite-plugin-html'
 
-// import replace from '@rollup/plugin-replace'
-
 export default defineConfig(({ mode }) => {
+  function createManualChunks(id, { getModuleInfo }) {
+    if (id.includes('node_modules')) {
+      const mod = getModuleInfo(id)
+      // console.log('getModuleInfo(id)', mod?.isEntry, mod?.importers)
+      return 'vendor'
+      // } else if (id.includes('uuiui')) {
+      //   return 'uuiui'
+    }
+  }
+
   const isDevEnv = mode === 'development'
   return {
     plugins: [
@@ -59,6 +67,9 @@ export default defineConfig(({ mode }) => {
         input: {
           index: resolve(__dirname, 'src/vite/index.html'),
           'vscode-outer': resolve(__dirname, 'src/vite/vscode-outer/index.html'),
+        },
+        output: {
+          manualChunks: createManualChunks,
         },
       },
     },
