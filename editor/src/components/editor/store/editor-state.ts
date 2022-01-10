@@ -1014,6 +1014,7 @@ export function transientCanvasState(
   fileState: TransientFilesState | null,
   toastsToApply: ReadonlyArray<Notice>,
   editorStatePatch: EditorStatePatch | null,
+  canvasSessionState: SelectModeCanvasSessionState | null = null,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
@@ -1021,7 +1022,7 @@ export function transientCanvasState(
     filesState: fileState,
     toastsToApply: toastsToApply,
     editorStatePatch: editorStatePatch,
-    canvasSessionState: null,
+    canvasSessionState: canvasSessionState,
   }
 }
 
@@ -1401,6 +1402,8 @@ export function deriveState(
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }
+
+  console.log('kuturry', derived.canvas.transientState.canvasSessionState?.activeStrategy?.name)
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
 

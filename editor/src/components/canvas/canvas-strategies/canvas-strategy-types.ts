@@ -59,7 +59,6 @@ export type CanvasInteractionSession = SelectModeCanvasSession
 
 export interface SelectModeCanvasSession {
   type: 'SELECT_MODE_CANVAS_SESSION'
-  activeStrategy: CanvasStrategyUpdateFn | null // should this live here, or inside sessionProps? or inside SelectModeCanvasSessionState? should it exist at all?
   sessionProps: SelectModeCanvasSessionProps
 }
 
@@ -73,10 +72,12 @@ export interface SelectModeCanvasSessionProps {
 }
 
 export interface SelectModeCanvasSessionState {
+  activeStrategy: CanvasStrategy | null // should this live here? should it exist at all?
   dragDeltaMinimumPassed: boolean
 }
 
 export const emptySelectModeCanvasSessionState: SelectModeCanvasSessionState = {
+  activeStrategy: null,
   dragDeltaMinimumPassed: false,
 }
 
@@ -86,7 +87,6 @@ export function startNewSelectModeCanvasSession(
 ): SelectModeCanvasSession {
   return {
     type: 'SELECT_MODE_CANVAS_SESSION',
-    activeStrategy: null,
     sessionProps: {
       start: start,
       mousePosition: start, // TODO maybe this should be independent of start?

@@ -21,7 +21,7 @@ export function pickDefaultCanvasStrategy(
   editorState: EditorState,
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
-): CanvasStrategyUpdateFn | null {
+): CanvasStrategy | null {
   sortBy(RegisteredCanvasStrategies, (l, r) => {
     // sort by fitness, descending
     return (
@@ -29,7 +29,7 @@ export function pickDefaultCanvasStrategy(
       l.fitnessFn(editorState, sessionProps, sessionState)
     )
   })
-  return RegisteredCanvasStrategies[0]?.updateFn ?? null
+  return RegisteredCanvasStrategies[0] ?? null
 }
 
 export function applyCanvasStrategy(
@@ -45,9 +45,18 @@ export function applyCanvasStrategy(
     canvasSession.sessionProps,
     sessionStateToUse,
   )
+  const sessionStateWithStrategy: SelectModeCanvasSessionState = {
+    ...sessionStateToUse,
+    activeStrategy: strategy,
+  }
 
   const result =
-    strategy?.(lifecycle, editorState, canvasSession.sessionProps, sessionStateToUse) ?? null
+    strategy?.updateFn?.(
+      lifecycle,
+      editorState,
+      canvasSession.sessionProps,
+      sessionStateWithStrategy,
+    ) ?? null
 
   if (result != null) {
     // TODO BEFORE MERGE APPLY result?.newSessionState !!!!
