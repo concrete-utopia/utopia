@@ -1,5 +1,5 @@
 import React from 'react'
-import { RegularControlDescription } from 'utopia-api'
+import { RegularControlDescription } from 'utopia-api/core'
 import { parseStringValidateAsColor } from '../../../../core/property-controls/property-controls-parser'
 import { isLeft } from '../../../../core/shared/either'
 import { mapValues } from '../../../../core/shared/object-utils'

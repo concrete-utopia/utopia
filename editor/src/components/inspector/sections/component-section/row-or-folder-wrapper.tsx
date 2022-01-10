@@ -1,5 +1,5 @@
 import React from 'react'
-import { ControlDescription } from 'utopia-api'
+import { ControlDescription } from 'utopia-api/core'
 import { right } from '../../../../core/shared/either'
 import { objectMap } from '../../../../core/shared/object-utils'
 import { PropertyPath } from '../../../../core/shared/project-file-types'

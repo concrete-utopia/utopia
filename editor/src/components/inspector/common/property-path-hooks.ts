@@ -2,7 +2,6 @@ import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import React from 'react'
 import { createContext, useContextSelector } from 'use-context-selector'
-import { PropertyControls } from 'utopia-api'
 import {
   forUnderlyingTargetFromEditorState,
   withUnderlyingTarget,

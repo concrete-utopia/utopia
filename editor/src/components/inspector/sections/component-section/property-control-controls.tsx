@@ -19,7 +19,7 @@ import {
   Vector2ControlDescription,
   Vector3ControlDescription,
   Vector4ControlDescription,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import { InspectorInfo } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
 import {

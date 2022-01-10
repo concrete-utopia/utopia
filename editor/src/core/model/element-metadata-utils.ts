@@ -1,5 +1,5 @@
 import * as OPI from 'object-path-immutable'
-import { FlexLength, LayoutSystem, Sides } from 'utopia-api'
+import { FlexLength, LayoutSystem, Sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import {

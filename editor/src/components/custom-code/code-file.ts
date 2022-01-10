@@ -1,6 +1,5 @@
 import Utils from '../../utils/utils'
 import { EmitFileResult } from '../../core/workers/ts/ts-worker'
-import { ImportType, PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import {
   NodeModules,

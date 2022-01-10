@@ -1,5 +1,5 @@
 import React from 'react'
-import { FlexStretch, Sides } from 'utopia-api'
+import { FlexStretch, Sides } from 'utopia-api/core'
 import { FlexLayoutHelpers, LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'

@@ -1,6 +1,6 @@
 import React from 'react'
 import { MapLike } from 'typescript'
-import { PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api/core'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import {
   JSXElementChild,

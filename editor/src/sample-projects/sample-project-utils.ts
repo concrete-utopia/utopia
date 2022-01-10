@@ -79,7 +79,7 @@ import Utopia, {
   Scene,
   Storyboard,
   registerModule,
-} from 'utopia-api/components'
+} from 'utopia-api'
 import { App } from '/src/app.js'
 
 export var SameFileApp = (props) => {
@@ -123,7 +123,7 @@ export var App = (props) => {
     '/src/card.js': createCodeFile(
       '/src/card.js',
       `import * as React from 'react'
-import { Rectangle } from 'utopia-api/components'
+import { Rectangle } from 'utopia-api'
 export var Card = (props) => {
   return <div data-uid='card-outer-div' style={{...props.style}}>
     <div data-uid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />

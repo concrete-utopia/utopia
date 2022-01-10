@@ -1,4 +1,4 @@
-import { Sides } from 'utopia-api'
+import { Sides } from 'utopia-api/core'
 import {
   ElementInstanceMetadata,
   elementInstanceMetadata,

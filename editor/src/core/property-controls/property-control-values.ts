@@ -22,7 +22,7 @@ import {
   FolderControlDescription,
   PropertyControls,
   RegularControlDescription,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import {
   parseColor,
   CSSColor,

@@ -38,7 +38,6 @@ import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-j
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
-import { Storyboard } from 'utopia-api/components'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'

@@ -9,7 +9,7 @@ import {
   isPercentPin,
   valueToUseForPin,
   VerticalFramePoints,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import {
   createLayoutPropertyPath,

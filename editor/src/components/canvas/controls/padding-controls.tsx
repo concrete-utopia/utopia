@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sides } from 'utopia-api'
+import { Sides } from 'utopia-api/core'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 

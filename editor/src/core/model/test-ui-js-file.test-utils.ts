@@ -1,4 +1,4 @@
-import { KrazyGeorgeTestUrl } from 'utopia-api'
+import { KrazyGeorgeTestUrl } from 'utopia-api/core'
 import { createLayoutPropertyPathString } from '../layout/layout-helpers-new'
 import { Imports, importAlias } from '../shared/project-file-types'
 import {

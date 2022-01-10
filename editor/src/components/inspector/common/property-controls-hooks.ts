@@ -16,7 +16,7 @@ import {
   ArrayControlDescription,
   HigherLevelControlDescription,
   RegularControlDescription,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import {
   filterUtopiaSpecificProps,
   InspectorInfo,

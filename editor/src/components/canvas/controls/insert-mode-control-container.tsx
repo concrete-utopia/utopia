@@ -1,5 +1,5 @@
 import React from 'react'
-import { FramePoint } from 'utopia-api'
+import { FramePoint } from 'utopia-api/core'
 import { LayoutHelpers, TopLeftWidthHeight } from '../../../core/layout/layout-helpers'
 import {
   getScenePropsOrElementAttributes,

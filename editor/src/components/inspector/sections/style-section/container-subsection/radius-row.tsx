@@ -3,7 +3,6 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { OptionsType } from 'react-select'
-import { FramePin } from 'utopia-api'
 import { isLeft, isRight, left, right } from '../../../../../core/shared/either'
 import utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'

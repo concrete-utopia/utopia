@@ -6,7 +6,7 @@ import { ParsedPropertyControls } from '../../../../core/property-controls/prope
 import { eitherToMaybe, foldEither } from '../../../../core/shared/either'
 import { unless, when } from '../../../../utils/react-conditionals'
 import { CSSCursor } from '../../../canvas/canvas-types'
-import { ControlDescription } from 'utopia-api'
+import { ControlDescription } from 'utopia-api/core'
 import { inferControlTypeBasedOnValue } from './component-section-utils'
 import { HiddenControls } from './hidden-controls-section'
 import * as PP from '../../../../core/shared/property-path'

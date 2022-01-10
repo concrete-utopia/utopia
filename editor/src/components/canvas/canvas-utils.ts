@@ -11,7 +11,7 @@ import {
   HorizontalFramePoints,
   isHorizontalPoint,
   numberPartOfPin,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import {
   createLayoutPropertyPath,

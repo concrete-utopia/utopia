@@ -29,6 +29,8 @@ export default defineConfig(({ mode }) => {
     },
     base: '/editor/',
     define: {
+      global: '{}',
+      module: '{}',
       'process.env.NODE_ENV': `"${process.env.APP_ENV}"`,
       'process.env.REACT_APP_ENVIRONMENT_CONFIG': `"${process.env.REACT_APP_ENVIRONMENT_CONFIG}"`,
       'process.env.REACT_APP_AUTH0_REDIRECT_URI': `"${process.env.REACT_APP_AUTH0_REDIRECT_URI}"`,

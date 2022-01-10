@@ -10,7 +10,7 @@ import {
   View as UtopiaView,
   Scene as UtopiaScene,
   Storyboard as UtopiaStoryboard,
-} from 'utopia-api/components'
+} from 'utopia-api'
 
 function renderToFormattedString(element: React.ReactElement) {
   const renderResult = ReactDOMServer.renderToStaticMarkup(element)

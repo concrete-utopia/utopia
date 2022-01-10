@@ -19,7 +19,7 @@ import {
   ArrayControlDescription,
   ObjectControlDescription,
   TupleControlDescription,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import {
   parseNumberInputControlDescription,
   parseCheckboxControlDescription,

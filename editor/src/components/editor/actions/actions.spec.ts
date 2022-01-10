@@ -1,5 +1,5 @@
 import * as Chai from 'chai'
-import { FramePin, LayoutSystem } from 'utopia-api'
+import { FramePin, LayoutSystem } from 'utopia-api/core'
 import {
   isUtopiaJSXComponent,
   jsxAttributeNestedObjectSimple,

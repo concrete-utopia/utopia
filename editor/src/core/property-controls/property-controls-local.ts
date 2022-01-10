@@ -3,7 +3,7 @@ import {
   ComponentToRegister,
   ComponentInsertOption,
   PropertyControls,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import deepEqual from 'fast-deep-equal'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import {

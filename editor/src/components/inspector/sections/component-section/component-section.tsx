@@ -16,7 +16,7 @@ import {
   RegularControlDescription,
   TupleControlDescription,
   UnionControlDescription,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'

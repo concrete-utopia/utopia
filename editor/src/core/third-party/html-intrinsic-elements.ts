@@ -1,4 +1,3 @@
-import { PropertyControls } from 'utopia-api'
 import { ParseResult } from '../../utils/value-parser-utils'
 import {
   ParsedPropertyControls,

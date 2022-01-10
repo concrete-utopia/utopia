@@ -7,12 +7,12 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./components": "./src/primitives/index.ts"
+    "./core": "./src/core.ts"
   },
   "typesVersions": {
     "*": {
-      "components": [
-        "dist/primitives/index.d.ts"
+      "core": [
+        "dist/core.d.ts"
       ]
     }
   },

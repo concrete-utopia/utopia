@@ -7,7 +7,7 @@ import {
   PropertyControls,
   expression,
   importStar,
-} from 'utopia-api'
+} from 'utopia-api/core'
 
 const Vector3: Vector3ControlDescription = {
   control: 'vector3',
