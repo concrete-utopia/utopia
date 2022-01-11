@@ -1,6 +1,6 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { foldEither } from '../../../core/shared/either'
+import { foldEither, isRight } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
@@ -11,6 +11,7 @@ import {
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
   setJSXValuesAtPaths,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
@@ -40,6 +41,7 @@ import {
 } from './canvas-strategy-types'
 import { aperture, mapDropNulls } from '../../../core/shared/array-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
@@ -93,8 +95,9 @@ export const flexGapStrategy: CanvasStrategy = {
         } else {
           newGap += sessionProps.mousePosition.y - sessionProps.start.y
         }
-        if (currentGap !== null && currentGap.attribute.type === 'ATTRIBUTE_VALUE') {
-          newGap += currentGap.attribute.value
+        const currentGapValue = optionalMap(jsxSimpleAttributeToValue, currentGap?.attribute)
+        if (currentGapValue !== null && isRight(currentGapValue)) {
+          newGap += currentGapValue.value
         }
         const propsToUpdate: Array<ValueAtPath> = [
           {
