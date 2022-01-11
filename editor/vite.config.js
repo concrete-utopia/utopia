@@ -2,12 +2,20 @@ import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { injectHtml } from 'vite-plugin-html'
+import { visualizer } from 'rollup-plugin-visualizer'
+import worker from 'rollup-plugin-workers'
 
 export default defineConfig(({ mode }) => {
   function createManualChunks(id, { getModuleInfo }) {
     if (id.includes('node_modules')) {
       const mod = getModuleInfo(id)
-      // console.log('getModuleInfo(id)', mod?.isEntry, mod?.importers)
+      if (id.includes('@babel/standalone')) {
+        return 'babel'
+      }
+      if (id.includes('eslint')) {
+        // console.log('getModuleInfo(id)', id, mod?.importers)
+        return 'eslint'
+      }
       return 'vendor'
       // } else if (id.includes('uuiui')) {
       //   return 'uuiui'
@@ -54,7 +62,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       target: 'esnext',
-      outDir: resolve(__dirname, 'lib2/editor'),
+      outDir: resolve(__dirname, 'lib'),
       commonjsOptions: {},
       sourcemap: true,
       compact: true,
@@ -62,6 +70,8 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         external: ['react', 'react-dom'],
         plugins: [
+          worker(),
+          // visualizer(),
           // replace({ 'process.env.NODE_ENV': 'production' }),
         ],
         input: {

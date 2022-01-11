@@ -218,6 +218,8 @@ specifiers:
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
   rollup-plugin-polyfill-node: ^0.8.0
+  rollup-plugin-visualizer: ^5.5.2
+  rollup-plugin-workers: ^2.1.0
   scheduler: 0.17.0
   script-ext-html-webpack-plugin: 2.1.4
   selenium-webdriver: 3.0.1
@@ -496,6 +498,8 @@ devDependencies:
   pretty-format: 26.1.0
   react-dev-utils: 10.2.1
   react-test-renderer: 16.9.0_utopia-react@17.0.0-rc.1
+  rollup-plugin-visualizer: 5.5.2
+  rollup-plugin-workers: 2.1.0
   script-ext-html-webpack-plugin: 2.1.4_d0775fc9e9778f8067265599ff567f52
   selenium-webdriver: 3.0.1
   shuffle-array: 1.0.1
@@ -7651,6 +7655,10 @@ packages:
     resolution: {integrity: sha512-BxbNGGNm0RyRYvUdHpIwv9IWzeM9XClbOxwoATuFdOE7ZE6wHL+HQ5T8hoPM+zHvmKzzsEqhgy0GrQ5X13afiQ==}
     engines: {node: '>=4.0'}
 
+  /estree-walker/0.6.1:
+    resolution: {integrity: sha512-SqmZANLWS0mnatqbSfRP5g8OXZC12Fgg1IwNtLsyHDzJizORW4khDfjPqJZsemPWBB2uqykUah5YpQ6epsqC/w==}
+    dev: true
+
   /estree-walker/1.0.1:
     resolution: {integrity: sha512-1fMXF3YP4pZZVozF8j/ZLfvnR8NSIljt56UhbZ5PeeDmmGHpgpdwQt7ITlGvYaQukCvuBRMLEiKiYC+oeIg4cg==}
     dev: false
@@ -9219,7 +9227,7 @@ packages:
       run-async: 2.4.1
       rxjs: 6.6.7
       string-width: 4.2.3
-      strip-ansi: 6.0.0
+      strip-ansi: 6.0.1
       through: 2.3.8
     dev: true
 
@@ -11113,7 +11121,6 @@ packages:
     resolution: {integrity: sha512-4CrMT5DOHTDk4HYDlzmwu4FVCcIYI8gauveasrdCu2IKIFOJ3f0v/8MDGJCDL9oD2ppz/Av1b0Nj345H9M+XIA==}
     dependencies:
       sourcemap-codec: 1.4.8
-    dev: false
 
   /make-dir/2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
@@ -14177,6 +14184,33 @@ packages:
       '@rollup/plugin-inject': 4.0.3
     dev: false
 
+  /rollup-plugin-visualizer/5.5.2:
+    resolution: {integrity: sha512-sh+P9KhuWTzeStyRA5yNZpoEFGuj5Ph34JLMa9+muhU8CneFf9L0XE4fmAwAojJLWp//uLUEyytBPSCdZEg5AA==}
+    engines: {node: '>=10.16'}
+    hasBin: true
+    peerDependencies:
+      rollup: ^2.0.0
+    dependencies:
+      nanoid: 3.1.30
+      open: 7.4.2
+      source-map: 0.7.3
+      yargs: 16.2.0
+    dev: true
+
+  /rollup-plugin-workers/2.1.0:
+    resolution: {integrity: sha512-rfL0JHYBayFEk+ojHyDYKZklAYveX90S5roV3PWtLxIttUoAxyamyiskJHEFoEh4AFxSdsmdSgeFoD49oMO8Pg==}
+    dependencies:
+      magic-string: 0.25.7
+      rollup-pluginutils: 2.8.2
+      traveler: github.com/tsbehlman/traveler/f94765d0e8d2c540dfbeee04be8be9c516b6a881
+    dev: true
+
+  /rollup-pluginutils/2.8.2:
+    resolution: {integrity: sha512-EEp9NhnUkwY8aif6bxgovPHMoMoNr2FulJziTndpt5H9RdwC47GSGuII9XxpSdzVGM0GWrNPHV6ie1LTNJPaLQ==}
+    dependencies:
+      estree-walker: 0.6.1
+    dev: true
+
   /rollup/2.60.2:
     resolution: {integrity: sha512-1Bgjpq61sPjgoZzuiDSGvbI1tD91giZABgjCQBKM5aYLnzjq52GoDuWVwT/cm/MCxCMPU8gqQvkj8doQ5C8Oqw==}
     engines: {node: '>=10.0.0'}
@@ -14759,7 +14793,6 @@ packages:
 
   /sourcemap-codec/1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
-    dev: false
 
   /space-separated-tokens/1.1.5:
     resolution: {integrity: sha512-q/JSVd1Lptzhf5bkYm4ob4iWPjx0KiRe3sRFBNrVqbJkFaBm5vbbowy1mymoPNLRa52+oadOhJ+K49wsSeSjTA==}
@@ -16375,7 +16408,7 @@ packages:
     dependencies:
       ansi-styles: 4.3.0
       string-width: 4.2.3
-      strip-ansi: 6.0.0
+      strip-ansi: 6.0.1
     dev: true
 
   /wrappy/1.0.2:
@@ -16572,7 +16605,7 @@ packages:
     dev: false
 
   github.com/milahu/patch-package/6b85a8bc1562d1482f30c1b65c9f4e91ba657d39:
-    resolution: {tarball: https://codeload.github.com/milahu/patch-package/tar.gz/6b85a8bc1562d1482f30c1b65c9f4e91ba657d39}
+    resolution: {commit: 6b85a8bc1562d1482f30c1b65c9f4e91ba657d39, repo: git+ssh://git@github.com/milahu/patch-package.git, type: git}
     name: '@milahu/patch-package-with-pnpm-support'
     version: 6.4.8
     engines: {npm: '>5'}
@@ -16611,8 +16644,14 @@ packages:
       warning: 3.0.0
     dev: false
 
+  github.com/tsbehlman/traveler/f94765d0e8d2c540dfbeee04be8be9c516b6a881:
+    resolution: {tarball: https://codeload.github.com/tsbehlman/traveler/tar.gz/f94765d0e8d2c540dfbeee04be8be9c516b6a881}
+    name: traveler
+    version: 1.0.0
+    dev: true
+
   github.com/types/npm-ramda/9529aa3c8ff70ff84afcbc0be83443c00f30ea90:
-    resolution: {tarball: https://codeload.github.com/types/npm-ramda/tar.gz/9529aa3c8ff70ff84afcbc0be83443c00f30ea90}
+    resolution: {commit: 9529aa3c8ff70ff84afcbc0be83443c00f30ea90, repo: git+ssh://git@github.com/types/npm-ramda.git, type: git}
     name: '@types/ramda'
     version: 0.25.0
     dev: true
