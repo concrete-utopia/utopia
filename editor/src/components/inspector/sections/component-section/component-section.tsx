@@ -159,28 +159,6 @@ const WarningTooltip = React.memo(({ warning }: { warning: string }) => {
   )
 })
 
-interface RowForInvalidControlProps {
-  propName: string
-  title: string
-  propertyError: ParseError
-  warningTooltip?: string
-}
-
-export const RowForInvalidControl = React.memo((props: RowForInvalidControlProps) => {
-  const propPath = [PP.create([props.propName])]
-  const warning =
-    props.warningTooltip == null ? null : <WarningTooltip warning={props.warningTooltip} />
-  return (
-    <UIGridRow padded={true} variant='<--1fr--><--1fr-->'>
-      <PropertyLabel target={propPath}>
-        {warning}
-        {props.title}
-      </PropertyLabel>
-      <ParseErrorControl parseError={props.propertyError} />
-    </UIGridRow>
-  )
-})
-
 interface AbstractRowForControlProps {
   propPath: PropertyPath
   isScene: boolean

@@ -1,26 +1,20 @@
 import {
-  FramePoint,
-  HorizontalFramePointsExceptSize,
-  isFramePoint,
   isPercentPin,
   LayoutSystem,
   NormalisedFrame,
-  valueToUseForPin,
-  VerticalFramePointsExceptSize,
-  VerticalFramePoints,
-  HorizontalFramePoints,
   isHorizontalPoint,
   numberPartOfPin,
 } from 'utopia-api'
 import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import {
-  createLayoutPropertyPath,
   framePointForPinnedProp,
   LayoutPinnedProps,
-  LayoutProp,
   pinnedPropForFramePoint,
   LayoutPinnedProp,
   LayoutTargetableProp,
+  isLayoutPinnedProp,
+  VerticalLayoutPinnedProps,
+  HorizontalLayoutPinnedProps,
 } from '../../core/layout/layout-helpers-new'
 import {
   maybeSwitchLayoutProps,
@@ -118,6 +112,7 @@ import {
   CanvasVector,
   localRectangle,
   LocalRectangle,
+  Size,
 } from '../../core/shared/math-utils'
 import { insertionSubjectIsJSXElement } from '../editor/editor-modes'
 import {
@@ -200,7 +195,7 @@ import {
   ProjectContentTreeRoot,
 } from '../assets'
 import { getAllTargetsAtPoint } from './dom-lookup'
-import { parseCSSLengthPercent } from '../inspector/common/css-utils'
+import { CSSNumber, parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
 import { addToMapOfArraysUnique, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
@@ -211,6 +206,7 @@ import { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
 import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
+import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -220,9 +216,7 @@ export function getOriginalFrames(
   function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
-      ...MetadataUtils.getChildrenHandlingGroups(componentMetadata, view, true).map(
-        (child) => child.elementPath,
-      ),
+      ...MetadataUtils.getChildren(componentMetadata, view).map((child) => child.elementPath),
     ]
   }
   Utils.fastForEach(
@@ -243,12 +237,6 @@ export function getOriginalFrames(
           if (localFrame != null && globalFrame != null) {
             // Remove the ancestor frames if the immediate ones are groups.
             let workingFrame: CanvasRectangle | null = canvasRectangle(localFrame)
-            workingFrame = MetadataUtils.shiftGroupFrame(
-              componentMetadata,
-              path,
-              workingFrame,
-              false,
-            )
 
             const local = localRectangle(workingFrame)
             originalFrames.push({
@@ -272,9 +260,7 @@ export function getOriginalCanvasFrames(
   function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
-      ...MetadataUtils.getChildrenHandlingGroups(componentMetadata, view, true).map(
-        (child) => child.elementPath,
-      ),
+      ...MetadataUtils.getChildren(componentMetadata, view).map((child) => child.elementPath),
     ]
   }
   Utils.fastForEach(selectedViews, (selectedView) => {
@@ -372,8 +358,8 @@ export function canvasFrameToNormalisedFrame(frame: CanvasRectangle): Normalised
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
-    case 'PinnedRight':
-    case 'PinnedBottom':
+    case 'right':
+    case 'bottom':
       return -1
     case 'flexGrow':
     case 'flexShrink':
@@ -385,13 +371,72 @@ function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
 
 function unsetValueWhenNegative(prop: LayoutTargetableProp): boolean {
   switch (prop) {
-    case 'PinnedLeft':
-    case 'PinnedTop':
-    case 'PinnedRight':
-    case 'PinnedBottom':
+    case 'left':
+    case 'top':
+    case 'right':
+    case 'bottom':
       return false
     default:
       return true
+  }
+}
+
+function cssNumberAsNumberIfPossible(
+  cssNumber: CSSNumber | number | string | undefined,
+): number | string | undefined {
+  if (cssNumber == null) {
+    return undefined
+  } else {
+    switch (typeof cssNumber) {
+      case 'string':
+        return cssNumber
+      case 'number':
+        return cssNumber
+      default:
+        if (cssNumber.unit == null) {
+          return cssNumber.value
+        } else {
+          return printCSSNumber(cssNumber, null)
+        }
+    }
+  }
+}
+
+export function referenceParentValueForProp(prop: LayoutPinnedProp, parentSize: Size): number {
+  switch (prop) {
+    case 'left':
+    case 'top':
+    case 'width':
+    case 'height':
+      return 0
+    case 'right':
+      return parentSize.width
+    case 'bottom':
+      return parentSize.height
+    default:
+      const _exhaustiveCheck: never = prop
+      throw new Error(`Unknown frame point ${JSON.stringify(prop)}`)
+  }
+}
+
+export function valueToUseForPin(
+  prop: LayoutPinnedProp,
+  absoluteValue: number,
+  pinIsPercentPin: boolean,
+  parentRect: Size,
+): string | number {
+  const referenceSize = HorizontalLayoutPinnedProps.includes(prop)
+    ? parentRect.width
+    : parentRect.height
+  const referenceValue = referenceParentValueForProp(prop, parentRect)
+  const shouldInvertOffset = prop === 'right' || prop === 'bottom'
+  const actualOffsetValue = absoluteValue - referenceValue
+  const offsetValue = shouldInvertOffset ? -actualOffsetValue : actualOffsetValue
+  if (pinIsPercentPin) {
+    const percentValue = (offsetValue / referenceSize) * 100
+    return `${percentValue}%`
+  } else {
+    return offsetValue
   }
 }
 
@@ -487,7 +532,9 @@ export function updateFramesOfScenesAndComponents(
               throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
             }
 
-            const targetPropertyPath = createLayoutPropertyPath(frameAndTarget.targetProperty)
+            const targetPropertyPath = stylePropPathMappingFn(frameAndTarget.targetProperty, [
+              'style',
+            ])
             const valueFromDOM = getObservableValueForLayoutProp(
               elementMetadata,
               frameAndTarget.targetProperty,
@@ -515,20 +562,19 @@ export function updateFramesOfScenesAndComponents(
             }
 
             propsToSkip.push(
-              createLayoutPropertyPath('left'),
-              createLayoutPropertyPath('top'),
-              createLayoutPropertyPath('right'),
-              createLayoutPropertyPath('bottom'),
-              createLayoutPropertyPath('Width'),
-              createLayoutPropertyPath('Height'),
-              createLayoutPropertyPath('minWidth'),
-              createLayoutPropertyPath('minHeight'),
-              createLayoutPropertyPath('maxWidth'),
-              createLayoutPropertyPath('maxHeight'),
-              createLayoutPropertyPath('FlexCrossBasis'),
-              createLayoutPropertyPath('flexBasis'),
-              createLayoutPropertyPath('flexGrow'),
-              createLayoutPropertyPath('flexShrink'),
+              stylePropPathMappingFn('left', ['style']),
+              stylePropPathMappingFn('top', ['style']),
+              stylePropPathMappingFn('right', ['style']),
+              stylePropPathMappingFn('bottom', ['style']),
+              stylePropPathMappingFn('width', ['style']),
+              stylePropPathMappingFn('height', ['style']),
+              stylePropPathMappingFn('minWidth', ['style']),
+              stylePropPathMappingFn('minHeight', ['style']),
+              stylePropPathMappingFn('maxWidth', ['style']),
+              stylePropPathMappingFn('maxHeight', ['style']),
+              stylePropPathMappingFn('flexBasis', ['style']),
+              stylePropPathMappingFn('flexGrow', ['style']),
+              stylePropPathMappingFn('flexShrink', ['style']),
             )
           }
           break
@@ -539,7 +585,7 @@ export function updateFramesOfScenesAndComponents(
     } else {
       let parentFrame: CanvasRectangle | null = null
       if (optionalParentFrame == null) {
-        const nonGroupParent = MetadataUtils.findNonGroupParent(
+        const nonGroupParent = MetadataUtils.findParent(
           workingEditorState.jsxMetadata,
           originalTarget,
         )
@@ -570,21 +616,23 @@ export function updateFramesOfScenesAndComponents(
 
             // Pinning layout.
             const frameProps = LayoutPinnedProps.filter((p) => {
-              const value = getLayoutProperty(p, right(elementProps))
+              const value = getLayoutProperty(p, right(elementProps), ['style'])
               return isLeft(value) || value.value != null
-            }).map(framePointForPinnedProp)
+            })
 
-            function whichPropsToUpdate() {
+            function whichPropsToUpdate(): Array<LayoutPinnedProp> {
               if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
                 // only update left, top, right or bottom if the frame is expressed as left, top, right, bottom.
                 // otherwise try to change width and height only
-                let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
-                let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
+                let verticalPoints = frameProps.filter((p) => VerticalLayoutPinnedProps.includes(p))
+                let horizontalPoints = frameProps.filter((p) =>
+                  HorizontalLayoutPinnedProps.includes(p),
+                )
                 if (verticalPoints.length < 2) {
-                  verticalPoints.push(FramePoint.Height)
+                  verticalPoints.push('height')
                 }
                 if (horizontalPoints.length < 2) {
-                  horizontalPoints.push(FramePoint.Width)
+                  horizontalPoints.push('width')
                 }
 
                 return [...horizontalPoints, ...verticalPoints]
@@ -597,27 +645,24 @@ export function updateFramesOfScenesAndComponents(
                 return extendPartialFramePointsForResize(frameProps, frameAndTarget.edgePosition)
               } else {
                 // The "Old" behavior, for PIN_FRAME_CHANGE
-                return frameProps.length == 4
-                  ? frameProps
-                  : [FramePoint.Left, FramePoint.Top, FramePoint.Width, FramePoint.Height]
+                return frameProps.length == 4 ? frameProps : ['left', 'top', 'width', 'height']
               }
             }
 
-            const propsToUpdate: Array<FramePoint> = whichPropsToUpdate()
+            const propsToUpdate = whichPropsToUpdate()
 
             Utils.fastForEach(propsToUpdate, (propToUpdate) => {
               const absoluteValue = fullFrame[propToUpdate]
               const previousValue = currentFullFrame == null ? null : currentFullFrame[propToUpdate]
 
-              const pinnedPropToUpdate = pinnedPropForFramePoint(propToUpdate)
-              const propPathToUpdate = createLayoutPropertyPath(pinnedPropToUpdate)
-              const existingProp = getLayoutProperty(pinnedPropToUpdate, right(elementProps))
+              const propPathToUpdate = stylePropPathMappingFn(propToUpdate, ['style'])
+              const existingProp = getLayoutProperty(propToUpdate, right(elementProps), ['style'])
               if (absoluteValue === previousValue || isLeft(existingProp)) {
                 // Only update pins that have actually changed or aren't set via code
                 propsToSkip.push(propPathToUpdate)
               } else {
                 const pinIsPercentage =
-                  existingProp.value == null ? false : isPercentPin(existingProp.value)
+                  existingProp.value == null ? false : existingProp.value.unit === '%'
                 let valueToUse: string | number
                 if (parentFrame == null) {
                   valueToUse = absoluteValue
@@ -639,30 +684,31 @@ export function updateFramesOfScenesAndComponents(
           break
 
         case 'PIN_MOVE_CHANGE': {
-          let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+          let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
-            const framePoint = framePointForPinnedProp(p)
-            if (framePoint !== FramePoint.Width && framePoint !== FramePoint.Height) {
-              const value = getLayoutProperty(p, right(element.props))
+            if (p !== 'width' && p !== 'height') {
+              const value = getLayoutProperty(p, right(element.props), ['style'])
               if (isLeft(value) || value.value != null) {
-                frameProps[framePoint] = value.value
-                propsToSkip.push(createLayoutPropertyPath(p))
+                frameProps[p] = cssNumberAsNumberIfPossible(value.value)
+                propsToSkip.push(stylePropPathMappingFn(p, ['style']))
               }
             }
           })
 
-          let framePointsToUse: Array<FramePoint> = [...(Object.keys(frameProps) as FramePoint[])]
+          let framePointsToUse: Array<LayoutPinnedProp> = [
+            ...(Object.keys(frameProps) as Array<LayoutPinnedProp>),
+          ]
           const horizontalExistingFramePoints = framePointsToUse.filter(
-            (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
+            (p) => p === 'left' || p === 'right',
           )
           if (horizontalExistingFramePoints.length === 0) {
-            framePointsToUse.push(FramePoint.Left)
+            framePointsToUse.push('left')
           }
           const verticalExistingFramePoints = framePointsToUse.filter(
-            (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
+            (p) => p === 'top' || p === 'bottom',
           )
           if (verticalExistingFramePoints.length === 0) {
-            framePointsToUse.push(FramePoint.Top)
+            framePointsToUse.push('top')
           }
           propsToSet.push(
             ...getPropsToSetToMoveElement(
@@ -675,17 +721,19 @@ export function updateFramesOfScenesAndComponents(
           break
         }
         case 'SINGLE_RESIZE':
-          let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+          let frameProps: { [k: string]: string | number | undefined } = {}
           Utils.fastForEach(LayoutPinnedProps, (p) => {
             const framePoint = framePointForPinnedProp(p)
-            const value = getLayoutProperty(p, right(element.props))
+            const value = getLayoutProperty(p, right(element.props), ['style'])
             if (isLeft(value) || value.value != null) {
-              frameProps[framePoint] = value.value
-              propsToSkip.push(createLayoutPropertyPath(p))
+              frameProps[framePoint] = cssNumberAsNumberIfPossible(value.value)
+              propsToSkip.push(stylePropPathMappingFn(p, ['style']))
             }
           })
 
-          let framePointsToUse: Array<FramePoint> = Object.keys(frameProps) as FramePoint[]
+          let framePointsToUse: Array<LayoutPinnedProp> = Object.keys(frameProps) as Array<
+            LayoutPinnedProp
+          >
 
           if (isEdgePositionOnSide(frameAndTarget.edgePosition)) {
             framePointsToUse = extendPartialFramePointsForResize(
@@ -693,21 +741,26 @@ export function updateFramesOfScenesAndComponents(
               frameAndTarget.edgePosition,
             )
           } else {
-            let verticalPoints = framePointsToUse.filter((p) => VerticalFramePoints.includes(p))
-            let horizontalPoints = framePointsToUse.filter((p) => HorizontalFramePoints.includes(p))
+            let verticalPoints = framePointsToUse.filter((p) => {
+              return VerticalLayoutPinnedProps.includes(p)
+            })
+            let horizontalPoints = framePointsToUse.filter((p) => {
+              return HorizontalLayoutPinnedProps.includes(p)
+            })
 
             if (verticalPoints.length < 2) {
               if (verticalPoints.length === 0) {
-                verticalPoints.push(FramePoint.Top)
+                verticalPoints.push('top')
               }
-              verticalPoints.push(FramePoint.Height)
+              verticalPoints.push('height')
             }
             if (horizontalPoints.length < 2) {
               if (horizontalPoints.length === 0) {
-                horizontalPoints.push(FramePoint.Left)
+                horizontalPoints.push('left')
               }
-              horizontalPoints.push(FramePoint.Width)
+              horizontalPoints.push('width')
             }
+
             framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
           }
 
@@ -743,20 +796,13 @@ export function updateFramesOfScenesAndComponents(
         workingEditorState,
         (elem) => {
           // Remove the pinning and flex props first...
-          const propsToMaybeRemove =
+          const propsToMaybeRemove: Array<LayoutPinnedProp | 'flexBasis'> =
             frameAndTarget.type === 'PIN_MOVE_CHANGE'
               ? PinningAndFlexPointsExceptSize // for PIN_MOVE_CHANGE, we don't want to remove the size props, we just keep them intact
               : PinningAndFlexPoints
           let propsToRemove: Array<PropertyPath> = [...propsToUnset]
-          function createPropPathForProp(prop: string): PropertyPath {
-            if (isFramePoint(prop)) {
-              return createLayoutPropertyPath(pinnedPropForFramePoint(prop))
-            } else {
-              return createLayoutPropertyPath(prop as LayoutProp)
-            }
-          }
           fastForEach(propsToMaybeRemove, (prop) => {
-            const propPath = createPropPathForProp(prop)
+            const propPath = stylePropPathMappingFn(prop, ['style'])
             if (!PP.contains(propsToNotDelete, propPath)) {
               propsToRemove.push(propPath)
             }
@@ -791,10 +837,8 @@ export function updateFramesOfScenesAndComponents(
     }
 
     // Round the frame details.
-    workingEditorState = modifyUnderlyingForOpenFile(
-      staticTarget,
-      workingEditorState,
-      roundJSXElementLayoutValues,
+    workingEditorState = modifyUnderlyingForOpenFile(staticTarget, workingEditorState, (attrs) =>
+      roundJSXElementLayoutValues(['style'], attrs),
     )
     // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
     // doesn't work. Once that is fixed we can re-implement keeping the children in place
@@ -810,7 +854,7 @@ export function updateFramesOfScenesAndComponents(
 }
 
 function updateFrameValueForProp(
-  framePoint: FramePoint,
+  framePoint: LayoutPinnedProp,
   delta: number,
   frameProps: { [k: string]: string | number | undefined },
   parentFrame: CanvasRectangle | null,
@@ -819,7 +863,7 @@ function updateFrameValueForProp(
     const existingProp = frameProps[framePoint]
     if (existingProp == null) {
       return {
-        path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+        path: stylePropPathMappingFn(framePoint, ['style']),
         value: jsxAttributeValue(delta, emptyComments),
       }
     }
@@ -835,7 +879,7 @@ function updateFrameValueForProp(
         let valueToUse: string | number
         const percentValue = parsedProp.value
         if (parentFrame != null) {
-          const referenceSize = isHorizontalPoint(framePoint)
+          const referenceSize = HorizontalLayoutPinnedProps.includes(framePoint)
             ? parentFrame.width
             : parentFrame.height
           const deltaAsPercentValue = (delta / referenceSize) * 100
@@ -844,12 +888,12 @@ function updateFrameValueForProp(
           valueToUse = `${percentValue + delta}%`
         }
         return {
-          path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+          path: stylePropPathMappingFn(framePoint, ['style']),
           value: jsxAttributeValue(valueToUse, emptyComments),
         }
       } else if (pinIsUnitlessOrPx) {
         return {
-          path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+          path: stylePropPathMappingFn(framePoint, ['style']),
           value: jsxAttributeValue(parsedProp.value + delta, emptyComments),
         }
       }
@@ -860,14 +904,14 @@ function updateFrameValueForProp(
 
 function getPropsToSetToMoveElement(
   dragDelta: CanvasVector,
-  framePoints: FramePoint[],
+  framePoints: Array<LayoutPinnedProp>,
   frameProps: { [k: string]: string | number | undefined },
   parentFrame: CanvasRectangle | null,
 ): ValueAtPath[] {
   let propsToSet: ValueAtPath[] = []
   Utils.fastForEach(framePoints, (framePoint) => {
-    const delta = isHorizontalPoint(framePoint) ? dragDelta.x : dragDelta.y
-    const shouldInvertValue = framePoint === FramePoint.Right || framePoint === FramePoint.Bottom
+    const delta = HorizontalLayoutPinnedProps.includes(framePoint) ? dragDelta.x : dragDelta.y
+    const shouldInvertValue = framePoint === 'right' || framePoint === 'bottom'
     const updatedProp = updateFrameValueForProp(
       framePoint,
       shouldInvertValue ? -delta : delta,
@@ -885,7 +929,7 @@ function getPropsToSetToResizeElement(
   edgePosition: EdgePosition,
   widthDelta: number,
   heightDelta: number,
-  framePoints: FramePoint[],
+  framePoints: Array<LayoutPinnedProp>,
   frameProps: { [k: string]: string | number | undefined },
   parentFrame: CanvasRectangle | null,
 ): ValueAtPath[] {
@@ -893,7 +937,7 @@ function getPropsToSetToResizeElement(
   Utils.fastForEach(framePoints, (framePoint) => {
     let updatedProp
     switch (framePoint) {
-      case FramePoint.Left: {
+      case 'left': {
         const targetEdgePoint = { x: 0, y: 0.5 }
         const delta = widthDelta * (edgePosition.x + targetEdgePoint.x - 1)
         if (delta !== 0) {
@@ -901,7 +945,7 @@ function getPropsToSetToResizeElement(
         }
         break
       }
-      case FramePoint.Top: {
+      case 'top': {
         const targetEdgePoint = { x: 0.5, y: 0 }
         const delta = heightDelta * (edgePosition.y + targetEdgePoint.y - 1)
         if (delta !== 0) {
@@ -909,7 +953,7 @@ function getPropsToSetToResizeElement(
         }
         break
       }
-      case FramePoint.Right: {
+      case 'right': {
         const targetEdgePoint = { x: 1, y: 0.5 }
         const delta = widthDelta * -(edgePosition.x + targetEdgePoint.x - 1)
         if (delta !== 0) {
@@ -917,7 +961,7 @@ function getPropsToSetToResizeElement(
         }
         break
       }
-      case FramePoint.Bottom: {
+      case 'bottom': {
         const targetEdgePoint = { x: 0.5, y: 1 }
         const delta = heightDelta * -(edgePosition.y + targetEdgePoint.y - 1)
         if (delta !== 0) {
@@ -925,31 +969,15 @@ function getPropsToSetToResizeElement(
         }
         break
       }
-      case FramePoint.Width: {
+      case 'width': {
         if (widthDelta !== 0) {
           updatedProp = updateFrameValueForProp(framePoint, widthDelta, frameProps, parentFrame)
         }
         break
       }
-      case FramePoint.Height: {
+      case 'height': {
         if (heightDelta !== 0) {
           updatedProp = updateFrameValueForProp(framePoint, heightDelta, frameProps, parentFrame)
-        }
-        break
-      }
-      case FramePoint.CenterX: {
-        const targetEdgePoint = { x: 0.5, y: 0.5 }
-        const delta = widthDelta * (edgePosition.x + targetEdgePoint.x - 1)
-        if (delta !== 0) {
-          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
-        }
-        break
-      }
-      case FramePoint.CenterY: {
-        const targetEdgePoint = { x: 0.5, y: 0.5 }
-        const delta = heightDelta * (edgePosition.y + targetEdgePoint.y - 1)
-        if (delta !== 0) {
-          updatedProp = updateFrameValueForProp(framePoint, delta, frameProps, parentFrame)
         }
         break
       }
@@ -964,24 +992,27 @@ function getPropsToSetToResizeElement(
   return propsToSet
 }
 
-function extendPartialFramePointsForResize(frameProps: FramePoint[], edgePosition: EdgePosition) {
+function extendPartialFramePointsForResize(
+  frameProps: Array<LayoutPinnedProp>,
+  edgePosition: EdgePosition,
+): Array<LayoutPinnedProp> {
   // if it has partial positioning points set and dragged on an edge only the dragged edge should be added while keeping the existing frame points.
-  let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
-  let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
+  let verticalPoints = frameProps.filter((p) => VerticalLayoutPinnedProps.includes(p))
+  let horizontalPoints = frameProps.filter((p) => HorizontalLayoutPinnedProps.includes(p))
   let framePointsToUse = [...frameProps]
   if (edgePosition.x === 0.5 && verticalPoints.length < 2) {
     if (verticalPoints.length === 0) {
       if (edgePosition.y === 0) {
-        verticalPoints.push(FramePoint.Top)
-        verticalPoints.push(FramePoint.Height)
+        verticalPoints.push('top')
+        verticalPoints.push('height')
       } else {
-        verticalPoints.push(FramePoint.Height)
+        verticalPoints.push('height')
       }
     } else {
       if (edgePosition.y === 0) {
-        verticalPoints.push(FramePoint.Top)
-      } else if (!verticalPoints.includes(FramePoint.Bottom)) {
-        verticalPoints.push(FramePoint.Height)
+        verticalPoints.push('top')
+      } else if (!verticalPoints.includes('bottom')) {
+        verticalPoints.push('height')
       }
     }
     framePointsToUse = [...verticalPoints, ...horizontalPoints]
@@ -989,16 +1020,16 @@ function extendPartialFramePointsForResize(frameProps: FramePoint[], edgePositio
   if (edgePosition.y === 0.5 && horizontalPoints.length < 2) {
     if (horizontalPoints.length === 0) {
       if (edgePosition.x === 0) {
-        horizontalPoints.push(FramePoint.Left)
-        horizontalPoints.push(FramePoint.Width)
+        horizontalPoints.push('left')
+        horizontalPoints.push('width')
       } else {
-        horizontalPoints.push(FramePoint.Width)
+        horizontalPoints.push('width')
       }
     } else {
       if (edgePosition.x === 0) {
-        horizontalPoints.push(FramePoint.Left)
-      } else if (!horizontalPoints.includes(FramePoint.Right)) {
-        horizontalPoints.push(FramePoint.Width)
+        horizontalPoints.push('left')
+      } else if (!horizontalPoints.includes('right')) {
+        horizontalPoints.push('width')
       }
     }
     framePointsToUse = [...verticalPoints, ...horizontalPoints]
@@ -2022,6 +2053,7 @@ export function moveTemplate(
               parentFrame,
               newParentLayoutSystem,
               newParentMainAxis,
+              ['style'],
             )
             const updatedUnderlyingElement = findElementAtPath(
               underlyingTarget,
@@ -2970,7 +3002,7 @@ export function getResizeOptions(
     case 'flex-horizontal':
       switch (controlDirection) {
         case 'horizontal':
-          return ['Height', 'minHeight', 'maxHeight']
+          return ['height', 'minHeight', 'maxHeight']
         case 'vertical':
           return ['flexBasis', 'flexGrow', 'flexShrink', 'minWidth', 'maxWidth']
         default:
@@ -2982,7 +3014,7 @@ export function getResizeOptions(
         case 'horizontal':
           return ['flexBasis', 'flexGrow', 'flexShrink', 'minHeight', 'maxHeight']
         case 'vertical':
-          return ['Width', 'minWidth', 'maxWidth']
+          return ['width', 'minWidth', 'maxWidth']
         default:
           const _exhaustiveCheck: never = controlDirection
           throw new Error(`Unhandled control direction ${JSON.stringify(controlDirection)}`)
@@ -2992,9 +3024,9 @@ export function getResizeOptions(
         case 'horizontal':
           switch (edge) {
             case 'before':
-              return ['PinnedTop', 'Height', 'marginTop', 'minHeight', 'maxHeight']
+              return ['top', 'height', 'marginTop', 'minHeight', 'maxHeight']
             case 'after':
-              return ['PinnedBottom', 'Height', 'marginBottom', 'minHeight', 'maxHeight']
+              return ['bottom', 'height', 'marginBottom', 'minHeight', 'maxHeight']
             default:
               const _exhaustiveCheck: never = edge
               throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
@@ -3002,9 +3034,9 @@ export function getResizeOptions(
         case 'vertical':
           switch (edge) {
             case 'before':
-              return ['PinnedLeft', 'Width', 'marginLeft', 'minWidth', 'maxWidth']
+              return ['left', 'width', 'marginLeft', 'minWidth', 'maxWidth']
             case 'after':
-              return ['PinnedRight', 'Width', 'marginRight', 'minWidth', 'maxWidth']
+              return ['right', 'width', 'marginRight', 'minWidth', 'maxWidth']
             default:
               const _exhaustiveCheck: never = edge
               throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
@@ -3018,9 +3050,9 @@ export function getResizeOptions(
         case 'horizontal':
           switch (edge) {
             case 'before':
-              return ['Height', 'marginTop', 'minHeight', 'maxHeight']
+              return ['height', 'marginTop', 'minHeight', 'maxHeight']
             case 'after':
-              return ['Height', 'marginBottom', 'minHeight', 'maxHeight']
+              return ['height', 'marginBottom', 'minHeight', 'maxHeight']
             default:
               const _exhaustiveCheck: never = edge
               throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
@@ -3028,9 +3060,9 @@ export function getResizeOptions(
         case 'vertical':
           switch (edge) {
             case 'before':
-              return ['Width', 'marginLeft', 'minWidth', 'maxWidth']
+              return ['width', 'marginLeft', 'minWidth', 'maxWidth']
             case 'after':
-              return ['Width', 'marginRight', 'minWidth', 'maxWidth']
+              return ['width', 'marginRight', 'minWidth', 'maxWidth']
             default:
               const _exhaustiveCheck: never = edge
               throw new Error(`Unhandled control edge ${JSON.stringify(edge)}`)
@@ -3064,19 +3096,18 @@ export function getObservableValueForLayoutProp(
     return null
   } else {
     switch (layoutProp) {
-      case 'Width':
+      case 'width':
       case 'minWidth':
       case 'maxWidth':
         return elementMetadata.localFrame?.width
-      case 'Height':
+      case 'height':
       case 'minHeight':
       case 'maxHeight':
         return elementMetadata.localFrame?.height
       case 'flexBasis':
-      case 'FlexCrossBasis':
       case 'flexGrow':
       case 'flexShrink':
-        const path = createLayoutPropertyPath(layoutProp)
+        const path = stylePropPathMappingFn(layoutProp, ['style'])
         return Utils.pathOr(null, PP.getElements(path), elementMetadata.props)
       case 'marginTop':
         return elementMetadata.specialSizeMeasurements.margin.top
@@ -3086,17 +3117,17 @@ export function getObservableValueForLayoutProp(
         return elementMetadata.specialSizeMeasurements.margin.left
       case 'marginRight':
         return elementMetadata.specialSizeMeasurements.margin.right
-      case 'PinnedLeft':
+      case 'left':
         return elementMetadata.localFrame?.x
-      case 'PinnedTop':
+      case 'top':
         return elementMetadata.localFrame?.y
-      case 'PinnedRight':
+      case 'right':
         return elementMetadata.localFrame == null ||
           elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
           ? null
           : elementMetadata.specialSizeMeasurements.coordinateSystemBounds.width -
               (elementMetadata.localFrame.width + elementMetadata.localFrame.x)
-      case 'PinnedBottom':
+      case 'bottom':
         return elementMetadata.localFrame == null ||
           elementMetadata.specialSizeMeasurements.coordinateSystemBounds == null
           ? null

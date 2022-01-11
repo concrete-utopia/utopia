@@ -1,6 +1,8 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { css, jsx } from '@emotion/react'
 import * as ObjectPath from 'object-path'
 import React from 'react'
-import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
   findElementAtPath,
   getSimpleAttributeAtPath,
@@ -41,7 +43,11 @@ import {
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
+import {
+  InspectorCallbackContext,
+  InspectorPropsContext,
+  stylePropPathMappingFn,
+} from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
 import {
@@ -78,6 +84,7 @@ import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
+import { getControlStyles } from './common/control-status'
 
 export interface ElementPathElement {
   name?: string
@@ -213,10 +220,12 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
 })
 AlignmentButtons.displayName = 'AlignmentButtons'
 
-const nonDefaultPositionPaths: Array<PropertyPath> = [
-  createLayoutPropertyPath('PinnedRight'),
-  createLayoutPropertyPath('PinnedBottom'),
-]
+function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<PropertyPath> {
+  return [
+    stylePropPathMappingFn('right', propertyTarget),
+    stylePropPathMappingFn('bottom', propertyTarget),
+  ]
+}
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
@@ -256,7 +265,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           const elem = possibleElement.element.value
           if (isJSXElement(elem)) {
             if (!hasNonDefaultPositionAttributesInner) {
-              for (const nonDefaultPositionPath of nonDefaultPositionPaths) {
+              for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(['style'])) {
                 const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
                 if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
                   hasNonDefaultPositionAttributesInner = true
@@ -302,14 +311,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {when(isTwindEnabled(), <ClassNameSubsection />)}
           {anyComponents ? <ComponentSection isScene={false} /> : null}
-          <LayoutSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
-          <StyleSection />
-          <WarningSubsection />
-          <ImgSection />
           <TargetSelectorSection
             targets={props.targets}
             selectedTargetPath={props.selectedTargetPath}
@@ -318,6 +319,14 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             onStyleSelectorDelete={props.onStyleSelectorDelete}
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
+          <LayoutSection
+            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+            aspectRatioLocked={aspectRatioLocked}
+            toggleAspectRatioLock={toggleAspectRatioLock}
+          />
+          <StyleSection />
+          <WarningSubsection />
+          <ImgSection />
           <EventHandlersSection />
         </React.Fragment>
       )
@@ -331,6 +340,26 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
         width: '100%',
         position: 'relative',
         color: colorTheme.neutralForeground.value,
+      }}
+      css={{
+        '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
+        '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
+        '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
+        '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
+        '&:hover': {
+          '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+          '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
+            .secondaryColor,
+          '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+          '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+        },
+        '&:focus-within': {
+          '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+          '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
+            .secondaryColor,
+          '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+          '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+        },
       }}
       onFocus={onFocus}
     >

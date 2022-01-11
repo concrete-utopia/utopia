@@ -40,14 +40,7 @@ export function extendSelectedViewsForInteraction(
       // What's the deal here? Why are we checking if the thing has a global frame but then not using it?
       return []
     } else {
-      // autoSizing views are the new groups
-      if (MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, view)) {
-        return MetadataUtils.getChildrenHandlingGroups(componentMetadata, view, false).map(
-          (component) => component.elementPath,
-        )
-      } else {
-        return [view]
-      }
+      return [view]
     }
   }, selectedViews)
 }

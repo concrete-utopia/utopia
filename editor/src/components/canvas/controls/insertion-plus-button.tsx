@@ -42,11 +42,7 @@ export const InsertionControls: React.FunctionComponent<ControlProps> = React.me
     if (parentPath == null || parentFrame == null || parentElement == null) {
       return null
     }
-    const children = MetadataUtils.getChildrenHandlingGroups(
-      props.componentMetadata,
-      parentPath,
-      false,
-    )
+    const children = MetadataUtils.getChildren(props.componentMetadata, parentPath)
     let controlProps: ButtonControlProps[] = []
 
     if (

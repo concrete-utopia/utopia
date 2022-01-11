@@ -67,7 +67,7 @@ import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
 import { objectMap } from '../core/shared/object-utils'
 
-export function delay<T>(time: number): Promise<T> {
+export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
 }
 
