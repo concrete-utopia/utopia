@@ -9,9 +9,9 @@ function VSCodeOuterIframe(): React.ReactElement {
   // TODO: Alternative root handling.
   const urlParams = new URLSearchParams(window.location.search)
   const projectID = urlParams.get('project_id')!
-  // const baseIframeSrc = createIframeUrl(VSCODE_EDITOR_IFRAME_BASE_URL, 'vscode-editor-inner-iframe')
-  const baseIframeSrc = 'http://localhost:8000/editor/vscode-inner.html'
-  const url = new URL(baseIframeSrc)
+  const baseIframeSrc = createIframeUrl(VSCODE_EDITOR_IFRAME_BASE_URL, 'vscode-inner')
+  const url = new URL(`${VSCODE_EDITOR_IFRAME_BASE_URL}editor/vscode-inner.html`)
+  // const url = new URL(baseIframeSrc)
   url.searchParams.append('project_id', projectID)
   setBranchNameFromURL(url.searchParams)
   return (

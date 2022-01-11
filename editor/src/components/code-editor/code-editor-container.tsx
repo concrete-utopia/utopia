@@ -8,9 +8,9 @@ import { getEditorBranchNameFromURL, setBranchNameFromURL } from '../../utils/br
 
 const VSCodeIframeContainer = React.memo((props: { projectID: string }) => {
   const projectID = props.projectID
-  const baseIframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'vscode-editor-outer-iframe')
+  const baseIframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'vscode-outer')
+  const url = new URL(`${MONACO_EDITOR_IFRAME_BASE_URL}editor/vscode-outer/`)
   // const url = new URL(baseIframeSrc)
-  const url = new URL('http://localhost:8000/editor/vscode-outer/')
   url.searchParams.append('project_id', projectID)
 
   setBranchNameFromURL(url.searchParams)
