@@ -1404,8 +1404,6 @@ export function deriveState(
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }
 
-  console.log('kuturry', derived.canvas.transientState.canvasSessionState?.activeStrategy?.name)
-
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
 
   return sanitizedDerivedState
