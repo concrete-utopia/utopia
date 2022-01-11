@@ -368,9 +368,17 @@ export function reverse<T>(array: Array<T>): Array<T> {
 }
 
 export function aperture<T>(n: number, array: Array<T>): Array<Array<T>> {
-  let result: Array<Array<T>> = []
-  for (let arrayIndex: number = 0; arrayIndex < array.length - n + 1; arrayIndex++) {
-    result.push(array.slice(arrayIndex, arrayIndex + n))
+  if (n > 0) {
+    if (n > array.length) {
+      return [array]
+    } else {
+      let result: Array<Array<T>> = []
+      for (let arrayIndex: number = 0; arrayIndex < array.length - n + 1; arrayIndex++) {
+        result.push(array.slice(arrayIndex, arrayIndex + n))
+      }
+      return result
+    }
+  } else {
+    return []
   }
-  return result
 }
