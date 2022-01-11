@@ -38,6 +38,10 @@ export default defineConfig(({ mode }) => {
       'process.env.REACT_APP_COMMIT_HASH': `"${process.env.REACT_APP_COMMIT_HASH}"`,
     },
     optimizeDeps: {
+      // This is a workaround for an apparent issue in the vite react plugin, which leads to
+      // "react/jsx-runtime" potentially being an undiscoverable dependency, meaning it won't be
+      // optimised, leading to a runtime error that "module is not defined"
+      // https://github.com/vitejs/vite/issues/6215
       include: ['react/jsx-runtime'],
     },
     build: {
