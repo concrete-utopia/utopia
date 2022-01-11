@@ -63,6 +63,7 @@ export const flexGapStrategy: CanvasStrategy = {
     sessionState: SelectModeCanvasSessionState,
   ): CanvasStrategyUpdateFnResult => {
     if (sessionProps.activeControl.type === 'FLEX_GAP_HANDLE') {
+      // Only looks at the first selected element.
       const targetedElement = editorState.selectedViews[0]
       const targetParent = MetadataUtils.getParent(editorState.jsxMetadata, targetedElement)
       const isFlexLayouted = MetadataUtils.isFlexLayoutedContainer(targetParent)
@@ -109,10 +110,22 @@ export const flexGapStrategy: CanvasStrategy = {
           targetParent.elementPath,
           propsToUpdate,
         )
+        // Identify the siblings so that the metadata gets updated for those as well,
+        // which should result in the gap controls also being updated.
+        const siblingsOfTarget = MetadataUtils.getSiblings(
+          editorState.jsxMetadata,
+          targetedElement,
+        ).map((metadata) => metadata.elementPath)
         return {
           newSessionState: sessionState,
           transientFilesState: transientFilesStateAfterUpdate,
-          editorStatePatch: {},
+          editorStatePatch: {
+            canvas: {
+              domWalkerAdditionalElementsToUpdate: {
+                $set: siblingsOfTarget,
+              },
+            },
+          },
         }
       }
     }

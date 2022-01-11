@@ -458,6 +458,7 @@ export interface EditorState {
       animatedPlaceholderTargetUids: Array<string>
       flexAlignDropTargets: Array<FlexAlignControlRectProps>
     }
+    domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   }
   floatingInsertMenu: FloatingInsertMenuState
   inspector: {
@@ -1257,6 +1258,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         animatedPlaceholderTargetUids: [],
         flexAlignDropTargets: [],
       },
+      domWalkerAdditionalElementsToUpdate: [],
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
@@ -1518,6 +1520,7 @@ export function editorModelFromPersistentModel(
         animatedPlaceholderTargetUids: [],
         flexAlignDropTargets: [],
       },
+      domWalkerAdditionalElementsToUpdate: [],
     },
     floatingInsertMenu: {
       insertMenuMode: 'closed',
