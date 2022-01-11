@@ -62,7 +62,6 @@ specifiers:
   '@types/prettier': 2.0.1
   '@types/prop-types': 15.5.6
   '@types/pubsub-js': 1.8.2
-  '@types/ramda': github:types/npm-ramda#dist
   '@types/rc-slider': 8.2.2
   '@types/react': 16.9.49
   '@types/react-dnd': 3.0.2
@@ -422,7 +421,6 @@ devDependencies:
   '@types/prettier': 2.0.1
   '@types/prop-types': 15.5.6
   '@types/pubsub-js': 1.8.2
-  '@types/ramda': github.com/types/npm-ramda/9529aa3c8ff70ff84afcbc0be83443c00f30ea90
   '@types/rc-slider': 8.2.2
   '@types/react': 16.9.49
   '@types/react-dnd': 3.0.2_d9cccff7df39c9a08a2a815f75fb6cbc
@@ -16648,10 +16646,4 @@ packages:
     resolution: {tarball: https://codeload.github.com/tsbehlman/traveler/tar.gz/f94765d0e8d2c540dfbeee04be8be9c516b6a881}
     name: traveler
     version: 1.0.0
-    dev: true
-
-  github.com/types/npm-ramda/9529aa3c8ff70ff84afcbc0be83443c00f30ea90:
-    resolution: {commit: 9529aa3c8ff70ff84afcbc0be83443c00f30ea90, repo: git+ssh://git@github.com/types/npm-ramda.git, type: git}
-    name: '@types/ramda'
-    version: 0.25.0
     dev: true
