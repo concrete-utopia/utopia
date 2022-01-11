@@ -123,6 +123,9 @@ export const flexGapStrategy: CanvasStrategy = {
           newSessionState: sessionState,
           transientFilesState: transientFilesStateAfterUpdate,
           editorStatePatch: {
+            highlightedViews: {
+              $set: [],
+            },
             canvas: {
               domWalkerAdditionalElementsToUpdate: {
                 $set: siblingsOfTarget,
