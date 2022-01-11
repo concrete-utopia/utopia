@@ -14,7 +14,7 @@ import { RowForControl } from './component-section'
 import { InspectorWidthAtom } from '../../common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
-import { PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api/core'
 
 interface FolderSectionProps {
   isRoot: boolean

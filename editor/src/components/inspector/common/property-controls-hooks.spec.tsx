@@ -20,7 +20,7 @@ import {
   ElementInstanceMetadataMap,
   jsxElementWithoutUID,
 } from '../../../core/shared/element-template'
-import { PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api/core'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'

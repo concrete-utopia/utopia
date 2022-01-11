@@ -55,6 +55,7 @@ import {
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
+import { PropertyControls } from 'utopia-api/core'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
