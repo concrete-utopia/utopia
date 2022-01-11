@@ -90,6 +90,7 @@ import {
   createBuiltInDependenciesList,
 } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { NO_OP } from '../../../core/shared/utils'
+import { cssNumber } from '../../inspector/common/css-utils'
 
 const chaiExpect = Chai.expect
 
@@ -811,10 +812,12 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
         findJSXElementChildAtPath(components, targetText),
       )
       if (isJSXElement(textElement)) {
-        expect(getLayoutPropertyOr(undefined, 'Width', right(textElement.props))).toEqual(newWidth)
-        expect(getLayoutPropertyOr(undefined, 'Height', right(textElement.props))).toEqual(
-          newHeight,
-        )
+        expect(
+          getLayoutPropertyOr(undefined, 'width', right(textElement.props), ['style']),
+        ).toEqual(cssNumber(newWidth))
+        expect(
+          getLayoutPropertyOr(undefined, 'height', right(textElement.props), ['style']),
+        ).toEqual(cssNumber(newHeight))
       } else {
         chaiExpect.fail('Not a JSX element.')
       }

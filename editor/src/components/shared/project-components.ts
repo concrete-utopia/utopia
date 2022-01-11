@@ -3,7 +3,7 @@ import { URL_HASH } from '../../common/env-vars'
 import { parsePropertyControls } from '../../core/property-controls/property-controls-parser'
 import {
   hasStyleControls,
-  parsedPropertyControlsForComponentInFile,
+  propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import {
@@ -208,9 +208,8 @@ function makeHTMLDescriptor(
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
-  const parsedControls = parsePropertyControls(propertyControls)
   return {
-    properties: parsePropertyControls(propertyControls),
+    properties: propertyControls,
     variants: [
       {
         insertMenuLabel: tag,
@@ -334,39 +333,16 @@ export function getComponentGroups(
         let insertableComponents: Array<InsertableComponent> = []
         fastForEach(possibleExportedComponents, (exportedComponent) => {
           const pathWithoutExtension = dropFileExtension(fullPath)
-          const parsedControls = parsedPropertyControlsForComponentInFile(
+          const propertyControls = propertyControlsForComponentInFile(
             exportedComponent.listingName,
             pathWithoutExtension,
             propertyControlsInfo,
           )
 
-          // Drill down into the parsed controls to see if this has an appropriate style object entry.
-          const stylePropOptions: Array<StylePropOption> = foldEither(
-            () => {
-              return doNotAddStyleProp
-            },
-            (propertyControls) => {
-              if ('style' in propertyControls) {
-                return foldEither(
-                  () => {
-                    return doNotAddStyleProp
-                  },
-                  (controlDescription) => {
-                    switch (controlDescription.control) {
-                      case 'style-controls':
-                        return addSizeAndNotStyleProp
-                      default:
-                        return doNotAddStyleProp
-                    }
-                  },
-                  propertyControls['style'],
-                )
-              } else {
-                return doNotAddStyleProp
-              }
-            },
-            parsedControls,
-          )
+          // Drill down into the property controls to see if this has an appropriate style object entry.
+          const stylePropOptions = hasStyleControls(propertyControls)
+            ? addSizeAndNotStyleProp
+            : doNotAddStyleProp
 
           const propertyControlsForDependency =
             propertyControlsInfo[fullPath] ?? propertyControlsInfo[pathWithoutExtension]
@@ -414,16 +390,11 @@ export function getComponentGroups(
     let insertableComponents: Array<InsertableComponent> = []
     fastForEach(Object.keys(components), (componentName) => {
       const component = components[componentName]
-      let stylePropOptions: Array<StylePropOption> = doNotAddStyleProp
       const propertyControls = component.properties
-      // Drill down to see if this dependency component has a style object entry
-      // against style.
-      if (hasStyleControls(propertyControls)) {
-        stylePropOptions = addSizeAndNotStyleProp
-      }
-
-      const probablyIntrinsicElement =
-        moduleName == null || isIntrinsicElementFromString(componentName)
+      // Drill down into the property controls to see if this has an appropriate style object entry.
+      const stylePropOptions = hasStyleControls(propertyControls)
+        ? addSizeAndNotStyleProp
+        : doNotAddStyleProp
 
       fastForEach(component.variants, (insertOption) => {
         insertableComponents.push(

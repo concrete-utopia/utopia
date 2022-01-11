@@ -1,6 +1,5 @@
 import React from 'react'
 import { FlexDirection, FlexWrap } from 'utopia-api/core'
-import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
@@ -10,6 +9,7 @@ import { SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   alignItemsOptions,
   flexDirectionOptions,
@@ -93,7 +93,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           [
             setProp_UNSAFE(
               parentTarget,
-              createLayoutPropertyPath('flexDirection'),
+              stylePropPathMappingFn('flexDirection', ['style']),
               jsxAttributeValue(newValue, emptyComments),
             ),
           ],
@@ -111,7 +111,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           [
             setProp_UNSAFE(
               parentTarget,
-              createLayoutPropertyPath('alignItems'),
+              stylePropPathMappingFn('alignItems', ['style']),
               jsxAttributeValue(option.value, emptyComments),
             ),
           ],

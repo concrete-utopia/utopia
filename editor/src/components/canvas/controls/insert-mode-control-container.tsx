@@ -49,10 +49,10 @@ import { InsertionControls } from './insertion-control'
 import { CanvasControlsContainerID, ControlProps } from './new-canvas-controls'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
-import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { RightMenuTab } from '../../editor/store/editor-state'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -270,6 +270,7 @@ export class InsertModeControlContainer extends React.Component<
         parentAttributes,
         attributes,
         frame,
+        ['style'],
       )
 
       if (isLeft(updatedAttributes)) {
@@ -289,8 +290,8 @@ export class InsertModeControlContainer extends React.Component<
     if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
       const element = this.props.mode.subject.element
       if (this.props.mode.insertionStarted && this.state.dragFrame != null) {
-        const width = getLayoutPropertyOr(0, 'Width', right(element.props))
-        const height = getLayoutPropertyOr(0, 'Height', right(element.props))
+        const width = getLayoutPropertyOr(0, 'width', right(element.props), ['style'])
+        const height = getLayoutPropertyOr(0, 'height', right(element.props), ['style'])
         const canvasFrame = {
           x: this.state.dragFrame.x - width / 2,
           y: this.state.dragFrame.y - height / 2,
@@ -307,6 +308,7 @@ export class InsertModeControlContainer extends React.Component<
           parentAttributes,
           attributes,
           frame,
+          ['style'],
         )
 
         if (isLeft(updatedAttributes)) {
@@ -353,7 +355,7 @@ export class InsertModeControlContainer extends React.Component<
             eitherToMaybe(
               setJSXValueAtPath(
                 element.props,
-                createLayoutPropertyPath('position'),
+                stylePropPathMappingFn('position', ['style']),
                 jsxAttributeValue('relative', emptyComments),
               ),
             ) ?? element.props,

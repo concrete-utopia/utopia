@@ -15,7 +15,6 @@ import {
   LayoutHelpers,
   PinLayoutHelpers,
 } from '../../../core/layout/layout-helpers'
-import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import {
   maybeSwitchChildrenLayoutProps,
   maybeSwitchLayoutProps,
@@ -524,6 +523,7 @@ import {
 import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -634,6 +634,7 @@ function switchAndUpdateFrames(
   editor: EditorModel,
   target: ElementPath,
   layoutSystem: SettableLayoutSystem,
+  propertyTarget: ReadonlyArray<string>,
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
@@ -644,19 +645,11 @@ function switchAndUpdateFrames(
     return editor
   }
 
-  const layoutSystemPath = createLayoutPropertyPath('LayoutSystem')
-  const styleDisplayPath = createLayoutPropertyPath('display')
+  const styleDisplayPath = stylePropPathMappingFn('display', propertyTarget)
 
   let withUpdatedLayoutSystem: EditorModel = editor
   switch (layoutSystem) {
     case 'flex':
-      withUpdatedLayoutSystem = setPropertyOnTarget(
-        withUpdatedLayoutSystem,
-        target,
-        (attributes) => {
-          return unsetJSXValueAtPath(attributes, layoutSystemPath)
-        },
-      )
       withUpdatedLayoutSystem = setPropertyOnTarget(
         withUpdatedLayoutSystem,
         target,
@@ -672,14 +665,11 @@ function switchAndUpdateFrames(
     case 'flow':
     case 'grid':
       const propsToRemove = [
-        layoutSystemPath,
-        createLayoutPropertyPath('PinnedLeft'),
-        createLayoutPropertyPath('PinnedTop'),
-        createLayoutPropertyPath('PinnedRight'),
-        createLayoutPropertyPath('PinnedBottom'),
-        createLayoutPropertyPath('PinnedCenterX'),
-        createLayoutPropertyPath('PinnedCenterY'),
-        createLayoutPropertyPath('position'),
+        stylePropPathMappingFn('left', propertyTarget),
+        stylePropPathMappingFn('top', propertyTarget),
+        stylePropPathMappingFn('right', propertyTarget),
+        stylePropPathMappingFn('bottom', propertyTarget),
+        stylePropPathMappingFn('position', propertyTarget),
       ]
       withUpdatedLayoutSystem = setPropertyOnTarget(
         withUpdatedLayoutSystem,
@@ -705,7 +695,7 @@ function switchAndUpdateFrames(
         (attributes) => {
           return setJSXValueAtPath(
             attributes,
-            createLayoutPropertyPath('position'),
+            stylePropPathMappingFn('position', propertyTarget),
             jsxAttributeValue('absolute', emptyComments),
           )
         },
@@ -716,14 +706,6 @@ function switchAndUpdateFrames(
   // metadata which causes a problem as it's effectively out of date after the above call.
   switch (layoutSystem) {
     case 'flex':
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          layoutSystemPath,
-        ),
-      }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
         jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
@@ -738,36 +720,18 @@ function switchAndUpdateFrames(
         jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.jsxMetadata,
           target,
-          createLayoutPropertyPath('position'), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
+          stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'relative',
-        ),
-      }
-      break
-    case 'flow':
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          layoutSystemPath,
         ),
       }
       break
     case LayoutSystem.PinSystem:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadata,
-          target,
-          layoutSystemPath,
-        ),
-      }
-      withUpdatedLayoutSystem = {
-        ...withUpdatedLayoutSystem,
         jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
           withUpdatedLayoutSystem.jsxMetadata,
           target,
-          createLayoutPropertyPath('position'), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
+          stylePropPathMappingFn('position', propertyTarget), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'absolute',
         ),
       }
@@ -826,7 +790,13 @@ function switchAndUpdateFrames(
 
   let withChildrenUpdated = modifyOpenJSXElementsAndMetadata(
     (components, metadata) => {
-      return maybeSwitchChildrenLayoutProps(target, editor.jsxMetadata, metadata, components)
+      return maybeSwitchChildrenLayoutProps(
+        target,
+        editor.jsxMetadata,
+        metadata,
+        components,
+        propertyTarget,
+      )
     },
     target,
     withUpdatedLayoutSystem,
@@ -2445,11 +2415,7 @@ export const UPDATE_FNS = {
         }
 
         const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.target)
-        const children = MetadataUtils.getChildrenHandlingGroups(
-          editor.jsxMetadata,
-          action.target,
-          true,
-        )
+        const children = MetadataUtils.getChildren(editor.jsxMetadata, action.target)
         if (children.length === 0 || !MetadataUtils.isViewAgainstImports(element)) {
           return editor
         }
@@ -2814,6 +2780,7 @@ export const UPDATE_FNS = {
                 null,
                 null,
                 null,
+                ['style'],
               )
               updatedComponents = maybeSwitchResult.components
               toastsAdded.push(...maybeSwitchResult.toast)
@@ -3024,10 +2991,10 @@ export const UPDATE_FNS = {
     }
 
     const newLayout = {
-      [FramePoint.Left]: frame.x,
-      [FramePoint.Top]: frame.y,
-      [FramePoint.Width]: frame.width,
-      [FramePoint.Height]: frame.height,
+      left: frame.x,
+      top: frame.y,
+      width: frame.width,
+      height: frame.height,
     }
 
     let errorMessage: string | null = null
@@ -3038,6 +3005,7 @@ export const UPDATE_FNS = {
         const updatedAttributes = PinLayoutHelpers.setLayoutPropsToPinsWithFrame(
           element.props,
           newLayout,
+          ['style'],
         )
 
         if (isLeft(updatedAttributes)) {
@@ -4088,7 +4056,7 @@ export const UPDATE_FNS = {
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     return setPropertyOnTarget(editor, action.target, (props) => {
       return mapEither(
-        roundAttributeLayoutValues,
+        (attrs) => roundAttributeLayoutValues(['style'], attrs),
         setJSXValueAtPath(props, action.propertyPath, action.value),
       )
     })
@@ -4144,7 +4112,7 @@ export const UPDATE_FNS = {
   },
   SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
     return editor.selectedViews.reduce((working, target) => {
-      return switchAndUpdateFrames(working, target, action.layoutSystem)
+      return switchAndUpdateFrames(working, target, action.layoutSystem, action.propertyTarget)
     }, editor)
   },
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {

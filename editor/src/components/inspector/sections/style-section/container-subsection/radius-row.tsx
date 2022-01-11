@@ -177,8 +177,8 @@ export const RadiusRow = React.memo(() => {
     useSubmitValueFactory,
     onUnsetValues,
   } = useInspectorStyleInfo('borderRadius')
-  const valueWidth = useInspectorLayoutInfo('Width')
-  const valueHeight = useInspectorLayoutInfo('Height')
+  const valueWidth = useInspectorLayoutInfo('width')
+  const valueHeight = useInspectorLayoutInfo('height')
   const sliderMax = getSliderMax(valueWidth.value, valueHeight.value)
 
   const [onBorderRadiusTypeSubmitValue] = useSubmitValueFactory(updateRadiusType)

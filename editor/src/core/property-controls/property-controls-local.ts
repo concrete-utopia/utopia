@@ -4,26 +4,15 @@ import {
   ComponentInsertOption,
   PropertyControls,
 } from 'utopia-api/core'
-import deepEqual from 'fast-deep-equal'
 import { ProjectContentTreeRoot } from '../../components/assets'
 import {
-  ComponentDescriptorsForFile,
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
-import type { EditorDispatch } from '../../components/editor/action-types'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
-import {
-  EditorState,
-  packageJsonFileFromProjectContents,
-} from '../../components/editor/store/editor-state'
-import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
-import {
-  parseControlDescription,
-  ParsedPropertyControls,
-  parsePropertyControls,
-} from './property-controls-parser'
+import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
+import { parseControlDescription } from './property-controls-parser'
 import {
   getParseErrorDetails,
   objectKeyParser,
@@ -38,17 +27,19 @@ import { getCachedParseResultForUserStrings } from './property-controls-local-pa
 import {
   applicative2Either,
   applicative3Either,
+  bimapEither,
   Either,
-  forEachRight,
+  foldEither,
   isLeft,
-  isRight,
   mapEither,
   sequenceEither,
 } from '../shared/either'
-import { mapArrayToDictionary } from '../shared/array-utils'
 import { setOptionalProp } from '../shared/object-utils'
-import { addRegisteredControls } from '../../components/canvas/canvas-globals'
+import { addRegisteredControls, ControlsToCheck } from '../../components/canvas/canvas-globals'
 import { getGlobalEvaluatedFileName } from '../shared/code-exec-utils'
+import { memoize } from '../shared/memoize'
+import fastDeepEqual from 'fast-deep-equal'
+import { TimedCacheMap } from '../shared/timed-cache-map'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -98,10 +89,9 @@ async function componentDescriptorForComponentToRegister(
   moduleName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
-  const parsedPropertyControls = parsePropertyControls(componentToRegister.properties)
-  const unparsedVariants = variantsForComponentToRegister(componentToRegister, componentName)
+  const insertOptionsToParse = variantsForComponentToRegister(componentToRegister, componentName)
 
-  const parsedInsertOptionPromises = unparsedVariants.map((insertOption) =>
+  const parsedInsertOptionPromises = insertOptionsToParse.map((insertOption) =>
     parseInsertOption(insertOption, componentName, moduleName, workers),
   )
 
@@ -111,17 +101,23 @@ async function componentDescriptorForComponentToRegister(
   return mapEither((variants) => {
     return {
       componentName: componentName,
-      properties: parsedPropertyControls,
+      properties: componentToRegister.properties,
       variants: variants,
     }
   }, parsedVariants)
 }
 
-function registerModuleInternal(
+interface PreparedComponentDescriptorsForRegistering {
+  sourceFile: string
+  moduleNameOrPath: string
+  componentDescriptors: ControlsToCheck
+}
+
+function prepareComponentDescriptorsForRegistering(
   workers: UtopiaTsWorkers,
   moduleNameOrPath: string,
   components: { [componentName: string]: ComponentToRegister },
-): void {
+): PreparedComponentDescriptorsForRegistering {
   const componentNames = Object.keys(components)
   const componentDescriptorPromises = componentNames.map((componentName) => {
     const componentToRegister = components[componentName]
@@ -137,14 +133,19 @@ function registerModuleInternal(
   const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
     sequenceEither(unsequenced),
   )
-  addRegisteredControls(getGlobalEvaluatedFileName(), moduleNameOrPath, componentDescriptors)
+
+  return {
+    sourceFile: getGlobalEvaluatedFileName(),
+    moduleNameOrPath: moduleNameOrPath,
+    componentDescriptors: componentDescriptors,
+  }
 }
 
-export function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControls> {
+function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControls> {
   return parseObject(parseControlDescription)(value)
 }
 
-export function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
+function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsertOption> {
   return applicative3Either(
     (code, additionalImports, label) => {
       let insertOption: ComponentInsertOption = {
@@ -162,7 +163,7 @@ export function parseComponentInsertOption(value: unknown): ParseResult<Componen
   )
 }
 
-export function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
+function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
   return applicative2Either(
     (properties, variants) => {
       return {
@@ -175,49 +176,97 @@ export function parseComponentToRegister(value: unknown): ParseResult<ComponentT
   )
 }
 
-export const parseComponents: (
+const parseComponents: (
   value: unknown,
 ) => ParseResult<{ [componentName: string]: ComponentToRegister }> = parseObject(
   parseComponentToRegister,
 )
 
+function parseAndPrepareComponents(
+  workers: UtopiaTsWorkers,
+  moduleNameOrPath: string,
+  unparsedComponents: unknown,
+): Either<string, PreparedComponentDescriptorsForRegistering> {
+  const parsedComponents = parseComponents(unparsedComponents)
+
+  return bimapEither(
+    (parseError) => {
+      const errorDetails = getParseErrorDetails(parseError)
+      return `registerModule second param (components): ${errorDetails.description} [${errorDetails.path}]`
+    },
+    (components: { [componentName: string]: ComponentToRegister }) => {
+      return prepareComponentDescriptorsForRegistering(workers, moduleNameOrPath, components)
+    },
+    parsedComponents,
+  )
+}
+
+type PartiallyAppliedParseAndPrepareComponents = (
+  unparsedComponents: unknown,
+) => Either<string, PreparedComponentDescriptorsForRegistering>
+
+const partiallyParseAndPrepareComponents = (
+  workers: UtopiaTsWorkers,
+  moduleNameOrPath: string,
+): PartiallyAppliedParseAndPrepareComponents => {
+  return (unparsedComponents: unknown) =>
+    parseAndPrepareComponents(workers, moduleNameOrPath, unparsedComponents)
+}
+
 export function createRegisterModuleFunction(
   workers: UtopiaTsWorkers | null,
 ): typeof registerModuleAPI {
+  let cachedParseAndPrepareComponentsMap = new TimedCacheMap<
+    string,
+    PartiallyAppliedParseAndPrepareComponents
+  >()
+
   // create a function with a signature that matches utopia-api/registerModule
   return function registerModule(
     unparsedModuleName: string,
     unparsedComponents: { [componentName: string]: ComponentToRegister },
   ): void {
     const parsedModuleName = parseString(unparsedModuleName)
-    const parsedComponents = parseComponents(unparsedComponents)
 
-    const parsedParams = applicative2Either(
-      (moduleName, components) => {
-        return { moduleName: moduleName, components: components }
+    foldEither(
+      (parseFailure) => {
+        const errorDetails = getParseErrorDetails(parseFailure)
+        throw new Error(`registerModule first param (moduleName): ${errorDetails.description}`)
+      },
+      (moduleName) => {
+        if (workers != null) {
+          let parseAndPrepareComponentsFn = cachedParseAndPrepareComponentsMap.get(moduleName)
+          if (parseAndPrepareComponentsFn == null) {
+            // Create a memoized function for the handling of component descriptors for the specified module name
+            parseAndPrepareComponentsFn = memoize(
+              partiallyParseAndPrepareComponents(workers, moduleName),
+              {
+                equals: fastDeepEqual,
+                maxSize: 5,
+              },
+            )
+            cachedParseAndPrepareComponentsMap.set(moduleName, parseAndPrepareComponentsFn)
+          }
+
+          const parsedPreparedDescriptors = parseAndPrepareComponentsFn(unparsedComponents)
+          foldEither(
+            (parseFailureErrorMessage) => {
+              throw new Error(parseFailureErrorMessage)
+            },
+            (preparedDescriptors) => {
+              // Fires off asynchronously.
+              addRegisteredControls(
+                preparedDescriptors.sourceFile,
+                preparedDescriptors.moduleNameOrPath,
+                preparedDescriptors.componentDescriptors,
+              )
+            },
+            parsedPreparedDescriptors,
+          )
+        }
       },
       parsedModuleName,
-      parsedComponents,
     )
-
-    if (isLeft(parsedModuleName)) {
-      const errorDetails = getParseErrorDetails(parsedModuleName.value)
-      throw new Error(`registerModule first param (moduleName): ${errorDetails.description}`)
-    }
-
-    if (isLeft(parsedComponents)) {
-      const errorDetails = getParseErrorDetails(parsedComponents.value)
-      throw new Error(
-        `registerModule second param (components): ${errorDetails.description} [${errorDetails.path}]`,
-      )
-    }
-
-    forEachRight(parsedParams, ({ moduleName, components }) => {
-      if (workers != null) {
-        // Fires off asynchronously.
-        registerModuleInternal(workers, moduleName, components)
-      }
-    })
   }
 }
 
@@ -225,7 +274,7 @@ export function getThirdPartyControlsIntrinsic(
   elementName: string,
   propertyControlsInfo: PropertyControlsInfo,
   projectContents: ProjectContentTreeRoot,
-): ParseResult<ParsedPropertyControls> | null {
+): PropertyControls | null {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
   const foundPackageWithElement = Object.keys(propertyControlsInfo).find((key) => {

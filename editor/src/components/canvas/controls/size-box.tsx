@@ -33,7 +33,6 @@ import {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { SizeBoxLabel } from './size-box-label'
 //TODO: switch to functional component and make use of 'useColorTheme':
 import { colorTheme as fixmeColorTheme, useColorTheme } from '../../../uuiui'
 import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'

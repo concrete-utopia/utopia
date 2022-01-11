@@ -1,5 +1,4 @@
 import { KrazyGeorgeTestUrl } from 'utopia-api/core'
-import { createLayoutPropertyPathString } from '../layout/layout-helpers-new'
 import { Imports, importAlias } from '../shared/project-file-types'
 import {
   jsxAttributeNestedObjectSimple,
@@ -69,29 +68,29 @@ const mainComponentForTests = utopiaJSXComponent(
       layout: jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
           left: jsxAttributeOtherJavaScript(
-            `props.${createLayoutPropertyPathString('PinnedLeft')}`,
-            `return props.${createLayoutPropertyPathString('PinnedLeft')}`,
+            `props.style.left`,
+            `return props.style.left`,
             ['props'],
             null,
             {},
           ),
           top: jsxAttributeOtherJavaScript(
-            `props.${createLayoutPropertyPathString('PinnedTop')}`,
-            `return props.${createLayoutPropertyPathString('PinnedTop')}`,
+            `props.style.top`,
+            `return props.style.top`,
             ['props'],
             null,
             {},
           ),
           width: jsxAttributeOtherJavaScript(
-            `props.${createLayoutPropertyPathString('Width')}`,
-            `return props.${createLayoutPropertyPathString('Width')}`,
+            `props.style.width`,
+            `return props.style.width`,
             ['props'],
             null,
             {},
           ),
           height: jsxAttributeOtherJavaScript(
-            `props.${createLayoutPropertyPathString('Height')}`,
-            `return props.${createLayoutPropertyPathString('Height')}`,
+            `props.style.height`,
+            `return props.style.height`,
             ['props'],
             null,
             {},

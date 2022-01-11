@@ -688,6 +688,7 @@ export type TextFormattingType = 'bold' | 'italic' | 'underline'
 export interface SwitchLayoutSystem {
   action: 'SWITCH_LAYOUT_SYSTEM'
   layoutSystem: SettableLayoutSystem
+  propertyTarget: ReadonlyArray<string>
 }
 
 export interface InsertImageIntoUI {

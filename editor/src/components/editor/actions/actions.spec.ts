@@ -120,6 +120,7 @@ import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
+import { cssNumber } from '../../inspector/common/css-utils'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -300,14 +301,14 @@ describe('SET_CANVAS_FRAMES', () => {
       ['rootElement', 'children', 0, 'props'],
       updatedRoot,
     )
-    const leftProp = getLayoutPropertyOr(undefined, 'PinnedLeft', right(updatedViewProps))
-    const top = getLayoutPropertyOr(undefined, 'PinnedTop', right(updatedViewProps))
-    const width = getLayoutPropertyOr(undefined, 'Width', right(updatedViewProps))
-    const height = getLayoutPropertyOr(undefined, 'Height', right(updatedViewProps))
-    chaiExpect(leftProp).to.equal(20)
-    chaiExpect(top).to.equal(20)
-    chaiExpect(width).to.equal(50)
-    chaiExpect(height).to.equal(50)
+    const leftProp = getLayoutPropertyOr(undefined, 'left', right(updatedViewProps), ['style'])
+    const top = getLayoutPropertyOr(undefined, 'top', right(updatedViewProps), ['style'])
+    const width = getLayoutPropertyOr(undefined, 'width', right(updatedViewProps), ['style'])
+    const height = getLayoutPropertyOr(undefined, 'height', right(updatedViewProps), ['style'])
+    chaiExpect(leftProp).to.deep.equal(cssNumber(20))
+    chaiExpect(top).to.deep.equal(cssNumber(20))
+    chaiExpect(width).to.deep.equal(cssNumber(50))
+    chaiExpect(height).to.deep.equal(cssNumber(50))
   })
 })
 
@@ -355,41 +356,12 @@ describe('moveTemplate', () => {
       jsxElementName(name, []),
       uid,
       jsxAttributesFromMap({
-        layout: jsxAttributeNestedObjectSimple(
+        style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
             left: jsxAttributeValue(x, emptyComments),
             top: jsxAttributeValue(y, emptyComments),
             width: jsxAttributeValue(width, emptyComments),
             height: jsxAttributeValue(height, emptyComments),
-          }),
-          emptyComments,
-        ),
-        'data-uid': jsxAttributeValue(uid, emptyComments),
-      }),
-      children,
-    )
-  }
-
-  function group(
-    uid: string,
-    children: Array<JSXElement> = [],
-    x: FramePin = 0,
-    y: FramePin = 0,
-    width: FramePin = 0,
-    height: FramePin = 0,
-    name: string = 'View1',
-  ): JSXElement {
-    return jsxElement(
-      jsxElementName(name, []),
-      uid,
-      jsxAttributesFromMap({
-        layout: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            left: jsxAttributeValue(x, emptyComments),
-            top: jsxAttributeValue(y, emptyComments),
-            width: jsxAttributeValue(width, emptyComments),
-            height: jsxAttributeValue(height, emptyComments),
-            layoutSystem: jsxAttributeValue(LayoutSystem.Group, emptyComments),
           }),
           emptyComments,
         ),
@@ -689,7 +661,7 @@ describe('moveTemplate', () => {
       jsxElementName('bbb', []),
       'bbb',
       jsxAttributesFromMap({
-        layout: jsxAttributeNestedObjectSimple(
+        style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
             bottom: jsxAttributeValue(50, emptyComments),
             right: jsxAttributeValue(50, emptyComments),
@@ -702,9 +674,9 @@ describe('moveTemplate', () => {
       }),
       [],
     )
-    const group1 = group('ddd', [], -10, -10, 100, 100, 'Group')
+    const root2 = view('ddd', [], -10, -10, 100, 100, 'Group')
     const root1 = view('aaa', [view1])
-    const editor = testEditorFromParseSuccess(fileModel([root1, group1]))
+    const editor = testEditorFromParseSuccess(fileModel([root1, root2]))
     const groupFrame = canvasRectangle({ x: -10, y: -10, width: 100, height: 100 })
 
     const newEditor = editorMoveTemplate(
@@ -732,120 +704,16 @@ describe('moveTemplate', () => {
     expect(isUtopiaJSXComponent(updatedGroup)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedGroup)).toHaveLength(1)
     const actual: any = Utils.path(['rootElement', 'children', 0], updatedGroup)
-    expect(getLayoutPropertyOr(undefined, 'PinnedLeft', right(actual.props))).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'PinnedTop', right(actual.props))).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'Width', right(actual.props))).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'Height', right(actual.props))).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'PinnedRight', right(actual.props))).not.toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'PinnedBottom', right(actual.props))).not.toBeDefined()
-  })
-  xit('reparents from group to flex with frame props updated', () => {
-    // FIXME This requires setting the special size measurements during tests
-    const view1 = view('bbb', [], 50, 50, 100, 100)
-    const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
-    const flexView = jsxElement(
-      jsxElementName('aaa', []),
-      'aaa',
-      jsxAttributesFromMap({
-        layout: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            left: jsxAttributeValue(50, emptyComments),
-            top: jsxAttributeValue(50, emptyComments),
-            width: jsxAttributeValue(200, emptyComments),
-            height: jsxAttributeValue(200, emptyComments),
-          }),
-          emptyComments,
-        ),
-        style: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            display: jsxAttributeValue('flex', emptyComments),
-          }),
-          emptyComments,
-        ),
-        'data-uid': jsxAttributeValue('aaa', emptyComments),
-      }),
-      [],
-    )
-    const editor = testEditorFromParseSuccess(fileModel([flexView, group1]))
-
-    const newEditor = editorMoveTemplate(
-      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
-      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
-      canvasRectangle({ x: 50, y: 50, width: 100, height: 100 }),
-      { type: 'front' },
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
-      null,
-      editor,
-      null,
-      null,
-    ).editor
-
-    const newUiJsFile = getContentsTreeFileFromString(
-      newEditor.projectContents,
-      StoryboardFilePath,
-    ) as TextFile
-    expect(isTextFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedRoot1 = newTopLevelElements[0] as UtopiaJSXComponent
-    expect(isUtopiaJSXComponent(updatedRoot1)).toBeTruthy()
-    expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot1)).toHaveLength(1)
-    const actual: any = Utils.path(['rootElement', 'children', 0], updatedRoot1)
-    expect(getLayoutPropertyOr(undefined, 'flexBasis', right(actual.props))).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'FlexCrossBasis', right(actual.props))).toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'PinnedLeft', right(actual.props))).not.toBeDefined()
-    expect(getLayoutPropertyOr(undefined, 'PinnedTop', right(actual.props))).not.toBeDefined()
-  })
-
-  // TODO BALAZS FIX THIS BY MARCH 10 2020
-  xit('reparents from group to pinned with frame props unchanged', () => {
-    const view1 = jsxElement(
-      jsxElementName('bbb', []),
-      'bbb',
-      jsxAttributesFromMap({
-        layout: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            top: jsxAttributeValue(50, emptyComments),
-            left: jsxAttributeValue(50, emptyComments),
-            width: jsxAttributeValue(100, emptyComments),
-            height: jsxAttributeValue(100, emptyComments),
-          }),
-          emptyComments,
-        ),
-        'data-uid': jsxAttributeValue('bbb', emptyComments),
-      }),
-      [],
-    )
-    const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
-    const root1 = view('aaa', [], 0, 0, 200, 200)
-    const editor = testEditorFromParseSuccess(fileModel([root1, group1]))
-
-    const newEditor = editorMoveTemplate(
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['ddd', 'bbb']),
-      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
-      canvasRectangle({ x: 50, y: 50, width: 100, height: 100 }),
-      { type: 'front' },
-      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
-      null,
-      editor,
-      null,
-      null,
-    ).editor
-
-    const newUiJsFile = getContentsTreeFileFromString(
-      newEditor.projectContents,
-      StoryboardFilePath,
-    ) as TextFile
-    expect(isTextFile(newUiJsFile)).toBeTruthy()
-    expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedRoot1 = newTopLevelElements[0] as UtopiaJSXComponent
-    expect(isUtopiaJSXComponent(updatedRoot1)).toBeTruthy()
-    expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot1)).toHaveLength(1)
-    const actual = Utils.path(['rootElement', 'children', 0], updatedRoot1) as JSXElement
-    chaiExpect(actual).to.deep.equal(view1)
+    expect(getLayoutPropertyOr(undefined, 'left', right(actual.props), ['style'])).toBeDefined()
+    expect(getLayoutPropertyOr(undefined, 'top', right(actual.props), ['style'])).toBeDefined()
+    expect(getLayoutPropertyOr(undefined, 'width', right(actual.props), ['style'])).toBeDefined()
+    expect(getLayoutPropertyOr(undefined, 'height', right(actual.props), ['style'])).toBeDefined()
+    expect(
+      getLayoutPropertyOr(undefined, 'right', right(actual.props), ['style']),
+    ).not.toBeDefined()
+    expect(
+      getLayoutPropertyOr(undefined, 'bottom', right(actual.props), ['style']),
+    ).not.toBeDefined()
   })
 })
 
@@ -886,7 +754,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }, emptyComments),
-      layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }, emptyComments),
     }),
     [childElement],
   )
@@ -1007,14 +874,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     selectedViews: [EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])],
   })
   it('switches from pins to flex correctly', () => {
-    const switchActionToFlex = switchLayoutSystem('flex')
+    const switchActionToFlex = switchLayoutSystem('flex', ['style'])
     const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
     expect(getOpenFileComponents(result).map(clearTopLevelElementUniqueIDs)).toMatchSnapshot()
   })
   it('switches from flex to pins correctly', () => {
-    const switchActionToFlex = switchLayoutSystem('flex')
+    const switchActionToFlex = switchLayoutSystem('flex', ['style'])
     let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
-    const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem)
+    const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem, ['style'])
     result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result)
     expect(getOpenFileComponents(result).map(clearTopLevelElementUniqueIDs)).toMatchSnapshot()
   })

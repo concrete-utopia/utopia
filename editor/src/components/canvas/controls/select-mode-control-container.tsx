@@ -479,14 +479,6 @@ export class SelectModeControlContainer extends React.Component<
     }, storyboardChildren)
     let labelDirectlySelectable = this.props.highlightsEnabled
 
-    // TODO future span element should be included here
-    let repositionOnly = false
-    if (this.props.selectedViews.length === 1) {
-      const path = this.props.selectedViews[0]
-      const element = MetadataUtils.findElementByElementPath(this.props.componentMetadata, path)
-      repositionOnly = element != null && MetadataUtils.isAutoSizingText(element)
-    }
-
     return (
       <div
         data-testid='select-mode-control-container-root'
@@ -511,22 +503,18 @@ export class SelectModeControlContainer extends React.Component<
           <>
             <OutlineControls {...this.props} />
             {this.canResizeElements() ? (
-              repositionOnly ? (
-                <RepositionableControl {...this.props} />
-              ) : (
-                <>
-                  <ConstraintsControls {...this.props} />
-                  <YogaControls
-                    {...this.props}
-                    dragState={
-                      this.props.dragState != null &&
-                      this.props.dragState.type === 'RESIZE_DRAG_STATE'
-                        ? this.props.dragState
-                        : null
-                    }
-                  />
-                </>
-              )
+              <>
+                <ConstraintsControls {...this.props} />
+                <YogaControls
+                  {...this.props}
+                  dragState={
+                    this.props.dragState != null &&
+                    this.props.dragState.type === 'RESIZE_DRAG_STATE'
+                      ? this.props.dragState
+                      : null
+                  }
+                />
+              </>
             ) : null}
             <ZeroSizedElementControls {...this.props} />
           </>

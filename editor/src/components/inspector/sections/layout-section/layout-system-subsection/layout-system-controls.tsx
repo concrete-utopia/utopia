@@ -8,6 +8,8 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
   InspectorInfo,
+  stylePropPathMappingFn,
+  InspectorPropsContext,
 } from '../../../common/property-path-hooks'
 import { useEditorState } from '../../../../editor/store/store-hook'
 import { switchLayoutSystem } from '../../../../editor/actions/action-creators'
@@ -18,11 +20,7 @@ import {
   ControlStyles,
 } from '../../../common/control-status'
 import { LayoutSystem } from 'utopia-api/core'
-import {
-  createLayoutPropertyPath,
-  LayoutProp,
-  StyleLayoutProp,
-} from '../../../../../core/layout/layout-helpers-new'
+import { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
 import {
   DetectedLayoutSystem,
   SettableLayoutSystem,
@@ -35,23 +33,24 @@ import {
   FunctionIcons,
 } from '../../../../../uuiui'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
+import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import { useContextSelector } from 'use-context-selector'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
   controlStatus: ControlStatus
   controlStyles: ControlStyles
 } {
-  const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
   const styleDisplayMetadata = useInspectorStyleInfo('display')
 
-  let metadataToUse: InspectorInfo<any> = layoutSystemMetadata
+  let metadataToUse: InspectorInfo<any> = styleDisplayMetadata
   if (styleDisplayMetadata.value === 'flex') {
     metadataToUse = styleDisplayMetadata
   }
 
   if (metadataToUse.value == null) {
     const updatedPropertyStatus = {
-      ...layoutSystemMetadata.propertyStatus,
+      ...metadataToUse.propertyStatus,
       set: true,
     }
     const controlStatus = getControlStatusFromPropertyStatus(updatedPropertyStatus)
@@ -72,14 +71,16 @@ function useDefaultedLayoutSystemInfo(): {
 
 export function useLayoutSystemData() {
   const dispatch = useEditorState((store) => store.dispatch, 'useLayoutSystemData dispatch')
-
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
   const onLayoutSystemChange = React.useCallback(
     (layoutSystem: SettableLayoutSystem) => {
       switch (layoutSystem) {
         case LayoutSystem.PinSystem:
         case 'flow':
         case 'flex':
-          dispatch([switchLayoutSystem(layoutSystem)], 'everyone')
+          dispatch([switchLayoutSystem(layoutSystem, targetPath)], 'everyone')
           break
         case LayoutSystem.Group:
         case 'grid':
@@ -90,7 +91,7 @@ export function useLayoutSystemData() {
           throw new Error(`Unknown layout system ${JSON.stringify(layoutSystem)}`)
       }
     },
-    [dispatch],
+    [dispatch, targetPath],
   )
 
   const { value, controlStatus, controlStyles } = useDefaultedLayoutSystemInfo()
@@ -139,13 +140,17 @@ const layoutSystemOptions = [
   },
 ]
 
-export const paddingPropsToUnset = [
-  createLayoutPropertyPath('padding'),
-  createLayoutPropertyPath('paddingLeft'),
-  createLayoutPropertyPath('paddingTop'),
-  createLayoutPropertyPath('paddingRight'),
-  createLayoutPropertyPath('paddingBottom'),
-]
+export function buildPaddingPropsToUnset(
+  propertyTarget: ReadonlyArray<string>,
+): Array<PropertyPath> {
+  return [
+    stylePropPathMappingFn('padding', propertyTarget),
+    stylePropPathMappingFn('paddingLeft', propertyTarget),
+    stylePropPathMappingFn('paddingTop', propertyTarget),
+    stylePropPathMappingFn('paddingRight', propertyTarget),
+    stylePropPathMappingFn('paddingBottom', propertyTarget),
+  ]
+}
 
 export const PaddingControl = React.memo(() => {
   const {
@@ -156,7 +161,7 @@ export const PaddingControl = React.memo(() => {
   } = useInspectorInfoLonghandShorthand(
     ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
     'padding',
-    createLayoutPropertyPath,
+    stylePropPathMappingFn,
   )
 
   const paddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
@@ -245,30 +250,32 @@ export const PaddingControl = React.memo(() => {
   )
 })
 
-const layoutSystemProperties: Array<LayoutProp | StyleLayoutProp> = [
-  'alignContent',
-  'alignItems',
-  'display',
-  'flexDirection',
-  'flexWrap',
-  'FlexGap',
-  'justifyContent',
-  'marginBottom',
-  'marginLeft',
-  'marginRight',
-  'marginTop',
-  'margin',
-]
-
-const layoutSystemConfigPropertyPaths = layoutSystemProperties.map((name) =>
-  createLayoutPropertyPath(name),
-)
+function layoutSystemConfigPropertyPaths(
+  propertyTarget: ReadonlyArray<string>,
+): Array<PropertyPath> {
+  return [
+    stylePropPathMappingFn('alignContent', propertyTarget),
+    stylePropPathMappingFn('alignItems', propertyTarget),
+    stylePropPathMappingFn('display', propertyTarget),
+    stylePropPathMappingFn('flexDirection', propertyTarget),
+    stylePropPathMappingFn('flexWrap', propertyTarget),
+    stylePropPathMappingFn('justifyContent', propertyTarget),
+    stylePropPathMappingFn('marginBottom', propertyTarget),
+    stylePropPathMappingFn('marginLeft', propertyTarget),
+    stylePropPathMappingFn('marginRight', propertyTarget),
+    stylePropPathMappingFn('marginTop', propertyTarget),
+    stylePropPathMappingFn('margin', propertyTarget),
+  ]
+}
 
 function useDeleteAllLayoutConfig() {
   const { onUnsetValue } = React.useContext(InspectorCallbackContext)
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
   return React.useCallback(() => {
-    onUnsetValue(layoutSystemConfigPropertyPaths, false)
-  }, [onUnsetValue])
+    onUnsetValue(layoutSystemConfigPropertyPaths(targetPath), false)
+  }, [onUnsetValue, targetPath])
 }
 
 export const DeleteAllLayoutSystemConfigButton = React.memo(() => {

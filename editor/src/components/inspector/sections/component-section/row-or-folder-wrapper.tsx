@@ -1,9 +1,6 @@
 import React from 'react'
 import { ControlDescription } from 'utopia-api/core'
-import { right } from '../../../../core/shared/either'
-import { objectMap } from '../../../../core/shared/object-utils'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
-import { ParseResult } from '../../../../utils/value-parser-utils'
 import { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { FolderSection } from './folder-section'
@@ -29,10 +26,7 @@ export const RowOrFolderWrapper = React.memo((props: RowOrFolderWrapperProps) =>
         <FolderSection
           isRoot={false}
           indentationLevel={props.indentationLevel}
-          parsedPropertyControls={objectMap(
-            (c): ParseResult<ControlDescription> => right(c), // this is not the nicest, but the Either type inference is a bit limited
-            props.controlDescription.controls,
-          )}
+          propertyControls={props.controlDescription.controls}
           setGlobalCursor={props.setGlobalCursor}
           title={props.controlDescription.label ?? PP.toString(props.propPath)}
           visibleEmptyControls={props.visibleEmptyControls}

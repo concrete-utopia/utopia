@@ -4,7 +4,6 @@ import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
-import { parsePropertyControls } from '../property-controls/property-controls-parser'
 import {
   emptyComments,
   JSXAttributes,
@@ -29,9 +28,8 @@ function createBasicComponent(
   propertyControls: PropertyControls,
   attributes?: JSXAttributes,
 ): ComponentDescriptor {
-  const parsedControls = parsePropertyControls(propertyControls)
   return {
-    properties: parsePropertyControls({ ...StyleObjectProps, ...propertyControls }),
+    properties: { ...StyleObjectProps, ...propertyControls },
     variants: [
       {
         insertMenuLabel: [baseVariable, ...propertyPathParts].join('.'),

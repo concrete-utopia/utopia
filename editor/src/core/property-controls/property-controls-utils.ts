@@ -27,23 +27,20 @@ import { importedFromWhere } from '../../components/editor/import-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 
-export function parsedPropertyControlsForComponentInFile(
+export function propertyControlsForComponentInFile(
   componentName: string,
   filePathNoExtension: string,
   propertyControlsInfo: PropertyControlsInfo,
-): ParseResult<ParsedPropertyControls> {
+): PropertyControls {
   const propertyControlsForFile = propertyControlsInfo[filePathNoExtension] ?? {}
   const propertyControlsForComponent = propertyControlsForFile[componentName]?.properties
-  return (
-    propertyControlsForComponent ??
-    left(descriptionParseError(`No property controls for ${componentName}.`))
-  )
+  return propertyControlsForComponent ?? {}
 }
 
 export function getPropertyControlsForTargetFromEditor(
   target: ElementPath,
   editor: EditorState,
-): ParseResult<ParsedPropertyControls> | null {
+): PropertyControls | null {
   const openFilePath = getOpenUIJSFileKey(editor)
   return getPropertyControlsForTarget(
     target,
@@ -60,7 +57,7 @@ export function getPropertyControlsForTarget(
   openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-): ParseResult<ParsedPropertyControls> | null {
+): PropertyControls | null {
   return withUnderlyingTarget(
     target,
     projectContents,
@@ -128,23 +125,8 @@ export function getPropertyControlsForTarget(
   )
 }
 
-export function hasStyleControls(propertyControls: ParseResult<ParsedPropertyControls>): boolean {
-  return foldEither(
-    (_parseFailed) => false,
-    (parsedPropertyControls) => {
-      const styleControls = parsedPropertyControls['style']
-      if (styleControls == null) {
-        return false
-      } else {
-        return foldEither(
-          (_) => false,
-          (r) => r.control === 'style-controls',
-          styleControls,
-        )
-      }
-    },
-    propertyControls,
-  )
+export function hasStyleControls(propertyControls: PropertyControls): boolean {
+  return propertyControls['style']?.control === 'style-controls'
 }
 
 export const specialPropertiesToIgnore: Array<string> = ['style', 'children']

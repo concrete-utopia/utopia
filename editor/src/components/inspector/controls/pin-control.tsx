@@ -117,7 +117,7 @@ export const PinControl = (props: PinControlProps) => {
             strokeWidth={MouseCatchmentStrokeWidth}
             stroke='transparent'
             strokeLinecap='butt'
-            onMouseDown={handlePinMouseDown('PinnedTop')}
+            onMouseDown={handlePinMouseDown('top')}
           />
           <path
             d={`M${HorizontalMid},${VerticalMid - (VerticalLength - 4)} l0,${
@@ -152,7 +152,7 @@ export const PinControl = (props: PinControlProps) => {
             strokeWidth={MouseCatchmentStrokeWidth}
             stroke='transparent'
             strokeLinecap='butt'
-            onMouseDown={handlePinMouseDown('PinnedBottom')}
+            onMouseDown={handlePinMouseDown('bottom')}
           />
           <path
             d={`M${HorizontalEnd},${VerticalMid} l${HorizontalLength},0`}
@@ -167,7 +167,7 @@ export const PinControl = (props: PinControlProps) => {
             strokeWidth={MouseCatchmentStrokeWidth}
             stroke='transparent'
             strokeLinecap='butt'
-            onMouseDown={handlePinMouseDown('PinnedRight')}
+            onMouseDown={handlePinMouseDown('right')}
           />
           <path
             d={`M${HorizontalMid - (HorizontalLength - 6)},${VerticalMid} l${
@@ -197,7 +197,7 @@ export const PinControl = (props: PinControlProps) => {
             strokeWidth={MouseCatchmentStrokeWidth}
             stroke='transparent'
             strokeLinecap='butt'
-            onMouseDown={handlePinMouseDown('PinnedLeft')}
+            onMouseDown={handlePinMouseDown('left')}
           />
           <g transform={`translate(${HorizontalDividerStart},${VerticalDividerStart})`}>
             <path

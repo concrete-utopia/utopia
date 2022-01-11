@@ -43,14 +43,18 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
     } else {
       return defaultEither(
         defaultStretch,
-        LayoutHelpers.getFlexStretchForChild(sceneMetadataOrElementMetadata, target),
+        LayoutHelpers.getFlexStretchForChild(sceneMetadataOrElementMetadata, target, ['style']),
       )
     }
   }
 
   getYogaSize = (visualSize: CanvasRectangle): CanvasRectangle => {
     const childStretch = this.getTargetStretch()
-    const yogaSize = MetadataUtils.getYogaSizeProps(this.props.target, this.props.componentMetadata)
+    const yogaSize = MetadataUtils.getYogaSizeProps(
+      this.props.target,
+      this.props.componentMetadata,
+      ['style'],
+    )
 
     return canvasRectangle({
       x: visualSize.x,
@@ -87,9 +91,12 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
     )
     let flexDirection: 'horizontal' | 'vertical' | null = null
     if (parentElement != null) {
-      forEachRight(FlexLayoutHelpers.getMainAxis(right(parentElement.props)), (direction) => {
-        flexDirection = direction
-      })
+      forEachRight(
+        FlexLayoutHelpers.getMainAxis(['style'], right(parentElement.props)),
+        (direction) => {
+          flexDirection = direction
+        },
+      )
     }
     const yogaSize = this.getYogaSize(visualSize)
 
