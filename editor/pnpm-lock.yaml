@@ -16603,7 +16603,7 @@ packages:
     dev: false
 
   github.com/milahu/patch-package/6b85a8bc1562d1482f30c1b65c9f4e91ba657d39:
-    resolution: {commit: 6b85a8bc1562d1482f30c1b65c9f4e91ba657d39, repo: git+https://git@github.com/milahu/patch-package.git, type: git}
+    resolution: {commit: 6b85a8bc1562d1482f30c1b65c9f4e91ba657d39, repo: git+https://github.com/milahu/patch-package.git, type: git}
     name: '@milahu/patch-package-with-pnpm-support'
     version: 6.4.8
     engines: {npm: '>5'}
