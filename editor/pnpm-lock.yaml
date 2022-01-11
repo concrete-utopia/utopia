@@ -20,6 +20,7 @@ specifiers:
   '@emotion/styled': 11.0.0
   '@emotion/styled-base': 11.0.0
   '@hot-loader/react-dom': 16.13.0
+  '@milahu/patch-package-with-pnpm-support': 6.4.8
   '@originjs/vite-plugin-commonjs': ^1.0.1
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 7.0.1
@@ -180,7 +181,6 @@ specifiers:
   object-path-immutable: 3.0.0
   onigasm: 2.2.4
   only-allow: ^1.0.0
-  patch-package: github:milahu/patch-package#pnpm-support-2
   path: ^0.12.7
   path-parse: 1.0.6
   pegjs: 0.10.0
@@ -385,6 +385,7 @@ devDependencies:
   '@babel/preset-react': 7.14.5_@babel+core@7.15.5
   '@babel/preset-typescript': 7.15.0_@babel+core@7.15.5
   '@hot-loader/react-dom': 16.13.0_utopia-react@17.0.0-rc.1
+  '@milahu/patch-package-with-pnpm-support': 6.4.8
   '@originjs/vite-plugin-commonjs': 1.0.1
   '@react-three/fiber': 7.0.1_fb240f2ddf3ca4b47c2b562802d6427d
   '@relative-ci/agent': 2.1.0_webpack@5.52.0
@@ -491,7 +492,6 @@ devDependencies:
   node-fetch: 2.6.1
   null-loader: 4.0.1_webpack@5.52.0
   only-allow: 1.0.0
-  patch-package: github.com/milahu/patch-package/6b85a8bc1562d1482f30c1b65c9f4e91ba657d39
   pegjs: 0.10.0
   pretty-format: 26.1.0
   react-dev-utils: 10.2.1
@@ -2725,6 +2725,28 @@ packages:
       '@types/node': 16.10.2
       '@types/yargs': 16.0.4
       chalk: 4.1.2
+    dev: true
+
+  /@milahu/patch-package-with-pnpm-support/6.4.8:
+    resolution: {integrity: sha512-aPb7vokV6kIhoEP8ZrygK6zfVMGp0zP9RJL6GvX3YziQelmnEWa58x7aZrAk9/q66LQPZDnZ5/aNhsp7l8TbfQ==}
+    engines: {npm: '>5'}
+    hasBin: true
+    dependencies:
+      '@types/dashdash': 1.14.1
+      '@yarnpkg/lockfile': 1.1.0
+      chalk: 2.4.2
+      cross-spawn: 6.0.5
+      dashdash: 2.0.0
+      find-yarn-workspace-root: 2.0.0
+      fs-extra: 7.0.1
+      is-ci: 2.0.0
+      klaw-sync: 6.0.0
+      open: 7.4.2
+      rimraf: 2.7.1
+      semver: 5.7.1
+      shlex: 2.1.0
+      slash: 2.0.0
+      tmp: 0.0.33
     dev: true
 
   /@mrmlnc/readdir-enhanced/2.2.1:
@@ -16601,32 +16623,6 @@ packages:
     name: matter-js
     version: 0.17.1
     dev: false
-
-  github.com/milahu/patch-package/6b85a8bc1562d1482f30c1b65c9f4e91ba657d39:
-    resolution: {commit: 6b85a8bc1562d1482f30c1b65c9f4e91ba657d39, repo: git+https://github.com/milahu/patch-package.git, type: git}
-    name: '@milahu/patch-package-with-pnpm-support'
-    version: 6.4.8
-    engines: {npm: '>5'}
-    hasBin: true
-    prepare: true
-    requiresBuild: true
-    dependencies:
-      '@types/dashdash': 1.14.1
-      '@yarnpkg/lockfile': 1.1.0
-      chalk: 2.4.2
-      cross-spawn: 6.0.5
-      dashdash: 2.0.0
-      find-yarn-workspace-root: 2.0.0
-      fs-extra: 7.0.1
-      is-ci: 2.0.0
-      klaw-sync: 6.0.0
-      open: 7.4.2
-      rimraf: 2.7.1
-      semver: 5.7.1
-      shlex: 2.1.0
-      slash: 2.0.0
-      tmp: 0.0.33
-    dev: true
 
   github.com/momentumworks/slider/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f:
     resolution: {tarball: https://codeload.github.com/momentumworks/slider/tar.gz/93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f}

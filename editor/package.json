@@ -314,7 +314,7 @@
     "node-fetch": "2.6.1",
     "null-loader": "4.0.1",
     "only-allow": "^1.0.0",
-    "patch-package": "github:milahu/patch-package#pnpm-support-2",
+    "@milahu/patch-package-with-pnpm-support": "6.4.8",
     "pegjs": "0.10.0",
     "pretty-format": "26.1.0",
     "react-dev-utils": "10.2.1",
