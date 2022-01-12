@@ -84,7 +84,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     )
 
     // if any indicator box is highlighted, we also want to change the parent's style too
-    const higlightedIndicator = indicatorBoxes.filter((b) => b.highlighted === true)[0]
+    const higlightedIndicator = indicatorBoxes.find((b) => b.highlighted === true)
     if (higlightedIndicator == null || targetParent == null) {
       return {
         newSessionState: {
