@@ -17,7 +17,7 @@ interface ResizeHandle {
   edgePosition: EdgePosition
 }
 
-type FlexGapHandle = {
+interface FlexGapHandle {
   type: 'FLEX_GAP_HANDLE'
 }
 
