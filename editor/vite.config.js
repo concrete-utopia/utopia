@@ -72,7 +72,10 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         plugins: [
           nodePolyfills(),
-          nodeResolve({ moduleDirectories: module.paths }),
+          nodeResolve({
+            moduleDirectories: module.paths,
+            preferBuiltins: false,
+          }),
           worker(),
           // visualizer(),
           // replace({ 'process.env.NODE_ENV': 'production' }),
