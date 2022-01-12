@@ -68,7 +68,7 @@ export default defineConfig(({ mode }) => {
       compact: true,
       minify: 'terser',
       rollupOptions: {
-        external: ['react', 'react-dom'],
+        // external: ['react', 'react-dom'],
         plugins: [
           worker(),
           // visualizer(),
