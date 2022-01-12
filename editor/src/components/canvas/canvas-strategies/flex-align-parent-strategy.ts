@@ -166,7 +166,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
   },
 }
 
-type AssociatedFlexProp = {
+interface AssociatedFlexProp {
   justifyContent?: React.CSSProperties['justifyContent']
   alignItems?: React.CSSProperties['alignItems']
 }
