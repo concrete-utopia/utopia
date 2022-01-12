@@ -12,7 +12,7 @@ interface BoundingArea {
   type: 'BOUNDING_AREA'
 }
 
-type ResizeHandle = {
+interface ResizeHandle {
   type: 'RESIZE_HANDLE'
   edgePosition: EdgePosition
 }
