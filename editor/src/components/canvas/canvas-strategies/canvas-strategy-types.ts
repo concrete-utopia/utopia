@@ -8,7 +8,7 @@ import type {
 } from '../../editor/store/editor-state'
 import type { EdgePosition } from '../canvas-types'
 
-type BoundingArea = {
+interface BoundingArea {
   type: 'BOUNDING_AREA'
 }
 
