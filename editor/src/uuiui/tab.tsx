@@ -6,7 +6,6 @@ import styled from '@emotion/styled'
 import { FlexRow, SimpleFlexRow } from './widgets/layout/flex-row'
 import { Button } from './button'
 import { Icons } from './icons'
-import * as R from 'ramda'
 
 import { useColorTheme, UtopiaTheme } from './styles/theme'
 import { CSSObject } from '@emotion/serialize'

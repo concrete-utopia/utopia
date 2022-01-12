@@ -5,6 +5,7 @@ import { injectHtml } from 'vite-plugin-html'
 import { visualizer } from 'rollup-plugin-visualizer'
 import worker from 'rollup-plugin-workers'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
+import nodePolyfills from 'rollup-plugin-polyfill-node'
 
 export default defineConfig(({ mode }) => {
   function createManualChunks(id, { getModuleInfo }) {
@@ -64,13 +65,13 @@ export default defineConfig(({ mode }) => {
     build: {
       target: 'esnext',
       outDir: resolve(__dirname, 'lib'),
-      emptyOutDir: true,
       commonjsOptions: {},
       sourcemap: true,
       compact: true,
       minify: 'terser',
       rollupOptions: {
         plugins: [
+          nodePolyfills(),
           nodeResolve({ moduleDirectories: module.paths }),
           worker(),
           // visualizer(),

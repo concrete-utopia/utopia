@@ -217,7 +217,7 @@ specifiers:
   react-windowed-select: 3.1.2
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
-  rollup-plugin-polyfill-node: ^0.8.0
+  rollup-plugin-polyfill-node: 0.8.0
   rollup-plugin-visualizer: ^5.5.2
   rollup-plugin-workers: 2.1.0
   scheduler: 0.17.0
