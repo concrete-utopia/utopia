@@ -100,7 +100,7 @@ export function startNewSelectModeCanvasSession(
     type: 'SELECT_MODE_CANVAS_SESSION',
     sessionProps: {
       start: start,
-      mousePosition: start, // TODO maybe this should be independent of start?
+      mousePosition: start,
       activeControl: activeControl,
       drag: null,
       globalTime: Date.now(),
