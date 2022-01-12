@@ -83,7 +83,7 @@ export interface SelectModeCanvasSessionProps {
 }
 
 export interface SelectModeCanvasSessionState {
-  activeStrategy: CanvasStrategy | null // should this live here? should it exist at all?
+  activeStrategy: CanvasStrategy | null
   dragDeltaMinimumPassed: boolean
 }
 
