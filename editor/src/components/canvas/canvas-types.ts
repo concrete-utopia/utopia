@@ -632,7 +632,7 @@ interface ClearDragState {
   applyChanges: boolean
 }
 
-export type CreateDragState = {
+export interface CreateDragState {
   action: 'CREATE_DRAG_STATE'
   dragState: DragState
 }
