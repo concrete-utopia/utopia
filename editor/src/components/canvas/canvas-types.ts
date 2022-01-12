@@ -637,7 +637,7 @@ export interface CreateDragState {
   dragState: DragState
 }
 
-export type UpdateCanvasSessionProps = {
+export interface UpdateCanvasSessionProps {
   action: 'UPDATE_CANVAS_SESSION_PROPS'
   newCanvasSessionProps: Partial<SelectModeCanvasSessionProps>
 }
