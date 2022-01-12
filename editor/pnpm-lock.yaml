@@ -25,6 +25,7 @@ specifiers:
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 7.0.1
   '@relative-ci/agent': ^2.1.0
+  '@rollup/plugin-node-resolve': 13.1.3
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': ^1.0.4
   '@svgr/plugin-jsx': 5.5.0
@@ -389,6 +390,7 @@ devDependencies:
   '@originjs/vite-plugin-commonjs': 1.0.1
   '@react-three/fiber': 7.0.1_fb240f2ddf3ca4b47c2b562802d6427d
   '@relative-ci/agent': 2.1.0_webpack@5.52.0
+  '@rollup/plugin-node-resolve': 13.1.3
   '@testing-library/react': 9.1.4_d9cccff7df39c9a08a2a815f75fb6cbc
   '@testing-library/react-hooks': 5.1.2_dde3fa6c6ce2f58e39e177699e67aa1b
   '@types/chai': 3.5.1
@@ -2981,6 +2983,20 @@ packages:
       magic-string: 0.25.7
     dev: false
 
+  /@rollup/plugin-node-resolve/13.1.3:
+    resolution: {integrity: sha512-BdxNk+LtmElRo5d06MGY4zoepyrXX1tkzX2hrnPEZ53k78GuOMWLqmJDGIIOPwVRIFZrLQOo+Yr6KtCuLIA0AQ==}
+    engines: {node: '>= 10.0.0'}
+    peerDependencies:
+      rollup: ^2.42.0
+    dependencies:
+      '@rollup/pluginutils': 3.1.0
+      '@types/resolve': 1.17.1
+      builtin-modules: 3.2.0
+      deepmerge: 4.2.2
+      is-module: 1.0.0
+      resolve: 1.20.0
+    dev: true
+
   /@rollup/pluginutils/3.1.0:
     resolution: {integrity: sha512-GksZ6pr6TpIjHm8h9lSQ8pi8BE9VeubNT0OMJ3B5uZJ8pz73NPiqOtCog/x2/QzM1ENChPKxMDhiQuRHsqc+lg==}
     engines: {node: '>= 8.0.0'}
@@ -2990,7 +3006,6 @@ packages:
       '@types/estree': 0.0.39
       estree-walker: 1.0.1
       picomatch: 2.3.0
-    dev: false
 
   /@rollup/pluginutils/4.1.1:
     resolution: {integrity: sha512-clDjivHqWGXi7u+0d2r2sBi4Ie6VLEAzWMIkvJLnDmxoOhBYOTfzGbOQBA32THHm11/LiJbd01tJUpJsbshSWQ==}
@@ -3339,7 +3354,6 @@ packages:
 
   /@types/estree/0.0.39:
     resolution: {integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==}
-    dev: false
 
   /@types/estree/0.0.50:
     resolution: {integrity: sha512-C6N5s2ZFtuZRj54k2/zyRhNDjJwwcViAM3Nbm8zjBpbqAdZ00mr0CFxvSKeO8Y/e03WVFLpQMdHYVfUd6SB+Hw==}
@@ -3648,6 +3662,12 @@ packages:
       '@types/prop-types': 15.5.6
       '@types/scheduler': 0.16.1
       csstype: 3.0.9
+
+  /@types/resolve/1.17.1:
+    resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
+    dependencies:
+      '@types/node': 16.10.2
+    dev: true
 
   /@types/responselike/1.0.0:
     resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
@@ -5318,6 +5338,11 @@ packages:
     resolution: {integrity: sha1-Jw8HbFpywC9bZaR9+Uxf46J4iS8=}
     engines: {node: '>=0.10.0'}
     dev: false
+
+  /builtin-modules/3.2.0:
+    resolution: {integrity: sha512-lGzLKcioL90C7wMczpkY0n/oART3MbBa8R9OFGE1rJxoVI86u4WAGfEk8Wjv10eKSyTHVGkSo3bvBylCEtk7LA==}
+    engines: {node: '>=6'}
+    dev: true
 
   /builtin-status-codes/3.0.0:
     resolution: {integrity: sha1-hZgoeOIbmOHGZCXgPQF0eI9Wnug=}
@@ -7681,7 +7706,6 @@ packages:
 
   /estree-walker/1.0.1:
     resolution: {integrity: sha512-1fMXF3YP4pZZVozF8j/ZLfvnR8NSIljt56UhbZ5PeeDmmGHpgpdwQt7ITlGvYaQukCvuBRMLEiKiYC+oeIg4cg==}
-    dev: false
 
   /estree-walker/2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
@@ -9526,6 +9550,10 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       ip-regex: 4.3.0
+    dev: true
+
+  /is-module/1.0.0:
+    resolution: {integrity: sha1-Mlj7afeMFNW4FdZkM2tM/7ZEFZE=}
     dev: true
 
   /is-negative-zero/2.0.1:

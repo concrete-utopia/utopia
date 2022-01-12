@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import { injectHtml } from 'vite-plugin-html'
 import { visualizer } from 'rollup-plugin-visualizer'
 import worker from 'rollup-plugin-workers'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
 
 export default defineConfig(({ mode }) => {
   function createManualChunks(id, { getModuleInfo }) {
@@ -63,13 +64,14 @@ export default defineConfig(({ mode }) => {
     build: {
       target: 'esnext',
       outDir: resolve(__dirname, 'lib'),
+      emptyOutDir: true,
       commonjsOptions: {},
       sourcemap: true,
       compact: true,
       minify: 'terser',
       rollupOptions: {
-        // external: ['react', 'react-dom'],
         plugins: [
+          nodeResolve({ moduleDirectories: module.paths }),
           worker(),
           // visualizer(),
           // replace({ 'process.env.NODE_ENV': 'production' }),
@@ -78,9 +80,9 @@ export default defineConfig(({ mode }) => {
           index: resolve(__dirname, 'src/vite/index.html'),
           'vscode-outer': resolve(__dirname, 'src/vite/vscode-outer/index.html'),
         },
-        output: {
-          // manualChunks: createManualChunks,
-        },
+        // output: {
+        //   manualChunks: createManualChunks,
+        // },
       },
     },
   }
