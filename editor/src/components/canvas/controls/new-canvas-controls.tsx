@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EP from '../../../core/shared/element-path'
@@ -410,8 +411,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       <LayoutParentControl />
-      <FlexAlignControls />
-      <FlexGapControls />
+      {when(
+        isFeatureEnabled('Canvas Strategies'),
+        <>
+          <FlexAlignControls />
+          <FlexGapControls />
+        </>,
+      )}
     </div>
   )
 }
