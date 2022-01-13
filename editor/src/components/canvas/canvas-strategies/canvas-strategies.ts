@@ -59,15 +59,14 @@ export function applyCanvasStrategy(
       sessionStateWithStrategy,
     ) ?? null
 
-  if (result != null) {
-    // TODO BEFORE MERGE APPLY result?.newSessionState !!!!
+  if (result == null) {
+    // no strategy was active, return empty result
+    return transientCanvasStateForSession(canvasSessionState, null, null)
+  } else {
     return transientCanvasStateForSession(
       result.newSessionState,
       result.transientFilesState,
       result.editorStatePatch,
     )
-  } else {
-    // no strategy was active, return empty result
-    return transientCanvasStateForSession(canvasSessionState, null, null)
   }
 }
