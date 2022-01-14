@@ -328,7 +328,7 @@ export function createOrUpdateDragState(
   action: CreateDragState,
 ): EditorState {
   if (model.canvas.dragState == null && action.dragState.type === 'SELECT_MODE_CANVAS_SESSION') {
-    // create canavs session session, start setInterval to keep globalTime updated
+    // create canvas session, start setInterval to keep globalTime updated
     clearInterval(dragStateTimerHandle)
     dragStateTimerHandle = setInterval(() => {
       dispatch([CanvasActions.updateCanvasSessionProps({ globalTime: Date.now() })])
