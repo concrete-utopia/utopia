@@ -52,6 +52,8 @@ interface NavigatorItemWrapperProps {
 const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
   createSelector(
     (store: EditorStore) => store.editor.jsxMetadata,
+    (store: EditorStore) => store.editor.selectedViews,
+    (store: EditorStore) => store.editor.highlightedViews,
     (store: EditorStore) => store.derived.canvas.transientState,
     (store: EditorStore) => store.derived.navigatorTargets,
     (store: EditorStore) => store.derived.elementWarnings,
@@ -60,6 +62,8 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
     (store: EditorStore) => store.editor.canvas.openFile?.filename ?? null,
     (
       jsxMetadata,
+      selectedViews,
+      highlightedViews,
       transientState,
       navigatorTargets,
       elementWarnings,
@@ -111,8 +115,11 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       return {
         staticElementName: staticName,
         label: labelInner,
-        isSelected: EP.containsPath(elementPath, transientState.selectedViews),
-        isHighlighted: EP.containsPath(elementPath, transientState.highlightedViews),
+        isSelected: EP.containsPath(elementPath, transientState.selectedViews ?? selectedViews),
+        isHighlighted: EP.containsPath(
+          elementPath,
+          transientState.highlightedViews ?? highlightedViews,
+        ),
         noOfChildren: noOfChildrenInner,
         supportsChildren: supportsChildren,
         elementOriginType: elementOriginType,

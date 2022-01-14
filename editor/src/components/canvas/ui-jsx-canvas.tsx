@@ -163,6 +163,7 @@ export interface UiJsxCanvasProps {
   scrollAnimation: boolean
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
+  domWalkerAdditionalElementsToUpdate: Array<ElementPath>
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -244,6 +245,7 @@ export function pickUiJsxCanvasProps(
       scrollAnimation: editor.canvas.scrollAnimation,
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
+      domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
     }
   }
 }

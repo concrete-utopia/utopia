@@ -119,23 +119,29 @@ import {
   JSXElementNameKeepDeepEqualityCall,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
+import { SelectModeCanvasSessionState } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import {
   TransientCanvasState,
   TransientFilesState,
   transientCanvasState,
   DerivedState,
+  EditorStatePatch,
 } from './editor-state'
 
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
-  return combine4EqualityCalls(
+  return combine6EqualityCalls(
     (state) => state.selectedViews,
-    ElementPathArrayKeepDeepEquality,
+    nullableDeepEquality(ElementPathArrayKeepDeepEquality),
     (state) => state.highlightedViews,
-    ElementPathArrayKeepDeepEquality,
+    nullableDeepEquality(ElementPathArrayKeepDeepEquality),
     (state) => state.filesState,
     createCallFromIntrospectiveKeepDeep<TransientFilesState | null>(),
     (state) => state.toastsToApply,
     createCallWithShallowEquals(),
+    (state) => state.editorStatePatch,
+    createCallFromIntrospectiveKeepDeep<EditorStatePatch | null>(),
+    (state) => state.canvasSessionState,
+    createCallFromIntrospectiveKeepDeep<SelectModeCanvasSessionState | null>(),
     transientCanvasState,
   )
 }
