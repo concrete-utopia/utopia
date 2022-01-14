@@ -25,8 +25,6 @@ specifiers:
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 7.0.1
   '@relative-ci/agent': ^2.1.0
-  '@rollup/plugin-inject': 4.0.4
-  '@rollup/plugin-node-resolve': 13.1.3
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': ^1.0.4
   '@svgr/plugin-jsx': 5.5.0
@@ -218,9 +216,6 @@ specifiers:
   react-windowed-select: 3.1.2
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
-  rollup-plugin-polyfill-node: 0.8.0
-  rollup-plugin-visualizer: ^5.5.2
-  rollup-plugin-workers: 2.1.0
   scheduler: 0.17.0
   script-ext-html-webpack-plugin: 2.1.4
   selenium-webdriver: 3.0.1
@@ -358,7 +353,6 @@ dependencies:
   react-windowed-select: 3.1.2_b9c7432b687c5eca0e0b2d49cc5d18aa
   reselect: 4.0.0
   resize-observer-polyfill: 1.5.0
-  rollup-plugin-polyfill-node: 0.8.0
   scheduler: 0.17.0
   semver: 7.3.2
   settle-promise: 1.0.0
@@ -391,8 +385,6 @@ devDependencies:
   '@originjs/vite-plugin-commonjs': 1.0.1
   '@react-three/fiber': 7.0.1_fb240f2ddf3ca4b47c2b562802d6427d
   '@relative-ci/agent': 2.1.0_webpack@5.52.0
-  '@rollup/plugin-inject': 4.0.4
-  '@rollup/plugin-node-resolve': 13.1.3
   '@testing-library/react': 9.1.4_d9cccff7df39c9a08a2a815f75fb6cbc
   '@testing-library/react-hooks': 5.1.2_dde3fa6c6ce2f58e39e177699e67aa1b
   '@types/chai': 3.5.1
@@ -500,8 +492,6 @@ devDependencies:
   pretty-format: 26.1.0
   react-dev-utils: 10.2.1
   react-test-renderer: 16.9.0_utopia-react@17.0.0-rc.1
-  rollup-plugin-visualizer: 5.5.2
-  rollup-plugin-workers: 2.1.0
   script-ext-html-webpack-plugin: 2.1.4_d0775fc9e9778f8067265599ff567f52
   selenium-webdriver: 3.0.1
   shuffle-array: 1.0.1
@@ -2975,39 +2965,6 @@ packages:
       java-properties: 1.0.2
     dev: true
 
-  /@rollup/plugin-inject/4.0.4:
-    resolution: {integrity: sha512-4pbcU4J/nS+zuHk+c+OL3WtmEQhqxlZ9uqfjQMQDOHOPld7PsCd8k5LWs8h5wjwJN7MgnAn768F2sDxEP4eNFQ==}
-    peerDependencies:
-      rollup: ^1.20.0 || ^2.0.0
-    dependencies:
-      '@rollup/pluginutils': 3.1.0
-      estree-walker: 2.0.2
-      magic-string: 0.25.7
-
-  /@rollup/plugin-node-resolve/13.1.3:
-    resolution: {integrity: sha512-BdxNk+LtmElRo5d06MGY4zoepyrXX1tkzX2hrnPEZ53k78GuOMWLqmJDGIIOPwVRIFZrLQOo+Yr6KtCuLIA0AQ==}
-    engines: {node: '>= 10.0.0'}
-    peerDependencies:
-      rollup: ^2.42.0
-    dependencies:
-      '@rollup/pluginutils': 3.1.0
-      '@types/resolve': 1.17.1
-      builtin-modules: 3.2.0
-      deepmerge: 4.2.2
-      is-module: 1.0.0
-      resolve: 1.20.0
-    dev: true
-
-  /@rollup/pluginutils/3.1.0:
-    resolution: {integrity: sha512-GksZ6pr6TpIjHm8h9lSQ8pi8BE9VeubNT0OMJ3B5uZJ8pz73NPiqOtCog/x2/QzM1ENChPKxMDhiQuRHsqc+lg==}
-    engines: {node: '>= 8.0.0'}
-    peerDependencies:
-      rollup: ^1.20.0||^2.0.0
-    dependencies:
-      '@types/estree': 0.0.39
-      estree-walker: 1.0.1
-      picomatch: 2.3.0
-
   /@rollup/pluginutils/4.1.1:
     resolution: {integrity: sha512-clDjivHqWGXi7u+0d2r2sBi4Ie6VLEAzWMIkvJLnDmxoOhBYOTfzGbOQBA32THHm11/LiJbd01tJUpJsbshSWQ==}
     engines: {node: '>= 8.0.0'}
@@ -3353,9 +3310,6 @@ packages:
       '@types/json-schema': 6.0.0
     dev: true
 
-  /@types/estree/0.0.39:
-    resolution: {integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==}
-
   /@types/estree/0.0.50:
     resolution: {integrity: sha512-C6N5s2ZFtuZRj54k2/zyRhNDjJwwcViAM3Nbm8zjBpbqAdZ00mr0CFxvSKeO8Y/e03WVFLpQMdHYVfUd6SB+Hw==}
     dev: true
@@ -3663,12 +3617,6 @@ packages:
       '@types/prop-types': 15.5.6
       '@types/scheduler': 0.16.1
       csstype: 3.0.9
-
-  /@types/resolve/1.17.1:
-    resolution: {integrity: sha512-yy7HuzQhj0dhGpD8RLXSZWEkLsV9ibvxvi6EiJ3bkqLAO1RGo0WbkWQiwpRlSFymTJRz0d3k5LM3kkx8ArDbLw==}
-    dependencies:
-      '@types/node': 16.10.2
-    dev: true
 
   /@types/responselike/1.0.0:
     resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
@@ -5339,11 +5287,6 @@ packages:
     resolution: {integrity: sha1-Jw8HbFpywC9bZaR9+Uxf46J4iS8=}
     engines: {node: '>=0.10.0'}
     dev: false
-
-  /builtin-modules/3.2.0:
-    resolution: {integrity: sha512-lGzLKcioL90C7wMczpkY0n/oART3MbBa8R9OFGE1rJxoVI86u4WAGfEk8Wjv10eKSyTHVGkSo3bvBylCEtk7LA==}
-    engines: {node: '>=6'}
-    dev: true
 
   /builtin-status-codes/3.0.0:
     resolution: {integrity: sha1-hZgoeOIbmOHGZCXgPQF0eI9Wnug=}
@@ -7701,15 +7644,9 @@ packages:
     resolution: {integrity: sha512-BxbNGGNm0RyRYvUdHpIwv9IWzeM9XClbOxwoATuFdOE7ZE6wHL+HQ5T8hoPM+zHvmKzzsEqhgy0GrQ5X13afiQ==}
     engines: {node: '>=4.0'}
 
-  /estree-walker/0.6.1:
-    resolution: {integrity: sha512-SqmZANLWS0mnatqbSfRP5g8OXZC12Fgg1IwNtLsyHDzJizORW4khDfjPqJZsemPWBB2uqykUah5YpQ6epsqC/w==}
-    dev: true
-
-  /estree-walker/1.0.1:
-    resolution: {integrity: sha512-1fMXF3YP4pZZVozF8j/ZLfvnR8NSIljt56UhbZ5PeeDmmGHpgpdwQt7ITlGvYaQukCvuBRMLEiKiYC+oeIg4cg==}
-
   /estree-walker/2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
+    dev: true
 
   /esutils/2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
@@ -9553,10 +9490,6 @@ packages:
       ip-regex: 4.3.0
     dev: true
 
-  /is-module/1.0.0:
-    resolution: {integrity: sha1-Mlj7afeMFNW4FdZkM2tM/7ZEFZE=}
-    dev: true
-
   /is-negative-zero/2.0.1:
     resolution: {integrity: sha512-2z6JzQvZRa9A2Y7xC6dQQm4FSTSTNWjKIYYTt4246eMTJmIo0Q+ZyOsU66X8lxK1AbB92dFeglPLrhwpeRKO6w==}
     engines: {node: '>= 0.4'}
@@ -11166,11 +11099,6 @@ packages:
     dependencies:
       yallist: 4.0.0
 
-  /magic-string/0.25.7:
-    resolution: {integrity: sha512-4CrMT5DOHTDk4HYDlzmwu4FVCcIYI8gauveasrdCu2IKIFOJ3f0v/8MDGJCDL9oD2ppz/Av1b0Nj345H9M+XIA==}
-    dependencies:
-      sourcemap-codec: 1.4.8
-
   /make-dir/2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
     engines: {node: '>=6'}
@@ -12285,6 +12213,7 @@ packages:
   /picomatch/2.3.0:
     resolution: {integrity: sha512-lY1Q/PiJGC2zOv/z391WOTD+Z02bCgsFfvxoXXf6h7kv9o+WmsmzYqrAwY63sNgOxE4xEdq0WyUnXfKeBrSvYw==}
     engines: {node: '>=8.6'}
+    dev: true
 
   /pify/2.3.0:
     resolution: {integrity: sha1-7RQaasBDqEnqWISY59yosVMw6Qw=}
@@ -14225,41 +14154,6 @@ packages:
       inherits: 2.0.4
     dev: true
 
-  /rollup-plugin-polyfill-node/0.8.0:
-    resolution: {integrity: sha512-C4UeKedOmOBkB3FgR+z/v9kzRwV1Q/H8xWs1u1+CNe4XOV6hINfOrcO+TredKxYvopCmr+WKUSNsFUnD1RLHgQ==}
-    peerDependencies:
-      rollup: ^1.20.0 || ^2.0.0
-    dependencies:
-      '@rollup/plugin-inject': 4.0.4
-    dev: false
-
-  /rollup-plugin-visualizer/5.5.2:
-    resolution: {integrity: sha512-sh+P9KhuWTzeStyRA5yNZpoEFGuj5Ph34JLMa9+muhU8CneFf9L0XE4fmAwAojJLWp//uLUEyytBPSCdZEg5AA==}
-    engines: {node: '>=10.16'}
-    hasBin: true
-    peerDependencies:
-      rollup: ^2.0.0
-    dependencies:
-      nanoid: 3.1.30
-      open: 7.4.2
-      source-map: 0.7.3
-      yargs: 16.2.0
-    dev: true
-
-  /rollup-plugin-workers/2.1.0:
-    resolution: {integrity: sha512-rfL0JHYBayFEk+ojHyDYKZklAYveX90S5roV3PWtLxIttUoAxyamyiskJHEFoEh4AFxSdsmdSgeFoD49oMO8Pg==}
-    dependencies:
-      magic-string: 0.25.7
-      rollup-pluginutils: 2.8.2
-      traveler: github.com/tsbehlman/traveler/f94765d0e8d2c540dfbeee04be8be9c516b6a881
-    dev: true
-
-  /rollup-pluginutils/2.8.2:
-    resolution: {integrity: sha512-EEp9NhnUkwY8aif6bxgovPHMoMoNr2FulJziTndpt5H9RdwC47GSGuII9XxpSdzVGM0GWrNPHV6ie1LTNJPaLQ==}
-    dependencies:
-      estree-walker: 0.6.1
-    dev: true
-
   /rollup/2.60.2:
     resolution: {integrity: sha512-1Bgjpq61sPjgoZzuiDSGvbI1tD91giZABgjCQBKM5aYLnzjq52GoDuWVwT/cm/MCxCMPU8gqQvkj8doQ5C8Oqw==}
     engines: {node: '>=10.0.0'}
@@ -14839,9 +14733,6 @@ packages:
   /source-map/0.7.3:
     resolution: {integrity: sha512-CkCj6giN3S+n9qrYiBTX5gystlENnRW5jZeNLHpe6aue+SrHcG5VYwujhW9s4dY31mEGsxBDrHR6oI69fTXsaQ==}
     engines: {node: '>= 8'}
-
-  /sourcemap-codec/1.4.8:
-    resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
 
   /space-separated-tokens/1.1.5:
     resolution: {integrity: sha512-q/JSVd1Lptzhf5bkYm4ob4iWPjx0KiRe3sRFBNrVqbJkFaBm5vbbowy1mymoPNLRa52+oadOhJ+K49wsSeSjTA==}
@@ -16666,9 +16557,3 @@ packages:
       shallowequal: 1.1.0
       warning: 3.0.0
     dev: false
-
-  github.com/tsbehlman/traveler/f94765d0e8d2c540dfbeee04be8be9c516b6a881:
-    resolution: {tarball: https://codeload.github.com/tsbehlman/traveler/tar.gz/f94765d0e8d2c540dfbeee04be8be9c516b6a881}
-    name: traveler
-    version: 1.0.0
-    dev: true
