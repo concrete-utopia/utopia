@@ -23,14 +23,20 @@ export function pickDefaultCanvasStrategy(
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
 ): CanvasStrategy | null {
-  sortBy(RegisteredCanvasStrategies, (l, r) => {
-    // sort by fitness, descending
-    return (
-      r.fitnessFn(editorState, sessionProps, sessionState) -
-      l.fitnessFn(editorState, sessionProps, sessionState)
-    )
+  const applicableStrategies = RegisteredCanvasStrategies.map((s) => ({
+    fitness: s.fitnessFn(editorState, sessionProps, sessionState),
+    strategy: s,
+  })).filter((s) => {
+    // discard strategies with 0 fitness
+    return s.fitness > 0
   })
-  return RegisteredCanvasStrategies[0] ?? null
+
+  return (
+    sortBy(applicableStrategies, (l, r) => {
+      // sort by fitness, descending
+      return r.fitness - l.fitness
+    })[0]?.strategy ?? null
+  )
 }
 
 export function applyCanvasStrategy(
