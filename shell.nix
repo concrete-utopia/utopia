@@ -159,6 +159,18 @@ let
 
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
 
+  puppeteerScripts = [
+      (pkgs.writeScriptBin "run-puppeteer-test" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
+      ${pnpm} install --unsafe-perm
+      PUPPETEER_EXECUTABLE_PATH=${pkgs.google-chrome}/bin/google-chrome-stable ${pnpm} run performance-test
+    '')
+  ];
+
+  withPuppeteerScripts = withBaseEditorScripts ++ (lib.optionals stdenv.isLinux puppeteerScripts);
+
   serverBaseScripts = [
     (pkgs.writeScriptBin "rebuild-cabal" ''
       #!/usr/bin/env bash
@@ -199,7 +211,7 @@ let
     '')
   ];
 
-  withServerBaseScripts = withBaseEditorScripts ++ (lib.optionals includeServerBuildSupport serverBaseScripts);
+  withServerBaseScripts = withPuppeteerScripts ++ (lib.optionals includeServerBuildSupport serverBaseScripts);
 
   editorRunScripts = [
     (pkgs.writeScriptBin "watch-tsc" ''
@@ -442,7 +454,7 @@ let
 
   scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
 
-  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.x11 pkgs.xorg.libxkbfile ];
+  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.x11 pkgs.xorg.libxkbfile pkgs.google-chrome ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
     Cocoa
     CoreServices
