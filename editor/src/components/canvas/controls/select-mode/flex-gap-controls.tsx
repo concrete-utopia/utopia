@@ -60,7 +60,7 @@ export const FlexGapControls = React.memo(() => {
     const siblingPairs = aperture(2, siblings)
     if (isFlexLayouted) {
       return mapDropNulls(([first, second]) => {
-        if (first.globalFrame == null || second.globalFrame == null) {
+        if (first?.globalFrame == null || second?.globalFrame == null) {
           return null
         } else {
           return {
