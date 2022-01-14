@@ -81,10 +81,6 @@ import {
 } from '../../../core/shared/redux-devtools'
 import { pick } from '../../../core/shared/object-utils'
 import {
-  getSavedCodeFromTextFile,
-  getUnsavedCodeFromTextFile,
-} from '../../../core/model/project-file-utils'
-import {
   ProjectChanges,
   emptyProjectChanges,
   combineProjectChanges,
