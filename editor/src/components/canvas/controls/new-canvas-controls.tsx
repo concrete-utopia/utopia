@@ -101,7 +101,6 @@ export interface ControlProps {
   openFile: string | null
   hiddenInstances: Array<ElementPath>
   focusedElementPath: ElementPath | null
-  highlightsEnabled: boolean
   canvasOffset: CanvasPoint
   scale: number
   dispatch: EditorDispatch
@@ -129,11 +128,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       editor: store.editor,
       derived: store.derived,
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
-      animationEnabled:
-        (store.editor.canvas.dragState == null ||
-          getDragStateStart(store.editor.canvas.dragState, store.editor.canvas.resizeOptions) ==
-            null) &&
-        store.editor.canvas.animationsEnabled,
 
       controls: store.derived.canvas.controls,
       scale: store.editor.canvas.scale,
@@ -231,7 +225,6 @@ interface NewCanvasControlsInnerProps {
   derived: DerivedState
   dispatch: EditorDispatch
   canvasOffset: CanvasPoint
-  animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   localSelectedViews: Array<ElementPath>
   localHighlightedViews: Array<ElementPath>
@@ -298,7 +291,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       componentMetadata: componentMetadata,
       hiddenInstances: props.editor.hiddenInstances,
       focusedElementPath: props.editor.focusedElementPath,
-      highlightsEnabled: props.editor.canvas.highlightsEnabled,
       canvasOffset: props.canvasOffset,
       scale: props.editor.canvas.scale,
       dispatch: props.dispatch,

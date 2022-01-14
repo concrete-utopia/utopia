@@ -113,7 +113,6 @@ import type {
   SendLinterRequestMessage,
   SendPreviewModel,
   SetAspectRatioLock,
-  SetCanvasAnimationsEnabled,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
@@ -121,7 +120,6 @@ import type {
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
   SetHighlightedView,
-  SetHighlightsEnabled,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetMainUIFile,
@@ -686,13 +684,6 @@ export function setCursorOverlay(cursor: CSSCursor | null): SetCursorOverlay {
   }
 }
 
-export function setCanvasAnimationsEnabled(value: boolean): SetCanvasAnimationsEnabled {
-  return {
-    action: 'SET_CANVAS_ANIMATIONS_ENABLED',
-    value: value,
-  }
-}
-
 export function setZIndex(target: ElementPath, index: number): SetZIndex {
   return {
     action: 'SET_Z_INDEX',
@@ -849,13 +840,6 @@ export function updatePreviewConnected(connected: boolean): UpdatePreviewConnect
   return {
     action: 'UPDATE_PREVIEW_CONNECTED',
     connected: connected,
-  }
-}
-
-export function setHighlightsEnabled(value: boolean): SetHighlightsEnabled {
-  return {
-    action: 'SET_HIGHLIGHTS_ENABLED',
-    value: value,
   }
 }
 

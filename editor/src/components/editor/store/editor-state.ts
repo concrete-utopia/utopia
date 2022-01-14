@@ -439,8 +439,6 @@ export interface EditorState {
       triggerMousePosition: WindowPoint | null
     } | null
     selectionControlsVisible: boolean
-    animationsEnabled: boolean
-    highlightsEnabled: boolean
     cursor: CSSCursor | null
     duplicationState: DuplicationState | null
     base64Blobs: CanvasBase64Blobs
@@ -1237,8 +1235,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       roundedCanvasOffset: BaseCanvasOffsetLeftPane,
       textEditor: null,
       selectionControlsVisible: true,
-      animationsEnabled: true,
-      highlightsEnabled: true,
       cursor: null,
       duplicationState: null,
       base64Blobs: {},
@@ -1499,8 +1495,6 @@ export function editorModelFromPersistentModel(
       roundedCanvasOffset: BaseCanvasOffsetLeftPane,
       textEditor: null,
       selectionControlsVisible: true,
-      animationsEnabled: true,
-      highlightsEnabled: true,
       cursor: null,
       duplicationState: null,
       base64Blobs: {},

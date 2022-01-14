@@ -46,7 +46,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR':
     case 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS':
     case 'SET_CURSOR_OVERLAY':
-    case 'SET_CANVAS_ANIMATIONS_ENABLED':
     case 'SET_NAVIGATOR_RENAMING_TARGET':
     case 'REDRAW_OLD_CANVAS_CONTROLS':
     case 'UPDATE_FRAME_DIMENSIONS':
@@ -55,7 +54,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_PROJECT_ID':
     case 'SET_CODE_EDITOR_VISIBILITY':
     case 'UPDATE_PREVIEW_CONNECTED':
-    case 'SET_HIGHLIGHTS_ENABLED':
     case 'SEND_PREVIEW_MODEL':
     case 'CLOSE_DESIGNER_FILE':
     case 'UPDATE_CODE_RESULT_CACHE':

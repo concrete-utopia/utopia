@@ -279,7 +279,6 @@ import {
   SelectComponents,
   SendPreviewModel,
   SetAspectRatioLock,
-  SetCanvasAnimationsEnabled,
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
@@ -287,7 +286,6 @@ import {
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
   SetHighlightedView,
-  SetHighlightsEnabled,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetRightMenuExpanded,
@@ -970,8 +968,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       roundedCanvasOffset: currentEditor.canvas.roundedCanvasOffset,
       textEditor: null,
       selectionControlsVisible: currentEditor.canvas.selectionControlsVisible,
-      animationsEnabled: currentEditor.canvas.animationsEnabled,
-      highlightsEnabled: true,
       cursor: null,
       duplicationState: null,
       base64Blobs: {},
@@ -3053,21 +3049,6 @@ export const UPDATE_FNS = {
       },
     }
   },
-  SET_CANVAS_ANIMATIONS_ENABLED: (
-    action: SetCanvasAnimationsEnabled,
-    editor: EditorModel,
-  ): EditorModel => {
-    if (editor.canvas.animationsEnabled === action.value) {
-      return editor
-    }
-    return {
-      ...editor,
-      canvas: {
-        ...editor.canvas,
-        animationsEnabled: action.value,
-      },
-    }
-  },
   UPDATE_FRAME_DIMENSIONS: (
     action: UpdateFrameDimensions,
     editor: EditorModel,
@@ -3483,18 +3464,6 @@ export const UPDATE_FNS = {
     return produce(editor, (editorState) => {
       editorState.preview.connected = action.connected
     })
-  },
-  SET_HIGHLIGHTS_ENABLED: (action: SetHighlightsEnabled, editor: EditorModel): EditorModel => {
-    if (editor.canvas.highlightsEnabled === action.value) {
-      return editor
-    }
-    return {
-      ...editor,
-      canvas: {
-        ...editor.canvas,
-        highlightsEnabled: action.value,
-      },
-    }
   },
   ALIGN_SELECTED_VIEWS: (
     action: AlignSelectedViews,
