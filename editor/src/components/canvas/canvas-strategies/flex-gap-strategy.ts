@@ -45,8 +45,11 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
-  fitnessFn: (editor, currentSession) => {
-    if (editor.selectedViews.length === 1) {
+  fitnessFn: (editor, sessionProps) => {
+    if (
+      editor.selectedViews.length === 1 &&
+      sessionProps.activeControl.type === 'FLEX_GAP_HANDLE'
+    ) {
       const selectedView = editor.selectedViews[0]
 
       const isFlexLayouted = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
