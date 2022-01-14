@@ -10,6 +10,7 @@ import {
   CanvasMouseEvent,
   CanvasPositions,
   ControlOrHigherOrderControl,
+  CreateDragState,
   CSSCursor,
   DragState,
   DuplicateNewUID,
@@ -20,8 +21,9 @@ import {
 } from '../components/canvas/canvas-types'
 import {
   anyDragStarted,
-  clearDragState,
+  clearDragStateAndInteractionSession,
   createDuplicationNewUIDsFromEditorState,
+  createOrUpdateDragState,
   dragExceededThreshold,
   getCanvasOffset,
   getDragStateDrag,
@@ -89,6 +91,7 @@ import {
   updateGlobalPositions,
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
+import { updateSelectModeCanvasSessionDragVector } from '../components/canvas/canvas-strategies/canvas-strategy-types'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -275,6 +278,7 @@ function on(
 }
 
 export function runLocalCanvasAction(
+  dispatch: EditorDispatch,
   model: EditorState,
   derivedState: DerivedState,
   action: CanvasAction,
@@ -296,14 +300,26 @@ export function runLocalCanvasAction(
       }
     }
     case 'CLEAR_DRAG_STATE':
-      return clearDragState(model, derivedState, action.applyChanges)
+      return clearDragStateAndInteractionSession(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
-      return {
-        ...model,
-        canvas: {
-          ...model.canvas,
-          dragState: action.dragState,
-        },
+      return createOrUpdateDragState(dispatch, model, action)
+    case 'UPDATE_CANVAS_SESSION_PROPS':
+      if (model.canvas.dragState?.type === 'SELECT_MODE_CANVAS_SESSION') {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            dragState: {
+              ...model.canvas.dragState,
+              sessionProps: {
+                ...model.canvas.dragState.sessionProps,
+                ...action.newCanvasSessionProps,
+              },
+            },
+          },
+        }
+      } else {
+        throw new Error('trying to update a nonexistent CanvasInteractionSession')
       }
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
       return update(model, {
@@ -824,6 +840,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     function fireDragStateUpdate(updateFn: DragState): void {
       dispatch([CanvasActions.createDragState(updateFn)], 'canvas')
     }
+    // TODO insert update functions for canvas interaction session
     if (dragState != null) {
       switch (dragState.type) {
         case 'MOVE_DRAG_STATE':
@@ -928,7 +945,16 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             }
             break
           }
+          break
         }
+        case 'INSERT_DRAG_STATE':
+          break
+        case 'SELECT_MODE_CANVAS_SESSION':
+          // TODO add keyboard stuff to canvas session!
+          break
+        default:
+          const _exhaustiveCheck: never = dragState
+          break
       }
     }
   }
@@ -1072,6 +1098,14 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               enableSnapping,
               centerBasedResize,
               keepAspectRatio,
+            )
+            break
+          }
+          case 'SELECT_MODE_CANVAS_SESSION': {
+            newDragState = updateSelectModeCanvasSessionDragVector(
+              dragState,
+              canvasPositions.canvasPositionRounded,
+              newDrag,
             )
             break
           }
