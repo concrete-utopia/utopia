@@ -12,10 +12,10 @@ import { BASE_URL } from '../../common/env-vars'
 
 const WORKER_BASE_URL = `${BASE_URL}editor/`
 
-// import TSWorker from './ts/ts-worker?worker'
-// import ParserPrinterWorker from './parser-printer/parser-printer.worker?worker'
-// import LinterWorker from './linter/linter.worker?worker'
-// import WatchdogWorker from './watchdog.worker?worker'
+import TSWorker from './ts/ts-worker?worker'
+import ParserPrinterWorker from './parser-printer/parser-printer.worker?worker'
+import LinterWorker from './linter/linter.worker?worker'
+import WatchdogWorker from './watchdog.worker?worker'
 
 export function createTsWorker(): Worker {
   // const oldPublicPath = __webpack_public_path__
@@ -23,8 +23,7 @@ export function createTsWorker(): Worker {
   // const worker = new Worker(new URL('./ts/ts.worker.ts', WORKER_BASE_URL))
   // __webpack_public_path__ = oldPublicPath
   // return worker
-  // return new TSWorker()
-  return new Worker('./ts/ts-worker', { type: 'module' })
+  return new TSWorker()
 }
 
 export function createParserPrinterWorker(): Worker {
@@ -33,9 +32,7 @@ export function createParserPrinterWorker(): Worker {
   // const worker = new Worker(new URL('./parser-printer/parser-printer.worker.ts', WORKER_BASE_URL))
   // __webpack_public_path__ = oldPublicPath
   // return worker
-  // return new ParserPrinterWorker()
-
-  return new Worker('./parser-printer/parser-printer.worker', { type: 'module' })
+  return new ParserPrinterWorker()
 }
 
 export function createLinterWorker(): Worker {
@@ -44,8 +41,7 @@ export function createLinterWorker(): Worker {
   // const worker = new Worker(new URL('./linter/linter.worker.ts', WORKER_BASE_URL))
   // __webpack_public_path__ = oldPublicPath
   // return worker
-  // return new LinterWorker()
-  return new Worker('./linter/linter.worker', { type: 'module' })
+  return new LinterWorker()
 }
 
 export function createWatchdogWorker(): Worker {
@@ -54,6 +50,5 @@ export function createWatchdogWorker(): Worker {
   // const worker = new Worker(new URL('./watchdog.worker.ts', WORKER_BASE_URL))
   // __webpack_public_path__ = oldPublicPath
   // return worker
-  // return new WatchdogWorker()
-  return new Worker('./watchdog.worker', { type: 'module' })
+  return new WatchdogWorker()
 }
