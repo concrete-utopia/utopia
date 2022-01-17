@@ -119,6 +119,7 @@ import {
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { getDragStateStart } from '../canvas/canvas-utils'
+import { CanvasOffset } from '../canvas/canvas-atoms'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -466,7 +467,7 @@ export function handleKeyDown(
             'no-filter',
             WindowMousePositionRaw,
             editor.canvas.scale,
-            editor.canvas.realCanvasOffset,
+            CanvasOffset,
           )
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {

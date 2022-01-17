@@ -246,7 +246,7 @@ describe('Spy Wrapper Template Path Tests', () => {
       true,
     )
 
-    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+    await dispatch([CanvasActions.clearDragState(false)], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
@@ -435,7 +435,7 @@ describe('Spy Wrapper Template Path Tests', () => {
       true,
     )
 
-    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+    await dispatch([CanvasActions.clearDragState(false)], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
@@ -633,7 +633,7 @@ describe('Spy Wrapper Template Path Tests', () => {
       true,
     )
 
-    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+    await dispatch([CanvasActions.clearDragState(false)], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
@@ -829,7 +829,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
       true,
     )
 
-    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+    await dispatch([CanvasActions.clearDragState(false)], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
@@ -1018,7 +1018,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
       true,
     )
 
-    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+    await dispatch([CanvasActions.clearDragState(false)], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
@@ -1216,7 +1216,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
       true,
     )
 
-    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+    await dispatch([CanvasActions.clearDragState(false)], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
@@ -1444,7 +1444,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
       true,
     )
 
-    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+    await dispatch([CanvasActions.clearDragState(false)], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
@@ -1691,7 +1691,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
       true,
     )
 
-    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+    await dispatch([CanvasActions.clearDragState(false)], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)

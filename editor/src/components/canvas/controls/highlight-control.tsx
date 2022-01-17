@@ -1,17 +1,18 @@
 import React from 'react'
 import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
+import { useRoundedCanvasOffset } from '../canvas-atoms'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
 import { ZeroSizeHighlightControl } from './zero-sized-element-controls'
 
 interface HighlightControlProps {
   frame: CanvasRectangle
-  canvasOffset: CanvasPoint
   scale: number
   color?: string
 }
 
 export const HighlightControl = React.memo((props: HighlightControlProps) => {
+  const [canvasOffset] = useRoundedCanvasOffset() // TODO do we need this, or can we use css-var?
   const colorTheme = useColorTheme()
   const outlineWidth = 1.5 / props.scale
   const outlineColor =
@@ -21,7 +22,7 @@ export const HighlightControl = React.memo((props: HighlightControlProps) => {
     return (
       <ZeroSizeHighlightControl
         frame={props.frame}
-        canvasOffset={props.canvasOffset}
+        canvasOffset={canvasOffset}
         scale={props.scale}
         color={outlineColor}
       />
@@ -32,8 +33,8 @@ export const HighlightControl = React.memo((props: HighlightControlProps) => {
         className='role-component-highlight-outline'
         style={{
           position: 'absolute',
-          left: props.canvasOffset.x + props.frame.x,
-          top: props.canvasOffset.y + props.frame.y,
+          left: canvasOffset.x + props.frame.x,
+          top: canvasOffset.y + props.frame.y,
           width: props.frame.width,
           height: props.frame.height,
           boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,

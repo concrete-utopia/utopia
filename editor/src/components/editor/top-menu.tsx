@@ -45,9 +45,11 @@ const TopMenuLeftControls = React.memo(() => {
   const onClickNavigateTab = React.useCallback(() => {
     let actions: EditorAction[] = [EditorActions.togglePanel('navigator')]
     if (navigatorVisible) {
-      actions.push(CanvasActions.scrollCanvas({ x: navigatorWidth, y: 0 } as CanvasVector))
+      // TODO SCROLL CANVAS
+      // actions.push(CanvasActions.scrollCanvas({ x: navigatorWidth, y: 0 } as CanvasVector))
     } else {
-      actions.push(CanvasActions.scrollCanvas({ x: -navigatorWidth, y: 0 } as CanvasVector))
+      // TODO SCROLL CANVAS
+      // actions.push(CanvasActions.scrollCanvas({ x: -navigatorWidth, y: 0 } as CanvasVector))
     }
     dispatch(actions)
   }, [dispatch, navigatorVisible, navigatorWidth])

@@ -4,15 +4,11 @@ import { aperture, mapDropNulls } from '../../../../core/shared/array-utils'
 import { point, windowPoint } from '../../../../core/shared/math-utils'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
+import { useRoundedCanvasOffset } from '../../canvas-atoms'
 import { startNewSelectModeCanvasSession } from '../../canvas-strategies/canvas-strategy-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 
 export const FlexGapControls = React.memo(() => {
-  const canvasOffset = useEditorState(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'FlexGapControls canvasOffset',
-  )
-
   const targetedElement = useEditorState(
     (store) => store.editor.selectedViews[0],
     'FlexGapControls targetedElement',
@@ -27,10 +23,7 @@ export const FlexGapControls = React.memo(() => {
 
   const canvasScale = useEditorState((store) => store.editor.canvas.scale, 'FlexGapControls scale')
 
-  const roundedCanvasOffset = useEditorState(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'FlexGapControls roundedCanvasOffset',
-  )
+  const [roundedCanvasOffset] = useRoundedCanvasOffset() // TODO do we need this, or can we use css-var?
 
   const startDragging = React.useCallback(
     (event: React.MouseEvent) => {
@@ -84,8 +77,8 @@ export const FlexGapControls = React.memo(() => {
             key={`flex-gap-rect-${rect.x}-${rect.y}-${rect.width}-${rect.height}`}
             style={{
               position: 'absolute',
-              left: canvasOffset.x + rect.x,
-              top: canvasOffset.y + rect.y,
+              left: roundedCanvasOffset.x + rect.x,
+              top: roundedCanvasOffset.y + rect.y,
               width: rect.width,
               height: rect.height,
               backgroundColor: 'purple',

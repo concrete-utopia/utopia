@@ -7,12 +7,6 @@ import {
 import type { CanvasAction, DragState } from './canvas-types'
 
 const CanvasActions = {
-  scrollCanvas: function (delta: CanvasVector): CanvasAction {
-    return {
-      action: 'SCROLL_CANVAS',
-      delta: delta,
-    }
-  },
   createDragState: function (dragState: DragState): CanvasAction {
     return {
       action: 'CREATE_DRAG_STATE',

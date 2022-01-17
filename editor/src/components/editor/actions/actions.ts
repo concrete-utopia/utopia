@@ -528,6 +528,7 @@ import { uniqToasts } from './toast-helpers'
 import { NavigatorStateKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { CanvasOffset } from '../../canvas/canvas-atoms'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -964,8 +965,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       dragState: null,
       scale: currentEditor.canvas.scale,
       snappingThreshold: currentEditor.canvas.snappingThreshold,
-      realCanvasOffset: currentEditor.canvas.realCanvasOffset,
-      roundedCanvasOffset: currentEditor.canvas.roundedCanvasOffset,
       textEditor: null,
       selectionControlsVisible: currentEditor.canvas.selectionControlsVisible,
       cursor: null,
@@ -4436,8 +4435,8 @@ export const UPDATE_FNS = {
         const containerDivBoundingRect = containerRootDiv.getBoundingClientRect()
         const navigatorOffset = isNavigatorOnTop ? LeftPaneDefaultWidth : 0
         const containerRectangle = {
-          x: navigatorOffset - editor.canvas.realCanvasOffset.x,
-          y: -editor.canvas.realCanvasOffset.y,
+          x: navigatorOffset - CanvasOffset.x,
+          y: -CanvasOffset.y,
           width: containerDivBoundingRect.width,
           height: containerDivBoundingRect.height,
         } as CanvasRectangle
@@ -4448,6 +4447,7 @@ export const UPDATE_FNS = {
         }
       }
       const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+      // TODO SCROLL CANVAS
       const newCanvasOffset = Utils.pointDifference(targetElementCoords, baseCanvasOffset)
 
       return UPDATE_FNS.SET_SCROLL_ANIMATION(
@@ -4456,8 +4456,9 @@ export const UPDATE_FNS = {
           ...editor,
           canvas: {
             ...editor.canvas,
-            realCanvasOffset: newCanvasOffset,
-            roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+            // TODO SCROLL CANVAS
+            // realCanvasOffset: newCanvasOffset,
+            // roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
           },
         },
         dispatch,

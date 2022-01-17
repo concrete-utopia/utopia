@@ -127,7 +127,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
       dispatch: store.dispatch,
       editor: store.editor,
       derived: store.derived,
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
 
       controls: store.derived.canvas.controls,
       scale: store.editor.canvas.scale,
@@ -224,7 +223,6 @@ interface NewCanvasControlsInnerProps {
   editor: EditorState
   derived: DerivedState
   dispatch: EditorDispatch
-  canvasOffset: CanvasPoint
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   localSelectedViews: Array<ElementPath>
   localHighlightedViews: Array<ElementPath>
@@ -285,13 +283,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       localSelectedViews,
     )
     const resolveFn = props.editor.codeResultCache.curriedResolveFn(props.editor.projectContents)
-    const controlProps: ControlProps = {
+    const controlProps: Omit<ControlProps, 'canvasOffset'> = {
       selectedViews: localSelectedViews,
       highlightedViews: localHighlightedViews,
       componentMetadata: componentMetadata,
       hiddenInstances: props.editor.hiddenInstances,
       focusedElementPath: props.editor.focusedElementPath,
-      canvasOffset: props.canvasOffset,
       scale: props.editor.canvas.scale,
       dispatch: props.dispatch,
       resizeStatus: getResizeStatus(),
@@ -347,7 +344,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             dragState={
               dragState != null && dragState.type === 'INSERT_DRAG_STATE' ? dragState : null
             }
-            canvasOffset={props.editor.canvas.realCanvasOffset /* maybe roundedCanvasOffset? */}
             scale={props.editor.canvas.scale}
           />
         )
@@ -378,7 +374,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               color={color}
               frame={frame}
               scale={props.editor.canvas.scale}
-              canvasOffset={props.canvasOffset}
             />
           )
         })

@@ -32,8 +32,9 @@ export function useTriggerScrollPerformanceTest(): () => void {
     let framesPassed = 0
     async function step() {
       performance.mark(`scroll_step_${framesPassed}`)
-      await dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -5, y: -1 }))])
-        .entireUpdateFinished
+      // TODO SCROLL CANVAS USING MOUSE EVENT DISPATCH
+      // await dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -5, y: -1 }))])
+      //   .entireUpdateFinished
       performance.mark(`scroll_dispatch_finished_${framesPassed}`)
       performance.measure(
         `scroll_frame_${framesPassed}`,

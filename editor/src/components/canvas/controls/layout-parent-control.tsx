@@ -15,6 +15,7 @@ import {
   flexDirectionOptions,
   getDirectionAwareLabels,
 } from '../../inspector/sections/layout-section/flex-container-subsection/flex-container-controls'
+import { useRoundedCanvasOffset } from '../canvas-atoms'
 
 const getFlexDirectionIcon = (
   flexWrap: FlexWrap | null,
@@ -33,9 +34,9 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
 
   const dispatch = useEditorState((store) => store.dispatch, 'LayoutParentControl dispatch')
 
-  const { canvasOffset, scale } = useEditorState((store) => {
+  const [canvasOffset] = useRoundedCanvasOffset() // TODO do we need this, or can we use css-var?
+  const { scale } = useEditorState((store) => {
     return {
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
       scale: store.editor.canvas.scale,
     }
   }, 'LayoutParentControl canvas')

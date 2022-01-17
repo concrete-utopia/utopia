@@ -12,6 +12,7 @@ import {
 } from '../../../../utils/react-memoize.test-utils'
 import { ComponentSection } from './component-section'
 import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file.test-utils'
+import { CSSCursor } from '../../../canvas/canvas-types'
 
 describe('Component Section', () => {
   enableWhyDidYouRenderOnComponent(ComponentSection)
@@ -57,7 +58,7 @@ describe('Component Section', () => {
     act(() => {
       storeHookForTest.updateStoreWithImmer((store) => {
         // irrelevant state change, we expect zero rerenders
-        store.editor.canvas.roundedCanvasOffset = { x: 30, y: 50 } as CanvasVector
+        store.editor.canvas.cursor = CSSCursor.Move
       })
     })
 

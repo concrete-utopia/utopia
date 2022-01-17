@@ -53,6 +53,7 @@ import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import { useRoundedCanvasOffset } from '../canvas-atoms'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -74,7 +75,6 @@ interface InsertModeControlContainerProps extends ControlProps {
   mode: InsertMode
   keysPressed: KeysPressed
   dragState: InsertDragState | null
-  canvasOffset: CanvasVector
   scale: number
 }
 
@@ -101,7 +101,15 @@ function getDragFrame(props: InsertModeControlContainerProps): CanvasRectangle |
   }
 }
 
-export class InsertModeControlContainer extends React.Component<
+export const InsertModeControlContainer: React.FunctionComponent<Omit<
+  InsertModeControlContainerProps,
+  'canvasOffset'
+>> = (props) => {
+  const [canvasOffset] = useRoundedCanvasOffset()
+  return <InsertModeControlContainerInner {...props} canvasOffset={canvasOffset} />
+}
+
+class InsertModeControlContainerInner extends React.Component<
   InsertModeControlContainerProps,
   InsertModeControlContainerState
 > {

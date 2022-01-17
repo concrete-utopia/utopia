@@ -31,6 +31,7 @@ import { when } from '../../../utils/react-conditionals'
 import { InsertionControls } from './insertion-plus-button'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
+import { useRoundedCanvasOffset } from '../canvas-atoms'
 
 function getDistanceGuidelines(
   highlightedView: ElementPath,
@@ -68,9 +69,17 @@ interface SelectModeControlContainerState {
   lastHovered: ElementPath | null
 }
 
+export const SelectModeControlContainer: React.FunctionComponent<Omit<
+  SelectModeControlContainerProps,
+  'canvasOffset'
+>> = (props) => {
+  const [canvasOffset] = useRoundedCanvasOffset()
+  return <SelectModeControlContainerInner {...props} canvasOffset={canvasOffset} />
+}
+
 // SelectModeControlContainer is a single React component containing all the individual
 // SelectModeControl components (one for every utopia component).
-export class SelectModeControlContainer extends React.Component<
+class SelectModeControlContainerInner extends React.Component<
   SelectModeControlContainerProps,
   SelectModeControlContainerState
 > {

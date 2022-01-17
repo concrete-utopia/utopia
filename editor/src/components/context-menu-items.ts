@@ -36,7 +36,6 @@ export interface ContextMenuItem<T> {
 }
 
 export interface CanvasData {
-  canvasOffset: CanvasPoint
   selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot

@@ -17,6 +17,7 @@ import { LayoutSection } from './layout-section'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import { NO_OP } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../common/property-path-hooks'
+import { CSSCursor } from '../../../canvas/canvas-types'
 
 describe('Layout Section', () => {
   enableWhyDidYouRenderOnComponent(LayoutSection)
@@ -52,7 +53,7 @@ describe('Layout Section', () => {
     act(() => {
       storeHookForTest.updateStoreWithImmer((store) => {
         // irrelevant state change, we expect zero rerenders
-        store.editor.canvas.roundedCanvasOffset = { x: 30, y: 50 } as CanvasVector
+        store.editor.canvas.cursor = CSSCursor.Move
       })
     })
 

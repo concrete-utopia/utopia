@@ -13,7 +13,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SHOW_CONTEXT_MENU':
     case 'UPDATE_KEYS_PRESSED':
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
-    case 'SCROLL_CANVAS':
     case 'SET_FOCUS':
     case 'RESIZE_LEFTPANE':
     case 'CREATE_DRAG_STATE':

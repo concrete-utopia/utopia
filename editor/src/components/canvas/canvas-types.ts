@@ -622,11 +622,6 @@ export type CanvasMouseEvent =
   | ContextMenu
   | Wheel
 
-type ScrollCanvas = {
-  action: 'SCROLL_CANVAS'
-  delta: CanvasVector
-}
-
 interface ClearDragState {
   action: 'CLEAR_DRAG_STATE'
   applyChanges: boolean
@@ -659,7 +654,6 @@ type ZoomUI = {
 }
 
 export type CanvasAction =
-  | ScrollCanvas
   | ClearDragState
   | CreateDragState
   | Zoom
@@ -675,7 +669,6 @@ export type CanvasModel = {
   scale: number
   highlightedviews: Array<ElementPath>
   selectedViews: Array<ElementPath>
-  canvasOffset: CanvasPoint
   focusedPanel: EditorPanel | null
   editorState: EditorState
 }

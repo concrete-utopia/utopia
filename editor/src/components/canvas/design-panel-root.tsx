@@ -36,6 +36,7 @@ import CanvasActions from './canvas-actions'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
+import { CanvasVarProvider } from './canvas-var-provider'
 
 interface NumberSize {
   width: number
@@ -192,15 +193,18 @@ export const DesignPanelRoot = React.memo(() => {
   const onNavigatorResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
       setNavigatorWidth((currentWidth) => currentWidth + delta.width)
-      dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -delta.width, y: 0 }))])
+      // TODO SCROLL CANVAS
+      // dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -delta.width, y: 0 }))])
     },
     [setNavigatorWidth, dispatch],
   )
 
   return (
-    <SimpleFlexRow
+    <CanvasVarProvider
       className='OpenFileEditorShell'
       style={{
+        display: 'flex',
+        flexDirection: 'row',
         position: 'relative',
         flexGrow: 1,
         alignItems: 'stretch',
@@ -348,7 +352,7 @@ export const DesignPanelRoot = React.memo(() => {
           ) : null}
         </>
       ) : null}
-    </SimpleFlexRow>
+    </CanvasVarProvider>
   )
 })
 DesignPanelRoot.displayName = 'DesignPanelRoot'

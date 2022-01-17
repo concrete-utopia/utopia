@@ -290,7 +290,8 @@ describe('Select Mode Advanced Cases', () => {
               ['CardList-Root', 'CardList-Col', 'CardList-Card~~~1'],
             ]),
           ),
-          CanvasActions.scrollCanvas(canvasPoint({ x: 430, y: 390 })),
+          // TODO SCROLL CANVAS
+          // CanvasActions.scrollCanvas(canvasPoint({ x: 430, y: 390 })),
         ],
         true,
       )

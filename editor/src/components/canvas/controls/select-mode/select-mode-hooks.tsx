@@ -42,6 +42,7 @@ import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { startNewSelectModeCanvasSession } from '../../canvas-strategies/canvas-strategy-types'
+import { CanvasOffset } from '../../canvas-atoms'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -193,20 +194,13 @@ function useFindValidTarget(): (
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       canvasScale: store.editor.canvas.scale,
-      canvasOffset: store.editor.canvas.realCanvasOffset,
       focusedElementPath: store.editor.focusedElementPath,
     }
   })
 
   return React.useCallback(
     (selectableViews: Array<ElementPath>, mousePoint: WindowPoint | null) => {
-      const {
-        selectedViews,
-        componentMetadata,
-        hiddenInstances,
-        canvasScale,
-        canvasOffset,
-      } = storeRef.current
+      const { selectedViews, componentMetadata, hiddenInstances, canvasScale } = storeRef.current
       const validElementMouseOver: ElementPath | null = getValidTargetAtPoint(
         componentMetadata,
         selectedViews,
@@ -214,7 +208,7 @@ function useFindValidTarget(): (
         selectableViews,
         mousePoint,
         canvasScale,
-        canvasOffset,
+        CanvasOffset, // TODO CanvasOffset Ref?
       )
       const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null

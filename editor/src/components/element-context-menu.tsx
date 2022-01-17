@@ -37,6 +37,7 @@ import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
+import { CanvasOffset } from './canvas/canvas-atoms'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -109,7 +110,7 @@ function useCanvasContextMenuItems(
               'no-filter',
               WindowMousePositionRaw,
               data.scale,
-              data.canvasOffset,
+              CanvasOffset,
             )
             if (elementsUnderCursor != null) {
               return !elementsUnderCursor.some((underCursor: ElementPath) =>
@@ -179,7 +180,6 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
   const editorSliceRef = useRefEditorState((store) => {
     const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
     return {
-      canvasOffset: store.editor.canvas.roundedCanvasOffset,
       selectedViews: store.editor.selectedViews,
       jsxMetadata: store.editor.jsxMetadata,
       editorDispatch: store.dispatch,
@@ -196,7 +196,6 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
   const getData: () => CanvasData = React.useCallback(() => {
     const currentEditor = editorSliceRef.current
     return {
-      canvasOffset: currentEditor.canvasOffset,
       selectedViews: currentEditor.selectedViews,
       jsxMetadata: currentEditor.jsxMetadata,
       projectContents: currentEditor.projectContents,

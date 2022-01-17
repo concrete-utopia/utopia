@@ -212,6 +212,7 @@ import { applyCanvasStrategy } from './canvas-strategies/canvas-strategies'
 import { SelectModeCanvasSessionState } from './canvas-strategies/canvas-strategy-types'
 import { EditorDispatch } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
+import { CanvasOffset } from './canvas-atoms'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -1902,7 +1903,6 @@ function getReparentTargetAtPosition(
   selectedViews: Array<ElementPath>,
   hiddenInstances: Array<ElementPath>,
   canvasScale: number,
-  canvasOffset: CanvasVector,
 ): ElementPath | undefined {
   const allTargets = getAllTargetsAtPoint(
     componentMeta,
@@ -1911,7 +1911,7 @@ function getReparentTargetAtPosition(
     'no-filter',
     WindowMousePositionRaw,
     canvasScale,
-    canvasOffset,
+    CanvasOffset,
   )
   // filtering for non-selected views from alltargets
   return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
@@ -1931,7 +1931,6 @@ export function getReparentTarget(
     selectedViews,
     editorState.hiddenInstances,
     editorState.canvas.scale,
-    editorState.canvas.realCanvasOffset,
   )
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(

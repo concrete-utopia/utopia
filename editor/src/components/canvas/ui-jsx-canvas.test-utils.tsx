@@ -55,7 +55,6 @@ import type { CurriedResolveFn } from '../custom-code/code-file'
 import * as path from 'path'
 
 export interface PartialCanvasProps {
-  offset: UiJsxCanvasProps['offset']
   scale: UiJsxCanvasProps['scale']
   hiddenInstances: UiJsxCanvasProps['hiddenInstances']
   editedTextElement: UiJsxCanvasProps['editedTextElement']
@@ -209,7 +208,6 @@ export function renderCanvasReturnResultAndError(
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
-      offset: canvasPoint({ x: 0, y: 0 }),
       scale: 1,
       hiddenInstances: [],
       editedTextElement: null,

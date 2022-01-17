@@ -92,6 +92,7 @@ import {
 } from '../utils/global-positions'
 import { last, reverse } from '../core/shared/array-utils'
 import { updateSelectModeCanvasSessionDragVector } from '../components/canvas/canvas-strategies/canvas-strategy-types'
+import { CanvasOffset } from '../components/canvas/canvas-atoms'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -245,7 +246,8 @@ function on(
         }
       }
     } else {
-      return [CanvasActions.scrollCanvas((event.delta as any) as CanvasVector)]
+      // TODO SCROLL CANVAS
+      // return [CanvasActions.scrollCanvas((event.delta as any) as CanvasVector)]
     }
   } else if (
     isDragging(canvas.editorState) &&
@@ -257,7 +259,7 @@ function on(
     let scrollX: number = 0
     let scrollY: number = 0
     const scaledCanvasBounds = Utils.scaleRect(canvasBounds, 1 / canvas.scale)
-    const offsetCanvasPosition = Utils.offsetPoint(event.canvasPositionRounded, canvas.canvasOffset)
+    const offsetCanvasPosition = Utils.offsetPoint(event.canvasPositionRounded, CanvasOffset)
     if (offsetCanvasPosition.x < 0) {
       scrollX = -scrollBump
     } else if (offsetCanvasPosition.x > scaledCanvasBounds.width) {
@@ -270,7 +272,8 @@ function on(
     }
     if (scrollX !== 0 || scrollY !== 0) {
       const scrollDelta = { x: scrollX, y: scrollY } as CanvasVector
-      additionalEvents.push(CanvasActions.scrollCanvas(scrollDelta))
+      // TODO SCROLL CANVAS
+      // additionalEvents.push(CanvasActions.scrollCanvas(scrollDelta))
     }
   }
   // Handle all other cases via the plugins.
@@ -285,20 +288,6 @@ export function runLocalCanvasAction(
 ): EditorState {
   // TODO BB horrorshow performance
   switch (action.action) {
-    case 'SCROLL_CANVAS': {
-      const newCanvasOffset = Utils.offsetPoint(
-        model.canvas.realCanvasOffset,
-        Utils.negate(action.delta),
-      )
-      return {
-        ...model,
-        canvas: {
-          ...model.canvas,
-          realCanvasOffset: newCanvasOffset,
-          roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
-        },
-      }
-    }
     case 'CLEAR_DRAG_STATE':
       return clearDragStateAndInteractionSession(model, derivedState, action.applyChanges)
     case 'CREATE_DRAG_STATE':
@@ -338,7 +327,7 @@ export function runLocalCanvasAction(
       const { focusPoint, scale } = action
       const previousScale = model.canvas.scale
       const newCanvasOffset = getCanvasOffset(
-        model.canvas.realCanvasOffset,
+        CanvasOffset,
         previousScale,
         scale,
         model.jsxMetadata,
@@ -353,8 +342,9 @@ export function runLocalCanvasAction(
           ...model.canvas,
           scale: scale,
           snappingThreshold: BaseSnappingThreshold / scale,
-          realCanvasOffset: newCanvasOffset,
-          roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
+          // TODO SCROLL CANVAS
+          // realCanvasOffset: newCanvasOffset,
+          // roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
         },
       }
     }
@@ -512,21 +502,6 @@ function topMostControlFragmentContainingPoint(
   }, null)
 }
 
-function createNodeConnectorsDiv(offset: CanvasPoint, scale: number) {
-  return RU.create('div', {
-    id: NodeConnectorsDivId,
-    key: NodeConnectorsDivId,
-    style: {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      zoom: scale >= 1 ? `${scale * 100}%` : 1,
-      transform:
-        (scale < 1 ? `scale(${scale})` : '') + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
-    },
-  })
-}
-
 interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
@@ -577,7 +552,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   }
 
   getPositionFromCoordinates = (x: number, y: number): CanvasPositions => {
-    const inverseOffset = Utils.negate(this.props.model.canvasOffset)
+    const inverseOffset = Utils.negate(CanvasOffset)
     const inverseScale = 1 / this.props.model.scale
     const canvasDivCoords = this.screenToElementCoordinates(x, y)
     const pagePosition = Utils.scaleVector(canvasDivCoords, inverseScale)
@@ -662,11 +637,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
   render() {
     // we round the offset here, so all layers, the canvas, and controls use the same rounded value for positioning
     // instead of letting Chrome do it, because that results in funky artifacts (e.g. while scrolling, the layers don't "jump" pixels at the same time)
-
-    const nodeConnectorsDiv = createNodeConnectorsDiv(
-      this.props.model.canvasOffset,
-      this.props.model.scale,
-    )
 
     const modeOverrideCursor = this.getModeSpecificCursor()
     const dragStateCursor = null // FIXME: dragState == null ? null : dragState.cursor
@@ -796,7 +766,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
         },
       },
-      nodeConnectorsDiv,
       React.createElement(CanvasComponentEntry, {}),
       canvasControls,
     )

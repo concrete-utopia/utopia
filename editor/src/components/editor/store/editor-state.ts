@@ -432,8 +432,6 @@ export interface EditorState {
     dragState: DragState | null
     scale: number
     snappingThreshold: number
-    realCanvasOffset: CanvasVector
-    roundedCanvasOffset: CanvasVector
     textEditor: {
       elementPath: ElementPath
       triggerMousePosition: WindowPoint | null
@@ -1231,8 +1229,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
-      realCanvasOffset: BaseCanvasOffsetLeftPane,
-      roundedCanvasOffset: BaseCanvasOffsetLeftPane,
       textEditor: null,
       selectionControlsVisible: true,
       cursor: null,
@@ -1419,7 +1415,6 @@ export function createCanvasModelKILLME(
     scale: editorState.canvas.scale,
     highlightedviews: editorState.highlightedViews,
     selectedViews: editorState.selectedViews,
-    canvasOffset: editorState.canvas.roundedCanvasOffset,
     focusedPanel: editorState.focusedPanel,
     editorState: editorState,
   }
@@ -1491,8 +1486,6 @@ export function editorModelFromPersistentModel(
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
-      realCanvasOffset: BaseCanvasOffsetLeftPane,
-      roundedCanvasOffset: BaseCanvasOffsetLeftPane,
       textEditor: null,
       selectionControlsVisible: true,
       cursor: null,

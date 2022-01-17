@@ -136,7 +136,6 @@ export const DomWalkerInvalidatePathsCtxAtom = atomWithPubSub<DomWalkerInvalidat
 })
 
 export interface UiJsxCanvasProps {
-  offset: CanvasVector
   scale: number
   uiFilePath: string
   curriedRequireFn: CurriedUtopiaRequireFn
@@ -221,7 +220,6 @@ export function pickUiJsxCanvasProps(
       hiddenInstances = [...hiddenInstances, editedTextElement]
     }
     return {
-      offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
       uiFilePath: uiFilePath,
       curriedRequireFn: editor.codeResultCache.curriedRequireFn,
@@ -299,7 +297,6 @@ function clearSpyCollectorInvalidPaths(
 export const UiJsxCanvas = React.memo(
   React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
     const {
-      offset,
       scale,
       uiFilePath,
       curriedRequireFn,
@@ -504,7 +501,6 @@ export const UiJsxCanvas = React.memo(
               domWalkerInvalidateCount={props.domWalkerInvalidateCount}
               walkDOM={walkDOM}
               scale={scale}
-              offset={offset}
               onDomReport={onDomReport}
               validRootPaths={rootValidPaths}
               canvasRootElementElementPath={storyboardRootElementPath}
@@ -741,7 +737,6 @@ function useGetStoryboardRoot(
 export interface CanvasContainerProps {
   walkDOM: boolean
   scale: number
-  offset: CanvasVector
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
     cachedPaths: Array<ElementPath>,

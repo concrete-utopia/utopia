@@ -20,7 +20,7 @@ describe('Dom-walker Caching', () => {
     )
     // unfortunately we have to dispatch a non-action to allow the dom-walker to run for a second time.
     // It needs to run for a second time to "settle".
-    await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 0, y: 0 }))], true)
+    await renderResult.dispatch([CanvasActions.clearDragState(false)], true)
     return renderResult
   }
 
@@ -42,7 +42,7 @@ describe('Dom-walker Caching', () => {
 
     renderResult.clearRecordedActions()
 
-    await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 20, y: 30 }))], true)
+    await renderResult.dispatch([CanvasActions.clearDragState(false)], true)
 
     const saveDomReportActions = renderResult
       .getRecordedActions()

@@ -86,7 +86,7 @@ export const CanvasComponentEntry = React.memo((props: CanvasComponentEntryProps
           zoom: canvasProps.scale >= 1 ? `${canvasProps.scale * 100}%` : 1,
           transform:
             (canvasProps.scale < 1 ? `scale(${canvasProps.scale})` : '') +
-            ` translate3d(${canvasProps.offset.x}px, ${canvasProps.offset.y}px, 0)`,
+            ` translate3d(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y), 0)`,
           transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
         }}
       >

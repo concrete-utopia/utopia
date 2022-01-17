@@ -1,11 +1,9 @@
 import * as React from 'react'
 import { useEditorState } from '../../../editor/store/store-hook'
+import { useRoundedCanvasOffset } from '../../canvas-atoms'
 
 export const FlexAlignControls = React.memo(() => {
-  const canvasOffset = useEditorState(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'FlexAlignControls canvasOffset',
-  )
+  const [canvasOffset] = useRoundedCanvasOffset() // TODO do we need this, or can we use css-var?
   const flexAlignDropTargets = useEditorState((store) => {
     return store.editor.canvas.controls.flexAlignDropTargets
   }, 'FlexAlignControls flexAlignDropTargets')
