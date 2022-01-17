@@ -295,6 +295,7 @@ export class Editor {
       }
       return { entireUpdateFinished: result.entireUpdateFinished }
     }
+
     if (PRODUCTION_ENV) {
       return runDispatch()
     } else {

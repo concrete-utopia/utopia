@@ -15,28 +15,44 @@ import {
 } from './canvas-strategy-types'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
+import { resizeAbsoluteStrategy } from './resize-absolute-strategy'
 
-const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy, flexAlignParentStrategy]
+const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  resizeAbsoluteStrategy,
+  flexGapStrategy,
+  flexAlignParentStrategy,
+]
 
 export function pickDefaultCanvasStrategy(
   editorState: EditorState,
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
 ): CanvasStrategy | null {
-  const applicableStrategies = RegisteredCanvasStrategies.map((s) => ({
-    fitness: s.fitnessFn(editorState, sessionProps, sessionState),
-    strategy: s,
-  })).filter((s) => {
-    // discard strategies with 0 fitness
-    return s.fitness > 0
+  // Compute the fitness results upfront.
+  const strategiesWithFitness = RegisteredCanvasStrategies.map((strategy) => {
+    return {
+      fitness: strategy.fitnessFn(editorState, sessionProps, sessionState),
+      strategy: strategy,
+    }
   })
 
-  return (
-    sortBy(applicableStrategies, (l, r) => {
-      // sort by fitness, descending
-      return r.fitness - l.fitness
-    })[0]?.strategy ?? null
-  )
+  // Filter out those which have declared (by virtue of a null result) that they
+  // cannot be candidates.
+  let filteredStrategies: Array<{ fitness: number; strategy: CanvasStrategy }> = []
+  for (const strategyWithFitness of strategiesWithFitness) {
+    if (strategyWithFitness.fitness != null) {
+      filteredStrategies.push({
+        fitness: strategyWithFitness.fitness,
+        strategy: strategyWithFitness.strategy,
+      })
+    }
+  }
+
+  sortBy(filteredStrategies, (l, r) => {
+    // Sort by fitness, descending.
+    return r.fitness - l.fitness
+  })
+  return filteredStrategies[0]?.strategy ?? null
 }
 
 export function applyCanvasStrategy(

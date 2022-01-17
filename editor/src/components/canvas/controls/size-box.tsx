@@ -49,6 +49,7 @@ import {
 import { safeIndex } from '../../../core/shared/array-utils'
 import { CSSPosition } from '../../inspector/common/css-utils'
 import * as EP from '../../../core/shared/element-path'
+import { startNewSelectModeCanvasSession } from '../canvas-strategies/canvas-strategy-types'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -116,24 +117,35 @@ class ResizeControl extends React.Component<ResizeControlProps> {
         propertyTargetOptions,
         this.props.propertyTargetSelectedIndex,
       )
-      const newDragState = updateResizeDragState(
-        resizeDragState(
-          this.props.measureSize,
-          originalFrames,
-          this.props.position,
-          this.props.enabledDirection,
-          this.props.metadata,
-          this.props.selectedViews,
-          isMultiSelect,
-          [],
-        ),
-        start,
-        null,
-        targetProperty,
-        enableSnapping,
-        centerBasedResize,
-        keepAspectRatio,
-      )
+      let newDragState: DragState
+      if (isFeatureEnabled('Canvas Strategies')) {
+        newDragState = startNewSelectModeCanvasSession(start, {
+          type: 'RESIZE_HANDLE',
+          edgePosition: this.props.position,
+          enabledDirection: this.props.enabledDirection,
+          originalSize: this.props.measureSize,
+          originalFrames: originalFrames,
+        })
+      } else {
+        newDragState = updateResizeDragState(
+          resizeDragState(
+            this.props.measureSize,
+            originalFrames,
+            this.props.position,
+            this.props.enabledDirection,
+            this.props.metadata,
+            this.props.selectedViews,
+            isMultiSelect,
+            [],
+          ),
+          start,
+          null,
+          targetProperty,
+          enableSnapping,
+          centerBasedResize,
+          keepAspectRatio,
+        )
+      }
 
       this.props.dispatch(
         [

@@ -417,7 +417,7 @@ function unsetValueWhenNegative(prop: LayoutTargetableProp): boolean {
   }
 }
 
-function cssNumberAsNumberIfPossible(
+export function cssNumberAsNumberIfPossible(
   cssNumber: CSSNumber | number | string | undefined,
 ): number | string | undefined {
   if (cssNumber == null) {
@@ -961,7 +961,7 @@ function getPropsToSetToMoveElement(
   return propsToSet
 }
 
-function getPropsToSetToResizeElement(
+export function getPropsToSetToResizeElement(
   edgePosition: EdgePosition,
   widthDelta: number,
   heightDelta: number,
@@ -1028,7 +1028,7 @@ function getPropsToSetToResizeElement(
   return propsToSet
 }
 
-function extendPartialFramePointsForResize(
+export function extendPartialFramePointsForResize(
   frameProps: Array<LayoutPinnedProp>,
   edgePosition: EdgePosition,
 ): Array<LayoutPinnedProp> {
@@ -1344,12 +1344,12 @@ function getTargetableProp(resizeOptions: ResizeOptions): LayoutTargetableProp |
   return resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
 }
 
-function findResizePropertyChange(
-  dragState: ResizeDragState,
+export function findResizePropertyChange(
+  properties: Array<ResizeDragStatePropertyChange>,
   resizeOptions: ResizeOptions,
 ): ResizeDragStatePropertyChange | undefined {
   const resizeProp: LayoutTargetableProp | undefined = getTargetableProp(resizeOptions)
-  return dragState.properties.find((prop) => prop.targetProperty === resizeProp)
+  return properties.find((prop) => prop.targetProperty === resizeProp)
 }
 
 function calculateDraggedRectangle(
@@ -1359,7 +1359,7 @@ function calculateDraggedRectangle(
   const originalSize = dragState.originalSize
   const resizeOptions = editor.canvas.resizeOptions
 
-  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
+  const propertyChange = findResizePropertyChange(dragState.properties, resizeOptions)
   if (propertyChange == null) {
     return originalSize
   } else {
@@ -1413,7 +1413,7 @@ export function calculateNewBounds(
   const newRectangle = calculateDraggedRectangle(editor, dragState)
   const resizeOptions = editor.canvas.resizeOptions
 
-  const propertyChange = findResizePropertyChange(dragState, resizeOptions)
+  const propertyChange = findResizePropertyChange(dragState.properties, resizeOptions)
   if (propertyChange == null) {
     return originalSize
   } else {
@@ -3007,7 +3007,7 @@ export function getDragStatePositions(
       case 'SELECT_MODE_CANVAS_SESSION':
         return dragState.sessionProps
       case 'RESIZE_DRAG_STATE':
-        return findResizePropertyChange(dragState, resizeOptions) ?? null
+        return findResizePropertyChange(dragState.properties, resizeOptions) ?? null
       default:
         const _exhaustiveCheck: never = dragState
         throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)

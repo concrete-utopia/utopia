@@ -1,20 +1,24 @@
 import type { Spec } from 'immutability-helper'
-import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
 import type {
   EditorState,
   EditorStatePatch,
+  OriginalCanvasAndLocalFrame,
   TransientCanvasState,
   TransientFilesState,
 } from '../../editor/store/editor-state'
-import type { EdgePosition } from '../canvas-types'
+import type { EdgePosition, EnabledDirection, ResizeDragStatePropertyChange } from '../canvas-types'
 
 interface BoundingArea {
   type: 'BOUNDING_AREA'
 }
 
-interface ResizeHandle {
+export interface ResizeHandle {
   type: 'RESIZE_HANDLE'
   edgePosition: EdgePosition
+  enabledDirection: EnabledDirection
+  originalSize: CanvasRectangle
+  originalFrames: Array<OriginalCanvasAndLocalFrame>
 }
 
 interface FlexGapHandle {
@@ -64,7 +68,7 @@ export type CanvasStrategyFitnessFn = (
   editorState: EditorState,
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
-) => number
+) => number | null
 
 export type CanvasInteractionSession = SelectModeCanvasSession
 
@@ -82,14 +86,26 @@ export interface SelectModeCanvasSessionProps {
   lastTimeMouseMoved: number
 }
 
+export interface AbsoluteResizeStrategyState {
+  properties: Array<ResizeDragStatePropertyChange>
+  propertyTargetSelectedIndex: number
+}
+
+export const emptyAbsoluteResizeStrategyState: AbsoluteResizeStrategyState = {
+  properties: [],
+  propertyTargetSelectedIndex: 0,
+}
+
 export interface SelectModeCanvasSessionState {
   activeStrategy: CanvasStrategy | null
   dragDeltaMinimumPassed: boolean
+  absoluteResizeStrategy: AbsoluteResizeStrategyState | null
 }
 
 export const emptySelectModeCanvasSessionState: SelectModeCanvasSessionState = {
   activeStrategy: null,
   dragDeltaMinimumPassed: false,
+  absoluteResizeStrategy: null,
 }
 
 export function startNewSelectModeCanvasSession(
