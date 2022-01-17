@@ -11,7 +11,7 @@ import {
 import { TypeDefinitions } from '../shared/npm-dependency-types'
 import { TextFile } from '../shared/project-file-types'
 import utils from '../../utils/utils'
-import { createTsWorker } from './utils'
+import { createTsWorker } from './vite-import-utils'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
 export interface BundlerContext {

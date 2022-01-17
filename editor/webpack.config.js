@@ -290,6 +290,16 @@ const config = {
         test: /\.ttf$/,
         use: ['file-loader'],
       },
+      // Replace Vite specific worker imports
+      {
+        test: /vite-import-utils\.ts$/,
+        loader: 'file-replace-loader',
+        options: {
+          condition: 'always',
+          replacement: path.resolve(__dirname, 'src/core/workers/utils.ts'),
+          async: true,
+        },
+      },
     ],
   },
 
