@@ -151,8 +151,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.RESET_PINS(action, state, dispatch)
     case 'SET_CURSOR_OVERLAY':
       return UPDATE_FNS.SET_CURSOR_OVERLAY(action, state)
-    case 'SET_CANVAS_ANIMATIONS_ENABLED':
-      return UPDATE_FNS.SET_CANVAS_ANIMATIONS_ENABLED(action, state)
     case 'SET_Z_INDEX':
       return UPDATE_FNS.SET_Z_INDEX(action, state, derivedState)
     case 'UPDATE_FRAME_DIMENSIONS':
@@ -177,8 +175,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_THUMBNAIL_GENERATED(action, state)
     case 'UPDATE_PREVIEW_CONNECTED':
       return UPDATE_FNS.UPDATE_PREVIEW_CONNECTED(action, state)
-    case 'SET_HIGHLIGHTS_ENABLED':
-      return UPDATE_FNS.SET_HIGHLIGHTS_ENABLED(action, state)
     case 'SHOW_CONTEXT_MENU':
       return UPDATE_FNS.SHOW_CONTEXT_MENU(action, state)
     case 'DUPLICATE_SPECIFIC_ELEMENTS':

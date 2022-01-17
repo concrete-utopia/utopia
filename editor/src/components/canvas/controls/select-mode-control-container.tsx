@@ -477,7 +477,6 @@ export class SelectModeControlContainer extends React.Component<
         child.element,
       )
     }, storyboardChildren)
-    let labelDirectlySelectable = this.props.highlightsEnabled
 
     return (
       <div
@@ -495,7 +494,7 @@ export class SelectModeControlContainer extends React.Component<
         {roots.map((root) => {
           return (
             <React.Fragment key={`${EP.toComponentId(root)}}-root-controls`}>
-              {this.renderLabel(root, allElementsDirectlySelectable || labelDirectlySelectable)}
+              {this.renderLabel(root, allElementsDirectlySelectable)}
             </React.Fragment>
           )
         })}

@@ -451,11 +451,6 @@ export interface UnwrapGroupOrView {
   onlyForGroups: boolean
 }
 
-export interface SetCanvasAnimationsEnabled {
-  action: 'SET_CANVAS_ANIMATIONS_ENABLED'
-  value: boolean
-}
-
 export interface UpdateFrameDimensions {
   action: 'UPDATE_FRAME_DIMENSIONS'
   element: ElementPath
@@ -514,11 +509,6 @@ export interface UpdateThumbnailGenerated {
 export interface UpdatePreviewConnected {
   action: 'UPDATE_PREVIEW_CONNECTED'
   connected: boolean
-}
-
-export interface SetHighlightsEnabled {
-  action: 'SET_HIGHLIGHTS_ENABLED'
-  value: boolean
 }
 
 export interface AlignSelectedViews {
@@ -990,7 +980,6 @@ export type EditorAction =
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
   | UnwrapGroupOrView
-  | SetCanvasAnimationsEnabled
   | SetNavigatorRenamingTarget
   | RedrawOldCanvasControls
   | UpdateFrameDimensions
@@ -1004,7 +993,6 @@ export type EditorAction =
   | RegenerateThumbnail
   | UpdateThumbnailGenerated
   | UpdatePreviewConnected
-  | SetHighlightsEnabled
   | AlignSelectedViews
   | DistributeSelectedViews
   | SetCursorOverlay

@@ -55,7 +55,6 @@ import {
   DUPLICATE_SELECTION_SHORTCUT,
   FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT,
   handleShortcuts,
-  HIDE_HIGHLIGHTS_SHORTCUT,
   INSERT_ELLIPSE_SHORTCUT,
   INSERT_IMAGE_SHORTCUT,
   INSERT_RECTANGLE_SHORTCUT,
@@ -86,7 +85,6 @@ import {
   RESIZE_ELEMENT_UP_SHORTCUT,
   SAVE_CURRENT_FILE_SHORTCUT,
   SELECT_ALL_SIBLINGS_SHORTCUT,
-  SHOW_HIGHLIGHTS_SHORTCUT,
   START_RENAMING_SHORTCUT,
   TOGGLE_BACKGROUND_SHORTCUT,
   TOGGLE_BORDER_SHORTCUT,
@@ -708,9 +706,6 @@ export function handleKeyDown(
       [REDO_CHANGES_SHORTCUT]: () => {
         return [EditorActions.redo()]
       },
-      [HIDE_HIGHLIGHTS_SHORTCUT]: () => {
-        return [EditorActions.setHighlightsEnabled(false), EditorActions.clearHighlightedViews()]
-      },
       [MOVE_ELEMENT_BACKWARD_SHORTCUT]: () => {
         return isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)
           ? [EditorActions.moveSelectedBackward()]
@@ -824,9 +819,7 @@ export function handleKeyUp(
 
   function getUIFileActions(): Array<EditorAction> {
     return handleShortcuts<Array<EditorAction>>(namesByKey, event, [], {
-      [SHOW_HIGHLIGHTS_SHORTCUT]: () => {
-        return [EditorActions.setHighlightsEnabled(true)]
-      },
+      // no shortcuts at the moment
     })
   }
 

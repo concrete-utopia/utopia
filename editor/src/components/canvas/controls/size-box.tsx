@@ -5,10 +5,7 @@ import React from 'react'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
-import {
-  setCanvasAnimationsEnabled,
-  setResizeOptionsTargetOptions,
-} from '../../editor/actions/action-creators'
+import { setResizeOptionsTargetOptions } from '../../editor/actions/action-creators'
 import { ControlFontSize } from '../canvas-controls-frame'
 import {
   CSSCursor,
@@ -80,10 +77,6 @@ class ResizeControl extends React.Component<ResizeControlProps> {
     super(props)
   }
 
-  componentWillUnmount() {
-    this.props.dispatch([setCanvasAnimationsEnabled(true)], 'canvas')
-  }
-
   onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
     if (event.buttons === 1) {
@@ -138,7 +131,6 @@ class ResizeControl extends React.Component<ResizeControlProps> {
       this.props.dispatch(
         [
           CanvasActions.createDragState(newDragState),
-          setCanvasAnimationsEnabled(false),
           setResizeOptionsTargetOptions(
             propertyTargetOptions,
             this.props.propertyTargetSelectedIndex,

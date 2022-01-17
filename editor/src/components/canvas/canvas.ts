@@ -304,8 +304,6 @@ const Canvas = {
   },
   handleKeyUp(key: KeyCharacter, editor: EditorState, derived: DerivedState): Array<EditorAction> {
     switch (key) {
-      case 'z':
-        return [EditorActions.setHighlightsEnabled(true)]
       default:
         return []
     }

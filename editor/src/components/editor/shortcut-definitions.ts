@@ -79,8 +79,6 @@ export const INSERT_VIEW_SHORTCUT = 'insert-view'
 export const CUT_SELECTION_SHORTCUT = 'cut-selection'
 export const UNDO_CHANGES_SHORTCUT = 'undo-changes'
 export const REDO_CHANGES_SHORTCUT = 'redo-changes'
-export const HIDE_HIGHLIGHTS_SHORTCUT = 'hide-highlights'
-export const SHOW_HIGHLIGHTS_SHORTCUT = 'show-highlights'
 export const MOVE_ELEMENT_FORWARD_SHORTCUT = 'move-element-forward'
 export const MOVE_ELEMENT_TO_FRONT_SHORTCUT = 'move-element-to-front'
 export const MOVE_ELEMENT_BACKWARD_SHORTCUT = 'move-element-backward'
@@ -245,9 +243,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Redo the most recently undone change.',
     key('z', ['cmd', 'shift']),
   ),
-  // FIXME: Do these shortcuts need to specify keyup/keydown state?
-  [HIDE_HIGHLIGHTS_SHORTCUT]: shortcut('Hide the highlights.', key('z', [], 'keydown')),
-  [SHOW_HIGHLIGHTS_SHORTCUT]: shortcut('Show the highlights.', key('z', [], 'keyup')),
   [MOVE_ELEMENT_FORWARD_SHORTCUT]: shortcut(
     'Move element forward in z-index related to its siblings.',
     key(']', 'cmd'),
