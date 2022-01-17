@@ -121,6 +121,7 @@ function DomWalkerWrapper(props: UiJsxCanvasPropsWithErrorCallback) {
     domWalkerInvalidateCount: props.domWalkerInvalidateCount,
     scale: props.scale,
     onDomReport: props.onDomReport,
+    additionalElementsToUpdate: props.domWalkerAdditionalElementsToUpdate,
   })
 
   return (

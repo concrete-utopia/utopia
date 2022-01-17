@@ -228,6 +228,7 @@ export function renderCanvasReturnResultAndError(
       scrollAnimation: false,
       propertyControlsInfo: {},
       dispatch: NO_OP,
+      domWalkerAdditionalElementsToUpdate: [],
     }
   } else {
     canvasProps = {
@@ -252,6 +253,7 @@ export function renderCanvasReturnResultAndError(
       scrollAnimation: false,
       propertyControlsInfo: {},
       dispatch: NO_OP,
+      domWalkerAdditionalElementsToUpdate: [],
     }
   }
 

@@ -252,8 +252,11 @@ export const MetadataUtils = {
     )
   },
   isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
-    element: ElementInstanceMetadata,
+    element: ElementInstanceMetadata | null,
   ): boolean {
+    if (element == null) {
+      return false
+    }
     return (
       MetadataUtils.isParentYogaLayoutedContainerForElement(element) &&
       !MetadataUtils.isPositionAbsolute(element)

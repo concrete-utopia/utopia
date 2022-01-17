@@ -43,6 +43,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
         ),
       },
       [],
+      null,
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(state, state)
@@ -73,6 +74,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
         ),
       },
       [],
+      null,
     )
     const newState: TransientCanvasState = transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'bbb']])],
@@ -97,6 +99,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
         ),
       },
       [],
+      null,
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(oldState, newState)
@@ -127,6 +130,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
         ),
       },
       [],
+      null,
     )
     const newState: TransientCanvasState = transientCanvasState(
       [EP.elementPath([['scene'], ['aaa', 'ddd']])],
@@ -151,6 +155,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
         ),
       },
       [],
+      null,
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(oldState, newState)
@@ -193,6 +198,7 @@ describe('DerivedStateKeepDeepEquality', () => {
             ),
           },
           [],
+          null,
         ),
       },
       elementWarnings: addToComplexMap(
@@ -236,6 +242,7 @@ describe('DerivedStateKeepDeepEquality', () => {
             ),
           },
           [],
+          null,
         ),
       },
       elementWarnings: addToComplexMap(
@@ -274,6 +281,7 @@ describe('DerivedStateKeepDeepEquality', () => {
             ),
           },
           [],
+          null,
         ),
       },
       elementWarnings: addToComplexMap(
@@ -317,6 +325,7 @@ describe('DerivedStateKeepDeepEquality', () => {
             ),
           },
           [],
+          null,
         ),
       },
       elementWarnings: addToComplexMap(
@@ -355,6 +364,7 @@ describe('DerivedStateKeepDeepEquality', () => {
             ),
           },
           [],
+          null,
         ),
       },
       elementWarnings: addToComplexMap(

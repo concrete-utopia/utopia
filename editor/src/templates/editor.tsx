@@ -135,6 +135,7 @@ export class Editor {
     ) => load(this.storedState.dispatch, project, projectName, projectId, builtInDependencies)
 
     this.storedState = {
+      unpatchedEditor: emptyEditorState,
       editor: emptyEditorState,
       derived: derivedState,
       history: history,

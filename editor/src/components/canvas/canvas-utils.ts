@@ -163,6 +163,7 @@ import {
   singleResizeChange,
   ResizeDragStatePropertyChange,
   CanvasPositions,
+  CreateDragState,
 } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
@@ -207,6 +208,10 @@ import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { uniqToasts } from '../editor/actions/toast-helpers'
 import { LayoutTargetablePropArrayKeepDeepEquality } from '../../utils/deep-equality-instances'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
+import { applyCanvasStrategy } from './canvas-strategies/canvas-strategies'
+import { SelectModeCanvasSessionState } from './canvas-strategies/canvas-strategy-types'
+import { EditorDispatch } from '../editor/action-types'
+import CanvasActions from './canvas-actions'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -315,11 +320,39 @@ function applyTransientFilesState(
   }
 }
 
-export function clearDragState(
+let dragStateTimerHandle: any = null
+
+export function createOrUpdateDragState(
+  dispatch: EditorDispatch,
+  model: EditorState,
+  action: CreateDragState,
+): EditorState {
+  if (model.canvas.dragState == null && action.dragState.type === 'SELECT_MODE_CANVAS_SESSION') {
+    // create canvas session, start setInterval to keep globalTime updated
+    clearInterval(dragStateTimerHandle)
+    dragStateTimerHandle = setInterval(() => {
+      dispatch([CanvasActions.updateCanvasSessionProps({ globalTime: Date.now() })])
+    }, 200)
+  } else {
+    // update session, leave timeout as is
+  }
+
+  return {
+    ...model,
+    canvas: {
+      ...model.canvas,
+      dragState: action.dragState,
+    },
+  }
+}
+
+export function clearDragStateAndInteractionSession(
   model: EditorState,
   derived: DerivedState,
   applyChanges: boolean,
 ): EditorState {
+  clearInterval(dragStateTimerHandle)
+
   let result: EditorState = model
   if (
     applyChanges &&
@@ -328,8 +361,10 @@ export function clearDragState(
   ) {
     const producedTransientCanvasState = produceCanvasTransientState(
       derived.canvas.transientState.selectedViews,
+      derived.canvas.transientState.canvasSessionState,
       result,
       false,
+      'final',
     )
     const producedTransientFilesState = producedTransientCanvasState.filesState
     result = applyTransientFilesState(
@@ -345,9 +380,10 @@ export function clearDragState(
       ...result.canvas,
       dragState: null,
     },
-    selectedViews: applyChanges
-      ? derived.canvas.transientState.selectedViews
-      : result.selectedViews,
+    selectedViews:
+      applyChanges && derived.canvas.transientState.selectedViews != null
+        ? derived.canvas.transientState.selectedViews
+        : result.selectedViews,
   }
 }
 
@@ -1466,6 +1502,9 @@ export function getCursorFromDragState(editorState: EditorState): CSSCursor | nu
         } else {
           return null
         }
+      case 'SELECT_MODE_CANVAS_SESSION':
+        // TODO Cursor
+        return null
       case 'INSERT_DRAG_STATE':
         return null
       default:
@@ -1508,6 +1547,7 @@ function getTransientCanvasStateFromFrameChanges(
       return transientFileState(success.topLevelElements, success.imports)
     }, successByFilename),
     workingEditorState.toasts, // TODO filter for relevant toasts
+    null,
   )
 }
 
@@ -1534,7 +1574,13 @@ export function produceResizeCanvasTransientState(
   })
   const boundingBox = Utils.boundingRectangleArray(globalFrames)
   if (boundingBox == null) {
-    return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      dragState.draggedElements,
+      editorState.highlightedViews,
+      null,
+      [],
+      null,
+    )
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
       forUnderlyingTargetFromEditorState(
@@ -1607,7 +1653,13 @@ export function produceResizeSingleSelectCanvasTransientState(
     true,
   )
   if (elementsToTarget.length !== 1) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      null,
+      [],
+      null,
+    )
   }
   const elementToTarget = elementsToTarget[0]
 
@@ -1677,9 +1729,11 @@ export function produceResizeSingleSelectCanvasTransientState(
 }
 
 export function produceCanvasTransientState(
-  previousCanvasTransientSelectedViews: Array<ElementPath>,
+  previousCanvasTransientSelectedViews: Array<ElementPath> | null,
+  previousSessionState: SelectModeCanvasSessionState | null,
   editorState: EditorState,
   preventAnimations: boolean,
+  lifecycle: 'transient' | 'final',
 ): TransientCanvasState {
   const currentOpenFile = editorState.canvas.openFile?.filename
   let transientState: TransientCanvasState | null = null
@@ -1730,6 +1784,7 @@ export function produceCanvasTransientState(
                   [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
                 },
                 [],
+                null,
               )
               return parseSuccess
             },
@@ -1744,6 +1799,14 @@ export function produceCanvasTransientState(
         ) {
           const dragState = editorState.canvas.dragState
           switch (dragState.type) {
+            case 'SELECT_MODE_CANVAS_SESSION':
+              transientState = applyCanvasStrategy(
+                lifecycle,
+                editorState,
+                dragState,
+                previousSessionState,
+              )
+              break
             case 'MOVE_DRAG_STATE':
               transientState = produceMoveTransientCanvasState(
                 previousCanvasTransientSelectedViews,
@@ -1783,7 +1846,13 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null, [])
+    return transientCanvasState(
+      editorState.selectedViews,
+      editorState.highlightedViews,
+      null,
+      [],
+      null,
+    )
   } else {
     return transientState
   }
@@ -2233,7 +2302,7 @@ function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPa
 }
 
 function produceMoveTransientCanvasState(
-  previousCanvasTransientSelectedViews: Array<ElementPath>,
+  previousCanvasTransientSelectedViews: Array<ElementPath> | null,
   editorState: EditorState,
   dragState: MoveDragState,
   preventAnimations: boolean,
@@ -2256,7 +2325,7 @@ function produceMoveTransientCanvasState(
 
   if (dragState.reparent) {
     const reparentTarget = getReparentTarget(
-      previousCanvasTransientSelectedViews,
+      previousCanvasTransientSelectedViews ?? editorState.selectedViews,
       workingEditorState,
       elementsToTarget,
       dragState.canvasPosition,
@@ -2348,6 +2417,7 @@ function produceMoveTransientCanvasState(
     workingEditorState.highlightedViews,
     transientFilesState,
     workingEditorState.toasts, // TODO Filter for relevant toasts
+    null,
   )
 }
 
@@ -2918,6 +2988,7 @@ function createCanvasTransientStateFromProperties(
       updatedEditor.highlightedViews,
       transientFilesState,
       [],
+      null,
     )
   }
 }
@@ -2933,6 +3004,8 @@ export function getDragStatePositions(
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
         return dragState
+      case 'SELECT_MODE_CANVAS_SESSION':
+        return dragState.sessionProps
       case 'RESIZE_DRAG_STATE':
         return findResizePropertyChange(dragState, resizeOptions) ?? null
       default:
@@ -2967,6 +3040,8 @@ export function anyDragStarted(dragState: DragState | null): boolean {
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
         return dragState.start != null
+      case 'SELECT_MODE_CANVAS_SESSION':
+        return dragState.sessionProps.start != null
       case 'RESIZE_DRAG_STATE':
         return dragState.properties.some((prop) => prop.start != null)
       default:
@@ -2984,6 +3059,8 @@ export function anyDragMovement(dragState: DragState | null): boolean {
       case 'MOVE_DRAG_STATE':
       case 'INSERT_DRAG_STATE':
         return dragState.drag != null
+      case 'SELECT_MODE_CANVAS_SESSION':
+        return dragState.sessionProps.drag != null
       case 'RESIZE_DRAG_STATE':
         return dragState.properties.some((prop) => prop.drag != null)
       default:

@@ -48,6 +48,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
     )
 
     const initialEditorStore: EditorStore = {
+      unpatchedEditor: null as any,
       editor: null as any,
       derived: null as any,
       history: null as any,

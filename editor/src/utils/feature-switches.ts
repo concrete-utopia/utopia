@@ -12,6 +12,7 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Click on empty canvas unfocuses'
   | 'Insertion Plus Button'
+  | 'Canvas Strategies'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -23,6 +24,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Click on empty canvas unfocuses',
   'Insertion Plus Button',
+  'Canvas Strategies',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -35,6 +37,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
+  'Canvas Strategies': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

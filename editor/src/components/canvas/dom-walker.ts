@@ -383,6 +383,7 @@ export interface DomWalkerProps {
   mountCount: number
   domWalkerInvalidateCount: number
   canvasInteractionHappening: boolean
+  additionalElementsToUpdate: Array<ElementPath>
 }
 
 function mergeFragmentMetadata(
@@ -469,6 +470,7 @@ export function useDomWalker(
         !initComplete,
         props.scale,
         containerRect,
+        props.additionalElementsToUpdate,
       )
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_END')
@@ -579,8 +581,16 @@ function collectMetadata(
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidated: boolean,
   selectedViews: Array<ElementPath>,
+  additionalElementsToUpdate: Array<ElementPath>,
 ): { collectedMetadata: Array<ElementInstanceMetadata>; cachedPaths: Array<ElementPath> } {
-  const shouldCollect = invalidated || isAnyPathInvalidated(stringPathsForElement, invalidatedPaths)
+  const shouldCollect =
+    invalidated ||
+    isAnyPathInvalidated(stringPathsForElement, invalidatedPaths) ||
+    pathsForElement.some((pathForElement) => {
+      return additionalElementsToUpdate.some((additionalElementToUpdate) =>
+        EP.pathsEqual(pathForElement, additionalElementToUpdate),
+      )
+    })
   if (shouldCollect && pathsForElement.length > 0) {
     const {
       tagName,
@@ -649,6 +659,7 @@ function collectMetadata(
         rootMetadataInStateRef,
         true,
         selectedViews,
+        additionalElementsToUpdate,
       )
     }
   }
@@ -808,6 +819,7 @@ function walkCanvasRootFragment(
   invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
+  additionalElementsToUpdate: Array<ElementPath>,
 ): {
   metadata: ReadonlyArray<ElementInstanceMetadata>
   cachedPaths: Array<ElementPath>
@@ -851,6 +863,7 @@ function walkCanvasRootFragment(
       invalidated,
       scale,
       containerRectLazy,
+      additionalElementsToUpdate,
     )
     // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
     // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
@@ -887,6 +900,7 @@ function walkScene(
   invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
+  additionalElementsToUpdate: Array<ElementPath>,
 ): {
   metadata: ReadonlyArray<ElementInstanceMetadata>
   cachedPaths: Array<ElementPath>
@@ -923,6 +937,7 @@ function walkScene(
         invalidatedScene,
         scale,
         containerRectLazy,
+        additionalElementsToUpdate,
       )
 
       const { collectedMetadata: sceneMetadata, cachedPaths: sceneCachedPaths } = collectMetadata(
@@ -939,6 +954,7 @@ function walkScene(
         rootMetadataInStateRef,
         invalidatedScene,
         selectedViews,
+        additionalElementsToUpdate,
       )
       return {
         metadata: [...rootMetadata, ...sceneMetadata],
@@ -963,6 +979,7 @@ function walkSceneInner(
   invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
+  additionalElementsToUpdate: Array<ElementPath>,
 ): {
   childPaths: Array<ElementPath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
@@ -991,6 +1008,7 @@ function walkSceneInner(
       invalidated,
       scale,
       containerRectLazy,
+      additionalElementsToUpdate,
     )
 
     childPaths.push(...childNodePaths)
@@ -1022,6 +1040,7 @@ function walkElements(
   invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
+  additionalElementsToUpdate: Array<ElementPath>,
 ): {
   childPaths: ReadonlyArray<ElementPath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
@@ -1043,6 +1062,7 @@ function walkElements(
       invalidated,
       scale,
       containerRectLazy,
+      additionalElementsToUpdate,
     )
 
     const result = {
@@ -1095,6 +1115,7 @@ function walkElements(
           invalidated,
           scale,
           containerRectLazy,
+          additionalElementsToUpdate,
         )
         childPaths.push(...childNodePaths)
         rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
@@ -1118,6 +1139,7 @@ function walkElements(
       rootMetadataInStateRef,
       invalidated,
       selectedViews,
+      additionalElementsToUpdate,
     )
 
     rootMetadataAccumulator = [...rootMetadataAccumulator, ...collectedMetadata]

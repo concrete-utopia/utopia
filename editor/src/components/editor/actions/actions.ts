@@ -192,7 +192,7 @@ import {
 } from '../../canvas/canvas-types'
 import {
   canvasFrameToNormalisedFrame,
-  clearDragState,
+  clearDragStateAndInteractionSession,
   duplicate,
   editorMultiselectReparentNoStyleChange,
   getFrameChange,
@@ -976,6 +976,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       scrollAnimation: currentEditor.canvas.scrollAnimation,
       transientProperties: null,
       resizeOptions: currentEditor.canvas.resizeOptions,
+      controls: currentEditor.canvas.controls,
+      domWalkerAdditionalElementsToUpdate: currentEditor.canvas.domWalkerAdditionalElementsToUpdate,
     },
     floatingInsertMenu: currentEditor.floatingInsertMenu,
     inspector: {
@@ -1054,8 +1056,10 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
       controls: [],
       transientState: produceCanvasTransientState(
         poppedDerived.canvas.transientState.selectedViews,
+        poppedDerived.canvas.transientState.canvasSessionState,
         history.current.editor,
         true,
+        'transient',
       ),
     },
     elementWarnings: poppedDerived.elementWarnings,
@@ -1217,9 +1221,6 @@ function updateNavigatorCollapsedState(
       $set: collapsedNoChildrenSelected.filter(
         (path) => !EP.containsPath(path, collapsedWithChildrenSelected),
       ),
-    },
-    temporaryExpandedViews: {
-      $set: collapsedWithChildrenSelected,
     },
   })
 }
@@ -1882,18 +1883,18 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
-    return clearDragState(setModeState(action.mode, editor), derived, false)
+    return clearDragStateAndInteractionSession(setModeState(action.mode, editor), derived, false)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
     if (isLiveMode(editor.mode)) {
-      return clearDragState(
+      return clearDragStateAndInteractionSession(
         setModeState(EditorModes.selectMode(editor.mode.controlId), editor),
         derived,
         false,
       )
     } else {
-      return clearDragState(
+      return clearDragStateAndInteractionSession(
         setModeState(
           EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
           editor,
