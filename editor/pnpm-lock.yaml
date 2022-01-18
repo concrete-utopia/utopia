@@ -126,7 +126,6 @@ specifiers:
   fast-check: 1.15.0
   fast-deep-equal: 2.0.1
   file-loader: 5.0.2
-  file-replace-loader: ^1.4.0
   flow-bin: 0.38.0
   fontfaceobserver: 2.1.0
   fork-ts-checker-async-overlay-webpack-plugin: 0.2.0
@@ -460,7 +459,6 @@ devDependencies:
   expect: 26.1.0
   fast-check: 1.15.0
   file-loader: 5.0.2_webpack@5.52.0
-  file-replace-loader: 1.4.0
   flow-bin: 0.38.0
   fork-ts-checker-async-overlay-webpack-plugin: 0.2.0_a76bb3c87e421bbbc6a3c704c4d3c266
   fork-ts-checker-webpack-plugin: 4.1.2
@@ -8050,13 +8048,6 @@ packages:
       loader-utils: 1.4.0
       schema-utils: 2.7.1
       webpack: 5.52.0_webpack-cli@4.8.0
-    dev: true
-
-  /file-replace-loader/1.4.0:
-    resolution: {integrity: sha512-qXbFaCuUHXNRWo2elkioNDnGAXHM/hy9brlhjRGiEwo47VxtP4fGFyxF0p6yWK3xS94FLphO/oDB7lGymWIt1w==}
-    dependencies:
-      loader-utils: 2.0.0
-      schema-utils: 2.7.1
     dev: true
 
   /filelist/1.0.2:

@@ -284,7 +284,6 @@
     "expect": "26.1.0",
     "fast-check": "1.15.0",
     "file-loader": "5.0.2",
-    "file-replace-loader": "^1.4.0",
     "flow-bin": "0.38.0",
     "fork-ts-checker-async-overlay-webpack-plugin": "0.2.0",
     "fork-ts-checker-webpack-plugin": "4.1.2",

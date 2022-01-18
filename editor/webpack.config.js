@@ -201,6 +201,7 @@ const config = {
     symlinks: true, // We set this to false as we have symlinked some common code from the website project
     alias: {
       uuiui: srcPath('uuiui'),
+      'worker-imports': path.resolve(__dirname, 'src/core/workers/worker-import-utils.ts'),
       'uuiui-deps': srcPath('uuiui-deps'),
       fs: require.resolve('./node_modules/browserfs/dist/shims/fs'),
       process: require.resolve('./node_modules/browserfs/dist/shims/process'),
@@ -289,16 +290,6 @@ const config = {
       {
         test: /\.ttf$/,
         use: ['file-loader'],
-      },
-      // Replace Vite specific worker imports
-      {
-        test: /vite-import-utils\.ts$/,
-        loader: 'file-replace-loader',
-        options: {
-          condition: 'always',
-          replacement: path.resolve(__dirname, 'src/core/workers/utils.ts'),
-          async: true,
-        },
       },
     ],
   },

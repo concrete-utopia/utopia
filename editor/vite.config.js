@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { resolve, join } from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { injectHtml } from 'vite-plugin-html'
@@ -27,6 +27,11 @@ export default defineConfig(({ mode }) => {
       },
     },
     base: '/editor/',
+    resolve: {
+      alias: {
+        'worker-imports': join(__dirname, 'src/core/workers/vite-worker-import-utils.ts'),
+      },
+    },
     define: {
       'process.env.NODE_ENV': `"${process.env.APP_ENV}"`,
       'process.env.REACT_APP_ENVIRONMENT_CONFIG': `"${process.env.REACT_APP_ENVIRONMENT_CONFIG}"`,
