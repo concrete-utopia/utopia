@@ -100,7 +100,7 @@ module.exports = {
         '^platform-detect$': '<rootDir>/src/utils/stubs/platform-detect-stub.ts',
         '\\.(css)$': '<rootDir>/test/jest/__mocks__/styleMock.js',
         'utopia-api/core': '<rootDir>/node_modules/utopia-api/dist/core.js',
-        'worker-imports': '<rootDir>/src/core/workers/__mocks__/utils.ts',
+        'worker-imports': '<rootDir>/src/core/workers/__mocks__/worker-import-utils.ts',
       },
       transform: {
         '\\.[jt]sx?$': 'babel-jest',
