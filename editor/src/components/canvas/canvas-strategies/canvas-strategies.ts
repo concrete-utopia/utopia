@@ -18,11 +18,16 @@ import { flexGapStrategy } from './flex-gap-strategy'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy, flexAlignParentStrategy]
 
-export function pickDefaultCanvasStrategy(
+interface StrategiesWithFitness {
+  fitness: number
+  strategy: CanvasStrategy
+}
+
+function getApplicableStrategies(
   editorState: EditorState,
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
-): CanvasStrategy | null {
+): Array<StrategiesWithFitness> {
   const applicableStrategies = RegisteredCanvasStrategies.map((s) => ({
     fitness: s.fitnessFn(editorState, sessionProps, sessionState),
     strategy: s,
@@ -31,12 +36,32 @@ export function pickDefaultCanvasStrategy(
     return s.fitness > 0
   })
 
-  return (
-    sortBy(applicableStrategies, (l, r) => {
-      // sort by fitness, descending
-      return r.fitness - l.fitness
-    })[0]?.strategy ?? null
-  )
+  return sortBy(applicableStrategies, (l, r) => {
+    // sort by fitness, descending
+    return r.fitness - l.fitness
+  })
+}
+
+export function pickDefaultCanvasStrategy(
+  applicableStrategies: Array<StrategiesWithFitness>,
+): CanvasStrategy | null {
+  return applicableStrategies[0]?.strategy ?? null
+}
+
+function pickStrategy(
+  sessionProps: SelectModeCanvasSessionProps,
+  applicableStrategies: Array<StrategiesWithFitness>,
+): CanvasStrategy | null {
+  if (sessionProps.userPreferredStrategy != null) {
+    const foundStrategyByName = applicableStrategies.find(
+      (s) => s.strategy.name === sessionProps.userPreferredStrategy,
+    )
+    if (foundStrategyByName != null) {
+      return foundStrategyByName.strategy
+    }
+  }
+  // fall back to default strategy
+  return pickDefaultCanvasStrategy(applicableStrategies)
 }
 
 export function applyCanvasStrategy(
@@ -45,25 +70,19 @@ export function applyCanvasStrategy(
   canvasSession: SelectModeCanvasSession,
   canvasSessionState: SelectModeCanvasSessionState | null,
 ): TransientCanvasState | null {
-  const sessionStateToUse = canvasSessionState ?? emptySelectModeCanvasSessionState
+  const sessionProps = canvasSession.sessionProps
+  const sessionState = canvasSessionState ?? emptySelectModeCanvasSessionState
 
-  const strategy = pickDefaultCanvasStrategy(
-    editorState,
-    canvasSession.sessionProps,
-    sessionStateToUse,
-  )
+  const applicableStrategies = getApplicableStrategies(editorState, sessionProps, sessionState)
+  const strategy = pickStrategy(sessionProps, applicableStrategies)
   const sessionStateWithStrategy: SelectModeCanvasSessionState = {
-    ...sessionStateToUse,
+    ...sessionState,
     activeStrategy: strategy,
+    possibleStrategies: applicableStrategies.map((s) => s.strategy),
   }
 
   const result =
-    strategy?.updateFn?.(
-      lifecycle,
-      editorState,
-      canvasSession.sessionProps,
-      sessionStateWithStrategy,
-    ) ?? null
+    strategy?.updateFn?.(lifecycle, editorState, sessionProps, sessionStateWithStrategy) ?? null
 
   if (result == null) {
     // no strategy was active, return empty result

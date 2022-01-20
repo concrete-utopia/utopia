@@ -358,6 +358,25 @@ export function runLocalCanvasAction(
         },
       }
     }
+    case 'SET_USERS_PREFERRED_STRATEGY': {
+      if (model.canvas.dragState?.type === 'SELECT_MODE_CANVAS_SESSION') {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            dragState: {
+              ...model.canvas.dragState,
+              sessionProps: {
+                ...model.canvas.dragState.sessionProps,
+                userPreferredStrategy: action.strategyName,
+              },
+            },
+          },
+        }
+      } else {
+        return model
+      }
+    }
     default:
       const _exhaustiveCheck: never = action
       return model

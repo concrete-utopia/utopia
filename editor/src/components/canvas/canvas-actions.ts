@@ -52,6 +52,12 @@ const CanvasActions = {
       applyChanges: applyChanges,
     }
   },
+  setUsersPreferredStrategy: function (strategyName: string): CanvasAction {
+    return {
+      action: 'SET_USERS_PREFERRED_STRATEGY',
+      strategyName: strategyName,
+    }
+  },
 }
 
 export default CanvasActions

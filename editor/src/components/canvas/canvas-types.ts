@@ -658,6 +658,11 @@ type ZoomUI = {
   zoomIn: boolean
 }
 
+type SetUsersPreferredStrategy = {
+  action: 'SET_USERS_PREFERRED_STRATEGY'
+  strategyName: string // TODO limit it to string literal union of registered strategy names?
+}
+
 export type CanvasAction =
   | ScrollCanvas
   | ClearDragState
@@ -666,6 +671,7 @@ export type CanvasAction =
   | ZoomUI
   | SetSelectionControlsVisibility
   | UpdateCanvasSessionProps
+  | SetUsersPreferredStrategy
 
 export type CanvasModel = {
   controls: Array<HigherOrderControl>

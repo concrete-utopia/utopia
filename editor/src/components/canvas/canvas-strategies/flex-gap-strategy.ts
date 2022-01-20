@@ -46,6 +46,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
   fitnessFn: (editor, sessionProps) => {
+    return 5 // fit
     if (
       editor.selectedViews.length === 1 &&
       sessionProps.activeControl.type === 'FLEX_GAP_HANDLE'

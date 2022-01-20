@@ -74,6 +74,7 @@ export interface SelectModeCanvasSession {
 }
 
 export interface SelectModeCanvasSessionProps {
+  userPreferredStrategy: CanvasStrategy['name'] | null
   start: CanvasPoint
   mousePosition: CanvasPoint
   drag: CanvasVector | null
@@ -84,11 +85,13 @@ export interface SelectModeCanvasSessionProps {
 
 export interface SelectModeCanvasSessionState {
   activeStrategy: CanvasStrategy | null
+  possibleStrategies: Array<CanvasStrategy>
   dragDeltaMinimumPassed: boolean
 }
 
 export const emptySelectModeCanvasSessionState: SelectModeCanvasSessionState = {
   activeStrategy: null,
+  possibleStrategies: [],
   dragDeltaMinimumPassed: false,
 }
 
@@ -99,6 +102,7 @@ export function startNewSelectModeCanvasSession(
   return {
     type: 'SELECT_MODE_CANVAS_SESSION',
     sessionProps: {
+      userPreferredStrategy: null,
       start: start,
       mousePosition: start,
       activeControl: activeControl,
