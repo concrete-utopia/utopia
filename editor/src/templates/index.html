@@ -16,6 +16,15 @@
     />
 
     <!--editorScript-->
+
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="use-credentials" />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/gh/mcklayin/dom-to-image-improved@v2.8.0/dist/dom-to-image-more.min.js"
+      integrity="sha256-SWiKkXQIRpzbpHAKgzvEE/LefY3As3O7OH79qVhxRV4="
+      crossorigin="anonymous"
+    ></script>
+
     <% if (VITE) { %>
     <script>
       window.global = window
@@ -25,10 +34,8 @@
       window.process.cwd = new Function()
     </script>
     <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
-    <script type="module" src="/editor-entry-point.tsx"></script>
+    <script defer type="module" src="/editor-entry-point.tsx"></script>
     <% } %>
-
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="use-credentials" />
 
     <!--preloadVSCode-->
 

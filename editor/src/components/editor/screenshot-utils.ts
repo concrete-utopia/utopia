@@ -1,4 +1,5 @@
-import domtoimage from 'dom-to-image-improved'
+import domtoimage from 'domtoimage'
+
 const BASE64_PREFIX = 'data:image/png;base64,'
 
 type Dom2ImageOptions = { width?: number; height?: number }
