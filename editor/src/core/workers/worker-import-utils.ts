@@ -15,7 +15,7 @@ const WORKER_BASE_URL = `${BASE_URL}editor/`
 export function createTsWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(new URL('./ts/ts.worker.ts', WORKER_BASE_URL))
+  const worker = new Worker(new URL('./ts/ts.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
@@ -23,7 +23,7 @@ export function createTsWorker(): Worker {
 export function createParserPrinterWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(new URL('./parser-printer/parser-printer.worker.ts', WORKER_BASE_URL))
+  const worker = new Worker(new URL('./parser-printer/parser-printer.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
@@ -31,7 +31,7 @@ export function createParserPrinterWorker(): Worker {
 export function createLinterWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(new URL('./linter/linter.worker.ts', WORKER_BASE_URL))
+  const worker = new Worker(new URL('./linter/linter.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
@@ -39,7 +39,7 @@ export function createLinterWorker(): Worker {
 export function createWatchdogWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(new URL('./watchdog.worker.ts', WORKER_BASE_URL))
+  const worker = new Worker(new URL('./watchdog.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
