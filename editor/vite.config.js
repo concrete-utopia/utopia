@@ -9,7 +9,14 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       isDevEnv && react(),
-      injectHtml({ data: { UTOPIA_SHA: process.env.REACT_APP_COMMIT_HASH } }),
+      injectHtml({
+        data: {
+          VITE: true,
+          UTOPIA_SHA: process.env.REACT_APP_COMMIT_HASH,
+          UTOPIA_DOMAIN: isDevEnv ? 'http://localhost:8000' : '',
+          VSCODE_DOMAIN: '${window.location.origin}',
+        },
+      }),
     ],
     root: './src/vite',
     publicDir: '../../resources/editor',
@@ -63,6 +70,7 @@ export default defineConfig(({ mode }) => {
         ],
         input: {
           index: resolve(__dirname, 'src/vite/index.html'),
+          'vscode-inner': resolve(__dirname, 'src/vite/vscode-inner/index.html'),
           'vscode-outer': resolve(__dirname, 'src/vite/vscode-outer/index.html'),
         },
       },

@@ -3,6 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--ogTags-->
+
+    <link
+      rel="icon"
+      type="image/png"
+      href="<%- UTOPIA_DOMAIN %>/editor/icons/favicons/favicon-192.png?hash=<%- UTOPIA_SHA %>"
+    />
+    <link
+      rel="preload"
+      type="image/png"
+      href="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
+      as="image"
+    />
+
+    <!--editorScript-->
+    <% if (VITE) { %>
     <script>
       window.global = window
       window.require = () => {}
@@ -11,21 +27,8 @@
       window.process.cwd = new Function()
     </script>
     <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
-    <!--ogTags-->
-
-    <link
-      rel="icon"
-      type="image/png"
-      href="/icons/favicons/favicon-192.png?hash=<%- UTOPIA_SHA %>"
-    />
-    <link
-      rel="preload"
-      type="image/png"
-      href="/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
-      as="image"
-    />
-
-    <!--editorScript-->
+    <script type="module" src="/main.tsx"></script>
+    <% } %>
 
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="use-credentials" />
 
@@ -99,7 +102,7 @@
           "
         >
           <img
-            src="/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
+            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
             height="128px"
             alt="Utopia Logo"
           />
@@ -130,7 +133,5 @@
         <!-- ends loading content-->
       </div>
     </div>
-
-    <script type="module" src="/main.tsx"></script>
   </body>
 </html>
