@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
-    root: './src/vite',
+    root: './src/templates',
     publicDir: '../../resources/editor',
     server: {
       port: 8088,
@@ -68,11 +68,11 @@ export default defineConfig(({ mode }) => {
             moduleDirectories: module.paths,
           }),
         ],
-        input: {
-          index: resolve(__dirname, 'src/vite/index.html'),
-          'vscode-inner': resolve(__dirname, 'src/vite/vscode-inner/index.html'),
-          'vscode-outer': resolve(__dirname, 'src/vite/vscode-outer/index.html'),
-        },
+        // input: {
+        //   index: resolve(__dirname, 'src/vite/index.html'),
+        //   'vscode-inner': resolve(__dirname, 'src/vite/vscode-inner/index.html'),
+        //   'vscode-outer': resolve(__dirname, 'src/vite/vscode-outer/index.html'),
+        // },
       },
     },
   }

@@ -47,6 +47,7 @@ const BaseDomain = isProd ? 'https://cdn.utopia.app' : isStaging ? 'https://cdn.
 const VSCodeBaseDomain = BaseDomain === '' ? '${window.location.origin}' : BaseDomain
 
 const htmlTemplateParameters = {
+  VITE: false,
   UTOPIA_SHA: process.env.UTOPIA_SHA ?? 'nocommit',
   UTOPIA_DOMAIN: BaseDomain,
   VSCODE_DOMAIN: VSCodeBaseDomain,
@@ -60,11 +61,14 @@ const config = {
       ? ['react-hot-loader/patch', './src/templates/editor-entry-point.tsx']
       : './src/templates/editor-entry-point.tsx',
     preview: hot
-      ? ['react-hot-loader/patch', './src/templates/preview.tsx']
-      : './src/templates/preview.tsx',
+      ? ['react-hot-loader/patch', './src/templates/preview/preview.tsx']
+      : './src/templates/preview/preview.tsx',
     vsCodeEditorOuterIframe: hot
-      ? ['react-hot-loader/patch', './src/templates/vscode-editor-outer-iframe.tsx']
-      : './src/templates/vscode-editor-outer-iframe.tsx',
+      ? [
+          'react-hot-loader/patch',
+          './src/templates/vscode-editor-outer-iframe/vscode-editor-outer-iframe.tsx',
+        ]
+      : './src/templates/vscode-editor-outer-iframe/vscode-editor-outer-iframe.tsx',
   },
 
   output: {
@@ -98,8 +102,8 @@ const config = {
       chunks: [],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/project-not-found.html',
-      filename: 'project-not-found.html',
+      template: './src/templates/project-not-found/index.html',
+      filename: 'project-not-found/index.html',
       minify: false,
       templateParameters: htmlTemplateParameters,
     }),
@@ -108,8 +112,8 @@ const config = {
       chunks: ['preview'],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/preview.html',
-      filename: 'preview.html',
+      template: './src/templates/preview/index.html',
+      filename: 'preview/index.html',
       minify: false,
       templateParameters: htmlTemplateParameters,
     }),
@@ -117,7 +121,7 @@ const config = {
       chunks: ['vsCodeEditorOuterIframe'],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/vscode-editor-outer-iframe.html',
+      template: './src/templates/vscode-editor-outer-iframe/index.html',
       filename: 'vscode-editor-outer-iframe/index.html',
       minify: false,
       templateParameters: htmlTemplateParameters,
@@ -126,7 +130,7 @@ const config = {
       chunks: [],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/vscode-editor-inner-iframe.html',
+      template: './src/templates/vscode-editor-inner-iframe/index.html',
       filename: 'vscode-editor-inner-iframe/index.html',
       minify: false,
       templateParameters: htmlTemplateParameters,

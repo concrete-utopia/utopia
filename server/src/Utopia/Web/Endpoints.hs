@@ -283,7 +283,7 @@ renderPageWithMetadata possibleProjectID possibleMetadata possibleProject branch
 
 innerProjectPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
 innerProjectPage (Just _) UnknownProject _ branchName = do
-  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
+  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found/index.html"
   return $ H.preEscapedToHtml projectNotFoundHtml
 innerProjectPage possibleProjectID details possibleProject branchName =
   renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "index.html"
@@ -299,10 +299,10 @@ emptyProjectPage = innerProjectPage Nothing UnknownProject Nothing
 
 innerPreviewPage :: Maybe ProjectIdWithSuffix -> ProjectDetails -> Maybe DB.DecodedProject -> Maybe Text -> ServerMonad H.Html
 innerPreviewPage (Just _) UnknownProject _ branchName = do
-  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
+  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found/index.html"
   return $ H.preEscapedToHtml projectNotFoundHtml
 innerPreviewPage possibleProjectID details possibleProject branchName =
-  renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "preview.html"
+  renderPageWithMetadata possibleProjectID (projectDetailsToPossibleMetadata details) possibleProject branchName "preview/index.html"
 
 previewPage :: ProjectIdWithSuffix -> Maybe Text -> ServerMonad H.Html
 previewPage projectIDWithSuffix@(ProjectIdWithSuffix projectID _) branchName = do
