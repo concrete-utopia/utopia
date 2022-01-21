@@ -1,44 +1,48 @@
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { LayoutPinnedProp, LayoutPinnedProps } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  applyUtopiaJSXComponentsChanges,
-  getUtopiaJSXComponentsFromSuccess,
-} from '../../../core/model/project-file-utils'
 import { foldEither, forEachRight, isLeft, right } from '../../../core/shared/either'
 import { isJSXElement, JSXElement } from '../../../core/shared/element-template'
 import { setJSXValuesAtPaths, ValueAtPath } from '../../../core/shared/jsx-attributes'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, RevisionsState } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import {
-  TransientFilesState,
   EditorStatePatch,
   EditorState,
   modifyUnderlyingForOpenFile,
   forUnderlyingTargetFromEditorState,
-  transformElementAtPath,
-  withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import {
-  SelectModeCanvasSessionState,
-  SelectModeCanvasSessionProps,
-} from '../canvas-strategies/canvas-strategy-types'
+import { SelectModeCanvasSessionState } from '../canvas-strategies/canvas-strategy-types'
 import { cssNumberAsNumberIfPossible, getPropsToSetToMoveElement } from '../canvas-utils'
-import update from 'immutability-helper'
+import update, { Spec } from 'immutability-helper'
 import * as EP from '../../../core/shared/element-path'
-import { canvasPoint, point } from '../../../core/shared/math-utils'
+import { canvasPoint } from '../../../core/shared/math-utils'
+import {
+  getProjectContentKeyPathElements,
+  ProjectContentFile,
+  ProjectContentsTree,
+  ProjectContentTreeRoot,
+} from '../../assets'
+import { drop } from '../../../core/shared/array-utils'
+
+export interface PathMapping {
+  from: ElementPath
+  to: ElementPath
+}
+
+export type PathMappings = Array<PathMapping>
 
 export interface CommandFunctionResult {
   sessionState: SelectModeCanvasSessionState
-  transientFilesState: TransientFilesState
   editorStatePatch: EditorStatePatch
+  pathMappings: PathMappings
 }
 
 export type CommandFunction<T> = (
   editorState: EditorState,
   sessionState: SelectModeCanvasSessionState,
+  pathMappings: PathMappings,
   command: T,
 ) => CommandFunctionResult
 
@@ -67,6 +71,7 @@ export type CanvasCommand = SetDragMinimumExceededCommand | MoveElement
 export const runSetDragMinimumExceededCommand: CommandFunction<SetDragMinimumExceededCommand> = (
   editorState: EditorState,
   sessionState: SelectModeCanvasSessionState,
+  pathMappings: PathMappings,
   command: SetDragMinimumExceededCommand,
 ) => {
   return {
@@ -74,14 +79,15 @@ export const runSetDragMinimumExceededCommand: CommandFunction<SetDragMinimumExc
       ...sessionState,
       dragDeltaMinimumPassed: true,
     },
-    transientFilesState: {},
     editorStatePatch: {},
+    pathMappings: pathMappings,
   }
 }
 
 export const runMoveElementCommand: CommandFunction<MoveElement> = (
   editorState: EditorState,
   sessionState: SelectModeCanvasSessionState,
+  pathMappings: PathMappings,
   command: MoveElement,
 ) => {
   // Currently this is moving something by an amount,
@@ -100,8 +106,7 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
       ? null
       : MetadataUtils.getFrameInCanvasCoords(parentTarget, editorState.jsxMetadata)
 
-  let workingEditorState: EditorState = editorState
-  let workingFileState: TransientFilesState = {}
+  let editorStatePatch: EditorStatePatch = {}
 
   switch (elementMetadata.specialSizeMeasurements.position) {
     // For a relative pinned element.
@@ -141,14 +146,7 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
             frameProps,
             parentFrame,
           )
-          const result = applyValuesAtPath(
-            workingEditorState,
-            workingFileState,
-            command.target,
-            whatToMove,
-          )
-          workingEditorState = result.editorState
-          workingFileState = result.transientFilesState
+          editorStatePatch = applyValuesAtPath(editorState, command.target, whatToMove)
         }
       })
       break
@@ -158,59 +156,99 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
 
   return {
     sessionState: sessionState,
-    transientFilesState: workingFileState,
-    editorStatePatch: {},
+    editorStatePatch: editorStatePatch,
+    pathMappings: pathMappings,
   }
 }
 
 function applyValuesAtPath(
   editorState: EditorState,
-  filesState: TransientFilesState,
   target: ElementPath,
   jsxValuesAndPathsToSet: ValueAtPath[],
-): { editorState: EditorState; transientFilesState: TransientFilesState } {
-  let workingEditorState = { ...editorState }
-  let transientFilesState = { ...filesState }
+): EditorStatePatch {
+  let result: EditorStatePatch = {}
 
-  workingEditorState = modifyUnderlyingForOpenFile(target, editorState, (element: JSXElement) => {
-    return foldEither(
-      () => {
-        return element
-      },
-      (updatedProps) => {
-        return {
-          ...element,
-          props: updatedProps,
-        }
-      },
-      setJSXValuesAtPaths(element.props, jsxValuesAndPathsToSet),
-    )
-  })
+  const workingEditorState = modifyUnderlyingForOpenFile(
+    target,
+    editorState,
+    (element: JSXElement) => {
+      return foldEither(
+        () => {
+          return element
+        },
+        (updatedProps) => {
+          return {
+            ...element,
+            props: updatedProps,
+          }
+        },
+        setJSXValuesAtPaths(element.props, jsxValuesAndPathsToSet),
+      )
+    },
+  )
 
   forUnderlyingTargetFromEditorState(
     target,
     workingEditorState,
     (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      transientFilesState[underlyingFilePath] = {
-        topLevelElementsIncludingScenes: success.topLevelElements,
-        imports: success.imports,
+      const projectContentFilePatch: Spec<ProjectContentFile> = {
+        content: {
+          fileContents: {
+            revisionsState: {
+              $set: RevisionsState.ParsedAhead,
+            },
+          },
+          lastParseSuccess: {
+            topLevelElements: {
+              $set: success.topLevelElements,
+            },
+            imports: {
+              $set: success.imports,
+            },
+          },
+        },
       }
-      return success
+      // ProjectContentTreeRoot is a bit awkward to patch.
+      const pathElements = getProjectContentKeyPathElements(underlyingFilePath)
+      if (pathElements.length === 0) {
+        throw new Error('Invalid path length.')
+      }
+      const remainderPath = drop(1, pathElements)
+      const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
+        (working: Spec<ProjectContentsTree>, pathPart: string) => {
+          return {
+            children: {
+              [pathPart]: working,
+            },
+          }
+        },
+        projectContentFilePatch,
+      )
+
+      // Finally patch the last part of the path in.
+      const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
+        [pathElements[0]]: projectContentsTreePatch,
+      }
+
+      result = {
+        projectContents: projectContentTreeRootPatch,
+      }
     },
   )
-  return { editorState: workingEditorState, transientFilesState: transientFilesState }
+  return result
 }
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
   sessionState: SelectModeCanvasSessionState,
+  pathMappings: PathMappings,
   command: CanvasCommand,
 ) => {
   switch (command.type) {
     case 'MOVE_ELEMENT':
-      return runMoveElementCommand(editorState, sessionState, command)
+      return runMoveElementCommand(editorState, sessionState, pathMappings, command)
     case 'SET_DRAG_MININUM_EXCEEDED':
-      return runSetDragMinimumExceededCommand(editorState, sessionState, command)
+      return runSetDragMinimumExceededCommand(editorState, sessionState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -221,16 +259,31 @@ export function foldCommands(
   editorState: EditorState,
   sessionState: SelectModeCanvasSessionState,
   commands: Array<CanvasCommand>,
-): void {
+): { statePatches: Array<EditorStatePatch>; sessionState: SelectModeCanvasSessionState } {
+  let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
   let workingSessionState: SelectModeCanvasSessionState = sessionState
+  let workingPathMappings: PathMappings = []
   for (const command of commands) {
-    const commandResult = runCanvasCommand(workingEditorState, workingSessionState, command)
+    // Run the command with our current states.
+    const commandResult = runCanvasCommand(
+      workingEditorState,
+      workingSessionState,
+      workingPathMappings,
+      command,
+    )
+    // Capture values from the result.
     workingSessionState = commandResult.sessionState
-    workingEditorState = update(workingEditorState, commandResult.editorStatePatch)
-    commandResult.editorStatePatch
-    // Possibly need some way to combine editor state patches if we want to return an accumulated one of those.
+    const statePatch = commandResult.editorStatePatch
+    workingPathMappings = commandResult.pathMappings
+    // Apply the update to the editor state.
+    workingEditorState = update(workingEditorState, statePatch)
+    // Collate the patches.
+    statePatches.push(statePatch)
   }
 
-  // Depends on what we want to return out of here.
+  return {
+    statePatches: statePatches,
+    sessionState: workingSessionState,
+  }
 }

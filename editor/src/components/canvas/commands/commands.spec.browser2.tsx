@@ -1,20 +1,18 @@
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import {
-  emptyComments,
-  getElementsByUIDFromTopLevelElements,
-  getJSXAttribute,
-  jsxAttributeValue,
-  partOfJsxAttributeValue,
-} from '../../../core/shared/element-template'
-import { getJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
-import { forceNotNull } from '../../../core/shared/optional-utils'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import { selectComponents, setFocusedElement } from '../../editor/actions/action-creators'
+import { setFocusedElement } from '../../editor/actions/action-creators'
 import { emptySelectModeCanvasSessionState } from '../canvas-strategies/canvas-strategy-types'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { moveElement, runMoveElementCommand } from './commands'
+import Utils from '../../../utils/utils'
+import {
+  getElementsByUIDFromTopLevelElements,
+  partOfJsxAttributeValue,
+} from '../../../core/shared/element-template'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import { getJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 
 describe('runMoveElementCommand', () => {
   it('works for a basic pinned element', async () => {
@@ -45,10 +43,24 @@ describe('runMoveElementCommand', () => {
     const result = runMoveElementCommand(
       renderResult.getEditorState().editor,
       sessionState,
+      [],
       moveCommand,
     )
-    const file = result.transientFilesState['/src/card.js']
-    const elements = getElementsByUIDFromTopLevelElements(file.topLevelElementsIncludingScenes)
+    const topLevelElements = Utils.path(
+      [
+        'projectContents',
+        'src',
+        'children',
+        'card.js',
+        'content',
+        'lastParseSuccess',
+        'topLevelElements',
+        '$set',
+      ],
+      result.editorStatePatch,
+    )
+
+    const elements = getElementsByUIDFromTopLevelElements(topLevelElements as any)
     const rectangle = forceNotNull('Could not find rectangle.', elements['card-inner-rectangle'])
 
     const top = getJSXAttributeAtPath(rectangle.props, PP.create(['style', 'top'])).attribute
