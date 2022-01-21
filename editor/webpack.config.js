@@ -179,6 +179,7 @@ const config = {
       'process.env.BABEL_TYPES_8_BREAKING': 'undefined',
       'process.env.JEST_WORKER_ID': 'undefined',
       'process.env.HOT_MODE': hot,
+      'process.env.HMR': false,
     }),
 
     // setting up the various process.env.VARIABLE replacements
