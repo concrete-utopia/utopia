@@ -105,7 +105,7 @@ export class Editor {
 
   constructor() {
     updateCssVars()
-    // startPreviewConnectedMonitoring(this.boundDispatch)
+    startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(emptyEditorState, null)
