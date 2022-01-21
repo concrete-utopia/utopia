@@ -9,16 +9,7 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
     throw e
   }
 })
-if (typeof (globalThis as any).global === 'undefined') {
-  ;(globalThis as any).global = globalThis
-}
 ;(global as any).BrowserFS = BrowserFS
-
-// worker polyfills
-self.process = process ?? {}
-self.process.cwd = process.cwd ?? new Function()
-import { Buffer } from 'buffer'
-self.Buffer = Buffer
 
 import type { Linter as ESLintLinter } from 'eslint'
 import Linter from 'eslint4b'

@@ -1,3 +1,4 @@
+import '../../vite-shims'
 import fastDeepEquals from 'fast-deep-equal'
 import * as ReactErrorOverlay from 'react-error-overlay'
 import { BASE_URL, getProjectID, getQueryParam, PREVIEW_IS_EMBEDDED } from '../../common/env-vars'

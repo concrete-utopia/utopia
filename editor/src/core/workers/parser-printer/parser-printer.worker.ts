@@ -1,3 +1,4 @@
+import '../../../vite-shims'
 import { ParsePrintResultMessage } from '../common/worker-types'
 import { handleMessage } from './parser-printer-worker'
 
