@@ -165,6 +165,14 @@ export function createFakeMetadataForEditor(editor: EditorState): ElementInstanc
   }
 }
 
+export function withFakeMetadataForEditor(editor: EditorState): EditorState {
+  const componentMetadata = createFakeMetadataForEditor(editor)
+  return {
+    ...editor,
+    jsxMetadata: componentMetadata,
+  }
+}
+
 export function createFakeMetadataForParseSuccess(
   success: ParseSuccess,
 ): ElementInstanceMetadataMap {

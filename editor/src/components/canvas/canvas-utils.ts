@@ -417,7 +417,7 @@ function unsetValueWhenNegative(prop: LayoutTargetableProp): boolean {
   }
 }
 
-function cssNumberAsNumberIfPossible(
+export function cssNumberAsNumberIfPossible(
   cssNumber: CSSNumber | number | string | undefined,
 ): number | string | undefined {
   if (cssNumber == null) {
@@ -938,7 +938,7 @@ function updateFrameValueForProp(
   return null
 }
 
-function getPropsToSetToMoveElement(
+export function getPropsToSetToMoveElement(
   dragDelta: CanvasVector,
   framePoints: Array<LayoutPinnedProp>,
   frameProps: { [k: string]: string | number | undefined },
