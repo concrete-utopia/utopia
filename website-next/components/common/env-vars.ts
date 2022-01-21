@@ -13,6 +13,8 @@ const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' || (window as any)?.['process']?.['type'] != null
 
+export const HMR: boolean = typeof process.env.HMR === 'boolean' ? process.env.HMR : false
+
 export const SHOW_FPS = false
 export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
 export const RUN_PERFORMANCE_CHECK = false
