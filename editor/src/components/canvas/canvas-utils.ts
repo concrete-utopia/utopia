@@ -366,6 +366,8 @@ export function clearDragStateAndInteractionSession(
       false,
       'final',
     )
+
+    // TODO do we want to also apply the editorStatePatch here??
     const producedTransientFilesState = producedTransientCanvasState.filesState
     result = applyTransientFilesState(
       producedTransientFilesState,
