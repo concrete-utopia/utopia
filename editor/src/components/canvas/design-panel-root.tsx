@@ -116,7 +116,7 @@ const NothingOpenCard = React.memo(() => {
   )
 })
 
-export const DesignPanelRoot = React.memo(() => {
+const DesignPanelRootInner = React.memo(() => {
   const dispatch = useEditorState((store) => store.dispatch, 'DesignPanelRoot dispatch')
   const interfaceDesigner = useEditorState(
     (store) => store.editor.interfaceDesigner,
@@ -198,15 +198,7 @@ export const DesignPanelRoot = React.memo(() => {
   )
 
   return (
-    <SimpleFlexRow
-      className='OpenFileEditorShell'
-      style={{
-        position: 'relative',
-        flexGrow: 1,
-        alignItems: 'stretch',
-        overflowX: 'hidden',
-      }}
-    >
+    <>
       <SimpleFlexRow
         className='CanvasCodeRow'
         style={{
@@ -320,18 +312,7 @@ export const DesignPanelRoot = React.memo(() => {
                     height: '100%',
                   }}
                 >
-                  <NavigatorComponent
-                    style={{
-                      zIndex: 1,
-                      flexGrow: 1,
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'stretch',
-                      justifyContent: 'stretch',
-                      overscrollBehavior: 'contain',
-                    }}
-                  />
+                  <NavigatorComponent />
                 </ResizableFlexColumn>
               </div>
             ) : null}
@@ -348,7 +329,36 @@ export const DesignPanelRoot = React.memo(() => {
           ) : null}
         </>
       ) : null}
-    </SimpleFlexRow>
+    </>
+  )
+})
+
+export const DesignPanelRoot = React.memo(() => {
+  const roundedCanvasOffset = useEditorState(
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'DesignPanelRoot roundedCanvasOffset',
+  )
+
+  return (
+    <>
+      <style>{`
+      .utopia-css-var-container {
+        --utopia-canvas-offset-x: ${roundedCanvasOffset.x}px;
+        --utopia-canvas-offset-y: ${roundedCanvasOffset.y}px;
+      }
+    `}</style>
+      <SimpleFlexRow
+        className='OpenFileEditorShell utopia-css-var-container'
+        style={{
+          position: 'relative',
+          flexGrow: 1,
+          alignItems: 'stretch',
+          overflowX: 'hidden',
+        }}
+      >
+        <DesignPanelRootInner />
+      </SimpleFlexRow>
+    </>
   )
 })
 DesignPanelRoot.displayName = 'DesignPanelRoot'
