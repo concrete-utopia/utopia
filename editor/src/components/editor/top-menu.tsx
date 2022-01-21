@@ -151,7 +151,7 @@ const TopMenuRightControls = React.memo(() => {
           style={{ fontSize: 9, textAlign: 'center', width: 32 }}
           onClick={zoom100pct}
         >
-          <span style={{ backgroundColor: 'hotpink' }}>{zoomLevel}x</span>
+          {zoomLevel}x
         </SquareButton>
         <Tooltip title='Zoom in' placement='left'>
           <span>
