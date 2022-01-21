@@ -16,7 +16,7 @@ import {
   ArrayControlDescription,
   HigherLevelControlDescription,
   RegularControlDescription,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import {
   filterUtopiaSpecificProps,
   InspectorInfo,
@@ -65,7 +65,7 @@ import {
 } from '../../editor/store/store-deep-equality-instances'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import { omit } from '../../../core/shared/object-utils'
-import { PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api/core'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]

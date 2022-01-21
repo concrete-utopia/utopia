@@ -1,4 +1,4 @@
-import { LayoutSystem } from 'utopia-api' // TODO fixme this imports utopia-api
+import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
 import { LayoutTargetableProp, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'

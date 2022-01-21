@@ -1,4 +1,4 @@
-import { sides } from 'utopia-api'
+import { sides } from 'utopia-api/core'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,

@@ -1,4 +1,13 @@
-export const utopiaApiTypings = `declare module 'utopia-api/helpers/helper-functions' {
+export const utopiaApiTypings = `declare module 'utopia-api/core' {
+  export * from 'utopia-api/layout/frame';
+  export * from 'utopia-api/layout/layout';
+  export * from 'utopia-api/layout/flex';
+  export * from 'utopia-api/helpers/helper-functions';
+  export * from 'utopia-api/property-controls/property-controls';
+  export * from 'utopia-api/property-controls/factories';
+
+}
+declare module 'utopia-api/helpers/helper-functions' {
   import { PropertyControls } from 'utopia-api/property-controls/property-controls';
   export interface ComponentInsertOption {
       code: string;
@@ -43,9 +52,6 @@ declare module 'utopia-api/helpers/test-assets' {
 
 }
 declare module 'utopia-api/index' {
-  export * from 'utopia-api/layout/frame';
-  export * from 'utopia-api/layout/layout';
-  export * from 'utopia-api/layout/flex';
   export * from 'utopia-api/primitives/common';
   export * from 'utopia-api/primitives/view';
   export * from 'utopia-api/primitives/flex-views';
@@ -55,7 +61,6 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/primitives/scene';
   export * from 'utopia-api/primitives/storyboard';
   export * from 'utopia-api/helpers/helper-functions';
-  export * from 'utopia-api/property-controls/property-controls';
   export * from 'utopia-api/property-controls/factories';
 
 }

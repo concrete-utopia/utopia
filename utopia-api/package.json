@@ -5,6 +5,17 @@
   "main": "src/index.ts",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./core": "./src/core.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "core": [
+        "dist/core.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "clean": "rm -rf dist/",
     "test": "jest",

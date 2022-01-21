@@ -226,6 +226,12 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       RUN_COMPILER=true ${pnpm} run move-fast-and-break-things
     '')
+    (pkgs.writeScriptBin "watch-editor-hmr" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      RUN_COMPILER=true ${pnpm} run dev-fast
+    '')
     (pkgs.writeScriptBin "watch-editor-no-compile" ''
       #!/usr/bin/env bash
       set -e
@@ -393,8 +399,8 @@ let
         send-keys -t :2 watch-server C-m \; \
         new-window -n "Editor TSC" \; \
         send-keys -t :3 watch-tsc C-m \; \
-        new-window -n "Editor Webpack" \; \
-        send-keys -t :4 watch-editor-cowboy C-m \; \
+        new-window -n "Editor Vite" \; \
+        send-keys -t :4 watch-editor-hmr C-m \; \
         new-window -n "Website" \; \
         send-keys -t :5 watch-website C-m \; \
         new-window -n "VSCode Common" \; \
@@ -414,6 +420,38 @@ let
       build-vscode-with-extension
       install-editor
       start-minimal
+    '')
+    (pkgs.writeScriptBin "start-minimal-webpack" ''
+      #!/usr/bin/env bash
+      stop-dev
+      tmux new-session -s utopia-dev \; \
+        set-option -g mouse on \; \
+        new-window -n "Scratchpad" \; \
+        new-window -n "Server" \; \
+        send-keys -t :2 watch-server C-m \; \
+        new-window -n "Editor TSC" \; \
+        send-keys -t :3 watch-tsc C-m \; \
+        new-window -n "Editor Webpack" \; \
+        send-keys -t :4 watch-editor-cowboy C-m \; \
+        new-window -n "Website" \; \
+        send-keys -t :5 watch-website C-m \; \
+        new-window -n "VSCode Common" \; \
+        send-keys -t :6 watch-utopia-vscode-common C-m \; \
+        new-window -n "VSCode Extension" \; \
+        send-keys -t :7 watch-utopia-vscode-extension C-m \; \
+        new-window -n "VSCode Pull Extension" \; \
+        send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        new-window -n "PostgreSQL" \; \
+        send-keys -t :9 start-postgres C-m \; \
+        select-window -t :1 \;
+    '')
+    (pkgs.writeScriptBin "start-full-webpack" ''
+      #!/usr/bin/env bash
+      stop-dev
+      set -e
+      build-vscode-with-extension
+      install-editor
+      start-minimal-webpack
     '')
   ] ++ vscodeDevScripts;
 

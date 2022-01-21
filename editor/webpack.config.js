@@ -4,7 +4,6 @@ const CleanTerminalPlugin = require('clean-terminal-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
-const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const path = require('path')
 const webpack = require('webpack')
@@ -47,6 +46,13 @@ const hashPattern = hot ? '[contenthash]' : '[chunkhash]' // I changed [hash] to
 const BaseDomain = isProd ? 'https://cdn.utopia.app' : isStaging ? 'https://cdn.utopia.pizza' : ''
 const VSCodeBaseDomain = BaseDomain === '' ? '${window.location.origin}' : BaseDomain
 
+const htmlTemplateParameters = {
+  VITE: false,
+  UTOPIA_SHA: process.env.UTOPIA_SHA ?? 'nocommit',
+  UTOPIA_DOMAIN: BaseDomain,
+  VSCODE_DOMAIN: VSCodeBaseDomain,
+}
+
 const config = {
   mode: actualMode,
 
@@ -55,11 +61,14 @@ const config = {
       ? ['react-hot-loader/patch', './src/templates/editor-entry-point.tsx']
       : './src/templates/editor-entry-point.tsx',
     preview: hot
-      ? ['react-hot-loader/patch', './src/templates/preview.tsx']
-      : './src/templates/preview.tsx',
+      ? ['react-hot-loader/patch', './src/templates/preview/preview.tsx']
+      : './src/templates/preview/preview.tsx',
     vsCodeEditorOuterIframe: hot
-      ? ['react-hot-loader/patch', './src/templates/vscode-editor-outer-iframe.tsx']
-      : './src/templates/vscode-editor-outer-iframe.tsx',
+      ? [
+          'react-hot-loader/patch',
+          './src/templates/vscode-editor-outer-iframe/vscode-editor-outer-iframe.tsx',
+        ]
+      : './src/templates/vscode-editor-outer-iframe/vscode-editor-outer-iframe.tsx',
   },
 
   output: {
@@ -87,39 +96,44 @@ const config = {
       scriptLoading: 'defer',
       template: './src/templates/index.html',
       minify: false,
+      templateParameters: htmlTemplateParameters,
     }),
     new HtmlWebpackPlugin({
       chunks: [],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/project-not-found.html',
-      filename: 'project-not-found.html',
+      template: './src/templates/project-not-found/index.html',
+      filename: 'project-not-found/index.html',
       minify: false,
+      templateParameters: htmlTemplateParameters,
     }),
     new HtmlWebpackPlugin({
       // Run it again to generate the preview.html
       chunks: ['preview'],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/preview.html',
-      filename: 'preview.html',
+      template: './src/templates/preview/index.html',
+      filename: 'preview/index.html',
       minify: false,
+      templateParameters: htmlTemplateParameters,
     }),
     new HtmlWebpackPlugin({
       chunks: ['vsCodeEditorOuterIframe'],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/vscode-editor-outer-iframe.html',
+      template: './src/templates/vscode-editor-outer-iframe/index.html',
       filename: 'vscode-editor-outer-iframe/index.html',
       minify: false,
+      templateParameters: htmlTemplateParameters,
     }),
     new HtmlWebpackPlugin({
       chunks: [],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
-      template: './src/templates/vscode-editor-inner-iframe.html',
+      template: './src/templates/vscode-editor-inner-iframe/index.html',
       filename: 'vscode-editor-inner-iframe/index.html',
       minify: false,
+      templateParameters: htmlTemplateParameters,
     }),
     new ScriptExtHtmlWebpackPlugin({
       // Support CORS so we can use the CDN endpoint from either of the domains
@@ -128,12 +142,6 @@ const config = {
         attribute: 'crossorigin',
         value: 'anonymous',
       },
-    }),
-    new InterpolateHtmlPlugin(HtmlWebpackPlugin, {
-      // This plugin replaces variables of the form %VARIABLE% with the value provided in this object
-      UTOPIA_SHA: process.env.UTOPIA_SHA ?? 'nocommit',
-      UTOPIA_DOMAIN: BaseDomain,
-      VSCODE_DOMAIN: VSCodeBaseDomain,
     }),
 
     // Optionally run the TS compiler in a different thread, but as part of the webpack build still
@@ -165,10 +173,13 @@ const config = {
 
     new webpack.DefinePlugin({
       // with Webpack 5, process is not shimmed anymore, these are some properties that I had to replace with undefined so the various checks do not throw a runtime type error
+      process: 'undefined',
+      'process.cwd': 'undefined',
       'process.platform': 'undefined',
       'process.env.BABEL_TYPES_8_BREAKING': 'undefined',
       'process.env.JEST_WORKER_ID': 'undefined',
       'process.env.HOT_MODE': hot,
+      'process.env.HMR': false,
     }),
 
     // setting up the various process.env.VARIABLE replacements
@@ -201,6 +212,7 @@ const config = {
     symlinks: true, // We set this to false as we have symlinked some common code from the website project
     alias: {
       uuiui: srcPath('uuiui'),
+      'worker-imports': path.resolve(__dirname, 'src/core/workers/worker-import-utils.ts'),
       'uuiui-deps': srcPath('uuiui-deps'),
       fs: require.resolve('./node_modules/browserfs/dist/shims/fs'),
       process: require.resolve('./node_modules/browserfs/dist/shims/process'),

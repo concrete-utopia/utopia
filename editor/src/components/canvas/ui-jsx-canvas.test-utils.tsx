@@ -4,7 +4,7 @@ import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 applyUIDMonkeyPatch()
 import * as ReactDOM from 'react-dom'
 import * as ReactDOMServer from 'react-dom/server'
-import * as UtopiaAPI from 'utopia-api'
+import * as UtopiaAPI from 'utopia-api/core'
 import * as UUIUI from '../../uuiui'
 import * as EmotionReact from '@emotion/react'
 

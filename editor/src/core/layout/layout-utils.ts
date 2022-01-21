@@ -1,4 +1,4 @@
-import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api'
+import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api/core'
 import { transformElementAtPath } from '../../components/editor/store/editor-state'
 import * as EP from '../shared/element-path'
 import {

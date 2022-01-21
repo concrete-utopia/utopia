@@ -57,7 +57,7 @@ import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { when } from '../../../utils/react-conditionals'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { safeIndex } from '../../../core/shared/array-utils'
-import { LayoutSystem } from 'utopia-api'
+import { LayoutSystem } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 type InsertMenuItemValue = InsertableComponent & {

@@ -1,4 +1,4 @@
-const domtoimage = require('domtoimage')
+import domtoimage from 'domtoimage'
 
 const BASE64_PREFIX = 'data:image/png;base64,'
 

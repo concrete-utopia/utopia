@@ -1,6 +1,6 @@
 import { TypeDefinitions } from '../shared/npm-dependency-types'
 import { createLinterRequestMessage } from './linter/linter-worker'
-import { createLinterWorker, createParserPrinterWorker, createWatchdogWorker } from './utils'
+import { createLinterWorker, createParserPrinterWorker, createWatchdogWorker } from 'worker-imports'
 import {
   createWatchdogInitMessage,
   createHeartbeatResponseMessage,

@@ -1,4 +1,4 @@
-import { PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api/core'
 import { ReactThreeFiberControls } from '../property-controls/third-party-property-controls/react-three-fiber-controls'
 import {
   ComponentDescriptor,

@@ -8,7 +8,7 @@ import {
   emptyComments,
   jsxTextBlock,
 } from '../../core/shared/element-template'
-import { NormalisedFrame } from 'utopia-api'
+import { NormalisedFrame } from 'utopia-api/core'
 
 export function defaultSceneElement(
   uid: string,

@@ -1,3 +1,4 @@
+import '../../../vite-shims'
 import { OutgoingWorkerMessage } from '../common/worker-types'
 import { handleMessage } from './ts-worker'
 

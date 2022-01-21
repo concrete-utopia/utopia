@@ -1,5 +1,4 @@
 import * as Chai from 'chai'
-import { NormalisedFrame } from 'utopia-api'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   emptyComments,

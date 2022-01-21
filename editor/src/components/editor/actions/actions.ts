@@ -3,13 +3,7 @@ import update from 'immutability-helper'
 import React from 'react'
 import localforage from 'localforage'
 import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
-import {
-  FlexAlignment,
-  FramePoint,
-  LayoutSystem,
-  NormalisedFrame,
-  PropertyControls,
-} from 'utopia-api'
+import { FramePoint, LayoutSystem } from 'utopia-api/core'
 import {
   SampleFileBuildResult,
   SampleFileBundledExportsInfo,

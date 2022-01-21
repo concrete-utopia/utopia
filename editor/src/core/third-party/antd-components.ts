@@ -1,5 +1,5 @@
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
-import { PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api/core'
 import {
   ComponentDescriptor,
   ComponentDescriptorsForFile,

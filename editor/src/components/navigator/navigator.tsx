@@ -27,7 +27,6 @@ import {
   InspectorSectionHeader,
 } from '../../uuiui'
 import { last } from '../../core/shared/array-utils'
-import { FlexCol } from 'utopia-api'
 
 const NavigatorContainerId = 'navigator'
 

@@ -1,6 +1,6 @@
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { ParsedPropertyControls } from './property-controls-parser'
-import { PropertyControls, ImportType } from 'utopia-api'
+import { PropertyControls, ImportType } from 'utopia-api/core'
 import { isRight, foldEither, left, maybeEitherToMaybe, eitherToMaybe } from '../shared/either'
 import { forEachValue } from '../shared/object-utils'
 import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'

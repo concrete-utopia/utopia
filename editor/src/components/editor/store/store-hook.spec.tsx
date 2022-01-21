@@ -1,5 +1,4 @@
 import React from 'react'
-import { o } from 'ramda'
 import create, { UseStore } from 'zustand'
 import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext, useSelectorWithCallback } from './store-hook'

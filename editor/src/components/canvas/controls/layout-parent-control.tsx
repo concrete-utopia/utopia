@@ -1,5 +1,5 @@
 import React from 'react'
-import { FlexDirection, FlexWrap } from 'utopia-api'
+import { FlexDirection, FlexWrap } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'

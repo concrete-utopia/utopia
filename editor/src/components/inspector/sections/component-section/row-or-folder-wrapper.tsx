@@ -1,5 +1,5 @@
 import React from 'react'
-import { ControlDescription } from 'utopia-api'
+import { ControlDescription } from 'utopia-api/core'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'

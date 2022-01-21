@@ -1,4 +1,4 @@
-import { ImportType, PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api/core'
 import { URL_HASH } from '../../common/env-vars'
 import { parsePropertyControls } from '../../core/property-controls/property-controls-parser'
 import {

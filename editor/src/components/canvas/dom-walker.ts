@@ -1,5 +1,5 @@
 import React from 'react'
-import { sides } from 'utopia-api'
+import { sides } from 'utopia-api/core'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 

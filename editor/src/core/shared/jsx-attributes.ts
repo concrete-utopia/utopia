@@ -1,6 +1,6 @@
 import * as ObjectPath from 'object-path'
 import { MapLike } from 'typescript'
-import { UtopiaUtils } from 'utopia-api'
+import { UtopiaUtils } from 'utopia-api/core'
 import { findLastIndex, uniqBy } from './array-utils'
 import { Either, isLeft, left, mapEither, reduceWithEither, right, sequenceEither } from './either'
 import {

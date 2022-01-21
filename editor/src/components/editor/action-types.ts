@@ -1,4 +1,3 @@
-import { LayoutSystem, NormalisedFrame } from 'utopia-api'
 import {
   ElementInstanceMetadata,
   JSXAttribute,

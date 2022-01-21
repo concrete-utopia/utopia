@@ -12,7 +12,7 @@ import {
   isPercentPin,
   LayoutSystem,
   UtopiaUtils,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { findLastIndex } from '../../../core/shared/array-utils'
 import {

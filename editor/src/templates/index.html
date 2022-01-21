@@ -6,12 +6,12 @@
     <link
       rel="icon"
       type="image/png"
-      href="%UTOPIA_DOMAIN%/editor/icons/favicons/favicon-192.png?hash=%UTOPIA_SHA%"
+      href="<%- UTOPIA_DOMAIN %>/editor/icons/favicons/favicon-192.png?hash=<%- UTOPIA_SHA %>"
     />
     <link
       rel="preload"
       type="image/png"
-      href="%UTOPIA_DOMAIN%/editor/pyramid_fullsize@2x.jpg?hash=%UTOPIA_SHA%"
+      href="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
       as="image"
     />
 
@@ -24,6 +24,10 @@
       integrity="sha256-SWiKkXQIRpzbpHAKgzvEE/LefY3As3O7OH79qVhxRV4="
       crossorigin="anonymous"
     ></script>
+
+    <% if (VITE) { %>
+    <script defer type="module" src="/editor-entry-point.tsx"></script>
+    <% } %>
 
     <!--preloadVSCode-->
 
@@ -96,7 +100,7 @@
           "
         >
           <img
-            src="%UTOPIA_DOMAIN%/editor/pyramid_fullsize@2x.jpg?hash=%UTOPIA_SHA%"
+            src="<%- UTOPIA_DOMAIN %>/editor/pyramid_fullsize@2x.jpg?hash=<%- UTOPIA_SHA %>"
             height="128px"
             alt="Utopia Logo"
           />

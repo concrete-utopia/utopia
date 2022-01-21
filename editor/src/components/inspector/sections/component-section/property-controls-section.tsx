@@ -16,7 +16,7 @@ import { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { VerySubdued } from '../../../../uuiui'
 import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
-import { PropertyControls } from 'utopia-api'
+import { PropertyControls } from 'utopia-api/core'
 
 function useFilterPropsContext(paths: ElementPath[]): InspectorPropsContextData {
   const currentContext = useContext(InspectorPropsContext)

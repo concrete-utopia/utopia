@@ -4,6 +4,8 @@
 //   trackAllPureComponents: true,
 // })
 
+import '../vite-shims'
+
 // import feature switches so they are loaded before anything else can read them
 import '../utils/feature-switches'
 

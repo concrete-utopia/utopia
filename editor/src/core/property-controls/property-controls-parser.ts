@@ -28,7 +28,7 @@ import {
   BasicControlOptions,
   ExpressionControlOption,
   TupleControlDescription,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import {
   descriptionParseError,

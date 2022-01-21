@@ -1,4 +1,4 @@
-import { ImportType, NormalisedFrame } from 'utopia-api'
+import { ImportType, NormalisedFrame } from 'utopia-api/core'
 import {
   ArbitraryJSBlock,
   ImportStatement,

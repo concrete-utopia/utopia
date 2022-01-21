@@ -12,7 +12,7 @@ import {
   UnionControlDescription,
   RegularControlDescription,
   ExpressionInputControlDescription,
-} from 'utopia-api'
+} from 'utopia-api/core'
 import {
   JSXAttribute,
   jsxArrayValue,

@@ -1,5 +1,5 @@
 import { handleMessage, IncomingWorkerMessage } from './ts-worker'
-import { LayoutSystem } from 'utopia-api'
+import { LayoutSystem } from 'utopia-api/core'
 import {
   EmptyExportsDetail,
   RevisionsState,

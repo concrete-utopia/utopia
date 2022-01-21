@@ -21,7 +21,7 @@ let lastSentMessage: number = 0
 let lastConsumedMessage: number = -1
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
 const POLLING_TIMEOUT = 8
-let pollTimeout: number | null = null
+let pollTimeout: any | null = null
 
 function lastConsumedMessageKey(mailbox: Mailbox): string {
   return `/${mailbox}_LAST_CONSUMED`

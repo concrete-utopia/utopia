@@ -19,7 +19,7 @@ import {
   ControlStatus,
   ControlStyles,
 } from '../../../common/control-status'
-import { LayoutSystem } from 'utopia-api'
+import { LayoutSystem } from 'utopia-api/core'
 import { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
 import {
   DetectedLayoutSystem,

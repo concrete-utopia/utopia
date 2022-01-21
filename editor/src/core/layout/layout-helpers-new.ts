@@ -1,4 +1,4 @@
-import { FramePin, FlexLength, LayoutSystem, FramePoint } from 'utopia-api'
+import { FramePin, FlexLength, LayoutSystem, FramePoint } from 'utopia-api/core'
 import { PropertyPath, PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { ElementInstanceMetadata } from '../shared/element-template'

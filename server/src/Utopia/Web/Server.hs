@@ -62,6 +62,21 @@ redirector redirections applicationToWrap request sendResponse =
       passthrough = applicationToWrap request sendResponse
       redirectTo target = sendResponse $ responseLBS temporaryRedirect307 [("Location", target)] mempty
   in  maybe passthrough redirectTo possibleRedirection
+{-|
+  When importing a JSON file, Vite will create a URL that ends in '.json?import', and expects the content
+  type of that request to be application/javascript, which we need to explicitly set here, otherwise the
+  server will return it as a JSON content type (because of the extension)
+-}
+viteFudgeMiddleware :: Middleware
+viteFudgeMiddleware applicationToWrap request sendResponse =
+  let rawPath = rawPathInfo request
+      rawQuery = rawQueryString request
+      shouldRewriteHeader = B.isSuffixOf ".json" rawPath && rawQuery == "?import"
+      rewriteHeaders headers = fmap (\header -> if fst header == "Content-Type" then (fst header, "application/javascript") else header) headers
+      rewriteContentType response = mapResponseHeaders rewriteHeaders response
+      withRewriteSendResponse response = sendResponse $ rewriteContentType response
+      sendResponseToUse = if shouldRewriteHeader then withRewriteSendResponse else sendResponse
+   in applicationToWrap request sendResponseToUse
 
 projectToPPath :: [Text] -> [Text]
 projectToPPath ("project" : pathRemainder) = "p" : pathRemainder
@@ -159,6 +174,7 @@ runServerWithResources EnvironmentRuntime{..} = do
     $ requestRewriter assetsCache
     $ gzip def
     $ noCacheMiddleware
+    $ viteFudgeMiddleware
     $ monitorEndpoints apiProxy meterMap
     $ serverApplication
     $ _serverAPI resources

@@ -1,4 +1,4 @@
-import { SafeFunction } from '../../shared/code-exec-utils'
+import { safeFunction } from '../../shared/code-exec-utils'
 import * as Babel from '@babel/standalone'
 import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
 import * as BabelExportNamespaceFrom from '@babel/plugin-proposal-export-namespace-from'
@@ -83,7 +83,7 @@ function evaluateJs(
     }
 
     // evaluating the module code https://nodejs.org/api/modules.html#modules_the_module_wrapper
-    SafeFunction(
+    safeFunction(
       false,
       { require: requireFn, exports: exports, module: module, process: process },
       filePath,

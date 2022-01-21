@@ -4,7 +4,7 @@ import { PackageType } from '../core/shared/project-file-types'
 import { AnyJson, JsonMap } from '../missing-types/json'
 import { JsonSchema, PropSchema } from '../missing-types/json-schema'
 import { ControlStyles } from '../components/inspector/common/control-status'
-import { NormalisedFrame } from 'utopia-api'
+import { NormalisedFrame } from 'utopia-api/core'
 import { fastForEach, NO_OP } from '../core/shared/utils'
 import {
   CanvasRectangle,
@@ -136,7 +136,7 @@ import {
   keepReferenceIfShallowEqual,
 } from '../core/shared/equality-utils'
 import {
-  SafeFunction,
+  safeFunction,
   SafeFunctionCurriedErrorHandler,
   processErrorWithSourceMap,
 } from '../core/shared/code-exec-utils'
@@ -926,7 +926,7 @@ export default {
   colorToRGBAWithoutOpacity: colorToRGBAWithoutOpacity,
   colorToReactNativeColor: colorToReactNativeColor,
   nullIfTransparent: nullIfTransparent,
-  SafeFunction: SafeFunction,
+  SafeFunction: safeFunction,
   SafeFunctionCurriedErrorHandler: SafeFunctionCurriedErrorHandler,
   TRANSPARENT_IMAGE_SRC: TRANSPARENT_IMAGE_SRC,
   get: get,
