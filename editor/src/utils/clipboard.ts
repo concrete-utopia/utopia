@@ -33,7 +33,7 @@ import {
 } from '../components/custom-code/code-file'
 import { mapDropNulls } from '../core/shared/array-utils'
 // tslint:disable-next-line:no-var-requires
-const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malformatted
+import ClipboardPolyfill from 'clipboard-polyfill'
 
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
