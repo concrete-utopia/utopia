@@ -32,7 +32,6 @@ import {
   normalisePathToUnderlyingTarget,
 } from '../components/custom-code/code-file'
 import { mapDropNulls } from '../core/shared/array-utils'
-// tslint:disable-next-line:no-var-requires
 import ClipboardPolyfill from 'clipboard-polyfill'
 
 interface JSXElementCopyData {
