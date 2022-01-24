@@ -1065,6 +1065,7 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <Rectangle
+                  data-testid='rectangle'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1168,6 +1169,7 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <Rectangle
+                  data-testid='rectangle'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1268,6 +1270,7 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <Rectangle
+                  data-testid='rectangle'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1360,6 +1363,7 @@ describe('INSERT_INSERTABLE', () => {
                   }}
                 />
                 <Rectangle
+                  data-testid='rectangle'
                   style={{
                     position: 'absolute',
                     left: 100,
@@ -1443,6 +1447,7 @@ describe('INSERT_INSERTABLE', () => {
                     }}
                   />
                   <Rectangle
+                    data-testid='rectangle'
                     style={{
                       position: 'absolute',
                       left: 100,

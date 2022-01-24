@@ -51,6 +51,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
             />
             <Rectangle
               data-uid='card-inner-rectangle'
+              data-testid='rectangle'
               style={{
                 position: 'absolute',
                 left: 100,
@@ -101,6 +102,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
             />
             <Rectangle
               data-uid='card-inner-rectangle'
+              data-testid='rectangle'
               style={{
                 position: 'absolute',
                 left: 160,

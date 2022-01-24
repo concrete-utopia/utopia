@@ -155,6 +155,7 @@ describe('modifyUnderlyingTarget', () => {
               data-thing='a thing'
             />
             <Rectangle
+              data-testid='rectangle'
               style={{
                 position: 'absolute',
                 left: 100,
