@@ -31,18 +31,17 @@ describe('Dom-walker Caching', () => {
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(saveDomReportActions.length).toBe(3)
+    expect(saveDomReportActions.length).toBe(2)
     expect(saveDomReportActions[0].cachedPaths).toEqual([])
     expect(saveDomReportActions[1].cachedPaths).toEqual([])
-    expect(saveDomReportActions[2].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
   })
 
-  it('returns cached metadata for scroll', async () => {
+  it('returns cached metadata for zoom', async () => {
     const renderResult = await prepareTestProject()
 
     renderResult.clearRecordedActions()
 
-    await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 20, y: 30 }))], true)
+    await renderResult.dispatch([CanvasActions.zoom(2)], true)
 
     const saveDomReportActions = renderResult
       .getRecordedActions()
