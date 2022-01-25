@@ -25,6 +25,7 @@ import {
   ProjectContentTreeRoot,
 } from '../../assets'
 import { drop } from '../../../core/shared/array-utils'
+import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 export interface PathMapping {
   from: ElementPath
@@ -50,6 +51,10 @@ export interface SetDragMinimumExceededCommand {
   type: 'SET_DRAG_MININUM_EXCEEDED'
 }
 
+export const setDragMinimumExceededCommand: SetDragMinimumExceededCommand = {
+  type: 'SET_DRAG_MININUM_EXCEEDED',
+}
+
 export interface MoveElement {
   type: 'MOVE_ELEMENT'
   target: ElementPath
@@ -66,7 +71,19 @@ export function moveElement(target: ElementPath, x: number, y: number): MoveElem
   }
 }
 
-export type CanvasCommand = SetDragMinimumExceededCommand | MoveElement
+export interface WildcardPatch {
+  type: 'WILDCARD_PATCH'
+  patch: EditorStatePatch
+}
+
+export function wildcardPatch(patch: EditorStatePatch): WildcardPatch {
+  return {
+    type: 'WILDCARD_PATCH',
+    patch: patch,
+  }
+}
+
+export type CanvasCommand = SetDragMinimumExceededCommand | MoveElement | WildcardPatch
 
 export const runSetDragMinimumExceededCommand: CommandFunction<SetDragMinimumExceededCommand> = (
   editorState: EditorState,
@@ -161,7 +178,20 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
   }
 }
 
-function applyValuesAtPath(
+export const runWildcardPatch: CommandFunction<WildcardPatch> = (
+  editorState: EditorState,
+  sessionState: SelectModeCanvasSessionState,
+  pathMappings: PathMappings,
+  command: WildcardPatch,
+) => {
+  return {
+    sessionState: sessionState,
+    editorStatePatch: command.patch,
+    pathMappings: pathMappings,
+  }
+}
+
+export function applyValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
   jsxValuesAndPathsToSet: ValueAtPath[],
@@ -197,13 +227,13 @@ function applyValuesAtPath(
             revisionsState: {
               $set: RevisionsState.ParsedAhead,
             },
-          },
-          lastParseSuccess: {
-            topLevelElements: {
-              $set: success.topLevelElements,
-            },
-            imports: {
-              $set: success.imports,
+            parsed: {
+              topLevelElements: {
+                $set: success.topLevelElements,
+              },
+              imports: {
+                $set: success.imports,
+              },
             },
           },
         },
@@ -249,6 +279,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runMoveElementCommand(editorState, sessionState, pathMappings, command)
     case 'SET_DRAG_MININUM_EXCEEDED':
       return runSetDragMinimumExceededCommand(editorState, sessionState, pathMappings, command)
+    case 'WILDCARD_PATCH':
+      return runWildcardPatch(editorState, sessionState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -286,4 +318,17 @@ export function foldCommands(
     statePatches: statePatches,
     sessionState: workingSessionState,
   }
+}
+
+export function applyStatePatches(
+  editorState: EditorState,
+  priorPatchedState: EditorState,
+  patches: Array<EditorStatePatch>,
+): EditorState {
+  return keepDeepReferenceEqualityIfPossible(
+    priorPatchedState,
+    patches.reduce((workingState, patch) => {
+      return update(workingState, patch)
+    }, editorState),
+  )
 }

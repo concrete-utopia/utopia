@@ -212,6 +212,7 @@ import { applyCanvasStrategy } from './canvas-strategies/canvas-strategies'
 import { SelectModeCanvasSessionState } from './canvas-strategies/canvas-strategy-types'
 import { EditorDispatch } from '../editor/action-types'
 import CanvasActions from './canvas-actions'
+import { applyStatePatches } from './commands/commands'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -367,13 +368,14 @@ export function clearDragStateAndInteractionSession(
       'final',
     )
 
-    // TODO do we want to also apply the editorStatePatch here??
     const producedTransientFilesState = producedTransientCanvasState.filesState
     result = applyTransientFilesState(
       producedTransientFilesState,
       producedTransientCanvasState.toastsToApply,
       result,
     )
+
+    result = applyStatePatches(result, result, producedTransientCanvasState.editorStatePatch)
   }
 
   return {
@@ -1549,7 +1551,7 @@ function getTransientCanvasStateFromFrameChanges(
       return transientFileState(success.topLevelElements, success.imports)
     }, successByFilename),
     workingEditorState.toasts, // TODO filter for relevant toasts
-    null,
+    [],
   )
 }
 
@@ -1581,7 +1583,7 @@ export function produceResizeCanvasTransientState(
       editorState.highlightedViews,
       null,
       [],
-      null,
+      [],
     )
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
@@ -1660,7 +1662,7 @@ export function produceResizeSingleSelectCanvasTransientState(
       editorState.highlightedViews,
       null,
       [],
-      null,
+      [],
     )
   }
   const elementToTarget = elementsToTarget[0]
@@ -1786,7 +1788,7 @@ export function produceCanvasTransientState(
                   [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
                 },
                 [],
-                null,
+                [],
               )
               return parseSuccess
             },
@@ -1853,7 +1855,7 @@ export function produceCanvasTransientState(
       editorState.highlightedViews,
       null,
       [],
-      null,
+      [],
     )
   } else {
     return transientState
@@ -2419,7 +2421,7 @@ function produceMoveTransientCanvasState(
     workingEditorState.highlightedViews,
     transientFilesState,
     workingEditorState.toasts, // TODO Filter for relevant toasts
-    null,
+    [],
   )
 }
 
@@ -2990,7 +2992,7 @@ function createCanvasTransientStateFromProperties(
       updatedEditor.highlightedViews,
       transientFilesState,
       [],
-      null,
+      [],
     )
   }
 }

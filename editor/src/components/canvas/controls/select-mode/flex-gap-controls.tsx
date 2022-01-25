@@ -2,6 +2,7 @@ import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { aperture, mapDropNulls } from '../../../../core/shared/array-utils'
 import { point, windowPoint } from '../../../../core/shared/math-utils'
+import { when } from '../../../../utils/react-conditionals'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { startNewSelectModeCanvasSession } from '../../canvas-strategies/canvas-strategy-types'
@@ -53,6 +54,13 @@ export const FlexGapControls = React.memo(() => {
     [dispatch, canvasScale, roundedCanvasOffset],
   )
 
+  const completeDrag = React.useCallback(
+    (event: React.MouseEvent) => {
+      dispatch([CanvasActions.clearDragState(true)], 'canvas')
+    },
+    [dispatch],
+  )
+
   const flexGapRects = React.useMemo(() => {
     const targetParent = MetadataUtils.getParent(jsxMetadata, targetedElement)
     const isFlexLayouted = MetadataUtils.isFlexLayoutedContainer(targetParent)
@@ -78,6 +86,20 @@ export const FlexGapControls = React.memo(() => {
 
   return (
     <>
+      {when(
+        flexGapRects.length > 0,
+        <div
+          key={`flex-gap-rect-mouse-catcher`}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+          }}
+          onMouseUp={completeDrag}
+        />,
+      )}
       {flexGapRects.map((rect) => {
         return (
           <div

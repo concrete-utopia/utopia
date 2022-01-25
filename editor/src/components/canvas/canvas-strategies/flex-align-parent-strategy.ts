@@ -24,6 +24,7 @@ import {
   modifyUnderlyingForOpenFile,
   TransientFilesState,
 } from '../../editor/store/editor-state'
+import { setDragMinimumExceededCommand, wildcardPatch } from '../commands/commands'
 import {
   CanvasStrategy,
   CanvasStrategyUpdateFnResult,
@@ -62,19 +63,15 @@ export const flexAlignParentStrategy: CanvasStrategy = {
       !sessionState.dragDeltaMinimumPassed &&
       magnitude(sessionProps.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
     ) {
-      return {
-        newSessionState: sessionState,
-        transientFilesState: {},
-        editorStatePatch: {
-          canvas: {
-            controls: {
-              animatedPlaceholderTargetUids: {
-                $set: lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
-              },
+      return wildcardPatch({
+        canvas: {
+          controls: {
+            animatedPlaceholderTargetUids: {
+              $set: lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
             },
           },
         },
-      }
+      })
     }
 
     const targetParent = MetadataUtils.getParent(editorState.jsxMetadata, draggedElement)
@@ -86,13 +83,9 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     // if any indicator box is highlighted, we also want to change the parent's style too
     const higlightedIndicator = indicatorBoxes.find((b) => b.highlighted === true)
     if (higlightedIndicator == null || targetParent == null) {
-      return {
-        newSessionState: {
-          ...sessionState,
-          dragDeltaMinimumPassed: true,
-        },
-        transientFilesState: {},
-        editorStatePatch: {
+      return [
+        setDragMinimumExceededCommand,
+        wildcardPatch({
           canvas: {
             controls: {
               flexAlignDropTargets: { $set: indicatorBoxes },
@@ -101,8 +94,8 @@ export const flexAlignParentStrategy: CanvasStrategy = {
               },
             },
           },
-        },
-      }
+        }),
+      ]
     } else {
       const flexPropToChange: AssociatedFlexProp = higlightedIndicator.associatedFlexProp
 
@@ -145,13 +138,9 @@ export const flexAlignParentStrategy: CanvasStrategy = {
         childOpacity0,
       )
 
-      return {
-        newSessionState: {
-          ...sessionState,
-          dragDeltaMinimumPassed: true,
-        },
-        transientFilesState: transientFilesStateAfterChild,
-        editorStatePatch: {
+      return [
+        setDragMinimumExceededCommand,
+        wildcardPatch({
           canvas: {
             controls: {
               flexAlignDropTargets: { $set: indicatorBoxes },
@@ -160,8 +149,8 @@ export const flexAlignParentStrategy: CanvasStrategy = {
               },
             },
           },
-        },
-      }
+        }),
+      ]
     }
   },
 }
