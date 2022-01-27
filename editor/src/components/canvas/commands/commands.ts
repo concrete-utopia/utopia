@@ -325,10 +325,14 @@ export function applyStatePatches(
   priorPatchedState: EditorState,
   patches: Array<EditorStatePatch>,
 ): EditorState {
-  return keepDeepReferenceEqualityIfPossible(
-    priorPatchedState,
-    patches.reduce((workingState, patch) => {
-      return update(workingState, patch)
-    }, editorState),
-  )
+  if (patches.length === 0) {
+    return editorState
+  } else {
+    return keepDeepReferenceEqualityIfPossible(
+      priorPatchedState,
+      patches.reduce((workingState, patch) => {
+        return update(workingState, patch)
+      }, editorState),
+    )
+  }
 }
