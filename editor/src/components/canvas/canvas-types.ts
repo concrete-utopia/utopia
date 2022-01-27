@@ -28,7 +28,7 @@ import {
   CanvasInteractionSession,
   SelectModeCanvasSessionProps,
 } from './canvas-strategies/canvas-strategy-types'
-import { InteractionSession } from '../../interactions_proposal'
+import { InteractionState } from '../../interactions_proposal'
 
 export const CanvasContainerID = 'canvas-container'
 
@@ -579,7 +579,7 @@ type Drag = IMouseEvent & {
 
 type Move = IMouseEvent & {
   event: 'MOVE'
-  interactionSession: InteractionSession | null
+  interactionState: InteractionState | null
 }
 
 type Click = IMouseEvent & {
@@ -639,9 +639,9 @@ export interface CreateDragState {
   dragState: DragState
 }
 
-export interface CreateInteractionSession {
-  action: 'CREATE_INTERACTION_SESSION'
-  interactionSession: InteractionSession
+export interface CreateInteractionState {
+  action: 'CREATE_INTERACTION_STATE'
+  interactionState: InteractionState
 }
 
 export interface UpdateCanvasSessionProps {
@@ -669,7 +669,7 @@ export type CanvasAction =
   | ScrollCanvas
   | ClearDragState
   | CreateDragState
-  | CreateInteractionSession
+  | CreateInteractionState
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility

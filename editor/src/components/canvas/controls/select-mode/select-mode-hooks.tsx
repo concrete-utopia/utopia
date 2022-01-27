@@ -41,10 +41,7 @@ import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
-import {
-  startInteractionSession,
-  startNewSelectModeCanvasSession,
-} from '../../canvas-strategies/canvas-strategy-types'
+import { createMouseInteractionState } from '../../../../interactions_proposal'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -315,11 +312,8 @@ function useStartCanvasSession(): (
       }
 
       dispatch([
-        CanvasActions.createDragState(
-          startNewSelectModeCanvasSession(start, { type: 'BOUNDING_AREA', target: target }),
-        ),
-        CanvasActions.createInteractionSession(
-          startInteractionSession(start, { type: 'BOUNDING_AREA', target: target }),
+        CanvasActions.createInteractionState(
+          createMouseInteractionState(start, { type: 'BOUNDING_AREA', target: target }),
         ),
       ])
     },

@@ -1,7 +1,6 @@
 import type { Spec } from 'immutability-helper'
 import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import { InteractionSession } from '../../../interactions_proposal'
 import type {
   EditorState,
   EditorStatePatch,
@@ -25,6 +24,10 @@ interface FlexGapHandle {
   type: 'FLEX_GAP_HANDLE'
 }
 
+interface KeyboardCatcherControl {
+  type: 'KEYBOARD_CATCHER_CONTROL'
+}
+
 export interface FlexAlignControlRectProps {
   x: number
   y: number
@@ -41,7 +44,7 @@ export interface FlexGapControlRectProps {
   height: number
 }
 
-type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle
+export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl
 
 export interface CanvasStrategy {
   name: string
@@ -121,40 +124,5 @@ export function updateSelectModeCanvasSessionDragVector(
       drag: drag,
       lastTimeMouseMoved: Date.now(),
     },
-  }
-}
-
-export function startInteractionSession(
-  start: CanvasPoint,
-  activeControl: CanvasControlType,
-): InteractionSession {
-  return {
-    mouse: {
-      start: start,
-      mousePosition: start,
-      drag: null,
-      dragThresholdPassed: false,
-    },
-    keyboard: { keysPressed: [] },
-    activeControl: activeControl as any, // TODO FIX CanvasControlType
-    lastInteractionTime: Date.now(),
-    accumulatedCommands: [],
-  }
-}
-
-export function updateInteractionSession(
-  currentSession: InteractionSession,
-  mousePosition: CanvasPoint,
-  drag: CanvasVector,
-): InteractionSession {
-  return {
-    ...currentSession,
-    mouse: {
-      start: currentSession.mouse?.start ?? mousePosition,
-      mousePosition: mousePosition,
-      drag: drag,
-      dragThresholdPassed: currentSession.mouse?.dragThresholdPassed ?? true,
-    },
-    lastInteractionTime: Date.now(),
   }
 }

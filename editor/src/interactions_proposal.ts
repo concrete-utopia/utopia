@@ -1,9 +1,10 @@
-// Faked versions of real types
-type ElementPath = any
-type CanvasPoint = { x: number; y: number }
-type CanvasVector = { x: number; y: number }
-type KeyCharacter = string
-type ElementInstanceMetadata = any
+import { EdgePosition } from './components/canvas/canvas-types'
+import { MoveIntoDragThreshold } from './components/canvas/canvas-utils'
+import { ElementInstanceMetadata } from './core/shared/element-template'
+import { CanvasPoint, CanvasVector } from './core/shared/math-utils'
+import { ElementPath } from './core/shared/project-file-types'
+import { KeyCharacter } from './utils/keyboard'
+import { CanvasControlType } from './components/canvas/canvas-strategies/canvas-strategy-types'
 
 interface CanvasState {
   // The idea here being that we should be restricting the model we're supplying to the interactions system,
@@ -42,34 +43,48 @@ interface SetDragMinimumExceededCommand {
 // Commands that update other parts of the editor state, and will be discarded at the end of the interaction
 type EditorUpdateCommand = SetDragMinimumExceededCommand
 
-interface BoundingBoxControl {
-  type: 'BOUNDING_BOX_CONTROL'
-  target: ElementPath
-}
-
-interface KeyboardCatcherControl {
-  type: 'KEYBOARD_CATCHER_CONTROL'
-}
-
-type CanvasControlType = BoundingBoxControl | KeyboardCatcherControl
-
 interface MouseInteraction {
-  start: CanvasPoint
   mousePosition: CanvasPoint
+  dragStart: CanvasPoint | null
+  drag: CanvasVector | null
+  dragThresholdPassed: boolean
+  // Should dragging be moved more into the strategy somehow?
+}
+
+// Are interaction sessions created from a mouse move? This is required if we want to pull highlighting and selection into this
+// If the answer is yes, how does a dragging session start? Do we then require strategies to end the current session and create
+// a new session?
+
+// Separate InteractionSession into "state of the universe" (which includes current keys pressed, mouse position, which mouse
+// buttons are pressed), and "session specific data" (which includes dragging, active control etc.)
+
+interface MouseState {
+  mousePosition: CanvasPoint
+  primaryButtonDown: boolean
+}
+
+interface DragState {
+  dragStart: CanvasPoint | null
   drag: CanvasVector | null
   dragThresholdPassed: boolean
 }
 
-interface KeyboardInteraction {
+interface KeyboardState {
   keysPressed: Array<KeyCharacter>
-  // Sean:
-  // Does the above include modifiers?
 }
 
-export interface InteractionSession {
-  mouse: MouseInteraction | null
-  keyboard: KeyboardInteraction | null
+export interface InputState {
+  // This represents the state of the universe, and so will always exist
+  // For the sake of performance, this _definitely_ needs to live outside of the react lifecycle
+  mouse: MouseState
+  keyboard: KeyboardState
+}
+
+export interface InteractionState {
+  // This represents an actual interaction that has started as the result of a key press or a drag
+  dragState: DragState
   activeControl: CanvasControlType // Do we need to guard against multiple controls trying to trigger or update an interaction session?
+  sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
   accumulatedCommands: Array<ModelUpdateCommandsWithReason>
 
@@ -92,6 +107,78 @@ export interface InteractionSession {
   // The above is predicated on the commands setting discrete values and/or not changing something on another element at the same time.
 }
 
+// Does this need to be split into a default mouse interaction state and a separate drag interaction state?
+// Thinking here in terms of highlight and selection
+export function createMouseInteractionState(
+  mouseDownPoint: CanvasPoint,
+  activeControl: CanvasControlType,
+): InteractionState {
+  return {
+    dragState: {
+      dragStart: mouseDownPoint,
+      drag: null,
+      dragThresholdPassed: false,
+    },
+    activeControl: activeControl,
+    sourceOfUpdate: activeControl,
+    lastInteractionTime: Date.now(),
+    accumulatedCommands: [],
+  }
+}
+
+function dragExceededThreshold(drag: CanvasVector): boolean {
+  const xDiff = Math.abs(drag.x)
+  const yDiff = Math.abs(drag.y)
+  return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
+}
+
+export function updateMouseInteractionState(
+  currentState: InteractionState,
+  drag: CanvasVector,
+  sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
+): InteractionState {
+  const dragThresholdPassed =
+    currentState.dragState.dragThresholdPassed || dragExceededThreshold(drag)
+  return {
+    dragState: {
+      dragStart: currentState.dragState.dragStart,
+      drag: dragThresholdPassed ? drag : null,
+      dragThresholdPassed: dragThresholdPassed,
+    },
+    activeControl: currentState.activeControl,
+    sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
+    lastInteractionTime: Date.now(),
+    accumulatedCommands: currentState.accumulatedCommands,
+  }
+}
+
+export function createKeyboardInteractionState(activeControl: CanvasControlType): InteractionState {
+  return {
+    dragState: {
+      dragStart: null,
+      drag: null,
+      dragThresholdPassed: false,
+    },
+    activeControl: activeControl,
+    sourceOfUpdate: activeControl,
+    lastInteractionTime: Date.now(),
+    accumulatedCommands: [],
+  }
+}
+
+export function updateKeyboardInteractionState(
+  currentState: InteractionState,
+  sourceOfUpdate: CanvasControlType,
+): InteractionState {
+  return {
+    dragState: currentState.dragState,
+    activeControl: currentState.activeControl,
+    sourceOfUpdate: sourceOfUpdate,
+    lastInteractionTime: Date.now(),
+    accumulatedCommands: currentState.accumulatedCommands,
+  }
+}
+
 interface StrategyApplicationResult {
   modelUpdates: Array<ModelUpdateCommandsWithReason>
   transientUpdates: Array<EditorUpdateCommand>
@@ -104,7 +191,8 @@ export interface CanvasStrategyMeta {
   shouldKeepCommands: (
     previousStrategy: string,
     nextStrategy: string | null,
-    session: InteractionSession,
+    inputState: InputState,
+    interactionState: InteractionState,
   ) => boolean
   // Sean:
   // Returns a boolean indicating if the latest/current collection of commands should be
@@ -114,13 +202,18 @@ export interface CanvasStrategyMeta {
 export interface CanvasStrategy {
   name: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
 
-  isApplicable: (canvasState: CanvasState, session: InteractionSession | null) => boolean
+  isApplicable: (
+    canvasState: CanvasState,
+    inputState: InputState,
+    interactionState: InteractionState | null,
+  ) => boolean
   // Determines if we should show the controls that this strategy renders
   // Maybe this can just be rolled into controlsToRender?
 
   controlsToRender: (
     canvasState: CanvasState,
-    session: InteractionSession | null,
+    inputState: InputState,
+    interactionState: InteractionState | null,
   ) => Array<CanvasControlType>
   // The controls to render when this strategy is applicable, regardless of if it is currently active
   // Other options:
@@ -136,16 +229,24 @@ export interface CanvasStrategy {
   // - Returning the objects like the ones we have in this example seems like a better option, if only for testing purposes.
   // - If we're eliminating most strategies by using `isApplicable`, we'd only be running a small subset of the strategies.
 
-  fitness: (canvasState: CanvasState, session: InteractionSession) => number
+  fitness: (
+    canvasState: CanvasState,
+    inputState: InputState,
+    interactionState: InteractionState,
+  ) => number
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
-  apply: (canvasState: CanvasState, session: InteractionSession) => StrategyApplicationResult
+  apply: (
+    canvasState: CanvasState,
+    inputState: InputState,
+    interactionState: InteractionState,
+  ) => StrategyApplicationResult
   // Returns the commands that inform how the model and the editor should be updated
 }
 
 function movementForKeys(keysPressed: Array<KeyCharacter>): CanvasVector | null {
   if (keysPressed.includes('left')) {
-    return { x: -5, y: 0 }
+    return { x: -5, y: 0 } as CanvasVector
   } else {
     return null
   }
@@ -155,7 +256,8 @@ export const SomeCanvasStrategyMeta: CanvasStrategyMeta = {
   shouldKeepCommands: (
     previousStrategy: string,
     nextStrategy: string | null,
-    session: InteractionSession,
+    inputState: InputState,
+    interactionState: InteractionState,
   ) => {
     return nextStrategy !== AbsoluteMoveStrategy.name
   },
@@ -163,55 +265,51 @@ export const SomeCanvasStrategyMeta: CanvasStrategyMeta = {
 
 export const AbsoluteMoveStrategy: CanvasStrategy = {
   name: 'AbsoluteMoveStrategy',
-  isApplicable: (canvasState: CanvasState): boolean => {
+  isApplicable: (
+    canvasState: CanvasState,
+    inputState: InputState,
+    interactionState: InteractionState | null,
+  ): boolean => {
     return canvasState.selectedElements.some(
       (e) => e.specialSizeMeasurements.position === 'absolute',
     )
   },
-  controlsToRender: (canvasState: CanvasState): Array<CanvasControlType> => {
+  controlsToRender: (
+    canvasState: CanvasState,
+    inputState: InputState,
+    interactionState: InteractionState | null,
+  ): Array<CanvasControlType> => {
     const boundingBoxes: Array<CanvasControlType> = canvasState.selectedElements.map((e) => ({
-      type: 'BOUNDING_BOX_CONTROL',
+      type: 'BOUNDING_AREA',
       target: e.elementPath,
     }))
     return boundingBoxes.concat({ type: 'KEYBOARD_CATCHER_CONTROL' })
   },
-  fitness: (canvasState: CanvasState, session: InteractionSession): number => {
-    if (AbsoluteMoveStrategy.isApplicable(canvasState, session)) {
-      if (session.activeControl.type === 'BOUNDING_BOX_CONTROL') {
-        return session.mouse?.drag == null ? 0 : 1
-      } else if (session.activeControl.type === 'KEYBOARD_CATCHER_CONTROL') {
-        return movementForKeys(session.keyboard?.keysPressed ?? []) == null ? 0 : 1
+  fitness: (
+    canvasState: CanvasState,
+    inputState: InputState,
+    interactionState: InteractionState,
+  ): number => {
+    if (AbsoluteMoveStrategy.isApplicable(canvasState, inputState, interactionState)) {
+      if (interactionState.activeControl.type === 'BOUNDING_AREA') {
+        return interactionState.dragState.dragThresholdPassed ? 1 : 0
+      } else if (interactionState.activeControl.type === 'KEYBOARD_CATCHER_CONTROL') {
+        return movementForKeys(inputState.keyboard.keysPressed) == null ? 0 : 1
       }
     }
     return 0
   },
-  apply: (canvasState: CanvasState, session: InteractionSession): StrategyApplicationResult => {
-    if (session.mouse != null && !session.mouse.dragThresholdPassed) {
-      const largestAxisDrag = Math.max(
-        Math.abs(session.mouse.drag?.x ?? 0),
-        Math.abs(session.mouse.drag?.y ?? 0),
-      )
-      if (largestAxisDrag > 5) {
-        return {
-          modelUpdates: session.accumulatedCommands,
-          transientUpdates: [
-            {
-              type: 'SET_DRAG_MININUM_EXCEEDED',
-            },
-          ],
-        }
-      } else {
-        return {
-          modelUpdates: session.accumulatedCommands,
-          transientUpdates: [], // Should this return the previous transient updates? I'm not sure
-        }
-      }
-    }
-
-    const movement = session.mouse?.drag ?? movementForKeys(session.keyboard?.keysPressed ?? [])
+  apply: (
+    canvasState: CanvasState,
+    inputState: InputState,
+    interactionState: InteractionState,
+  ): StrategyApplicationResult => {
+    const movement =
+      interactionState.dragState.drag ?? movementForKeys(inputState.keyboard.keysPressed)
     if (movement == null) {
+      // TODO Handle key up using a timeout to apply the final result
       return {
-        modelUpdates: session.accumulatedCommands,
+        modelUpdates: interactionState.accumulatedCommands,
         transientUpdates: [], // Should this return the previous transient updates? I'm not sure
       }
     } else {
@@ -223,15 +321,15 @@ export const AbsoluteMoveStrategy: CanvasStrategy = {
       }
 
       const lastAppliedCommands =
-        session.accumulatedCommands[session.accumulatedCommands.length - 1]
+        interactionState.accumulatedCommands[interactionState.accumulatedCommands.length - 1]
       const replaceLastAppliedCommands = lastAppliedCommands?.reason === AbsoluteMoveStrategy.name
       // I wonder if instead of providing a reason, and then trying to match on that, a better option would be to use some
       // sort of "marker" command to mark the point at which the strategy changed. The motivation for the reason
       // here, however, also includes e.g. replacing a previous command for updating width with one for updating minWidth
       // when the user explicitly changes the chosen strategy via the picker menu mid-interaction
       const previousCommands = replaceLastAppliedCommands
-        ? session.accumulatedCommands.slice(0, -1)
-        : session.accumulatedCommands
+        ? interactionState.accumulatedCommands.slice(0, -1)
+        : interactionState.accumulatedCommands
 
       return {
         modelUpdates: previousCommands.concat(newModelCommands),

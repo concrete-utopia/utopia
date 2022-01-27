@@ -163,7 +163,7 @@ import type {
   FlexGapControlRectProps,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { Spec } from 'immutability-helper'
-import { InteractionSession } from '../../../interactions_proposal'
+import { InteractionState } from '../../../interactions_proposal'
 
 const ObjectPathImmutable: any = OPI
 
@@ -431,7 +431,7 @@ export interface EditorState {
   canvas: {
     visible: boolean
     dragState: DragState | null
-    interactionSession: InteractionSession | null
+    interactionState: InteractionState | null
     scale: number
     snappingThreshold: number
     realCanvasOffset: CanvasVector
@@ -1229,7 +1229,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
-      interactionSession: null,
+      interactionState: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
@@ -1490,7 +1490,7 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       dragState: null, // TODO change dragState if editorMode changes
-      interactionSession: null,
+      interactionState: null,
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,

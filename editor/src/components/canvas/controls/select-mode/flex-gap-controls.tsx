@@ -2,13 +2,10 @@ import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { aperture, mapDropNulls } from '../../../../core/shared/array-utils'
 import { point, windowPoint } from '../../../../core/shared/math-utils'
+import { createMouseInteractionState } from '../../../../interactions_proposal'
 import { when } from '../../../../utils/react-conditionals'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import {
-  startInteractionSession,
-  startNewSelectModeCanvasSession,
-} from '../../canvas-strategies/canvas-strategy-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 
 export const FlexGapControls = React.memo(() => {
@@ -45,11 +42,8 @@ export const FlexGapControls = React.memo(() => {
       ).canvasPositionRounded
       dispatch(
         [
-          CanvasActions.createDragState(
-            startNewSelectModeCanvasSession(startPoint, { type: 'FLEX_GAP_HANDLE' }),
-          ),
-          CanvasActions.createInteractionSession(
-            startInteractionSession(startPoint, { type: 'FLEX_GAP_HANDLE' }),
+          CanvasActions.createInteractionState(
+            createMouseInteractionState(startPoint, { type: 'FLEX_GAP_HANDLE' }),
           ),
         ],
         'canvas',
