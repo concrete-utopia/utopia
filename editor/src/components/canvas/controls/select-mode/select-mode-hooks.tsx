@@ -315,6 +315,9 @@ function useStartCanvasSession(): (
       }
 
       dispatch([
+        CanvasActions.createDragState(
+          startNewSelectModeCanvasSession(start, { type: 'BOUNDING_AREA', target: target }),
+        ),
         CanvasActions.createInteractionSession(
           startInteractionSession(start, { type: 'BOUNDING_AREA', target: target }),
         ),

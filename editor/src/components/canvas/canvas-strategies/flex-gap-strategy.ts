@@ -60,10 +60,9 @@ export const flexGapStrategy: CanvasStrategy = {
         return 10 // fit!
       }
     }
-    return 0 // not fit
+    return null // not fit
   },
   updateFn: (
-    lifecycle: 'transient' | 'final',
     editorState: EditorState,
     sessionProps: SelectModeCanvasSessionProps,
     sessionState: SelectModeCanvasSessionState,
@@ -111,7 +110,7 @@ export const flexGapStrategy: CanvasStrategy = {
         ]
 
         // Apply the update to the properties.
-        const propertyUpdatePatch = applyValuesAtPath(
+        const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
           editorState,
           targetParent.elementPath,
           propsToUpdate,
@@ -123,8 +122,8 @@ export const flexGapStrategy: CanvasStrategy = {
           targetedElement,
         ).map((metadata) => metadata.elementPath)
         return [
-          wildcardPatch(propertyUpdatePatch),
-          wildcardPatch({
+          wildcardPatch('permanent', propertyUpdatePatch),
+          wildcardPatch('transient', {
             highlightedViews: {
               $set: [],
             },

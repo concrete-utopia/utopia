@@ -24,7 +24,11 @@ import {
   modifyUnderlyingForOpenFile,
   TransientFilesState,
 } from '../../editor/store/editor-state'
-import { setDragMinimumExceededCommand, wildcardPatch } from '../commands/commands'
+import {
+  applyValuesAtPath,
+  setDragMinimumExceededCommand,
+  wildcardPatch,
+} from '../commands/commands'
 import {
   CanvasStrategy,
   CanvasStrategyUpdateFnResult,
@@ -48,10 +52,9 @@ export const flexAlignParentStrategy: CanvasStrategy = {
         return 10 // fit!
       }
     }
-    return 0 // not fit
+    return null // not fit
   },
   updateFn: (
-    lifecycle: 'transient' | 'final',
     editorState: EditorState,
     sessionProps: SelectModeCanvasSessionProps,
     sessionState: SelectModeCanvasSessionState,
@@ -63,11 +66,11 @@ export const flexAlignParentStrategy: CanvasStrategy = {
       !sessionState.dragDeltaMinimumPassed &&
       magnitude(sessionProps.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
     ) {
-      return wildcardPatch({
+      return wildcardPatch('transient', {
         canvas: {
           controls: {
             animatedPlaceholderTargetUids: {
-              $set: lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+              $set: [EP.toUid(draggedElement)],
             },
           },
         },
@@ -84,13 +87,13 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     const higlightedIndicator = indicatorBoxes.find((b) => b.highlighted === true)
     if (higlightedIndicator == null || targetParent == null) {
       return [
-        setDragMinimumExceededCommand,
-        wildcardPatch({
+        setDragMinimumExceededCommand('transient'),
+        wildcardPatch('transient', {
           canvas: {
             controls: {
               flexAlignDropTargets: { $set: indicatorBoxes },
               animatedPlaceholderTargetUids: {
-                $set: lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+                $set: [EP.toUid(draggedElement)],
               },
             },
           },
@@ -99,11 +102,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     } else {
       const flexPropToChange: AssociatedFlexProp = higlightedIndicator.associatedFlexProp
 
-      let workingEditorState = { ...editorState }
-      let transientFilesState: TransientFilesState = {}
-
       // Change Parent Props
-
       const parentPropsToUpdate: Array<ValueAtPath> = [
         ...Object.entries(flexPropToChange).map(([key, value]) => ({
           path: PP.create(['style', key]),
@@ -112,40 +111,31 @@ export const flexAlignParentStrategy: CanvasStrategy = {
       ]
 
       const {
-        editorState: editorStateAfterParent,
-        transientFilesState: transientFilesStateAfterParent,
-      } = applyValuesAtPath(
-        workingEditorState,
-        transientFilesState,
-        targetParent.elementPath,
-        parentPropsToUpdate,
-      )
+        editorStateWithChanges: editorStateAfterParent,
+        editorStatePatch: editorStatePatchAfterParent,
+      } = applyValuesAtPath(editorState, targetParent.elementPath, parentPropsToUpdate)
 
       // Make child invisible
+      const childOpacity0: Array<ValueAtPath> = [
+        { path: PP.create(['style', 'opacity']), value: jsxAttributeValue(0, emptyComments) },
+      ]
 
-      const childOpacity0: Array<ValueAtPath> =
-        lifecycle === 'transient'
-          ? [{ path: PP.create(['style', 'opacity']), value: jsxAttributeValue(0, emptyComments) }]
-          : []
-
-      const {
-        editorState: editorStateAfterChild,
-        transientFilesState: transientFilesStateAfterChild,
-      } = applyValuesAtPath(
+      const { editorStatePatch: editorStatePatchAfterChild } = applyValuesAtPath(
         editorStateAfterParent,
-        transientFilesStateAfterParent,
         draggedElement,
         childOpacity0,
       )
 
       return [
-        setDragMinimumExceededCommand,
-        wildcardPatch({
+        setDragMinimumExceededCommand('transient'),
+        wildcardPatch('permanent', editorStatePatchAfterParent),
+        wildcardPatch('transient', editorStatePatchAfterChild),
+        wildcardPatch('transient', {
           canvas: {
             controls: {
               flexAlignDropTargets: { $set: indicatorBoxes },
               animatedPlaceholderTargetUids: {
-                $set: lifecycle === 'transient' ? [EP.toUid(draggedElement)] : [],
+                $set: [EP.toUid(draggedElement)],
               },
             },
           },
@@ -158,44 +148,6 @@ export const flexAlignParentStrategy: CanvasStrategy = {
 interface AssociatedFlexProp {
   justifyContent?: React.CSSProperties['justifyContent']
   alignItems?: React.CSSProperties['alignItems']
-}
-
-function applyValuesAtPath(
-  editorState: EditorState,
-  filesState: TransientFilesState,
-  target: ElementPath,
-  jsxValuesAndPathsToSet: ValueAtPath[],
-): { editorState: EditorState; transientFilesState: TransientFilesState } {
-  let workingEditorState = { ...editorState }
-  let transientFilesState = { ...filesState }
-
-  workingEditorState = modifyUnderlyingForOpenFile(target, editorState, (element: JSXElement) => {
-    return foldEither(
-      () => {
-        return element
-      },
-      (updatedProps) => {
-        return {
-          ...element,
-          props: updatedProps,
-        }
-      },
-      setJSXValuesAtPaths(element.props, jsxValuesAndPathsToSet),
-    )
-  })
-
-  forUnderlyingTargetFromEditorState(
-    target,
-    workingEditorState,
-    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      transientFilesState[underlyingFilePath] = {
-        topLevelElementsIncludingScenes: success.topLevelElements,
-        imports: success.imports,
-      }
-      return success
-    },
-  )
-  return { editorState: workingEditorState, transientFilesState: transientFilesState }
 }
 
 function flexIndicatorBox(

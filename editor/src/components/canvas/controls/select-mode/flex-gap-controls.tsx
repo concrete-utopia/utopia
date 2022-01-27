@@ -45,6 +45,9 @@ export const FlexGapControls = React.memo(() => {
       ).canvasPositionRounded
       dispatch(
         [
+          CanvasActions.createDragState(
+            startNewSelectModeCanvasSession(startPoint, { type: 'FLEX_GAP_HANDLE' }),
+          ),
           CanvasActions.createInteractionSession(
             startInteractionSession(startPoint, { type: 'FLEX_GAP_HANDLE' }),
           ),

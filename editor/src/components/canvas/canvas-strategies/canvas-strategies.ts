@@ -5,7 +5,7 @@ import {
   TransientCanvasState,
   transientCanvasStateForSession,
 } from '../../editor/store/editor-state'
-import { foldCommands } from '../commands/commands'
+import { foldCommands, TransientOrNot } from '../commands/commands'
 import {
   CanvasStrategy,
   CanvasStrategyUpdateFn,
@@ -24,24 +24,35 @@ export function pickDefaultCanvasStrategy(
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
 ): CanvasStrategy | null {
-  const applicableStrategies = RegisteredCanvasStrategies.map((s) => ({
-    fitness: s.fitnessFn(editorState, sessionProps, sessionState),
-    strategy: s,
-  })).filter((s) => {
-    // discard strategies with 0 fitness
-    return s.fitness > 0
+  // Compute the fitness results upfront.
+  const strategiesWithFitness = RegisteredCanvasStrategies.map((strategy) => {
+    return {
+      fitness: strategy.fitnessFn(editorState, sessionProps, sessionState),
+      strategy: strategy,
+    }
   })
 
-  return (
-    sortBy(applicableStrategies, (l, r) => {
-      // sort by fitness, descending
-      return r.fitness - l.fitness
-    })[0]?.strategy ?? null
-  )
+  // Filter out those which have declared (by virtue of a null result) that they
+  // cannot be candidates.
+  let filteredStrategies: Array<{ fitness: number; strategy: CanvasStrategy }> = []
+  for (const strategyWithFitness of strategiesWithFitness) {
+    if (strategyWithFitness.fitness != null) {
+      filteredStrategies.push({
+        fitness: strategyWithFitness.fitness,
+        strategy: strategyWithFitness.strategy,
+      })
+    }
+  }
+
+  sortBy(filteredStrategies, (l, r) => {
+    // Sort by fitness, descending.
+    return r.fitness - l.fitness
+  })
+  return filteredStrategies[0]?.strategy ?? null
 }
 
 export function applyCanvasStrategy(
-  lifecycle: 'transient' | 'final',
+  lifecycle: TransientOrNot,
   editorState: EditorState,
   canvasSession: SelectModeCanvasSession,
   canvasSessionState: SelectModeCanvasSessionState | null,
@@ -59,19 +70,19 @@ export function applyCanvasStrategy(
   }
 
   const result =
-    strategy?.updateFn?.(
-      lifecycle,
-      editorState,
-      canvasSession.sessionProps,
-      sessionStateWithStrategy,
-    ) ?? null
+    strategy?.updateFn?.(editorState, canvasSession.sessionProps, sessionStateWithStrategy) ?? null
 
   if (result == null) {
     // no strategy was active, return empty result
     return transientCanvasStateForSession(canvasSessionState, [])
   } else {
     const commandArray = Array.isArray(result) ? result : [result]
-    const commandsResults = foldCommands(editorState, sessionStateWithStrategy, commandArray)
+    const commandsResults = foldCommands(
+      editorState,
+      sessionStateWithStrategy,
+      commandArray,
+      lifecycle,
+    )
     return transientCanvasStateForSession(sessionStateWithStrategy, commandsResults.statePatches)
   }
 }

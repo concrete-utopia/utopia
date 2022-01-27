@@ -54,7 +54,6 @@ export type CanvasSessionPatch = Spec<SelectModeCanvasSession>
 export type CanvasStrategyUpdateFnResult = Array<CanvasCommand> | CanvasCommand
 
 export type CanvasStrategyUpdateFn = (
-  lifecycle: 'transient' | 'final',
   editorState: EditorState,
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
@@ -64,7 +63,7 @@ export type CanvasStrategyFitnessFn = (
   editorState: EditorState,
   sessionProps: SelectModeCanvasSessionProps,
   sessionState: SelectModeCanvasSessionState,
-) => number
+) => number | null
 
 export type CanvasInteractionSession = SelectModeCanvasSession
 

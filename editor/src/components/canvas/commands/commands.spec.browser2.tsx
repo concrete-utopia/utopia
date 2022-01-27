@@ -33,7 +33,7 @@ describe('runMoveElementCommand', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div', 'card-inner-rectangle'],
     ])
-    const moveCommand = moveElement(innerRectanglePath, 200, 120)
+    const moveCommand = moveElement('permanent', innerRectanglePath, 200, 120)
 
     const sessionState = {
       ...emptySelectModeCanvasSessionState,

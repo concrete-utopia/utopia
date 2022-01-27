@@ -47,38 +47,56 @@ export type CommandFunction<T> = (
   command: T,
 ) => CommandFunctionResult
 
-export interface SetDragMinimumExceededCommand {
+export type TransientOrNot = 'transient' | 'permanent'
+
+export interface BaseCommand {
+  transient: TransientOrNot
+}
+
+export interface SetDragMinimumExceededCommand extends BaseCommand {
   type: 'SET_DRAG_MININUM_EXCEEDED'
 }
 
-export const setDragMinimumExceededCommand: SetDragMinimumExceededCommand = {
-  type: 'SET_DRAG_MININUM_EXCEEDED',
+export function setDragMinimumExceededCommand(
+  transient: TransientOrNot,
+): SetDragMinimumExceededCommand {
+  return {
+    type: 'SET_DRAG_MININUM_EXCEEDED',
+    transient: transient,
+  }
 }
 
-export interface MoveElement {
+export interface MoveElement extends BaseCommand {
   type: 'MOVE_ELEMENT'
   target: ElementPath
   x: number
   y: number
 }
 
-export function moveElement(target: ElementPath, x: number, y: number): MoveElement {
+export function moveElement(
+  transient: TransientOrNot,
+  target: ElementPath,
+  x: number,
+  y: number,
+): MoveElement {
   return {
     type: 'MOVE_ELEMENT',
+    transient: transient,
     target: target,
     x: x,
     y: y,
   }
 }
 
-export interface WildcardPatch {
+export interface WildcardPatch extends BaseCommand {
   type: 'WILDCARD_PATCH'
   patch: EditorStatePatch
 }
 
-export function wildcardPatch(patch: EditorStatePatch): WildcardPatch {
+export function wildcardPatch(transient: TransientOrNot, patch: EditorStatePatch): WildcardPatch {
   return {
     type: 'WILDCARD_PATCH',
+    transient: transient,
     patch: patch,
   }
 }
@@ -164,6 +182,7 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
             parentFrame,
           )
           editorStatePatch = applyValuesAtPath(editorState, command.target, whatToMove)
+            .editorStatePatch
         }
       })
       break
@@ -195,8 +214,8 @@ export function applyValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
   jsxValuesAndPathsToSet: ValueAtPath[],
-): EditorStatePatch {
-  let result: EditorStatePatch = {}
+): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
+  let editorStatePatch: EditorStatePatch = {}
 
   const workingEditorState = modifyUnderlyingForOpenFile(
     target,
@@ -260,12 +279,15 @@ export function applyValuesAtPath(
         [pathElements[0]]: projectContentsTreePatch,
       }
 
-      result = {
+      editorStatePatch = {
         projectContents: projectContentTreeRootPatch,
       }
     },
   )
-  return result
+  return {
+    editorStateWithChanges: workingEditorState,
+    editorStatePatch: editorStatePatch,
+  }
 }
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
@@ -291,27 +313,31 @@ export function foldCommands(
   editorState: EditorState,
   sessionState: SelectModeCanvasSessionState,
   commands: Array<CanvasCommand>,
+  transient: TransientOrNot,
 ): { statePatches: Array<EditorStatePatch>; sessionState: SelectModeCanvasSessionState } {
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
   let workingSessionState: SelectModeCanvasSessionState = sessionState
   let workingPathMappings: PathMappings = []
   for (const command of commands) {
-    // Run the command with our current states.
-    const commandResult = runCanvasCommand(
-      workingEditorState,
-      workingSessionState,
-      workingPathMappings,
-      command,
-    )
-    // Capture values from the result.
-    workingSessionState = commandResult.sessionState
-    const statePatch = commandResult.editorStatePatch
-    workingPathMappings = commandResult.pathMappings
-    // Apply the update to the editor state.
-    workingEditorState = update(workingEditorState, statePatch)
-    // Collate the patches.
-    statePatches.push(statePatch)
+    // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
+    if (transient === 'transient' || command.transient === 'permanent') {
+      // Run the command with our current states.
+      const commandResult = runCanvasCommand(
+        workingEditorState,
+        workingSessionState,
+        workingPathMappings,
+        command,
+      )
+      // Capture values from the result.
+      workingSessionState = commandResult.sessionState
+      const statePatch = commandResult.editorStatePatch
+      workingPathMappings = commandResult.pathMappings
+      // Apply the update to the editor state.
+      workingEditorState = update(workingEditorState, statePatch)
+      // Collate the patches.
+      statePatches.push(statePatch)
+    }
   }
 
   return {
