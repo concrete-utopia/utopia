@@ -66,7 +66,7 @@ interface KeyboardInteraction {
   // Does the above include modifiers?
 }
 
-interface InteractionSession {
+export interface InteractionSession {
   mouse: MouseInteraction | null
   keyboard: KeyboardInteraction | null
   activeControl: CanvasControlType // Do we need to guard against multiple controls trying to trigger or update an interaction session?

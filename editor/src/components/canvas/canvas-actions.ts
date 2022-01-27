@@ -1,4 +1,5 @@
 import type { CanvasPoint, CanvasVector } from '../../core/shared/math-utils'
+import { InteractionSession } from '../../interactions_proposal'
 import {
   CanvasInteractionSession,
   SelectModeCanvasSessionProps,
@@ -17,6 +18,12 @@ const CanvasActions = {
     return {
       action: 'CREATE_DRAG_STATE',
       dragState: dragState,
+    }
+  },
+  createInteractionSession: function (session: InteractionSession): CanvasAction {
+    return {
+      action: 'CREATE_INTERACTION_SESSION',
+      interactionSession: session,
     }
   },
   updateCanvasSessionProps: function (

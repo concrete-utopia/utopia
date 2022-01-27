@@ -1,5 +1,7 @@
 import type { Spec } from 'immutability-helper'
 import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import { InteractionSession } from '../../../interactions_proposal'
 import type {
   EditorState,
   EditorStatePatch,
@@ -11,6 +13,7 @@ import { CanvasCommand } from '../commands/commands'
 
 interface BoundingArea {
   type: 'BOUNDING_AREA'
+  target: ElementPath
 }
 
 interface ResizeHandle {
@@ -119,5 +122,40 @@ export function updateSelectModeCanvasSessionDragVector(
       drag: drag,
       lastTimeMouseMoved: Date.now(),
     },
+  }
+}
+
+export function startInteractionSession(
+  start: CanvasPoint,
+  activeControl: CanvasControlType,
+): InteractionSession {
+  return {
+    mouse: {
+      start: start,
+      mousePosition: start,
+      drag: null,
+      dragThresholdPassed: false,
+    },
+    keyboard: { keysPressed: [] },
+    activeControl: activeControl as any, // TODO FIX CanvasControlType
+    lastInteractionTime: Date.now(),
+    accumulatedCommands: [],
+  }
+}
+
+export function updateInteractionSession(
+  currentSession: InteractionSession,
+  mousePosition: CanvasPoint,
+  drag: CanvasVector,
+): InteractionSession {
+  return {
+    ...currentSession,
+    mouse: {
+      start: currentSession.mouse?.start ?? mousePosition,
+      mousePosition: mousePosition,
+      drag: drag,
+      dragThresholdPassed: currentSession.mouse?.dragThresholdPassed ?? true,
+    },
+    lastInteractionTime: Date.now(),
   }
 }

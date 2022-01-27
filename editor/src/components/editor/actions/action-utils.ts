@@ -106,6 +106,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_INDEXED_DB_FAILED':
     case 'FORCE_PARSE_FILE':
     case 'UPDATE_CANVAS_SESSION_PROPS':
+    case 'CREATE_INTERACTION_SESSION':
       return true
 
     case 'NEW':
