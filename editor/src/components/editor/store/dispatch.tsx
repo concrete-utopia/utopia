@@ -42,6 +42,7 @@ import {
   DerivedState,
   deriveState,
   EditorState,
+  EditorStatePatch,
   EditorStore,
   getAllBuildErrors,
   getAllErrorsFromFiles,
@@ -91,7 +92,7 @@ import {
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
-import update from 'immutability-helper'
+import { applyStatePatches } from '../../canvas/commands/commands'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -452,12 +453,13 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
-  const patchedEditorState =
-    frozenDerivedState.canvas.transientState.editorStatePatch == null
-      ? frozenEditorState
-      : update(frozenEditorState, frozenDerivedState.canvas.transientState.editorStatePatch)
+  const patchedEditorState = applyStatePatches(
+    frozenEditorState,
+    storedState.editor,
+    frozenDerivedState.canvas.transientState.editorStatePatch,
+  )
 
-  const finalStore = {
+  const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     editor: patchedEditorState,
     derived: frozenDerivedState,
