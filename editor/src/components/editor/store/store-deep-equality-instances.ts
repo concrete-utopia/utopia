@@ -139,7 +139,7 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
     (state) => state.toastsToApply,
     createCallWithShallowEquals(),
     (state) => state.editorStatePatch,
-    createCallFromIntrospectiveKeepDeep<EditorStatePatch | null>(),
+    arrayDeepEquality(createCallFromIntrospectiveKeepDeep<EditorStatePatch>()),
     (state) => state.canvasSessionState,
     createCallFromIntrospectiveKeepDeep<SelectModeCanvasSessionState | null>(),
     transientCanvasState,

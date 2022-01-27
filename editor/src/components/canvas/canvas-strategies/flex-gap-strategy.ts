@@ -42,6 +42,7 @@ import {
 import { aperture, mapDropNulls } from '../../../core/shared/array-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { applyValuesAtPath, wildcardPatch } from '../commands/commands'
 
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
@@ -109,10 +110,9 @@ export const flexGapStrategy: CanvasStrategy = {
           },
         ]
 
-        // Apply the update into the transient state.
-        const { transientFilesState: transientFilesStateAfterUpdate } = applyValuesAtPath(
+        // Apply the update to the properties.
+        const propertyUpdatePatch = applyValuesAtPath(
           editorState,
-          {},
           targetParent.elementPath,
           propsToUpdate,
         )
@@ -122,10 +122,9 @@ export const flexGapStrategy: CanvasStrategy = {
           editorState.jsxMetadata,
           targetedElement,
         ).map((metadata) => metadata.elementPath)
-        return {
-          newSessionState: sessionState,
-          transientFilesState: transientFilesStateAfterUpdate,
-          editorStatePatch: {
+        return [
+          wildcardPatch(propertyUpdatePatch),
+          wildcardPatch({
             highlightedViews: {
               $set: [],
             },
@@ -134,54 +133,12 @@ export const flexGapStrategy: CanvasStrategy = {
                 $set: siblingsOfTarget,
               },
             },
-          },
-        }
+          }),
+        ]
       }
     }
 
     // Fallback for when the checks above are not satisfied.
-    return {
-      newSessionState: sessionState,
-      transientFilesState: {},
-      editorStatePatch: {},
-    }
+    return []
   },
-}
-
-function applyValuesAtPath(
-  editorState: EditorState,
-  filesState: TransientFilesState,
-  target: ElementPath,
-  jsxValuesAndPathsToSet: ValueAtPath[],
-): { editorState: EditorState; transientFilesState: TransientFilesState } {
-  let workingEditorState = { ...editorState }
-  let transientFilesState = { ...filesState }
-
-  workingEditorState = modifyUnderlyingForOpenFile(target, editorState, (element: JSXElement) => {
-    return foldEither(
-      () => {
-        return element
-      },
-      (updatedProps) => {
-        return {
-          ...element,
-          props: updatedProps,
-        }
-      },
-      setJSXValuesAtPaths(element.props, jsxValuesAndPathsToSet),
-    )
-  })
-
-  forUnderlyingTargetFromEditorState(
-    target,
-    workingEditorState,
-    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
-      transientFilesState[underlyingFilePath] = {
-        topLevelElementsIncludingScenes: success.topLevelElements,
-        imports: success.imports,
-      }
-      return success
-    },
-  )
-  return { editorState: workingEditorState, transientFilesState: transientFilesState }
 }

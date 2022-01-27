@@ -5,6 +5,7 @@ import {
   TransientCanvasState,
   transientCanvasStateForSession,
 } from '../../editor/store/editor-state'
+import { foldCommands } from '../commands/commands'
 import {
   CanvasStrategy,
   CanvasStrategyUpdateFn,
@@ -67,12 +68,10 @@ export function applyCanvasStrategy(
 
   if (result == null) {
     // no strategy was active, return empty result
-    return transientCanvasStateForSession(canvasSessionState, null, null)
+    return transientCanvasStateForSession(canvasSessionState, [])
   } else {
-    return transientCanvasStateForSession(
-      result.newSessionState,
-      result.transientFilesState,
-      result.editorStatePatch,
-    )
+    const commandArray = Array.isArray(result) ? result : [result]
+    const commandsResults = foldCommands(editorState, sessionStateWithStrategy, commandArray)
+    return transientCanvasStateForSession(sessionStateWithStrategy, commandsResults.statePatches)
   }
 }
