@@ -3,8 +3,10 @@ import { MoveIntoDragThreshold } from './components/canvas/canvas-utils'
 import { ElementInstanceMetadata } from './core/shared/element-template'
 import { CanvasPoint, CanvasVector } from './core/shared/math-utils'
 import { ElementPath } from './core/shared/project-file-types'
-import { KeyCharacter } from './utils/keyboard'
+import { KeyCharacter, Modifier } from './utils/keyboard'
 import { CanvasControlType } from './components/canvas/canvas-strategies/canvas-strategy-types'
+import { addAllUniquely } from './core/shared/array-utils'
+import { Modifiers } from './utils/modifiers'
 
 interface CanvasState {
   // The idea here being that we should be restricting the model we're supplying to the interactions system,
@@ -63,24 +65,23 @@ interface MouseState {
   primaryButtonDown: boolean
 }
 
-interface DragState {
-  dragStart: CanvasPoint | null
+interface DragInteractionData {
+  type: 'DRAG'
+  dragStart: CanvasPoint
   drag: CanvasVector | null
   dragThresholdPassed: boolean
+  modifiers: Modifiers
 }
 
-interface KeyboardState {
+interface KeyboardInteractionData {
+  type: 'KEYBOARD'
   keysPressed: Array<KeyCharacter>
+  // keysPressed also includes modifiers, but we want the separate modifiers array since they are captured and mapped to a specific
+  // set via modifiersForEvent in keyboard.ts
+  modifiers: Modifiers
 }
 
-export interface InputState {
-  // We're already globally tracking mouse position in global-positions.ts
-
-  // This represents the state of the universe, and so will always exist
-  // For the sake of performance, this _definitely_ needs to live outside of the react lifecycle
-  mouse: MouseState
-  keyboard: KeyboardState
-}
+type InteractionData = KeyboardInteractionData | DragInteractionData
 
 // Should we be limiting the scope here to only interactions that can update the project itself?
 // If yes, what are the implications of the model? Do we need to maintain InputState?
@@ -101,7 +102,7 @@ export interface InputState {
 
 export interface InteractionState {
   // This represents an actual interaction that has started as the result of a key press or a drag
-  dragState: DragState
+  interactionData: InteractionData
   activeControl: CanvasControlType // Do we need to guard against multiple controls trying to trigger or update an interaction session?
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
@@ -131,15 +132,18 @@ export interface InteractionState {
 
 // Does this need to be split into a default mouse interaction state and a separate drag interaction state?
 // Thinking here in terms of highlight and selection
-export function createMouseInteractionState(
+export function createInteractionViaMouse(
   mouseDownPoint: CanvasPoint,
+  modifiers: Modifiers,
   activeControl: CanvasControlType,
 ): InteractionState {
   return {
-    dragState: {
+    interactionData: {
+      type: 'DRAG',
       dragStart: mouseDownPoint,
       drag: null,
       dragThresholdPassed: false,
+      modifiers: modifiers,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -154,32 +158,43 @@ function dragExceededThreshold(drag: CanvasVector): boolean {
   return xDiff > MoveIntoDragThreshold || yDiff > MoveIntoDragThreshold
 }
 
-export function updateMouseInteractionState(
+export function updateInteractionViaMouse(
   currentState: InteractionState,
   drag: CanvasVector,
+  modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType | null, // If null it means the active control is the source
 ): InteractionState {
-  const dragThresholdPassed =
-    currentState.dragState.dragThresholdPassed || dragExceededThreshold(drag)
-  return {
-    dragState: {
-      dragStart: currentState.dragState.dragStart,
-      drag: dragThresholdPassed ? drag : null,
-      dragThresholdPassed: dragThresholdPassed,
-    },
-    activeControl: currentState.activeControl,
-    sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
-    lastInteractionTime: Date.now(),
-    accumulatedCommands: currentState.accumulatedCommands,
+  if (currentState.interactionData.type === 'DRAG') {
+    const dragThresholdPassed =
+      currentState.interactionData.dragThresholdPassed || dragExceededThreshold(drag)
+    return {
+      interactionData: {
+        type: 'DRAG',
+        dragStart: currentState.interactionData.dragStart,
+        drag: dragThresholdPassed ? drag : null,
+        dragThresholdPassed: dragThresholdPassed,
+        modifiers: modifiers,
+      },
+      activeControl: currentState.activeControl,
+      sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
+      lastInteractionTime: Date.now(),
+      accumulatedCommands: currentState.accumulatedCommands,
+    }
+  } else {
+    return currentState
   }
 }
 
-export function createKeyboardInteractionState(activeControl: CanvasControlType): InteractionState {
+export function createInteractionViaKeyboard(
+  keysPressed: Array<KeyCharacter>,
+  modifiers: Modifiers,
+  activeControl: CanvasControlType,
+): InteractionState {
   return {
-    dragState: {
-      dragStart: null,
-      drag: null,
-      dragThresholdPassed: false,
+    interactionData: {
+      type: 'KEYBOARD',
+      keysPressed: keysPressed,
+      modifiers: modifiers,
     },
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
@@ -188,16 +203,46 @@ export function createKeyboardInteractionState(activeControl: CanvasControlType)
   }
 }
 
-export function updateKeyboardInteractionState(
+export function updateInteractionViaKeyboard(
   currentState: InteractionState,
+  addedKeysPressed: Array<KeyCharacter>,
+  keysReleased: Array<KeyCharacter>,
+  modifiers: Modifiers,
   sourceOfUpdate: CanvasControlType,
 ): InteractionState {
-  return {
-    dragState: currentState.dragState,
-    activeControl: currentState.activeControl,
-    sourceOfUpdate: sourceOfUpdate,
-    lastInteractionTime: Date.now(),
-    accumulatedCommands: currentState.accumulatedCommands,
+  if (currentState.interactionData.type === 'KEYBOARD') {
+    const withRemovedKeys = currentState.interactionData.keysPressed.filter(
+      (k) => !keysReleased.includes(k),
+    )
+    const newKeysPressed = addAllUniquely(withRemovedKeys, addedKeysPressed)
+
+    return {
+      interactionData: {
+        type: 'KEYBOARD',
+        keysPressed: newKeysPressed,
+        modifiers: modifiers,
+      },
+      activeControl: currentState.activeControl,
+      sourceOfUpdate: sourceOfUpdate,
+      lastInteractionTime: Date.now(),
+      accumulatedCommands: currentState.accumulatedCommands,
+    }
+  } else if (currentState.interactionData.type === 'DRAG') {
+    return {
+      interactionData: {
+        type: 'DRAG',
+        dragStart: currentState.interactionData.dragStart,
+        drag: currentState.interactionData.drag,
+        dragThresholdPassed: currentState.interactionData.dragThresholdPassed,
+        modifiers: modifiers,
+      },
+      activeControl: currentState.activeControl,
+      sourceOfUpdate: currentState.activeControl,
+      lastInteractionTime: Date.now(),
+      accumulatedCommands: currentState.accumulatedCommands,
+    }
+  } else {
+    return currentState
   }
 }
 
@@ -213,7 +258,6 @@ export interface CanvasStrategyMeta {
   shouldKeepCommands: (
     previousStrategy: string,
     nextStrategy: string | null,
-    inputState: InputState,
     interactionState: InteractionState,
   ) => boolean
   // Sean:
@@ -224,17 +268,12 @@ export interface CanvasStrategyMeta {
 export interface CanvasStrategy {
   name: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
 
-  isApplicable: (
-    canvasState: CanvasState,
-    inputState: InputState, // Does this need to be passed to `isApplicable`? Probably not
-    interactionState: InteractionState | null,
-  ) => boolean
+  isApplicable: (canvasState: CanvasState, interactionState: InteractionState | null) => boolean
   // Determines if we should show the controls that this strategy renders
   // Maybe this can just be rolled into controlsToRender?
 
   controlsToRender: (
     canvasState: CanvasState,
-    inputState: InputState, // Does this need to be passed to `controlsToRender`? Probably not
     interactionState: InteractionState | null,
   ) => Array<CanvasControlType>
   // The controls to render when this strategy is applicable, regardless of if it is currently active
@@ -251,18 +290,10 @@ export interface CanvasStrategy {
   // - Returning the objects like the ones we have in this example seems like a better option, if only for testing purposes.
   // - If we're eliminating most strategies by using `isApplicable`, we'd only be running a small subset of the strategies.
 
-  fitness: (
-    canvasState: CanvasState,
-    inputState: InputState,
-    interactionState: InteractionState,
-  ) => number
+  fitness: (canvasState: CanvasState, interactionState: InteractionState) => number
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
-  apply: (
-    canvasState: CanvasState,
-    inputState: InputState,
-    interactionState: InteractionState,
-  ) => StrategyApplicationResult
+  apply: (canvasState: CanvasState, interactionState: InteractionState) => StrategyApplicationResult
   // Returns the commands that inform how the model and the editor should be updated
 }
 
@@ -278,7 +309,6 @@ export const SomeCanvasStrategyMeta: CanvasStrategyMeta = {
   shouldKeepCommands: (
     previousStrategy: string,
     nextStrategy: string | null,
-    inputState: InputState,
     interactionState: InteractionState,
   ) => {
     return nextStrategy !== AbsoluteMoveStrategy.name
@@ -287,18 +317,13 @@ export const SomeCanvasStrategyMeta: CanvasStrategyMeta = {
 
 export const AbsoluteMoveStrategy: CanvasStrategy = {
   name: 'AbsoluteMoveStrategy',
-  isApplicable: (
-    canvasState: CanvasState,
-    inputState: InputState,
-    interactionState: InteractionState | null,
-  ): boolean => {
+  isApplicable: (canvasState: CanvasState, interactionState: InteractionState | null): boolean => {
     return canvasState.selectedElements.some(
       (e) => e.specialSizeMeasurements.position === 'absolute',
     )
   },
   controlsToRender: (
     canvasState: CanvasState,
-    inputState: InputState,
     interactionState: InteractionState | null,
   ): Array<CanvasControlType> => {
     const boundingBoxes: Array<CanvasControlType> = canvasState.selectedElements.map((e) => ({
@@ -307,27 +332,33 @@ export const AbsoluteMoveStrategy: CanvasStrategy = {
     }))
     return boundingBoxes.concat({ type: 'KEYBOARD_CATCHER_CONTROL' })
   },
-  fitness: (
-    canvasState: CanvasState,
-    inputState: InputState,
-    interactionState: InteractionState,
-  ): number => {
-    if (AbsoluteMoveStrategy.isApplicable(canvasState, inputState, interactionState)) {
-      if (interactionState.activeControl.type === 'BOUNDING_AREA') {
-        return interactionState.dragState.dragThresholdPassed ? 1 : 0
-      } else if (interactionState.activeControl.type === 'KEYBOARD_CATCHER_CONTROL') {
-        return movementForKeys(inputState.keyboard.keysPressed) == null ? 0 : 1
+  fitness: (canvasState: CanvasState, interactionState: InteractionState): number => {
+    if (AbsoluteMoveStrategy.isApplicable(canvasState, interactionState)) {
+      if (
+        interactionState.activeControl.type === 'BOUNDING_AREA' &&
+        interactionState.interactionData.type === 'DRAG'
+      ) {
+        return interactionState.interactionData.dragThresholdPassed ? 1 : 0
+      } else if (
+        interactionState.activeControl.type === 'KEYBOARD_CATCHER_CONTROL' &&
+        interactionState.interactionData.type === 'KEYBOARD'
+      ) {
+        return movementForKeys(interactionState.interactionData.keysPressed) == null ? 0 : 1
       }
     }
     return 0
   },
   apply: (
     canvasState: CanvasState,
-    inputState: InputState,
     interactionState: InteractionState,
   ): StrategyApplicationResult => {
     const movement =
-      interactionState.dragState.drag ?? movementForKeys(inputState.keyboard.keysPressed)
+      interactionState.interactionData.type === 'DRAG'
+        ? interactionState.interactionData.drag
+        : interactionState.interactionData.type === 'KEYBOARD'
+        ? movementForKeys(interactionState.interactionData.keysPressed)
+        : null
+
     if (movement == null) {
       // TODO Handle key up using a timeout to apply the final result
       return {

@@ -2,7 +2,8 @@ import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { aperture, mapDropNulls } from '../../../../core/shared/array-utils'
 import { point, windowPoint } from '../../../../core/shared/math-utils'
-import { createMouseInteractionState } from '../../../../interactions_proposal'
+import { createInteractionViaMouse } from '../../../../interactions_proposal'
+import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
@@ -40,10 +41,13 @@ export const FlexGapControls = React.memo(() => {
         roundedCanvasOffset,
         windowPoint(point(event.clientX, event.clientY)),
       ).canvasPositionRounded
+
       dispatch(
         [
           CanvasActions.createInteractionState(
-            createMouseInteractionState(startPoint, { type: 'FLEX_GAP_HANDLE' }),
+            createInteractionViaMouse(startPoint, Modifier.modifiersForEvent(event), {
+              type: 'FLEX_GAP_HANDLE',
+            }),
           ),
         ],
         'canvas',

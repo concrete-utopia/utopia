@@ -30,7 +30,4 @@ export const Modifier = {
       shift: event.shiftKey,
     }
   },
-  none: function (modifiers: Modifiers): boolean {
-    return !(modifiers.alt || modifiers.cmd || modifiers.ctrl || modifiers.shift)
-  },
 }
