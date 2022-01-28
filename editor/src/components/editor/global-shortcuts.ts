@@ -119,6 +119,7 @@ import {
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { getDragStateStart } from '../canvas/canvas-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -372,6 +373,11 @@ export function handleKeyDown(
     directionModifier: -1 | 1,
     adjustment: 1 | 10,
   ): Array<EditorAction> {
+    if (isFeatureEnabled('Canvas Strategies')) {
+      // Disable these keyboard shortcuts so they don't interfere with strategies
+      return []
+    }
+
     const adjustmentActions = adjustAllSelectedFrames(
       editor,
       dispatch,

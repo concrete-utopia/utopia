@@ -154,6 +154,10 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   }
 
   let optionalDragStateAction: Array<EditorAction> = []
+  if ('interactionState' in event && event.interactionState != null) {
+    optionalDragStateAction = [CanvasActions.createInteractionState(event.interactionState)]
+  }
+
   const insertMode = model.mode.type === 'insert'
   if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
@@ -177,13 +181,11 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
         break
 
       case 'MOVE':
-        if (event.interactionState != null) {
-          optionalDragStateAction = [CanvasActions.createInteractionState(event.interactionState)]
-        }
         break
       case 'MOUSE_LEFT_WINDOW':
         break
 
+      // TODO This will prevent strategies that rely on these events
       case 'DRAG_END':
       case 'CLICK':
       case 'DOUBLE_CLICK':
