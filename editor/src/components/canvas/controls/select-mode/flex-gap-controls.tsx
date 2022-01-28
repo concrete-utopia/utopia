@@ -60,6 +60,7 @@ export const FlexGapControls = React.memo(() => {
 
   const completeDrag = React.useCallback(
     (event: React.MouseEvent) => {
+      // TODO Complete Interaction Session here
       dispatch([CanvasActions.clearDragState(true)], 'canvas')
     },
     [dispatch],
