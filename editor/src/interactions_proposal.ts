@@ -74,11 +74,30 @@ interface KeyboardState {
 }
 
 export interface InputState {
+  // We're already globally tracking mouse position in global-positions.ts
+
   // This represents the state of the universe, and so will always exist
   // For the sake of performance, this _definitely_ needs to live outside of the react lifecycle
   mouse: MouseState
   keyboard: KeyboardState
 }
+
+// Should we be limiting the scope here to only interactions that can update the project itself?
+// If yes, what are the implications of the model? Do we need to maintain InputState?
+// - Yes
+
+// Does something have to have a lifecycle for it to be considered an interaction
+// - no consensus here, but it doesn't block us
+
+// Should we be separating keyboard and mouse interactions?
+// What would separting them mean?
+// What would be the benefit of this vs 1 combined interaction state?
+// 1. An interaction can be started be either a key press or a mouse down
+//   - keyboard interactions don't use the mouse in any way
+//   - mouse interactions don't use the keyboard in any way other than modifier keys present on mouse events
+
+// Do we desire interactions that are tweaked by a keyboard modifier that isn't cmd, shift, alt, ctrl?
+// - likely not inside strategies (we could want them for making changes to the editor "mode", or chosen strategy)
 
 export interface InteractionState {
   // This represents an actual interaction that has started as the result of a key press or a drag
@@ -87,6 +106,9 @@ export interface InteractionState {
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
   accumulatedCommands: Array<ModelUpdateCommandsWithReason>
+
+  // Need to track here which strategy is being applied
+  // Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
 
   // The latest strategy might want to replace the last commands based on the reason
   // e.g. a continuous drag would be continuously updating the commands that it is generating
@@ -204,7 +226,7 @@ export interface CanvasStrategy {
 
   isApplicable: (
     canvasState: CanvasState,
-    inputState: InputState,
+    inputState: InputState, // Does this need to be passed to `isApplicable`? Probably not
     interactionState: InteractionState | null,
   ) => boolean
   // Determines if we should show the controls that this strategy renders
@@ -212,7 +234,7 @@ export interface CanvasStrategy {
 
   controlsToRender: (
     canvasState: CanvasState,
-    inputState: InputState,
+    inputState: InputState, // Does this need to be passed to `controlsToRender`? Probably not
     interactionState: InteractionState | null,
   ) => Array<CanvasControlType>
   // The controls to render when this strategy is applicable, regardless of if it is currently active
