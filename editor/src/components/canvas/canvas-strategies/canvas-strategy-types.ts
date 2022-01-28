@@ -1,6 +1,7 @@
 import type { Spec } from 'immutability-helper'
 import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
+import { CanvasStrategy } from '../../../interactions_proposal'
 import type {
   EditorState,
   EditorStatePatch,
@@ -45,12 +46,6 @@ export interface FlexGapControlRectProps {
 }
 
 export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl
-
-export interface CanvasStrategy {
-  name: string
-  updateFn: CanvasStrategyUpdateFn
-  fitnessFn: CanvasStrategyFitnessFn
-}
 
 export type CanvasSessionPatch = Spec<SelectModeCanvasSession>
 

@@ -1,4 +1,5 @@
 import { sortBy } from '../../../core/shared/array-utils'
+import { CanvasStrategy, CanvasState, InteractionState } from '../../../interactions_proposal'
 import {
   EditorState,
   transientCanvasState,
@@ -7,71 +8,52 @@ import {
 } from '../../editor/store/editor-state'
 import { foldCommands, TransientOrNot } from '../commands/commands'
 import {
-  CanvasStrategy,
-  CanvasStrategyUpdateFn,
   emptySelectModeCanvasSessionState,
   SelectModeCanvasSession,
   SelectModeCanvasSessionProps,
   SelectModeCanvasSessionState,
 } from './canvas-strategy-types'
-import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
 
-const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy, flexAlignParentStrategy]
+const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy] //, flexAlignParentStrategy]
 
 export function pickDefaultCanvasStrategy(
-  editorState: EditorState,
-  sessionProps: SelectModeCanvasSessionProps,
-  sessionState: SelectModeCanvasSessionState,
+  canvasState: CanvasState,
+  interactionState: InteractionState,
 ): CanvasStrategy | null {
+  const applicableStrategies = RegisteredCanvasStrategies.filter((strategy) => {
+    return strategy.isApplicable(canvasState, interactionState)
+  })
+
   // Compute the fitness results upfront.
-  const strategiesWithFitness = RegisteredCanvasStrategies.map((strategy) => {
+  const strategiesWithFitness = applicableStrategies.map((strategy) => {
     return {
-      fitness: strategy.fitnessFn(editorState, sessionProps, sessionState),
+      fitness: strategy.fitness(canvasState, interactionState),
       strategy: strategy,
     }
   })
 
-  // Filter out those which have declared (by virtue of a null result) that they
-  // cannot be candidates.
-  let filteredStrategies: Array<{ fitness: number; strategy: CanvasStrategy }> = []
-  for (const strategyWithFitness of strategiesWithFitness) {
-    if (strategyWithFitness.fitness != null) {
-      filteredStrategies.push({
-        fitness: strategyWithFitness.fitness,
-        strategy: strategyWithFitness.strategy,
-      })
-    }
-  }
-
-  sortBy(filteredStrategies, (l, r) => {
+  sortBy(strategiesWithFitness, (l, r) => {
     // Sort by fitness, descending.
     return r.fitness - l.fitness
   })
-  return filteredStrategies[0]?.strategy ?? null
+  return strategiesWithFitness[0]?.strategy ?? null
 }
 
 export function applyCanvasStrategy(
   lifecycle: TransientOrNot,
   editorState: EditorState,
-  canvasSession: SelectModeCanvasSession,
-  canvasSessionState: SelectModeCanvasSessionState | null,
+  canvasState: CanvasState,
+  interactionState: InteractionState,
 ): TransientCanvasState | null {
-  const sessionStateToUse = canvasSessionState ?? emptySelectModeCanvasSessionState
+  const strategy = pickDefaultCanvasStrategy(canvasState, interactionState)
 
-  const strategy = pickDefaultCanvasStrategy(
-    editorState,
-    canvasSession.sessionProps,
-    sessionStateToUse,
-  )
-  const sessionStateWithStrategy: SelectModeCanvasSessionState = {
-    ...sessionStateToUse,
-    activeStrategy: strategy,
-  }
+  const result = strategy?.apply?.(canvasState, interactionState) ?? null
 
-  const result =
-    strategy?.updateFn?.(editorState, canvasSession.sessionProps, sessionStateWithStrategy) ?? null
+  return null
 
+  // FIXME: Some variant of this will need to be implemented.
+  /*
   if (result == null) {
     // no strategy was active, return empty result
     return transientCanvasStateForSession(canvasSessionState, [])
@@ -85,4 +67,5 @@ export function applyCanvasStrategy(
     )
     return transientCanvasStateForSession(sessionStateWithStrategy, commandsResults.statePatches)
   }
+  */
 }

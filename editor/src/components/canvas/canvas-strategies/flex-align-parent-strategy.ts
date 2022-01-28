@@ -18,6 +18,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
+import { CanvasStrategy } from '../../../interactions_proposal'
 import {
   EditorState,
   forUnderlyingTargetFromEditorState,
@@ -30,13 +31,14 @@ import {
   wildcardPatch,
 } from '../commands/commands'
 import {
-  CanvasStrategy,
   CanvasStrategyUpdateFnResult,
   FlexAlignControlRectProps,
   SelectModeCanvasSessionProps,
   SelectModeCanvasSessionState,
 } from './canvas-strategy-types'
 
+// FIXME: Reimplement with new interface.
+/*
 export const flexAlignParentStrategy: CanvasStrategy = {
   name: "Change Parent's Flex Align and Justify",
   fitnessFn: (editor, currentSession) => {
@@ -199,3 +201,4 @@ function calcualteFlexAlignIndicatorBoxes(
     ),
   ]
 }
+*/

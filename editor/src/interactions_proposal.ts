@@ -1,49 +1,24 @@
 import { EdgePosition } from './components/canvas/canvas-types'
 import { MoveIntoDragThreshold } from './components/canvas/canvas-utils'
-import { ElementInstanceMetadata } from './core/shared/element-template'
+import { ElementInstanceMetadata, ElementInstanceMetadataMap } from './core/shared/element-template'
 import { CanvasPoint, CanvasVector } from './core/shared/math-utils'
 import { ElementPath } from './core/shared/project-file-types'
 import { KeyCharacter, Modifier } from './utils/keyboard'
 import { CanvasControlType } from './components/canvas/canvas-strategies/canvas-strategy-types'
 import { addAllUniquely } from './core/shared/array-utils'
 import { Modifiers } from './utils/modifiers'
+import { ProjectContentTreeRoot } from './components/assets'
+import { CanvasCommand } from './components/canvas/commands/commands'
 
-interface CanvasState {
+// FIXME: There's a type with the same name in the dom types.
+export interface CanvasState {
   // The idea here being that we should be restricting the model we're supplying to the interactions system,
   // but that's not a requirement of this proposal
   selectedElements: Array<ElementInstanceMetadata>
+  metadata: ElementInstanceMetadataMap
+  projectContents: ProjectContentTreeRoot
+  openFile: string | null | undefined
 }
-
-interface MoveElement {
-  type: 'MOVE_ELEMENT'
-  target: ElementPath
-  x: number
-  y: number
-}
-
-function moveElement(target: ElementPath, x: number, y: number): MoveElement {
-  return {
-    type: 'MOVE_ELEMENT',
-    target: target,
-    x: x,
-    y: y,
-  }
-}
-
-// Commands that update the project model itself, and will be applied at the end of the interaction
-type ModelUpdateCommand = MoveElement
-
-interface ModelUpdateCommandsWithReason {
-  commands: Array<ModelUpdateCommand>
-  reason: string // The name of the strategy that created these commands? This exists so that a strategy can update its own commands
-}
-
-interface SetDragMinimumExceededCommand {
-  type: 'SET_DRAG_MININUM_EXCEEDED'
-}
-
-// Commands that update other parts of the editor state, and will be discarded at the end of the interaction
-type EditorUpdateCommand = SetDragMinimumExceededCommand
 
 interface MouseInteraction {
   mousePosition: CanvasPoint
@@ -101,8 +76,8 @@ type InteractionData = KeyboardInteractionData | DragInteractionData
 // - likely not inside strategies (we could want them for making changes to the editor "mode", or chosen strategy)
 
 // TODO
-// - [ ] Update accumulatedCommands
 // - [ ] Track the strategy being applied
+// - [ ] Update accumulatedCommands
 // - [ ] Check fitness functions and apply chosen strategy in the dispatch function
 //       removing the editorStatePatch from the TransientCanvasState
 // - [ ] Apply the strategies to the patched editor to get the new patch
@@ -115,9 +90,10 @@ export interface InteractionState {
   activeControl: CanvasControlType // Do we need to guard against multiple controls trying to trigger or update an interaction session?
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
-  accumulatedCommands: Array<ModelUpdateCommandsWithReason>
+  accumulatedCommands: Array<CanvasCommand>
 
-  // Need to track here which strategy is being applied
+  // Need to track here which strategy is being applied.
+  currentStrategy: string | null
   // Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
 
   // The latest strategy might want to replace the last commands based on the reason
@@ -158,6 +134,7 @@ export function createInteractionViaMouse(
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     accumulatedCommands: [],
+    currentStrategy: null,
   }
 }
 
@@ -188,6 +165,7 @@ export function updateInteractionViaMouse(
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
       accumulatedCommands: currentState.accumulatedCommands,
+      currentStrategy: currentState.currentStrategy,
     }
   } else {
     return currentState
@@ -209,6 +187,7 @@ export function createInteractionViaKeyboard(
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     accumulatedCommands: [],
+    currentStrategy: null,
   }
 }
 
@@ -235,6 +214,7 @@ export function updateInteractionViaKeyboard(
       sourceOfUpdate: sourceOfUpdate,
       lastInteractionTime: Date.now(),
       accumulatedCommands: currentState.accumulatedCommands,
+      currentStrategy: currentState.currentStrategy,
     }
   } else if (currentState.interactionData.type === 'DRAG') {
     return {
@@ -249,19 +229,14 @@ export function updateInteractionViaKeyboard(
       sourceOfUpdate: currentState.activeControl,
       lastInteractionTime: Date.now(),
       accumulatedCommands: currentState.accumulatedCommands,
+      currentStrategy: currentState.currentStrategy,
     }
   } else {
     return currentState
   }
 }
 
-interface StrategyApplicationResult {
-  modelUpdates: Array<ModelUpdateCommandsWithReason>
-  transientUpdates: Array<EditorUpdateCommand>
-  // Sean:
-  // We currently have duplication change the selected view to the newly created elements,
-  // does this mean that we can't do that or do we need a way of changing that for both types of command?
-}
+export type StrategyApplicationResult = Array<CanvasCommand>
 
 export interface CanvasStrategyMeta {
   shouldKeepCommands: (
@@ -303,6 +278,7 @@ export interface CanvasStrategy {
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
   apply: (canvasState: CanvasState, interactionState: InteractionState) => StrategyApplicationResult
+
   // Returns the commands that inform how the model and the editor should be updated
 }
 
@@ -370,33 +346,9 @@ export const AbsoluteMoveStrategy: CanvasStrategy = {
 
     if (movement == null) {
       // TODO Handle key up using a timeout to apply the final result
-      return {
-        modelUpdates: interactionState.accumulatedCommands,
-        transientUpdates: [], // Should this return the previous transient updates? I'm not sure
-      }
+      return interactionState.accumulatedCommands
     } else {
-      const newModelCommands: ModelUpdateCommandsWithReason = {
-        reason: AbsoluteMoveStrategy.name,
-        commands: canvasState.selectedElements.map((e) =>
-          moveElement(e.elementPath, movement.x, movement.y),
-        ),
-      }
-
-      const lastAppliedCommands =
-        interactionState.accumulatedCommands[interactionState.accumulatedCommands.length - 1]
-      const replaceLastAppliedCommands = lastAppliedCommands?.reason === AbsoluteMoveStrategy.name
-      // I wonder if instead of providing a reason, and then trying to match on that, a better option would be to use some
-      // sort of "marker" command to mark the point at which the strategy changed. The motivation for the reason
-      // here, however, also includes e.g. replacing a previous command for updating width with one for updating minWidth
-      // when the user explicitly changes the chosen strategy via the picker menu mid-interaction
-      const previousCommands = replaceLastAppliedCommands
-        ? interactionState.accumulatedCommands.slice(0, -1)
-        : interactionState.accumulatedCommands
-
-      return {
-        modelUpdates: previousCommands.concat(newModelCommands),
-        transientUpdates: [],
-      }
+      return []
     }
   },
 }

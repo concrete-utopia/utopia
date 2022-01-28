@@ -29,100 +29,83 @@ import {
   forUnderlyingTargetFromEditorState,
   modifyUnderlyingForOpenFile,
   TransientFilesState,
+  withUnderlyingTarget,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import {
-  CanvasStrategy,
   CanvasStrategyUpdateFnResult,
   FlexAlignControlRectProps,
   SelectModeCanvasSession,
   SelectModeCanvasSessionProps,
   SelectModeCanvasSessionState,
 } from './canvas-strategy-types'
-import { aperture, mapDropNulls } from '../../../core/shared/array-utils'
+import { aperture, mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import { applyValuesAtPath, wildcardPatch } from '../commands/commands'
+import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
+import { adjustNumberProperty, applyValuesAtPath, wildcardPatch } from '../commands/commands'
+import { CanvasStrategy } from '../../../interactions_proposal'
 
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
-  fitnessFn: (editor, sessionProps) => {
+  isApplicable: (canvasState, interactionState) => {
     if (
-      editor.selectedViews.length === 1 &&
-      sessionProps.activeControl.type === 'FLEX_GAP_HANDLE'
+      canvasState.selectedElements.length === 1 &&
+      interactionState != null &&
+      interactionState.activeControl.type === 'FLEX_GAP_HANDLE'
     ) {
-      const selectedView = editor.selectedViews[0]
-
-      const isFlexLayouted = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
-        MetadataUtils.findElementByElementPath(editor.jsxMetadata, selectedView),
-      )
-      if (isFlexLayouted) {
-        return 10 // fit!
-      }
+      const selectedView = canvasState.selectedElements[0]
+      return selectedView.specialSizeMeasurements.parentLayoutSystem === 'flex'
     }
-    return null // not fit
+    return false
   },
-  updateFn: (
-    editorState: EditorState,
-    sessionProps: SelectModeCanvasSessionProps,
-    sessionState: SelectModeCanvasSessionState,
-  ): CanvasStrategyUpdateFnResult => {
-    if (sessionProps.activeControl.type === 'FLEX_GAP_HANDLE') {
+  controlsToRender: (canvasState, interactionState) => {
+    return []
+  },
+  fitness: (canvasState, interactionState) => {
+    return flexGapStrategy.isApplicable(canvasState, interactionState) &&
+      interactionState.interactionData.type === 'DRAG'
+      ? 1
+      : 0
+  },
+  apply: (canvasState, interactionState) => {
+    if (
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.activeControl.type === 'FLEX_GAP_HANDLE'
+    ) {
       // Only looks at the first selected element.
-      const targetedElement = editorState.selectedViews[0]
-      const targetParent = MetadataUtils.getParent(editorState.jsxMetadata, targetedElement)
-      const isFlexLayouted = MetadataUtils.isFlexLayoutedContainer(targetParent)
+      const targetedElement = forceNotNull(
+        'Could not get first element.',
+        safeIndex(canvasState.selectedElements, 0),
+      )
+      const targetParent = MetadataUtils.getParent(
+        canvasState.metadata,
+        targetedElement.elementPath,
+      )
       const gapPropPath = stylePropPathMappingFn('gap', ['style'])
 
-      if (targetParent !== null && isFlexLayouted && sessionProps.drag !== null) {
-        // Identify the current flex gap value, whatever that may be.
-        const currentGap = withUnderlyingTargetFromEditorState(
-          targetParent.elementPath,
-          editorState,
-          null,
-          (success, element, underlyingTarget, underlyingFilePath) => {
-            if (isJSXElement(element)) {
-              return getJSXAttributeAtPath(element.props, gapPropPath)
-            } else {
-              return null
-            }
-          },
-        )
-
-        // Handle updating the existing gap value, treating a value that can't be parsed
-        // as zero.
-        let newGap: number = 0
+      if (targetParent !== null) {
         const flexDirection = MetadataUtils.getFlexDirection(targetParent)
+        let gapChange: number = 0
         if (flexDirection.startsWith('row')) {
-          newGap += sessionProps.mousePosition.x - sessionProps.start.x
+          gapChange = interactionState.interactionData.drag?.x ?? 0
         } else {
-          newGap += sessionProps.mousePosition.y - sessionProps.start.y
+          gapChange = interactionState.interactionData.drag?.y ?? 0
         }
-        const currentGapValue = optionalMap(jsxSimpleAttributeToValue, currentGap?.attribute)
-        if (currentGapValue !== null && isRight(currentGapValue)) {
-          newGap += currentGapValue.value
-        }
-        const propsToUpdate: Array<ValueAtPath> = [
-          {
-            path: gapPropPath,
-            value: jsxAttributeValue(newGap, emptyComments),
-          },
-        ]
-
-        // Apply the update to the properties.
-        const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-          editorState,
-          targetParent.elementPath,
-          propsToUpdate,
+        const adjustProperty = adjustNumberProperty(
+          'permanent',
+          targetedElement.elementPath,
+          gapPropPath,
+          gapChange,
         )
+
         // Identify the siblings so that the metadata gets updated for those as well,
         // which should result in the gap controls also being updated.
         const siblingsOfTarget = MetadataUtils.getSiblings(
-          editorState.jsxMetadata,
-          targetedElement,
+          canvasState.metadata,
+          targetedElement.elementPath,
         ).map((metadata) => metadata.elementPath)
         return [
-          wildcardPatch('permanent', propertyUpdatePatch),
+          adjustProperty,
           wildcardPatch('transient', {
             highlightedViews: {
               $set: [],

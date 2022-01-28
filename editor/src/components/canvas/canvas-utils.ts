@@ -1804,13 +1804,8 @@ export function produceCanvasTransientState(
           const dragState = editorState.canvas.dragState
           switch (dragState.type) {
             case 'SELECT_MODE_CANVAS_SESSION':
-              transientState = applyCanvasStrategy(
-                lifecycle,
-                editorState,
-                dragState,
-                previousSessionState,
-              )
-              break
+              // FIXME: Remove case.
+              throw new Error('Should not be triggered.')
             case 'MOVE_DRAG_STATE':
               transientState = produceMoveTransientCanvasState(
                 previousCanvasTransientSelectedViews,

@@ -1,17 +1,29 @@
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { LayoutPinnedProp, LayoutPinnedProps } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { foldEither, forEachRight, isLeft, right } from '../../../core/shared/either'
-import { isJSXElement, JSXElement } from '../../../core/shared/element-template'
-import { setJSXValuesAtPaths, ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import { ElementPath, RevisionsState } from '../../../core/shared/project-file-types'
+import { foldEither, forEachRight, isLeft, isRight, right } from '../../../core/shared/either'
+import {
+  emptyComments,
+  isJSXElement,
+  JSXAttribute,
+  jsxAttributeValue,
+  JSXElement,
+} from '../../../core/shared/element-template'
+import {
+  getJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+  setJSXValuesAtPaths,
+  ValueAtPath,
+} from '../../../core/shared/jsx-attributes'
+import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
+import { ElementPath, PropertyPath, RevisionsState } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import {
   EditorStatePatch,
   EditorState,
   modifyUnderlyingForOpenFile,
   forUnderlyingTargetFromEditorState,
+  withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import { SelectModeCanvasSessionState } from '../canvas-strategies/canvas-strategy-types'
 import { cssNumberAsNumberIfPossible, getPropsToSetToMoveElement } from '../canvas-utils'
@@ -101,7 +113,33 @@ export function wildcardPatch(transient: TransientOrNot, patch: EditorStatePatch
   }
 }
 
-export type CanvasCommand = SetDragMinimumExceededCommand | MoveElement | WildcardPatch
+export interface AdjustNumberProperty extends BaseCommand {
+  type: 'ADJUST_NUMBER_PROPERTY'
+  target: ElementPath
+  property: PropertyPath
+  value: number
+}
+
+export function adjustNumberProperty(
+  transient: TransientOrNot,
+  target: ElementPath,
+  property: PropertyPath,
+  value: number,
+): AdjustNumberProperty {
+  return {
+    type: 'ADJUST_NUMBER_PROPERTY',
+    transient: transient,
+    target: target,
+    property: property,
+    value: value,
+  }
+}
+
+export type CanvasCommand =
+  | SetDragMinimumExceededCommand
+  | MoveElement
+  | WildcardPatch
+  | AdjustNumberProperty
 
 export const runSetDragMinimumExceededCommand: CommandFunction<SetDragMinimumExceededCommand> = (
   editorState: EditorState,
@@ -210,6 +248,58 @@ export const runWildcardPatch: CommandFunction<WildcardPatch> = (
   }
 }
 
+function runAdjustNumberProperty(
+  editorState: EditorState,
+  sessionState: SelectModeCanvasSessionState,
+  pathMappings: PathMappings,
+  command: AdjustNumberProperty,
+): CommandFunctionResult {
+  // Identify the current value, whatever that may be.
+  const currentAttribute = withUnderlyingTargetFromEditorState(
+    command.target,
+    editorState,
+    null,
+    (success, element, underlyingTarget, underlyingFilePath) => {
+      if (isJSXElement(element)) {
+        return getJSXAttributeAtPath(element.props, command.property)
+      } else {
+        return null
+      }
+    },
+  )
+
+  // Handle updating the existing value, treating a value that can't be parsed
+  // as zero.
+  let newValue: number = 0
+  const currentValue = optionalMap(jsxSimpleAttributeToValue, currentAttribute?.attribute)
+  if (currentValue !== null && isRight(currentValue) && typeof currentValue.value === 'number') {
+    newValue = currentValue.value
+  }
+
+  // Change the value.
+  newValue += command.value
+
+  const propsToUpdate: Array<ValueAtPath> = [
+    {
+      path: command.property,
+      value: jsxAttributeValue(newValue, emptyComments),
+    },
+  ]
+
+  // Apply the update to the properties.
+  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+    editorState,
+    command.target,
+    propsToUpdate,
+  )
+
+  return {
+    sessionState: sessionState,
+    editorStatePatch: propertyUpdatePatch,
+    pathMappings: pathMappings,
+  }
+}
+
 export function applyValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
@@ -303,6 +393,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runSetDragMinimumExceededCommand(editorState, sessionState, pathMappings, command)
     case 'WILDCARD_PATCH':
       return runWildcardPatch(editorState, sessionState, pathMappings, command)
+    case 'ADJUST_NUMBER_PROPERTY':
+      return runAdjustNumberProperty(editorState, sessionState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
