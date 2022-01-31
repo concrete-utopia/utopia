@@ -81,7 +81,8 @@ type InteractionData = KeyboardInteractionData | DragInteractionData
 //       removing the editorStatePatch from the TransientCanvasState
 // - [ ] Apply the strategies to the patched editor to get the new patch
 
-// - [ ] Check available strategies on each render(?) and render their controls in the canvas controls layer
+// - [X] Check available strategies on each render(?) and render their controls in the canvas controls layer
+// - [ ] Make sure it actually works once applyCanvasStrategy is fixed
 
 // - [ ] Use patched editor for rendering the canvas, rather than the transient canvas state
 //       Transient state being null results in some optimisations that we need to check for here (or possibly the drag state)
