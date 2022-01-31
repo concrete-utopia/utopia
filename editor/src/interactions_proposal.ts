@@ -77,9 +77,9 @@ type InteractionData = KeyboardInteractionData | DragInteractionData
 
 // TODO
 // - [ ] Update accumulatedCommands
-// - [ ] Check fitness functions and apply chosen strategy in the dispatch function
+// - [X] Check fitness functions and apply chosen strategy in the dispatch function
 //       removing the editorStatePatch from the TransientCanvasState
-// - [ ] Apply the strategies to the patched editor to get the new patch
+// - [X] Apply the strategies to the patched editor to get the new patch
 
 // - [X] Check available strategies on each render(?) and render their controls in the canvas controls layer
 // - [ ] Make sure it actually works once applyCanvasStrategy is fixed
