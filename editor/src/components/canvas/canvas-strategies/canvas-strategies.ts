@@ -1,5 +1,8 @@
+import { createSelector } from 'reselect'
 import { sortBy } from '../../../core/shared/array-utils'
 import { CanvasState, CanvasStrategy, InteractionState } from '../../../interactions_proposal'
+import { EditorStore } from '../../editor/store/editor-state'
+import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
@@ -9,6 +12,28 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy, flex
 interface StrategiesWithFitness {
   fitness: number
   strategy: CanvasStrategy
+}
+
+const getApplicableStrategiesSelector = createSelector(
+  (store: EditorStore): CanvasState => {
+    return {
+      selectedElements: store.editor.selectedViews,
+      metadata: store.editor.jsxMetadata,
+      projectContents: store.editor.projectContents,
+      openFile: store.editor.canvas.openFile?.filename,
+    }
+  },
+  (store: EditorStore) => store.editor.canvas.interactionState,
+  (canvasState: CanvasState, interactionState: InteractionState | null): Array<string> => {
+    if (interactionState == null) {
+      return []
+    }
+    return getApplicableStrategies(canvasState, interactionState).map((s) => s.strategy.name)
+  },
+)
+
+export function useGetApplicableStrategies(): Array<string> {
+  return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies')
 }
 
 function getApplicableStrategies(

@@ -13,6 +13,7 @@ import {
 } from '../../../core/shared/element-template'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { getJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
+import { createEmptyStrategyState } from '../../../interactions_proposal'
 
 describe('runMoveElementCommand', () => {
   it('works for a basic pinned element', async () => {
@@ -35,7 +36,12 @@ describe('runMoveElementCommand', () => {
     ])
     const moveCommand = moveElement('permanent', innerRectanglePath, 200, 120)
 
-    const result = runMoveElementCommand(renderResult.getEditorState().editor, [], moveCommand)
+    const result = runMoveElementCommand(
+      renderResult.getEditorState().editor,
+      createEmptyStrategyState(),
+      [],
+      moveCommand,
+    )
     const topLevelElements = Utils.path(
       [
         'projectContents',

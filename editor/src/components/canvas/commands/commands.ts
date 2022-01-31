@@ -38,6 +38,7 @@ import {
 } from '../../assets'
 import { drop } from '../../../core/shared/array-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import { StrategyState } from '../../../interactions_proposal'
 
 export interface PathMapping {
   from: ElementPath
@@ -49,10 +50,12 @@ export type PathMappings = Array<PathMapping>
 export interface CommandFunctionResult {
   editorStatePatch: EditorStatePatch
   pathMappings: PathMappings
+  strategyState: StrategyState
 }
 
 export type CommandFunction<T> = (
   editorState: EditorState,
+  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: T,
 ) => CommandFunctionResult
@@ -146,6 +149,7 @@ export type CanvasCommand = MoveElement | WildcardPatch | AdjustNumberProperty |
 
 export const runMoveElementCommand: CommandFunction<MoveElement> = (
   editorState: EditorState,
+  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: MoveElement,
 ) => {
@@ -216,23 +220,27 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
 
   return {
     editorStatePatch: editorStatePatch,
+    strategyState: strategyState,
     pathMappings: pathMappings,
   }
 }
 
 export const runWildcardPatch: CommandFunction<WildcardPatch> = (
   editorState: EditorState,
+  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: WildcardPatch,
 ) => {
   return {
     editorStatePatch: command.patch,
+    strategyState: strategyState,
     pathMappings: pathMappings,
   }
 }
 
 export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   editorState: EditorState,
+  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: AdjustNumberProperty,
 ) => {
@@ -277,12 +285,14 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
 
   return {
     editorStatePatch: propertyUpdatePatch,
+    strategyState: strategyState,
     pathMappings: pathMappings,
   }
 }
 
 export const runSetProperty: CommandFunction<SetProperty> = (
   editorState: EditorState,
+  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: SetProperty,
 ) => {
@@ -302,6 +312,7 @@ export const runSetProperty: CommandFunction<SetProperty> = (
 
   return {
     editorStatePatch: propertyUpdatePatch,
+    strategyState: strategyState,
     pathMappings: pathMappings,
   }
 }
@@ -388,18 +399,19 @@ export function applyValuesAtPath(
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
+  strategyState: StrategyState,
   pathMappings: PathMappings,
   command: CanvasCommand,
 ) => {
   switch (command.type) {
     case 'MOVE_ELEMENT':
-      return runMoveElementCommand(editorState, pathMappings, command)
+      return runMoveElementCommand(editorState, strategyState, pathMappings, command)
     case 'WILDCARD_PATCH':
-      return runWildcardPatch(editorState, pathMappings, command)
+      return runWildcardPatch(editorState, strategyState, pathMappings, command)
     case 'ADJUST_NUMBER_PROPERTY':
-      return runAdjustNumberProperty(editorState, pathMappings, command)
+      return runAdjustNumberProperty(editorState, strategyState, pathMappings, command)
     case 'SET_PROPERTY':
-      return runSetProperty(editorState, pathMappings, command)
+      return runSetProperty(editorState, strategyState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -408,17 +420,24 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
 
 export function foldCommands(
   editorState: EditorState,
+  strategyState: StrategyState,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
-): Array<EditorStatePatch> {
+): { editorStatePatches: Array<EditorStatePatch>; newStrategyState: StrategyState } {
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
+  let workingStrategyState: StrategyState = strategyState
   let workingPathMappings: PathMappings = []
   for (const command of commands) {
     // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
     if (transient === 'transient' || command.transient === 'permanent') {
       // Run the command with our current states.
-      const commandResult = runCanvasCommand(workingEditorState, workingPathMappings, command)
+      const commandResult = runCanvasCommand(
+        workingEditorState,
+        workingStrategyState,
+        workingPathMappings,
+        command,
+      )
       // Capture values from the result.
       const statePatch = commandResult.editorStatePatch
       workingPathMappings = commandResult.pathMappings
@@ -429,7 +448,7 @@ export function foldCommands(
     }
   }
 
-  return statePatches
+  return { editorStatePatches: statePatches, newStrategyState: workingStrategyState }
 }
 
 export function applyStatePatches(

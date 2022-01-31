@@ -128,18 +128,24 @@ export interface InteractionState {
   // The above is predicated on the commands setting discrete values and/or not changing something on another element at the same time.
 }
 
+export interface StrategyState {}
+export function createEmptyStrategyState(): StrategyState {
+  return {}
+}
+
 export interface SessionStateState {
+  // PLEASE RENAME ME
   // Need to track here which strategy is being applied.
   currentStrategy: string | null
-  possibleStrategies: Array<string>
 
-  // Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing) -- maybe here?
+  // this is the inner state of the Strategies, can be changed via commands
+  strategyState: StrategyState
 }
 
 export function createEmptySessionStateState(): SessionStateState {
   return {
     currentStrategy: null,
-    possibleStrategies: [],
+    strategyState: createEmptyStrategyState(),
   }
 }
 

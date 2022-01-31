@@ -96,7 +96,11 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
 import { applyStatePatches, CanvasCommand, foldCommands } from '../../canvas/commands/commands'
 import { applyCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
-import { CanvasState } from '../../../interactions_proposal'
+import {
+  CanvasState,
+  createEmptySessionStateState,
+  SessionStateState,
+} from '../../../interactions_proposal'
 import { c } from 'tar'
 
 export interface DispatchResult extends EditorStore {
@@ -481,8 +485,9 @@ export function editorDispatch(
   const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
 
-  const editorStatePatches: Array<EditorStatePatch> = foldCommands(
+  const commandResult = foldCommands(
     frozenEditorState,
+    result.sessionStateState.strategyState,
     [...(frozenEditorState.canvas.interactionState?.accumulatedCommands ?? []), ...patchCommands],
     shouldApplyChanges ? 'permanent' : 'transient',
   )
@@ -490,14 +495,22 @@ export function editorDispatch(
   const patchedEditorState = applyStatePatches(
     frozenEditorState,
     storedState.editor,
-    shouldDiscardChanges ? [] : editorStatePatches,
+    shouldDiscardChanges ? [] : commandResult.editorStatePatches,
   )
+
+  const newSessionStateState: SessionStateState = clearInteractionStateActionDispatched
+    ? createEmptySessionStateState() // QUESTION should we make this NULL instead?
+    : {
+        ...result.sessionStateState,
+        currentStrategy: strategyName,
+        strategyState: commandResult.newStrategyState,
+      }
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     editor: patchedEditorState,
     derived: frozenDerivedState,
-    sessionStateState: result.sessionStateState, // TODO SessionStateState needs updating inside the applyCanvasStrategy() function
+    sessionStateState: newSessionStateState,
     history: newHistory,
     userState: result.userState,
     workers: storedState.workers,
