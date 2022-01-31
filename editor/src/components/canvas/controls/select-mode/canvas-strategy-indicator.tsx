@@ -42,9 +42,9 @@ export const CanvasStrategyIndicator = React.memo(() => {
         onTabPressed(nextStrategyName)
       }
     }
-    window.addEventListener('keydown', handleTabKey)
+    window.addEventListener('keydown', handleTabKey, true)
     return function cleanup() {
-      window.removeEventListener('keydown', handleTabKey)
+      window.removeEventListener('keydown', handleTabKey, true)
     }
   }, [onTabPressed, activeStrategy, otherPossibleStrategies])
 
