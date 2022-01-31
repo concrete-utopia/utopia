@@ -33,6 +33,8 @@ import {
   isUndoOrRedo,
   isParsedModelUpdate,
   isFromVSCode,
+  isClearInteractionState,
+  shouldApplyClearInteractionStateResult,
 } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -475,16 +477,20 @@ export function editorDispatch(
     patchCommands = canvasStrategyResult.commands
   }
 
+  const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
+  const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
+  const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
+
   const editorStatePatches: Array<EditorStatePatch> = foldCommands(
     frozenEditorState,
     [...(frozenEditorState.canvas.interactionState?.accumulatedCommands ?? []), ...patchCommands],
-    'transient',
+    shouldApplyChanges ? 'permanent' : 'transient',
   )
 
   const patchedEditorState = applyStatePatches(
     frozenEditorState,
     storedState.editor,
-    editorStatePatches,
+    shouldDiscardChanges ? [] : editorStatePatches,
   )
 
   const finalStore: DispatchResult = {

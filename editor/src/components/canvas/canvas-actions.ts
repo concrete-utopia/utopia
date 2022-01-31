@@ -26,6 +26,12 @@ const CanvasActions = {
       interactionState: session,
     }
   },
+  clearInteractionState: function (applyChanges: boolean): CanvasAction {
+    return {
+      action: 'CLEAR_INTERACTION_STATE',
+      applyChanges: applyChanges,
+    }
+  },
   updateCanvasSessionProps: function (
     newCanvasSessionProps: Partial<SelectModeCanvasSessionProps>,
   ): CanvasAction {

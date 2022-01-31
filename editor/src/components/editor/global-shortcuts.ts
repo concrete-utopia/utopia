@@ -448,6 +448,8 @@ export function handleKeyDown(
           getDragStateStart(editor.canvas.dragState, editor.canvas.resizeOptions) != null
         ) {
           return [CanvasActions.clearDragState(false)]
+        } else if (editor.canvas.interactionState != null) {
+          return [CanvasActions.clearInteractionState(false)]
         } else if (isSelectMode(editor.mode) || isSelectLiteMode(editor.mode)) {
           return jumpToParentActions(editor.selectedViews)
         }
@@ -619,6 +621,7 @@ export function handleKeyDown(
         const exitInsertModeActions = [
           EditorActions.switchEditorMode(EditorModes.selectMode()),
           CanvasActions.clearDragState(false),
+          CanvasActions.clearInteractionState(false),
           EditorActions.clearHighlightedViews(),
         ]
         if (editor.selectedViews.length === 1) {

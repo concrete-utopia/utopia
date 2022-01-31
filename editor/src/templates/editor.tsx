@@ -269,6 +269,7 @@ export class Editor {
       [
         EditorActions.clearHighlightedViews(),
         CanvasActions.clearDragState(false),
+        CanvasActions.clearInteractionState(false),
         EditorActions.updateKeys({}),
         EditorActions.closePopup(),
       ],

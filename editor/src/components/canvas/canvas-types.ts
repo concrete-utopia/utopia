@@ -644,6 +644,11 @@ export interface CreateInteractionState {
   interactionState: InteractionState
 }
 
+export interface ClearInteractionState {
+  action: 'CLEAR_INTERACTION_STATE'
+  applyChanges: boolean
+}
+
 export interface UpdateCanvasSessionProps {
   action: 'UPDATE_CANVAS_SESSION_PROPS'
   newCanvasSessionProps: Partial<SelectModeCanvasSessionProps>
@@ -675,6 +680,7 @@ export type CanvasAction =
   | ClearDragState
   | CreateDragState
   | CreateInteractionState
+  | ClearInteractionState
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility
