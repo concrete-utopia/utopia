@@ -178,6 +178,7 @@ function callPropertyControlsHook(selectedViews: ElementPath[]) {
     unpatchedEditor: editorState,
     editor: editorState,
     derived: null as any,
+    sessionStateState: null as any,
     history: null as any,
     userState: null as any,
     workers: null as any,

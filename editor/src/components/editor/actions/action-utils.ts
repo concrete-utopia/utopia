@@ -107,6 +107,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FORCE_PARSE_FILE':
     case 'UPDATE_CANVAS_SESSION_PROPS':
     case 'CREATE_INTERACTION_STATE':
+    case 'SET_USERS_PREFERRED_STRATEGY':
       return true
 
     case 'NEW':

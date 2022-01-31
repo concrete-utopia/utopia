@@ -374,6 +374,22 @@ export function runLocalCanvasAction(
           interactionState: action.interactionState,
         },
       }
+    case 'SET_USERS_PREFERRED_STRATEGY': {
+      if (model.canvas.interactionState != null) {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            interactionState: {
+              ...model.canvas.interactionState,
+              userPreferredStrategy: action.strategyName,
+            },
+          },
+        }
+      } else {
+        return model
+      }
+    }
     default:
       const _exhaustiveCheck: never = action
       return model

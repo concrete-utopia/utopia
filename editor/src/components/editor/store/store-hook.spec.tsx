@@ -15,6 +15,7 @@ function createEmptyEditorStoreHook() {
     unpatchedEditor: emptyEditorState,
     editor: emptyEditorState,
     derived: null as any,
+    sessionStateState: null as any,
     history: null as any,
     userState: null as any,
     workers: null as any,

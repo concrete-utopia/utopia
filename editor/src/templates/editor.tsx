@@ -82,6 +82,7 @@ import { PersistenceMachine } from '../components/editor/persistence/persistence
 import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
 import { defaultProject } from '../sample-projects/sample-project-utils'
 import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import { createEmptySessionStateState } from '../interactions_proposal'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -109,6 +110,8 @@ export class Editor {
 
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(emptyEditorState, null)
+
+    const sessionStateState = createEmptySessionStateState()
 
     const history = History.init(emptyEditorState, derivedState)
 
@@ -138,6 +141,7 @@ export class Editor {
       unpatchedEditor: emptyEditorState,
       editor: emptyEditorState,
       derived: derivedState,
+      sessionStateState: sessionStateState,
       history: history,
       userState: defaultUserState,
       workers: workers,

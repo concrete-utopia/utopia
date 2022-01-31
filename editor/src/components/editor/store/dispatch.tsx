@@ -191,6 +191,7 @@ function processAction(
       unpatchedEditor: editorAfterNavigator,
       editor: editorAfterNavigator,
       derived: working.derived,
+      sessionStateState: working.sessionStateState, // this means the actions cannot update sessionStateState – this piece of state lives outside our "redux" state
       history: newStateHistory,
       userState: working.userState,
       workers: working.workers,
@@ -463,6 +464,7 @@ export function editorDispatch(
     unpatchedEditor: frozenEditorState,
     editor: patchedEditorState,
     derived: frozenDerivedState,
+    sessionStateState: result.sessionStateState, // TODO SessionStateState needs updating inside the applyCanvasStrategy() function
     history: newHistory,
     userState: result.userState,
     workers: storedState.workers,
@@ -667,6 +669,7 @@ function editorDispatchInner(
       unpatchedEditor: frozenEditorState,
       editor: frozenEditorState,
       derived: frozenDerivedState,
+      sessionStateState: result.sessionStateState,
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,
