@@ -178,6 +178,11 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
             ),
           ]
         }
+        if (model.editorState.canvas.interactionState?.interactionData.type === 'DRAG') {
+          const applyChanges =
+            model.editorState.canvas.interactionState?.interactionData.dragThresholdPassed
+          optionalDragStateAction = [CanvasActions.clearInteractionState(applyChanges)]
+        }
         break
 
       case 'MOVE':
