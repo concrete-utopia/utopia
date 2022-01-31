@@ -68,6 +68,8 @@ function pickStrategy(
   applicableStrategies: Array<StrategiesWithFitness>,
   interactionState: InteractionState,
 ): CanvasStrategy | null {
+  // FIXME Explicitly picking a strategy will prevent natural handovers that otherwise should occur
+
   if (interactionState.userPreferredStrategy != null) {
     const foundStrategyByName = applicableStrategies.find(
       (s) => s.strategy.name === interactionState.userPreferredStrategy,

@@ -35,6 +35,7 @@ import {
   isFromVSCode,
   isClearInteractionState,
   shouldApplyClearInteractionStateResult,
+  strategyWasOverridden,
 } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -487,7 +488,7 @@ export function editorDispatch(
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
 
   const strategyChanged = strategyName != result.sessionStateState.currentStrategy
-  const shouldKeepCommands = strategyChanged // && TODO call shouldKeepCommands
+  const shouldKeepCommands = strategyChanged && !dispatchedActions.some(strategyWasOverridden)
   const updatedAccumulatedCommands = shouldKeepCommands
     ? [
         ...result.sessionStateState.accumulatedCommands,

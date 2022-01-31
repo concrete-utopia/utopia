@@ -219,6 +219,19 @@ export function isFromVSCode(action: EditorAction): boolean {
   }
 }
 
+export function strategyWasOverridden(action: EditorAction): boolean {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(strategyWasOverridden)
+    case 'ATOMIC':
+      return action.actions.some(strategyWasOverridden)
+    case 'SET_USERS_PREFERRED_STRATEGY':
+      return true
+    default:
+      return false
+  }
+}
+
 export function isClearInteractionState(action: EditorAction): action is ClearInteractionState {
   switch (action.action) {
     case 'TRANSIENT_ACTIONS':

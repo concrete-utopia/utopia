@@ -76,10 +76,12 @@ type InteractionData = KeyboardInteractionData | DragInteractionData
 // - likely not inside strategies (we could want them for making changes to the editor "mode", or chosen strategy)
 
 // TODO
-// - [ ] Update accumulatedCommands
+// - [X] Update accumulatedCommands
 // - [X] Check fitness functions and apply chosen strategy in the dispatch function
 //       removing the editorStatePatch from the TransientCanvasState
 // - [X] Apply the strategies to the patched editor to get the new patch
+// - [X] Implement shouldKeepCommands
+// - [ ] Support natural handovers when a specific strategy was chosen (e.g. move then reparent)
 
 // - [X] Check available strategies on each render(?) and render their controls in the canvas controls layer
 // - [ ] Make sure it actually works once applyCanvasStrategy is fixed
@@ -269,17 +271,6 @@ export function updateInteractionViaKeyboard(
 }
 
 export type StrategyApplicationResult = Array<CanvasCommand>
-
-export interface CanvasStrategyMeta {
-  shouldKeepCommands: (
-    previousStrategy: string,
-    nextStrategy: string | null,
-    interactionState: InteractionState,
-  ) => boolean
-  // Sean:
-  // Returns a boolean indicating if the latest/current collection of commands should be
-  // added on to `accumulatedCommands` when switching the strategy or "completing" the interaction.
-}
 
 export interface CanvasStrategy {
   name: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
