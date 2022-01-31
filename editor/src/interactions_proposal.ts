@@ -76,13 +76,24 @@ type InteractionData = KeyboardInteractionData | DragInteractionData
 // - likely not inside strategies (we could want them for making changes to the editor "mode", or chosen strategy)
 
 // TODO
-// - [ ] Track the strategy being applied
 // - [ ] Update accumulatedCommands
 // - [ ] Check fitness functions and apply chosen strategy in the dispatch function
 //       removing the editorStatePatch from the TransientCanvasState
 // - [ ] Apply the strategies to the patched editor to get the new patch
-// - [ ] Use patched editor for rendering the canvas, rather than the transient canvas state
+
 // - [ ] Check available strategies on each render(?) and render their controls in the canvas controls layer
+
+// - [ ] Use patched editor for rendering the canvas, rather than the transient canvas state
+//       Transient state being null results in some optimisations that we need to check for here (or possibly the drag state)
+
+// - [ ] Track the strategy being applied
+// - [ ] Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
+//       We already have a solution for this in SelectModeCanvasSessionState
+
+// - [ ] Need to actually end the sessions (we create and update the sessions but don't ever close them out)
+// - [ ] When closing the session we either apply the non-transient updates only, OR cancel the session which bins the commands
+
+// - [ ] Insertion lives in the drag state
 
 export interface InteractionState {
   // This represents an actual interaction that has started as the result of a key press or a drag
