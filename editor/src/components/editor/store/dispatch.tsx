@@ -467,6 +467,7 @@ export function editorDispatch(
   let strategyName: string | null = null
   let patchCommands: Array<CanvasCommand> = []
   if (frozenEditorState.canvas.interactionState != null) {
+    // TODO This should be using the patched editor state
     const canvasState: CanvasState = {
       selectedElements: frozenEditorState.selectedViews,
       metadata: frozenEditorState.jsxMetadata,
@@ -485,13 +486,30 @@ export function editorDispatch(
   const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
 
+  const strategyChanged = strategyName != result.sessionStateState.currentStrategy
+  const shouldKeepCommands = strategyChanged // && TODO call shouldKeepCommands
+  const updatedAccumulatedCommands = shouldKeepCommands
+    ? [
+        ...result.sessionStateState.accumulatedCommands,
+        ...result.sessionStateState.currentStrategyCommands,
+      ]
+    : result.sessionStateState.accumulatedCommands
+
+  const workingSessionStateState: SessionStateState = {
+    currentStrategy: strategyName,
+    currentStrategyCommands: patchCommands,
+    accumulatedCommands: updatedAccumulatedCommands,
+    strategyState: result.sessionStateState.strategyState,
+  }
+
   const commandResult = foldCommands(
     frozenEditorState,
-    result.sessionStateState.strategyState,
-    [...(frozenEditorState.canvas.interactionState?.accumulatedCommands ?? []), ...patchCommands],
+    workingSessionStateState,
+    [...workingSessionStateState.accumulatedCommands, ...patchCommands],
     shouldApplyChanges ? 'permanent' : 'transient',
   )
 
+  // TODO shouldApplyChanges should then update the final editor, not the patched editor
   const patchedEditorState = applyStatePatches(
     frozenEditorState,
     storedState.editor,
@@ -501,8 +519,7 @@ export function editorDispatch(
   const newSessionStateState: SessionStateState = clearInteractionStateActionDispatched
     ? createEmptySessionStateState() // QUESTION should we make this NULL instead?
     : {
-        ...result.sessionStateState,
-        currentStrategy: strategyName,
+        ...workingSessionStateState,
         strategyState: commandResult.newStrategyState,
       }
 

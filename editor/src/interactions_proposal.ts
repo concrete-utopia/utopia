@@ -102,7 +102,6 @@ export interface InteractionState {
   activeControl: CanvasControlType // Do we need to guard against multiple controls trying to trigger or update an interaction session?
   sourceOfUpdate: CanvasControlType
   lastInteractionTime: number
-  accumulatedCommands: Array<CanvasCommand>
 
   // To track if the user selected a strategy
   userPreferredStrategy: string | null
@@ -137,6 +136,8 @@ export interface SessionStateState {
   // PLEASE RENAME ME
   // Need to track here which strategy is being applied.
   currentStrategy: string | null
+  currentStrategyCommands: Array<CanvasCommand>
+  accumulatedCommands: Array<CanvasCommand>
 
   // this is the inner state of the Strategies, can be changed via commands
   strategyState: StrategyState
@@ -145,6 +146,8 @@ export interface SessionStateState {
 export function createEmptySessionStateState(): SessionStateState {
   return {
     currentStrategy: null,
+    currentStrategyCommands: [],
+    accumulatedCommands: [],
     strategyState: createEmptyStrategyState(),
   }
 }
@@ -167,7 +170,6 @@ export function createInteractionViaMouse(
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
-    accumulatedCommands: [],
     userPreferredStrategy: null,
   }
 }
@@ -198,7 +200,6 @@ export function updateInteractionViaMouse(
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
-      accumulatedCommands: currentState.accumulatedCommands,
       userPreferredStrategy: currentState.userPreferredStrategy,
     }
   } else {
@@ -220,7 +221,6 @@ export function createInteractionViaKeyboard(
     activeControl: activeControl,
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
-    accumulatedCommands: [],
     userPreferredStrategy: null,
   }
 }
@@ -247,7 +247,6 @@ export function updateInteractionViaKeyboard(
       activeControl: currentState.activeControl,
       sourceOfUpdate: sourceOfUpdate,
       lastInteractionTime: Date.now(),
-      accumulatedCommands: currentState.accumulatedCommands,
       userPreferredStrategy: currentState.userPreferredStrategy,
     }
   } else if (currentState.interactionData.type === 'DRAG') {
@@ -262,7 +261,6 @@ export function updateInteractionViaKeyboard(
       activeControl: currentState.activeControl,
       sourceOfUpdate: currentState.activeControl,
       lastInteractionTime: Date.now(),
-      accumulatedCommands: currentState.accumulatedCommands,
       userPreferredStrategy: currentState.userPreferredStrategy,
     }
   } else {
