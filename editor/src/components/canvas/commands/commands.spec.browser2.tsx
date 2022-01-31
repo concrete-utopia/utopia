@@ -35,17 +35,7 @@ describe('runMoveElementCommand', () => {
     ])
     const moveCommand = moveElement('permanent', innerRectanglePath, 200, 120)
 
-    const sessionState = {
-      ...emptySelectModeCanvasSessionState,
-      dragDeltaMinimumPassed: true,
-    }
-
-    const result = runMoveElementCommand(
-      renderResult.getEditorState().editor,
-      sessionState,
-      [],
-      moveCommand,
-    )
+    const result = runMoveElementCommand(renderResult.getEditorState().editor, [], moveCommand)
     const topLevelElements = Utils.path(
       [
         'projectContents',

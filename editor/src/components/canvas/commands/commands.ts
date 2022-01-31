@@ -47,14 +47,12 @@ export interface PathMapping {
 export type PathMappings = Array<PathMapping>
 
 export interface CommandFunctionResult {
-  sessionState: SelectModeCanvasSessionState
   editorStatePatch: EditorStatePatch
   pathMappings: PathMappings
 }
 
 export type CommandFunction<T> = (
   editorState: EditorState,
-  sessionState: SelectModeCanvasSessionState,
   pathMappings: PathMappings,
   command: T,
 ) => CommandFunctionResult
@@ -63,19 +61,6 @@ export type TransientOrNot = 'transient' | 'permanent'
 
 export interface BaseCommand {
   transient: TransientOrNot
-}
-
-export interface SetDragMinimumExceededCommand extends BaseCommand {
-  type: 'SET_DRAG_MININUM_EXCEEDED'
-}
-
-export function setDragMinimumExceededCommand(
-  transient: TransientOrNot,
-): SetDragMinimumExceededCommand {
-  return {
-    type: 'SET_DRAG_MININUM_EXCEEDED',
-    transient: transient,
-  }
 }
 
 export interface MoveElement extends BaseCommand {
@@ -135,31 +120,32 @@ export function adjustNumberProperty(
   }
 }
 
-export type CanvasCommand =
-  | SetDragMinimumExceededCommand
-  | MoveElement
-  | WildcardPatch
-  | AdjustNumberProperty
+export interface SetProperty extends BaseCommand {
+  type: 'SET_PROPERTY'
+  target: ElementPath
+  property: PropertyPath
+  value: JSXAttribute
+}
 
-export const runSetDragMinimumExceededCommand: CommandFunction<SetDragMinimumExceededCommand> = (
-  editorState: EditorState,
-  sessionState: SelectModeCanvasSessionState,
-  pathMappings: PathMappings,
-  command: SetDragMinimumExceededCommand,
-) => {
+export function setProperty(
+  transient: TransientOrNot,
+  target: ElementPath,
+  property: PropertyPath,
+  value: JSXAttribute,
+): SetProperty {
   return {
-    sessionState: {
-      ...sessionState,
-      dragDeltaMinimumPassed: true,
-    },
-    editorStatePatch: {},
-    pathMappings: pathMappings,
+    type: 'SET_PROPERTY',
+    transient: transient,
+    target: target,
+    property: property,
+    value: value,
   }
 }
 
+export type CanvasCommand = MoveElement | WildcardPatch | AdjustNumberProperty | SetProperty
+
 export const runMoveElementCommand: CommandFunction<MoveElement> = (
   editorState: EditorState,
-  sessionState: SelectModeCanvasSessionState,
   pathMappings: PathMappings,
   command: MoveElement,
 ) => {
@@ -229,7 +215,6 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
   }
 
   return {
-    sessionState: sessionState,
     editorStatePatch: editorStatePatch,
     pathMappings: pathMappings,
   }
@@ -237,23 +222,20 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
 
 export const runWildcardPatch: CommandFunction<WildcardPatch> = (
   editorState: EditorState,
-  sessionState: SelectModeCanvasSessionState,
   pathMappings: PathMappings,
   command: WildcardPatch,
 ) => {
   return {
-    sessionState: sessionState,
     editorStatePatch: command.patch,
     pathMappings: pathMappings,
   }
 }
 
-function runAdjustNumberProperty(
+export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   editorState: EditorState,
-  sessionState: SelectModeCanvasSessionState,
   pathMappings: PathMappings,
   command: AdjustNumberProperty,
-): CommandFunctionResult {
+) => {
   // Identify the current value, whatever that may be.
   const currentAttribute = withUnderlyingTargetFromEditorState(
     command.target,
@@ -294,7 +276,31 @@ function runAdjustNumberProperty(
   )
 
   return {
-    sessionState: sessionState,
+    editorStatePatch: propertyUpdatePatch,
+    pathMappings: pathMappings,
+  }
+}
+
+export const runSetProperty: CommandFunction<SetProperty> = (
+  editorState: EditorState,
+  pathMappings: PathMappings,
+  command: SetProperty,
+) => {
+  const propsToUpdate: Array<ValueAtPath> = [
+    {
+      path: command.property,
+      value: command.value,
+    },
+  ]
+
+  // Apply the update to the properties.
+  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+    editorState,
+    command.target,
+    propsToUpdate,
+  )
+
+  return {
     editorStatePatch: propertyUpdatePatch,
     pathMappings: pathMappings,
   }
@@ -382,19 +388,18 @@ export function applyValuesAtPath(
 
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
-  sessionState: SelectModeCanvasSessionState,
   pathMappings: PathMappings,
   command: CanvasCommand,
 ) => {
   switch (command.type) {
     case 'MOVE_ELEMENT':
-      return runMoveElementCommand(editorState, sessionState, pathMappings, command)
-    case 'SET_DRAG_MININUM_EXCEEDED':
-      return runSetDragMinimumExceededCommand(editorState, sessionState, pathMappings, command)
+      return runMoveElementCommand(editorState, pathMappings, command)
     case 'WILDCARD_PATCH':
-      return runWildcardPatch(editorState, sessionState, pathMappings, command)
+      return runWildcardPatch(editorState, pathMappings, command)
     case 'ADJUST_NUMBER_PROPERTY':
-      return runAdjustNumberProperty(editorState, sessionState, pathMappings, command)
+      return runAdjustNumberProperty(editorState, pathMappings, command)
+    case 'SET_PROPERTY':
+      return runSetProperty(editorState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -403,26 +408,18 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
 
 export function foldCommands(
   editorState: EditorState,
-  sessionState: SelectModeCanvasSessionState,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
-): { statePatches: Array<EditorStatePatch>; sessionState: SelectModeCanvasSessionState } {
+): Array<EditorStatePatch> {
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
-  let workingSessionState: SelectModeCanvasSessionState = sessionState
   let workingPathMappings: PathMappings = []
   for (const command of commands) {
     // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
     if (transient === 'transient' || command.transient === 'permanent') {
       // Run the command with our current states.
-      const commandResult = runCanvasCommand(
-        workingEditorState,
-        workingSessionState,
-        workingPathMappings,
-        command,
-      )
+      const commandResult = runCanvasCommand(workingEditorState, workingPathMappings, command)
       // Capture values from the result.
-      workingSessionState = commandResult.sessionState
       const statePatch = commandResult.editorStatePatch
       workingPathMappings = commandResult.pathMappings
       // Apply the update to the editor state.
@@ -432,10 +429,7 @@ export function foldCommands(
     }
   }
 
-  return {
-    statePatches: statePatches,
-    sessionState: workingSessionState,
-  }
+  return statePatches
 }
 
 export function applyStatePatches(

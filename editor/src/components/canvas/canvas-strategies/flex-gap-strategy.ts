@@ -1,49 +1,9 @@
-import React from 'react'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { foldEither, isRight } from '../../../core/shared/either'
-import * as EP from '../../../core/shared/element-path'
-import {
-  ElementInstanceMetadata,
-  emptyComments,
-  isJSXElement,
-  jsxAttributeValue,
-  JSXElement,
-} from '../../../core/shared/element-template'
-import {
-  getJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
-  setJSXValuesAtPaths,
-  ValueAtPath,
-} from '../../../core/shared/jsx-attributes'
-import {
-  canvasPoint,
-  CanvasPoint,
-  CanvasRectangle,
-  magnitude,
-  rectContainsPoint,
-} from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import * as PP from '../../../core/shared/property-path'
-import {
-  EditorState,
-  forUnderlyingTargetFromEditorState,
-  modifyUnderlyingForOpenFile,
-  TransientFilesState,
-  withUnderlyingTarget,
-  withUnderlyingTargetFromEditorState,
-} from '../../editor/store/editor-state'
-import {
-  CanvasStrategyUpdateFnResult,
-  FlexAlignControlRectProps,
-  SelectModeCanvasSession,
-  SelectModeCanvasSessionProps,
-  SelectModeCanvasSessionState,
-} from './canvas-strategy-types'
 import { aperture, mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { adjustNumberProperty, applyValuesAtPath, wildcardPatch } from '../commands/commands'
 import { CanvasStrategy } from '../../../interactions_proposal'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
@@ -54,7 +14,11 @@ export const flexGapStrategy: CanvasStrategy = {
       interactionState.activeControl.type === 'FLEX_GAP_HANDLE'
     ) {
       const selectedView = canvasState.selectedElements[0]
-      return selectedView.specialSizeMeasurements.parentLayoutSystem === 'flex'
+      const selectedMetadata = MetadataUtils.findElementByElementPath(
+        canvasState.metadata,
+        selectedView,
+      )
+      return selectedMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flex'
     }
     return false
   },
@@ -77,10 +41,7 @@ export const flexGapStrategy: CanvasStrategy = {
         'Could not get first element.',
         safeIndex(canvasState.selectedElements, 0),
       )
-      const targetParent = MetadataUtils.getParent(
-        canvasState.metadata,
-        targetedElement.elementPath,
-      )
+      const targetParent = MetadataUtils.getParent(canvasState.metadata, targetedElement)
       const gapPropPath = stylePropPathMappingFn('gap', ['style'])
 
       if (targetParent !== null) {
@@ -93,7 +54,7 @@ export const flexGapStrategy: CanvasStrategy = {
         }
         const adjustProperty = adjustNumberProperty(
           'permanent',
-          targetedElement.elementPath,
+          targetedElement,
           gapPropPath,
           gapChange,
         )
@@ -102,7 +63,7 @@ export const flexGapStrategy: CanvasStrategy = {
         // which should result in the gap controls also being updated.
         const siblingsOfTarget = MetadataUtils.getSiblings(
           canvasState.metadata,
-          targetedElement.elementPath,
+          targetedElement,
         ).map((metadata) => metadata.elementPath)
         return [
           adjustProperty,

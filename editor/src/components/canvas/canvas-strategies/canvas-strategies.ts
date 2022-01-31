@@ -1,21 +1,10 @@
 import { sortBy } from '../../../core/shared/array-utils'
-import { CanvasStrategy, CanvasState, InteractionState } from '../../../interactions_proposal'
-import {
-  EditorState,
-  transientCanvasState,
-  TransientCanvasState,
-  transientCanvasStateForSession,
-} from '../../editor/store/editor-state'
-import { foldCommands, TransientOrNot } from '../commands/commands'
-import {
-  emptySelectModeCanvasSessionState,
-  SelectModeCanvasSession,
-  SelectModeCanvasSessionProps,
-  SelectModeCanvasSessionState,
-} from './canvas-strategy-types'
+import { CanvasState, CanvasStrategy, InteractionState } from '../../../interactions_proposal'
+import { CanvasCommand } from '../commands/commands'
+import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
 
-const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy] //, flexAlignParentStrategy]
+const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy, flexAlignParentStrategy]
 
 interface StrategiesWithFitness {
   fitness: number
@@ -67,32 +56,21 @@ function pickStrategy(
 }
 
 export function applyCanvasStrategy(
-  lifecycle: TransientOrNot,
-  editorState: EditorState,
   canvasState: CanvasState,
   interactionState: InteractionState,
-): TransientCanvasState | null {
+): { commands: Array<CanvasCommand>; strategy: string | null } {
   const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
   const strategy = pickStrategy(applicableStrategies, interactionState)
-
-  const result = strategy?.apply?.(canvasState, interactionState) ?? null
-
-  return null
-
-  // FIXME: Some variant of this will need to be implemented.
-  /*
-  if (result == null) {
-    // no strategy was active, return empty result
-    return transientCanvasStateForSession(canvasSessionState, [])
+  if (strategy == null) {
+    return {
+      commands: [],
+      strategy: null,
+    }
   } else {
-    const commandArray = Array.isArray(result) ? result : [result]
-    const commandsResults = foldCommands(
-      editorState,
-      sessionStateWithStrategy,
-      commandArray,
-      lifecycle,
-    )
-    return transientCanvasStateForSession(sessionStateWithStrategy, commandsResults.statePatches)
+    const commands = strategy.apply(canvasState, interactionState)
+    return {
+      commands: commands,
+      strategy: strategy.name,
+    }
   }
-  */
 }

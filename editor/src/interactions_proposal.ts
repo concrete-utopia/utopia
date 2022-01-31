@@ -14,7 +14,7 @@ import { CanvasCommand } from './components/canvas/commands/commands'
 export interface CanvasState {
   // The idea here being that we should be restricting the model we're supplying to the interactions system,
   // but that's not a requirement of this proposal
-  selectedElements: Array<ElementInstanceMetadata>
+  selectedElements: Array<ElementPath>
   metadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
   openFile: string | null | undefined
@@ -306,7 +306,6 @@ export interface CanvasStrategy {
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
   apply: (canvasState: CanvasState, interactionState: InteractionState) => StrategyApplicationResult
-
   // Returns the commands that inform how the model and the editor should be updated
 }
 
@@ -318,6 +317,7 @@ function movementForKeys(keysPressed: Array<KeyCharacter>): CanvasVector | null 
   }
 }
 
+/*
 export const SomeCanvasStrategyMeta: CanvasStrategyMeta = {
   shouldKeepCommands: (
     previousStrategy: string,
@@ -327,56 +327,4 @@ export const SomeCanvasStrategyMeta: CanvasStrategyMeta = {
     return nextStrategy !== AbsoluteMoveStrategy.name
   },
 }
-
-export const AbsoluteMoveStrategy: CanvasStrategy = {
-  name: 'AbsoluteMoveStrategy',
-  isApplicable: (canvasState: CanvasState, interactionState: InteractionState | null): boolean => {
-    return canvasState.selectedElements.some(
-      (e) => e.specialSizeMeasurements.position === 'absolute',
-    )
-  },
-  controlsToRender: (
-    canvasState: CanvasState,
-    interactionState: InteractionState | null,
-  ): Array<CanvasControlType> => {
-    const boundingBoxes: Array<CanvasControlType> = canvasState.selectedElements.map((e) => ({
-      type: 'BOUNDING_AREA',
-      target: e.elementPath,
-    }))
-    return boundingBoxes.concat({ type: 'KEYBOARD_CATCHER_CONTROL' })
-  },
-  fitness: (canvasState: CanvasState, interactionState: InteractionState): number => {
-    if (AbsoluteMoveStrategy.isApplicable(canvasState, interactionState)) {
-      if (
-        interactionState.activeControl.type === 'BOUNDING_AREA' &&
-        interactionState.interactionData.type === 'DRAG'
-      ) {
-        return interactionState.interactionData.dragThresholdPassed ? 1 : 0
-      } else if (
-        interactionState.activeControl.type === 'KEYBOARD_CATCHER_CONTROL' &&
-        interactionState.interactionData.type === 'KEYBOARD'
-      ) {
-        return movementForKeys(interactionState.interactionData.keysPressed) == null ? 0 : 1
-      }
-    }
-    return 0
-  },
-  apply: (
-    canvasState: CanvasState,
-    interactionState: InteractionState,
-  ): StrategyApplicationResult => {
-    const movement =
-      interactionState.interactionData.type === 'DRAG'
-        ? interactionState.interactionData.drag
-        : interactionState.interactionData.type === 'KEYBOARD'
-        ? movementForKeys(interactionState.interactionData.keysPressed)
-        : null
-
-    if (movement == null) {
-      // TODO Handle key up using a timeout to apply the final result
-      return interactionState.accumulatedCommands
-    } else {
-      return []
-    }
-  },
-}
+*/

@@ -92,7 +92,10 @@ import {
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
-import { applyStatePatches } from '../../canvas/commands/commands'
+import { applyStatePatches, CanvasCommand, foldCommands } from '../../canvas/commands/commands'
+import { applyCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
+import { CanvasState } from '../../../interactions_proposal'
+import { c } from 'tar'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -454,10 +457,34 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
+  // Create commands from the interaction state.
+  let strategyName: string | null = null
+  let patchCommands: Array<CanvasCommand> = []
+  if (frozenEditorState.canvas.interactionState != null) {
+    const canvasState: CanvasState = {
+      selectedElements: frozenEditorState.selectedViews,
+      metadata: frozenEditorState.jsxMetadata,
+      projectContents: frozenEditorState.projectContents,
+      openFile: frozenEditorState.canvas.openFile?.filename,
+    }
+    const canvasStrategyResult = applyCanvasStrategy(
+      canvasState,
+      frozenEditorState.canvas.interactionState,
+    )
+    strategyName = canvasStrategyResult.strategy
+    patchCommands = canvasStrategyResult.commands
+  }
+
+  const editorStatePatches: Array<EditorStatePatch> = foldCommands(
+    frozenEditorState,
+    [...(frozenEditorState.canvas.interactionState?.accumulatedCommands ?? []), ...patchCommands],
+    'transient',
+  )
+
   const patchedEditorState = applyStatePatches(
     frozenEditorState,
     storedState.editor,
-    frozenDerivedState.canvas.transientState.editorStatePatch,
+    editorStatePatches,
   )
 
   const finalStore: DispatchResult = {

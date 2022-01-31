@@ -1,95 +1,87 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { foldEither } from '../../../core/shared/either'
+import { safeIndex } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   emptyComments,
   jsxAttributeValue,
-  JSXElement,
 } from '../../../core/shared/element-template'
-import { setJSXValuesAtPaths, ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
-  canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   magnitude,
+  offsetPoint,
   rectContainsPoint,
 } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasStrategy } from '../../../interactions_proposal'
-import {
-  EditorState,
-  forUnderlyingTargetFromEditorState,
-  modifyUnderlyingForOpenFile,
-  TransientFilesState,
-} from '../../editor/store/editor-state'
-import {
-  applyValuesAtPath,
-  setDragMinimumExceededCommand,
-  wildcardPatch,
-} from '../commands/commands'
-import {
-  CanvasStrategyUpdateFnResult,
-  FlexAlignControlRectProps,
-  SelectModeCanvasSessionProps,
-  SelectModeCanvasSessionState,
-} from './canvas-strategy-types'
+import { setProperty, SetProperty, wildcardPatch } from '../commands/commands'
+import { FlexAlignControlRectProps } from './canvas-strategy-types'
 
-// FIXME: Reimplement with new interface.
-/*
 export const flexAlignParentStrategy: CanvasStrategy = {
   name: "Change Parent's Flex Align and Justify",
-  fitnessFn: (editor, currentSession) => {
-    if (editor.selectedViews.length === 1) {
-      const selectedView = editor.selectedViews[0]
+  isApplicable: (canvasState, interactionState) => {
+    if (canvasState.selectedElements.length === 1) {
+      const selectedElement = canvasState.selectedElements[0]
 
       const isFlexLayouted = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
-        MetadataUtils.findElementByElementPath(editor.jsxMetadata, selectedView),
+        MetadataUtils.findElementByElementPath(canvasState.metadata, selectedElement),
       )
-      const hasNoSiblings = MetadataUtils.getSiblings(editor.jsxMetadata, selectedView).length === 1
+      const hasNoSiblings =
+        MetadataUtils.getSiblings(canvasState.metadata, selectedElement).length === 1
 
       if (isFlexLayouted && hasNoSiblings) {
-        return 10 // fit!
+        return true
       }
     }
-    return null // not fit
+    return false
   },
-  updateFn: (
-    editorState: EditorState,
-    sessionProps: SelectModeCanvasSessionProps,
-    sessionState: SelectModeCanvasSessionState,
-  ): CanvasStrategyUpdateFnResult => {
+  controlsToRender: (canvasState, interactionState) => {
+    // FIXME: What controls?
+    return []
+  },
+  fitness: (canvasState, interactionState) => {
+    return flexAlignParentStrategy.isApplicable(canvasState, interactionState) ? 10 : 0
+  },
+  apply: (canvasState, interactionState) => {
     // only apply after a certain treshold IF we hadn't already passed that treshold once
-    const draggedElement = editorState.selectedViews[0]
-
-    if (
-      !sessionState.dragDeltaMinimumPassed &&
-      magnitude(sessionProps.drag ?? canvasPoint({ x: 0, y: 0 })) < 15
-    ) {
-      return wildcardPatch('transient', {
-        canvas: {
-          controls: {
-            animatedPlaceholderTargetUids: {
-              $set: [EP.toUid(draggedElement)],
-            },
-          },
-        },
-      })
+    const draggedElement = safeIndex(canvasState.selectedElements, 0)
+    if (draggedElement == null || interactionState.interactionData.type !== 'DRAG') {
+      return []
     }
 
-    const targetParent = MetadataUtils.getParent(editorState.jsxMetadata, draggedElement)
-    const indicatorBoxes = calcualteFlexAlignIndicatorBoxes(
-      targetParent,
-      sessionProps.mousePosition,
-    )
+    if (
+      interactionState.interactionData.drag !== null &&
+      magnitude(interactionState.interactionData.drag) < 15
+    ) {
+      return [
+        wildcardPatch('transient', {
+          canvas: {
+            controls: {
+              animatedPlaceholderTargetUids: {
+                $set: [EP.toUid(draggedElement)],
+              },
+            },
+          },
+        }),
+      ]
+    }
+
+    const targetParent = MetadataUtils.getParent(canvasState.metadata, draggedElement)
+    const mousePosition =
+      interactionState.interactionData.drag == null
+        ? interactionState.interactionData.dragStart
+        : offsetPoint(
+            interactionState.interactionData.dragStart,
+            interactionState.interactionData.drag,
+          )
+    const indicatorBoxes = calcualteFlexAlignIndicatorBoxes(targetParent, mousePosition)
 
     // if any indicator box is highlighted, we also want to change the parent's style too
     const higlightedIndicator = indicatorBoxes.find((b) => b.highlighted === true)
     if (higlightedIndicator == null || targetParent == null) {
       return [
-        setDragMinimumExceededCommand('transient'),
         wildcardPatch('transient', {
           canvas: {
             controls: {
@@ -105,33 +97,28 @@ export const flexAlignParentStrategy: CanvasStrategy = {
       const flexPropToChange: AssociatedFlexProp = higlightedIndicator.associatedFlexProp
 
       // Change Parent Props
-      const parentPropsToUpdate: Array<ValueAtPath> = [
-        ...Object.entries(flexPropToChange).map(([key, value]) => ({
-          path: PP.create(['style', key]),
-          value: jsxAttributeValue(value, emptyComments),
-        })),
-      ]
-
-      const {
-        editorStateWithChanges: editorStateAfterParent,
-        editorStatePatch: editorStatePatchAfterParent,
-      } = applyValuesAtPath(editorState, targetParent.elementPath, parentPropsToUpdate)
+      const parentPropsToUpdate: Array<SetProperty> = Object.entries(flexPropToChange).map(
+        ([key, value]) => {
+          return setProperty(
+            'permanent',
+            targetParent.elementPath,
+            PP.create(['style', key]),
+            jsxAttributeValue(value, emptyComments),
+          )
+        },
+      )
 
       // Make child invisible
-      const childOpacity0: Array<ValueAtPath> = [
-        { path: PP.create(['style', 'opacity']), value: jsxAttributeValue(0, emptyComments) },
-      ]
-
-      const { editorStatePatch: editorStatePatchAfterChild } = applyValuesAtPath(
-        editorStateAfterParent,
+      const childOpacity0: SetProperty = setProperty(
+        'transient',
         draggedElement,
-        childOpacity0,
+        PP.create(['style', 'opacity']),
+        jsxAttributeValue(0, emptyComments),
       )
 
       return [
-        setDragMinimumExceededCommand('transient'),
-        wildcardPatch('permanent', editorStatePatchAfterParent),
-        wildcardPatch('transient', editorStatePatchAfterChild),
+        ...parentPropsToUpdate,
+        childOpacity0,
         wildcardPatch('transient', {
           canvas: {
             controls: {
@@ -201,4 +188,3 @@ function calcualteFlexAlignIndicatorBoxes(
     ),
   ]
 }
-*/
