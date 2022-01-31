@@ -509,7 +509,6 @@ export function editorDispatch(
     shouldApplyChanges ? 'permanent' : 'transient',
   )
 
-  // TODO shouldApplyChanges should then update the final editor, not the patched editor
   const patchedEditorState = applyStatePatches(
     frozenEditorState,
     storedState.editor,
