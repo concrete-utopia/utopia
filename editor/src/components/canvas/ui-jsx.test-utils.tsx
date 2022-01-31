@@ -86,6 +86,7 @@ import {
   createBuiltInDependenciesList,
 } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
+import { createEmptySessionStateState } from '../../interactions_proposal'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -222,6 +223,7 @@ export async function renderTestEditorWithModel(
     unpatchedEditor: emptyEditorState,
     editor: emptyEditorState,
     derived: derivedState,
+    sessionStateState: createEmptySessionStateState(),
     history: history,
     userState: {
       loginState: notLoggedIn,

@@ -48,6 +48,7 @@ export function getStoreHook(
     unpatchedEditor: editor.editor,
     editor: editor.editor,
     derived: editor.derivedState,
+    sessionStateState: editor.sessionStateState,
     history: {
       previous: [],
       next: [],

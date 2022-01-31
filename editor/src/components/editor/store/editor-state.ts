@@ -163,7 +163,7 @@ import type {
   FlexGapControlRectProps,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { Spec } from 'immutability-helper'
-import { InteractionState } from '../../../interactions_proposal'
+import { InteractionState, SessionStateState } from '../../../interactions_proposal'
 
 const ObjectPathImmutable: any = OPI
 
@@ -247,6 +247,7 @@ export type EditorStore = {
   unpatchedEditor: EditorState
   editor: EditorState
   derived: DerivedState
+  sessionStateState: SessionStateState
   history: StateHistory
   userState: UserState
   workers: UtopiaTsWorkers

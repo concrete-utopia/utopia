@@ -92,8 +92,9 @@ export interface InteractionState {
   lastInteractionTime: number
   accumulatedCommands: Array<CanvasCommand>
 
-  // Need to track here which strategy is being applied.
-  currentStrategy: string | null
+  // To track if the user selected a strategy
+  userPreferredStrategy: string | null
+
   // Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
 
   // The latest strategy might want to replace the last commands based on the reason
@@ -115,6 +116,21 @@ export interface InteractionState {
   // The above is predicated on the commands setting discrete values and/or not changing something on another element at the same time.
 }
 
+export interface SessionStateState {
+  // Need to track here which strategy is being applied.
+  currentStrategy: string | null
+  possibleStrategies: Array<string>
+
+  // Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing) -- maybe here?
+}
+
+export function createEmptySessionStateState(): SessionStateState {
+  return {
+    currentStrategy: null,
+    possibleStrategies: [],
+  }
+}
+
 // Does this need to be split into a default mouse interaction state and a separate drag interaction state?
 // Thinking here in terms of highlight and selection
 export function createInteractionViaMouse(
@@ -134,7 +150,7 @@ export function createInteractionViaMouse(
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     accumulatedCommands: [],
-    currentStrategy: null,
+    userPreferredStrategy: null,
   }
 }
 
@@ -165,7 +181,7 @@ export function updateInteractionViaMouse(
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
       accumulatedCommands: currentState.accumulatedCommands,
-      currentStrategy: currentState.currentStrategy,
+      userPreferredStrategy: currentState.userPreferredStrategy,
     }
   } else {
     return currentState
@@ -187,7 +203,7 @@ export function createInteractionViaKeyboard(
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     accumulatedCommands: [],
-    currentStrategy: null,
+    userPreferredStrategy: null,
   }
 }
 
@@ -214,7 +230,7 @@ export function updateInteractionViaKeyboard(
       sourceOfUpdate: sourceOfUpdate,
       lastInteractionTime: Date.now(),
       accumulatedCommands: currentState.accumulatedCommands,
-      currentStrategy: currentState.currentStrategy,
+      userPreferredStrategy: currentState.userPreferredStrategy,
     }
   } else if (currentState.interactionData.type === 'DRAG') {
     return {
@@ -229,7 +245,7 @@ export function updateInteractionViaKeyboard(
       sourceOfUpdate: currentState.activeControl,
       lastInteractionTime: Date.now(),
       accumulatedCommands: currentState.accumulatedCommands,
-      currentStrategy: currentState.currentStrategy,
+      userPreferredStrategy: currentState.userPreferredStrategy,
     }
   } else {
     return currentState

@@ -30,6 +30,7 @@ import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-
 import { disableStoredStateforTests } from '../editor/stored-state'
 import { matchInlineSnapshotBrowser } from '../../../test/karma-snapshots'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { createEmptySessionStateState } from '../../interactions_proposal'
 
 disableStoredStateforTests()
 
@@ -61,6 +62,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
     unpatchedEditor: emptyEditorState,
     editor: emptyEditorState,
     derived: derivedState,
+    sessionStateState: createEmptySessionStateState(),
     history: history,
     userState: {
       loginState: notLoggedIn,
