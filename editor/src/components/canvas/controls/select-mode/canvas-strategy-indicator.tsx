@@ -1,14 +1,54 @@
 import * as React from 'react'
 import { when } from '../../../../utils/react-conditionals'
-import { FlexRow, useColorTheme, UtopiaStyles } from '../../../../uuiui'
+import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
+import CanvasActions from '../../canvas-actions'
 
 export const CanvasStrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
+  const dispatch = useEditorState((store) => store.dispatch, 'CanvasStrategyIndicator dispatch')
   const activeStrategy = useEditorState(
-    (store) => store.derived.canvas.transientState.canvasSessionState?.activeStrategy?.name,
-    'CanvasStrategyIndicator activeStrategy.name',
+    (store) => store.sessionStateState.currentStrategy,
+    'CanvasStrategyIndicator sessionStateState.currentStrategy',
   )
+  const otherPossibleStrategies = useEditorState(
+    (store) => store.sessionStateState.possibleStrategies,
+    'CanvasStrategyIndicator sessionStateState.possibleStrategies',
+  )
+
+  const onTabPressed = React.useCallback(
+    (newStrategyName: string) => {
+      dispatch([CanvasActions.setUsersPreferredStrategy(newStrategyName)])
+    },
+    [dispatch],
+  )
+
+  React.useEffect(() => {
+    function handleTabKey(event: KeyboardEvent) {
+      if (
+        event.key === 'Tab' &&
+        activeStrategy != null &&
+        otherPossibleStrategies != null &&
+        otherPossibleStrategies.length > 0
+      ) {
+        event.stopImmediatePropagation()
+        event.stopPropagation()
+        event.preventDefault()
+
+        const activeStrategyIndex = otherPossibleStrategies.findIndex(
+          (strategyName: string) => strategyName === activeStrategy,
+        )
+        const nextStrategyIndex = (activeStrategyIndex + 1) % otherPossibleStrategies.length
+        const nextStrategyName = otherPossibleStrategies[nextStrategyIndex]
+
+        onTabPressed(nextStrategyName)
+      }
+    }
+    window.addEventListener('keydown', handleTabKey)
+    return function cleanup() {
+      window.removeEventListener('keydown', handleTabKey)
+    }
+  }, [onTabPressed, activeStrategy, otherPossibleStrategies])
 
   return (
     <>
@@ -22,11 +62,11 @@ export const CanvasStrategyIndicator = React.memo(() => {
             left: 4,
           }}
         >
-          <FlexRow
+          <FlexColumn
             style={{
-              height: 29,
+              minHeight: 29,
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'stretch',
               padding: 4,
               gap: 4,
               borderRadius: 4,
@@ -34,8 +74,27 @@ export const CanvasStrategyIndicator = React.memo(() => {
               boxShadow: UtopiaStyles.popup.boxShadow,
             }}
           >
-            {activeStrategy}
-          </FlexRow>
+            {otherPossibleStrategies?.map((strategy) => {
+              return (
+                <FlexRow
+                  key={strategy}
+                  style={{
+                    height: 29,
+                    paddingLeft: 4,
+                    paddingRight: 4,
+                    backgroundColor:
+                      strategy === activeStrategy ? colorTheme.primary.value : undefined,
+                    color:
+                      strategy === activeStrategy
+                        ? colorTheme.white.value
+                        : colorTheme.textColor.value,
+                  }}
+                >
+                  {strategy}
+                </FlexRow>
+              )
+            })}
+          </FlexColumn>
         </div>,
       )}
     </>

@@ -17,10 +17,15 @@ import { flexGapStrategy } from './flex-gap-strategy'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy] //, flexAlignParentStrategy]
 
-export function pickDefaultCanvasStrategy(
+interface StrategiesWithFitness {
+  fitness: number
+  strategy: CanvasStrategy
+}
+
+function getApplicableStrategies(
   canvasState: CanvasState,
   interactionState: InteractionState,
-): CanvasStrategy | null {
+): Array<StrategiesWithFitness> {
   const applicableStrategies = RegisteredCanvasStrategies.filter((strategy) => {
     return strategy.isApplicable(canvasState, interactionState)
   })
@@ -33,11 +38,32 @@ export function pickDefaultCanvasStrategy(
     }
   })
 
-  sortBy(strategiesWithFitness, (l, r) => {
-    // Sort by fitness, descending.
+  return sortBy(strategiesWithFitness, (l, r) => {
+    // sort by fitness, descending
     return r.fitness - l.fitness
   })
-  return strategiesWithFitness[0]?.strategy ?? null
+}
+
+export function pickDefaultCanvasStrategy(
+  applicableStrategies: Array<StrategiesWithFitness>,
+): CanvasStrategy | null {
+  return applicableStrategies[0]?.strategy ?? null
+}
+
+function pickStrategy(
+  applicableStrategies: Array<StrategiesWithFitness>,
+  interactionState: InteractionState,
+): CanvasStrategy | null {
+  if (interactionState.userPreferredStrategy != null) {
+    const foundStrategyByName = applicableStrategies.find(
+      (s) => s.strategy.name === interactionState.userPreferredStrategy,
+    )
+    if (foundStrategyByName != null) {
+      return foundStrategyByName.strategy
+    }
+  }
+  // fall back to default strategy
+  return pickDefaultCanvasStrategy(applicableStrategies)
 }
 
 export function applyCanvasStrategy(
@@ -46,7 +72,8 @@ export function applyCanvasStrategy(
   canvasState: CanvasState,
   interactionState: InteractionState,
 ): TransientCanvasState | null {
-  const strategy = pickDefaultCanvasStrategy(canvasState, interactionState)
+  const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
+  const strategy = pickStrategy(applicableStrategies, interactionState)
 
   const result = strategy?.apply?.(canvasState, interactionState) ?? null
 
