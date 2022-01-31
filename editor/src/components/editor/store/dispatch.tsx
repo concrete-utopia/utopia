@@ -524,7 +524,7 @@ export function editorDispatch(
       }
 
   const finalStore: DispatchResult = {
-    unpatchedEditor: frozenEditorState,
+    unpatchedEditor: shouldApplyChanges ? patchedEditorState : frozenEditorState,
     editor: patchedEditorState,
     derived: frozenDerivedState,
     sessionStateState: newSessionStateState,
