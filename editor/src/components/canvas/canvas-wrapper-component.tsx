@@ -194,6 +194,7 @@ const ErrorOverlayComponent = React.memo((props: ErrorOverlayComponentProps) => 
       // since that might have been the cause of the error being thrown, as well as switching back to select mode
       dispatch([
         CanvasActions.clearDragState(true),
+        CanvasActions.clearInteractionState(true),
         switchEditorMode(EditorModes.selectMode()),
         clearHighlightedViews(),
       ])
