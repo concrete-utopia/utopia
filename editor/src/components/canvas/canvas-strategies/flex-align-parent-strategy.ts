@@ -51,23 +51,6 @@ export const flexAlignParentStrategy: CanvasStrategy = {
       return []
     }
 
-    if (
-      interactionState.interactionData.drag !== null &&
-      magnitude(interactionState.interactionData.drag) < 15
-    ) {
-      return [
-        wildcardPatch('transient', {
-          canvas: {
-            controls: {
-              animatedPlaceholderTargetUids: {
-                $set: [EP.toUid(draggedElement)],
-              },
-            },
-          },
-        }),
-      ]
-    }
-
     const targetParent = MetadataUtils.getParent(canvasState.metadata, draggedElement)
     const mousePosition =
       interactionState.interactionData.drag == null
