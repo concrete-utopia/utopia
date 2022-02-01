@@ -6,8 +6,13 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
+import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
 
-const RegisteredCanvasStrategies: Array<CanvasStrategy> = [flexGapStrategy, flexAlignParentStrategy]
+const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  flexGapStrategy,
+  flexAlignParentStrategy,
+  parentPaddingAdjustStrategy,
+]
 
 interface StrategiesWithFitness {
   fitness: number
