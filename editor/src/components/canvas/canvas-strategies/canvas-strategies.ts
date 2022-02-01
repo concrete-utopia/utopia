@@ -1,6 +1,7 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
+import { arrayEquals } from '../../../core/shared/utils'
 import {
   CanvasState,
   CanvasStrategy,
@@ -23,9 +24,57 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   ancestorAbsoluteMoveStrategy,
 ]
 
+function getApplicableStrategies(
+  canvasState: CanvasState,
+  interactionState: InteractionState | null,
+): Array<CanvasStrategy> {
+  return RegisteredCanvasStrategies.filter((strategy) => {
+    return strategy.isApplicable(canvasState, interactionState)
+  })
+}
+
+const getApplicableStrategiesSelector = createSelector(
+  (store: EditorStore): CanvasState => {
+    return {
+      selectedElements: store.editor.selectedViews,
+      metadata: store.editor.jsxMetadata,
+      projectContents: store.editor.projectContents,
+      openFile: store.editor.canvas.openFile?.filename,
+    }
+  },
+  (store: EditorStore) => store.editor.canvas.interactionState,
+  (canvasState: CanvasState, interactionState: InteractionState | null): Array<CanvasStrategy> => {
+    return getApplicableStrategies(canvasState, interactionState)
+  },
+)
+
+function useGetApplicableStrategies(): Array<CanvasStrategy> {
+  return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
+}
+
 interface StrategiesWithFitness {
   fitness: number
   strategy: CanvasStrategy
+}
+
+function getApplicableStrategiesOrderedByFitness(
+  canvasState: CanvasState,
+  interactionState: InteractionState,
+): Array<StrategiesWithFitness> {
+  const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
+
+  // Compute the fitness results upfront.
+  const strategiesWithFitness = applicableStrategies.map((strategy) => {
+    return {
+      fitness: strategy.fitness(canvasState, interactionState),
+      strategy: strategy,
+    }
+  })
+
+  return sortBy(strategiesWithFitness, (l, r) => {
+    // sort by fitness, descending
+    return r.fitness - l.fitness
+  })
 }
 
 const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
@@ -53,35 +102,6 @@ export function useGetApplicableStrategiesOrderedByFitness(): Array<string> {
     getApplicableStrategiesOrderedByFitnessSelector,
     'useGetApplicableStrategiesOrderedByFitness',
   )
-}
-
-function getApplicableStrategies(
-  canvasState: CanvasState,
-  interactionState: InteractionState | null,
-): Array<CanvasStrategy> {
-  return RegisteredCanvasStrategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionState)
-  })
-}
-
-function getApplicableStrategiesOrderedByFitness(
-  canvasState: CanvasState,
-  interactionState: InteractionState,
-): Array<StrategiesWithFitness> {
-  const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
-
-  // Compute the fitness results upfront.
-  const strategiesWithFitness = applicableStrategies.map((strategy) => {
-    return {
-      fitness: strategy.fitness(canvasState, interactionState),
-      strategy: strategy,
-    }
-  })
-
-  return sortBy(strategiesWithFitness, (l, r) => {
-    // sort by fitness, descending
-    return r.fitness - l.fitness
-  })
 }
 
 export function pickDefaultCanvasStrategy(
@@ -132,25 +152,11 @@ export function applyCanvasStrategy(
   }
 }
 
-const getStrategyControlsSelector = createSelector(
-  (store: EditorStore): CanvasState => {
-    return {
-      selectedElements: store.editor.selectedViews,
-      metadata: store.editor.jsxMetadata,
-      projectContents: store.editor.projectContents,
-      openFile: store.editor.canvas.openFile?.filename,
-    }
-  },
-  (store: EditorStore) => store.editor.canvas.interactionState,
-  (canvasState: CanvasState, interactionState: InteractionState | null): Array<ControlWithKey> => {
-    const applicableStrategiesWithFitness = getApplicableStrategies(canvasState, interactionState)
-    return applicableStrategiesWithFitness.reduce((working, s) => {
-      // FIXME This part needs memoising
-      return addAllUniquelyBy(working, s.controlsToRender, (l, r) => l.control === r.control)
-    }, [] as Array<ControlWithKey>)
-  },
-)
-
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
-  return useEditorState(getStrategyControlsSelector, 'useGetApplicableStrategyControls')
+  const applicableStrategies = useGetApplicableStrategies()
+  return React.useMemo(() => {
+    return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
+      return addAllUniquelyBy(working, s.controlsToRender, (l, r) => l.control === r.control)
+    }, [])
+  }, [applicableStrategies])
 }
