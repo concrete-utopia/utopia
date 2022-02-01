@@ -9,26 +9,28 @@ import { setProperty, wildcardPatch } from '../commands/commands'
 export const parentPaddingAdjustStrategy: CanvasStrategy = {
   name: 'Change Parent Padding',
   isApplicable: (canvasState, interactionState) => {
-    if (canvasState.selectedElements.length === 1 && interactionState != null) {
+    if (
+      canvasState.selectedElements.length === 1 &&
+      interactionState != null &&
+      interactionState.interactionData.type === 'DRAG'
+    ) {
       const metadata = MetadataUtils.findElementByElementPath(
         canvasState.metadata,
         canvasState.selectedElements[0],
       )
-      const parentMetadata = MetadataUtils.getParent(
-        canvasState.metadata,
-        canvasState.selectedElements[0],
-      )
-      // const dragDelta =
-      //   interactionState.interactionData.type === 'DRAG'
-      //     ? interactionState.interactionData.drag?.x ?? 0
-      //     : 0
-      return (
-        // what if the element has margin or margin left only
-        // interaction direction is also important
-        metadata?.specialSizeMeasurements.position === 'static' &&
-        // (parentMetadata?.specialSizeMeasurements.padding.top ?? 0) > Math.abs(dragDelta)
-        (parentMetadata?.specialSizeMeasurements.padding.top ?? 0) > 0
-      )
+
+      // what if the element has margin or margin left only
+      // interaction direction is also important
+      if (metadata?.specialSizeMeasurements.position === 'static') {
+        const parentMetadata = MetadataUtils.getParent(
+          canvasState.metadata,
+          canvasState.selectedElements[0],
+        )
+        const dragDeltaX = interactionState.interactionData.drag?.x ?? 0
+        const parentPaddingTop = parentMetadata?.specialSizeMeasurements.padding.top ?? 0
+
+        return parentPaddingTop > 0 || (parentPaddingTop === 0 && dragDeltaX > 0)
+      }
     }
     return false
   },
