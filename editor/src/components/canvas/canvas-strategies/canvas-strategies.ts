@@ -1,3 +1,4 @@
+import React from 'react'
 import { createSelector } from 'reselect'
 import { sortBy } from '../../../core/shared/array-utils'
 import { CanvasState, CanvasStrategy, InteractionState } from '../../../interactions_proposal'
@@ -19,7 +20,7 @@ interface StrategiesWithFitness {
   strategy: CanvasStrategy
 }
 
-const getApplicableStrategiesSelector = createSelector(
+const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
   (store: EditorStore): CanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
@@ -33,21 +34,33 @@ const getApplicableStrategiesSelector = createSelector(
     if (interactionState == null) {
       return []
     }
-    return getApplicableStrategies(canvasState, interactionState).map((s) => s.strategy.name)
+    return getApplicableStrategiesOrderedByFitness(canvasState, interactionState).map(
+      (s) => s.strategy.name,
+    )
   },
 )
 
-export function useGetApplicableStrategies(): Array<string> {
-  return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies')
+export function useGetApplicableStrategiesOrderedByFitness(): Array<string> {
+  return useEditorState(
+    getApplicableStrategiesOrderedByFitnessSelector,
+    'useGetApplicableStrategiesOrderedByFitness',
+  )
 }
 
 function getApplicableStrategies(
   canvasState: CanvasState,
-  interactionState: InteractionState,
-): Array<StrategiesWithFitness> {
-  const applicableStrategies = RegisteredCanvasStrategies.filter((strategy) => {
+  interactionState: InteractionState | null,
+): Array<CanvasStrategy> {
+  return RegisteredCanvasStrategies.filter((strategy) => {
     return strategy.isApplicable(canvasState, interactionState)
   })
+}
+
+function getApplicableStrategiesOrderedByFitness(
+  canvasState: CanvasState,
+  interactionState: InteractionState,
+): Array<StrategiesWithFitness> {
+  const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = applicableStrategies.map((strategy) => {
@@ -91,7 +104,10 @@ export function applyCanvasStrategy(
   canvasState: CanvasState,
   interactionState: InteractionState,
 ): { commands: Array<CanvasCommand>; strategy: string | null } {
-  const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
+  const applicableStrategies = getApplicableStrategiesOrderedByFitness(
+    canvasState,
+    interactionState,
+  )
   const strategy = pickStrategy(applicableStrategies, interactionState)
   if (strategy == null) {
     return {
@@ -105,4 +121,28 @@ export function applyCanvasStrategy(
       strategy: strategy.name,
     }
   }
+}
+
+const getStrategyControlsSelector = createSelector(
+  (store: EditorStore): CanvasState => {
+    return {
+      selectedElements: store.editor.selectedViews,
+      metadata: store.editor.jsxMetadata,
+      projectContents: store.editor.projectContents,
+      openFile: store.editor.canvas.openFile?.filename,
+    }
+  },
+  (store: EditorStore) => store.editor.canvas.interactionState,
+  (canvasState: CanvasState, interactionState: InteractionState | null): Array<React.FC> => {
+    const applicableStrategiesWithFitness = getApplicableStrategies(canvasState, interactionState)
+    return applicableStrategiesWithFitness.reduce((working, s) => {
+      // FIXME This part needs memoising
+      // FIXME This needs to make the array unique
+      return working.concat(s.controlsToRender)
+    }, [] as Array<React.FC>)
+  },
+)
+
+export function useGetApplicableStrategyControls(): Array<React.FC> {
+  return useEditorState(getStrategyControlsSelector, 'useGetApplicableStrategyControls')
 }

@@ -37,10 +37,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: (canvasState, interactionState) => {
-    // FIXME: What controls?
-    return []
-  },
+  controlsToRender: [], // FIXME: What controls?
   fitness: (canvasState, interactionState) => {
     return flexAlignParentStrategy.isApplicable(canvasState, interactionState) ? 10 : 0
   },

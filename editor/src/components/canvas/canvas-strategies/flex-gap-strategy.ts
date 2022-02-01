@@ -4,15 +4,12 @@ import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { adjustNumberProperty, applyValuesAtPath, wildcardPatch } from '../commands/commands'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { FlexGapControls } from '../controls/select-mode/flex-gap-controls'
 
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
-  isApplicable: (canvasState, interactionState) => {
-    if (
-      canvasState.selectedElements.length === 1 &&
-      interactionState != null &&
-      interactionState.activeControl.type === 'FLEX_GAP_HANDLE'
-    ) {
+  isApplicable: (canvasState, _interactionState) => {
+    if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]
       const selectedMetadata = MetadataUtils.findElementByElementPath(
         canvasState.metadata,
@@ -22,9 +19,7 @@ export const flexGapStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: (canvasState, interactionState) => {
-    return []
-  },
+  controlsToRender: [FlexGapControls],
   fitness: (canvasState, interactionState) => {
     return flexGapStrategy.isApplicable(canvasState, interactionState) &&
       interactionState.interactionData.type === 'DRAG'

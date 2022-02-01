@@ -3,7 +3,7 @@ import { when } from '../../../../utils/react-conditionals'
 import { FlexRow, FlexColumn, useColorTheme, UtopiaStyles } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { useGetApplicableStrategies } from '../../canvas-strategies/canvas-strategies'
+import { useGetApplicableStrategiesOrderedByFitness } from '../../canvas-strategies/canvas-strategies'
 
 export const CanvasStrategyIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -12,7 +12,7 @@ export const CanvasStrategyIndicator = React.memo(() => {
     (store) => store.sessionStateState.currentStrategy,
     'CanvasStrategyIndicator sessionStateState.currentStrategy',
   )
-  const otherPossibleStrategies = useGetApplicableStrategies()
+  const otherPossibleStrategies = useGetApplicableStrategiesOrderedByFitness()
 
   const onTabPressed = React.useCallback(
     (newStrategyName: string) => {

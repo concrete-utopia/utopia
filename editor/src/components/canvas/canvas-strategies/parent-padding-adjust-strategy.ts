@@ -32,9 +32,7 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: (canvasState, interactionState) => {
-    return [] // parent padding control
-  },
+  controlsToRender: [], // parent padding control
   fitness: (canvasState, interactionState) => {
     return parentPaddingAdjustStrategy.isApplicable(canvasState, interactionState) &&
       interactionState.interactionData.type === 'DRAG'

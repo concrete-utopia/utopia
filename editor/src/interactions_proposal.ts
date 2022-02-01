@@ -9,6 +9,7 @@ import { addAllUniquely } from './core/shared/array-utils'
 import { Modifiers } from './utils/modifiers'
 import { ProjectContentTreeRoot } from './components/assets'
 import { CanvasCommand } from './components/canvas/commands/commands'
+import React from 'react'
 
 // FIXME: There's a type with the same name in the dom types.
 export interface CanvasState {
@@ -279,23 +280,8 @@ export interface CanvasStrategy {
   // Determines if we should show the controls that this strategy renders
   // Maybe this can just be rolled into controlsToRender?
 
-  controlsToRender: (
-    canvasState: CanvasState,
-    interactionState: InteractionState | null,
-  ) => Array<CanvasControlType>
+  controlsToRender: Array<React.FC>
   // The controls to render when this strategy is applicable, regardless of if it is currently active
-  // Other options:
-  //  1. the controls are an array of React Components, and we let the render functions of those determine
-  //     whether or not to render them
-  //  2. the controlsToRender is just a static array, meaning the CanvasControlType becomes more specific
-  //     e.g. BoundingBoxForSelectedElementControl
-  // Also, should this return a Set rather than an Array? We probably need to reconcile these before rendering as strategies
-  // will share controls (but will multiple strategies with the same controls for the same elements be applicable
-  // at the same time?
-  // Sean:
-  // - Can't use a Set for something like a JavaScript object as it doesn't do any deep introspection.
-  // - Returning the objects like the ones we have in this example seems like a better option, if only for testing purposes.
-  // - If we're eliminating most strategies by using `isApplicable`, we'd only be running a small subset of the strategies.
 
   fitness: (canvasState: CanvasState, interactionState: InteractionState) => number
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply

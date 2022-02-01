@@ -61,6 +61,10 @@ import { getDragStateStart } from '../canvas-utils'
 import { AnimatedPlaceholderBoxes } from './select-mode/animated-placeholder-boxes'
 import { FlexAlignControls } from './select-mode/flex-align-controls'
 import { FlexGapControls } from './select-mode/flex-gap-controls'
+import {
+  useGetApplicableStrategiesOrderedByFitness,
+  useGetApplicableStrategyControls,
+} from '../canvas-strategies/canvas-strategies'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -234,6 +238,7 @@ interface NewCanvasControlsInnerProps {
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const colorTheme = useColorTheme()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
+  const strategyControls = useGetApplicableStrategyControls() // TODO Wrap in feature flag?
 
   const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
   const cmdKeyPressed = props.editor.keysPressed['cmd'] ?? false
@@ -405,10 +410,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       <LayoutParentControl />
       {when(
         isFeatureEnabled('Canvas Strategies'),
-        <>
-          <FlexAlignControls />
-          <FlexGapControls />
-        </>,
+        <>{strategyControls.map(React.createElement)}</>,
       )}
     </div>
   )
