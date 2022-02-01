@@ -93,8 +93,8 @@ type InteractionData = KeyboardInteractionData | DragInteractionData
 // - [ ] Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
 //       We already have a solution for this in SelectModeCanvasSessionState
 
-// - [ ] Need to actually end the sessions (we create and update the sessions but don't ever close them out)
-// - [ ] When closing the session we either apply the non-transient updates only, OR cancel the session which bins the commands
+// - [X] Need to actually end the sessions (we create and update the sessions but don't ever close them out)
+// - [X] When closing the session we either apply the non-transient updates only, OR cancel the session which bins the commands
 
 // - [ ] Insertion lives in the drag state
 
