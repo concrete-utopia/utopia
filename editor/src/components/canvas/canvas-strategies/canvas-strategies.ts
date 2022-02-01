@@ -1,6 +1,6 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { sortBy } from '../../../core/shared/array-utils'
+import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
 import {
   CanvasState,
   CanvasStrategy,
@@ -142,8 +142,7 @@ const getStrategyControlsSelector = createSelector(
     const applicableStrategiesWithFitness = getApplicableStrategies(canvasState, interactionState)
     return applicableStrategiesWithFitness.reduce((working, s) => {
       // FIXME This part needs memoising
-      // FIXME This needs to make the array unique
-      return working.concat(s.controlsToRender)
+      return addAllUniquelyBy(working, s.controlsToRender, (l, r) => l.control === r.control)
     }, [] as Array<ControlWithKey>)
   },
 )
