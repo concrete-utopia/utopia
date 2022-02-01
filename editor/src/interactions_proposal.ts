@@ -89,7 +89,7 @@ type InteractionData = KeyboardInteractionData | DragInteractionData
 // - [ ] Use patched editor for rendering the canvas, rather than the transient canvas state
 //       Transient state being null results in some optimisations that we need to check for here (or possibly the drag state)
 
-// - [ ] Track the strategy being applied
+// - [X] Track the strategy being applied
 // - [ ] Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
 //       We already have a solution for this in SelectModeCanvasSessionState
 
