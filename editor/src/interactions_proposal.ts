@@ -144,6 +144,9 @@ export interface SessionStateState {
 
   // this is the inner state of the Strategies, can be changed via commands
   strategyState: StrategyState
+
+  // Checkpointed metadata at the point at which a strategy change has occurred.
+  startingMetadata: ElementInstanceMetadataMap
 }
 
 export function createEmptySessionStateState(): SessionStateState {
@@ -152,6 +155,7 @@ export function createEmptySessionStateState(): SessionStateState {
     currentStrategyCommands: [],
     accumulatedCommands: [],
     strategyState: createEmptyStrategyState(),
+    startingMetadata: {},
   }
 }
 
@@ -290,7 +294,11 @@ export interface CanvasStrategy {
   fitness: (canvasState: CanvasState, interactionState: InteractionState) => number
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
-  apply: (canvasState: CanvasState, interactionState: InteractionState) => StrategyApplicationResult
+  apply: (
+    canvasState: CanvasState,
+    interactionState: InteractionState,
+    sessionState: SessionStateState,
+  ) => StrategyApplicationResult
   // Returns the commands that inform how the model and the editor should be updated
 }
 

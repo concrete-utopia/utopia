@@ -484,6 +484,7 @@ export function editorDispatch(
     const canvasStrategyResult = applyCanvasStrategy(
       canvasState,
       frozenEditorState.canvas.interactionState,
+      result.sessionStateState,
     )
     strategyName = canvasStrategyResult.strategy
     patchCommands = canvasStrategyResult.commands
@@ -507,6 +508,7 @@ export function editorDispatch(
     currentStrategyCommands: patchCommands,
     accumulatedCommands: updatedAccumulatedCommands,
     strategyState: result.sessionStateState.strategyState,
+    startingMetadata: result.sessionStateState.startingMetadata,
   }
 
   const commandResult = foldCommands(
@@ -522,12 +524,21 @@ export function editorDispatch(
     shouldDiscardChanges ? [] : commandResult.editorStatePatches,
   )
 
-  const newSessionStateState: SessionStateState = clearInteractionStateActionDispatched
+  let newSessionStateState: SessionStateState = clearInteractionStateActionDispatched
     ? createEmptySessionStateState() // QUESTION should we make this NULL instead?
     : {
         ...workingSessionStateState,
         strategyState: commandResult.newStrategyState,
       }
+
+  // Should the strategy be changed, checkpoint the metadata into `startingMetadata` for
+  // future reference by the strategies.
+  if (strategyChanged) {
+    newSessionStateState = {
+      ...newSessionStateState,
+      startingMetadata: frozenEditorState.jsxMetadata,
+    }
+  }
 
   const finalStore: DispatchResult = {
     unpatchedEditor: shouldApplyChanges ? patchedEditorState : frozenEditorState,

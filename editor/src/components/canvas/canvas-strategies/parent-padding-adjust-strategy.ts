@@ -39,7 +39,7 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState) => {
+  apply: (canvasState, interactionState, sessionState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
@@ -49,7 +49,7 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
         'Could not get first element.',
         safeIndex(canvasState.selectedElements, 0),
       )
-      const targetParent = MetadataUtils.getParent(canvasState.metadata, targetedElement)
+      const targetParent = MetadataUtils.getParent(sessionState.startingMetadata, targetedElement)
       const paddingPath = stylePropPathMappingFn('padding', ['style'])
       if (targetParent !== null) {
         const paddingChange = interactionState.interactionData.drag.x

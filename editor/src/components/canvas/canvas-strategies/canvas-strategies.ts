@@ -6,6 +6,7 @@ import {
   CanvasStrategy,
   ControlWithKey,
   InteractionState,
+  SessionStateState,
 } from '../../../interactions_proposal'
 import { EditorStore } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -108,6 +109,7 @@ function pickStrategy(
 export function applyCanvasStrategy(
   canvasState: CanvasState,
   interactionState: InteractionState,
+  sessionState: SessionStateState,
 ): { commands: Array<CanvasCommand>; strategy: string | null } {
   const applicableStrategies = getApplicableStrategiesOrderedByFitness(
     canvasState,
@@ -120,7 +122,7 @@ export function applyCanvasStrategy(
       strategy: null,
     }
   } else {
-    const commands = strategy.apply(canvasState, interactionState)
+    const commands = strategy.apply(canvasState, interactionState, sessionState)
     return {
       commands: commands,
       strategy: strategy.name,
