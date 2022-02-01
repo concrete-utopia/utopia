@@ -300,17 +300,14 @@ function useStartDragState(): (
   )
 }
 
-function useStartCanvasSession(): (
-  target: ElementPath,
-  start: CanvasPoint | null,
-) => (event: MouseEvent) => void {
+function useStartCanvasSession(): (event: MouseEvent, target: ElementPath) => void {
   const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   return React.useCallback(
-    (target: ElementPath, start: CanvasPoint | null) => (event: MouseEvent) => {
-      if (start == null) {
-        return
-      }
+    (event: MouseEvent, target: ElementPath) => {
+      const start = windowToCanvasCoordinates(windowPoint(point(event.clientX, event.clientY)))
+        .canvasPositionRounded
 
       dispatch([
         CanvasActions.createInteractionState(
@@ -321,7 +318,7 @@ function useStartCanvasSession(): (
         ),
       ])
     },
-    [dispatch],
+    [dispatch, windowToCanvasCoordinates],
   )
 }
 
@@ -356,7 +353,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   foundTarget: ElementPath,
 ) => void {
   const startDragState = useStartDragState()
-  const startCanvasModeSession = useStartCanvasSession()
+
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   const startDragStateAfterDragExceedsThreshold = React.useCallback(
@@ -365,21 +362,13 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
         windowPoint(point(nativeEvent.clientX, nativeEvent.clientY)),
       ).canvasPositionRounded
 
-      if (isFeatureEnabled('Canvas Strategies')) {
-        callbackAfterDragExceedsThreshold(
-          nativeEvent,
-          DRAG_START_TRESHOLD,
-          startCanvasModeSession(foundTarget, startPoint),
-        )
-      } else {
-        callbackAfterDragExceedsThreshold(
-          nativeEvent,
-          DRAG_START_TRESHOLD,
-          startDragState(foundTarget, startPoint),
-        )
-      }
+      callbackAfterDragExceedsThreshold(
+        nativeEvent,
+        DRAG_START_TRESHOLD,
+        startDragState(foundTarget, startPoint),
+      )
     },
-    [startDragState, startCanvasModeSession, windowToCanvasCoordinates],
+    [startDragState, windowToCanvasCoordinates],
   )
 
   return startDragStateAfterDragExceedsThreshold
@@ -482,6 +471,7 @@ function useSelectOrLiveModeSelectAndHover(
   const findValidTarget = useFindValidTarget()
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
+  const startCanvasModeSession = useStartCanvasSession()
 
   const { onMouseMove } = useHighlightCallbacks(
     active,
@@ -511,7 +501,11 @@ function useSelectOrLiveModeSelectAndHover(
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null && draggingAllowed) {
-          startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
+          if (isFeatureEnabled('Canvas Strategies')) {
+            startCanvasModeSession(event.nativeEvent, foundTarget.elementPath)
+          } else {
+            startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
+          }
         }
 
         let updatedSelection: Array<ElementPath>
