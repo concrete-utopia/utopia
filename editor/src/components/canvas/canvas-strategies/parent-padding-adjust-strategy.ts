@@ -56,7 +56,7 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
       if (targetParent !== null) {
         const paddingChange = interactionState.interactionData.drag.x
         const currentPadding = targetParent?.specialSizeMeasurements.padding.top ?? 0
-        const newPadding = Math.min(currentPadding + paddingChange, 0)
+        const newPadding = Math.max(currentPadding + paddingChange, 0)
         const adjustProperty = setProperty(
           'permanent',
           targetParent.elementPath,
