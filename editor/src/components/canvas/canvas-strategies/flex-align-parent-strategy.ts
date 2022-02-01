@@ -17,6 +17,7 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { setProperty, SetProperty, wildcardPatch } from '../commands/commands'
+import { FlexAlignControls } from '../controls/select-mode/flex-align-controls'
 import { FlexAlignControlRectProps } from './canvas-strategy-types'
 
 export const flexAlignParentStrategy: CanvasStrategy = {
@@ -37,7 +38,7 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: [], // FIXME: What controls?
+  controlsToRender: [{ control: FlexAlignControls, key: 'FlexAlignControls' }],
   fitness: (canvasState, interactionState) => {
     return flexAlignParentStrategy.isApplicable(canvasState, interactionState) ? 10 : 0
   },
