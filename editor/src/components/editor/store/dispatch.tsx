@@ -96,7 +96,10 @@ import {
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
 import { applyStatePatches, CanvasCommand, foldCommands } from '../../canvas/commands/commands'
-import { applyCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
+import {
+  applyCanvasStrategy,
+  strategySwitchInteractionStateReset,
+} from '../../canvas/canvas-strategies/canvas-strategies'
 import {
   CanvasState,
   createEmptySessionStateState,
@@ -445,7 +448,7 @@ export function editorDispatch(
 
   const editorFilteredForFiles = filterEditorForFiles(editorWithModelChecked.editorState)
 
-  const frozenEditorState = editorFilteredForFiles
+  let frozenEditorState = editorFilteredForFiles
   const frozenDerivedState = result.derived
 
   let newHistory: StateHistory
@@ -537,6 +540,17 @@ export function editorDispatch(
     newSessionStateState = {
       ...newSessionStateState,
       startingMetadata: frozenEditorState.jsxMetadata,
+    }
+    if (frozenEditorState.canvas.interactionState != null) {
+      frozenEditorState = {
+        ...frozenEditorState,
+        canvas: {
+          ...frozenEditorState.canvas,
+          interactionState: strategySwitchInteractionStateReset(
+            frozenEditorState.canvas.interactionState,
+          ),
+        },
+      }
     }
   }
 

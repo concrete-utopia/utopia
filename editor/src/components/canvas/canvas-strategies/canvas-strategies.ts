@@ -1,11 +1,13 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
+import { offsetPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
   CanvasState,
   CanvasStrategy,
   ControlWithKey,
+  InteractionData,
   InteractionState,
   SessionStateState,
 } from '../../../interactions_proposal'
@@ -159,4 +161,35 @@ export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
       return addAllUniquelyBy(working, s.controlsToRender, (l, r) => l.control === r.control)
     }, [])
   }, [applicableStrategies])
+}
+
+export function strategySwitchInteractionDataReset(
+  interactionData: InteractionData,
+): InteractionData {
+  switch (interactionData.type) {
+    case 'DRAG':
+      if (interactionData.drag == null) {
+        return interactionData
+      } else {
+        return {
+          ...interactionData,
+          dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
+          drag: null,
+        }
+      }
+    case 'KEYBOARD':
+      return interactionData
+    default:
+      const _exhaustiveCheck: never = interactionData
+      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
+  }
+}
+
+export function strategySwitchInteractionStateReset(
+  interactionState: InteractionState,
+): InteractionState {
+  return {
+    ...interactionState,
+    interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
+  }
 }

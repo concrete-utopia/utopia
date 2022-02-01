@@ -57,7 +57,7 @@ interface KeyboardInteractionData {
   modifiers: Modifiers
 }
 
-type InteractionData = KeyboardInteractionData | DragInteractionData
+export type InteractionData = KeyboardInteractionData | DragInteractionData
 
 // Should we be limiting the scope here to only interactions that can update the project itself?
 // If yes, what are the implications of the model? Do we need to maintain InputState?
