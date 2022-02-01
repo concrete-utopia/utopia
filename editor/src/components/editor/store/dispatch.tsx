@@ -467,6 +467,12 @@ export function editorDispatch(
   // Create commands from the interaction state.
   let strategyName: string | null = null
   let patchCommands: Array<CanvasCommand> = []
+  if (
+    frozenEditorState.canvas.interactionState != null &&
+    frozenDerivedState.canvas.transientState.filesState != null
+  ) {
+    throw new Error('transient canvas state is not allowed while an interaction state is active')
+  }
   if (frozenEditorState.canvas.interactionState != null) {
     // TODO This should be using the patched editor state
     const canvasState: CanvasState = {
