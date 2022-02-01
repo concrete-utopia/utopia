@@ -273,6 +273,10 @@ export function updateInteractionViaKeyboard(
 
 export type StrategyApplicationResult = Array<CanvasCommand>
 
+export interface ControlWithKey {
+  control: React.FC
+  key: string
+}
 export interface CanvasStrategy {
   name: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
 
@@ -280,7 +284,7 @@ export interface CanvasStrategy {
   // Determines if we should show the controls that this strategy renders
   // Maybe this can just be rolled into controlsToRender?
 
-  controlsToRender: Array<React.FC>
+  controlsToRender: Array<ControlWithKey>
   // The controls to render when this strategy is applicable, regardless of if it is currently active
 
   fitness: (canvasState: CanvasState, interactionState: InteractionState) => number

@@ -410,7 +410,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       <LayoutParentControl />
       {when(
         isFeatureEnabled('Canvas Strategies'),
-        <>{strategyControls.map(React.createElement)}</>,
+        <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
       )}
     </div>
   )

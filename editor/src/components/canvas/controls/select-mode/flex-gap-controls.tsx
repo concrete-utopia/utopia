@@ -9,7 +9,7 @@ import { useEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 
-export const FlexGapControls = React.memo(() => {
+const FlexGapControls_ = () => {
   const canvasOffset = useEditorState(
     (store) => store.editor.canvas.roundedCanvasOffset,
     'FlexGapControls canvasOffset',
@@ -123,4 +123,6 @@ export const FlexGapControls = React.memo(() => {
       })}
     </>
   )
-})
+}
+FlexGapControls_.displayName = 'FlexGapControls'
+export const FlexGapControls = React.memo(FlexGapControls_)

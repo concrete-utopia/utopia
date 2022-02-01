@@ -1,7 +1,12 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { sortBy } from '../../../core/shared/array-utils'
-import { CanvasState, CanvasStrategy, InteractionState } from '../../../interactions_proposal'
+import {
+  CanvasState,
+  CanvasStrategy,
+  ControlWithKey,
+  InteractionState,
+} from '../../../interactions_proposal'
 import { EditorStore } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
@@ -133,16 +138,16 @@ const getStrategyControlsSelector = createSelector(
     }
   },
   (store: EditorStore) => store.editor.canvas.interactionState,
-  (canvasState: CanvasState, interactionState: InteractionState | null): Array<React.FC> => {
+  (canvasState: CanvasState, interactionState: InteractionState | null): Array<ControlWithKey> => {
     const applicableStrategiesWithFitness = getApplicableStrategies(canvasState, interactionState)
     return applicableStrategiesWithFitness.reduce((working, s) => {
       // FIXME This part needs memoising
       // FIXME This needs to make the array unique
       return working.concat(s.controlsToRender)
-    }, [] as Array<React.FC>)
+    }, [] as Array<ControlWithKey>)
   },
 )
 
-export function useGetApplicableStrategyControls(): Array<React.FC> {
+export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   return useEditorState(getStrategyControlsSelector, 'useGetApplicableStrategyControls')
 }
