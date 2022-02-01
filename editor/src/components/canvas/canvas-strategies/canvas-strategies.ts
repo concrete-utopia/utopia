@@ -11,6 +11,7 @@ import {
 import { EditorStore } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
+import { ancestorAbsoluteMoveStrategy } from './ancestor-absolute-move-strategy'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
 import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
@@ -19,6 +20,7 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexGapStrategy,
   flexAlignParentStrategy,
   parentPaddingAdjustStrategy,
+  ancestorAbsoluteMoveStrategy,
 ]
 
 interface StrategiesWithFitness {
