@@ -15,12 +15,6 @@ export const ParentPaddingControl = React.memo(() => {
     return parentElement?.specialSizeMeasurements.padding ?? null
   }, 'padding')
 
-  const scale = useEditorState((store) => store.editor.canvas.scale, 'scale')
-  const canvasOffset = useEditorState(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'canvasOffset',
-  )
-
   if (frame == null) {
     return null
   }
