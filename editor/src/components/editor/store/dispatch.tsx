@@ -522,6 +522,7 @@ export function editorDispatch(
     shouldApplyChanges ? 'permanent' : 'transient',
   )
 
+  // FIXME if shouldDiscardChanges, should this just become the previous unpatchedEditorState?
   const patchedEditorState = applyStatePatches(
     frozenEditorState,
     storedState.editor,
