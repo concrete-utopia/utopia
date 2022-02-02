@@ -339,12 +339,20 @@ export const DesignPanelRoot = React.memo(() => {
     'DesignPanelRoot roundedCanvasOffset',
   )
 
+  const { zoom, scale } = useEditorState((store) => {
+    const canvasScale = store.editor.canvas.scale
+    // this is made to match the zoom and scale used in #canvas-container-outer
+    return { zoom: Math.max(1, canvasScale), scale: Math.min(1, canvasScale) }
+  }, 'DesignPanelRoot zoom scale')
+
   return (
     <>
       <style>{`
       .utopia-css-var-container {
         --utopia-canvas-offset-x: ${roundedCanvasOffset.x}px;
         --utopia-canvas-offset-y: ${roundedCanvasOffset.y}px;
+        --utopia-canvas-zoom: ${zoom};
+        --utopia-canvas-transform-scale: ${scale};
       }
     `}</style>
       <SimpleFlexRow
