@@ -280,6 +280,10 @@ export type StrategyApplicationResult = Array<CanvasCommand>
 export interface ControlWithKey {
   control: React.FC
   key: string
+  show:
+    | 'always-visible'
+    | 'visible-only-while-active'
+    | 'visible-except-when-other-strategy-is-active'
 }
 export interface CanvasStrategy {
   name: string // We'd need to do something to guarantee uniqueness here if using this for the commands' reason

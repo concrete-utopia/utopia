@@ -158,11 +158,20 @@ export function applyCanvasStrategy(
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
   const applicableStrategies = useGetApplicableStrategies()
+  const currentStrategy = useEditorState(
+    (store) => store.sessionStateState.currentStrategy,
+    'currentStrategy',
+  )
   return React.useMemo(() => {
     return applicableStrategies.reduce<ControlWithKey[]>((working, s) => {
-      return addAllUniquelyBy(working, s.controlsToRender, (l, r) => l.control === r.control)
+      const filteredControls = s.controlsToRender.filter(
+        (control) =>
+          control.show === 'always-visible' ||
+          (control.show === 'visible-only-while-active' && s.name === currentStrategy),
+      )
+      return addAllUniquelyBy(working, filteredControls, (l, r) => l.control === r.control)
     }, [])
-  }, [applicableStrategies])
+  }, [applicableStrategies, currentStrategy])
 }
 
 export function strategySwitchInteractionDataReset(

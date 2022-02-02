@@ -19,7 +19,9 @@ export const flexGapStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: [{ control: FlexGapControls, key: 'flex-gap-controls' }],
+  controlsToRender: [
+    { control: FlexGapControls, key: 'flex-gap-controls', show: 'always-visible' },
+  ],
   fitness: (canvasState, interactionState) => {
     return flexGapStrategy.isApplicable(canvasState, interactionState) &&
       interactionState.interactionData.type === 'DRAG' &&

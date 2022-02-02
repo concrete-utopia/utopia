@@ -38,7 +38,9 @@ export const flexAlignParentStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: [{ control: FlexAlignControls, key: 'FlexAlignControls' }],
+  controlsToRender: [
+    { control: FlexAlignControls, key: 'FlexAlignControls', show: 'visible-only-while-active' },
+  ],
   fitness: (canvasState, interactionState) => {
     return flexAlignParentStrategy.isApplicable(canvasState, interactionState) ? 10 : 0
   },

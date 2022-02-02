@@ -25,7 +25,13 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: [{ control: ParentPaddingControl, key: 'parent-padding-control' }], // parent padding control
+  controlsToRender: [
+    {
+      control: ParentPaddingControl,
+      key: 'parent-padding-control',
+      show: 'visible-only-while-active',
+    },
+  ], // parent padding control
   fitness: (canvasState, interactionState) => {
     if (
       canvasState.selectedElements.length === 1 &&
