@@ -70,7 +70,7 @@ function getApplicableStrategiesOrderedByFitness(
   // Compute the fitness results upfront.
   const strategiesWithFitness = applicableStrategies.map((strategy) => {
     return {
-      fitness: strategy.fitness(canvasState, interactionState),
+      fitness: strategy.fitness(canvasState, interactionState), // TODO filter strategies with fitness 0 or null!!!
       strategy: strategy,
     }
   })
