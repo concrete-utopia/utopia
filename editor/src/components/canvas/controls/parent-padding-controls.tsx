@@ -24,7 +24,5 @@ export const ParentPaddingControl = React.memo(() => {
   if (frame == null) {
     return null
   }
-  return (
-    <PaddingControls padding={padding} frame={frame} canvasOffset={canvasOffset} scale={scale} />
-  )
+  return <PaddingControls padding={padding} frame={frame} />
 })
