@@ -9,28 +9,20 @@ import { ParentPaddingControl } from '../controls/parent-padding-controls'
 
 export const parentPaddingAdjustStrategy: CanvasStrategy = {
   name: 'Change Parent Padding',
-  isApplicable: (canvasState, interactionState) => {
-    if (
-      canvasState.selectedElements.length === 1 &&
-      interactionState != null &&
-      interactionState.interactionData.type === 'DRAG'
-    ) {
+  isApplicable: (canvasState) => {
+    if (canvasState.selectedElements.length === 1) {
       const metadata = MetadataUtils.findElementByElementPath(
         canvasState.metadata,
         canvasState.selectedElements[0],
       )
-
-      // what if the element has margin or margin left only
-      // interaction direction is also important
       if (metadata?.specialSizeMeasurements.position === 'static') {
         const parentMetadata = MetadataUtils.getParent(
           canvasState.metadata,
           canvasState.selectedElements[0],
         )
-        const dragDeltaX = interactionState.interactionData.drag?.x ?? 0
         const parentPaddingTop = parentMetadata?.specialSizeMeasurements.padding.top ?? 0
 
-        return parentPaddingTop > 0 || (parentPaddingTop === 0 && dragDeltaX > 0)
+        return parentPaddingTop > 0
       }
     }
     return false
@@ -38,7 +30,8 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
   controlsToRender: [{ control: ParentPaddingControl, key: 'parent-padding-control' }], // parent padding control
   fitness: (canvasState, interactionState) => {
     return parentPaddingAdjustStrategy.isApplicable(canvasState, interactionState) &&
-      interactionState.interactionData.type === 'DRAG'
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.interactionData.drag != null
       ? 1
       : 0
   },
