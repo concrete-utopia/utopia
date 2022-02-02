@@ -5,6 +5,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { setProperty, wildcardPatch } from '../commands/commands'
+import { ParentPaddingControl } from '../controls/parent-padding-controls'
 
 export const parentPaddingAdjustStrategy: CanvasStrategy = {
   name: 'Change Parent Padding',
@@ -34,7 +35,7 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
     }
     return false
   },
-  controlsToRender: [], // parent padding control
+  controlsToRender: [{ control: ParentPaddingControl, key: 'parent-padding-control' }], // parent padding control
   fitness: (canvasState, interactionState) => {
     return parentPaddingAdjustStrategy.isApplicable(canvasState, interactionState) &&
       interactionState.interactionData.type === 'DRAG'
