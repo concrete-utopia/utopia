@@ -13,7 +13,7 @@ export const ParentPaddingControl = React.memo(() => {
     const selectedView = store.editor.selectedViews[0]
     const parentElement = MetadataUtils.getParent(store.editor.jsxMetadata, selectedView)
     return parentElement?.specialSizeMeasurements.padding ?? null
-  }, 'frame')
+  }, 'padding')
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'scale')
   const canvasOffset = useEditorState(
