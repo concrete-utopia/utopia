@@ -137,12 +137,17 @@ export function createEmptyStrategyState(): StrategyState {
   return {}
 }
 
+export interface CommandDescription {
+  description: string
+  transient: boolean
+}
 export interface SessionStateState {
   // PLEASE RENAME ME
   // Need to track here which strategy is being applied.
   currentStrategy: string | null
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedCommands: Array<CanvasCommand>
+  commandDescriptions: Array<CommandDescription>
 
   // this is the inner state of the Strategies, can be changed via commands
   strategyState: StrategyState
@@ -156,6 +161,7 @@ export function createEmptySessionStateState(): SessionStateState {
     currentStrategy: null,
     currentStrategyCommands: [],
     accumulatedCommands: [],
+    commandDescriptions: [],
     strategyState: createEmptyStrategyState(),
     startingMetadata: {},
   }

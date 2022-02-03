@@ -32,6 +32,7 @@ import { SelectModeCanvasSessionState } from '../canvas-strategies/canvas-strate
 import { cssNumberAsNumberIfPossible, getPropsToSetToMoveElement } from '../canvas-utils'
 import update, { Spec } from 'immutability-helper'
 import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import {
   getProjectContentKeyPathElements,
@@ -41,7 +42,7 @@ import {
 } from '../../assets'
 import { drop } from '../../../core/shared/array-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import { StrategyState } from '../../../interactions_proposal'
+import { CommandDescription, StrategyState } from '../../../interactions_proposal'
 import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
@@ -59,6 +60,7 @@ export interface CommandFunctionResult {
   editorStatePatch: EditorStatePatch
   pathMappings: PathMappings
   strategyState: StrategyState
+  commandDescription: string
 }
 
 export type CommandFunction<T> = (
@@ -290,6 +292,9 @@ export const runMoveElementCommand: CommandFunction<MoveElement> = (
     editorStatePatch: editorStatePatch,
     strategyState: strategyState,
     pathMappings: pathMappings,
+    commandDescription: `Move Element ${EP.toUid(command.target)} by x: ${command.x}, y: ${
+      command.y
+    }`,
   }
 }
 
@@ -303,6 +308,7 @@ export const runWildcardPatch: CommandFunction<WildcardPatch> = (
     editorStatePatch: command.patch,
     strategyState: strategyState,
     pathMappings: pathMappings,
+    commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
   }
 }
 
@@ -355,6 +361,9 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
     editorStatePatch: propertyUpdatePatch,
     strategyState: strategyState,
     pathMappings: pathMappings,
+    commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
+      command.property,
+    )} to ${command.value}`,
   }
 }
 
@@ -382,8 +391,12 @@ export const runSetProperty: CommandFunction<SetProperty> = (
     editorStatePatch: propertyUpdatePatch,
     strategyState: strategyState,
     pathMappings: pathMappings,
+    commandDescription: `Set Property ${EP.toUid(command.target)}/${PP.toString(
+      command.property,
+    )} to ${jsxSimpleAttributeToValue(command.value).value}`,
   }
 }
+
 export const runReparentElement: CommandFunction<ReparentElement> = (
   editorState: EditorState,
   strategyState: StrategyState,
@@ -459,6 +472,9 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     editorStatePatch: editorStatePatch,
     strategyState: strategyState,
     pathMappings: pathMappings,
+    commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
+      command.newParent,
+    )}`,
   }
 }
 
@@ -477,6 +493,7 @@ export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
     editorStatePatch: editorStatePatch,
     strategyState: strategyState,
     pathMappings: pathMappings,
+    commandDescription: `Update Selected Views: ${command.value.map(EP.toString).join(', ')}`,
   }
 }
 
@@ -671,11 +688,16 @@ export function foldCommands(
   strategyState: StrategyState,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
-): { editorStatePatches: Array<EditorStatePatch>; newStrategyState: StrategyState } {
+): {
+  editorStatePatches: Array<EditorStatePatch>
+  newStrategyState: StrategyState
+  commandDescriptions: Array<CommandDescription>
+} {
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
   let workingStrategyState: StrategyState = strategyState
   let workingPathMappings: PathMappings = []
+  let workingCommandDescriptions: Array<CommandDescription> = []
   for (const command of commands) {
     // Allow every command if this is a transient fold, otherwise only allow commands that are not transient.
     if (transient === 'transient' || command.transient === 'permanent') {
@@ -693,10 +715,18 @@ export function foldCommands(
       workingEditorState = update(workingEditorState, statePatch)
       // Collate the patches.
       statePatches.push(statePatch)
+      workingCommandDescriptions.push({
+        description: commandResult.commandDescription,
+        transient: command.transient === 'transient',
+      })
     }
   }
 
-  return { editorStatePatches: statePatches, newStrategyState: workingStrategyState }
+  return {
+    editorStatePatches: statePatches,
+    newStrategyState: workingStrategyState,
+    commandDescriptions: workingCommandDescriptions,
+  }
 }
 
 export function applyStatePatches(

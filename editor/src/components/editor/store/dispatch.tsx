@@ -514,6 +514,7 @@ export function editorDispatch(
     currentStrategy: strategyName,
     currentStrategyCommands: patchCommands,
     accumulatedCommands: updatedAccumulatedCommands,
+    commandDescriptions: [],
     strategyState: result.sessionStateState.strategyState,
     startingMetadata: result.sessionStateState.startingMetadata,
   }
@@ -537,6 +538,7 @@ export function editorDispatch(
     : {
         ...workingSessionStateState,
         strategyState: commandResult.newStrategyState,
+        commandDescriptions: commandResult.commandDescriptions,
       }
 
   // Should the strategy be changed, checkpoint the metadata into `startingMetadata` for

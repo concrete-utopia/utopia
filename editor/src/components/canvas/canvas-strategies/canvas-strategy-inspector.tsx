@@ -4,15 +4,11 @@ import { useEditorState } from '../../editor/store/store-hook'
 
 export const CanvasStrategyInspector = React.memo(() => {
   const colorTheme = useColorTheme()
-  const accumulatedCommands = useEditorState(
-    (store) => store.sessionStateState.accumulatedCommands,
+  const commandsToList = useEditorState(
+    (store) => store.sessionStateState.commandDescriptions,
     'CanvasStrategyInspector accumulatedCommands',
   )
-  const currentStrategyCommands = useEditorState(
-    (store) => store.sessionStateState.currentStrategyCommands,
-    'CanvasStrategyInspector currentStrategyCommands',
-  )
-  const commandsToList = [...accumulatedCommands, ...currentStrategyCommands]
+
   if (commandsToList.length === 0) {
     return null
   } else {
@@ -20,6 +16,8 @@ export const CanvasStrategyInspector = React.memo(() => {
       <div
         style={{
           position: 'absolute',
+          display: 'flex',
+          flexDirection: 'column',
           top: 0,
           width: '100%',
           height: '100%',
@@ -30,7 +28,16 @@ export const CanvasStrategyInspector = React.memo(() => {
       >
         The following Commands are being applied:
         {commandsToList.map((c, i) => (
-          <div key={`${i}-${c.type}`}>{c.type}</div>
+          <span
+            key={`${i}-${c.description}`}
+            style={{
+              whiteSpace: 'normal',
+              fontStyle: c.transient ? 'italic' : 'normal',
+              fontWeight: c.transient ? undefined : 'bold',
+            }}
+          >
+            • {c.description}
+          </span>
         ))}
       </div>
     )
