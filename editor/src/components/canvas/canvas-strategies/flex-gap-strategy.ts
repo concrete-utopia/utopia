@@ -52,7 +52,7 @@ export const flexGapStrategy: CanvasStrategy = {
         }
         const adjustProperty = adjustNumberProperty(
           'permanent',
-          targetedElement,
+          targetParent.elementPath,
           gapPropPath,
           gapChange,
         )
