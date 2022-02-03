@@ -412,6 +412,9 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
       editorStatePatch = {
         projectContents: projectContentTreeRootPatch,
+        selectedViews: {
+          $set: [EP.appendToPath(command.newParent, EP.toUid(command.target))],
+        },
       }
     },
   )
