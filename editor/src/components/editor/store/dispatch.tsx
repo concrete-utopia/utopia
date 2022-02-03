@@ -499,7 +499,7 @@ export function editorDispatch(
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
 
   const strategyChanged = strategyName != result.sessionStateState.currentStrategy
-  const shouldKeepCommands = strategyChanged && !dispatchedActions.some(strategyWasOverridden)
+  const shouldKeepCommands = strategyChanged && !dispatchedActions.some(strategyWasOverridden) // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
   const updatedAccumulatedCommands = shouldKeepCommands
     ? [
         ...result.sessionStateState.accumulatedCommands,
@@ -539,6 +539,7 @@ export function editorDispatch(
   // Should the strategy be changed, checkpoint the metadata into `startingMetadata` for
   // future reference by the strategies.
   if (strategyChanged) {
+    // TODO if the user deliberately changes the strategy, do not reset startingMetadata
     newSessionStateState = {
       ...newSessionStateState,
       startingMetadata: frozenEditorState.jsxMetadata,
