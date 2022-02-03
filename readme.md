@@ -146,7 +146,7 @@ use_nix() {
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
   if [ "$out" ] && (( $update_drv )); then
     local drv_link=".direnv/drv"
-    local drv="$(nix show-derivation $out | grep -E -o -m1 '/nix/store/.*.drv')"
+    local drv="$(nix --experimental-features nix-command show-derivation $out | grep -E -o -m1 '/nix/store/.*.drv')"
     local stripped_pwd=${PWD/\//}
     local escaped_pwd=${stripped_pwd//-/--}
     local escaped_pwd=${escaped_pwd//\//-}
