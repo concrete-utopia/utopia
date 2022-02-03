@@ -297,7 +297,11 @@ export interface CanvasStrategy {
   controlsToRender: Array<ControlWithKey>
   // The controls to render when this strategy is applicable, regardless of if it is currently active
 
-  fitness: (canvasState: CanvasState, interactionState: InteractionState) => number
+  fitness: (
+    canvasState: CanvasState,
+    interactionState: InteractionState,
+    sessionState: SessionStateState,
+  ) => number | null
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
   apply: (

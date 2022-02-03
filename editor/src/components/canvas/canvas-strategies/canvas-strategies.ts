@@ -18,10 +18,13 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { ancestorAbsoluteMoveStrategy } from './ancestor-absolute-move-strategy'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
+import { flexBasisResizeStrategy, flexGrowResizeStrategy } from './flex-basis-resize-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
 import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  flexBasisResizeStrategy,
+  flexGrowResizeStrategy,
   flexGapStrategy,
   flexAlignParentStrategy,
   parentPaddingAdjustStrategy,
@@ -68,21 +71,34 @@ interface StrategiesWithFitness {
 function getApplicableStrategiesOrderedByFitness(
   canvasState: CanvasState,
   interactionState: InteractionState,
+  sessionState: SessionStateState,
 ): Array<StrategiesWithFitness> {
   const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = applicableStrategies.map((strategy) => {
     return {
-      fitness: strategy.fitness(canvasState, interactionState), // TODO filter strategies with fitness 0 or null!!!
+      fitness: strategy.fitness(canvasState, interactionState, sessionState), // TODO filter strategies with fitness 0 or null!!!
       strategy: strategy,
     }
   })
 
-  return sortBy(strategiesWithFitness, (l, r) => {
+  let strategiesWithAFitnessValue: Array<StrategiesWithFitness> = []
+  strategiesWithFitness.forEach((strategy) => {
+    if (strategy.fitness != null) {
+      strategiesWithAFitnessValue.push({
+        fitness: strategy.fitness,
+        strategy: strategy.strategy,
+      })
+    }
+  })
+
+  const sortedStrategies = sortBy(strategiesWithAFitnessValue, (l, r) => {
     // sort by fitness, descending
     return r.fitness - l.fitness
   })
+
+  return sortedStrategies
 }
 
 const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
@@ -97,11 +113,16 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
     }
   },
   (store: EditorStore) => store.editor.canvas.interactionState,
-  (canvasState: CanvasState, interactionState: InteractionState | null): Array<string> => {
+  (store: EditorStore) => store.sessionStateState,
+  (
+    canvasState: CanvasState,
+    interactionState: InteractionState | null,
+    sessionState: SessionStateState,
+  ): Array<string> => {
     if (interactionState == null) {
       return []
     }
-    return getApplicableStrategiesOrderedByFitness(canvasState, interactionState).map(
+    return getApplicableStrategiesOrderedByFitness(canvasState, interactionState, sessionState).map(
       (s) => s.strategy.name,
     )
   },
@@ -146,6 +167,7 @@ export function applyCanvasStrategy(
   const applicableStrategies = getApplicableStrategiesOrderedByFitness(
     canvasState,
     interactionState,
+    sessionState,
   )
   const strategy = pickStrategy(applicableStrategies, interactionState)
   if (strategy == null) {

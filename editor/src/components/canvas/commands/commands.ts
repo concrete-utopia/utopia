@@ -13,6 +13,7 @@ import {
   getJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
   setJSXValuesAtPaths,
+  unsetJSXValuesAtPaths,
   ValueAtPath,
 } from '../../../core/shared/jsx-attributes'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
@@ -45,6 +46,7 @@ import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
+import * as PP from '../../../core/shared/property-path'
 
 export interface PathMapping {
   from: ElementPath
@@ -185,6 +187,25 @@ export function updateSelectedViews(
   }
 }
 
+export interface DeleteProperty extends BaseCommand {
+  type: 'DELETE_PROPERTY'
+  target: ElementPath
+  property: PropertyPath
+}
+
+export function deleteProperty(
+  transient: TransientOrNot,
+  target: ElementPath,
+  property: PropertyPath,
+): DeleteProperty {
+  return {
+    type: 'DELETE_PROPERTY',
+    transient: transient,
+    target: target,
+    property: property,
+  }
+}
+
 export type CanvasCommand =
   | MoveElement
   | WildcardPatch
@@ -192,6 +213,7 @@ export type CanvasCommand =
   | SetProperty
   | ReparentElement
   | UpdateSelectedViews
+  | DeleteProperty
 
 export const runMoveElementCommand: CommandFunction<MoveElement> = (
   editorState: EditorState,
@@ -538,6 +560,85 @@ export function applyValuesAtPath(
   }
 }
 
+function runDeleteProperty(
+  editorState: EditorState,
+  strategyState: StrategyState,
+  pathMappings: PathMappings,
+  command: DeleteProperty,
+): CommandFunctionResult {
+  let editorStatePatch: EditorStatePatch = {}
+
+  const workingEditorState = modifyUnderlyingForOpenFile(
+    command.target,
+    editorState,
+    (element: JSXElement) => {
+      return foldEither(
+        () => {
+          return element
+        },
+        (updatedProps) => {
+          return {
+            ...element,
+            props: updatedProps,
+          }
+        },
+        unsetJSXValuesAtPaths(element.props, [command.property]),
+      )
+    },
+  )
+
+  forUnderlyingTargetFromEditorState(
+    command.target,
+    workingEditorState,
+    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
+      const projectContentFilePatch: Spec<ProjectContentFile> = {
+        content: {
+          fileContents: {
+            revisionsState: {
+              $set: RevisionsState.ParsedAhead,
+            },
+            parsed: {
+              topLevelElements: {
+                $set: success.topLevelElements,
+              },
+            },
+          },
+        },
+      }
+      // ProjectContentTreeRoot is a bit awkward to patch.
+      const pathElements = getProjectContentKeyPathElements(underlyingFilePath)
+      if (pathElements.length === 0) {
+        throw new Error('Invalid path length.')
+      }
+      const remainderPath = drop(1, pathElements)
+      const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
+        (working: Spec<ProjectContentsTree>, pathPart: string) => {
+          return {
+            children: {
+              [pathPart]: working,
+            },
+          }
+        },
+        projectContentFilePatch,
+      )
+
+      // Finally patch the last part of the path in.
+      const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
+        [pathElements[0]]: projectContentsTreePatch,
+      }
+
+      editorStatePatch = {
+        projectContents: projectContentTreeRootPatch,
+      }
+    },
+  )
+  return {
+    editorStatePatch: editorStatePatch,
+    strategyState: strategyState,
+    pathMappings: pathMappings,
+  }
+}
+
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
   strategyState: StrategyState,
@@ -557,6 +658,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runReparentElement(editorState, strategyState, pathMappings, command)
     case 'UPDATE_SELECTED_VIEWS':
       return runUpdateSelectedViews(editorState, strategyState, pathMappings, command)
+    case 'DELETE_PROPERTY':
+      return runDeleteProperty(editorState, strategyState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

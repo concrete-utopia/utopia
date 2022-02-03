@@ -501,7 +501,8 @@ export function editorDispatch(
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
 
   const strategyChanged = strategyName != result.sessionStateState.currentStrategy
-  const shouldKeepCommands = strategyChanged && !dispatchedActions.some(strategyWasOverridden) // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
+  const strategyHasBeenOverriden = dispatchedActions.some(strategyWasOverridden)
+  const shouldKeepCommands = strategyChanged && !strategyHasBeenOverriden // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
   const updatedAccumulatedCommands = shouldKeepCommands
     ? [
         ...result.sessionStateState.accumulatedCommands,
