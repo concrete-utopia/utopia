@@ -19,6 +19,8 @@ export interface CanvasState {
   metadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
   openFile: string | null | undefined
+  scale: number
+  canvasOffset: CanvasVector
 }
 
 interface MouseInteraction {

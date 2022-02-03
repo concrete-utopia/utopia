@@ -141,6 +141,7 @@ import {
   withUnderlyingTarget,
   transformElementAtPath,
   ResizeOptions,
+  DesignerFile,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -185,7 +186,7 @@ import {
 } from './guideline'
 import { addImport, mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { getStoryboardUID } from '../../core/model/scene-utils'
+import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
@@ -1916,7 +1917,7 @@ function getReparentTargetAtPosition(
   return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
 }
 
-export function getReparentTarget(
+export function getReparentTargetFromState(
   selectedViews: Array<ElementPath>,
   editorState: EditorState,
   toReparent: Array<ElementPath>,
@@ -1925,26 +1926,48 @@ export function getReparentTarget(
   shouldReparent: boolean
   newParent: ElementPath | null
 } {
-  const result = getReparentTargetAtPosition(
-    editorState.jsxMetadata,
+  return getReparentTarget(
     selectedViews,
+    toReparent,
+    editorState.jsxMetadata,
     editorState.hiddenInstances,
     editorState.canvas.scale,
     editorState.canvas.realCanvasOffset,
+    editorState.projectContents,
+    editorState.canvas.openFile?.filename,
+  )
+}
+
+export function getReparentTarget(
+  selectedViews: Array<ElementPath>,
+  toReparent: Array<ElementPath>,
+  componentMeta: ElementInstanceMetadataMap,
+  hiddenInstances: Array<ElementPath>,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null | undefined,
+): {
+  shouldReparent: boolean
+  newParent: ElementPath | null
+} {
+  const result = getReparentTargetAtPosition(
+    componentMeta,
+    selectedViews,
+    hiddenInstances,
+    canvasScale,
+    canvasOffset,
   )
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
-    toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadata, view)),
+    toReparent.map((view) => MetadataUtils.getParent(componentMeta, view)),
   )
   let parentSupportsChild = true
   if (possibleNewParent != null) {
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(
-      editorState.jsxMetadata,
-      possibleNewParent,
-    )
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(componentMeta, possibleNewParent)
   } else {
     // a null template path means Canvas, let's translate that to the storyboard component
-    const storyboardComponent = getStoryboardElementPathFromEditorState(editorState)
+    const storyboardComponent = getStoryboardElementPath(projectContents, openFile ?? null)
     return {
       shouldReparent: storyboardComponent != null,
       newParent: storyboardComponent,
@@ -2323,7 +2346,7 @@ function produceMoveTransientCanvasState(
   }
 
   if (dragState.reparent) {
-    const reparentTarget = getReparentTarget(
+    const reparentTarget = getReparentTargetFromState(
       previousCanvasTransientSelectedViews ?? editorState.selectedViews,
       workingEditorState,
       elementsToTarget,

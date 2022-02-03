@@ -484,6 +484,8 @@ export function editorDispatch(
       metadata: frozenEditorState.jsxMetadata,
       projectContents: frozenEditorState.projectContents,
       openFile: frozenEditorState.canvas.openFile?.filename,
+      scale: frozenEditorState.canvas.scale,
+      canvasOffset: frozenEditorState.canvas.roundedCanvasOffset,
     }
     const canvasStrategyResult = applyCanvasStrategy(
       canvasState,

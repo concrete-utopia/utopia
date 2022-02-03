@@ -15,6 +15,7 @@ import { EditorStore } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
+import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { ancestorAbsoluteMoveStrategy } from './ancestor-absolute-move-strategy'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
@@ -26,6 +27,7 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   parentPaddingAdjustStrategy,
   ancestorAbsoluteMoveStrategy,
   absoluteMoveStrategy,
+  absoluteReparentStrategy,
 ]
 
 function getApplicableStrategies(
@@ -44,6 +46,8 @@ const getApplicableStrategiesSelector = createSelector(
       metadata: store.editor.jsxMetadata,
       projectContents: store.editor.projectContents,
       openFile: store.editor.canvas.openFile?.filename,
+      scale: store.editor.canvas.scale,
+      canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }
   },
   (store: EditorStore) => store.editor.canvas.interactionState,
@@ -88,6 +92,8 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
       metadata: store.editor.jsxMetadata,
       projectContents: store.editor.projectContents,
       openFile: store.editor.canvas.openFile?.filename,
+      scale: store.editor.canvas.scale,
+      canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }
   },
   (store: EditorStore) => store.editor.canvas.interactionState,

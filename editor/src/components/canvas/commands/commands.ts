@@ -24,6 +24,8 @@ import {
   modifyUnderlyingForOpenFile,
   forUnderlyingTargetFromEditorState,
   withUnderlyingTargetFromEditorState,
+  removeElementAtPath,
+  insertElementAtPath,
 } from '../../editor/store/editor-state'
 import { SelectModeCanvasSessionState } from '../canvas-strategies/canvas-strategy-types'
 import { cssNumberAsNumberIfPossible, getPropsToSetToMoveElement } from '../canvas-utils'
@@ -39,6 +41,10 @@ import {
 import { drop } from '../../../core/shared/array-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { StrategyState } from '../../../interactions_proposal'
+import {
+  applyUtopiaJSXComponentsChanges,
+  getUtopiaJSXComponentsFromSuccess,
+} from '../../../core/model/project-file-utils'
 
 export interface PathMapping {
   from: ElementPath
@@ -85,6 +91,24 @@ export function moveElement(
     target: target,
     x: x,
     y: y,
+  }
+}
+export interface ReparentElement extends BaseCommand {
+  type: 'REPARENT_ELEMENT'
+  target: ElementPath
+  newParent: ElementPath
+}
+
+export function reparentElement(
+  transient: TransientOrNot,
+  target: ElementPath,
+  newParent: ElementPath,
+): ReparentElement {
+  return {
+    type: 'REPARENT_ELEMENT',
+    transient: transient,
+    target: target,
+    newParent: newParent,
   }
 }
 
@@ -145,7 +169,12 @@ export function setProperty(
   }
 }
 
-export type CanvasCommand = MoveElement | WildcardPatch | AdjustNumberProperty | SetProperty
+export type CanvasCommand =
+  | MoveElement
+  | WildcardPatch
+  | AdjustNumberProperty
+  | SetProperty
+  | ReparentElement
 
 export const runMoveElementCommand: CommandFunction<MoveElement> = (
   editorState: EditorState,
@@ -316,6 +345,83 @@ export const runSetProperty: CommandFunction<SetProperty> = (
     pathMappings: pathMappings,
   }
 }
+export const runReparentElement: CommandFunction<ReparentElement> = (
+  editorState: EditorState,
+  strategyState: StrategyState,
+  pathMappings: PathMappings,
+  command: ReparentElement,
+) => {
+  let editorStatePatch: EditorStatePatch = {}
+  forUnderlyingTargetFromEditorState(
+    command.target,
+    editorState,
+    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
+      const components = getUtopiaJSXComponentsFromSuccess(success)
+      const withElementRemoved = removeElementAtPath(command.target, components)
+      const withElementInserted = insertElementAtPath(
+        editorState.projectContents,
+        editorState.canvas.openFile?.filename ?? null,
+        command.newParent,
+        underlyingElement,
+        withElementRemoved,
+        null,
+      )
+
+      const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+        success.topLevelElements,
+        withElementInserted,
+      )
+      const projectContentFilePatch: Spec<ProjectContentFile> = {
+        content: {
+          fileContents: {
+            revisionsState: {
+              $set: RevisionsState.ParsedAhead,
+            },
+            parsed: {
+              topLevelElements: {
+                $set: updatedTopLevelElements,
+              },
+              imports: {
+                $set: success.imports,
+              },
+            },
+          },
+        },
+      }
+      // ProjectContentTreeRoot is a bit awkward to patch.
+      const pathElements = getProjectContentKeyPathElements(underlyingFilePath)
+      if (pathElements.length === 0) {
+        throw new Error('Invalid path length.')
+      }
+      const remainderPath = drop(1, pathElements)
+      const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
+        (working: Spec<ProjectContentsTree>, pathPart: string) => {
+          return {
+            children: {
+              [pathPart]: working,
+            },
+          }
+        },
+        projectContentFilePatch,
+      )
+
+      // Finally patch the last part of the path in.
+      const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
+        [pathElements[0]]: projectContentsTreePatch,
+      }
+
+      editorStatePatch = {
+        projectContents: projectContentTreeRootPatch,
+      }
+    },
+  )
+
+  return {
+    editorStatePatch: editorStatePatch,
+    strategyState: strategyState,
+    pathMappings: pathMappings,
+  }
+}
 
 export function applyValuesAtPath(
   editorState: EditorState,
@@ -412,6 +518,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runAdjustNumberProperty(editorState, strategyState, pathMappings, command)
     case 'SET_PROPERTY':
       return runSetProperty(editorState, strategyState, pathMappings, command)
+    case 'REPARENT_ELEMENT':
+      return runReparentElement(editorState, strategyState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
