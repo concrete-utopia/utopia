@@ -563,7 +563,7 @@ export function editorDispatch(
     unpatchedEditor: shouldApplyChanges ? patchedEditorState : frozenEditorState,
     editor: patchedEditorState,
     derived: frozenDerivedState,
-    sessionStateState: newSessionStateState,
+    sessionStateState: optionalDeepFreeze(newSessionStateState),
     history: newHistory,
     userState: result.userState,
     workers: storedState.workers,
