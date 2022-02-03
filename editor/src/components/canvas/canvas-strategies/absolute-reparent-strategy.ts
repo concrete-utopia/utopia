@@ -25,7 +25,8 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     if (
       canvasState.selectedElements.length === 1 &&
       interactionState.interactionData.modifiers.cmd &&
-      interactionState.interactionData.type === 'DRAG'
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.interactionData.dragThresholdPassed
     ) {
       const reparentResult = getReparentTarget(
         canvasState.selectedElements,
