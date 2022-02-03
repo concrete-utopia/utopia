@@ -561,6 +561,7 @@ function useSelectOrLiveModeSelectAndHover(
       getSelectableViewsForSelectMode,
       editorStoreRef,
       draggingAllowed,
+      startCanvasModeSession,
     ],
   )
 
