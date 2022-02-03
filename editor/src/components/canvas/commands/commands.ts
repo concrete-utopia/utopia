@@ -47,7 +47,6 @@ import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
-import * as PP from '../../../core/shared/property-path'
 
 export interface PathMapping {
   from: ElementPath
@@ -653,6 +652,9 @@ function runDeleteProperty(
     editorStatePatch: editorStatePatch,
     strategyState: strategyState,
     pathMappings: pathMappings,
+    commandDescription: `Delete Property ${EP.toUid(command.target)}/${PP.toString(
+      command.property,
+    )}`,
   }
 }
 
