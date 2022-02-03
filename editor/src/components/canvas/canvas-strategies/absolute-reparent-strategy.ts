@@ -1,7 +1,8 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { getReparentTarget } from '../canvas-utils'
-import { reparentElement } from '../commands/commands'
+import { reparentElement, updateSelectedViews } from '../commands/commands'
+import * as EP from '../../../core/shared/element-path'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
@@ -53,6 +54,10 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )
     const newParent = reparentResult.newParent!
 
-    return [reparentElement('permanent', canvasState.selectedElements[0], newParent)]
+    const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
+    return [
+      reparentElement('permanent', canvasState.selectedElements[0], newParent),
+      updateSelectedViews('permanent', [newPath]),
+    ]
   },
 }

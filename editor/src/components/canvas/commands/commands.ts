@@ -169,12 +169,29 @@ export function setProperty(
   }
 }
 
+export interface UpdateSelectedViews extends BaseCommand {
+  type: 'UPDATE_SELECTED_VIEWS'
+  value: Array<ElementPath>
+}
+
+export function updateSelectedViews(
+  transient: TransientOrNot,
+  value: Array<ElementPath>,
+): UpdateSelectedViews {
+  return {
+    type: 'UPDATE_SELECTED_VIEWS',
+    transient: transient,
+    value: value,
+  }
+}
+
 export type CanvasCommand =
   | MoveElement
   | WildcardPatch
   | AdjustNumberProperty
   | SetProperty
   | ReparentElement
+  | UpdateSelectedViews
 
 export const runMoveElementCommand: CommandFunction<MoveElement> = (
   editorState: EditorState,
@@ -412,13 +429,28 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
       editorStatePatch = {
         projectContents: projectContentTreeRootPatch,
-        selectedViews: {
-          $set: [EP.appendToPath(command.newParent, EP.toUid(command.target))],
-        },
       }
     },
   )
 
+  return {
+    editorStatePatch: editorStatePatch,
+    strategyState: strategyState,
+    pathMappings: pathMappings,
+  }
+}
+
+export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
+  _: EditorState,
+  strategyState: StrategyState,
+  pathMappings: PathMappings,
+  command: UpdateSelectedViews,
+) => {
+  const editorStatePatch = {
+    selectedViews: {
+      $set: command.value,
+    },
+  }
   return {
     editorStatePatch: editorStatePatch,
     strategyState: strategyState,
@@ -523,6 +555,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runSetProperty(editorState, strategyState, pathMappings, command)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, strategyState, pathMappings, command)
+    case 'UPDATE_SELECTED_VIEWS':
+      return runUpdateSelectedViews(editorState, strategyState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
