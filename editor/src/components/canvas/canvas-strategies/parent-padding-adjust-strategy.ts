@@ -16,9 +16,14 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
         canvasState.selectedElements[0],
       )
 
-      // what if the element has margin or margin left only
-      // interaction direction is also important
-      if (metadata?.specialSizeMeasurements.position === 'static') {
+      const parentMetadata = MetadataUtils.getParent(
+        canvasState.metadata,
+        canvasState.selectedElements[0],
+      )
+      if (
+        metadata?.specialSizeMeasurements.position === 'static' &&
+        parentMetadata?.props?.style?.padding != null
+      ) {
         // only return true, if element is static, has no top left bottom right, and parent _has_ a padding prop
         return true
       }
