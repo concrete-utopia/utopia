@@ -5,8 +5,12 @@ import { reparentElement } from '../commands/commands'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
-  isApplicable: (canvasState) => {
-    if (canvasState.selectedElements.length === 1) {
+  isApplicable: (canvasState, interactionState) => {
+    if (
+      canvasState.selectedElements.length === 1 &&
+      interactionState != null &&
+      interactionState.interactionData.modifiers.cmd
+    ) {
       const metadata = MetadataUtils.findElementByElementPath(
         canvasState.metadata,
         canvasState.selectedElements[0],
