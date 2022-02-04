@@ -161,28 +161,24 @@ function pickStrategy(
 }
 
 export function applyCanvasStrategy(
+  strategy: CanvasStrategy,
   canvasState: CanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
-): { commands: Array<CanvasCommand>; strategy: string | null } {
+): Array<CanvasCommand> {
+  return strategy.apply(canvasState, interactionState, sessionState)
+}
+export function findCanvasStrategy(
+  canvasState: CanvasState,
+  interactionState: InteractionState,
+  sessionState: SessionStateState,
+): CanvasStrategy | null {
   const applicableStrategies = getApplicableStrategiesOrderedByFitness(
     canvasState,
     interactionState,
     sessionState,
   )
-  const strategy = pickStrategy(applicableStrategies, interactionState)
-  if (strategy == null) {
-    return {
-      commands: [],
-      strategy: null,
-    }
-  } else {
-    const commands = strategy.apply(canvasState, interactionState, sessionState)
-    return {
-      commands: commands,
-      strategy: strategy.name,
-    }
-  }
+  return pickStrategy(applicableStrategies, interactionState)
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {

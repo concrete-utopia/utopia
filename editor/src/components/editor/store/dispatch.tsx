@@ -98,6 +98,7 @@ import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
 import { applyStatePatches, CanvasCommand, foldCommands } from '../../canvas/commands/commands'
 import {
   applyCanvasStrategy,
+  findCanvasStrategy,
   strategySwitchInteractionStateReset,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
@@ -503,13 +504,22 @@ export function editorDispatch(
       scale: patchedEditorStateCurrent.canvas.scale,
       canvasOffset: patchedEditorStateCurrent.canvas.roundedCanvasOffset,
     }
-    const canvasStrategyResult = applyCanvasStrategy(
+
+    const strategy = findCanvasStrategy(
       canvasState,
       frozenEditorState.canvas.interactionState,
       result.sessionStateState,
     )
-    strategyName = canvasStrategyResult.strategy
-    patchCommands = canvasStrategyResult.commands
+    if (strategy != null) {
+      const commands = applyCanvasStrategy(
+        strategy,
+        canvasState,
+        frozenEditorState.canvas.interactionState,
+        result.sessionStateState,
+      )
+      patchCommands = commands
+      strategyName = strategy.name
+    }
   }
 
   const strategyChanged = strategyName != result.sessionStateState.currentStrategy
