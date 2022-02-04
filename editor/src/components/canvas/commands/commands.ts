@@ -115,6 +115,25 @@ export function reparentElement(
   }
 }
 
+export interface UpdateElementIndex extends BaseCommand {
+  type: 'UPDATE_ELEMENT_INDEX'
+  target: ElementPath
+  newIndex: number
+}
+
+export function updateElementIndex(
+  transient: TransientOrNot,
+  target: ElementPath,
+  newIndex: number,
+): UpdateElementIndex {
+  return {
+    type: 'UPDATE_ELEMENT_INDEX',
+    transient: transient,
+    target: target,
+    newIndex: newIndex,
+  }
+}
+
 export interface WildcardPatch extends BaseCommand {
   type: 'WILDCARD_PATCH'
   patch: EditorStatePatch
@@ -215,6 +234,7 @@ export type CanvasCommand =
   | ReparentElement
   | UpdateSelectedViews
   | DeleteProperty
+  | UpdateElementIndex
 
 export const runMoveElementCommand: CommandFunction<MoveElement> = (
   editorState: EditorState,
@@ -496,6 +516,90 @@ export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
   }
 }
 
+const runUpdateElementIndex: CommandFunction<UpdateElementIndex> = (
+  editorState: EditorState,
+  strategyState: StrategyState,
+  pathMappings: PathMappings,
+  command: UpdateElementIndex,
+) => {
+  let editorStatePatch: EditorStatePatch = {}
+  forUnderlyingTargetFromEditorState(
+    command.target,
+    editorState,
+    (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
+      const components = getUtopiaJSXComponentsFromSuccess(success)
+      const parentPath = EP.parentPath(command.target)
+      const withElementRemoved = removeElementAtPath(command.target, components)
+      const withElementInserted = insertElementAtPath(
+        editorState.projectContents,
+        editorState.canvas.openFile?.filename ?? null,
+        parentPath,
+        underlyingElement,
+        withElementRemoved,
+        {
+          type: 'absolute',
+          index: command.newIndex,
+        },
+      )
+
+      const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+        success.topLevelElements,
+        withElementInserted,
+      )
+      const projectContentFilePatch: Spec<ProjectContentFile> = {
+        content: {
+          fileContents: {
+            revisionsState: {
+              $set: RevisionsState.ParsedAhead,
+            },
+            parsed: {
+              topLevelElements: {
+                $set: updatedTopLevelElements,
+              },
+              imports: {
+                $set: success.imports,
+              },
+            },
+          },
+        },
+      }
+
+      // ProjectContentTreeRoot is a bit awkward to patch.
+      const pathElements = getProjectContentKeyPathElements(underlyingFilePath)
+      if (pathElements.length === 0) {
+        throw new Error('Invalid path length.')
+      }
+      const remainderPath = drop(1, pathElements)
+      const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
+        (working: Spec<ProjectContentsTree>, pathPart: string) => {
+          return {
+            children: {
+              [pathPart]: working,
+            },
+          }
+        },
+        projectContentFilePatch,
+      )
+
+      // Finally patch the last part of the path in.
+      const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
+        [pathElements[0]]: projectContentsTreePatch,
+      }
+
+      editorStatePatch = {
+        projectContents: projectContentTreeRootPatch,
+      }
+    },
+  )
+
+  return {
+    editorStatePatch: editorStatePatch,
+    strategyState: strategyState,
+    pathMappings: pathMappings,
+    commandDescription: `Shifted element to index ${command.newIndex}`,
+  }
+}
+
 export function applyValuesAtPath(
   editorState: EditorState,
   target: ElementPath,
@@ -679,6 +783,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runUpdateSelectedViews(editorState, strategyState, pathMappings, command)
     case 'DELETE_PROPERTY':
       return runDeleteProperty(editorState, strategyState, pathMappings, command)
+    case 'UPDATE_ELEMENT_INDEX':
+      return runUpdateElementIndex(editorState, strategyState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
