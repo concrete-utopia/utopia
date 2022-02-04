@@ -53,12 +53,14 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       canvasState.projectContents,
       canvasState.openFile,
     )
-    const newParent = reparentResult.newParent!
-
-    const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
-    return [
-      reparentElement('permanent', canvasState.selectedElements[0], newParent),
-      updateSelectedViews('permanent', [newPath]),
-    ]
+    const newParent = reparentResult.newParent
+    if (newParent != null) {
+      const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
+      return [
+        reparentElement('permanent', canvasState.selectedElements[0], newParent),
+        updateSelectedViews('permanent', [newPath]),
+      ]
+    }
+    return []
   },
 }
