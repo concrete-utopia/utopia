@@ -1,8 +1,9 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { getReparentTarget } from '../canvas-utils'
-import { reparentElement, updateSelectedViews } from '../commands/commands'
+import { moveElement, reparentElement, updateSelectedViews } from '../commands/commands'
 import * as EP from '../../../core/shared/element-path'
+import { pointDifference, zeroCanvasRect } from '../../../core/shared/math-utils'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
@@ -55,9 +56,25 @@ export const absoluteReparentStrategy: CanvasStrategy = {
     )
     const newParent = reparentResult.newParent
     if (newParent != null) {
+      const target = canvasState.selectedElements[0]
       const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
+
+      const oldParentFrame =
+        MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), canvasState.metadata) ??
+        zeroCanvasRect
+      const newParentFrame =
+        MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.metadata) ?? zeroCanvasRect
+      const newOffset = pointDifference(newParentFrame, oldParentFrame)
+      const currentFrame = MetadataUtils.getFrame(target, canvasState.metadata)
+      if (currentFrame == null) {
+        return []
+      }
+      const y = currentFrame.x + newOffset.x
+      const x = currentFrame.y + newOffset.y
+
       return [
-        reparentElement('permanent', canvasState.selectedElements[0], newParent),
+        // moveElement('permanent', target, x, y),
+        reparentElement('permanent', target, newParent),
         updateSelectedViews('permanent', [newPath]),
       ]
     }
