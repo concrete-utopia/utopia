@@ -160,14 +160,6 @@ function pickStrategy(
   return pickDefaultCanvasStrategy(applicableStrategies)
 }
 
-export function applyCanvasStrategy(
-  strategy: CanvasStrategy,
-  canvasState: CanvasState,
-  interactionState: InteractionState,
-  sessionState: SessionStateState,
-): Array<CanvasCommand> {
-  return strategy.apply(canvasState, interactionState, sessionState)
-}
 export function findCanvasStrategy(
   canvasState: CanvasState,
   interactionState: InteractionState,
@@ -179,6 +171,15 @@ export function findCanvasStrategy(
     sessionState,
   )
   return pickStrategy(applicableStrategies, interactionState)
+}
+
+export function applyCanvasStrategy(
+  strategy: CanvasStrategy,
+  canvasState: CanvasState,
+  interactionState: InteractionState,
+  sessionState: SessionStateState,
+): Array<CanvasCommand> {
+  return strategy.apply(canvasState, interactionState, sessionState)
 }
 
 export function useGetApplicableStrategyControls(): Array<ControlWithKey> {
