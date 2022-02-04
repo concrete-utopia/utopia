@@ -22,6 +22,7 @@ import { FlexAlignControlRectProps } from './canvas-strategy-types'
 
 export const flexAlignParentStrategy: CanvasStrategy = {
   name: "Change Parent's Flex Align and Justify",
+  strategyGroups: new Set(),
   isApplicable: (canvasState, interactionState) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedElement = canvasState.selectedElements[0]

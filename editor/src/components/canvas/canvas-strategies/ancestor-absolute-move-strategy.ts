@@ -8,6 +8,7 @@ import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/co
 
 export const ancestorAbsoluteMoveStrategy: CanvasStrategy = {
   name: 'Ancestor Absolute Move',
+  strategyGroups: new Set(),
   isApplicable: (canvasState, interactionState) => {
     if (canvasState.selectedElements.length === 1 && interactionState != null) {
       const metadata = MetadataUtils.findElementByElementPath(

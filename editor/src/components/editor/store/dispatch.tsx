@@ -99,6 +99,8 @@ import { applyStatePatches, CanvasCommand, foldCommands } from '../../canvas/com
 import {
   applyCanvasStrategy,
   findCanvasStrategy,
+  getStrategyByName,
+  strategiesPartOfSameGroup,
   strategySwitchInteractionStateReset,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
@@ -535,7 +537,11 @@ export function editorDispatch(
 
   const strategyChanged = strategyName != result.sessionStateState.currentStrategy
   const strategyHasBeenOverriden = dispatchedActions.some(strategyWasOverridden)
-  const shouldKeepCommands = strategyChanged && !strategyHasBeenOverriden // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
+  const partOfSameGroup = strategiesPartOfSameGroup(
+    result.sessionStateState.currentStrategy,
+    strategyName,
+  )
+  const shouldKeepCommands = strategyChanged && !strategyHasBeenOverriden && !partOfSameGroup // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
   const updatedAccumulatedCommands = shouldKeepCommands
     ? [
         ...result.sessionStateState.accumulatedCommands,

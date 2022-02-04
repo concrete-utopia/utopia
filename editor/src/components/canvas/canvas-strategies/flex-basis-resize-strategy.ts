@@ -10,12 +10,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasStrategy } from '../../../interactions_proposal'
-import {
-  adjustNumberProperty,
-  deleteProperty,
-  setProperty,
-  wildcardPatch,
-} from '../commands/commands'
+import { deleteProperty, setProperty, wildcardPatch } from '../commands/commands'
 import { FlexResizeControls } from '../controls/select-mode/flex-resize-control'
 
 function getSiblingSpacingFromEdge(
@@ -41,6 +36,7 @@ function getSiblingSpacingFromEdge(
 
 export const flexBasisResizeStrategy: CanvasStrategy = {
   name: 'Flex Basis Resize',
+  strategyGroups: new Set(['flex-basis-grow']),
   isApplicable: (canvasState, interactionState) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedElement = safeIndex(canvasState.selectedElements, 0)
@@ -128,6 +124,7 @@ export const flexBasisResizeStrategy: CanvasStrategy = {
 
 export const flexGrowResizeStrategy: CanvasStrategy = {
   name: 'Flex Grow Resize',
+  strategyGroups: new Set(['flex-basis-grow']),
   isApplicable: (canvasState, interactionState) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedElement = safeIndex(canvasState.selectedElements, 0)

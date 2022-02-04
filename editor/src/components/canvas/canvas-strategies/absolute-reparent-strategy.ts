@@ -8,6 +8,7 @@ import { stylePropPathMappingFn } from '../../../components/inspector/common/pro
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
+  strategyGroups: new Set(),
   isApplicable: (canvasState, interactionState) => {
     if (
       canvasState.selectedElements.length === 1 &&

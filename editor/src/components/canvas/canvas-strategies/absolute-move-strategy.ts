@@ -5,6 +5,7 @@ import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/co
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',
+  strategyGroups: new Set(),
   isApplicable: (canvasState, _interactionState) => {
     if (canvasState.selectedElements.length === 1) {
       const metadata = MetadataUtils.findElementByElementPath(

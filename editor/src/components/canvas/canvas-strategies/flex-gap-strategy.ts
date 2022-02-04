@@ -8,6 +8,7 @@ import { FlexGapControls } from '../controls/select-mode/flex-gap-controls'
 
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
+  strategyGroups: new Set(),
   isApplicable: (canvasState, _interactionState) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]

@@ -9,6 +9,7 @@ import { ParentPaddingControl } from '../controls/parent-padding-controls'
 
 export const parentPaddingAdjustStrategy: CanvasStrategy = {
   name: 'Change Parent Padding',
+  strategyGroups: new Set(),
   isApplicable: (canvasState) => {
     if (canvasState.selectedElements.length === 1) {
       const metadata = MetadataUtils.findElementByElementPath(

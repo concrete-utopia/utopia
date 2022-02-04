@@ -1,5 +1,6 @@
 import React from 'react'
 import { createSelector } from 'reselect'
+import { intersects } from 'semver'
 import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
 import { offsetPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
@@ -33,6 +34,36 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   absoluteMoveStrategy,
   absoluteReparentStrategy,
 ]
+
+export function getStrategyByName(name: string): CanvasStrategy | null {
+  return (
+    RegisteredCanvasStrategies.find((s) => {
+      return s.name === name
+    }) ?? null
+  )
+}
+
+export function strategiesPartOfSameGroup(
+  oldStrategyName: string | null,
+  newStrategyName: string | null,
+): boolean {
+  if (oldStrategyName == null || newStrategyName == null || oldStrategyName === newStrategyName) {
+    return false
+  } else {
+    const oldStrategy = getStrategyByName(oldStrategyName)
+    const newStrategy = getStrategyByName(newStrategyName)
+    if (oldStrategy == null || newStrategy == null) {
+      return false
+    } else {
+      for (const key of oldStrategy.strategyGroups) {
+        if (newStrategy.strategyGroups.has(key)) {
+          return true
+        }
+      }
+      return false
+    }
+  }
+}
 
 function getApplicableStrategies(
   canvasState: CanvasState,

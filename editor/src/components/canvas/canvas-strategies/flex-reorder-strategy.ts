@@ -18,6 +18,7 @@ function yCenter(target: ElementInstanceMetadata): number {
 
 export const flexReOrderStrategy: CanvasStrategy = {
   name: 'Re-order Flex Element',
+  strategyGroups: new Set(),
   isApplicable: (canvasState, _interactionState) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]
