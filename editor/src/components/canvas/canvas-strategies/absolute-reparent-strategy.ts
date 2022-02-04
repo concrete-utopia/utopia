@@ -1,10 +1,9 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { getReparentTarget } from '../canvas-utils'
-import { reparentElement, setProperty, updateSelectedViews } from '../commands/commands'
+import { adjustNumberProperty, reparentElement, updateSelectedViews } from '../commands/commands'
 import * as EP from '../../../core/shared/element-path'
 import { pointDifference, zeroCanvasRect } from '../../../core/shared/math-utils'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
@@ -66,25 +65,20 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         zeroCanvasRect
       const newParentFrame =
         MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.metadata) ?? zeroCanvasRect
-      const newOffset = pointDifference(newParentFrame, oldParentFrame)
-      const currentFrame = MetadataUtils.getFrame(target, canvasState.metadata)
-      if (currentFrame == null) {
-        return []
-      }
-      const x = currentFrame.x + newOffset.x
-      const y = currentFrame.y + newOffset.y
+      const offset = pointDifference(newParentFrame, oldParentFrame)
+
       return [
-        setProperty(
+        adjustNumberProperty(
           'permanent',
           target,
           stylePropPathMappingFn('left', ['style']),
-          jsxAttributeValue(x, emptyComments),
+          offset.x,
         ),
-        setProperty(
+        adjustNumberProperty(
           'permanent',
           target,
           stylePropPathMappingFn('top', ['style']),
-          jsxAttributeValue(y, emptyComments),
+          offset.y,
         ),
         reparentElement('permanent', target, newParent),
         updateSelectedViews('permanent', [newPath]),
