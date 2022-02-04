@@ -38,7 +38,7 @@ export const flexReOrderStrategy: CanvasStrategy = {
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState, _sessionState) => {
+  apply: (canvasState, interactionState, sessionState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.drag != null
@@ -48,30 +48,39 @@ export const flexReOrderStrategy: CanvasStrategy = {
         'Could not get first element.',
         safeIndex(canvasState.selectedElements, 0),
       )
-      const target = MetadataUtils.findElementByElementPath(canvasState.metadata, targetedElement)
-      if (target !== null) {
+      const targetAtStart = MetadataUtils.findElementByElementPath(
+        sessionState.startingMetadata,
+        targetedElement,
+      )
+      const parent = MetadataUtils.getParent(canvasState.metadata, targetedElement)
+      if (targetAtStart !== null && parent !== null) {
         const drag = interactionState.interactionData.drag
         const siblings = MetadataUtils.getSiblings(canvasState.metadata, targetedElement)
+        // FIXME For some reason the ordering of the siblings here doesn't update during the drag
         const thisElementIndex = siblings.findIndex(
           (sibling) => getUtopiaID(sibling) === EP.toUid(targetedElement),
         )
-        const flexDirection = target.specialSizeMeasurements.flexDirection ?? 'row' // TODO Check this is using the direction from the parent
+        const flexDirection = MetadataUtils.getFlexDirection(parent)
         const isRowDirection = flexDirection.startsWith('row')
         const draggedRelevantDimensionCenter = isRowDirection
-          ? xCenter(target) + drag.x
-          : yCenter(target) + drag.y
+          ? xCenter(targetAtStart) + drag.x
+          : yCenter(targetAtStart) + drag.y
 
         // Find the index of the first element that should be after the dragged element
         const firstElementAfterTargetIndex = siblings.findIndex((sibling, index) => {
-          if (index === thisElementIndex) {
-            return false // bail!
-          } else {
-            const siblingCenter = isRowDirection ? xCenter(sibling) : yCenter(sibling)
-            return siblingCenter > draggedRelevantDimensionCenter
-          }
+          const siblingCenter = isRowDirection ? xCenter(sibling) : yCenter(sibling)
+          return siblingCenter > draggedRelevantDimensionCenter
         })
 
-        const newIndex = Math.max(0, firstElementAfterTargetIndex)
+        const movedBack = firstElementAfterTargetIndex <= thisElementIndex
+        const movedToEnd = firstElementAfterTargetIndex < 0
+
+        const newIndex = movedToEnd
+          ? siblings.length - 1
+          : movedBack
+          ? firstElementAfterTargetIndex
+          : firstElementAfterTargetIndex - 1
+
         const indexChanged = newIndex !== thisElementIndex
 
         if (indexChanged) {

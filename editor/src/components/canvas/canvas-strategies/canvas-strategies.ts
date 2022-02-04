@@ -28,6 +28,7 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexBasisResizeStrategy,
   flexGrowResizeStrategy,
   flexGapStrategy,
+  flexReOrderStrategy,
   flexAlignParentStrategy,
   parentPaddingAdjustStrategy,
   ancestorAbsoluteMoveStrategy,
