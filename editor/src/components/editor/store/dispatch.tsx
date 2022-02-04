@@ -486,10 +486,7 @@ export function editorDispatch(
     const commandResultCurrent = foldCommands(
       frozenEditorState,
       result.sessionStateState,
-      [
-        ...result.sessionStateState.accumulatedCommands,
-        ...result.sessionStateState.currentStrategyCommands,
-      ],
+      [...result.sessionStateState.accumulatedCommands],
       shouldApplyChanges ? 'permanent' : 'transient',
     )
     const patchedEditorStateCurrent = applyStatePatches(
