@@ -478,15 +478,33 @@ export function editorDispatch(
   ) {
     throw new Error('transient canvas state is not allowed while an interaction state is active')
   }
+  const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
+  const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
+  const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
+
   if (frozenEditorState.canvas.interactionState != null) {
-    // TODO This should be using the patched editor state
+    const commandResultCurrent = foldCommands(
+      frozenEditorState,
+      result.sessionStateState,
+      [
+        ...result.sessionStateState.accumulatedCommands,
+        ...result.sessionStateState.currentStrategyCommands,
+      ],
+      shouldApplyChanges ? 'permanent' : 'transient',
+    )
+    const patchedEditorStateCurrent = applyStatePatches(
+      frozenEditorState,
+      storedState.editor,
+      shouldDiscardChanges ? [] : commandResultCurrent.editorStatePatches,
+    )
+
     const canvasState: CanvasState = {
-      selectedElements: frozenEditorState.selectedViews,
-      metadata: frozenEditorState.jsxMetadata,
-      projectContents: frozenEditorState.projectContents,
-      openFile: frozenEditorState.canvas.openFile?.filename,
-      scale: frozenEditorState.canvas.scale,
-      canvasOffset: frozenEditorState.canvas.roundedCanvasOffset,
+      selectedElements: patchedEditorStateCurrent.selectedViews,
+      metadata: patchedEditorStateCurrent.jsxMetadata,
+      projectContents: patchedEditorStateCurrent.projectContents,
+      openFile: patchedEditorStateCurrent.canvas.openFile?.filename,
+      scale: patchedEditorStateCurrent.canvas.scale,
+      canvasOffset: patchedEditorStateCurrent.canvas.roundedCanvasOffset,
     }
     const canvasStrategyResult = applyCanvasStrategy(
       canvasState,
@@ -496,10 +514,6 @@ export function editorDispatch(
     strategyName = canvasStrategyResult.strategy
     patchCommands = canvasStrategyResult.commands
   }
-
-  const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
-  const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
-  const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
 
   const strategyChanged = strategyName != result.sessionStateState.currentStrategy
   const strategyHasBeenOverriden = dispatchedActions.some(strategyWasOverridden)
