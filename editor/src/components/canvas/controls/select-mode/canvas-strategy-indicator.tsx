@@ -29,9 +29,9 @@ export const CanvasStrategyIndicator = React.memo(() => {
         otherPossibleStrategies != null &&
         otherPossibleStrategies.length > 0
       ) {
-        event.stopImmediatePropagation()
-        event.stopPropagation()
         event.preventDefault()
+        event.stopPropagation()
+        event.stopImmediatePropagation()
 
         const activeStrategyIndex = otherPossibleStrategies.findIndex(
           (strategyName: string) => strategyName === activeStrategy,

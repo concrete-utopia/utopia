@@ -4,12 +4,16 @@ import { useEditorState } from '../../editor/store/store-hook'
 
 export const CanvasStrategyInspector = React.memo(() => {
   const colorTheme = useColorTheme()
+  const activeInteractionState = useEditorState(
+    (store) => store.editor.canvas.interactionState != null,
+    'CanvasStrategyInspector activeInteractionState',
+  )
   const commandsToList = useEditorState(
     (store) => store.sessionStateState.commandDescriptions,
     'CanvasStrategyInspector accumulatedCommands',
   )
 
-  if (commandsToList.length === 0) {
+  if (!activeInteractionState) {
     return null
   } else {
     return (
