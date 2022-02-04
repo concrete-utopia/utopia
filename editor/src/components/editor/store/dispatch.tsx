@@ -510,7 +510,18 @@ export function editorDispatch(
       frozenEditorState.canvas.interactionState,
       result.sessionStateState,
     )
-    if (strategy != null) {
+    if (strategy?.name != result.sessionStateState.currentStrategy) {
+      frozenEditorState = {
+        ...frozenEditorState,
+        canvas: {
+          ...frozenEditorState.canvas,
+          interactionState: strategySwitchInteractionStateReset(
+            frozenEditorState.canvas.interactionState,
+          ),
+        },
+      }
+    }
+    if (strategy != null && frozenEditorState.canvas.interactionState != null) {
       const commands = applyCanvasStrategy(
         strategy,
         canvasState,
@@ -570,17 +581,6 @@ export function editorDispatch(
     newSessionStateState = {
       ...newSessionStateState,
       startingMetadata: frozenEditorState.jsxMetadata,
-    }
-    if (frozenEditorState.canvas.interactionState != null) {
-      frozenEditorState = {
-        ...frozenEditorState,
-        canvas: {
-          ...frozenEditorState.canvas,
-          interactionState: strategySwitchInteractionStateReset(
-            frozenEditorState.canvas.interactionState,
-          ),
-        },
-      }
     }
   }
 
