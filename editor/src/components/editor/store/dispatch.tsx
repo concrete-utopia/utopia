@@ -472,7 +472,8 @@ export function editorDispatch(
   let patchCommands: Array<CanvasCommand> = []
   if (
     frozenEditorState.canvas.interactionState != null &&
-    frozenDerivedState.canvas.transientState.filesState != null &&
+    (frozenDerivedState.canvas.transientState.selectedViews != null ||
+      frozenDerivedState.canvas.transientState.filesState != null) &&
     isFeatureEnabled('Canvas Strategies') // only throw error if Canvas Strategies are enabled to begin with, to allow an escape hatch for insertion
   ) {
     throw new Error('transient canvas state is not allowed while an interaction state is active')

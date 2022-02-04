@@ -1846,13 +1846,7 @@ export function produceCanvasTransientState(
   }
 
   if (transientState == null) {
-    return transientCanvasState(
-      editorState.selectedViews,
-      editorState.highlightedViews,
-      null,
-      [],
-      [],
-    )
+    return transientCanvasState(null, null, null, [], [])
   } else {
     return transientState
   }
