@@ -5,6 +5,7 @@ import { adjustNumberProperty, reparentElement, updateSelectedViews } from '../c
 import * as EP from '../../../core/shared/element-path'
 import { pointDifference, zeroCanvasRect } from '../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../components/inspector/common/property-path-hooks'
+import { absoluteMoveStrategy } from './absolute-move-strategy'
 
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
@@ -68,27 +69,21 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.metadata) ?? zeroCanvasRect
       const offset = pointDifference(newParentFrame, oldParentFrame)
 
-      const dragOrNull =
-        interactionState.interactionData.type === 'DRAG'
-          ? interactionState.interactionData.drag
-          : null
-      const drag = dragOrNull ?? {
-        x: 0,
-        y: 0,
-      }
+      const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, sessionState)
 
       return [
+        ...moveCommands,
         adjustNumberProperty(
           'permanent',
           target,
           stylePropPathMappingFn('left', ['style']),
-          offset.x + drag.x,
+          offset.x,
         ),
         adjustNumberProperty(
           'permanent',
           target,
           stylePropPathMappingFn('top', ['style']),
-          offset.y + drag.y,
+          offset.y,
         ),
         reparentElement('permanent', target, newParent),
         updateSelectedViews('permanent', [newPath]),
