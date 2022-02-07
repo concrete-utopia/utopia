@@ -2,12 +2,13 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { intersects } from 'semver'
 import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
-import { offsetPoint } from '../../../core/shared/math-utils'
+import { offsetPoint, vectorDifference } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
   CanvasState,
   CanvasStrategy,
   ControlWithKey,
+  DragInteractionData,
   InteractionData,
   InteractionState,
   SessionStateState,
@@ -240,10 +241,12 @@ export function strategySwitchInteractionDataReset(
       if (interactionData.drag == null) {
         return interactionData
       } else {
+        const { drag, dragStart } = getDragDataOnStrategySwitch(interactionData)
         return {
           ...interactionData,
-          dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
-          drag: null,
+          dragStart: dragStart,
+          drag: drag,
+          prevDrag: null,
         }
       }
     case 'KEYBOARD':
@@ -260,5 +263,24 @@ export function strategySwitchInteractionStateReset(
   return {
     ...interactionState,
     interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
+  }
+}
+
+function getDragDataOnStrategySwitch(dragInteractionData: DragInteractionData) {
+  if (dragInteractionData.drag == null) {
+    return {
+      drag: null,
+      dragStart: dragInteractionData.dragStart,
+    }
+  } else if (dragInteractionData.prevDrag != null) {
+    return {
+      dragStart: offsetPoint(dragInteractionData.dragStart, dragInteractionData.prevDrag),
+      drag: vectorDifference(dragInteractionData.prevDrag, dragInteractionData.drag),
+    }
+  } else {
+    return {
+      dragStart: offsetPoint(dragInteractionData.dragStart, dragInteractionData.drag),
+      drag: null,
+    }
   }
 }

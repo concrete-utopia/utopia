@@ -68,18 +68,27 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.metadata) ?? zeroCanvasRect
       const offset = pointDifference(newParentFrame, oldParentFrame)
 
+      const dragOrNull =
+        interactionState.interactionData.type === 'DRAG'
+          ? interactionState.interactionData.drag
+          : null
+      const drag = dragOrNull ?? {
+        x: 0,
+        y: 0,
+      }
+
       return [
         adjustNumberProperty(
           'permanent',
           target,
           stylePropPathMappingFn('left', ['style']),
-          offset.x,
+          offset.x + drag.x,
         ),
         adjustNumberProperty(
           'permanent',
           target,
           stylePropPathMappingFn('top', ['style']),
-          offset.y,
+          offset.y + drag.y,
         ),
         reparentElement('permanent', target, newParent),
         updateSelectedViews('permanent', [newPath]),
