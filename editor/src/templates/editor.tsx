@@ -88,10 +88,9 @@ import { createBuiltInDependenciesList } from '../core/es-modules/package-manage
 // @ts-ignore
 if (import.meta.hot) {
   // this is written without the != null part to make sure Webpack (and Vite) recognizes and tree shakes it
-  import.meta.hot.decline() // this _should_ be working but does not for some reason
-  import.meta.hot.on('vite:beforeUpdate', (event) => {
+  import.meta.hot?.decline() // this _should_ be working but does not for some reason
+  import.meta.hot?.on('vite:beforeUpdate', (event) => {
     if (event.updates.some((u) => u.path === '/editor.tsx')) {
-      // eslint-disable-next-line no-unused-expressions
       import.meta.hot?.invalidate()
     }
   })
