@@ -57,7 +57,11 @@ export const flexBasisResizeStrategy: CanvasStrategy = {
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     const applicable = flexBasisResizeStrategy.isApplicable(canvasState, interactionState)
-    if (applicable) {
+    if (
+      applicable &&
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.activeControl.type === 'RESIZE_HANDLE'
+    ) {
       const selectedElement = forceNotNull(
         'isApplicable should prevent null.',
         safeIndex(canvasState.selectedElements, 0),
@@ -66,7 +70,7 @@ export const flexBasisResizeStrategy: CanvasStrategy = {
         sessionState.startingMetadata,
         selectedElement,
       )
-      if (originalSiblingSpacing != null && interactionState.interactionData.type === 'DRAG') {
+      if (originalSiblingSpacing != null) {
         let spacing: number = originalSiblingSpacing
         const intData = interactionState.interactionData
         if (intData.drag != null) {
@@ -145,7 +149,11 @@ export const flexGrowResizeStrategy: CanvasStrategy = {
   ],
   fitness: (canvasState, interactionState, sessionState) => {
     const applicable = flexGrowResizeStrategy.isApplicable(canvasState, interactionState)
-    if (applicable) {
+    if (
+      applicable &&
+      interactionState.interactionData.type === 'DRAG' &&
+      interactionState.activeControl.type === 'RESIZE_HANDLE'
+    ) {
       const selectedElement = forceNotNull(
         'isApplicable should prevent null.',
         safeIndex(canvasState.selectedElements, 0),
@@ -154,7 +162,7 @@ export const flexGrowResizeStrategy: CanvasStrategy = {
         sessionState.startingMetadata,
         selectedElement,
       )
-      if (originalSiblingSpacing != null && interactionState.interactionData.type === 'DRAG') {
+      if (originalSiblingSpacing != null) {
         let spacing: number = originalSiblingSpacing
         const intData = interactionState.interactionData
         if (intData.drag != null) {
