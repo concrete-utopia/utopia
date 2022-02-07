@@ -226,6 +226,30 @@ export function deleteProperty(
   }
 }
 
+export interface StrategySwitched extends BaseCommand {
+  type: 'STRATEGY_SWITCHED'
+  reason: 'automatic' | 'user-input'
+  newStrategy: string
+  accumulatedCommands: boolean
+  dataReset: boolean
+}
+
+export function strategySwitched(
+  reason: 'automatic' | 'user-input',
+  newStrategy: string,
+  accumulatedCommands: boolean,
+  dataReset: boolean,
+): StrategySwitched {
+  return {
+    type: 'STRATEGY_SWITCHED',
+    transient: 'transient',
+    reason,
+    newStrategy,
+    accumulatedCommands,
+    dataReset,
+  }
+}
+
 export type CanvasCommand =
   | MoveElement
   | WildcardPatch
@@ -235,6 +259,7 @@ export type CanvasCommand =
   | UpdateSelectedViews
   | DeleteProperty
   | UpdateElementIndex
+  | StrategySwitched
 
 export const runMoveElementCommand: CommandFunction<MoveElement> = (
   editorState: EditorState,
@@ -762,6 +787,23 @@ function runDeleteProperty(
   }
 }
 
+function runStrategySwitchedCommand(
+  strategyState: StrategyState,
+  pathMappings: PathMappings,
+  command: StrategySwitched,
+): CommandFunctionResult {
+  let commandDescription: string = `Strategy switched to ${command.newStrategy} ${
+    command.reason === 'automatic' ? 'automatically' : 'by user input'
+  }. ${command.dataReset ? 'Interaction data reset.' : ''}`
+
+  return {
+    editorStatePatch: {},
+    strategyState: strategyState,
+    pathMappings: pathMappings,
+    commandDescription: commandDescription,
+  }
+}
+
 export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   editorState: EditorState,
   strategyState: StrategyState,
@@ -785,6 +827,8 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
       return runDeleteProperty(editorState, strategyState, pathMappings, command)
     case 'UPDATE_ELEMENT_INDEX':
       return runUpdateElementIndex(editorState, strategyState, pathMappings, command)
+    case 'STRATEGY_SWITCHED':
+      return runStrategySwitchedCommand(strategyState, pathMappings, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)

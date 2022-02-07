@@ -95,7 +95,12 @@ import {
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
-import { applyStatePatches, CanvasCommand, foldCommands } from '../../canvas/commands/commands'
+import {
+  applyStatePatches,
+  CanvasCommand,
+  foldCommands,
+  strategySwitched,
+} from '../../canvas/commands/commands'
 import {
   applyCanvasStrategy,
   findCanvasStrategy,
@@ -485,6 +490,7 @@ export function editorDispatch(
   const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
 
+  let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
   if (frozenEditorState.canvas.interactionState != null) {
     const commandResultCurrent = foldCommands(
       frozenEditorState,
@@ -513,6 +519,7 @@ export function editorDispatch(
       result.sessionStateState,
     )
     if (strategy?.name != result.sessionStateState.currentStrategy) {
+      didResetInteractionData = true
       frozenEditorState = {
         ...frozenEditorState,
         canvas: {
@@ -542,12 +549,23 @@ export function editorDispatch(
     strategyName,
   )
   const shouldKeepCommands = strategyChanged && !strategyHasBeenOverriden && !partOfSameGroup // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
+  const strategyChangedLogCommand = strategyChanged
+    ? [
+        strategySwitched(
+          strategyHasBeenOverriden ? 'user-input' : 'automatic',
+          strategyName!,
+          shouldKeepCommands,
+          didResetInteractionData,
+        ),
+      ]
+    : []
   const updatedAccumulatedCommands = shouldKeepCommands
     ? [
         ...result.sessionStateState.accumulatedCommands,
         ...result.sessionStateState.currentStrategyCommands,
+        ...strategyChangedLogCommand,
       ]
-    : result.sessionStateState.accumulatedCommands
+    : [...result.sessionStateState.accumulatedCommands, ...strategyChangedLogCommand]
 
   const workingSessionStateState: SessionStateState = {
     currentStrategy: strategyName,
@@ -561,7 +579,10 @@ export function editorDispatch(
   const commandResult = foldCommands(
     frozenEditorState,
     workingSessionStateState,
-    [...workingSessionStateState.accumulatedCommands, ...patchCommands],
+    [
+      ...workingSessionStateState.accumulatedCommands,
+      ...workingSessionStateState.currentStrategyCommands,
+    ],
     shouldApplyChanges ? 'permanent' : 'transient',
   )
 
