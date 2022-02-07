@@ -476,7 +476,6 @@ export function editorDispatch(
     isBrowserEnvironment
 
   // Create commands from the interaction state.
-  let strategyName: string | null = null
   let patchCommands: Array<CanvasCommand> = []
   if (
     frozenEditorState.canvas.interactionState != null &&
@@ -489,6 +488,9 @@ export function editorDispatch(
   const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
   const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
+  let strategyName: string | null = null
+  let strategyChanged: boolean = false
+  let partOfSameGroup: boolean = false
 
   let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
   if (frozenEditorState.canvas.interactionState != null) {
@@ -518,7 +520,15 @@ export function editorDispatch(
       frozenEditorState.canvas.interactionState,
       result.sessionStateState,
     )
-    if (strategy?.name != result.sessionStateState.currentStrategy) {
+    strategyName = strategy?.name ?? null
+
+    strategyChanged = strategyName != result.sessionStateState.currentStrategy
+    partOfSameGroup = strategiesPartOfSameGroup(
+      result.sessionStateState.currentStrategy,
+      strategyName,
+    )
+
+    if (strategyChanged && !partOfSameGroup) {
       didResetInteractionData = true
       frozenEditorState = {
         ...frozenEditorState,
@@ -538,16 +548,10 @@ export function editorDispatch(
         result.sessionStateState,
       )
       patchCommands = commands
-      strategyName = strategy.name
     }
   }
 
-  const strategyChanged = strategyName != result.sessionStateState.currentStrategy
   const strategyHasBeenOverriden = dispatchedActions.some(strategyWasOverridden)
-  const partOfSameGroup = strategiesPartOfSameGroup(
-    result.sessionStateState.currentStrategy,
-    strategyName,
-  )
   const shouldKeepCommands = strategyChanged && !strategyHasBeenOverriden && !partOfSameGroup // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
   const strategyChangedLogCommand = strategyChanged
     ? [
