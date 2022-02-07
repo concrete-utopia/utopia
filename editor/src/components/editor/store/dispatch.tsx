@@ -552,7 +552,8 @@ export function editorDispatch(
   }
 
   const strategyHasBeenOverriden = dispatchedActions.some(strategyWasOverridden)
-  const shouldKeepCommands = strategyChanged && !strategyHasBeenOverriden && !partOfSameGroup // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
+  const shouldKeepCommands =
+    (shouldApplyChanges || strategyChanged) && !strategyHasBeenOverriden && !partOfSameGroup // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
   const strategyChangedLogCommand = strategyChanged
     ? [
         strategySwitched(
