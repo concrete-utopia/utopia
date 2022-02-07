@@ -7,6 +7,9 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import * as EP from '../../../core/shared/element-path'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import { isRight } from '../../../core/shared/either'
+import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { ElementPath } from '../../../core/shared/project-file-types'
 
 function xCenter(target: ElementInstanceMetadata): number {
   return (target.globalFrame?.x ?? 0) + (target.globalFrame?.width ?? 0) / 2
@@ -54,9 +57,24 @@ export const flexReOrderStrategy: CanvasStrategy = {
       )
       const parent = MetadataUtils.getParent(canvasState.metadata, targetedElement)
       if (targetAtStart !== null && parent !== null) {
+        const parentPath: ElementPath = parent.elementPath
+        const siblingPaths = withUnderlyingTarget(
+          parentPath,
+          canvasState.projectContents,
+          {},
+          canvasState.openFile,
+          [],
+          (success, parentElement, _underlyingTarget, _underlyingFilePath) => {
+            const siblingUIDs = parentElement.children.map(getUtopiaID)
+            return siblingUIDs.map((uid) => EP.appendToPath(parentPath, uid))
+          },
+        )
+
         const drag = interactionState.interactionData.drag
-        const siblings = MetadataUtils.getSiblings(canvasState.metadata, targetedElement)
-        // FIXME For some reason the ordering of the siblings here doesn't update during the drag
+
+        const siblings = MetadataUtils.findElementsByElementPath(canvasState.metadata, siblingPaths)
+        // FIXME There still appears to be a caching issue somewhere here
+
         const thisElementIndex = siblings.findIndex(
           (sibling) => getUtopiaID(sibling) === EP.toUid(targetedElement),
         )
