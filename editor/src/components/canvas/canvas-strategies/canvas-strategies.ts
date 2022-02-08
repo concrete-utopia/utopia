@@ -241,12 +241,10 @@ export function strategySwitchInteractionDataReset(
       if (interactionData.drag == null) {
         return interactionData
       } else {
-        const { drag, dragStart } = getDragDataOnStrategySwitch(interactionData)
         return {
           ...interactionData,
-          dragStart: dragStart,
-          drag: drag,
-          prevDrag: null,
+          dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
+          drag: null,
         }
       }
     case 'KEYBOARD':
@@ -263,24 +261,5 @@ export function strategySwitchInteractionStateReset(
   return {
     ...interactionState,
     interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
-  }
-}
-
-function getDragDataOnStrategySwitch(dragInteractionData: DragInteractionData) {
-  if (dragInteractionData.drag == null) {
-    return {
-      drag: null,
-      dragStart: dragInteractionData.dragStart,
-    }
-  } else if (dragInteractionData.prevDrag != null) {
-    return {
-      dragStart: offsetPoint(dragInteractionData.dragStart, dragInteractionData.prevDrag),
-      drag: vectorDifference(dragInteractionData.prevDrag, dragInteractionData.drag),
-    }
-  } else {
-    return {
-      dragStart: offsetPoint(dragInteractionData.dragStart, dragInteractionData.drag),
-      drag: null,
-    }
   }
 }

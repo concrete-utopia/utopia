@@ -32,17 +32,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.interactionData.dragThresholdPassed
     ) {
-      const reparentResult = getReparentTarget(
-        canvasState.selectedElements,
-        canvasState.selectedElements,
-        canvasState.metadata,
-        [],
-        canvasState.scale,
-        canvasState.canvasOffset,
-        canvasState.projectContents,
-        canvasState.openFile,
-      )
-      return reparentResult.shouldReparent && reparentResult.newParent != null ? 999 : 0
+      return 999
     }
     return 0
   },
@@ -58,6 +48,8 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       canvasState.openFile,
     )
     const newParent = reparentResult.newParent
+    const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, sessionState)
+
     if (newParent != null) {
       const target = canvasState.selectedElements[0]
       const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
@@ -68,8 +60,6 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       const newParentFrame =
         MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.metadata) ?? zeroCanvasRect
       const offset = pointDifference(newParentFrame, oldParentFrame)
-
-      const moveCommands = absoluteMoveStrategy.apply(canvasState, interactionState, sessionState)
 
       return [
         ...moveCommands,
@@ -88,7 +78,8 @@ export const absoluteReparentStrategy: CanvasStrategy = {
         reparentElement('permanent', target, newParent),
         updateSelectedViews('permanent', [newPath]),
       ]
+    } else {
+      return moveCommands
     }
-    return []
   },
 }
