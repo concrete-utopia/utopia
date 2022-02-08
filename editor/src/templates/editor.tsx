@@ -6,6 +6,7 @@ import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
 import create from 'zustand'
+import '../utils/vite-hmr-config'
 import {
   getProjectID,
   PROBABLY_ELECTRON,
