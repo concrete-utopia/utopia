@@ -10,7 +10,7 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, interactionState) => {
+  isApplicable: (canvasState, interactionState, pathMappings) => {
     if (
       canvasState.selectedElements.length === 1 &&
       interactionState != null &&

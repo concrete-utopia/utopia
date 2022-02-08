@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/commands'
+import * as EP from '../../../core/shared/element-path'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',
@@ -15,7 +16,9 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       if (metadata == null) {
         const selectedElement = canvasState.selectedElements[0]
         const pathMapping = pathMappings.find(
-          (mapping) => mapping.from === selectedElement || mapping.to === selectedElement,
+          (mapping) =>
+            EP.pathsEqual(mapping.from, selectedElement) ||
+            EP.pathsEqual(mapping.to, selectedElement),
         )
         if (pathMapping == null) {
           return false
