@@ -22,9 +22,11 @@ import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexBasisResizeStrategy, flexGrowResizeStrategy } from './flex-basis-resize-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
 import { flexReOrderStrategy } from './flex-reorder-strategy'
+import { adjustMinMaxDimensionStrategy } from './min-max-dimension-adjust-strategy'
 import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  adjustMinMaxDimensionStrategy,
   flexBasisResizeStrategy,
   flexGrowResizeStrategy,
   flexGapStrategy,

@@ -38,12 +38,16 @@ export const absoluteMoveStrategy: CanvasStrategy = {
           selectedElement,
           stylePropPathMappingFn('left', ['style']),
           drag.x,
+          [],
+          true,
         ),
         adjustNumberProperty(
           'permanent',
           selectedElement,
           stylePropPathMappingFn('top', ['style']),
           drag.y,
+          [],
+          true,
         ),
         wildcardPatch('transient', {
           highlightedViews: {

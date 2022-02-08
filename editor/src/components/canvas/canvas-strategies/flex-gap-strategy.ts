@@ -56,6 +56,8 @@ export const flexGapStrategy: CanvasStrategy = {
           targetParent.elementPath,
           gapPropPath,
           gapChange,
+          [],
+          true,
         )
 
         // Identify the siblings so that the metadata gets updated for those as well,

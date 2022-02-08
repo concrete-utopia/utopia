@@ -61,12 +61,16 @@ export const ancestorAbsoluteMoveStrategy: CanvasStrategy = {
             ancestorWithLayout,
             stylePropPathMappingFn('left', ['style']),
             interactionState.interactionData.drag.x,
+            [],
+            true,
           ),
           adjustNumberProperty(
             'permanent',
             ancestorWithLayout,
             stylePropPathMappingFn('top', ['style']),
             interactionState.interactionData.drag.y,
+            [],
+            true,
           ),
           wildcardPatch('transient', {
             highlightedViews: {

@@ -6,6 +6,7 @@ import {
   emptyComments,
   isJSXElement,
   JSXAttribute,
+  JSXAttributes,
   jsxAttributeValue,
   JSXElement,
 } from '../../../core/shared/element-template'
@@ -152,6 +153,9 @@ export interface AdjustNumberProperty extends BaseCommand {
   target: ElementPath
   property: PropertyPath
   value: number
+  // FIXME: Should really be something like an inequality check against these.
+  fallbackProperties: Array<PropertyPath>
+  createIfNonExistant: boolean
 }
 
 export function adjustNumberProperty(
@@ -159,6 +163,8 @@ export function adjustNumberProperty(
   target: ElementPath,
   property: PropertyPath,
   value: number,
+  fallbackProperties: Array<PropertyPath>,
+  createIfNonExistant: boolean,
 ): AdjustNumberProperty {
   return {
     type: 'ADJUST_NUMBER_PROPERTY',
@@ -166,6 +172,8 @@ export function adjustNumberProperty(
     target: target,
     property: property,
     value: value,
+    fallbackProperties: fallbackProperties,
+    createIfNonExistant: createIfNonExistant,
   }
 }
 
@@ -362,32 +370,66 @@ export const runWildcardPatch: CommandFunction<WildcardPatch> = (
   }
 }
 
+function getNumberPropertyFromProps(props: JSXAttributes, property: PropertyPath): number | null {
+  const possibleProperty = getJSXAttributeAtPath(props, property)
+  const currentValue = optionalMap(jsxSimpleAttributeToValue, possibleProperty?.attribute)
+  if (currentValue !== null && isRight(currentValue) && typeof currentValue.value === 'number') {
+    return currentValue.value
+  } else {
+    return null
+  }
+}
+
 export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   editorState: EditorState,
   strategyState: StrategyState,
   pathMappings: PathMappings,
   command: AdjustNumberProperty,
 ) => {
+  // Handle updating the existing value, treating a value that can't be parsed
+  // as zero.
+  let newValue: number = 0
+
   // Identify the current value, whatever that may be.
-  const currentAttribute = withUnderlyingTargetFromEditorState(
+  let targetPropertyNonExistant: boolean = false
+  const currentValue = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
     null,
     (success, element, underlyingTarget, underlyingFilePath) => {
       if (isJSXElement(element)) {
-        return getJSXAttributeAtPath(element.props, command.property)
-      } else {
-        return null
+        // Try the property we're updating first.
+        const fromProperty = getNumberPropertyFromProps(element.props, command.property)
+        if (fromProperty == null) {
+          targetPropertyNonExistant = true
+          // Otherwise check the fallback properties.
+          for (const fallbackProp of command.fallbackProperties) {
+            const fromFallback = getNumberPropertyFromProps(element.props, fallbackProp)
+            if (fromFallback != null) {
+              return fromFallback
+            }
+          }
+        } else {
+          return fromProperty
+        }
       }
+      return null
     },
   )
 
-  // Handle updating the existing value, treating a value that can't be parsed
-  // as zero.
-  let newValue: number = 0
-  const currentValue = optionalMap(jsxSimpleAttributeToValue, currentAttribute?.attribute)
-  if (currentValue !== null && isRight(currentValue) && typeof currentValue.value === 'number') {
-    newValue = currentValue.value
+  if (targetPropertyNonExistant && !command.createIfNonExistant) {
+    return {
+      editorStatePatch: {},
+      strategyState: strategyState,
+      pathMappings: pathMappings,
+      commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
+        command.property,
+      )} not applied as the property does not exist.`,
+    }
+  }
+
+  if (currentValue != null) {
+    newValue += currentValue
   }
 
   // Change the value.
@@ -413,7 +455,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
     pathMappings: pathMappings,
     commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
-    )} to ${command.value}`,
+    )} by ${command.value}`,
   }
 }
 
