@@ -232,6 +232,8 @@ export interface StrategySwitched extends BaseCommand {
   newStrategy: string
   accumulatedCommands: boolean
   dataReset: boolean
+  previousFitness: number
+  newFitness: number
 }
 
 export function strategySwitched(
@@ -239,6 +241,8 @@ export function strategySwitched(
   newStrategy: string,
   accumulatedCommands: boolean,
   dataReset: boolean,
+  previousFitness: number,
+  newFitness: number,
 ): StrategySwitched {
   return {
     type: 'STRATEGY_SWITCHED',
@@ -247,6 +251,8 @@ export function strategySwitched(
     newStrategy,
     accumulatedCommands,
     dataReset,
+    previousFitness,
+    newFitness,
   }
 }
 
@@ -793,7 +799,9 @@ function runStrategySwitchedCommand(
   command: StrategySwitched,
 ): CommandFunctionResult {
   let commandDescription: string = `Strategy switched to ${command.newStrategy} ${
-    command.reason === 'automatic' ? 'automatically' : 'by user input'
+    command.reason === 'automatic'
+      ? `automatically (fitness ${command.previousFitness} -> ${command.newFitness})`
+      : 'by user input'
   }. ${command.dataReset ? 'Interaction data reset.' : ''}`
 
   return {

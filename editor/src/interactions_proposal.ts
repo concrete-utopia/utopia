@@ -145,6 +145,7 @@ export interface SessionStateState {
   // PLEASE RENAME ME
   // Need to track here which strategy is being applied.
   currentStrategy: string | null
+  currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
   accumulatedCommands: Array<{ strategy: string | null; commands: Array<CanvasCommand> }>
   commandDescriptions: Array<CommandDescription>
@@ -159,6 +160,7 @@ export interface SessionStateState {
 export function createEmptySessionStateState(): SessionStateState {
   return {
     currentStrategy: null,
+    currentStrategyFitness: 0,
     currentStrategyCommands: [],
     accumulatedCommands: [],
     commandDescriptions: [],
