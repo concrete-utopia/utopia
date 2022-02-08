@@ -113,7 +113,6 @@ import {
   createEmptySessionStateState,
   SessionStateState,
 } from '../../../interactions_proposal'
-import { c } from 'tar'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -497,7 +496,7 @@ export function editorDispatch(
     const commandResultCurrent = foldCommands(
       frozenEditorState,
       result.sessionStateState,
-      [...result.sessionStateState.accumulatedCommands],
+      result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands),
       shouldApplyChanges ? 'permanent' : 'transient',
     )
     const patchedEditorStateCurrent = applyStatePatches(
@@ -556,18 +555,26 @@ export function editorDispatch(
     (shouldApplyChanges || strategyChanged) && !strategyHasBeenOverriden && !partOfSameGroup // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
   const strategyChangedLogCommand = strategyChanged
     ? [
-        strategySwitched(
-          strategyHasBeenOverriden ? 'user-input' : 'automatic',
-          strategyName!,
-          shouldKeepCommands,
-          didResetInteractionData,
-        ),
+        {
+          strategy: null,
+          commands: [
+            strategySwitched(
+              strategyHasBeenOverriden ? 'user-input' : 'automatic',
+              strategyName!,
+              shouldKeepCommands,
+              didResetInteractionData,
+            ),
+          ],
+        },
       ]
     : []
   const updatedAccumulatedCommands = shouldKeepCommands
     ? [
         ...result.sessionStateState.accumulatedCommands,
-        ...result.sessionStateState.currentStrategyCommands,
+        {
+          strategy: result.sessionStateState.currentStrategy,
+          commands: result.sessionStateState.currentStrategyCommands,
+        },
         ...strategyChangedLogCommand,
       ]
     : [...result.sessionStateState.accumulatedCommands, ...strategyChangedLogCommand]
@@ -585,7 +592,7 @@ export function editorDispatch(
     frozenEditorState,
     workingSessionStateState,
     [
-      ...workingSessionStateState.accumulatedCommands,
+      ...workingSessionStateState.accumulatedCommands.flatMap((c) => c.commands),
       ...workingSessionStateState.currentStrategyCommands,
     ],
     shouldApplyChanges ? 'permanent' : 'transient',

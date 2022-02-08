@@ -147,7 +147,7 @@ export interface SessionStateState {
   // Need to track here which strategy is being applied.
   currentStrategy: string | null
   currentStrategyCommands: Array<CanvasCommand>
-  accumulatedCommands: Array<CanvasCommand>
+  accumulatedCommands: Array<{ strategy: string | null; commands: Array<CanvasCommand> }>
   commandDescriptions: Array<CommandDescription>
 
   // this is the inner state of the Strategies, can be changed via commands
