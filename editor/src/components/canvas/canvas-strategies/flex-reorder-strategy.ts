@@ -22,7 +22,7 @@ function yCenter(target: ElementInstanceMetadata): number {
 export const flexReOrderStrategy: CanvasStrategy = {
   name: 'Re-order Flex Element',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, _interactionState) => {
+  isApplicable: (canvasState, _interactionState, pathMappings) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]
       const selectedMetadata = MetadataUtils.findElementByElementPath(
@@ -34,8 +34,8 @@ export const flexReOrderStrategy: CanvasStrategy = {
     return false
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState) => {
-    return flexReOrderStrategy.isApplicable(canvasState, interactionState) &&
+  fitness: (canvasState, interactionState, sessionState, pathMappings) => {
+    return flexReOrderStrategy.isApplicable(canvasState, interactionState, pathMappings) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 1

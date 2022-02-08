@@ -133,7 +133,7 @@ export const flexBasisResizeStrategy: CanvasStrategy = {
 export const flexGrowResizeStrategy: CanvasStrategy = {
   name: 'Flex Grow Resize',
   strategyGroups: new Set(['flex-basis-grow']),
-  isApplicable: (canvasState, interactionState) => {
+  isApplicable: (canvasState, interactionState, pathMappings) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedElement = safeIndex(canvasState.selectedElements, 0)
 
@@ -151,8 +151,12 @@ export const flexGrowResizeStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: FlexResizeControls, key: 'FlexResizeControls', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
-    const applicable = flexGrowResizeStrategy.isApplicable(canvasState, interactionState)
+  fitness: (canvasState, interactionState, sessionState, pathMappings) => {
+    const applicable = flexGrowResizeStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      pathMappings,
+    )
     if (
       applicable &&
       interactionState.interactionData.type === 'DRAG' &&

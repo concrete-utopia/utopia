@@ -23,7 +23,7 @@ import { FlexAlignControlRectProps } from './canvas-strategy-types'
 export const flexAlignParentStrategy: CanvasStrategy = {
   name: "Change Parent's Flex Align and Justify",
   strategyGroups: new Set(),
-  isApplicable: (canvasState, interactionState) => {
+  isApplicable: (canvasState, interactionState, pathMappings) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedElement = canvasState.selectedElements[0]
 
@@ -42,8 +42,10 @@ export const flexAlignParentStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: FlexAlignControls, key: 'FlexAlignControls', show: 'visible-only-while-active' },
   ],
-  fitness: (canvasState, interactionState) => {
-    return flexAlignParentStrategy.isApplicable(canvasState, interactionState) ? 10 : 0
+  fitness: (canvasState, interactionState, sessionState, pathMappings) => {
+    return flexAlignParentStrategy.isApplicable(canvasState, interactionState, pathMappings)
+      ? 10
+      : 0
   },
   apply: (canvasState, interactionState) => {
     // only apply after a certain treshold IF we hadn't already passed that treshold once

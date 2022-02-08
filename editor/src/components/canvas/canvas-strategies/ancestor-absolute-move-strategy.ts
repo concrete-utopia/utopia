@@ -9,7 +9,7 @@ import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/co
 export const ancestorAbsoluteMoveStrategy: CanvasStrategy = {
   name: 'Ancestor Absolute Move',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, interactionState) => {
+  isApplicable: (canvasState, interactionState, pathMappings) => {
     if (canvasState.selectedElements.length === 1 && interactionState != null) {
       const metadata = MetadataUtils.findElementByElementPath(
         canvasState.metadata,
@@ -29,8 +29,8 @@ export const ancestorAbsoluteMoveStrategy: CanvasStrategy = {
     return false
   },
   controlsToRender: [], // parent padding control
-  fitness: (canvasState, interactionState) => {
-    return ancestorAbsoluteMoveStrategy.isApplicable(canvasState, interactionState) &&
+  fitness: (canvasState, interactionState, sessionState, pathMappings) => {
+    return ancestorAbsoluteMoveStrategy.isApplicable(canvasState, interactionState, pathMappings) &&
       interactionState.interactionData.type === 'DRAG'
       ? 1
       : 0

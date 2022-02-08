@@ -9,7 +9,7 @@ import { FlexGapControls } from '../controls/select-mode/flex-gap-controls'
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, _interactionState) => {
+  isApplicable: (canvasState, _interactionState, pathMappings) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]
       const selectedMetadata = MetadataUtils.findElementByElementPath(
@@ -23,8 +23,8 @@ export const flexGapStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: FlexGapControls, key: 'flex-gap-controls', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState) => {
-    return flexGapStrategy.isApplicable(canvasState, interactionState) &&
+  fitness: (canvasState, interactionState, sessionState, pathMappings) => {
+    return flexGapStrategy.isApplicable(canvasState, interactionState, pathMappings) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'FLEX_GAP_HANDLE'
       ? 1
