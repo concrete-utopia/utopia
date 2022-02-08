@@ -101,6 +101,7 @@ module.exports = {
         '\\.(css)$': '<rootDir>/test/jest/__mocks__/styleMock.js',
         'utopia-api/core': '<rootDir>/node_modules/utopia-api/dist/core.js',
         'worker-imports': '<rootDir>/src/core/workers/__mocks__/worker-import-utils.ts',
+        '../utils/vite-hmr-config': '<rootDir>/src/utils/__mocks__/vite-hmr-config.ts',
       },
       transform: {
         '\\.[jt]sx?$': 'babel-jest',

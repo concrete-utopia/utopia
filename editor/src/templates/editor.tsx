@@ -6,6 +6,7 @@ import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
 import create from 'zustand'
+import '../utils/vite-hmr-config'
 import {
   getProjectID,
   PROBABLY_ELECTRON,
@@ -82,19 +83,6 @@ import { PersistenceMachine } from '../components/editor/persistence/persistence
 import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
 import { defaultProject } from '../sample-projects/sample-project-utils'
 import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
-
-// TODO we should bump TS to latest (we are 0.4 versions behind!)
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-if (import.meta.hot) {
-  // this is written without the != null part to make sure Webpack (and Vite) recognizes and tree shakes it
-  import.meta.hot?.decline() // this _should_ be working but does not for some reason
-  import.meta.hot?.on('vite:beforeUpdate', (event) => {
-    if (event.updates.some((u) => u.path === '/editor.tsx')) {
-      import.meta.hot?.invalidate()
-    }
-  })
-}
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
