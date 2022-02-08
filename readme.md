@@ -69,25 +69,6 @@ Limitations:
 
 # Troubleshooting
 
-## M1 Macbook
-
-There are some extra steps to build server files, steps 11-14 are also needed when there are dependency changes for the server.
-
-1. Open Applications, locate the Terminal within the Utilities folder
-2. Select Terminal.app and right-click on it then “Duplicate”
-3. Rename the duplicated Terminal app to ‘Rosetta Terminal’
-4. Now select the new renamed ‘Rosetta Terminal’, right-click and choose “Get Info”
-5. Check the box for “Open using Rosetta”, then close the Get Info window
-6. Run the Rosetta Terminal
-7. Type `arch` first to make sure your terminal is good, this should show `i386` in the Rosetta Terminal
-8. Install homebrew there, please add `arch -x86_64` before pasting the install script
-9. Install gmp with `arch -x86_64 /usr/local/bin/brew install gmp`
-10. Close with cmd+q, open a normal Terminal and install direnv and nix-shell as the [description](https://github.com/concrete-utopia/utopia#prerequisites), then come back for the final 4 steps
-11. Run the Rosetta Terminal again
-12. Enter the utopia folder, `direnv` and run the `start-website-server` to build the server files here
-13. After you see a message about `Startup Processes Completed` exit terminal with cmd+q
-14. Open a normal Terminal, run the `start` script in the utopia folder.
-
 ## fsevents
 
 If you notice that 1 or more CPU cores are running 100% because of `node` processes, it is probably webpack-dev-server having trouble with `fsevents` on MacOS. To fix it, run `npm install fsevents` in the `utopia/editor` directory. see https://github.com/webpack/webpack/issues/701#issuecomment-216082726
@@ -165,7 +146,7 @@ use_nix() {
   # This part is based on https://discourse.nixos.org/t/what-is-the-best-dev-workflow-around-nix-shell/418/4
   if [ "$out" ] && (( $update_drv )); then
     local drv_link=".direnv/drv"
-    local drv="$(nix show-derivation $out | grep -E -o -m1 '/nix/store/.*.drv')"
+    local drv="$(nix --experimental-features nix-command show-derivation $out | grep -E -o -m1 '/nix/store/.*.drv')"
     local stripped_pwd=${PWD/\//}
     local escaped_pwd=${stripped_pwd//-/--}
     local escaped_pwd=${escaped_pwd//\//-}

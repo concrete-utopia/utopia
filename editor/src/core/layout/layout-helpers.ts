@@ -41,7 +41,7 @@ import {
   ValueAtPath,
 } from '../shared/jsx-attributes'
 import { Imports, NodeModules, PropertyPath, ElementPath } from '../shared/project-file-types'
-import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
+import { getLayoutProperty } from './getLayoutProperty'
 import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
 import { EdgePosition } from '../../components/canvas/canvas-types'
 import {
@@ -149,28 +149,6 @@ export const FlexLayoutHelpers = {
           propertyTarget,
         ),
       ),
-    )
-  },
-  getFlexDirectionFromProps(
-    props: JSXAttributes,
-    propertyTarget: ReadonlyArray<string>,
-  ): 'row' | 'row-reverse' | 'column' | 'column-reverse' {
-    return getLayoutPropertyOr(
-      'row', // TODO read this value from spy
-      'flexDirection',
-      right(props),
-      propertyTarget,
-    )
-  },
-  getFlexWrap: function (
-    props: JSXAttributes,
-    propertyTarget: ReadonlyArray<string>,
-  ): 'wrap' | 'wrap-reverse' | 'nowrap' {
-    return getLayoutPropertyOr(
-      'nowrap', // TODO read this value from spy
-      'flexWrap',
-      right(props),
-      propertyTarget,
     )
   },
   getMainAxis(

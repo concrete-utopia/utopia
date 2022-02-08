@@ -13,10 +13,7 @@ import {
 } from '../../editor/actions/action-creators'
 import { usePrevious } from '../../editor/hook-utils'
 import { useEditorState } from '../../editor/store/store-hook'
-import {
-  InspectorPropsContext,
-  stylePropPathMappingFn,
-} from '../../inspector/common/property-path-hooks'
+import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 
 interface PropertyTargetSelectorProps {
   targetComponentMetadata: ElementInstanceMetadata | null
@@ -35,9 +32,6 @@ export const PropertyTargetSelector = React.memo(
       }
     }, 'PropertyTargetSelector resizeOptions')
 
-    const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-      return contextData.targetPath
-    })
     const onKeyDown = React.useCallback(
       (event: KeyboardEvent) => {
         if (event.key === 'Tab') {
@@ -64,11 +58,11 @@ export const PropertyTargetSelector = React.memo(
         eitherToMaybe(
           getSimpleAttributeAtPath(
             left(props.targetComponentMetadata?.props ?? {}),
-            stylePropPathMappingFn(option, targetPath),
+            stylePropPathMappingFn(option, ['style']),
           ),
         ),
       )
-    }, [resizeOptions.propertyTargetOptions, props.targetComponentMetadata?.props, targetPath])
+    }, [resizeOptions.propertyTargetOptions, props.targetComponentMetadata?.props])
 
     const defaultSelectedOptionIndex = React.useMemo(() => {
       const indexOfFirstWithValue = valuesForProp.findIndex((value) => value != null)

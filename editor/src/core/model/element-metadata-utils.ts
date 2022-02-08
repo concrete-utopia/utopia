@@ -371,16 +371,6 @@ export const MetadataUtils = {
   getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
     return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
-  getFlexWrap: function (
-    instance: ElementInstanceMetadata | null,
-    propertyTarget: Array<string>,
-  ): 'wrap' | 'wrap-reverse' | 'nowrap' {
-    if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
-      return FlexLayoutHelpers.getFlexWrap(instance.element.value.props, propertyTarget)
-    } else {
-      return 'nowrap' // TODO read this value from spy
-    }
-  },
   findParent(metadata: ElementInstanceMetadataMap, target: ElementPath): ElementPath | null {
     const parentPath = EP.parentPath(target)
 
