@@ -250,11 +250,9 @@ export function shouldApplyClearInteractionStateResult(
 ): action is ClearInteractionState {
   switch (action.action) {
     case 'TRANSIENT_ACTIONS':
-      return (
-        action.transientActions.find(shouldApplyClearInteractionStateResult)?.applyChanges ?? false
-      )
+      return action.transientActions.some(shouldApplyClearInteractionStateResult)
     case 'ATOMIC':
-      return action.actions.find(shouldApplyClearInteractionStateResult)?.applyChanges ?? false
+      return action.actions.some(shouldApplyClearInteractionStateResult)
     case 'CLEAR_INTERACTION_STATE':
       return action.applyChanges
     default:
