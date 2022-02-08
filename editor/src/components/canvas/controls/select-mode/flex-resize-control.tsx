@@ -46,6 +46,12 @@ const FlexResizeControls_ = () => {
 
   const startDragging = React.useCallback(
     (event: React.MouseEvent) => {
+      function completeDrag() {
+        window.removeEventListener('mouseup', completeDrag)
+        dispatch([CanvasActions.clearInteractionState(true)], 'canvas')
+      }
+      window.addEventListener('mouseup', completeDrag)
+
       const startPoint = windowToCanvasCoordinates(
         canvasScale,
         roundedCanvasOffset,
@@ -67,14 +73,6 @@ const FlexResizeControls_ = () => {
       event.stopPropagation()
     },
     [dispatch, canvasScale, roundedCanvasOffset],
-  )
-
-  const completeDrag = React.useCallback(
-    (event: React.MouseEvent) => {
-      // TODO Complete Interaction Session here
-      dispatch([CanvasActions.clearInteractionState(true)], 'canvas')
-    },
-    [dispatch],
   )
 
   const elementMetadata = React.useMemo(() => {
@@ -102,18 +100,6 @@ const FlexResizeControls_ = () => {
   } else {
     return (
       <>
-        <div
-          key={`flex-resize-rect-mouse-catcher`}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '100%',
-            height: '100%',
-          }}
-          onMouseUp={completeDrag}
-        />
-        ,
         <div
           key={`flex-resize-rect-${edgeControlFrame.x}-${edgeControlFrame.y}-${edgeControlFrame.width}-${edgeControlFrame.height}`}
           style={{

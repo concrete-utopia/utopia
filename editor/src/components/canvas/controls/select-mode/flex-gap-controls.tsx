@@ -36,6 +36,12 @@ const FlexGapControls_ = () => {
 
   const startDragging = React.useCallback(
     (event: React.MouseEvent) => {
+      function completeDrag() {
+        window.removeEventListener('mouseup', completeDrag)
+        dispatch([CanvasActions.clearInteractionState(true)], 'canvas')
+      }
+      window.addEventListener('mouseup', completeDrag)
+
       const startPoint = windowToCanvasCoordinates(
         canvasScale,
         roundedCanvasOffset,
@@ -56,14 +62,6 @@ const FlexGapControls_ = () => {
       event.stopPropagation()
     },
     [dispatch, canvasScale, roundedCanvasOffset],
-  )
-
-  const completeDrag = React.useCallback(
-    (event: React.MouseEvent) => {
-      // TODO Complete Interaction Session here
-      dispatch([CanvasActions.clearInteractionState(true)], 'canvas')
-    },
-    [dispatch],
   )
 
   const flexGapRects = React.useMemo(() => {
@@ -91,20 +89,6 @@ const FlexGapControls_ = () => {
 
   return (
     <>
-      {when(
-        flexGapRects.length > 0,
-        <div
-          key={`flex-gap-rect-mouse-catcher`}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '100%',
-            height: '100%',
-          }}
-          onMouseUp={completeDrag}
-        />,
-      )}
       {flexGapRects.map((rect) => {
         return (
           <div
