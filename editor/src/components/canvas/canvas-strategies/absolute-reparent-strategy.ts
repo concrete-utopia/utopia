@@ -16,10 +16,24 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState != null &&
       interactionState.interactionData.modifiers.cmd
     ) {
-      const metadata = MetadataUtils.findElementByElementPath(
+      let metadata = MetadataUtils.findElementByElementPath(
         canvasState.metadata,
         canvasState.selectedElements[0],
       )
+      if (metadata == null) {
+        const selectedElement = canvasState.selectedElements[0]
+        const pathMapping = pathMappings.find(
+          (mapping) =>
+            EP.pathsEqual(mapping.from, selectedElement) ||
+            EP.pathsEqual(mapping.to, selectedElement),
+        )
+        if (pathMapping == null) {
+          return false
+        }
+        const mappedElementPath =
+          pathMapping.from === selectedElement ? pathMapping.to : pathMapping.from
+        metadata = MetadataUtils.findElementByElementPath(canvasState.metadata, mappedElementPath)
+      }
       return metadata?.specialSizeMeasurements.position === 'absolute'
     }
     return false
