@@ -1,7 +1,7 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { intersects } from 'semver'
-import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
+import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { offsetPoint, vectorDifference } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
@@ -110,24 +110,19 @@ function getApplicableStrategiesOrderedByFitness(
   const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
 
   // Compute the fitness results upfront.
-  const strategiesWithFitness = applicableStrategies.map((strategy) => {
-    return {
-      fitness: strategy.fitness(canvasState, interactionState, sessionState), // TODO filter strategies with fitness 0 or null!!!
-      strategy: strategy,
+  const strategiesWithFitness = mapDropNulls((strategy) => {
+    const fitness = strategy.fitness(canvasState, interactionState, sessionState)
+    if (fitness <= 0) {
+      return null
+    } else {
+      return {
+        fitness: fitness,
+        strategy: strategy,
+      }
     }
-  })
+  }, applicableStrategies)
 
-  let strategiesWithAFitnessValue: Array<StrategiesWithFitness> = []
-  strategiesWithFitness.forEach((strategy) => {
-    if (strategy.fitness != null) {
-      strategiesWithAFitnessValue.push({
-        fitness: strategy.fitness,
-        strategy: strategy.strategy,
-      })
-    }
-  })
-
-  const sortedStrategies = sortBy(strategiesWithAFitnessValue, (l, r) => {
+  const sortedStrategies = sortBy(strategiesWithFitness, (l, r) => {
     // sort by fitness, descending
     return r.fitness - l.fitness
   })

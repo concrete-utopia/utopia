@@ -309,7 +309,7 @@ export interface CanvasStrategy {
     canvasState: CanvasState,
     interactionState: InteractionState,
     sessionState: SessionStateState,
-  ) => number | null
+  ) => number
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
   apply: (

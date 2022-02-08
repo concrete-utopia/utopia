@@ -47,22 +47,6 @@ export interface FlexGapControlRectProps {
 
 export type CanvasControlType = BoundingArea | ResizeHandle | FlexGapHandle | KeyboardCatcherControl
 
-export type CanvasSessionPatch = Spec<SelectModeCanvasSession>
-
-export type CanvasStrategyUpdateFnResult = Array<CanvasCommand> | CanvasCommand
-
-export type CanvasStrategyUpdateFn = (
-  editorState: EditorState,
-  sessionProps: SelectModeCanvasSessionProps,
-  sessionState: SelectModeCanvasSessionState,
-) => CanvasStrategyUpdateFnResult
-
-export type CanvasStrategyFitnessFn = (
-  editorState: EditorState,
-  sessionProps: SelectModeCanvasSessionProps,
-  sessionState: SelectModeCanvasSessionState,
-) => number | null
-
 export type CanvasInteractionSession = SelectModeCanvasSession
 
 export interface SelectModeCanvasSession {
