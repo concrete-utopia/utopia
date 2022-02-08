@@ -2,7 +2,12 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { intersects } from 'semver'
 import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
-import { offsetPoint, vectorDifference } from '../../../core/shared/math-utils'
+import {
+  offsetPoint,
+  pointDifference,
+  vectorDifference,
+  zeroCanvasPoint,
+} from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
   CanvasState,
@@ -255,6 +260,32 @@ export function strategySwitchInteractionDataReset(
   }
 }
 
+export function modifierChangeInteractionDataReset(
+  interactionData: InteractionData,
+): InteractionData {
+  switch (interactionData.type) {
+    case 'DRAG':
+      if (interactionData.drag == null) {
+        return interactionData
+      } else {
+        const currentDrag = interactionData.drag ?? zeroCanvasPoint
+        return {
+          ...interactionData,
+          dragStart: interactionData.originalDragStart,
+          drag: pointDifference(
+            interactionData.originalDragStart,
+            offsetPoint(interactionData.dragStart, currentDrag),
+          ),
+        }
+      }
+    case 'KEYBOARD':
+      return interactionData
+    default:
+      const _exhaustiveCheck: never = interactionData
+      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
+  }
+}
+
 export function strategySwitchInteractionStateReset(
   interactionState: InteractionState,
 ): InteractionState {
@@ -262,4 +293,27 @@ export function strategySwitchInteractionStateReset(
     ...interactionState,
     interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
   }
+}
+
+export function modifierChangeInteractionStateReset(
+  interactionState: InteractionState,
+): InteractionState {
+  return {
+    ...interactionState,
+    interactionData: modifierChangeInteractionDataReset(interactionState.interactionData),
+  }
+}
+
+export function hasModifiersChanged(
+  prevInteractionData: InteractionData | null,
+  interactionData: InteractionData | null,
+): boolean {
+  return (
+    interactionData?.type === 'DRAG' &&
+    prevInteractionData?.type === 'DRAG' &&
+    ((!interactionData.modifiers.alt && prevInteractionData.modifiers.alt) ||
+      (!interactionData.modifiers.cmd && prevInteractionData.modifiers.cmd) ||
+      (!interactionData.modifiers.ctrl && prevInteractionData.modifiers.ctrl) ||
+      (!interactionData.modifiers.shift && prevInteractionData.modifiers.shift))
+  )
 }
