@@ -252,7 +252,7 @@ export function strategySwitchInteractionDataReset(
         return {
           ...interactionData,
           dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
-          drag: null,
+          drag: null, // TODO this shouldn't reset the drag to null, it should instead "replay" the last mouse interaction
         }
       }
     case 'KEYBOARD':
