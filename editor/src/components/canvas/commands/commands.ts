@@ -448,6 +448,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   command: ReparentElement,
 ) => {
   let editorStatePatch: EditorStatePatch = {}
+  const workingPathMappings = [...pathMappings]
   forUnderlyingTargetFromEditorState(
     command.target,
     editorState,
@@ -462,6 +463,10 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
         withElementRemoved,
         null,
       )
+      workingPathMappings.push({
+        from: command.target,
+        to: EP.appendToPath(command.newParent, EP.toUid(command.target)),
+      })
 
       const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
         success.topLevelElements,
@@ -515,7 +520,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
   return {
     editorStatePatch: editorStatePatch,
     strategyState: strategyState,
-    pathMappings: pathMappings,
+    pathMappings: workingPathMappings,
     commandDescription: `Reparent Element ${EP.toUid(command.target)} to new parent ${EP.toUid(
       command.newParent,
     )}`,
@@ -844,6 +849,7 @@ export function foldCommands(
   editorStatePatches: Array<EditorStatePatch>
   newStrategyState: StrategyState
   commandDescriptions: Array<CommandDescription>
+  pathMappings: PathMappings
 } {
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
@@ -878,6 +884,7 @@ export function foldCommands(
     editorStatePatches: statePatches,
     newStrategyState: workingStrategyState,
     commandDescriptions: workingCommandDescriptions,
+    pathMappings: workingPathMappings,
   }
 }
 

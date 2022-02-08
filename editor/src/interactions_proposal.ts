@@ -8,8 +8,9 @@ import { CanvasControlType } from './components/canvas/canvas-strategies/canvas-
 import { addAllUniquely } from './core/shared/array-utils'
 import { Modifiers } from './utils/modifiers'
 import { ProjectContentTreeRoot } from './components/assets'
-import { CanvasCommand } from './components/canvas/commands/commands'
+import { CanvasCommand, PathMappings } from './components/canvas/commands/commands'
 import React from 'react'
+import { PathMappingFn } from './components/inspector/common/property-path-hooks'
 
 // FIXME: There's a type with the same name in the dom types.
 export interface CanvasState {
@@ -302,7 +303,11 @@ export interface CanvasStrategy {
 
   strategyGroups: Set<string>
 
-  isApplicable: (canvasState: CanvasState, interactionState: InteractionState | null) => boolean
+  isApplicable: (
+    canvasState: CanvasState,
+    interactionState: InteractionState | null,
+    pathMappings: PathMappings,
+  ) => boolean
   // Determines if we should show the controls that this strategy renders
   // Maybe this can just be rolled into controlsToRender?
 
@@ -313,6 +318,7 @@ export interface CanvasStrategy {
     canvasState: CanvasState,
     interactionState: InteractionState,
     sessionState: SessionStateState,
+    pathMappings: PathMappings,
   ) => number | null
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 

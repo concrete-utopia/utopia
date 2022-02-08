@@ -10,7 +10,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasStrategy } from '../../../interactions_proposal'
-import { deleteProperty, setProperty, wildcardPatch } from '../commands/commands'
+import { deleteProperty, PathMappings, setProperty, wildcardPatch } from '../commands/commands'
 import { FlexResizeControls } from '../controls/select-mode/flex-resize-control'
 
 function getSiblingSpacingFromEdge(
@@ -55,8 +55,12 @@ export const flexBasisResizeStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: FlexResizeControls, key: 'FlexResizeControls', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState, sessionState) => {
-    const applicable = flexBasisResizeStrategy.isApplicable(canvasState, interactionState)
+  fitness: (canvasState, interactionState, sessionState, pathMappings: PathMappings) => {
+    const applicable = flexBasisResizeStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      pathMappings,
+    )
     if (
       applicable &&
       interactionState.interactionData.type === 'DRAG' &&

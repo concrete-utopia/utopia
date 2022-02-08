@@ -20,7 +20,7 @@ import {
 } from '../../../interactions_proposal'
 import { EditorStore } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
-import { CanvasCommand } from '../commands/commands'
+import { CanvasCommand, PathMappings } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
 import { ancestorAbsoluteMoveStrategy } from './ancestor-absolute-move-strategy'
@@ -75,9 +75,10 @@ export function strategiesPartOfSameGroup(
 function getApplicableStrategies(
   canvasState: CanvasState,
   interactionState: InteractionState | null,
+  pathMappings: PathMappings,
 ): Array<CanvasStrategy> {
   return RegisteredCanvasStrategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionState)
+    return strategy.isApplicable(canvasState, interactionState, pathMappings)
   })
 }
 
@@ -94,7 +95,7 @@ const getApplicableStrategiesSelector = createSelector(
   },
   (store: EditorStore) => store.editor.canvas.interactionState,
   (canvasState: CanvasState, interactionState: InteractionState | null): Array<CanvasStrategy> => {
-    return getApplicableStrategies(canvasState, interactionState)
+    return getApplicableStrategies(canvasState, interactionState, [])
   },
 )
 
@@ -111,8 +112,9 @@ function getApplicableStrategiesOrderedByFitness(
   canvasState: CanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
+  pathMappings: PathMappings,
 ): Array<StrategiesWithFitness> {
-  const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
+  const applicableStrategies = getApplicableStrategies(canvasState, interactionState, pathMappings)
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = applicableStrategies.map((strategy) => {
@@ -161,9 +163,12 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
     if (interactionState == null) {
       return []
     }
-    return getApplicableStrategiesOrderedByFitness(canvasState, interactionState, sessionState).map(
-      (s) => s.strategy.name,
-    )
+    return getApplicableStrategiesOrderedByFitness(
+      canvasState,
+      interactionState,
+      sessionState,
+      [],
+    ).map((s) => s.strategy.name)
   },
 )
 
@@ -202,11 +207,13 @@ export function findCanvasStrategy(
   canvasState: CanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
+  pathMappings: PathMappings,
 ): CanvasStrategy | null {
   const applicableStrategies = getApplicableStrategiesOrderedByFitness(
     canvasState,
     interactionState,
     sessionState,
+    pathMappings,
   )
   return pickStrategy(applicableStrategies, interactionState)
 }

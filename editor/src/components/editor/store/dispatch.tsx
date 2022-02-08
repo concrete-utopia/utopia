@@ -531,6 +531,7 @@ export function editorDispatch(
       canvasState,
       frozenEditorState.canvas.interactionState,
       result.sessionStateState,
+      commandResultCurrent.pathMappings,
     )
     strategyName = strategy?.name ?? null
 
