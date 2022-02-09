@@ -249,7 +249,7 @@ export function strategySwitchInteractionDataReset(
         return {
           ...interactionData,
           dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
-          drag: null,
+          drag: zeroCanvasPoint,
         }
       }
     case 'KEYBOARD':
@@ -311,9 +311,9 @@ export function hasModifiersChanged(
   return (
     interactionData?.type === 'DRAG' &&
     prevInteractionData?.type === 'DRAG' &&
-    ((!interactionData.modifiers.alt && prevInteractionData.modifiers.alt) ||
-      (!interactionData.modifiers.cmd && prevInteractionData.modifiers.cmd) ||
-      (!interactionData.modifiers.ctrl && prevInteractionData.modifiers.ctrl) ||
-      (!interactionData.modifiers.shift && prevInteractionData.modifiers.shift))
+    (interactionData.modifiers.alt !== prevInteractionData.modifiers.alt ||
+      interactionData.modifiers.cmd !== prevInteractionData.modifiers.cmd ||
+      interactionData.modifiers.ctrl !== prevInteractionData.modifiers.ctrl ||
+      interactionData.modifiers.shift !== prevInteractionData.modifiers.shift)
   )
 }
