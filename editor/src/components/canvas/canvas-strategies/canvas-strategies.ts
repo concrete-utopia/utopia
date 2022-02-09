@@ -1,9 +1,11 @@
 import React from 'react'
 import { createSelector } from 'reselect'
+import { intersects } from 'semver'
 import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
 import {
   offsetPoint,
   pointDifference,
+  vectorDifference,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
@@ -11,6 +13,7 @@ import {
   CanvasState,
   CanvasStrategy,
   ControlWithKey,
+  DragInteractionData,
   InteractionData,
   InteractionState,
   SessionStateState,
@@ -240,22 +243,13 @@ export function strategySwitchInteractionDataReset(
 ): InteractionData {
   switch (interactionData.type) {
     case 'DRAG':
-      console.log("DRAG SOFT RESET", interactionData)
       if (interactionData.drag == null) {
         return interactionData
-      } else if (interactionData.prevDrag == null) {
-        return {
-          ...interactionData,
-          dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
-          drag: zeroCanvasPoint,
-          prevDrag: zeroCanvasPoint,
-        }
       } else {
         return {
           ...interactionData,
-          dragStart: offsetPoint(interactionData.dragStart, interactionData.prevDrag),
-          drag: pointDifference(interactionData.prevDrag, interactionData.drag),
-          prevDrag: zeroCanvasPoint,
+          dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
+          drag: null,
         }
       }
     case 'KEYBOARD':
@@ -271,7 +265,6 @@ export function modifierChangeInteractionDataReset(
 ): InteractionData {
   switch (interactionData.type) {
     case 'DRAG':
-      console.log("DRAG HARD RESET", interactionData)
       if (interactionData.drag == null) {
         return interactionData
       } else {
@@ -283,7 +276,6 @@ export function modifierChangeInteractionDataReset(
             interactionData.originalDragStart,
             offsetPoint(interactionData.dragStart, currentDrag),
           ),
-          prevDrag: zeroCanvasPoint,
         }
       }
     case 'KEYBOARD':
@@ -294,26 +286,21 @@ export function modifierChangeInteractionDataReset(
   }
 }
 
-
 export function strategySwitchInteractionStateReset(
   interactionState: InteractionState,
 ): InteractionState {
-  const d = strategySwitchInteractionDataReset(interactionState.interactionData)
-  console.log("DRAG AFTER SOFT RESET", d)
   return {
     ...interactionState,
-    interactionData: d
+    interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
   }
 }
 
 export function modifierChangeInteractionStateReset(
   interactionState: InteractionState,
 ): InteractionState {
-  const d = modifierChangeInteractionDataReset(interactionState.interactionData)
-  console.log("DRAG AFTER HARD RESET", d)
   return {
     ...interactionState,
-    interactionData: d,
+    interactionData: modifierChangeInteractionDataReset(interactionState.interactionData),
   }
 }
 
@@ -324,9 +311,9 @@ export function hasModifiersChanged(
   return (
     interactionData?.type === 'DRAG' &&
     prevInteractionData?.type === 'DRAG' &&
-    ((interactionData.modifiers.alt !== prevInteractionData.modifiers.alt) ||
-      (interactionData.modifiers.cmd !== prevInteractionData.modifiers.cmd) ||
-      (interactionData.modifiers.ctrl !== prevInteractionData.modifiers.ctrl) ||
-      (interactionData.modifiers.shift !== prevInteractionData.modifiers.shift))
+    ((!interactionData.modifiers.alt && prevInteractionData.modifiers.alt) ||
+      (!interactionData.modifiers.cmd && prevInteractionData.modifiers.cmd) ||
+      (!interactionData.modifiers.ctrl && prevInteractionData.modifiers.ctrl) ||
+      (!interactionData.modifiers.shift && prevInteractionData.modifiers.shift))
   )
 }
