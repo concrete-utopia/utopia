@@ -304,7 +304,11 @@ export interface CanvasStrategy {
 
   strategyGroups: Set<string>
 
-  isApplicable: (canvasState: CanvasState, interactionState: InteractionState | null) => boolean
+  isApplicable: (
+    canvasState: CanvasState,
+    interactionState: InteractionState | null,
+    sessionState?: SessionStateState,
+  ) => boolean
   // Determines if we should show the controls that this strategy renders
   // Maybe this can just be rolled into controlsToRender?
 

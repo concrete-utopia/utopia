@@ -539,9 +539,7 @@ export function editorDispatch(
     strategyFitness = strategy?.fitness ?? 0
     previousStrategyCurrentFitness = previousStrategy?.fitness ?? NaN
 
-    strategyChanged =
-      strategyName != result.sessionStateState.currentStrategy &&
-      result.sessionStateState.currentStrategy != null
+    strategyChanged = strategyName != result.sessionStateState.currentStrategy
     partOfSameGroup = strategiesPartOfSameGroup(
       result.sessionStateState.currentStrategy,
       strategyName,

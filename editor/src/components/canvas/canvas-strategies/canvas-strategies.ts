@@ -69,9 +69,10 @@ export function strategiesPartOfSameGroup(
 function getApplicableStrategies(
   canvasState: CanvasState,
   interactionState: InteractionState | null,
+  sessionState?: SessionStateState,
 ): Array<CanvasStrategy> {
   return RegisteredCanvasStrategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionState)
+    return strategy.isApplicable(canvasState, interactionState, sessionState)
   })
 }
 
@@ -106,7 +107,7 @@ function getApplicableStrategiesOrderedByFitness(
   interactionState: InteractionState,
   sessionState: SessionStateState,
 ): Array<StrategiesWithFitness> {
-  const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
+  const applicableStrategies = getApplicableStrategies(canvasState, interactionState, sessionState)
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {
