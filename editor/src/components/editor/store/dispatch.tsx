@@ -506,6 +506,9 @@ export function editorDispatch(
       ? []
       : [...result.sessionStateState.accumulatedCommands]
 
+    if (modifiersChanged) {
+      console.log("ACC cleanup", modifiersChanged, result.sessionStateState.accumulatedCommands, " => ", accumulatedCommands)
+    }
     const commandResultCurrent = foldCommands(
       frozenEditorState,
       result.sessionStateState,
@@ -543,6 +546,7 @@ export function editorDispatch(
     )
 
     if (strategyChanged && !partOfSameGroup) {
+      console.log("Strategy changed", result.sessionStateState.currentStrategy, " -> ", strategyName)
       didResetInteractionData = true
       frozenEditorState = {
         ...frozenEditorState,
@@ -556,6 +560,7 @@ export function editorDispatch(
     }
 
     if (modifiersChanged && frozenEditorState.canvas.interactionState != null) {
+      console.log("Modifiers changed",  frozenEditorState.canvas.interactionState?.interactionData.modifiers)
       frozenEditorState = {
         ...frozenEditorState,
         canvas: {
@@ -595,6 +600,9 @@ export function editorDispatch(
         },
       ]
     : []
+
+  // console.log("SHOULD KEEP COMM", shouldKeepCommands)
+  
   const updatedAccumulatedCommands = shouldKeepCommands
     ? [
         ...result.sessionStateState.accumulatedCommands,
@@ -606,6 +614,10 @@ export function editorDispatch(
       ]
     : [...result.sessionStateState.accumulatedCommands, ...strategyChangedLogCommand]
 
+  if (modifiersChanged) {
+    console.log("ACC cleanup 2", modifiersChanged, result.sessionStateState.accumulatedCommands, " => ", modifiersChanged ? [] : updatedAccumulatedCommands)
+  }
+
   const workingSessionStateState: SessionStateState = {
     currentStrategy: strategyName,
     currentStrategyCommands: patchCommands,
@@ -613,6 +625,13 @@ export function editorDispatch(
     commandDescriptions: [],
     strategyState: result.sessionStateState.strategyState,
     startingMetadata: result.sessionStateState.startingMetadata,
+  }
+
+  if (modifiersChanged) {
+    console.log("CURRENT COMMANDS", workingSessionStateState, [
+      ...workingSessionStateState.accumulatedCommands.flatMap((c) => c.commands),
+      ...workingSessionStateState.currentStrategyCommands,
+    ]);
   }
 
   const commandResult = foldCommands(
