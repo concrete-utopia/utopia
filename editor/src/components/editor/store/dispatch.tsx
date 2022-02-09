@@ -490,6 +490,8 @@ export function editorDispatch(
   const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
   let strategyName: string | null = null
+  let previousStrategyCurrentFitness: number = NaN
+  let strategyFitness: number = 0
   let strategyChanged: boolean = false
   let partOfSameGroup: boolean = false
 
@@ -527,12 +529,15 @@ export function editorDispatch(
       canvasOffset: patchedEditorStateCurrent.canvas.roundedCanvasOffset,
     }
 
-    const strategy = findCanvasStrategy(
+    const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
       frozenEditorState.canvas.interactionState,
       result.sessionStateState,
+      result.sessionStateState.currentStrategy,
     )
-    strategyName = strategy?.name ?? null
+    strategyName = strategy?.strategy.name ?? null
+    strategyFitness = strategy?.fitness ?? 0
+    previousStrategyCurrentFitness = previousStrategy?.fitness ?? NaN
 
     strategyChanged =
       strategyName != result.sessionStateState.currentStrategy &&
@@ -568,7 +573,7 @@ export function editorDispatch(
     }
     if (strategy != null && frozenEditorState.canvas.interactionState != null) {
       const commands = applyCanvasStrategy(
-        strategy,
+        strategy.strategy,
         canvasState,
         frozenEditorState.canvas.interactionState,
         result.sessionStateState,
@@ -590,6 +595,8 @@ export function editorDispatch(
               strategyName!,
               shouldKeepCommands,
               didResetInteractionData,
+              previousStrategyCurrentFitness,
+              strategyFitness,
             ),
           ],
         },
@@ -608,6 +615,7 @@ export function editorDispatch(
 
   const workingSessionStateState: SessionStateState = {
     currentStrategy: strategyName,
+    currentStrategyFitness: strategyFitness,
     currentStrategyCommands: patchCommands,
     accumulatedCommands: modifiersChanged ? [] : updatedAccumulatedCommands,
     commandDescriptions: [],

@@ -1,19 +1,13 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { intersects } from 'semver'
-import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
-import {
-  offsetPoint,
-  pointDifference,
-  vectorDifference,
-  zeroCanvasPoint,
-} from '../../../core/shared/math-utils'
+import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { offsetPoint, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
   CanvasState,
   CanvasStrategy,
   ControlWithKey,
-  DragInteractionData,
   InteractionData,
   InteractionState,
   SessionStateState,
@@ -115,24 +109,19 @@ function getApplicableStrategiesOrderedByFitness(
   const applicableStrategies = getApplicableStrategies(canvasState, interactionState)
 
   // Compute the fitness results upfront.
-  const strategiesWithFitness = applicableStrategies.map((strategy) => {
-    return {
-      fitness: strategy.fitness(canvasState, interactionState, sessionState), // TODO filter strategies with fitness 0 or null!!!
-      strategy: strategy,
+  const strategiesWithFitness = mapDropNulls((strategy) => {
+    const fitness = strategy.fitness(canvasState, interactionState, sessionState)
+    if (fitness <= 0) {
+      return null
+    } else {
+      return {
+        fitness: fitness,
+        strategy: strategy,
+      }
     }
-  })
+  }, applicableStrategies)
 
-  let strategiesWithAFitnessValue: Array<StrategiesWithFitness> = []
-  strategiesWithFitness.forEach((strategy) => {
-    if (strategy.fitness != null) {
-      strategiesWithAFitnessValue.push({
-        fitness: strategy.fitness,
-        strategy: strategy.strategy,
-      })
-    }
-  })
-
-  const sortedStrategies = sortBy(strategiesWithAFitnessValue, (l, r) => {
+  const sortedStrategies = sortBy(strategiesWithFitness, (l, r) => {
     // sort by fitness, descending
     return r.fitness - l.fitness
   })
@@ -174,41 +163,54 @@ export function useGetApplicableStrategiesOrderedByFitness(): Array<string> {
   )
 }
 
-export function pickDefaultCanvasStrategy(
-  applicableStrategies: Array<StrategiesWithFitness>,
-): CanvasStrategy | null {
-  return applicableStrategies[0]?.strategy ?? null
+function pickDefaultCanvasStrategy(
+  sortedApplicableStrategies: Array<StrategiesWithFitness>,
+  previousStrategyName: string | null,
+): { strategy: StrategiesWithFitness | null; previousStrategy: StrategiesWithFitness | null } {
+  const currentBestStrategy = sortedApplicableStrategies[0] ?? null
+  const previousStrategy =
+    sortedApplicableStrategies.find((s) => s.strategy.name === previousStrategyName) ?? null
+  if (previousStrategy != null && previousStrategy.fitness === currentBestStrategy.fitness) {
+    return { strategy: previousStrategy, previousStrategy: previousStrategy }
+  } else {
+    return { strategy: currentBestStrategy, previousStrategy: previousStrategy }
+  }
 }
 
 function pickStrategy(
-  applicableStrategies: Array<StrategiesWithFitness>,
+  sortedApplicableStrategies: Array<StrategiesWithFitness>,
   interactionState: InteractionState,
-): CanvasStrategy | null {
+  previousStrategyName: string | null,
+): { strategy: StrategiesWithFitness | null; previousStrategy: StrategiesWithFitness | null } {
   // FIXME Explicitly picking a strategy will prevent natural handovers that otherwise should occur
 
   if (interactionState.userPreferredStrategy != null) {
-    const foundStrategyByName = applicableStrategies.find(
+    const foundStrategyByName = sortedApplicableStrategies.find(
       (s) => s.strategy.name === interactionState.userPreferredStrategy,
     )
+    const foundPreviousStrategy =
+      sortedApplicableStrategies.find((s) => s.strategy.name === previousStrategyName) ?? null
+
     if (foundStrategyByName != null) {
-      return foundStrategyByName.strategy
+      return { strategy: foundStrategyByName, previousStrategy: foundPreviousStrategy }
     }
   }
   // fall back to default strategy
-  return pickDefaultCanvasStrategy(applicableStrategies)
+  return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyName)
 }
 
 export function findCanvasStrategy(
   canvasState: CanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
-): CanvasStrategy | null {
-  const applicableStrategies = getApplicableStrategiesOrderedByFitness(
+  previousStrategyName: string | null,
+): { strategy: StrategiesWithFitness | null; previousStrategy: StrategiesWithFitness | null } {
+  const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     canvasState,
     interactionState,
     sessionState,
   )
-  return pickStrategy(applicableStrategies, interactionState)
+  return pickStrategy(sortedApplicableStrategies, interactionState, previousStrategyName)
 }
 
 export function applyCanvasStrategy(
@@ -249,7 +251,7 @@ export function strategySwitchInteractionDataReset(
         return {
           ...interactionData,
           dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
-          drag: zeroCanvasPoint,
+          drag: zeroCanvasPoint, // TODO this shouldn't reset the zerCanvasPoint, it should instead "replay" the last mouse interaction
         }
       }
     case 'KEYBOARD':
