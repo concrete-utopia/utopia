@@ -3,30 +3,18 @@ import { CanvasStrategy } from '../../../interactions_proposal'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/commands'
 import * as EP from '../../../core/shared/element-path'
+import { getMetadataUsingPathMappings } from './canvas-strategies'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',
   strategyGroups: new Set(),
   isApplicable: (canvasState, _interactionState, pathMappings) => {
     if (canvasState.selectedElements.length === 1) {
-      let metadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
+      const metadata = getMetadataUsingPathMappings(
         canvasState.selectedElements[0],
+        canvasState.metadata,
+        pathMappings,
       )
-      if (metadata == null) {
-        const selectedElement = canvasState.selectedElements[0]
-        const pathMapping = pathMappings.find(
-          (mapping) =>
-            EP.pathsEqual(mapping.from, selectedElement) ||
-            EP.pathsEqual(mapping.to, selectedElement),
-        )
-        if (pathMapping == null) {
-          return false
-        }
-        const mappedElementPath =
-          pathMapping.from === selectedElement ? pathMapping.to : pathMapping.from
-        metadata = MetadataUtils.findElementByElementPath(canvasState.metadata, mappedElementPath)
-      }
 
       return metadata?.specialSizeMeasurements.position === 'absolute'
     } else {

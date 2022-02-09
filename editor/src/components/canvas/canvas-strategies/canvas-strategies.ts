@@ -1,13 +1,19 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { intersects } from 'semver'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { addAllUniquelyBy, sortBy } from '../../../core/shared/array-utils'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 import {
   offsetPoint,
   pointDifference,
   vectorDifference,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
   CanvasState,
@@ -29,6 +35,7 @@ import { flexBasisResizeStrategy, flexGrowResizeStrategy } from './flex-basis-re
 import { flexGapStrategy } from './flex-gap-strategy'
 import { flexReOrderStrategy } from './flex-reorder-strategy'
 import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
+import * as EP from '../../../core/shared/element-path'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   flexBasisResizeStrategy,
@@ -323,4 +330,23 @@ export function hasModifiersChanged(
       (!interactionData.modifiers.ctrl && prevInteractionData.modifiers.ctrl) ||
       (!interactionData.modifiers.shift && prevInteractionData.modifiers.shift))
   )
+}
+
+export function getMetadataUsingPathMappings(
+  path: ElementPath,
+  metadataMap: ElementInstanceMetadataMap,
+  pathMappings: PathMappings,
+): ElementInstanceMetadata | null {
+  const metadata = MetadataUtils.findElementByElementPath(metadataMap, path)
+  if (metadata != null) {
+    return metadata
+  }
+  const pathMapping = pathMappings.find(
+    (mapping) => EP.pathsEqual(mapping.from, path) || EP.pathsEqual(mapping.to, path),
+  )
+  if (pathMapping == null) {
+    return null
+  }
+  const mappedElementPath = pathMapping.from === path ? pathMapping.to : pathMapping.from
+  return MetadataUtils.findElementByElementPath(metadataMap, mappedElementPath)
 }
