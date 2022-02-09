@@ -2,13 +2,12 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { intersects } from 'semver'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
-import { offsetPoint, vectorDifference } from '../../../core/shared/math-utils'
+import { offsetPoint, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
   CanvasState,
   CanvasStrategy,
   ControlWithKey,
-  DragInteractionData,
   InteractionData,
   InteractionState,
   SessionStateState,
@@ -252,7 +251,33 @@ export function strategySwitchInteractionDataReset(
         return {
           ...interactionData,
           dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
-          drag: null, // TODO this shouldn't reset the drag to null, it should instead "replay" the last mouse interaction
+          drag: zeroCanvasPoint, // TODO this shouldn't reset the zerCanvasPoint, it should instead "replay" the last mouse interaction
+        }
+      }
+    case 'KEYBOARD':
+      return interactionData
+    default:
+      const _exhaustiveCheck: never = interactionData
+      throw new Error(`Unhandled interaction type ${JSON.stringify(interactionData)}`)
+  }
+}
+
+export function modifierChangeInteractionDataReset(
+  interactionData: InteractionData,
+): InteractionData {
+  switch (interactionData.type) {
+    case 'DRAG':
+      if (interactionData.drag == null) {
+        return interactionData
+      } else {
+        const currentDrag = interactionData.drag ?? zeroCanvasPoint
+        return {
+          ...interactionData,
+          dragStart: interactionData.originalDragStart,
+          drag: pointDifference(
+            interactionData.originalDragStart,
+            offsetPoint(interactionData.dragStart, currentDrag),
+          ),
         }
       }
     case 'KEYBOARD':
@@ -270,4 +295,27 @@ export function strategySwitchInteractionStateReset(
     ...interactionState,
     interactionData: strategySwitchInteractionDataReset(interactionState.interactionData),
   }
+}
+
+export function modifierChangeInteractionStateReset(
+  interactionState: InteractionState,
+): InteractionState {
+  return {
+    ...interactionState,
+    interactionData: modifierChangeInteractionDataReset(interactionState.interactionData),
+  }
+}
+
+export function hasModifiersChanged(
+  prevInteractionData: InteractionData | null,
+  interactionData: InteractionData | null,
+): boolean {
+  return (
+    interactionData?.type === 'DRAG' &&
+    prevInteractionData?.type === 'DRAG' &&
+    (interactionData.modifiers.alt !== prevInteractionData.modifiers.alt ||
+      interactionData.modifiers.cmd !== prevInteractionData.modifiers.cmd ||
+      interactionData.modifiers.ctrl !== prevInteractionData.modifiers.ctrl ||
+      interactionData.modifiers.shift !== prevInteractionData.modifiers.shift)
+  )
 }

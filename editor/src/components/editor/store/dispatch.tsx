@@ -105,6 +105,8 @@ import {
   applyCanvasStrategy,
   findCanvasStrategy,
   getStrategyByName,
+  hasModifiersChanged,
+  modifierChangeInteractionStateReset,
   strategiesPartOfSameGroup,
   strategySwitchInteractionStateReset,
 } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -494,11 +496,22 @@ export function editorDispatch(
   let partOfSameGroup: boolean = false
 
   let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
+
+  // TODO: extract to function
+  const modifiersChanged = hasModifiersChanged(
+    storedState.editor.canvas.interactionState?.interactionData ?? null,
+    frozenEditorState.canvas.interactionState?.interactionData ?? null,
+  )
+
   if (frozenEditorState.canvas.interactionState != null) {
+    const accumulatedCommands = modifiersChanged
+      ? []
+      : [...result.sessionStateState.accumulatedCommands]
+
     const commandResultCurrent = foldCommands(
       frozenEditorState,
       result.sessionStateState,
-      result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands),
+      accumulatedCommands.flatMap((c) => c.commands),
       shouldApplyChanges ? 'permanent' : 'transient',
     )
     const patchedEditorStateCurrent = applyStatePatches(
@@ -526,7 +539,9 @@ export function editorDispatch(
     strategyFitness = strategy?.fitness ?? 0
     previousStrategyCurrentFitness = previousStrategy?.fitness ?? NaN
 
-    strategyChanged = strategyName != result.sessionStateState.currentStrategy
+    strategyChanged =
+      strategyName != result.sessionStateState.currentStrategy &&
+      result.sessionStateState.currentStrategy != null
     partOfSameGroup = strategiesPartOfSameGroup(
       result.sessionStateState.currentStrategy,
       strategyName,
@@ -539,6 +554,18 @@ export function editorDispatch(
         canvas: {
           ...frozenEditorState.canvas,
           interactionState: strategySwitchInteractionStateReset(
+            frozenEditorState.canvas.interactionState,
+          ),
+        },
+      }
+    }
+
+    if (modifiersChanged && frozenEditorState.canvas.interactionState != null) {
+      frozenEditorState = {
+        ...frozenEditorState,
+        canvas: {
+          ...frozenEditorState.canvas,
+          interactionState: modifierChangeInteractionStateReset(
             frozenEditorState.canvas.interactionState,
           ),
         },
@@ -590,7 +617,7 @@ export function editorDispatch(
     currentStrategy: strategyName,
     currentStrategyFitness: strategyFitness,
     currentStrategyCommands: patchCommands,
-    accumulatedCommands: updatedAccumulatedCommands,
+    accumulatedCommands: modifiersChanged ? [] : updatedAccumulatedCommands,
     commandDescriptions: [],
     strategyState: result.sessionStateState.strategyState,
     startingMetadata: result.sessionStateState.startingMetadata,
