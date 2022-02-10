@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/commands'
+import { SelectionOutlineControl2 } from '../controls/selection-outline-control2'
 
 export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',
@@ -18,7 +19,9 @@ export const absoluteMoveStrategy: CanvasStrategy = {
       return false
     }
   },
-  controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
+  controlsToRender: [
+    { control: SelectionOutlineControl2, key: 'selection-outline-2', show: 'always-visible' },
+  ],
   fitness: (canvasState, interactionState) => {
     return absoluteMoveStrategy.isApplicable(canvasState, interactionState) &&
       interactionState.interactionData.type === 'DRAG' &&
