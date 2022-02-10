@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react'
 import * as EP from '../../../core/shared/element-path'
 import { windowPoint } from '../../../core/shared/math-utils'
-import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import {
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
 import { removeCanvasOffset, windowToCanvasCoordinates } from '../dom-lookup'
 
 export const SelectionOutlineControl2 = React.memo(() => {
@@ -12,21 +16,23 @@ export const SelectionOutlineControl2 = React.memo(() => {
   const controlRef = React.useRef<HTMLDivElement>(null)
   const observerRef = React.useRef<MutationObserver | null>()
   const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
-  useEffect(() => {
-    const observerCallback = () => {
-      if (selectedElementsRef.current.length === 1) {
-        const target = selectedElementsRef.current[0]
-        const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(target)}"]`)
-        const frame = htmlElement?.getBoundingClientRect()
-        if (frame != null && controlRef.current != null) {
-          const frameInCanvasCoords = removeCanvasOffset(windowPoint({ x: frame.x, y: frame.y }))
-          controlRef.current.style.left = frameInCanvasCoords.x + 'px'
-          controlRef.current.style.top = frameInCanvasCoords.y + 'px'
-          controlRef.current.style.width = frame.width + 'px'
-          controlRef.current.style.height = frame.height + 'px'
-        }
+
+  const observerCallback = React.useCallback(() => {
+    if (selectedElementsRef.current.length === 1) {
+      const target = selectedElementsRef.current[0]
+      const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(target)}"]`)
+      const frame = htmlElement?.getBoundingClientRect()
+      if (frame != null && controlRef.current != null) {
+        const frameInCanvasCoords = removeCanvasOffset(windowPoint({ x: frame.x, y: frame.y }))
+        controlRef.current.style.left = frameInCanvasCoords.x + 'px'
+        controlRef.current.style.top = frameInCanvasCoords.y + 'px'
+        controlRef.current.style.width = frame.width + 'px'
+        controlRef.current.style.height = frame.height + 'px'
       }
     }
+  }, [selectedElementsRef])
+
+  useEffect(() => {
     const observer = new MutationObserver(observerCallback)
     observerRef.current = observer
     return function cleanup() {
@@ -37,12 +43,13 @@ export const SelectionOutlineControl2 = React.memo(() => {
 
   useEffect(() => {
     if (selectedElements.length === 1) {
-      const canvasWrapper = document.getElementsByClassName('utopia-css-var-container')[0]
+      // this is a total hack that I found #node-connectors is still changing attributes on scroll. TODO use a HTMLElement that is deliberately for this
+      const thisElementRerendersOnScroll = document.getElementById('node-connectors')
       const htmlElement = document.querySelector(
         `*[data-paths~="${EP.toString(selectedElements[0])}"]`,
       )
-      if (canvasWrapper != null && observerRef.current != null) {
-        observerRef.current.observe(canvasWrapper, {
+      if (thisElementRerendersOnScroll != null && observerRef.current != null) {
+        observerRef.current.observe(thisElementRerendersOnScroll, {
           attributes: true,
         })
       }
@@ -53,11 +60,14 @@ export const SelectionOutlineControl2 = React.memo(() => {
           subtree: true,
         })
       }
+
+      observerCallback()
     }
+
     return function cleanup() {
       observerRef.current?.disconnect()
     }
-  }, [selectedElements])
+  }, [selectedElements, observerCallback])
 
   if (selectedElements.length === 1) {
     return (
