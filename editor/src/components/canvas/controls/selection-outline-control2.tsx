@@ -2,7 +2,7 @@ import React from 'react'
 import * as EP from '../../../core/shared/element-path'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { useEditorState } from '../../editor/store/store-hook'
-import { windowToCanvasCoordinates } from '../dom-lookup'
+import { removeCanvasOffset, windowToCanvasCoordinates } from '../dom-lookup'
 
 export const SelectionOutlineControl2 = React.memo(() => {
   const selectedElements = useEditorState(
@@ -21,17 +21,13 @@ export const SelectionOutlineControl2 = React.memo(() => {
     if (frame == null) {
       return null
     }
-    const frameInCanvasCoords = windowToCanvasCoordinates(
-      1,
-      canvasOffset,
-      windowPoint({ x: frame.x, y: frame.y }),
-    )
+    const frameInCanvasCoords = removeCanvasOffset(windowPoint({ x: frame.x, y: frame.y }))
     return (
       <div
         style={{
           position: 'absolute',
-          left: frameInCanvasCoords.canvasPositionRounded.x + canvasOffset.x,
-          top: frameInCanvasCoords.canvasPositionRounded.y + canvasOffset.y,
+          left: frameInCanvasCoords.x,
+          top: frameInCanvasCoords.y,
           width: frame.width,
           height: frame.height,
           backgroundColor: 'hotpink',

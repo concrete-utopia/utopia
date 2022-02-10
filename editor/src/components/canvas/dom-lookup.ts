@@ -162,3 +162,17 @@ export function windowToCanvasCoordinates(
     throw new Error('calling screenToElementCoordinates() before being mounted')
   }
 }
+
+export function removeCanvasOffset(screenPoint: WindowPoint): WindowPoint {
+  const canvasWrapper = document.getElementById('canvas-root')
+
+  if (canvasWrapper != null) {
+    const canvasWrapperRect = canvasWrapper.getBoundingClientRect()
+    return {
+      x: screenPoint.x - canvasWrapperRect.left,
+      y: screenPoint.y - canvasWrapperRect.top,
+    } as WindowPoint
+  } else {
+    throw new Error('calling screenToElementCoordinates() before being mounted')
+  }
+}
