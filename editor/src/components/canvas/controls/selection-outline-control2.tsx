@@ -9,10 +9,6 @@ export const SelectionOutlineControl2 = React.memo(() => {
     (store) => store.editor.selectedViews,
     'SelectionOutlineControl2',
   )
-  const canvasOffset = useEditorState(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'SelectionOutlineControl2 canvasOffset',
-  )
   if (selectedElements.length === 1) {
     const target = selectedElements[0]
     const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(target)}"]`)
