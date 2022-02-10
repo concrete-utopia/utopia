@@ -433,7 +433,6 @@ export function useDomWalker(
   const containerRef = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
     function onAnimationFrame() {
-      console.log('---------- ANIMATION FRAME ---------')
       requestAnimationFrame(onAnimationFrame)
     }
     requestAnimationFrame(onAnimationFrame)

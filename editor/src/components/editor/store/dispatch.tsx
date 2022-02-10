@@ -876,6 +876,9 @@ function editorDispatchInner(
       frozenEditorState.jsxMetadata,
       frozenEditorState.selectedViews[0],
     )
+    if (Math.abs(propsLeft - (measuredLeft ?? 0)) > 0) {
+      console.log(`----------------->>>>>> IT HAPPENED!!!`)
+    }
     console.log(`Metadata Spy Left: ${propsLeft}, dom walker left: ${measuredLeft}`)
 
     return {
