@@ -55,10 +55,13 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
 
       const oldParentFrame =
-        MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), canvasState.metadata) ??
-        zeroCanvasRect
+        MetadataUtils.getFrameInCanvasCoords(
+          EP.parentPath(target),
+          sessionState.startingMetadata,
+        ) ?? zeroCanvasRect
       const newParentFrame =
-        MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.metadata) ?? zeroCanvasRect
+        MetadataUtils.getFrameInCanvasCoords(newParent, sessionState.startingMetadata) ??
+        zeroCanvasRect
       const offset = pointDifference(newParentFrame, oldParentFrame)
 
       return [
