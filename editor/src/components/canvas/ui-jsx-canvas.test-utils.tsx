@@ -227,6 +227,7 @@ export function renderCanvasReturnResultAndError(
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      selectedViews: [],
     }
   } else {
     canvasProps = {
@@ -252,6 +253,7 @@ export function renderCanvasReturnResultAndError(
       propertyControlsInfo: {},
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
+      selectedViews: [],
     }
   }
 

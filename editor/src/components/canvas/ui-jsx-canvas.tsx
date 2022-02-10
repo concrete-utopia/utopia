@@ -48,6 +48,7 @@ import {
   getIndexHtmlFileFromEditorState,
   CanvasBase64Blobs,
   TransientFilesState,
+  withUnderlyingTarget,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import { SetValueCallback, useDomWalker } from './dom-walker'
@@ -95,6 +96,8 @@ import {
   clearListOfEvaluatedFiles,
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
+import { getSimpleAttributeAtPath } from '../../core/model/element-metadata-utils'
+import { create } from '../../core/shared/property-path'
 
 applyUIDMonkeyPatch()
 
@@ -163,6 +166,7 @@ export interface UiJsxCanvasProps {
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
+  selectedViews: Array<ElementPath>
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -244,6 +248,7 @@ export function pickUiJsxCanvasProps(
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
+      selectedViews: editor.selectedViews,
     }
   }
 }
@@ -294,8 +299,29 @@ function clearSpyCollectorInvalidPaths(
   })
 }
 
+function getSelectedElementLeft(
+  selectedElement: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  uiFilePath: string,
+): number | string {
+  return withUnderlyingTarget(
+    selectedElement,
+    projectContents,
+    {},
+    uiFilePath,
+    'Rheese',
+    (_, element) => {
+      return getSimpleAttributeAtPath(right(element.props), create(['style', 'left'])).value
+    },
+  )
+}
+
 export const UiJsxCanvas = React.memo(
   React.forwardRef<HTMLDivElement, UiJsxCanvasPropsWithErrorCallback>((props, ref) => {
+    console.log(
+      'UiJsxCanvas Render',
+      getSelectedElementLeft(props.selectedViews[0], props.projectContents, props.uiFilePath),
+    )
     const {
       scale,
       uiFilePath,

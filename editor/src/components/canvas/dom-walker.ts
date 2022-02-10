@@ -431,6 +431,13 @@ export function useDomWalker(
   props: DomWalkerProps,
 ): [SetValueCallback<Set<string>>, SetValueCallback<Set<string>>, React.Ref<HTMLDivElement>] {
   const containerRef = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    function onAnimationFrame() {
+      console.log('---------- ANIMATION FRAME ---------')
+      requestAnimationFrame(onAnimationFrame)
+    }
+    requestAnimationFrame(onAnimationFrame)
+  }, [])
 
   const fireThrottledCallback = useThrottledCallback(() => {
     const LogDomWalkerPerformance =
@@ -440,6 +447,7 @@ export function useDomWalker(
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_START')
       }
+      console.log('DOM WALKER START')
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
       if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
@@ -481,6 +489,7 @@ export function useDomWalker(
       // Fragments will appear as multiple separate entries with duplicate UIDs, so we need to handle those
       const fixedMetadata = mergeFragmentMetadata(metadata)
 
+      console.log('DOM WALKER LOG')
       props.onDomReport(fixedMetadata, cachedPaths)
     }
   })

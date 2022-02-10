@@ -31,6 +31,7 @@ import { when } from '../../../utils/react-conditionals'
 import { InsertionControls } from './insertion-plus-button'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
+import { getSelectedViewLeftMetadata } from '../../editor/store/dispatch'
 
 function getDistanceGuidelines(
   highlightedView: ElementPath,
@@ -461,6 +462,12 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   render(): JSX.Element {
+    const { measuredLeft, propsLeft } = getSelectedViewLeftMetadata(
+      this.props.componentMetadata,
+      this.props.selectedViews[0],
+    )
+
+    console.log(`select mode controls render, dom-walker Left: ${measuredLeft}`)
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)

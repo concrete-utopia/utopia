@@ -761,6 +761,17 @@ function applyProjectChanges(
   }
 }
 
+export function getSelectedViewLeftMetadata(
+  jsxMetadata: ElementInstanceMetadataMap,
+  selectedView: ElementPath,
+) {
+  return {
+    propsLeft: MetadataUtils.findElementByElementPath(jsxMetadata, selectedView)?.props?.style
+      ?.left,
+    measuredLeft: MetadataUtils.findElementByElementPath(jsxMetadata, selectedView)?.localFrame?.x,
+  }
+}
+
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -768,7 +779,7 @@ function editorDispatchInner(
   transient: boolean,
   spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
-  // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
+  console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
   const MeasureDispatchTime =
     isFeatureEnabled('Debug mode – Performance Marks') && PERFORMANCE_MARKS_ALLOWED
@@ -860,6 +871,12 @@ function editorDispatchInner(
         'dispatch_end',
       )
     }
+
+    const { measuredLeft, propsLeft } = getSelectedViewLeftMetadata(
+      frozenEditorState.jsxMetadata,
+      frozenEditorState.selectedViews[0],
+    )
+    console.log(`Metadata Spy Left: ${propsLeft}, dom walker left: ${measuredLeft}`)
 
     return {
       unpatchedEditor: frozenEditorState,
