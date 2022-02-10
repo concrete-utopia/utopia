@@ -2,6 +2,7 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { intersects } from 'semver'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { offsetPoint, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
@@ -71,10 +72,10 @@ export function strategiesPartOfSameGroup(
 function getApplicableStrategies(
   canvasState: CanvasState,
   interactionState: InteractionState | null,
-  sessionState?: SessionStateState,
+  metadata?: ElementInstanceMetadataMap,
 ): Array<CanvasStrategy> {
   return RegisteredCanvasStrategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionState, sessionState)
+    return strategy.isApplicable(canvasState, interactionState, metadata)
   })
 }
 
@@ -109,7 +110,11 @@ function getApplicableStrategiesOrderedByFitness(
   interactionState: InteractionState,
   sessionState: SessionStateState,
 ): Array<StrategiesWithFitness> {
-  const applicableStrategies = getApplicableStrategies(canvasState, interactionState, sessionState)
+  const applicableStrategies = getApplicableStrategies(
+    canvasState,
+    interactionState,
+    sessionState.startingMetadata,
+  )
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {

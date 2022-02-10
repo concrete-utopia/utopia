@@ -311,7 +311,7 @@ export interface CanvasStrategy {
   isApplicable: (
     canvasState: CanvasState,
     interactionState: InteractionState | null,
-    sessionState?: SessionStateState,
+    metadata?: ElementInstanceMetadataMap,
   ) => boolean
   // Determines if we should show the controls that this strategy renders
   // Maybe this can just be rolled into controlsToRender?

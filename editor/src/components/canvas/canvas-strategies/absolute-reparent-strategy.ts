@@ -10,17 +10,17 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, interactionState, sessionState) => {
+  isApplicable: (canvasState, interactionState, metadata) => {
     if (
       canvasState.selectedElements.length === 1 &&
       interactionState != null &&
       interactionState.interactionData.modifiers.cmd
     ) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        sessionState?.startingMetadata ?? canvasState.metadata,
+      const selectedMetadata = MetadataUtils.findElementByElementPath(
+        metadata ?? canvasState.metadata,
         canvasState.selectedElements[0],
       )
-      return metadata?.specialSizeMeasurements.position === 'absolute'
+      return selectedMetadata?.specialSizeMeasurements.position === 'absolute'
     }
     return false
   },
