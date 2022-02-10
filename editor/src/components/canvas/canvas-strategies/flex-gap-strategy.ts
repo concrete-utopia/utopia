@@ -56,7 +56,6 @@ export const flexGapStrategy: CanvasStrategy = {
           targetParent.elementPath,
           gapPropPath,
           gapChange,
-          [],
           true,
         )
 

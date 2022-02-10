@@ -68,7 +68,6 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           target,
           stylePropPathMappingFn('left', ['style']),
           offset.x,
-          [],
           true,
         ),
         adjustNumberProperty(
@@ -76,7 +75,6 @@ export const absoluteReparentStrategy: CanvasStrategy = {
           target,
           stylePropPathMappingFn('top', ['style']),
           offset.y,
-          [],
           true,
         ),
         reparentElement('permanent', target, newParent),

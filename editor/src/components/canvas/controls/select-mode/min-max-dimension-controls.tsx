@@ -3,6 +3,69 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useEditorState } from '../../../editor/store/store-hook'
 import Utils from '../../../../utils/utils'
+import {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
+import { LayoutTargetableProp } from '../../../../core/layout/layout-helpers-new'
+import { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
+
+type PositionCalculation = (
+  canvasOffset: CanvasVector,
+  elementFrame: CanvasRectangle,
+  dimensionValue: number,
+) => number
+
+function getDimensionPosition(
+  canvasOffset: CanvasVector,
+  elementMetadata: ElementInstanceMetadata | null,
+  styleProp: LayoutTargetableProp,
+  positionCalculation: PositionCalculation,
+): number | null {
+  if (elementMetadata == null || elementMetadata.globalFrame == null) {
+    return null
+  } else {
+    const styleValue = Utils.pathOr(null, ['style', styleProp], elementMetadata.props)
+    if (typeof styleValue === 'number') {
+      return positionCalculation(canvasOffset, elementMetadata.globalFrame, styleValue)
+    } else {
+      return null
+    }
+  }
+}
+
+interface DimensionMarkerProps {
+  markerKey: string
+  left: number | null
+  top: number | null
+}
+
+const DimensionMarker_ = ({ left, top, markerKey }: DimensionMarkerProps) => {
+  if (left == null || top == null) {
+    return null
+  } else {
+    return (
+      <div
+        key={markerKey}
+        style={{
+          position: 'absolute',
+          left: left,
+          top: top,
+          width: 1,
+          height: '100%',
+          border: 'none',
+          borderLeft: '1px dashed #f00',
+          color: '#fff',
+          backgroundColor: 'transparent',
+        }}
+      />
+    )
+  }
+}
+
+DimensionMarker_.displayName = 'DimensionMarker'
+const DimensionMarker = React.memo(DimensionMarker_)
 
 const MinMaxDimensionControls_ = () => {
   const canvasOffset = useEditorState(
@@ -27,47 +90,56 @@ const MinMaxDimensionControls_ = () => {
     return MetadataUtils.findElementByElementPath(jsxMetadata, targetedSingleElement)
   }, [jsxMetadata, targetedSingleElement])
 
-  const minWidth: number | null = React.useMemo(() => {
-    if (elementMetadata == null) {
-      return null
-    } else {
-      const styleValue = Utils.pathOr(null, ['style', 'minWidth'], elementMetadata.props)
-      if (typeof styleValue === 'number') {
-        return styleValue
-      } else {
-        return null
-      }
-    }
-  }, [elementMetadata])
-
   const minWidthPosition = React.useMemo(() => {
-    if (minWidth == null || elementMetadata == null || elementMetadata.globalFrame == null) {
-      return null
-    } else {
-      return canvasOffset.x + elementMetadata.globalFrame.x + minWidth
-    }
-  }, [canvasOffset, elementMetadata, minWidth])
+    return getDimensionPosition(
+      canvasOffset,
+      elementMetadata,
+      'minWidth',
+      (offsetOfCanvas, elementFrame, minWidth) => {
+        return offsetOfCanvas.x + elementFrame.x + minWidth
+      },
+    )
+  }, [canvasOffset, elementMetadata])
 
-  // TODO: Add in other bounds.
+  const maxWidthPosition = React.useMemo(() => {
+    return getDimensionPosition(
+      canvasOffset,
+      elementMetadata,
+      'maxWidth',
+      (offsetOfCanvas, elementFrame, maxWidth) => {
+        return offsetOfCanvas.x + elementFrame.x + maxWidth
+      },
+    )
+  }, [canvasOffset, elementMetadata])
+
+  const minHeightPosition = React.useMemo(() => {
+    return getDimensionPosition(
+      canvasOffset,
+      elementMetadata,
+      'minHeight',
+      (offsetOfCanvas, elementFrame, minHeight) => {
+        return offsetOfCanvas.y + elementFrame.y + minHeight
+      },
+    )
+  }, [canvasOffset, elementMetadata])
+
+  const maxHeightPosition = React.useMemo(() => {
+    return getDimensionPosition(
+      canvasOffset,
+      elementMetadata,
+      'maxHeight',
+      (offsetOfCanvas, elementFrame, maxHeight) => {
+        return offsetOfCanvas.y + elementFrame.y + maxHeight
+      },
+    )
+  }, [canvasOffset, elementMetadata])
 
   return (
     <>
-      ( minWidthPosition == null ? null :
-      <div
-        key={`min-width-marker`}
-        style={{
-          position: 'absolute',
-          left: minWidthPosition ?? undefined,
-          top: 0,
-          width: 1,
-          height: '100%',
-          border: 'none',
-          borderLeft: '1px dashed #f00',
-          color: '#fff',
-          backgroundColor: 'transparent',
-        }}
-      />
-      )
+      <DimensionMarker top={0} left={minWidthPosition} markerKey={'min-width-marker'} />
+      <DimensionMarker top={0} left={maxWidthPosition} markerKey={'max-width-marker'} />
+      <DimensionMarker top={minHeightPosition} left={0} markerKey={'min-height-marker'} />
+      <DimensionMarker top={maxHeightPosition} left={0} markerKey={'max-height-marker'} />
     </>
   )
 }

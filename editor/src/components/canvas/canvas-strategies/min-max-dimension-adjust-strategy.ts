@@ -1,7 +1,12 @@
 import { safeIndex } from '../../../core/shared/array-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import { adjustNumberProperty } from '../commands/commands'
+import {
+  AdjustNumberCondition,
+  adjustNumberInequalityCondition,
+  AdjustNumberInequalityCondition,
+  adjustNumberProperty,
+} from '../commands/commands'
 import { CanvasStrategy } from '../../../interactions_proposal'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { MinMaxDimensionControls } from '../controls/select-mode/min-max-dimension-controls'
@@ -63,6 +68,7 @@ export const adjustMinMaxDimensionStrategy: CanvasStrategy = {
       let additionalPropPath: PropertyPath | null = null
       let dimensionPropPath: PropertyPath
       let boundsPropPath: PropertyPath
+      let adjustmentInequality: AdjustNumberInequalityCondition | null = null
       if (isHorizontalResize(edgePosition)) {
         dimensionChange = interactionState.interactionData.drag?.x ?? 0
         if (edgePosition.x === 0) {
@@ -73,8 +79,10 @@ export const adjustMinMaxDimensionStrategy: CanvasStrategy = {
         }
         if (dimensionChange >= 0) {
           boundsPropPath = stylePropPathMappingFn('maxWidth', ['style'])
+          adjustmentInequality = adjustNumberInequalityCondition(dimensionPropPath, 'less-than')
         } else {
           boundsPropPath = stylePropPathMappingFn('minWidth', ['style'])
+          adjustmentInequality = adjustNumberInequalityCondition(dimensionPropPath, 'greater-than')
         }
       } else {
         dimensionChange = interactionState.interactionData.drag?.y ?? 0
@@ -86,8 +94,10 @@ export const adjustMinMaxDimensionStrategy: CanvasStrategy = {
         }
         if (dimensionChange >= 0) {
           boundsPropPath = stylePropPathMappingFn('maxHeight', ['style'])
+          adjustmentInequality = adjustNumberInequalityCondition(dimensionPropPath, 'less-than')
         } else {
           boundsPropPath = stylePropPathMappingFn('minHeight', ['style'])
+          adjustmentInequality = adjustNumberInequalityCondition(dimensionPropPath, 'greater-than')
         }
       }
       const adjustDimensionProperty = adjustNumberProperty(
@@ -95,7 +105,6 @@ export const adjustMinMaxDimensionStrategy: CanvasStrategy = {
         targetedElement,
         dimensionPropPath,
         dimensionChange,
-        [],
         true,
       )
       const additionalDimensionProperty =
@@ -107,7 +116,6 @@ export const adjustMinMaxDimensionStrategy: CanvasStrategy = {
                 targetedElement,
                 additionalPropPath,
                 -dimensionChange,
-                [],
                 true,
               ),
             ]
@@ -116,8 +124,7 @@ export const adjustMinMaxDimensionStrategy: CanvasStrategy = {
         'permanent',
         targetedElement,
         boundsPropPath,
-        dimensionChange,
-        [dimensionPropPath],
+        adjustmentInequality,
         false,
       )
       return [adjustDimensionProperty, ...additionalDimensionProperty, adjustBoundProperty]

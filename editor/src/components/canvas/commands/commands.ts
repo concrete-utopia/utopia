@@ -148,13 +148,28 @@ export function wildcardPatch(transient: TransientOrNot, patch: EditorStatePatch
   }
 }
 
+export type AdjustNumberCondition = 'less-than' | 'greater-than'
+
+export interface AdjustNumberInequalityCondition {
+  property: PropertyPath
+  condition: AdjustNumberCondition
+}
+
+export function adjustNumberInequalityCondition(
+  property: PropertyPath,
+  condition: AdjustNumberCondition,
+): AdjustNumberInequalityCondition {
+  return {
+    property: property,
+    condition: condition,
+  }
+}
+
 export interface AdjustNumberProperty extends BaseCommand {
   type: 'ADJUST_NUMBER_PROPERTY'
   target: ElementPath
   property: PropertyPath
-  value: number
-  // FIXME: Should really be something like an inequality check against these.
-  fallbackProperties: Array<PropertyPath>
+  value: number | AdjustNumberInequalityCondition
   createIfNonExistant: boolean
 }
 
@@ -162,8 +177,7 @@ export function adjustNumberProperty(
   transient: TransientOrNot,
   target: ElementPath,
   property: PropertyPath,
-  value: number,
-  fallbackProperties: Array<PropertyPath>,
+  value: number | AdjustNumberInequalityCondition,
   createIfNonExistant: boolean,
 ): AdjustNumberProperty {
   return {
@@ -172,7 +186,6 @@ export function adjustNumberProperty(
     target: target,
     property: property,
     value: value,
-    fallbackProperties: fallbackProperties,
     createIfNonExistant: createIfNonExistant,
   }
 }
@@ -392,23 +405,22 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
 
   // Identify the current value, whatever that may be.
   let targetPropertyNonExistant: boolean = false
+  let inequalityValue: number | null = null
   const currentValue = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
     null,
     (success, element, underlyingTarget, underlyingFilePath) => {
       if (isJSXElement(element)) {
-        // Try the property we're updating first.
+        // Check for the inequality adjustment target while we're here.
+        if (typeof command.value !== 'number') {
+          inequalityValue = getNumberPropertyFromProps(element.props, command.value.property)
+        }
+
+        // Try the property we're updating.
         const fromProperty = getNumberPropertyFromProps(element.props, command.property)
         if (fromProperty == null) {
           targetPropertyNonExistant = true
-          // Otherwise check the fallback properties.
-          for (const fallbackProp of command.fallbackProperties) {
-            const fromFallback = getNumberPropertyFromProps(element.props, fallbackProp)
-            if (fromFallback != null) {
-              return fromFallback
-            }
-          }
         } else {
           return fromProperty
         }
@@ -426,36 +438,74 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
         command.property,
       )} not applied as the property does not exist.`,
     }
-  }
+  } else {
+    if (typeof command.value === 'number') {
+      if (currentValue != null) {
+        newValue += currentValue
+      }
 
-  if (currentValue != null) {
-    newValue += currentValue
-  }
+      // Change the value.
+      newValue += command.value
+    } else {
+      if (currentValue != null && inequalityValue != null) {
+        switch (command.value.condition) {
+          case 'less-than':
+            if (inequalityValue <= currentValue) {
+              return {
+                editorStatePatch: {},
+                strategyState: strategyState,
+                pathMappings: pathMappings,
+                commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
+                  command.property,
+                )} not applied as value is large enough already.`,
+              }
+            } else {
+              newValue = inequalityValue
+            }
+            break
+          case 'greater-than':
+            if (inequalityValue >= currentValue) {
+              return {
+                editorStatePatch: {},
+                strategyState: strategyState,
+                pathMappings: pathMappings,
+                commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
+                  command.property,
+                )} not applied as value is small enough already.`,
+              }
+            } else {
+              newValue = inequalityValue
+            }
+            break
+          default:
+            const _exhaustiveCheck: never = command.value.condition
+            throw new Error(`Unhandled command condition of ${JSON.stringify(command.value)}`)
+        }
+      }
+    }
 
-  // Change the value.
-  newValue += command.value
+    const propsToUpdate: Array<ValueAtPath> = [
+      {
+        path: command.property,
+        value: jsxAttributeValue(newValue, emptyComments),
+      },
+    ]
 
-  const propsToUpdate: Array<ValueAtPath> = [
-    {
-      path: command.property,
-      value: jsxAttributeValue(newValue, emptyComments),
-    },
-  ]
+    // Apply the update to the properties.
+    const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
+      editorState,
+      command.target,
+      propsToUpdate,
+    )
 
-  // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
-    command.target,
-    propsToUpdate,
-  )
-
-  return {
-    editorStatePatch: propertyUpdatePatch,
-    strategyState: strategyState,
-    pathMappings: pathMappings,
-    commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
-      command.property,
-    )} by ${command.value}`,
+    return {
+      editorStatePatch: propertyUpdatePatch,
+      strategyState: strategyState,
+      pathMappings: pathMappings,
+      commandDescription: `Adjust Number Prop: ${EP.toUid(command.target)}/${PP.toString(
+        command.property,
+      )} by ${command.value}`,
+    }
   }
 }
 
