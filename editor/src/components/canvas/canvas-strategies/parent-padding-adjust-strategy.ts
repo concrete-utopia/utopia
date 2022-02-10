@@ -60,7 +60,7 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
 
         // TODO is this too strict?
         if (parentPaddingTop > 0 || (parentPaddingTop === 0 && dragDeltaX > 0)) {
-          return 1
+          return 2
         }
       }
     }
