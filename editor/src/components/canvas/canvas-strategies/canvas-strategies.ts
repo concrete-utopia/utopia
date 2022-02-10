@@ -248,13 +248,14 @@ export function strategySwitchInteractionDataReset(
 ): InteractionData {
   switch (interactionData.type) {
     case 'DRAG':
-      if (interactionData.drag == null) {
+      if (interactionData.drag == null || interactionData.prevDrag == null) {
         return interactionData
       } else {
         return {
           ...interactionData,
-          dragStart: offsetPoint(interactionData.dragStart, interactionData.drag),
-          drag: zeroCanvasPoint, // TODO this shouldn't reset the zerCanvasPoint, it should instead "replay" the last mouse interaction
+          dragStart: offsetPoint(interactionData.dragStart, interactionData.prevDrag),
+          drag: pointDifference(interactionData.prevDrag, interactionData.drag),
+          prevDrag: null,
         }
       }
     case 'KEYBOARD':
