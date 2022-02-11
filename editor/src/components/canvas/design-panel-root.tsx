@@ -10,7 +10,7 @@ import {
   NavigatorWidthAtom,
 } from '../editor/store/editor-state'
 
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorState, useSelectorWithCallback } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { InsertMenuPane } from '../navigator/left-pane'
@@ -37,6 +37,8 @@ import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
+import { shallowEqual } from '../../core/shared/equality-utils'
+import { CanvasScale, CanvasScrollOffset } from '../../utils/global-positions'
 
 interface NumberSize {
   width: number
@@ -335,27 +337,39 @@ const DesignPanelRootInner = React.memo(() => {
 })
 
 export const DesignPanelRoot = React.memo(() => {
-  const roundedCanvasOffset = useEditorState(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'DesignPanelRoot roundedCanvasOffset',
-  )
+  const styleTagRef = React.useRef<HTMLStyleElement>(null)
 
-  const { zoom, scale } = useEditorState((store) => {
-    const canvasScale = store.editor.canvas.scale
-    // this is made to match the zoom and scale used in #canvas-container-outer
-    return { zoom: Math.max(1, canvasScale), scale: Math.min(1, canvasScale) }
-  }, 'DesignPanelRoot zoom scale')
+  useSelectorWithCallback(
+    (store) => {
+      const canvasScale = store.editor.canvas.scale
+      return {
+        roundedCanvasOffset: store.editor.canvas.roundedCanvasOffset,
+        zoom: Math.max(1, canvasScale),
+        scale: Math.min(1, canvasScale),
+        canvasScale: canvasScale,
+      }
+    },
+    ({ roundedCanvasOffset, zoom, scale, canvasScale }) => {
+      if (styleTagRef.current != null) {
+        styleTagRef.current.innerHTML = `
+          .utopia-css-var-container {
+            --utopia-canvas-offset-x: ${roundedCanvasOffset.x}px;
+            --utopia-canvas-offset-y: ${roundedCanvasOffset.y}px;
+            --utopia-canvas-zoom: ${zoom};
+            --utopia-canvas-transform-scale: ${scale};
+          }
+    `
+        CanvasScrollOffset.x = roundedCanvasOffset.x
+        CanvasScrollOffset.y = roundedCanvasOffset.y
+        CanvasScale.current = canvasScale
+      }
+    },
+    true,
+  )
 
   return (
     <>
-      <style>{`
-      .utopia-css-var-container {
-        --utopia-canvas-offset-x: ${roundedCanvasOffset.x}px;
-        --utopia-canvas-offset-y: ${roundedCanvasOffset.y}px;
-        --utopia-canvas-zoom: ${zoom};
-        --utopia-canvas-transform-scale: ${scale};
-      }
-    `}</style>
+      <style ref={styleTagRef}></style>
       <SimpleFlexRow
         className='OpenFileEditorShell utopia-css-var-container'
         style={{
