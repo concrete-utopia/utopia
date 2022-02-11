@@ -20,10 +20,13 @@ import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
 import { EditorModes } from '../../components/editor/editor-modes'
+import { setFeatureEnabled } from '../../utils/feature-switches'
 
 const NumberOfIterations = 100
 
 export function useTriggerScrollPerformanceTest(): () => void {
+  setFeatureEnabled('Canvas Strategies', true)
+
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerScrollPerformanceTest dispatch',
@@ -120,6 +123,7 @@ export function useTriggerResizePerformanceTest(): () => void {
 }
 
 export function useTriggerSelectionPerformanceTest(): () => void {
+  setFeatureEnabled('Canvas Strategies', true)
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerSelectionPerformanceTest dispatch',
@@ -167,6 +171,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
 }
 
 export function useTriggerBaselinePerformanceTest(): () => void {
+  setFeatureEnabled('Canvas Strategies', true)
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerSelectionPerformanceTest dispatch',
