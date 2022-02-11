@@ -65,6 +65,7 @@ import {
   useGetApplicableStrategiesOrderedByFitness,
   useGetApplicableStrategyControls,
 } from '../canvas-strategies/canvas-strategies'
+import { SelectionOutlineControl2 } from './selection-outline-control2'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -405,14 +406,15 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
     >
-      {when(isFeatureEnabled('Canvas Strategies'), <AnimatedPlaceholderBoxes />)}
-      {renderModeControlContainer()}
-      {renderHighlightControls()}
-      <LayoutParentControl />
-      {when(
+      {/* {when(isFeatureEnabled('Canvas Strategies'), <AnimatedPlaceholderBoxes />)} */}
+      {/* {renderModeControlContainer()} */}
+      {/* {renderHighlightControls()} */}
+      {/* <LayoutParentControl /> */}
+      {/* {when(
         isFeatureEnabled('Canvas Strategies'),
         <>{strategyControls.map((c) => React.createElement(c.control, { key: c.key }))}</>,
-      )}
+      )} */}
+      <SelectionOutlineControl2 />
     </div>
   )
 }
