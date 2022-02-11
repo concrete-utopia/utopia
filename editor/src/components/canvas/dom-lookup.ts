@@ -16,6 +16,7 @@ import * as EP from '../../core/shared/element-path'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
+import { CanvasScale, CanvasScrollOffset } from '../../utils/global-positions'
 
 export function findParentSceneValidPaths(target: Element): Array<ElementPath> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
@@ -163,16 +164,6 @@ export function windowToCanvasCoordinates(
   }
 }
 
-export function removeCanvasOffset(screenPoint: WindowPoint): WindowPoint {
-  const canvasWrapper = document.getElementById('canvas-root')
-
-  if (canvasWrapper != null) {
-    const canvasWrapperRect = canvasWrapper.getBoundingClientRect()
-    return {
-      x: screenPoint.x - canvasWrapperRect.left,
-      y: screenPoint.y - canvasWrapperRect.top,
-    } as WindowPoint
-  } else {
-    throw new Error('calling screenToElementCoordinates() before being mounted')
-  }
+export function windowToCanvasCoordinatesGlobal(screenPoint: WindowPoint): CanvasPositions {
+  return windowToCanvasCoordinates(CanvasScale.current, CanvasScrollOffset, screenPoint)
 }

@@ -6,7 +6,7 @@ import {
   useRefEditorState,
   useSelectorWithCallback,
 } from '../../editor/store/store-hook'
-import { removeCanvasOffset, windowToCanvasCoordinates } from '../dom-lookup'
+import { windowToCanvasCoordinatesGlobal } from '../dom-lookup'
 
 export const SelectionOutlineControl2 = React.memo(() => {
   const selectedElements = useEditorState(
@@ -23,7 +23,9 @@ export const SelectionOutlineControl2 = React.memo(() => {
       const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(target)}"]`)
       const frame = htmlElement?.getBoundingClientRect()
       if (frame != null && controlRef.current != null) {
-        const frameInCanvasCoords = removeCanvasOffset(windowPoint({ x: frame.x, y: frame.y }))
+        const frameInCanvasCoords = windowToCanvasCoordinatesGlobal(
+          windowPoint({ x: frame.left, y: frame.top }),
+        ).canvasPositionRounded
         controlRef.current.style.left = frameInCanvasCoords.x + 'px'
         controlRef.current.style.top = frameInCanvasCoords.y + 'px'
         controlRef.current.style.width = frame.width + 'px'
@@ -76,6 +78,7 @@ export const SelectionOutlineControl2 = React.memo(() => {
         style={{
           position: 'absolute',
           backgroundColor: 'hotpink',
+          transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
       ></div>
     )
