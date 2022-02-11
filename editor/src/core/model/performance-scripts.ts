@@ -28,7 +28,19 @@ export function useTriggerScrollPerformanceTest(): () => void {
     (store) => store.dispatch as DebugDispatch,
     'useTriggerScrollPerformanceTest dispatch',
   )
+  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
+    if (allPaths.current.length === 0) {
+      console.info('SELECT_TEST_ERROR')
+      return
+    }
+
+    const targetPath = [...allPaths.current].sort(
+      (a, b) => EP.toString(b).length - EP.toString(a).length,
+    )[0]
+
+    await dispatch([selectComponents([targetPath!], false)]).entireUpdateFinished
+
     let framesPassed = 0
     async function step() {
       performance.mark(`scroll_step_${framesPassed}`)
@@ -48,7 +60,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch])
+  }, [dispatch, allPaths])
   return trigger
 }
 
