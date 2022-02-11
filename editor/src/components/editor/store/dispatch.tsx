@@ -516,7 +516,7 @@ export function editorDispatch(
 
     const canvasState: CanvasState = {
       selectedElements: patchedEditorStateCurrent.selectedViews,
-      metadata: patchedEditorStateCurrent.jsxMetadata,
+      // metadata: patchedEditorStateCurrent.jsxMetadata, // We can add metadata back if live metadata is necessary
       projectContents: patchedEditorStateCurrent.projectContents,
       openFile: patchedEditorStateCurrent.canvas.openFile?.filename,
       scale: patchedEditorStateCurrent.canvas.scale,
@@ -633,7 +633,10 @@ export function editorDispatch(
   )
 
   let newSessionStateState: SessionStateState = clearInteractionStateActionDispatched
-    ? createEmptySessionStateState() // QUESTION should we make this NULL instead?
+    ? {
+        ...createEmptySessionStateState(), // QUESTION should we make this NULL instead?
+        startingMetadata: editorFilteredForFiles.jsxMetadata,
+      }
     : {
         ...workingSessionStateState,
         strategyState: commandResult.newStrategyState,

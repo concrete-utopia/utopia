@@ -9,13 +9,10 @@ import { FlexGapControls } from '../controls/select-mode/flex-gap-controls'
 export const flexGapStrategy: CanvasStrategy = {
   name: 'Change Flex Gap',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, _interactionState) => {
+  isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]
-      const selectedMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
-        selectedView,
-      )
+      const selectedMetadata = MetadataUtils.findElementByElementPath(metadata, selectedView)
       return selectedMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flex'
     }
     return false
@@ -23,14 +20,18 @@ export const flexGapStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: FlexGapControls, key: 'flex-gap-controls', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState) => {
-    return flexGapStrategy.isApplicable(canvasState, interactionState) &&
+  fitness: (canvasState, interactionState, sessionState) => {
+    return flexGapStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'FLEX_GAP_HANDLE'
       ? 1
       : 0
   },
-  apply: (canvasState, interactionState) => {
+  apply: (canvasState, interactionState, sessionState) => {
     if (
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'FLEX_GAP_HANDLE'
@@ -40,7 +41,7 @@ export const flexGapStrategy: CanvasStrategy = {
         'Could not get first element.',
         safeIndex(canvasState.selectedElements, 0),
       )
-      const targetParent = MetadataUtils.getParent(canvasState.metadata, targetedElement)
+      const targetParent = MetadataUtils.getParent(sessionState.startingMetadata, targetedElement)
       const gapPropPath = stylePropPathMappingFn('gap', ['style'])
 
       if (targetParent !== null) {
@@ -62,7 +63,7 @@ export const flexGapStrategy: CanvasStrategy = {
         // Identify the siblings so that the metadata gets updated for those as well,
         // which should result in the gap controls also being updated.
         const siblingsOfTarget = MetadataUtils.getSiblings(
-          canvasState.metadata,
+          sessionState.startingMetadata,
           targetedElement,
         ).map((metadata) => metadata.elementPath)
         return [

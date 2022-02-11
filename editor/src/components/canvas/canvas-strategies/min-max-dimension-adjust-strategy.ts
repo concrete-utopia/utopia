@@ -28,13 +28,10 @@ function isHorizontalOrVerticalResize(position: EdgePosition): boolean {
 export const adjustMinMaxDimensionStrategy: CanvasStrategy = {
   name: 'Adjust Min And Max Dimension',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, _interactionState) => {
+  isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]
-      const selectedMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
-        selectedView,
-      )
+      const selectedMetadata = MetadataUtils.findElementByElementPath(metadata, selectedView)
       return selectedMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flow'
     }
     return false
@@ -42,9 +39,13 @@ export const adjustMinMaxDimensionStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: MinMaxDimensionControls, key: 'min-max-dimension-controls', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState) => {
+  fitness: (canvasState, interactionState, sessionState) => {
     // Currently only edge resizes.
-    return adjustMinMaxDimensionStrategy.isApplicable(canvasState, interactionState) &&
+    return adjustMinMaxDimensionStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'RESIZE_HANDLE' &&
       isHorizontalOrVerticalResize(interactionState.activeControl.edgePosition)

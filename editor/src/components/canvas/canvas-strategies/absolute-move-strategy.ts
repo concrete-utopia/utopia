@@ -6,21 +6,25 @@ import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/co
 export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, _interactionState) => {
+  isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        metadata,
         canvasState.selectedElements[0],
       )
 
-      return metadata?.specialSizeMeasurements.position === 'absolute'
+      return elementMetadata?.specialSizeMeasurements.position === 'absolute'
     } else {
       return false
     }
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState) => {
-    return absoluteMoveStrategy.isApplicable(canvasState, interactionState) &&
+  fitness: (canvasState, interactionState, sessionState) => {
+    return absoluteMoveStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 1

@@ -17,7 +17,7 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       interactionState.interactionData.modifiers.cmd
     ) {
       const selectedMetadata = MetadataUtils.findElementByElementPath(
-        metadata ?? canvasState.metadata,
+        metadata,
         canvasState.selectedElements[0],
       )
       return selectedMetadata?.specialSizeMeasurements.position === 'absolute'

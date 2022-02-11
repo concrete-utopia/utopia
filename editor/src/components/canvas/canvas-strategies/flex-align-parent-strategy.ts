@@ -23,15 +23,14 @@ import { FlexAlignControlRectProps } from './canvas-strategy-types'
 export const flexAlignParentStrategy: CanvasStrategy = {
   name: "Change Parent's Flex Align and Justify",
   strategyGroups: new Set(),
-  isApplicable: (canvasState, interactionState) => {
+  isApplicable: (canvasState, interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedElement = canvasState.selectedElements[0]
 
       const isFlexLayouted = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
-        MetadataUtils.findElementByElementPath(canvasState.metadata, selectedElement),
+        MetadataUtils.findElementByElementPath(metadata, selectedElement),
       )
-      const hasNoSiblings =
-        MetadataUtils.getSiblings(canvasState.metadata, selectedElement).length === 1
+      const hasNoSiblings = MetadataUtils.getSiblings(metadata, selectedElement).length === 1
 
       if (isFlexLayouted && hasNoSiblings) {
         return true
@@ -42,17 +41,23 @@ export const flexAlignParentStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: FlexAlignControls, key: 'FlexAlignControls', show: 'visible-only-while-active' },
   ],
-  fitness: (canvasState, interactionState) => {
-    return flexAlignParentStrategy.isApplicable(canvasState, interactionState) ? 10 : 0
+  fitness: (canvasState, interactionState, sessionState) => {
+    return flexAlignParentStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    )
+      ? 10
+      : 0
   },
-  apply: (canvasState, interactionState) => {
+  apply: (canvasState, interactionState, sessionState) => {
     // only apply after a certain treshold IF we hadn't already passed that treshold once
     const draggedElement = safeIndex(canvasState.selectedElements, 0)
     if (draggedElement == null || interactionState.interactionData.type !== 'DRAG') {
       return []
     }
 
-    const targetParent = MetadataUtils.getParent(canvasState.metadata, draggedElement)
+    const targetParent = MetadataUtils.getParent(sessionState.startingMetadata, draggedElement)
     const mousePosition =
       interactionState.interactionData.drag == null
         ? interactionState.interactionData.dragStart

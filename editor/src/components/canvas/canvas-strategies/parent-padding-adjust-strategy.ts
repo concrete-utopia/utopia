@@ -10,19 +10,16 @@ import { ParentPaddingControl } from '../controls/parent-padding-controls'
 export const parentPaddingAdjustStrategy: CanvasStrategy = {
   name: 'Change Parent Padding',
   strategyGroups: new Set(),
-  isApplicable: (canvasState) => {
+  isApplicable: (canvasState, _, metadata) => {
     if (canvasState.selectedElements.length === 1) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        metadata,
         canvasState.selectedElements[0],
       )
 
-      const parentMetadata = MetadataUtils.getParent(
-        canvasState.metadata,
-        canvasState.selectedElements[0],
-      )
+      const parentMetadata = MetadataUtils.getParent(metadata, canvasState.selectedElements[0])
       if (
-        metadata?.specialSizeMeasurements.position === 'static' &&
+        elementMetadata?.specialSizeMeasurements.position === 'static' &&
         parentMetadata?.props?.style?.padding != null
       ) {
         // only return true, if element is static, has no top left bottom right, and parent _has_ a padding prop
@@ -38,13 +35,13 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
       show: 'visible-only-while-active',
     },
   ], // parent padding control
-  fitness: (canvasState, interactionState) => {
+  fitness: (canvasState, interactionState, sessionState) => {
     if (
       canvasState.selectedElements.length === 1 &&
       interactionState.interactionData.type === 'DRAG'
     ) {
       const metadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
+        sessionState.startingMetadata,
         canvasState.selectedElements[0],
       )
 
@@ -52,7 +49,7 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
       // interaction direction is also important
       if (metadata?.specialSizeMeasurements.position === 'static') {
         const parentMetadata = MetadataUtils.getParent(
-          canvasState.metadata,
+          sessionState.startingMetadata,
           canvasState.selectedElements[0],
         )
         const dragDeltaX = interactionState.interactionData.drag?.x ?? 0

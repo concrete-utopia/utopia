@@ -37,13 +37,13 @@ function getSiblingSpacingFromEdge(
 export const flexBasisResizeStrategy: CanvasStrategy = {
   name: 'Flex Basis Resize',
   strategyGroups: new Set(['flex-basis-grow']),
-  isApplicable: (canvasState, interactionState) => {
+  isApplicable: (canvasState, interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedElement = safeIndex(canvasState.selectedElements, 0)
 
       if (selectedElement != null) {
         const isFlexLayouted = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
-          MetadataUtils.findElementByElementPath(canvasState.metadata, selectedElement),
+          MetadataUtils.findElementByElementPath(metadata, selectedElement),
         )
         if (isFlexLayouted) {
           return true
@@ -56,7 +56,11 @@ export const flexBasisResizeStrategy: CanvasStrategy = {
     { control: FlexResizeControls, key: 'FlexResizeControls', show: 'always-visible' },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
-    const applicable = flexBasisResizeStrategy.isApplicable(canvasState, interactionState)
+    const applicable = flexBasisResizeStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    )
     if (
       applicable &&
       interactionState.interactionData.type === 'DRAG' &&
@@ -129,13 +133,13 @@ export const flexBasisResizeStrategy: CanvasStrategy = {
 export const flexGrowResizeStrategy: CanvasStrategy = {
   name: 'Flex Grow Resize',
   strategyGroups: new Set(['flex-basis-grow']),
-  isApplicable: (canvasState, interactionState) => {
+  isApplicable: (canvasState, interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedElement = safeIndex(canvasState.selectedElements, 0)
 
       if (selectedElement != null) {
         const isFlexLayouted = MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
-          MetadataUtils.findElementByElementPath(canvasState.metadata, selectedElement),
+          MetadataUtils.findElementByElementPath(metadata, selectedElement),
         )
         if (isFlexLayouted) {
           return true
@@ -148,7 +152,11 @@ export const flexGrowResizeStrategy: CanvasStrategy = {
     { control: FlexResizeControls, key: 'FlexResizeControls', show: 'always-visible' },
   ],
   fitness: (canvasState, interactionState, sessionState) => {
-    const applicable = flexGrowResizeStrategy.isApplicable(canvasState, interactionState)
+    const applicable = flexGrowResizeStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    )
     if (
       applicable &&
       interactionState.interactionData.type === 'DRAG' &&

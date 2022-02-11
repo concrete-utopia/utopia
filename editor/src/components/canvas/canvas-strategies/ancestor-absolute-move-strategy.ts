@@ -9,16 +9,16 @@ import { adjustNumberProperty, setProperty, wildcardPatch } from '../commands/co
 export const ancestorAbsoluteMoveStrategy: CanvasStrategy = {
   name: 'Ancestor Absolute Move',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, interactionState) => {
+  isApplicable: (canvasState, interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1 && interactionState != null) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        metadata,
         canvasState.selectedElements[0],
       )
 
-      if (metadata?.specialSizeMeasurements.position === 'static') {
+      if (elementMetadata?.specialSizeMeasurements.position === 'static') {
         const ancestorWithLayout = MetadataUtils.findContainingBlock(
-          canvasState.metadata,
+          metadata,
           canvasState.selectedElements[0],
         )
         return ancestorWithLayout != null
@@ -29,9 +29,12 @@ export const ancestorAbsoluteMoveStrategy: CanvasStrategy = {
     return false
   },
   controlsToRender: [], // parent padding control
-  fitness: (canvasState, interactionState) => {
-    return ancestorAbsoluteMoveStrategy.isApplicable(canvasState, interactionState) &&
-      interactionState.interactionData.type === 'DRAG'
+  fitness: (canvasState, interactionState, sessionState) => {
+    return ancestorAbsoluteMoveStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    ) && interactionState.interactionData.type === 'DRAG'
       ? 1
       : 0
   },

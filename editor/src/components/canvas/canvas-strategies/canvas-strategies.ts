@@ -72,7 +72,7 @@ export function strategiesPartOfSameGroup(
 function getApplicableStrategies(
   canvasState: CanvasState,
   interactionState: InteractionState | null,
-  metadata?: ElementInstanceMetadataMap,
+  metadata: ElementInstanceMetadataMap,
 ): Array<CanvasStrategy> {
   return RegisteredCanvasStrategies.filter((strategy) => {
     return strategy.isApplicable(canvasState, interactionState, metadata)
@@ -83,7 +83,7 @@ const getApplicableStrategiesSelector = createSelector(
   (store: EditorStore): CanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
-      metadata: store.editor.jsxMetadata,
+      // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
       projectContents: store.editor.projectContents,
       openFile: store.editor.canvas.openFile?.filename,
       scale: store.editor.canvas.scale,
@@ -91,8 +91,13 @@ const getApplicableStrategiesSelector = createSelector(
     }
   },
   (store: EditorStore) => store.editor.canvas.interactionState,
-  (canvasState: CanvasState, interactionState: InteractionState | null): Array<CanvasStrategy> => {
-    return getApplicableStrategies(canvasState, interactionState)
+  (store: EditorStore) => store.editor.jsxMetadata,
+  (
+    canvasState: CanvasState,
+    interactionState: InteractionState | null,
+    metadata: ElementInstanceMetadataMap,
+  ): Array<CanvasStrategy> => {
+    return getApplicableStrategies(canvasState, interactionState, metadata)
   },
 )
 
@@ -141,7 +146,7 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
   (store: EditorStore): CanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
-      metadata: store.editor.jsxMetadata,
+      // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
       projectContents: store.editor.projectContents,
       openFile: store.editor.canvas.openFile?.filename,
       scale: store.editor.canvas.scale,

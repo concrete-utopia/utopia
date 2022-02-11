@@ -22,20 +22,21 @@ function yCenter(target: ElementInstanceMetadata): number {
 export const flexReOrderStrategy: CanvasStrategy = {
   name: 'Re-order Flex Element',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, _interactionState) => {
+  isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]
-      const selectedMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
-        selectedView,
-      )
+      const selectedMetadata = MetadataUtils.findElementByElementPath(metadata, selectedView)
       return selectedMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flex'
     }
     return false
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
-  fitness: (canvasState, interactionState) => {
-    return flexReOrderStrategy.isApplicable(canvasState, interactionState) &&
+  fitness: (canvasState, interactionState, sessionState) => {
+    return flexReOrderStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 1
@@ -55,7 +56,7 @@ export const flexReOrderStrategy: CanvasStrategy = {
         sessionState.startingMetadata,
         targetedElement,
       )
-      const parent = MetadataUtils.getParent(canvasState.metadata, targetedElement)
+      const parent = MetadataUtils.getParent(sessionState.startingMetadata, targetedElement)
       if (targetAtStart !== null && parent !== null) {
         const parentPath: ElementPath = parent.elementPath
         const siblingPaths = withUnderlyingTarget(
@@ -72,7 +73,10 @@ export const flexReOrderStrategy: CanvasStrategy = {
 
         const drag = interactionState.interactionData.drag
 
-        const siblings = MetadataUtils.findElementsByElementPath(canvasState.metadata, siblingPaths)
+        const siblings = MetadataUtils.findElementsByElementPath(
+          sessionState.startingMetadata,
+          siblingPaths,
+        )
         // FIXME There still appears to be a caching issue somewhere here
 
         const thisElementIndex = siblings.findIndex(
