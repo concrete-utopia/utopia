@@ -416,7 +416,7 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
         width: width,
         height: '100%',
       }}
-      style={{ transition: 'width 100ms ease-in-out' }}
+      style={{ transition: 'width 100ms ease-in-out', backfaceVisibility: 'hidden' }}
       snap={{
         x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
       }}
