@@ -40,11 +40,12 @@ export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (p
         minHeight: UtopiaTheme.layout.rowHeight.normal,
         cursor: 'pointer',
       }}
-      css={{
-        '&:hover': {
-          background: colorTheme.neutralBackground.value,
-        },
-      }}
+      // PERFORMANCE TEST
+      // css={{
+      //   '&:hover': {
+      //     background: colorTheme.neutralBackground.value,
+      //   },
+      // }}
       onClick={handleClick}
     >
       {props.children}

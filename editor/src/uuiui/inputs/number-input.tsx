@@ -611,25 +611,26 @@ export const NumberInput = React.memo<NumberInputProps>(
       <div style={style}>
         <div
           className='number-input-container'
-          css={{
+          // PERFORMANCE TEST
+          style={{
             color: controlStyles.mainColor,
             backgroundColor: controlStyles.backgroundColor,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
             borderRadius: 2,
-            ...chainedStyles,
-            '&:hover': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,
-            },
-            '&:focus-within': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
-            },
-            '&:hover input': {
-              color: controlStyles.mainColor,
-            },
-            '&:focus-within input': {
-              color: controlStyles.mainColor,
-            },
+            // ...chainedStyles,
+            // '&:hover': {
+            //   boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,
+            // },
+            // '&:focus-within': {
+            //   boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
+            // },
+            // '&:hover input': {
+            //   color: controlStyles.mainColor,
+            // },
+            // '&:focus-within input': {
+            //   color: controlStyles.mainColor,
+            // },
           }}
         >
           <InspectorInput
@@ -694,7 +695,8 @@ export const NumberInput = React.memo<NumberInputProps>(
           {incrementControls && controlStyles.interactive ? (
             <div
               className='number-input-increment-controls'
-              css={{
+              // PERFORMANCE TEST
+              style={{
                 position: 'absolute',
                 top: 0,
                 right: 1,
@@ -705,57 +707,59 @@ export const NumberInput = React.memo<NumberInputProps>(
 
                 boxShadow: `1px 0 ${controlStyles.borderColor} inset`,
                 display: 'none',
-                '.number-input-container:hover &': {
-                  display: 'block',
-                },
-                '.number-input-container:focus-within &': {
-                  display: 'block',
-                },
+                // '.number-input-container:hover &': {
+                //   display: 'block',
+                // },
+                // '.number-input-container:focus-within &': {
+                //   display: 'block',
+                // },
               }}
             >
               <div
-                css={{
+                // PERFORMANCE TEST
+                style={{
                   height: '50%',
                   opacity: 0.6,
                   position: 'relative',
                   borderTopRightRadius: borderRadiusStyles.borderTopRightRadius,
-                  ':active': {
-                    opacity: 1,
-                  },
-                  '::after': {
-                    content: '""',
-                    width: 'calc(100% - 1px)',
-                    height: 1,
-                    position: 'absolute',
-                    right: 1,
-                    bottom: 0,
-                    transform: 'translateY(0.5px)',
-                    pointerEvents: 'none',
-                  },
+                  // ':active': {
+                  //   opacity: 1,
+                  // },
+                  // '::after': {
+                  //   content: '""',
+                  //   width: 'calc(100% - 1px)',
+                  //   height: 1,
+                  //   position: 'absolute',
+                  //   right: 1,
+                  //   bottom: 0,
+                  //   transform: 'translateY(0.5px)',
+                  //   pointerEvents: 'none',
+                  // },
                 }}
                 onMouseDown={onIncrementMouseDown}
               >
                 <Icn category='controls/input' type='up' color='secondary' width={11} height={11} />
               </div>
               <div
-                css={{
+                // PERFORMANCE TEST
+                style={{
                   height: '50%',
                   opacity: 0.6,
                   position: 'relative',
                   borderBottomRightRadius: borderRadiusStyles.borderBottomRightRadius,
-                  ':active': {
-                    opacity: 1,
-                  },
-                  '::after': {
-                    content: '""',
-                    width: 'calc(100% - 1px)',
-                    height: 1,
-                    position: 'absolute',
-                    right: 1,
-                    bottom: 0,
-                    transform: 'translateY(0.5px)',
-                    pointerEvents: 'none',
-                  },
+                  // ':active': {
+                  //   opacity: 1,
+                  // },
+                  // '::after': {
+                  //   content: '""',
+                  //   width: 'calc(100% - 1px)',
+                  //   height: 1,
+                  //   position: 'absolute',
+                  //   right: 1,
+                  //   bottom: 0,
+                  //   transform: 'translateY(0.5px)',
+                  //   pointerEvents: 'none',
+                  // },
                 }}
                 onMouseDown={onDecrementMouseDown}
               >

@@ -51,7 +51,8 @@ const ErrorMessageRow = (props: ErrorMessageRowProps) => {
 
   return (
     <FlexRow
-      css={{
+      // PERFORMANCE TEST
+      style={{
         height: ErrorMessageRowHeight,
         flexGrow: 1,
         color: colorTheme.neutralForeground.value,
@@ -61,9 +62,9 @@ const ErrorMessageRow = (props: ErrorMessageRowProps) => {
         paddingLeft: 20,
         paddingRight: 8,
         cursor: isSourceKnown ? 'pointer' : 'default',
-        '&:hover': {
-          background: colorTheme.emphasizedBackground.value,
-        },
+        // '&:hover': {
+        //   background: colorTheme.emphasizedBackground.value,
+        // },
       }}
       onClick={isSourceKnown ? onClick : NO_OP}
     >
@@ -261,13 +262,14 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
               className='label-consolewrapper'
               // we need increased specificity because of our global settings for user-selection,
               // and console-feed 2.8x doesn't allow for style injection, despite the docs.
-              css={{
-                '& *': {
-                  userSelect: 'text',
-                  WebkitUserSelect: 'text',
-                  cursor: 'text',
-                },
-              }}
+              // PERFORMANCE TEST
+              // style={{
+              //   '& *': {
+              //     userSelect: 'text',
+              //     WebkitUserSelect: 'text',
+              //     cursor: 'text',
+              //   },
+              // }}
               style={{
                 backgroundColor: colorTheme.neutralInvertedBackground.value,
                 color: 'white',

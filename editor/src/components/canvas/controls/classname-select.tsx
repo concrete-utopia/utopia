@@ -102,8 +102,9 @@ const Menu = React.memo((props: MenuProps<TailWindOption, true>) => {
         {props.children}
         {showFooter ? (
           <div
-            css={{
-              label: 'focusedElementMetadata',
+            // PERFORMANCE TEST
+            style={{
+              // label: 'focusedElementMetadata',
               overflow: 'hidden',
               boxShadow: 'inset 0px 1px 0px 0px rgba(0,0,0,.1)',
               padding: '8px 8px',
@@ -374,7 +375,8 @@ export const ClassNameSelect = React.memo(
 
     return (
       <div
-        css={{
+        // PERFORMANCE TEST
+        style={{
           height: 22,
           borderRadius: 3,
           position: 'relative',
@@ -382,7 +384,7 @@ export const ClassNameSelect = React.memo(
           flexGrow: 1,
           display: 'flex',
           alignItems: 'center',
-          '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
+          // '&:focus-within': { boxShadow: `0px 0px 0px 1px ${theme.primary.value}` },
         }}
         onKeyDown={handleKeyDown}
       >

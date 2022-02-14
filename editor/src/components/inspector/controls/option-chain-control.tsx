@@ -50,7 +50,12 @@ export const OptionChainControl: React.FunctionComponent<DEPRECATEDControlProps<
     }, [style])
 
     return (
-      <div id={props.id} key={props.key} css={containerCSS}>
+      // PERFORMANCE TEST
+      <div
+        id={props.id}
+        key={props.key}
+        // css={containerCSS}
+      >
         <div
           style={{
             display: 'flex',
@@ -68,7 +73,8 @@ export const OptionChainControl: React.FunctionComponent<DEPRECATEDControlProps<
           {options.map((option: OptionChainOption<number | string>, index) => (
             <OptionControl
               {...props}
-              css={optionCSS}
+              // PERFORMANCE TEST
+              // style={optionCSS}
               key={'option-' + index}
               DEPRECATED_controlOptions={{
                 tooltip: option.tooltip,

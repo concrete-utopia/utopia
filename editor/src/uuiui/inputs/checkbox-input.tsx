@@ -46,8 +46,9 @@ export const CheckboxInput = React.memo(
           {...props}
           type='checkbox'
           disabled={!controlStyles.interactive}
-          style={style}
-          css={{
+          // PERFORMANCE TEST
+          style={{
+            ...style,
             WebkitAppearance: 'none',
             outline: 'none',
             margin: '5px 2px',
@@ -60,27 +61,27 @@ export const CheckboxInput = React.memo(
             backgroundPosition: '55% 55%',
             backgroundSize: '12px 12px',
             cursor: controlStyles.interactive ? 'pointer' : 'default',
-            '&:checked': {
-              backgroundImage:
-                'url("/editor/icons/light/controls/checkbox/checked-dark-12x12@2x.png")',
-            },
-            '&:focus': {
-              boxShadow: `0 0 0 1px ${colorTheme.inspectorFocusedColor.value}`,
-            },
-            '&.widget-status-controlled': {
-              backgroundImage:
-                'url("/editor/icons/light/controls/checkbox/checked-nodegraph-12x12@2x.png")',
-            },
-            '&:not(:checked)': {
-              backgroundImage: 'none',
-            },
-            '&:indeterminate': {
-              backgroundImage:
-                'url("/editor/icons/light/controls/checkbox/mixed-dark-12x12@2x.png")',
-            },
-            '&.widget-status-off, &.widget-status-disabled': {
-              cursor: 'inherit',
-            },
+            // '&:checked': {
+            //   backgroundImage:
+            //     'url("/editor/icons/light/controls/checkbox/checked-dark-12x12@2x.png")',
+            // },
+            // '&:focus': {
+            //   boxShadow: `0 0 0 1px ${colorTheme.inspectorFocusedColor.value}`,
+            // },
+            // '&.widget-status-controlled': {
+            //   backgroundImage:
+            //     'url("/editor/icons/light/controls/checkbox/checked-nodegraph-12x12@2x.png")',
+            // },
+            // '&:not(:checked)': {
+            //   backgroundImage: 'none',
+            // },
+            // '&:indeterminate': {
+            //   backgroundImage:
+            //     'url("/editor/icons/light/controls/checkbox/mixed-dark-12x12@2x.png")',
+            // },
+            // '&.widget-status-off, &.widget-status-disabled': {
+            //   cursor: 'inherit',
+            // },
           }}
           checked={checked}
           ref={composeRefs(ref, propsRef)}
