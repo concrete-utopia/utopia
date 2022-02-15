@@ -341,26 +341,26 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
         position: 'relative',
         color: colorTheme.neutralForeground.value,
       }}
-      css={{
-        '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
-        '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
-        '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
-        '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
-        '&:hover': {
-          '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-          '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-            .secondaryColor,
-          '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-          '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-        },
-        '&:focus-within': {
-          '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
-          '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
-            .secondaryColor,
-          '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
-          '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
-        },
-      }}
+      // css={{
+      //   '--control-styles-interactive-unset-main-color': UtopiaTheme.color.fg7.value,
+      //   '--control-styles-interactive-unset-secondary-color': UtopiaTheme.color.fg7.value,
+      //   '--control-styles-interactive-unset-track-color': UtopiaTheme.color.bg5.value,
+      //   '--control-styles-interactive-unset-rail-color': UtopiaTheme.color.bg3.value,
+      //   '&:hover': {
+      //     '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+      //     '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
+      //       .secondaryColor,
+      //     '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+      //     '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+      //   },
+      //   '&:focus-within': {
+      //     '--control-styles-interactive-unset-main-color': getControlStyles('simple').mainColor,
+      //     '--control-styles-interactive-unset-secondary-color': getControlStyles('simple')
+      //       .secondaryColor,
+      //     '--control-styles-interactive-unset-track-color': getControlStyles('simple').trackColor,
+      //     '--control-styles-interactive-unset-rail-color': getControlStyles('simple').railColor,
+      //   },
+      // }}
       onFocus={onFocus}
     >
       {renderInspectorContents()}
