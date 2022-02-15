@@ -56,6 +56,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
 }
 
 export function useTriggerResizePerformanceTest(): () => void {
+  setFeatureEnabled('Canvas Strategies', false)
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerResizePerformanceTest dispatch',
