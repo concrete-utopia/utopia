@@ -278,9 +278,8 @@ export function strategySwitchInteractionDataReset(
   }
 }
 
-export function modifierChangeInteractionDataReset(
-  interactionData: InteractionData,
-): InteractionData {
+// Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
+export function interactionDataHardReset(interactionData: InteractionData): InteractionData {
   switch (interactionData.type) {
     case 'DRAG':
       if (interactionData.drag == null) {
@@ -313,12 +312,11 @@ export function strategySwitchInteractionStateReset(
   }
 }
 
-export function modifierChangeInteractionStateReset(
-  interactionState: InteractionState,
-): InteractionState {
+// Hard reset means we need to ignore everything happening in the interaction until now, and replay all the dragging
+export function interactionStateHardReset(interactionState: InteractionState): InteractionState {
   return {
     ...interactionState,
-    interactionData: modifierChangeInteractionDataReset(interactionState.interactionData),
+    interactionData: interactionDataHardReset(interactionState.interactionData),
   }
 }
 

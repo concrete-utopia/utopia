@@ -106,7 +106,7 @@ import {
   findCanvasStrategy,
   getStrategyByName,
   hasModifiersChanged,
-  modifierChangeInteractionStateReset,
+  interactionStateHardReset,
   strategiesPartOfSameGroup,
   strategySwitchInteractionStateReset,
 } from '../../canvas/canvas-strategies/canvas-strategies'
@@ -491,14 +491,14 @@ export function editorDispatch(
 
   let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
 
-  // TODO: extract to function
-  const modifiersChanged = hasModifiersChanged(
-    storedState.editor.canvas.interactionState?.interactionData ?? null,
-    editorFilteredForFiles.canvas.interactionState?.interactionData ?? null,
-  )
+  const interactionHardResetNeeded =
+    hasModifiersChanged(
+      storedState.editor.canvas.interactionState?.interactionData ?? null,
+      editorFilteredForFiles.canvas.interactionState?.interactionData ?? null,
+    ) || result.sessionStateState.currentStrategy == null
 
   if (editorFilteredForFiles.canvas.interactionState != null) {
-    const accumulatedCommands = modifiersChanged
+    const accumulatedCommands = interactionHardResetNeeded
       ? []
       : [...result.sessionStateState.accumulatedCommands]
 
@@ -552,23 +552,29 @@ export function editorDispatch(
       }
     }
 
-    if (modifiersChanged && editorFilteredForFiles.canvas.interactionState != null) {
+    let sessionStateState = result.sessionStateState
+    if (interactionHardResetNeeded && editorFilteredForFiles.canvas.interactionState != null) {
       editorFilteredForFiles = {
         ...editorFilteredForFiles,
         canvas: {
           ...editorFilteredForFiles.canvas,
-          interactionState: modifierChangeInteractionStateReset(
+          interactionState: interactionStateHardReset(
             editorFilteredForFiles.canvas.interactionState,
           ),
         },
       }
+      sessionStateState = {
+        ...result.sessionStateState,
+        startingMetadata: sessionStateState.originalMetadata,
+      }
     }
+
     if (strategy != null && editorFilteredForFiles.canvas.interactionState != null) {
       const commands = applyCanvasStrategy(
         strategy.strategy,
         canvasState,
         editorFilteredForFiles.canvas.interactionState,
-        result.sessionStateState,
+        sessionStateState,
       )
       patchCommands = commands
     }
@@ -609,10 +615,11 @@ export function editorDispatch(
     currentStrategy: strategyName,
     currentStrategyFitness: strategyFitness,
     currentStrategyCommands: patchCommands,
-    accumulatedCommands: modifiersChanged ? [] : updatedAccumulatedCommands,
+    accumulatedCommands: interactionHardResetNeeded ? [] : updatedAccumulatedCommands,
     commandDescriptions: [],
     strategyState: result.sessionStateState.strategyState,
     startingMetadata: result.sessionStateState.startingMetadata,
+    originalMetadata: result.sessionStateState.originalMetadata,
   }
 
   const commandResult = foldCommands(
@@ -636,6 +643,7 @@ export function editorDispatch(
     ? {
         ...createEmptySessionStateState(), // QUESTION should we make this NULL instead?
         startingMetadata: editorFilteredForFiles.jsxMetadata,
+        originalMetadata: editorFilteredForFiles.jsxMetadata,
       }
     : {
         ...workingSessionStateState,
