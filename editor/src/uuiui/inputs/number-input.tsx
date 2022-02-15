@@ -612,7 +612,8 @@ export const NumberInput = React.memo<NumberInputProps>(
         <div
           className='number-input-container'
           css={{
-            color: controlStyles.mainColor,
+            // RECALCULATE STYLE
+            // color: controlStyles.mainColor,
             backgroundColor: controlStyles.backgroundColor,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
@@ -624,12 +625,13 @@ export const NumberInput = React.memo<NumberInputProps>(
             '&:focus-within': {
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
             },
-            '&:hover input': {
-              color: controlStyles.mainColor,
-            },
-            '&:focus-within input': {
-              color: controlStyles.mainColor,
-            },
+            // RECALCULATE STYLE
+            // '&:hover input': {
+            //   color: controlStyles.mainColor,
+            // },
+            // '&:focus-within input': {
+            //   color: controlStyles.mainColor,
+            // },
           }}
         >
           <InspectorInput
@@ -644,7 +646,8 @@ export const NumberInput = React.memo<NumberInputProps>(
             mixed={mixed}
             value={stateValue}
             ref={ref}
-            style={{ color: controlStyles.mainColor }}
+            // RECALCULATE STYLE
+            // style={{ color: controlStyles.mainColor }}
             className='number-input'
             height={height}
             id={id}
@@ -680,7 +683,8 @@ export const NumberInput = React.memo<NumberInputProps>(
                   fontSize: '9px',
                   width: '100%',
                   height: '100%',
-                  color: controlStyles.secondaryColor,
+                  // RECALCULATE STYLE
+                  // color: controlStyles.secondaryColor,
                 }}
               >
                 {typeof labelInner === 'object' && 'type' in labelInner ? (
@@ -792,7 +796,8 @@ export const NumberInput = React.memo<NumberInputProps>(
                 fontSize: 9,
                 textAlign: 'center',
                 display: 'block',
-                color: controlStyles.secondaryColor,
+                // RECALCULATE STYLE
+                // color: controlStyles.secondaryColor,
                 paddingTop: 2,
               }}
             >

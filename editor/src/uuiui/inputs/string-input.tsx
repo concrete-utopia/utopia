@@ -93,7 +93,8 @@ export const StringInput = React.memo(
             className='string-input-container'
             css={{
               borderRadius: 2,
-              color: controlStyles.mainColor,
+              // RECALCULATE STYLE
+              // color: controlStyles.mainColor,
               backgroundColor: controlStyles.backgroundColor,
               position: 'relative',
               '&:hover': {
@@ -111,10 +112,12 @@ export const StringInput = React.memo(
               value={inputProps.value}
               css={[
                 {
-                  color: controlStyles.mainColor,
+                  // RECALCULATE STYLE
+                  // color: controlStyles.mainColor,
                   '&::placeholder': {
                     fontStyle: 'italic',
-                    color: colorTheme.subduedForeground.value,
+                    // RECALCULATE STYLE
+                    // color: colorTheme.subduedForeground.value,
                   },
                 },
                 InspectorInputEmotionStyle({

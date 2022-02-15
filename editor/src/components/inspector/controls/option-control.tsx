@@ -91,7 +91,8 @@ export const OptionControl: React.FunctionComponent<
             textAlign: 'center',
             minWidth: controlOptions.width,
             height: controlOptions.height,
-            color: props.controlStyles.mainColor,
+            // RECALCULATE STYLE
+            // color: props.controlStyles.mainColor,
             '.option-chain-control-container .segment:first-of-type  &': {
               borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
               borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
