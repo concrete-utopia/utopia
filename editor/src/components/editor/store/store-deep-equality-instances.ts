@@ -600,7 +600,7 @@ export function JSXElementChildArrayKeepDeepEquality(): KeepDeepEqualityCall<
   return arrayDeepEquality(JSXElementChildKeepDeepEquality())
 }
 
-const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> = combine2EqualityCalls(
+export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> = combine2EqualityCalls(
   (param) => param.paramName,
   createCallWithTripleEquals(),
   (param) => param.defaultExpression,
@@ -608,7 +608,7 @@ const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> = combine
   regularParam,
 )
 
-const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredParamPart> = combine3EqualityCalls(
+export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredParamPart> = combine3EqualityCalls(
   (paramPart) => paramPart.propertyName,
   createCallWithTripleEquals(),
   (paramPart) => paramPart.param,
@@ -618,13 +618,13 @@ const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredPa
   destructuredParamPart,
 )
 
-const DestructuredObjectParamKeepDeepEquality: KeepDeepEqualityCall<DestructuredObject> = combine1EqualityCall(
+export const DestructuredObjectParamKeepDeepEquality: KeepDeepEqualityCall<DestructuredObject> = combine1EqualityCall(
   (paramPart) => paramPart.parts,
   arrayDeepEquality(DestructuredParamPartKeepDeepEquality),
   destructuredObject,
 )
 
-const DestructuredArrayPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredArrayPart> = (
+export const DestructuredArrayPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredArrayPart> = (
   oldValue,
   newValue,
 ) => {
@@ -637,13 +637,13 @@ const DestructuredArrayPartKeepDeepEquality: KeepDeepEqualityCall<DestructuredAr
   }
 }
 
-const DestructuredArrayKeepDeepEquality: KeepDeepEqualityCall<DestructuredArray> = combine1EqualityCall(
+export const DestructuredArrayKeepDeepEquality: KeepDeepEqualityCall<DestructuredArray> = combine1EqualityCall(
   (param) => param.parts,
   arrayDeepEquality(DestructuredArrayPartKeepDeepEquality),
   destructuredArray,
 )
 
-function BoundParamKeepDeepEquality(): KeepDeepEqualityCall<BoundParam> {
+export function BoundParamKeepDeepEquality(): KeepDeepEqualityCall<BoundParam> {
   return (oldValue, newValue) => {
     if (isRegularParam(oldValue) && isRegularParam(newValue)) {
       return RegularParamKeepDeepEquality(oldValue, newValue)
@@ -657,7 +657,7 @@ function BoundParamKeepDeepEquality(): KeepDeepEqualityCall<BoundParam> {
   }
 }
 
-function ParamKeepDeepEquality(): KeepDeepEqualityCall<Param> {
+export function ParamKeepDeepEquality(): KeepDeepEqualityCall<Param> {
   return combine2EqualityCalls(
     (param) => param.dotDotDotToken,
     createCallWithTripleEquals(),
@@ -879,7 +879,7 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.computedStyle,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
     (metadata) => metadata.attributeMetadatada,
-    nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
+    createCallFromIntrospectiveKeepDeep(),
     (metadata) => metadata.label,
     nullableDeepEquality(createCallWithTripleEquals()),
     (metadata) => metadata.importInfo,
