@@ -417,15 +417,14 @@ export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => 
   return (
     <UIRow
       rowHeight={'normal'}
-      // PERFORMANCE TEST
-      style={{
+      css={{
         background: props.selected ? UtopiaStyles.backgrounds.blue : 'initial',
         color: props.selected ? colorTheme.white.value : 'initial',
         opacity: props.disabled ? 0.3 : 1,
         gap: 8,
-        // '&:hover': {
-        //   border: `1px solid ${colorTheme.primary.value}`,
-        // },
+        '&:hover': {
+          border: `1px solid ${colorTheme.primary.value}`,
+        },
       }}
       onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
     >

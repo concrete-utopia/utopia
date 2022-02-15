@@ -196,8 +196,7 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
       <div
         key={name}
         className={name + ' ' + (this.props.className ?? '')}
-        // PERFORMANCE TEST
-        style={{
+        css={{
           width: '100%',
           ...this.props.style,
         }}

@@ -91,18 +91,17 @@ export const StringInput = React.memo(
         >
           <div
             className='string-input-container'
-            // PERFORMANCE TEST
-            style={{
+            css={{
               borderRadius: 2,
               color: controlStyles.mainColor,
               backgroundColor: controlStyles.backgroundColor,
               position: 'relative',
-              // '&:hover': {
-              //   boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,
-              // },
-              // '&:focus-within': {
-              //   boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
-              // },
+              '&:hover': {
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,
+              },
+              '&:focus-within': {
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
+              },
             }}
           >
             <HeadlessStringInput
@@ -110,20 +109,19 @@ export const StringInput = React.memo(
               data-testid={testId}
               data-controlstatus={controlStatus}
               value={inputProps.value}
-              // PERFORMANCE TEST
-              // css={[
-              //   {
-              //     color: controlStyles.mainColor,
-              //     '&::placeholder': {
-              //       fontStyle: 'italic',
-              //       color: colorTheme.subduedForeground.value,
-              //     },
-              //   },
-              //   InspectorInputEmotionStyle({
-              //     controlStyles,
-              //     hasLabel: false,
-              //   }),
-              // ]}
+              css={[
+                {
+                  color: controlStyles.mainColor,
+                  '&::placeholder': {
+                    fontStyle: 'italic',
+                    color: colorTheme.subduedForeground.value,
+                  },
+                },
+                InspectorInputEmotionStyle({
+                  controlStyles,
+                  hasLabel: false,
+                }),
+              ]}
               onKeyDown={onKeyDown}
               className={inputProps.className}
               ref={composeRefs(ref, propsRef)}
