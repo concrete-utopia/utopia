@@ -10,17 +10,17 @@ import { absoluteMoveStrategy } from './absolute-move-strategy'
 export const absoluteReparentStrategy: CanvasStrategy = {
   name: 'Reparent Absolute Elements',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, interactionState, sessionState) => {
+  isApplicable: (canvasState, interactionState, metadata) => {
     if (
       canvasState.selectedElements.length === 1 &&
       interactionState != null &&
       interactionState.interactionData.modifiers.cmd
     ) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        sessionState?.startingMetadata ?? canvasState.metadata,
+      const selectedMetadata = MetadataUtils.findElementByElementPath(
+        metadata,
         canvasState.selectedElements[0],
       )
-      return metadata?.specialSizeMeasurements.position === 'absolute'
+      return selectedMetadata?.specialSizeMeasurements.position === 'absolute'
     }
     return false
   },
@@ -55,10 +55,13 @@ export const absoluteReparentStrategy: CanvasStrategy = {
       const newPath = EP.appendToPath(newParent, EP.toUid(canvasState.selectedElements[0]))
 
       const oldParentFrame =
-        MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), canvasState.metadata) ??
-        zeroCanvasRect
+        MetadataUtils.getFrameInCanvasCoords(
+          EP.parentPath(target),
+          sessionState.startingMetadata,
+        ) ?? zeroCanvasRect
       const newParentFrame =
-        MetadataUtils.getFrameInCanvasCoords(newParent, canvasState.metadata) ?? zeroCanvasRect
+        MetadataUtils.getFrameInCanvasCoords(newParent, sessionState.startingMetadata) ??
+        zeroCanvasRect
       const offset = pointDifference(newParentFrame, oldParentFrame)
 
       return [

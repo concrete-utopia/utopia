@@ -450,36 +450,28 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const editorWithModelChecked =
-    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
-      ? { editorState: result.editor, modelUpdateFinished: Promise.resolve(true) }
-      : maybeRequestModelUpdateOnEditor(result.editor, storedState.workers, boundDispatch)
+  let editorFilteredForFiles = filterEditorForFiles(result.editor)
 
-  const editorFilteredForFiles = filterEditorForFiles(editorWithModelChecked.editorState)
-
-  let frozenEditorState = editorFilteredForFiles
   const frozenDerivedState = result.derived
 
   let newHistory: StateHistory
   if (transientOrNoChange) {
     newHistory = result.history
   } else {
-    newHistory = History.add(result.history, frozenEditorState, frozenDerivedState)
+    newHistory = History.add(result.history, editorFilteredForFiles, frozenDerivedState)
   }
 
   const alreadySaved = result.alreadySaved
 
-  const isLoaded = frozenEditorState.isLoaded
+  const isLoaded = editorFilteredForFiles.isLoaded
   const shouldSave =
     isLoaded &&
     !isLoadAction &&
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
-  // Create commands from the interaction state.
-  let patchCommands: Array<CanvasCommand> = []
   if (
-    frozenEditorState.canvas.interactionState != null &&
+    editorFilteredForFiles.canvas.interactionState != null &&
     (frozenDerivedState.canvas.transientState.selectedViews != null ||
       frozenDerivedState.canvas.transientState.filesState != null) &&
     isFeatureEnabled('Canvas Strategies') // only throw error if Canvas Strategies are enabled to begin with, to allow an escape hatch for insertion
@@ -489,40 +481,42 @@ export function editorDispatch(
   const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
   const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
+
+  let patchCommands: Array<CanvasCommand> = []
   let strategyName: string | null = null
   let previousStrategyCurrentFitness: number = NaN
   let strategyFitness: number = 0
   let strategyChanged: boolean = false
-  let partOfSameGroup: boolean = false
+  let partOfSameGroup: boolean = false // FIXME This is false if the strategy is unchanged, but surely it should be true
 
   let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
 
   // TODO: extract to function
   const modifiersChanged = hasModifiersChanged(
     storedState.editor.canvas.interactionState?.interactionData ?? null,
-    frozenEditorState.canvas.interactionState?.interactionData ?? null,
+    editorFilteredForFiles.canvas.interactionState?.interactionData ?? null,
   )
 
-  if (frozenEditorState.canvas.interactionState != null) {
+  if (editorFilteredForFiles.canvas.interactionState != null) {
     const accumulatedCommands = modifiersChanged
       ? []
       : [...result.sessionStateState.accumulatedCommands]
 
     const commandResultCurrent = foldCommands(
-      frozenEditorState,
+      editorFilteredForFiles,
       result.sessionStateState,
       accumulatedCommands.flatMap((c) => c.commands),
       shouldApplyChanges ? 'permanent' : 'transient',
     )
     const patchedEditorStateCurrent = applyStatePatches(
-      frozenEditorState,
+      editorFilteredForFiles,
       storedState.editor,
       shouldDiscardChanges ? [] : commandResultCurrent.editorStatePatches,
     )
 
     const canvasState: CanvasState = {
       selectedElements: patchedEditorStateCurrent.selectedViews,
-      metadata: patchedEditorStateCurrent.jsxMetadata,
+      // metadata: patchedEditorStateCurrent.jsxMetadata, // We can add metadata back if live metadata is necessary
       projectContents: patchedEditorStateCurrent.projectContents,
       openFile: patchedEditorStateCurrent.canvas.openFile?.filename,
       scale: patchedEditorStateCurrent.canvas.scale,
@@ -531,7 +525,7 @@ export function editorDispatch(
 
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
-      frozenEditorState.canvas.interactionState,
+      editorFilteredForFiles.canvas.interactionState,
       result.sessionStateState,
       result.sessionStateState.currentStrategy,
     )
@@ -547,33 +541,33 @@ export function editorDispatch(
 
     if (strategyChanged && !partOfSameGroup) {
       didResetInteractionData = true
-      frozenEditorState = {
-        ...frozenEditorState,
+      editorFilteredForFiles = {
+        ...editorFilteredForFiles,
         canvas: {
-          ...frozenEditorState.canvas,
+          ...editorFilteredForFiles.canvas,
           interactionState: strategySwitchInteractionStateReset(
-            frozenEditorState.canvas.interactionState,
+            editorFilteredForFiles.canvas.interactionState,
           ),
         },
       }
     }
 
-    if (modifiersChanged && frozenEditorState.canvas.interactionState != null) {
-      frozenEditorState = {
-        ...frozenEditorState,
+    if (modifiersChanged && editorFilteredForFiles.canvas.interactionState != null) {
+      editorFilteredForFiles = {
+        ...editorFilteredForFiles,
         canvas: {
-          ...frozenEditorState.canvas,
+          ...editorFilteredForFiles.canvas,
           interactionState: modifierChangeInteractionStateReset(
-            frozenEditorState.canvas.interactionState,
+            editorFilteredForFiles.canvas.interactionState,
           ),
         },
       }
     }
-    if (strategy != null && frozenEditorState.canvas.interactionState != null) {
+    if (strategy != null && editorFilteredForFiles.canvas.interactionState != null) {
       const commands = applyCanvasStrategy(
         strategy.strategy,
         canvasState,
-        frozenEditorState.canvas.interactionState,
+        editorFilteredForFiles.canvas.interactionState,
         result.sessionStateState,
       )
       patchCommands = commands
@@ -622,7 +616,7 @@ export function editorDispatch(
   }
 
   const commandResult = foldCommands(
-    frozenEditorState,
+    editorFilteredForFiles,
     workingSessionStateState,
     [
       ...workingSessionStateState.accumulatedCommands.flatMap((c) => c.commands),
@@ -633,13 +627,16 @@ export function editorDispatch(
 
   // FIXME if shouldDiscardChanges, should this just become the previous unpatchedEditorState?
   const patchedEditorState = applyStatePatches(
-    frozenEditorState,
+    editorFilteredForFiles,
     storedState.editor,
     shouldDiscardChanges ? [] : commandResult.editorStatePatches,
   )
 
   let newSessionStateState: SessionStateState = clearInteractionStateActionDispatched
-    ? createEmptySessionStateState() // QUESTION should we make this NULL instead?
+    ? {
+        ...createEmptySessionStateState(), // QUESTION should we make this NULL instead?
+        startingMetadata: editorFilteredForFiles.jsxMetadata,
+      }
     : {
         ...workingSessionStateState,
         strategyState: commandResult.newStrategyState,
@@ -652,12 +649,21 @@ export function editorDispatch(
     // TODO if the user deliberately changes the strategy, do not reset startingMetadata
     newSessionStateState = {
       ...newSessionStateState,
-      startingMetadata: frozenEditorState.jsxMetadata,
+      startingMetadata: editorFilteredForFiles.jsxMetadata,
     }
   }
 
+  const newUpdatchedEditor = shouldApplyChanges ? patchedEditorState : editorFilteredForFiles
+
+  const editorWithModelChecked =
+    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
+      ? { editorState: newUpdatchedEditor, modelUpdateFinished: Promise.resolve(true) }
+      : maybeRequestModelUpdateOnEditor(newUpdatchedEditor, storedState.workers, boundDispatch)
+
+  const frozenEditorState = editorWithModelChecked.editorState
+
   const finalStore: DispatchResult = {
-    unpatchedEditor: shouldApplyChanges ? patchedEditorState : frozenEditorState,
+    unpatchedEditor: frozenEditorState,
     editor: patchedEditorState,
     derived: frozenDerivedState,
     sessionStateState: optionalDeepFreeze(newSessionStateState),

@@ -16,7 +16,7 @@ export interface CanvasState {
   // The idea here being that we should be restricting the model we're supplying to the interactions system,
   // but that's not a requirement of this proposal
   selectedElements: Array<ElementPath>
-  metadata: ElementInstanceMetadataMap
+  // metadata: ElementInstanceMetadataMap // We can add metadata back if live metadata is necessary
   projectContents: ProjectContentTreeRoot
   openFile: string | null | undefined
   scale: number
@@ -311,7 +311,7 @@ export interface CanvasStrategy {
   isApplicable: (
     canvasState: CanvasState,
     interactionState: InteractionState | null,
-    sessionState?: SessionStateState,
+    metadata: ElementInstanceMetadataMap,
   ) => boolean
   // Determines if we should show the controls that this strategy renders
   // Maybe this can just be rolled into controlsToRender?

@@ -11,28 +11,24 @@ import { isRight } from '../../../core/shared/either'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { ElementPath } from '../../../core/shared/project-file-types'
 
-function xCenter(target: ElementInstanceMetadata): number {
-  return (target.globalFrame?.x ?? 0) + (target.globalFrame?.width ?? 0) / 2
-}
-
 function yCenter(target: ElementInstanceMetadata): number {
   return (target.globalFrame?.y ?? 0) + (target.globalFrame?.height ?? 0) / 2
 }
 
-export const flexReOrderStrategy: CanvasStrategy = {
-  name: 'Re-order Flex Element',
+export const flowReOrderStrategy: CanvasStrategy = {
+  name: 'Re-order Flow Element',
   strategyGroups: new Set(),
   isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
       const selectedView = canvasState.selectedElements[0]
       const selectedMetadata = MetadataUtils.findElementByElementPath(metadata, selectedView)
-      return selectedMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flex'
+      return selectedMetadata?.specialSizeMeasurements.parentLayoutSystem === 'flow'
     }
     return false
   },
   controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
   fitness: (canvasState, interactionState, sessionState) => {
-    return flexReOrderStrategy.isApplicable(
+    return flowReOrderStrategy.isApplicable(
       canvasState,
       interactionState,
       sessionState.startingMetadata,
@@ -57,7 +53,7 @@ export const flexReOrderStrategy: CanvasStrategy = {
         targetedElement,
       )
       const parent = MetadataUtils.getParent(sessionState.startingMetadata, targetedElement)
-      if (targetAtStart !== null && parent !== null) {
+      if (targetAtStart != null && parent != null) {
         const parentPath: ElementPath = parent.elementPath
         const siblingPaths = withUnderlyingTarget(
           parentPath,
@@ -73,6 +69,8 @@ export const flexReOrderStrategy: CanvasStrategy = {
 
         const drag = interactionState.interactionData.drag
 
+        const draggedCenter = yCenter(targetAtStart) + drag.y
+
         const siblings = MetadataUtils.findElementsByElementPath(
           sessionState.startingMetadata,
           siblingPaths,
@@ -82,32 +80,26 @@ export const flexReOrderStrategy: CanvasStrategy = {
         const thisElementIndex = siblings.findIndex(
           (sibling) => getUtopiaID(sibling) === EP.toUid(targetedElement),
         )
-        const flexDirection = MetadataUtils.getFlexDirection(parent)
-        const isRowDirection = flexDirection.startsWith('row')
-        const draggedRelevantDimensionCenter = isRowDirection
-          ? xCenter(targetAtStart) + drag.x
-          : yCenter(targetAtStart) + drag.y
 
-        // Find the index of the first element that should be after the dragged element
-        const firstElementAfterTargetIndex = siblings.findIndex((sibling, index) => {
-          const siblingCenter = isRowDirection ? xCenter(sibling) : yCenter(sibling)
-          return siblingCenter > draggedRelevantDimensionCenter
+        let indexToMoveTo: number | null = null
+        siblings.forEach((sibling, index) => {
+          const siblingCenter = yCenter(sibling)
+          if (index < thisElementIndex) {
+            if (draggedCenter < siblingCenter && indexToMoveTo == null) {
+              indexToMoveTo = index
+            }
+          } else if (index > thisElementIndex) {
+            if (draggedCenter > siblingCenter) {
+              indexToMoveTo = index
+            }
+          }
         })
 
-        const movedBack = firstElementAfterTargetIndex <= thisElementIndex
-        const movedToEnd = firstElementAfterTargetIndex < 0
+        const indexChanged = indexToMoveTo !== thisElementIndex
 
-        const newIndex = movedToEnd
-          ? siblings.length - 1
-          : movedBack
-          ? firstElementAfterTargetIndex
-          : firstElementAfterTargetIndex - 1
-
-        const indexChanged = newIndex !== thisElementIndex
-
-        if (indexChanged) {
+        if (indexToMoveTo != null && indexChanged) {
           return [
-            updateElementIndex('permanent', targetedElement, newIndex),
+            updateElementIndex('permanent', targetedElement, indexToMoveTo),
             wildcardPatch('transient', {
               highlightedViews: {
                 $set: [],

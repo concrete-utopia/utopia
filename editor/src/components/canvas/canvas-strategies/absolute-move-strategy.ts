@@ -7,14 +7,14 @@ import { SelectionOutlineControl2 } from '../controls/selection-outline-control2
 export const absoluteMoveStrategy: CanvasStrategy = {
   name: 'Absolute Move',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, _interactionState) => {
+  isApplicable: (canvasState, _interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        canvasState.metadata,
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        metadata,
         canvasState.selectedElements[0],
       )
 
-      return metadata?.specialSizeMeasurements.position === 'absolute'
+      return elementMetadata?.specialSizeMeasurements.position === 'absolute'
     } else {
       return false
     }
@@ -22,8 +22,12 @@ export const absoluteMoveStrategy: CanvasStrategy = {
   controlsToRender: [
     { control: SelectionOutlineControl2, key: 'selection-outline-2', show: 'always-visible' },
   ],
-  fitness: (canvasState, interactionState) => {
-    return absoluteMoveStrategy.isApplicable(canvasState, interactionState) &&
+  fitness: (canvasState, interactionState, sessionState) => {
+    return absoluteMoveStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    ) &&
       interactionState.interactionData.type === 'DRAG' &&
       interactionState.activeControl.type === 'BOUNDING_AREA'
       ? 1

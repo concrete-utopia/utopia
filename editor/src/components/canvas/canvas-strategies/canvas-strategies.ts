@@ -2,6 +2,7 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { intersects } from 'semver'
 import { addAllUniquelyBy, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { offsetPoint, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
@@ -22,6 +23,7 @@ import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexBasisResizeStrategy, flexGrowResizeStrategy } from './flex-basis-resize-strategy'
 import { flexGapStrategy } from './flex-gap-strategy'
 import { flexReOrderStrategy } from './flex-reorder-strategy'
+import { flowReOrderStrategy } from './flow-reorder-strategy'
 import { adjustMinMaxDimensionStrategy } from './min-max-dimension-adjust-strategy'
 import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
 
@@ -36,6 +38,7 @@ const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
   ancestorAbsoluteMoveStrategy,
   absoluteMoveStrategy,
   absoluteReparentStrategy,
+  flowReOrderStrategy,
 ]
 
 export function getStrategyByName(name: string): CanvasStrategy | null {
@@ -71,10 +74,10 @@ export function strategiesPartOfSameGroup(
 function getApplicableStrategies(
   canvasState: CanvasState,
   interactionState: InteractionState | null,
-  sessionState?: SessionStateState,
+  metadata: ElementInstanceMetadataMap,
 ): Array<CanvasStrategy> {
   return RegisteredCanvasStrategies.filter((strategy) => {
-    return strategy.isApplicable(canvasState, interactionState, sessionState)
+    return strategy.isApplicable(canvasState, interactionState, metadata)
   })
 }
 
@@ -82,7 +85,7 @@ const getApplicableStrategiesSelector = createSelector(
   (store: EditorStore): CanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
-      metadata: store.editor.jsxMetadata,
+      // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
       projectContents: store.editor.projectContents,
       openFile: store.editor.canvas.openFile?.filename,
       scale: store.editor.canvas.scale,
@@ -90,8 +93,13 @@ const getApplicableStrategiesSelector = createSelector(
     }
   },
   (store: EditorStore) => store.editor.canvas.interactionState,
-  (canvasState: CanvasState, interactionState: InteractionState | null): Array<CanvasStrategy> => {
-    return getApplicableStrategies(canvasState, interactionState)
+  (store: EditorStore) => store.editor.jsxMetadata,
+  (
+    canvasState: CanvasState,
+    interactionState: InteractionState | null,
+    metadata: ElementInstanceMetadataMap,
+  ): Array<CanvasStrategy> => {
+    return getApplicableStrategies(canvasState, interactionState, metadata)
   },
 )
 
@@ -109,7 +117,11 @@ function getApplicableStrategiesOrderedByFitness(
   interactionState: InteractionState,
   sessionState: SessionStateState,
 ): Array<StrategiesWithFitness> {
-  const applicableStrategies = getApplicableStrategies(canvasState, interactionState, sessionState)
+  const applicableStrategies = getApplicableStrategies(
+    canvasState,
+    interactionState,
+    sessionState.startingMetadata,
+  )
 
   // Compute the fitness results upfront.
   const strategiesWithFitness = mapDropNulls((strategy) => {
@@ -136,7 +148,7 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
   (store: EditorStore): CanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
-      metadata: store.editor.jsxMetadata,
+      // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
       projectContents: store.editor.projectContents,
       openFile: store.editor.canvas.openFile?.filename,
       scale: store.editor.canvas.scale,

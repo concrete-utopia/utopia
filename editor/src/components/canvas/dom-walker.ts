@@ -471,7 +471,7 @@ export function useDomWalker(
         !initComplete,
         props.scale,
         containerRect,
-        props.additionalElementsToUpdate,
+        [...props.additionalElementsToUpdate, ...props.selectedViews],
       )
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_END')
@@ -845,6 +845,7 @@ function walkCanvasRootFragment(
     invalidatedPaths.size === 0 &&
     invalidatedScenes.size === 0 &&
     rootMetadataInStateRef.current.length > 0 &&
+    additionalElementsToUpdate.length === 0 &&
     !invalidated
   ) {
     // no mutation happened on the entire canvas, just return the old metadata
