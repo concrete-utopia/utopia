@@ -9,19 +9,14 @@ const ApplyOnMouseUp_ = () => {
     dispatch([CanvasActions.clearInteractionState(true)], 'everyone')
   }, [dispatch])
 
-  return (
-    <div
-      key={'apply-on-mouse-up'}
-      style={{
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: '100%',
-        height: '100%',
-      }}
-      onMouseUp={onMouseUp}
-    />
-  )
+  React.useEffect(() => {
+    window.addEventListener('mouseup', onMouseUp, true)
+    return function cleanup() {
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [onMouseUp])
+
+  return null
 }
 ApplyOnMouseUp_.displayName = 'ApplyOnMouseUp'
 export const ApplyOnMouseUp = React.memo(ApplyOnMouseUp_)
