@@ -36,6 +36,7 @@ import {
   isClearInteractionState,
   shouldApplyClearInteractionStateResult,
   strategyWasOverridden,
+  isCreateInteractionState,
 } from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
@@ -479,6 +480,7 @@ export function editorDispatch(
     throw new Error('transient canvas state is not allowed while an interaction state is active')
   }
   const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
+  const createInteractionStateActionDispatched = dispatchedActions.some(isCreateInteractionState)
   const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
 
@@ -639,17 +641,19 @@ export function editorDispatch(
     shouldDiscardChanges ? [] : commandResult.editorStatePatches,
   )
 
-  let newSessionStateState: SessionStateState = clearInteractionStateActionDispatched
-    ? {
-        ...createEmptySessionStateState(), // QUESTION should we make this NULL instead?
-        startingMetadata: editorFilteredForFiles.jsxMetadata,
-        originalMetadata: editorFilteredForFiles.jsxMetadata,
-      }
-    : {
-        ...workingSessionStateState,
-        strategyState: commandResult.newStrategyState,
-        commandDescriptions: commandResult.commandDescriptions,
-      }
+  // QUESTION: Should this still do this on clearInteractionStateActionDispatched?
+  let newSessionStateState: SessionStateState =
+    clearInteractionStateActionDispatched || createInteractionStateActionDispatched
+      ? {
+          ...createEmptySessionStateState(), // QUESTION should we make this NULL instead?
+          startingMetadata: editorFilteredForFiles.jsxMetadata,
+          originalMetadata: editorFilteredForFiles.jsxMetadata,
+        }
+      : {
+          ...workingSessionStateState,
+          strategyState: commandResult.newStrategyState,
+          commandDescriptions: commandResult.commandDescriptions,
+        }
 
   // Should the strategy be changed, checkpoint the metadata into `startingMetadata` for
   // future reference by the strategies.

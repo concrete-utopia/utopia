@@ -113,6 +113,9 @@ export interface InteractionState {
   // To track if the user selected a strategy
   userPreferredStrategy: string | null
 
+  startedAt: number
+  globalTime: number
+
   // Need to store some state to bridge across changes in a strategy - e.g. individual segments in a drag (which prop you are changing)
 
   // The latest strategy might want to replace the last commands based on the reason
@@ -196,6 +199,8 @@ export function createInteractionViaMouse(
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
+    startedAt: Date.now(),
+    globalTime: Date.now(),
   }
 }
 
@@ -228,9 +233,14 @@ export function updateInteractionViaMouse(
       sourceOfUpdate: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
+      startedAt: currentState.startedAt,
+      globalTime: Date.now(),
     }
   } else {
-    return currentState
+    return {
+      ...currentState,
+      globalTime: Date.now(),
+    }
   }
 }
 
@@ -249,6 +259,8 @@ export function createInteractionViaKeyboard(
     sourceOfUpdate: activeControl,
     lastInteractionTime: Date.now(),
     userPreferredStrategy: null,
+    startedAt: Date.now(),
+    globalTime: Date.now(),
   }
 }
 
@@ -275,6 +287,8 @@ export function updateInteractionViaKeyboard(
       sourceOfUpdate: sourceOfUpdate,
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
+      startedAt: currentState.startedAt,
+      globalTime: Date.now(),
     }
   } else if (currentState.interactionData.type === 'DRAG') {
     return {
@@ -291,9 +305,21 @@ export function updateInteractionViaKeyboard(
       sourceOfUpdate: currentState.activeControl,
       lastInteractionTime: Date.now(),
       userPreferredStrategy: currentState.userPreferredStrategy,
+      startedAt: currentState.startedAt,
+      globalTime: Date.now(),
     }
   } else {
-    return currentState
+    return {
+      ...currentState,
+      globalTime: Date.now(),
+    }
+  }
+}
+
+export function updateInteractionViaTimeStep(currentState: InteractionState): InteractionState {
+  return {
+    ...currentState,
+    globalTime: Date.now(),
   }
 }
 

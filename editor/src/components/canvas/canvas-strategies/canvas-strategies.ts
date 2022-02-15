@@ -18,6 +18,7 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { absoluteReparentStrategy } from './absolute-reparent-strategy'
+import { alignToParentStrategy } from './align-to-parent-strategy'
 import { ancestorAbsoluteMoveStrategy } from './ancestor-absolute-move-strategy'
 import { flexAlignParentStrategy } from './flex-align-parent-strategy'
 import { flexBasisResizeStrategy, flexGrowResizeStrategy } from './flex-basis-resize-strategy'
@@ -28,6 +29,7 @@ import { adjustMinMaxDimensionStrategy } from './min-max-dimension-adjust-strate
 import { parentPaddingAdjustStrategy } from './parent-padding-adjust-strategy'
 
 const RegisteredCanvasStrategies: Array<CanvasStrategy> = [
+  alignToParentStrategy,
   adjustMinMaxDimensionStrategy,
   flexBasisResizeStrategy,
   flexGrowResizeStrategy,

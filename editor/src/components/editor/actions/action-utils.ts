@@ -1,4 +1,4 @@
-import { ClearInteractionState } from '../../canvas/canvas-types'
+import { ClearInteractionState, CreateInteractionState } from '../../canvas/canvas-types'
 import { EditorAction } from '../action-types'
 
 export function isTransientAction(action: EditorAction): boolean {
@@ -110,6 +110,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CANVAS_SESSION_PROPS':
     case 'CREATE_INTERACTION_STATE':
     case 'SET_USERS_PREFERRED_STRATEGY':
+    case 'UPDATE_INTERACTION_STATE':
       return true
 
     case 'NEW':
@@ -239,6 +240,19 @@ export function isClearInteractionState(action: EditorAction): action is ClearIn
     case 'ATOMIC':
       return action.actions.some(isClearInteractionState)
     case 'CLEAR_INTERACTION_STATE':
+      return true
+    default:
+      return false
+  }
+}
+
+export function isCreateInteractionState(action: EditorAction): action is CreateInteractionState {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return action.transientActions.some(isCreateInteractionState)
+    case 'ATOMIC':
+      return action.actions.some(isCreateInteractionState)
+    case 'CREATE_INTERACTION_STATE':
       return true
     default:
       return false

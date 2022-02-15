@@ -32,6 +32,14 @@ const CanvasActions = {
       applyChanges: applyChanges,
     }
   },
+  updateInteractionState: function (
+    newInteractionStateProps: Partial<InteractionState>,
+  ): CanvasAction {
+    return {
+      action: 'UPDATE_INTERACTION_STATE',
+      newInteractionStateProps: newInteractionStateProps,
+    }
+  },
   updateCanvasSessionProps: function (
     newCanvasSessionProps: Partial<SelectModeCanvasSessionProps>,
   ): CanvasAction {

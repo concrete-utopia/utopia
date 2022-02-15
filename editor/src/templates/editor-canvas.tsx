@@ -290,6 +290,8 @@ function on(
   return additionalEvents
 }
 
+let interactionStateTimerHandle: any = undefined
+
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -372,6 +374,10 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_STATE':
+      clearInterval(interactionStateTimerHandle)
+      interactionStateTimerHandle = setInterval(() => {
+        dispatch([CanvasActions.updateInteractionState({ globalTime: Date.now() })])
+      }, 200)
       return {
         ...model,
         canvas: {
@@ -380,12 +386,28 @@ export function runLocalCanvasAction(
         },
       }
     case 'CLEAR_INTERACTION_STATE':
+      clearInterval(interactionStateTimerHandle)
       return {
         ...model,
         canvas: {
           ...model.canvas,
           interactionState: null,
         },
+      }
+    case 'UPDATE_INTERACTION_STATE':
+      if (model.canvas.interactionState == null) {
+        return model
+      } else {
+        return {
+          ...model,
+          canvas: {
+            ...model.canvas,
+            interactionState: {
+              ...model.canvas.interactionState,
+              ...action.newInteractionStateProps,
+            },
+          },
+        }
       }
     case 'SET_USERS_PREFERRED_STRATEGY': {
       if (model.canvas.interactionState != null) {
