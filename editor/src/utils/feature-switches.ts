@@ -13,6 +13,7 @@ export type FeatureName =
   | 'Click on empty canvas unfocuses'
   | 'Insertion Plus Button'
   | 'Canvas Strategies'
+  | 'Canvas Absolute Resize Controls'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -25,6 +26,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Click on empty canvas unfocuses',
   'Insertion Plus Button',
   'Canvas Strategies',
+  'Canvas Absolute Resize Controls',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -38,6 +40,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Click on empty canvas unfocuses': true,
   'Insertion Plus Button': true,
   'Canvas Strategies': false,
+  'Canvas Absolute Resize Controls': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

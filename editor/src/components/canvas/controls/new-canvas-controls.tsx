@@ -411,7 +411,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           <FlexGapControls />
         </>,
       )}
-      <AbsoluteResizeControl />
+      {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <AbsoluteResizeControl />)}
     </div>
   )
 }
