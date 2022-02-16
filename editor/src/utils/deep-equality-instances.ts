@@ -64,7 +64,7 @@ export function EitherKeepDeepEquality<L, R>(
 ): KeepDeepEqualityCall<Either<L, R>> {
   type Result = KeepDeepEqualityResult<Either<L, R>>
   return (oldEither: Either<L, R>, newEither: Either<L, R>) => {
-    return foldEither<L, R, Result>(
+    const result = foldEither<L, R, Result>(
       (oldLeftValue) => {
         return foldEither<L, R, Result>(
           (newLeftValue) => {
@@ -91,6 +91,8 @@ export function EitherKeepDeepEquality<L, R>(
       },
       oldEither,
     )
+
+    return result.areEqual ? keepDeepEqualityResult(oldEither, true) : result
   }
 }
 
@@ -98,7 +100,7 @@ export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIcon
   (result) => result.path,
   ElementPathKeepDeepEquality,
   (result) => result.name,
-  createCallWithTripleEquals(),
+  nullableDeepEquality(JSXElementNameKeepDeepEqualityCall()),
   (result) => result.label,
   createCallWithTripleEquals(),
   (result) => result.iconProps,
