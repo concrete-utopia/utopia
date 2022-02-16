@@ -31,6 +31,7 @@ import { when } from '../../../utils/react-conditionals'
 import { InsertionControls } from './insertion-plus-button'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
+import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 
 function getDistanceGuidelines(
   highlightedView: ElementPath,
@@ -503,7 +504,7 @@ export class SelectModeControlContainer extends React.Component<
             <OutlineControls {...this.props} />
             {this.canResizeElements() ? (
               <>
-                <ConstraintsControls {...this.props} />
+                {/* <ConstraintsControls {...this.props} /> */}
                 <YogaControls
                   {...this.props}
                   dragState={

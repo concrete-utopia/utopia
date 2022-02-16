@@ -61,6 +61,7 @@ import { getDragStateStart } from '../canvas-utils'
 import { AnimatedPlaceholderBoxes } from './select-mode/animated-placeholder-boxes'
 import { FlexAlignControls } from './select-mode/flex-align-controls'
 import { FlexGapControls } from './select-mode/flex-gap-controls'
+import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -410,6 +411,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           <FlexGapControls />
         </>,
       )}
+      <AbsoluteResizeControl />
     </div>
   )
 }
