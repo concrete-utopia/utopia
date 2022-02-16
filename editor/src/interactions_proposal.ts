@@ -146,13 +146,19 @@ export interface CommandDescription {
   description: string
   transient: boolean
 }
+
+export interface StrategyAndAccumulatedCommands {
+  strategy: string | null
+  commands: Array<CanvasCommand>
+}
+
 export interface SessionStateState {
   // PLEASE RENAME ME
   // Need to track here which strategy is being applied.
   currentStrategy: string | null
   currentStrategyFitness: number
   currentStrategyCommands: Array<CanvasCommand>
-  accumulatedCommands: Array<{ strategy: string | null; commands: Array<CanvasCommand> }>
+  accumulatedCommands: Array<StrategyAndAccumulatedCommands>
   commandDescriptions: Array<CommandDescription>
 
   // this is the inner state of the Strategies, can be changed via commands

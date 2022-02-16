@@ -115,6 +115,7 @@ import {
   CanvasState,
   createEmptySessionStateState,
   SessionStateState,
+  StrategyAndAccumulatedCommands,
 } from '../../../interactions_proposal'
 
 export interface DispatchResult extends EditorStore {
@@ -451,7 +452,7 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  let editorFilteredForFiles = filterEditorForFiles(result.editor)
+  const editorFilteredForFiles = filterEditorForFiles(result.editor)
 
   const frozenDerivedState = result.derived
 
@@ -471,201 +472,17 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
-  if (
-    editorFilteredForFiles.canvas.interactionState != null &&
-    (frozenDerivedState.canvas.transientState.selectedViews != null ||
-      frozenDerivedState.canvas.transientState.filesState != null) &&
-    isFeatureEnabled('Canvas Strategies') // only throw error if Canvas Strategies are enabled to begin with, to allow an escape hatch for insertion
-  ) {
-    throw new Error('transient canvas state is not allowed while an interaction state is active')
-  }
-  const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
-  const createInteractionStateActionDispatched = dispatchedActions.some(isCreateInteractionState)
-  const shouldApplyChanges = dispatchedActions.some(shouldApplyClearInteractionStateResult)
-  const shouldDiscardChanges = clearInteractionStateActionDispatched && !shouldApplyChanges
-
-  let patchCommands: Array<CanvasCommand> = []
-  let strategyName: string | null = null
-  let previousStrategyCurrentFitness: number = NaN
-  let strategyFitness: number = 0
-  let strategyChanged: boolean = false
-  let partOfSameGroup: boolean = false // FIXME This is false if the strategy is unchanged, but surely it should be true
-
-  let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
-
-  const interactionHardResetNeeded =
-    hasModifiersChanged(
-      storedState.editor.canvas.interactionState?.interactionData ?? null,
-      editorFilteredForFiles.canvas.interactionState?.interactionData ?? null,
-    ) || result.sessionStateState.currentStrategy == null
-
-  if (editorFilteredForFiles.canvas.interactionState != null) {
-    const accumulatedCommands = interactionHardResetNeeded
-      ? []
-      : [...result.sessionStateState.accumulatedCommands]
-
-    const commandResultCurrent = foldCommands(
-      editorFilteredForFiles,
-      result.sessionStateState,
-      accumulatedCommands.flatMap((c) => c.commands),
-      shouldApplyChanges ? 'permanent' : 'transient',
-    )
-    const patchedEditorStateCurrent = applyStatePatches(
-      editorFilteredForFiles,
-      storedState.editor,
-      shouldDiscardChanges ? [] : commandResultCurrent.editorStatePatches,
-    )
-
-    const canvasState: CanvasState = {
-      selectedElements: patchedEditorStateCurrent.selectedViews,
-      // metadata: patchedEditorStateCurrent.jsxMetadata, // We can add metadata back if live metadata is necessary
-      projectContents: patchedEditorStateCurrent.projectContents,
-      openFile: patchedEditorStateCurrent.canvas.openFile?.filename,
-      scale: patchedEditorStateCurrent.canvas.scale,
-      canvasOffset: patchedEditorStateCurrent.canvas.roundedCanvasOffset,
-    }
-
-    const { strategy, previousStrategy } = findCanvasStrategy(
-      canvasState,
-      editorFilteredForFiles.canvas.interactionState,
-      result.sessionStateState,
-      result.sessionStateState.currentStrategy,
-    )
-    strategyName = strategy?.strategy.name ?? null
-    strategyFitness = strategy?.fitness ?? 0
-    previousStrategyCurrentFitness = previousStrategy?.fitness ?? NaN
-
-    strategyChanged = strategyName != result.sessionStateState.currentStrategy
-    partOfSameGroup = strategiesPartOfSameGroup(
-      result.sessionStateState.currentStrategy,
-      strategyName,
-    )
-
-    if (strategyChanged && !partOfSameGroup) {
-      didResetInteractionData = true
-      editorFilteredForFiles = {
-        ...editorFilteredForFiles,
-        canvas: {
-          ...editorFilteredForFiles.canvas,
-          interactionState: strategySwitchInteractionStateReset(
-            editorFilteredForFiles.canvas.interactionState,
-          ),
-        },
-      }
-    }
-
-    let sessionStateState = result.sessionStateState
-    if (interactionHardResetNeeded && editorFilteredForFiles.canvas.interactionState != null) {
-      editorFilteredForFiles = {
-        ...editorFilteredForFiles,
-        canvas: {
-          ...editorFilteredForFiles.canvas,
-          interactionState: interactionStateHardReset(
-            editorFilteredForFiles.canvas.interactionState,
-          ),
-        },
-      }
-      sessionStateState = {
-        ...result.sessionStateState,
-        startingMetadata: sessionStateState.originalMetadata,
-      }
-    }
-
-    if (strategy != null && editorFilteredForFiles.canvas.interactionState != null) {
-      const commands = applyCanvasStrategy(
-        strategy.strategy,
-        canvasState,
-        editorFilteredForFiles.canvas.interactionState,
-        sessionStateState,
-      )
-      patchCommands = commands
-    }
-  }
-
-  const strategyHasBeenOverriden = dispatchedActions.some(strategyWasOverridden)
-  const shouldKeepCommands =
-    (shouldApplyChanges || strategyChanged) && !strategyHasBeenOverriden && !partOfSameGroup // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
-  const strategyChangedLogCommand = strategyChanged
-    ? [
-        {
-          strategy: null,
-          commands: [
-            strategySwitched(
-              strategyHasBeenOverriden ? 'user-input' : 'automatic',
-              strategyName!,
-              shouldKeepCommands,
-              didResetInteractionData,
-              previousStrategyCurrentFitness,
-              strategyFitness,
-            ),
-          ],
-        },
-      ]
-    : []
-  const updatedAccumulatedCommands = shouldKeepCommands
-    ? [
-        ...result.sessionStateState.accumulatedCommands,
-        {
-          strategy: result.sessionStateState.currentStrategy,
-          commands: result.sessionStateState.currentStrategyCommands,
-        },
-        ...strategyChangedLogCommand,
-      ]
-    : [...result.sessionStateState.accumulatedCommands, ...strategyChangedLogCommand]
-
-  const workingSessionStateState: SessionStateState = {
-    currentStrategy: strategyName,
-    currentStrategyFitness: strategyFitness,
-    currentStrategyCommands: patchCommands,
-    accumulatedCommands: interactionHardResetNeeded ? [] : updatedAccumulatedCommands,
-    commandDescriptions: [],
-    strategyState: result.sessionStateState.strategyState,
-    startingMetadata: result.sessionStateState.startingMetadata,
-    originalMetadata: result.sessionStateState.originalMetadata,
-  }
-
-  const commandResult = foldCommands(
+  const {
+    unpatchedEditorState: newUpdatchedEditor,
+    patchedEditorState,
+    newSessionStateState,
+  } = handleStrategies(
     editorFilteredForFiles,
-    workingSessionStateState,
-    [
-      ...workingSessionStateState.accumulatedCommands.flatMap((c) => c.commands),
-      ...workingSessionStateState.currentStrategyCommands,
-    ],
-    shouldApplyChanges ? 'permanent' : 'transient',
+    frozenDerivedState,
+    dispatchedActions,
+    storedState,
+    result,
   )
-
-  // FIXME if shouldDiscardChanges, should this just become the previous unpatchedEditorState?
-  const patchedEditorState = applyStatePatches(
-    editorFilteredForFiles,
-    storedState.editor,
-    shouldDiscardChanges ? [] : commandResult.editorStatePatches,
-  )
-
-  // QUESTION: Should this still do this on clearInteractionStateActionDispatched?
-  let newSessionStateState: SessionStateState =
-    clearInteractionStateActionDispatched || createInteractionStateActionDispatched
-      ? {
-          ...createEmptySessionStateState(), // QUESTION should we make this NULL instead?
-          startingMetadata: editorFilteredForFiles.jsxMetadata,
-          originalMetadata: editorFilteredForFiles.jsxMetadata,
-        }
-      : {
-          ...workingSessionStateState,
-          strategyState: commandResult.newStrategyState,
-          commandDescriptions: commandResult.commandDescriptions,
-        }
-
-  // Should the strategy be changed, checkpoint the metadata into `startingMetadata` for
-  // future reference by the strategies.
-  if (strategyChanged) {
-    // TODO if the user deliberately changes the strategy, do not reset startingMetadata
-    newSessionStateState = {
-      ...newSessionStateState,
-      startingMetadata: editorFilteredForFiles.jsxMetadata,
-    }
-  }
-
-  const newUpdatchedEditor = shouldApplyChanges ? patchedEditorState : editorFilteredForFiles
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
@@ -743,6 +560,252 @@ export function editorDispatch(
   }
 
   return finalStore
+}
+
+interface HandleStrategiesResult {
+  unpatchedEditorState: EditorState
+  patchedEditorState: EditorState
+  newSessionStateState: SessionStateState
+}
+
+function handleStrategies(
+  editorState: EditorState,
+  frozenDerivedState: DerivedState,
+  dispatchedActions: readonly EditorAction[],
+  storedState: EditorStore,
+  result: DispatchResult,
+): HandleStrategiesResult {
+  // Upfront validation.
+  if (
+    editorState.canvas.interactionState != null &&
+    (frozenDerivedState.canvas.transientState.selectedViews != null ||
+      frozenDerivedState.canvas.transientState.filesState != null) &&
+    isFeatureEnabled('Canvas Strategies') // only throw error if Canvas Strategies are enabled to begin with, to allow an escape hatch for insertion
+  ) {
+    throw new Error('transient canvas state is not allowed while an interaction state is active')
+  }
+
+  // Determine what we need to know from the actions.
+  const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
+  const createInteractionStateActionDispatched = dispatchedActions.some(isCreateInteractionState)
+  const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionStateResult)
+  const strategyHasBeenOverriden = dispatchedActions.some(strategyWasOverridden)
+  const shouldDiscardChanges = clearInteractionStateActionDispatched && !makeChangesPermanent
+
+  let patchCommands: Array<CanvasCommand> = []
+  let strategyName: string | null = null
+  let previousStrategyCurrentFitness: number = NaN
+  let strategyFitness: number = 0
+  let strategyChanged: boolean = false
+  let partOfSameGroup: boolean = false
+
+  let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
+
+  // For a a modifier change or if there is no current strategy,
+  const interactionHardResetNeeded =
+    hasModifiersChanged(
+      storedState.editor.canvas.interactionState?.interactionData ?? null,
+      editorState.canvas.interactionState?.interactionData ?? null,
+    ) || result.sessionStateState.currentStrategy == null
+
+  // Check if there's an interaction state present.
+  let workingEditorState: EditorState = editorState
+  if (editorState.canvas.interactionState != null) {
+    // Clear the accumulatedCommands if the hard reset is needed.
+    const accumulatedCommands = interactionHardResetNeeded
+      ? []
+      : [...result.sessionStateState.accumulatedCommands]
+
+    // From the current strategy get a bunch of editor patches.
+    const commandResultCurrent = foldCommands(
+      editorState,
+      result.sessionStateState,
+      accumulatedCommands.flatMap((c) => c.commands),
+      makeChangesPermanent ? 'permanent' : 'transient',
+    )
+    const patchedEditorStateCurrent = shouldDiscardChanges
+      ? editorState
+      : applyStatePatches(editorState, storedState.editor, commandResultCurrent.editorStatePatches)
+
+    const canvasState: CanvasState = {
+      selectedElements: patchedEditorStateCurrent.selectedViews,
+      // metadata: patchedEditorStateCurrent.jsxMetadata, // We can add metadata back if live metadata is necessary
+      projectContents: patchedEditorStateCurrent.projectContents,
+      openFile: patchedEditorStateCurrent.canvas.openFile?.filename,
+      scale: patchedEditorStateCurrent.canvas.scale,
+      canvasOffset: patchedEditorStateCurrent.canvas.roundedCanvasOffset,
+    }
+
+    // Determine the new canvas strategy to run this time around.
+    const { strategy, previousStrategy } = findCanvasStrategy(
+      canvasState,
+      editorState.canvas.interactionState,
+      result.sessionStateState,
+      result.sessionStateState.currentStrategy,
+    )
+
+    // Variable housekeeping for later code.
+    strategyName = strategy?.strategy.name ?? null
+    strategyFitness = strategy?.fitness ?? 0
+    previousStrategyCurrentFitness = previousStrategy?.fitness ?? NaN
+    strategyChanged = strategyName != result.sessionStateState.currentStrategy
+    partOfSameGroup = strategiesPartOfSameGroup(
+      result.sessionStateState.currentStrategy,
+      strategyName,
+    )
+
+    // Should the strategy have changed and it's not part of the same group then
+    // soft reset the interaction state.
+    if (strategyChanged && !partOfSameGroup) {
+      didResetInteractionData = true
+      workingEditorState = {
+        ...workingEditorState,
+        canvas: {
+          ...workingEditorState.canvas,
+          interactionState: strategySwitchInteractionStateReset(
+            editorState.canvas.interactionState,
+          ),
+        },
+      }
+    }
+
+    let sessionStateState = result.sessionStateState
+    // Trigger the hard reset of the interaction state here if requested to do so.
+    if (interactionHardResetNeeded && workingEditorState.canvas.interactionState != null) {
+      workingEditorState = {
+        ...workingEditorState,
+        canvas: {
+          ...workingEditorState.canvas,
+          interactionState: interactionStateHardReset(editorState.canvas.interactionState),
+        },
+      }
+      sessionStateState = {
+        ...result.sessionStateState,
+        startingMetadata: sessionStateState.originalMetadata,
+      }
+    }
+
+    // If there is a current strategy, produce the commands from it.
+    if (strategy != null && workingEditorState.canvas.interactionState != null) {
+      const commands = applyCanvasStrategy(
+        strategy.strategy,
+        canvasState,
+        workingEditorState.canvas.interactionState,
+        sessionStateState,
+      )
+      patchCommands = commands
+    }
+  }
+
+  // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
+  const shouldKeepCommands =
+    (makeChangesPermanent || strategyChanged) && !strategyHasBeenOverriden && !partOfSameGroup
+
+  // Record if the strategy did change.
+  const strategyChangedLogCommands = strategyChanged
+    ? [
+        {
+          strategy: null,
+          commands: [
+            strategySwitched(
+              strategyHasBeenOverriden ? 'user-input' : 'automatic',
+              strategyName!,
+              shouldKeepCommands,
+              didResetInteractionData,
+              previousStrategyCurrentFitness,
+              strategyFitness,
+            ),
+          ],
+        },
+      ]
+    : []
+
+  // Determine here if the commands should apply to the next pass around this loop.
+  const updatedAccumulatedCommands = updateAccumulatedCommands(
+    shouldKeepCommands,
+    interactionHardResetNeeded,
+    result,
+    strategyChangedLogCommands,
+  )
+
+  const workingSessionStateState: SessionStateState = {
+    currentStrategy: strategyName,
+    currentStrategyFitness: strategyFitness,
+    currentStrategyCommands: patchCommands,
+    accumulatedCommands: updatedAccumulatedCommands,
+    commandDescriptions: [],
+    strategyState: result.sessionStateState.strategyState,
+    startingMetadata: result.sessionStateState.startingMetadata,
+    originalMetadata: result.sessionStateState.originalMetadata,
+  }
+
+  // Construct commands and then the state patches from them.
+  const commandResult = foldCommands(
+    workingEditorState,
+    workingSessionStateState,
+    [...updatedAccumulatedCommands.flatMap((c) => c.commands), ...patchCommands],
+    makeChangesPermanent ? 'permanent' : 'transient',
+  )
+
+  // FIXME if shouldDiscardChanges, should this just become the previous unpatchedEditorState?
+  const patchedEditorState = shouldDiscardChanges
+    ? workingEditorState
+    : applyStatePatches(workingEditorState, storedState.editor, commandResult.editorStatePatches)
+
+  // QUESTION: Should this still do this on clearInteractionStateActionDispatched?
+  let newSessionStateState: SessionStateState =
+    clearInteractionStateActionDispatched || createInteractionStateActionDispatched
+      ? {
+          ...createEmptySessionStateState(),
+          startingMetadata: workingEditorState.jsxMetadata,
+          originalMetadata: workingEditorState.jsxMetadata,
+        }
+      : {
+          ...workingSessionStateState,
+          strategyState: commandResult.newStrategyState,
+          commandDescriptions: commandResult.commandDescriptions,
+        }
+
+  // Should the strategy be changed, checkpoint the metadata into `startingMetadata` for
+  // future reference by the strategies.
+  if (strategyChanged) {
+    // TODO if the user deliberately changes the strategy, do not reset startingMetadata
+    newSessionStateState = {
+      ...newSessionStateState,
+      startingMetadata: workingEditorState.jsxMetadata,
+    }
+  }
+
+  const unpatchedEditorState = makeChangesPermanent ? patchedEditorState : workingEditorState
+  return {
+    unpatchedEditorState: unpatchedEditorState,
+    patchedEditorState: patchedEditorState,
+    newSessionStateState: newSessionStateState,
+  }
+}
+
+function updateAccumulatedCommands(
+  shouldKeepCommands: boolean,
+  interactionHardResetNeeded: boolean,
+  result: DispatchResult,
+  strategyChangedLogCommands: Array<StrategyAndAccumulatedCommands>,
+) {
+  if (interactionHardResetNeeded) {
+    return []
+  } else {
+    if (shouldKeepCommands) {
+      return [
+        ...result.sessionStateState.accumulatedCommands,
+        {
+          strategy: result.sessionStateState.currentStrategy,
+          commands: result.sessionStateState.currentStrategyCommands,
+        },
+        ...strategyChangedLogCommands,
+      ]
+    } else {
+      return [...result.sessionStateState.accumulatedCommands, ...strategyChangedLogCommands]
+    }
+  }
 }
 
 function applyProjectChanges(
