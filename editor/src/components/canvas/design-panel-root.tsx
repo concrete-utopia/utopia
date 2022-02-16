@@ -357,7 +357,7 @@ export const DesignPanelRoot = React.memo(() => {
       }
     `}</style>
       <SimpleFlexRow
-        className='OpenFileEditorShell utopia-css-var-container'
+        className='OpenFileEditorShell'
         style={{
           position: 'relative',
           flexGrow: 1,

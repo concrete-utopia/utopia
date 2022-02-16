@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import { ResizeDirection } from 're-resizable'
 import React from 'react'
@@ -59,6 +60,7 @@ import {
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import CanvasActions from '../canvas/canvas-actions'
+import { UtopiaCanvasVarStyleTag } from '../canvas/utopia-canvas-vars'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -264,115 +266,118 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   }, 'EditorComponentInner vscodeBridgeReady')
 
   return (
-    <SimpleFlexRow
-      className='editor-main-vertical-and-modals'
-      style={{
-        height: '100%',
-        width: '100%',
-        overscrollBehaviorX: 'contain',
-      }}
-      onDragEnter={startDragInsertion}
-    >
-      <SimpleFlexColumn
-        className='editor-main-vertical'
+    <>
+      <UtopiaCanvasVarStyleTag />
+      <SimpleFlexRow
+        className='editor-main-vertical-and-modals'
         style={{
           height: '100%',
           width: '100%',
+          overscrollBehaviorX: 'contain',
         }}
+        onDragEnter={startDragInsertion}
       >
-        {(isChrome as boolean) ? null : <BrowserInfoBar />}
-        <LoginStatusBar />
-
-        <SimpleFlexRow
-          className='editor-main-horizontal'
+        <SimpleFlexColumn
+          className='editor-main-vertical'
           style={{
+            height: '100%',
             width: '100%',
-            flexGrow: 1,
-            overflowY: 'hidden',
-            alignItems: 'stretch',
           }}
         >
-          <SimpleFlexColumn
-            style={{
-              height: '100%',
-              width: 44,
-              backgroundColor: colorTheme.leftMenuBackground.value,
-            }}
-          >
-            <Menubar />
-          </SimpleFlexColumn>
-          <div
-            className='LeftPaneShell'
-            style={{
-              height: '100%',
-              flexShrink: 0,
-              transition: 'all .1s ease-in-out',
-              width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
-              overflowX: 'scroll',
-              backgroundColor: colorTheme.leftPaneBackground.value,
-            }}
-          >
-            {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
-          </div>
+          {(isChrome as boolean) ? null : <BrowserInfoBar />}
+          <LoginStatusBar />
+
           <SimpleFlexRow
-            className='editor-shell'
+            className='editor-main-horizontal'
             style={{
+              width: '100%',
               flexGrow: 1,
+              overflowY: 'hidden',
               alignItems: 'stretch',
-              borderRight: `1px solid ${colorTheme.neutralBorder.value}`,
-              backgroundColor: colorTheme.neutralBackground.value,
             }}
           >
+            <SimpleFlexColumn
+              style={{
+                height: '100%',
+                width: 44,
+                backgroundColor: colorTheme.leftMenuBackground.value,
+              }}
+            >
+              <Menubar />
+            </SimpleFlexColumn>
+            <div
+              className='LeftPaneShell'
+              style={{
+                height: '100%',
+                flexShrink: 0,
+                transition: 'all .1s ease-in-out',
+                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
+                overflowX: 'scroll',
+                backgroundColor: colorTheme.leftPaneBackground.value,
+              }}
+            >
+              {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
+            </div>
             <SimpleFlexRow
-              className='openTabShell'
+              className='editor-shell'
               style={{
                 flexGrow: 1,
                 alignItems: 'stretch',
-                justifyContent: 'stretch',
-                overflowX: 'hidden',
+                borderRight: `1px solid ${colorTheme.neutralBorder.value}`,
+                backgroundColor: colorTheme.neutralBackground.value,
               }}
             >
-              <DesignPanelRoot />
-            </SimpleFlexRow>
-            {/* insert more columns here */}
-
-            {previewVisible ? (
-              <ResizableFlexColumn
-                style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
-                enable={{
-                  left: true,
-                  right: false,
-                }}
-                defaultSize={{
-                  width: 350,
-                  height: '100%',
+              <SimpleFlexRow
+                className='openTabShell'
+                style={{
+                  flexGrow: 1,
+                  alignItems: 'stretch',
+                  justifyContent: 'stretch',
+                  overflowX: 'hidden',
                 }}
               >
-                <SimpleFlexRow
-                  id='PreviewTabRail'
-                  style={{
-                    height: UtopiaTheme.layout.rowHeight.smaller,
-                    borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
-                    alignItems: 'stretch',
+                <DesignPanelRoot />
+              </SimpleFlexRow>
+              {/* insert more columns here */}
+
+              {previewVisible ? (
+                <ResizableFlexColumn
+                  style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
+                  enable={{
+                    left: true,
+                    right: false,
+                  }}
+                  defaultSize={{
+                    width: 350,
+                    height: '100%',
                   }}
                 >
-                  <TabComponent
-                    label='Preview'
-                    selected
-                    icon={<LargerIcons.PreviewPane color='primary' />}
-                    onClose={onClosePreview}
-                  />
-                </SimpleFlexRow>
-                <PreviewColumn />
-              </ResizableFlexColumn>
-            ) : null}
+                  <SimpleFlexRow
+                    id='PreviewTabRail'
+                    style={{
+                      height: UtopiaTheme.layout.rowHeight.smaller,
+                      borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+                      alignItems: 'stretch',
+                    }}
+                  >
+                    <TabComponent
+                      label='Preview'
+                      selected
+                      icon={<LargerIcons.PreviewPane color='primary' />}
+                      onClose={onClosePreview}
+                    />
+                  </SimpleFlexRow>
+                  <PreviewColumn />
+                </ResizableFlexColumn>
+              ) : null}
+            </SimpleFlexRow>
           </SimpleFlexRow>
-        </SimpleFlexRow>
-      </SimpleFlexColumn>
-      <ModalComponent />
-      <ToastRenderer />
-      <EditorCursorComponent />
-    </SimpleFlexRow>
+        </SimpleFlexColumn>
+        <ModalComponent />
+        <ToastRenderer />
+        <EditorCursorComponent />
+      </SimpleFlexRow>
+    </>
   )
 })
 
