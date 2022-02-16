@@ -592,6 +592,14 @@ function handleStrategies(
   const strategyHasBeenOverriden = dispatchedActions.some(strategyWasOverridden)
   const shouldDiscardChanges = clearInteractionStateActionDispatched && !makeChangesPermanent
 
+  if (shouldDiscardChanges) {
+    return {
+      unpatchedEditorState: editorState,
+      patchedEditorState: editorState,
+      newSessionStateState: createEmptySessionStateState(editorState.jsxMetadata),
+    }
+  }
+
   let patchCommands: Array<CanvasCommand> = []
   let strategyName: string | null = null
   let previousStrategyCurrentFitness: number = NaN
@@ -614,18 +622,20 @@ function handleStrategies(
     // Clear the accumulatedCommands if the hard reset is needed.
     const accumulatedCommands = interactionHardResetNeeded
       ? []
-      : [...result.sessionStateState.accumulatedCommands]
+      : result.sessionStateState.accumulatedCommands
 
     // From the current strategy get a bunch of editor patches.
     const commandResultCurrent = foldCommands(
       editorState,
-      result.sessionStateState,
+      result.sessionStateState, // WARNING this is a StrategyState which can be anything (type is {}), the contents is not used, just passed through
       accumulatedCommands.flatMap((c) => c.commands),
       makeChangesPermanent ? 'permanent' : 'transient',
     )
-    const patchedEditorStateCurrent = shouldDiscardChanges
-      ? editorState
-      : applyStatePatches(editorState, storedState.editor, commandResultCurrent.editorStatePatches)
+    const patchedEditorStateCurrent = applyStatePatches(
+      editorState,
+      storedState.editor,
+      commandResultCurrent.editorStatePatches,
+    )
 
     const canvasState: CanvasState = {
       selectedElements: patchedEditorStateCurrent.selectedViews,
@@ -748,18 +758,16 @@ function handleStrategies(
   )
 
   // FIXME if shouldDiscardChanges, should this just become the previous unpatchedEditorState?
-  const patchedEditorState = shouldDiscardChanges
-    ? workingEditorState
-    : applyStatePatches(workingEditorState, storedState.editor, commandResult.editorStatePatches)
+  const patchedEditorState = applyStatePatches(
+    workingEditorState,
+    storedState.editor,
+    commandResult.editorStatePatches,
+  )
 
   // QUESTION: Should this still do this on clearInteractionStateActionDispatched?
   let newSessionStateState: SessionStateState =
     clearInteractionStateActionDispatched || createInteractionStateActionDispatched
-      ? {
-          ...createEmptySessionStateState(),
-          startingMetadata: workingEditorState.jsxMetadata,
-          originalMetadata: workingEditorState.jsxMetadata,
-        }
+      ? createEmptySessionStateState(workingEditorState.jsxMetadata)
       : {
           ...workingSessionStateState,
           strategyState: commandResult.newStrategyState,

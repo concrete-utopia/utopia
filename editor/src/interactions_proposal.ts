@@ -171,7 +171,9 @@ export interface SessionStateState {
   originalMetadata: ElementInstanceMetadataMap
 }
 
-export function createEmptySessionStateState(): SessionStateState {
+export function createEmptySessionStateState(
+  metadata?: ElementInstanceMetadataMap,
+): SessionStateState {
   return {
     currentStrategy: null,
     currentStrategyFitness: 0,
@@ -179,8 +181,8 @@ export function createEmptySessionStateState(): SessionStateState {
     accumulatedCommands: [],
     commandDescriptions: [],
     strategyState: createEmptyStrategyState(),
-    startingMetadata: {},
-    originalMetadata: {},
+    startingMetadata: metadata ?? {},
+    originalMetadata: metadata ?? {},
   }
 }
 
