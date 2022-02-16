@@ -137,9 +137,14 @@ export interface InteractionState {
   // The above is predicated on the commands setting discrete values and/or not changing something on another element at the same time.
 }
 
-export interface StrategyState {}
+export interface StrategyState {
+  type: 'STRATEGY_STATE'
+}
+
 export function createEmptyStrategyState(): StrategyState {
-  return {}
+  return {
+    type: 'STRATEGY_STATE',
+  }
 }
 
 export interface CommandDescription {

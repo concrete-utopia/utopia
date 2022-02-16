@@ -472,15 +472,15 @@ export function editorDispatch(
     isBrowserEnvironment
 
   const {
-    unpatchedEditorState: newUpdatchedEditor,
+    unpatchedEditorState,
     patchedEditorState,
     newSessionStateState,
-  } = handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
+  } = alternativeHandleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
-      ? { editorState: newUpdatchedEditor, modelUpdateFinished: Promise.resolve(true) }
-      : maybeRequestModelUpdateOnEditor(newUpdatchedEditor, storedState.workers, boundDispatch)
+      ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
+      : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
 
   const frozenEditorState = editorWithModelChecked.editorState
 
@@ -559,6 +559,98 @@ interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
   patchedEditorState: EditorState
   newSessionStateState: SessionStateState
+}
+
+type NoInteraction = {
+  type: 'NO_INTERACTION'
+}
+
+type HowToHandleStrategies =
+  | 'no-interaction'
+  | 'interaction-start'
+  | 'interaction-update'
+  | 'interaction-finished'
+  | 'interaction-cancelled'
+  | 'interaction-handover'
+  | 'interaction-stack'
+  | 'interaction-switched'
+  | 'interaction-modifier-changed'
+
+function interactionStart(
+  storedState: EditorStore,
+  result: DispatchResult,
+): HandleStrategiesResult {
+  const newEditorState = result.editor
+  const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
+  const canvasState: CanvasState = {
+    selectedElements: newEditorState.selectedViews,
+    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
+    projectContents: newEditorState.projectContents,
+    openFile: newEditorState.canvas.openFile?.filename,
+    scale: newEditorState.canvas.scale,
+    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
+  }
+  const interactionState = newEditorState.canvas.interactionState
+  if (interactionState == null) {
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: newEditorState,
+      newSessionStateState: withClearedSession,
+    }
+  } else {
+    // Determine the new canvas strategy to run this time around.
+    const { strategy, previousStrategy } = findCanvasStrategy(
+      canvasState,
+      interactionState,
+      result.sessionStateState,
+      result.sessionStateState.currentStrategy,
+    )
+
+    // If there is a current strategy, produce the commands from it.
+    if (strategy != null && newEditorState.canvas.interactionState != null) {
+      const commands = applyCanvasStrategy(
+        strategy.strategy,
+        canvasState,
+        newEditorState.canvas.interactionState,
+        result.sessionStateState,
+      )
+      const commandResult = foldAndApplyCommands(
+        newEditorState,
+        storedState.editor,
+        storedState.sessionStateState.strategyState,
+        commands,
+        'transient',
+      )
+
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: commandResult.editorState,
+        newSessionStateState: withClearedSession,
+      }
+    } else {
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: newEditorState,
+        newSessionStateState: withClearedSession,
+      }
+    }
+  }
+}
+
+function alternativeHandleStrategies(
+  frozenDerivedState: DerivedState,
+  dispatchedActions: readonly EditorAction[],
+  storedState: EditorStore,
+  result: DispatchResult,
+): HandleStrategiesResult {
+  if (
+    storedState.editor.canvas.interactionState == null &&
+    result.editor.canvas.interactionState != null
+  ) {
+    return interactionStart(storedState, result)
+  } else {
+    return handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
+  }
 }
 
 function handleStrategies(
@@ -652,7 +744,7 @@ function handleStrategies(
   const commandResult = foldAndApplyCommands(
     workingEditorState,
     storedState.editor,
-    workingSessionStateState,
+    workingSessionStateState.strategyState,
     [...updatedAccumulatedCommands.flatMap((c) => c.commands), ...patchCommands],
     makeChangesPermanent ? 'permanent' : 'transient',
   )
@@ -721,7 +813,7 @@ function processInteractionState(
     const { editorState: patchedEditorStateCurrent } = foldAndApplyCommands(
       editorState,
       storedState.editor,
-      result.sessionStateState,
+      result.sessionStateState.strategyState,
       accumulatedCommands.flatMap((c) => c.commands),
       makeChangesPermanent ? 'permanent' : 'transient',
     )
