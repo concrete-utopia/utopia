@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { windowPoint } from '../../../../core/shared/math-utils'
 import { useColorTheme } from '../../../../uuiui'
@@ -26,7 +27,15 @@ export const AbsoluteResizeControl = React.memo(() => {
     'AbsoluteResizeControl selectedElements',
   )
   const allSelectedElementsAbsolute = useEditorState((store) => {
-    return true
+    return (
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every((path) => {
+        return (
+          MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+            ?.specialSizeMeasurements.position === 'absolute'
+        )
+      })
+    )
   }, 'AbsoluteResizeControl allSelectedElementsAbsolute')
 
   const observerCallback = React.useCallback(() => {
