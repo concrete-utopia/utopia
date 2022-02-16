@@ -97,9 +97,8 @@ import {
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
 import {
-  applyStatePatches,
   CanvasCommand,
-  foldCommands,
+  foldAndApplyCommands,
   strategySwitched,
 } from '../../canvas/commands/commands'
 import {
@@ -476,13 +475,7 @@ export function editorDispatch(
     unpatchedEditorState: newUpdatchedEditor,
     patchedEditorState,
     newSessionStateState,
-  } = handleStrategies(
-    editorFilteredForFiles,
-    frozenDerivedState,
-    dispatchedActions,
-    storedState,
-    result,
-  )
+  } = handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
@@ -569,15 +562,15 @@ interface HandleStrategiesResult {
 }
 
 function handleStrategies(
-  editorState: EditorState,
   frozenDerivedState: DerivedState,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStore,
   result: DispatchResult,
 ): HandleStrategiesResult {
+  const editorFilteredForFiles = filterEditorForFiles(result.editor)
   // Upfront validation.
   if (
-    editorState.canvas.interactionState != null &&
+    editorFilteredForFiles.canvas.interactionState != null &&
     (frozenDerivedState.canvas.transientState.selectedViews != null ||
       frozenDerivedState.canvas.transientState.filesState != null) &&
     isFeatureEnabled('Canvas Strategies') // only throw error if Canvas Strategies are enabled to begin with, to allow an escape hatch for insertion
@@ -594,9 +587,9 @@ function handleStrategies(
 
   if (shouldDiscardChanges) {
     return {
-      unpatchedEditorState: editorState,
-      patchedEditorState: editorState,
-      newSessionStateState: createEmptySessionStateState(editorState.jsxMetadata),
+      unpatchedEditorState: editorFilteredForFiles,
+      patchedEditorState: editorFilteredForFiles,
+      newSessionStateState: createEmptySessionStateState(editorFilteredForFiles.jsxMetadata),
     }
   }
 
@@ -611,7 +604,7 @@ function handleStrategies(
     interactionHardResetNeeded,
     patchCommands,
     workingEditorState,
-  } = processInteractionState(storedState, editorState, result, makeChangesPermanent)
+  } = processInteractionState(storedState, editorFilteredForFiles, result, makeChangesPermanent)
 
   // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
   const shouldKeepCommands =
@@ -656,19 +649,15 @@ function handleStrategies(
   }
 
   // Construct commands and then the state patches from them.
-  const commandResult = foldCommands(
+  const commandResult = foldAndApplyCommands(
     workingEditorState,
+    storedState.editor,
     workingSessionStateState,
     [...updatedAccumulatedCommands.flatMap((c) => c.commands), ...patchCommands],
     makeChangesPermanent ? 'permanent' : 'transient',
   )
 
-  // FIXME if shouldDiscardChanges, should this just become the previous unpatchedEditorState?
-  const patchedEditorState = applyStatePatches(
-    workingEditorState,
-    storedState.editor,
-    commandResult.editorStatePatches,
-  )
+  const patchedEditorState = commandResult.editorState
 
   // QUESTION: Should this still do this on clearInteractionStateActionDispatched?
   let newSessionStateState: SessionStateState =
@@ -729,16 +718,12 @@ function processInteractionState(
       : result.sessionStateState.accumulatedCommands
 
     // From the current strategy get a bunch of editor patches.
-    const commandResultCurrent = foldCommands(
+    const { editorState: patchedEditorStateCurrent } = foldAndApplyCommands(
       editorState,
+      storedState.editor,
       result.sessionStateState,
       accumulatedCommands.flatMap((c) => c.commands),
       makeChangesPermanent ? 'permanent' : 'transient',
-    )
-    const patchedEditorStateCurrent = applyStatePatches(
-      editorState,
-      storedState.editor,
-      commandResultCurrent.editorStatePatches,
     )
 
     const canvasState: CanvasState = {

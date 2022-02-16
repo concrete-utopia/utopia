@@ -935,7 +935,33 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   }
 }
 
-export function foldCommands(
+export function foldAndApplyCommands(
+  editorState: EditorState,
+  priorPatchedState: EditorState,
+  strategyState: StrategyState,
+  commands: Array<CanvasCommand>,
+  transient: TransientOrNot,
+): {
+  editorState: EditorState
+  editorStatePatches: Array<EditorStatePatch>
+  newStrategyState: StrategyState
+  commandDescriptions: Array<CommandDescription>
+} {
+  const commandResult = foldCommands(editorState, strategyState, commands, transient)
+  const updatedEditorState = applyStatePatches(
+    editorState,
+    priorPatchedState,
+    commandResult.editorStatePatches,
+  )
+  return {
+    editorState: updatedEditorState,
+    editorStatePatches: commandResult.editorStatePatches,
+    newStrategyState: commandResult.newStrategyState,
+    commandDescriptions: commandResult.commandDescriptions,
+  }
+}
+
+function foldCommands(
   editorState: EditorState,
   strategyState: StrategyState,
   commands: Array<CanvasCommand>,
