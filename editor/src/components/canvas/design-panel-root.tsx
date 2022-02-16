@@ -334,21 +334,10 @@ const DesignPanelRootInner = React.memo(() => {
 })
 
 export const DesignPanelRoot = React.memo(() => {
-  const roundedCanvasOffset = useEditorState(
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'DesignPanelRoot roundedCanvasOffset',
-  )
-
   return (
     <>
-      <style>{`
-      .utopia-css-var-container {
-        --utopia-canvas-offset-x: ${roundedCanvasOffset.x}px;
-        --utopia-canvas-offset-y: ${roundedCanvasOffset.y}px;
-      }
-    `}</style>
       <SimpleFlexRow
-        className='OpenFileEditorShell utopia-css-var-container'
+        className='OpenFileEditorShell'
         style={{
           position: 'relative',
           flexGrow: 1,
