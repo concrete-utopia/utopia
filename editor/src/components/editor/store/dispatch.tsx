@@ -600,112 +600,18 @@ function handleStrategies(
     }
   }
 
-  let patchCommands: Array<CanvasCommand> = []
-  let strategyName: string | null = null
-  let previousStrategyCurrentFitness: number = NaN
-  let strategyFitness: number = 0
-  let strategyChanged: boolean = false
-  let partOfSameGroup: boolean = false
-
-  let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
-
-  // For a a modifier change or if there is no current strategy,
-  const interactionHardResetNeeded =
-    hasModifiersChanged(
-      storedState.editor.canvas.interactionState?.interactionData ?? null,
-      editorState.canvas.interactionState?.interactionData ?? null,
-    ) || result.sessionStateState.currentStrategy == null
-
-  // Check if there's an interaction state present.
-  let workingEditorState: EditorState = editorState
-  if (editorState.canvas.interactionState != null) {
-    // Clear the accumulatedCommands if the hard reset is needed.
-    const accumulatedCommands = interactionHardResetNeeded
-      ? []
-      : result.sessionStateState.accumulatedCommands
-
-    // From the current strategy get a bunch of editor patches.
-    const commandResultCurrent = foldCommands(
-      editorState,
-      result.sessionStateState, // WARNING this is a StrategyState which can be anything (type is {}), the contents is not used, just passed through
-      accumulatedCommands.flatMap((c) => c.commands),
-      makeChangesPermanent ? 'permanent' : 'transient',
-    )
-    const patchedEditorStateCurrent = applyStatePatches(
-      editorState,
-      storedState.editor,
-      commandResultCurrent.editorStatePatches,
-    )
-
-    const canvasState: CanvasState = {
-      selectedElements: patchedEditorStateCurrent.selectedViews,
-      // metadata: patchedEditorStateCurrent.jsxMetadata, // We can add metadata back if live metadata is necessary
-      projectContents: patchedEditorStateCurrent.projectContents,
-      openFile: patchedEditorStateCurrent.canvas.openFile?.filename,
-      scale: patchedEditorStateCurrent.canvas.scale,
-      canvasOffset: patchedEditorStateCurrent.canvas.roundedCanvasOffset,
-    }
-
-    // Determine the new canvas strategy to run this time around.
-    const { strategy, previousStrategy } = findCanvasStrategy(
-      canvasState,
-      editorState.canvas.interactionState,
-      result.sessionStateState,
-      result.sessionStateState.currentStrategy,
-    )
-
-    // Variable housekeeping for later code.
-    strategyName = strategy?.strategy.name ?? null
-    strategyFitness = strategy?.fitness ?? 0
-    previousStrategyCurrentFitness = previousStrategy?.fitness ?? NaN
-    strategyChanged = strategyName != result.sessionStateState.currentStrategy
-    partOfSameGroup = strategiesPartOfSameGroup(
-      result.sessionStateState.currentStrategy,
-      strategyName,
-    )
-
-    // Should the strategy have changed and it's not part of the same group then
-    // soft reset the interaction state.
-    if (strategyChanged && !partOfSameGroup) {
-      didResetInteractionData = true
-      workingEditorState = {
-        ...workingEditorState,
-        canvas: {
-          ...workingEditorState.canvas,
-          interactionState: strategySwitchInteractionStateReset(
-            editorState.canvas.interactionState,
-          ),
-        },
-      }
-    }
-
-    let sessionStateState = result.sessionStateState
-    // Trigger the hard reset of the interaction state here if requested to do so.
-    if (interactionHardResetNeeded && workingEditorState.canvas.interactionState != null) {
-      workingEditorState = {
-        ...workingEditorState,
-        canvas: {
-          ...workingEditorState.canvas,
-          interactionState: interactionStateHardReset(editorState.canvas.interactionState),
-        },
-      }
-      sessionStateState = {
-        ...result.sessionStateState,
-        startingMetadata: sessionStateState.originalMetadata,
-      }
-    }
-
-    // If there is a current strategy, produce the commands from it.
-    if (strategy != null && workingEditorState.canvas.interactionState != null) {
-      const commands = applyCanvasStrategy(
-        strategy.strategy,
-        canvasState,
-        workingEditorState.canvas.interactionState,
-        sessionStateState,
-      )
-      patchCommands = commands
-    }
-  }
+  // TODO way too many returned values
+  const {
+    strategyChanged,
+    partOfSameGroup,
+    strategyName,
+    didResetInteractionData,
+    previousStrategyCurrentFitness,
+    strategyFitness,
+    interactionHardResetNeeded,
+    patchCommands,
+    workingEditorState,
+  } = processInteractionState(storedState, editorState, result, makeChangesPermanent)
 
   // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
   const shouldKeepCommands =
@@ -789,6 +695,131 @@ function handleStrategies(
     unpatchedEditorState: unpatchedEditorState,
     patchedEditorState: patchedEditorState,
     newSessionStateState: newSessionStateState,
+  }
+}
+
+function processInteractionState(
+  storedState: EditorStore,
+  editorState: EditorState,
+  result: DispatchResult,
+  makeChangesPermanent: boolean,
+) {
+  let patchCommands: Array<CanvasCommand> = []
+  let strategyName: string | null = null
+  let previousStrategyCurrentFitness: number = NaN
+  let strategyFitness: number = 0
+  let strategyChanged: boolean = false
+  let partOfSameGroup: boolean = false
+
+  let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
+
+  // For a a modifier change or if there is no current strategy,
+  const interactionHardResetNeeded =
+    hasModifiersChanged(
+      storedState.editor.canvas.interactionState?.interactionData ?? null,
+      editorState.canvas.interactionState?.interactionData ?? null,
+    ) || result.sessionStateState.currentStrategy == null
+
+  // Check if there's an interaction state present.
+  let workingEditorState: EditorState = editorState
+  if (editorState.canvas.interactionState != null) {
+    // Clear the accumulatedCommands if the hard reset is needed.
+    const accumulatedCommands = interactionHardResetNeeded
+      ? []
+      : result.sessionStateState.accumulatedCommands
+
+    // From the current strategy get a bunch of editor patches.
+    const commandResultCurrent = foldCommands(
+      editorState,
+      result.sessionStateState,
+      accumulatedCommands.flatMap((c) => c.commands),
+      makeChangesPermanent ? 'permanent' : 'transient',
+    )
+    const patchedEditorStateCurrent = applyStatePatches(
+      editorState,
+      storedState.editor,
+      commandResultCurrent.editorStatePatches,
+    )
+
+    const canvasState: CanvasState = {
+      selectedElements: patchedEditorStateCurrent.selectedViews,
+      // metadata: patchedEditorStateCurrent.jsxMetadata, // We can add metadata back if live metadata is necessary
+      projectContents: patchedEditorStateCurrent.projectContents,
+      openFile: patchedEditorStateCurrent.canvas.openFile?.filename,
+      scale: patchedEditorStateCurrent.canvas.scale,
+      canvasOffset: patchedEditorStateCurrent.canvas.roundedCanvasOffset,
+    }
+
+    // Determine the new canvas strategy to run this time around.
+    const { strategy, previousStrategy } = findCanvasStrategy(
+      canvasState,
+      editorState.canvas.interactionState,
+      result.sessionStateState,
+      result.sessionStateState.currentStrategy,
+    )
+
+    // Variable housekeeping for later code.
+    strategyName = strategy?.strategy.name ?? null
+    strategyFitness = strategy?.fitness ?? 0
+    previousStrategyCurrentFitness = previousStrategy?.fitness ?? NaN
+    strategyChanged = strategyName != result.sessionStateState.currentStrategy
+    partOfSameGroup = strategiesPartOfSameGroup(
+      result.sessionStateState.currentStrategy,
+      strategyName,
+    )
+
+    // Should the strategy have changed and it's not part of the same group then
+    // soft reset the interaction state.
+    if (strategyChanged && !partOfSameGroup) {
+      didResetInteractionData = true
+      workingEditorState = {
+        ...workingEditorState,
+        canvas: {
+          ...workingEditorState.canvas,
+          interactionState: strategySwitchInteractionStateReset(
+            editorState.canvas.interactionState,
+          ),
+        },
+      }
+    }
+
+    let sessionStateState = result.sessionStateState
+    // Trigger the hard reset of the interaction state here if requested to do so.
+    if (interactionHardResetNeeded && workingEditorState.canvas.interactionState != null) {
+      workingEditorState = {
+        ...workingEditorState,
+        canvas: {
+          ...workingEditorState.canvas,
+          interactionState: interactionStateHardReset(editorState.canvas.interactionState),
+        },
+      }
+      sessionStateState = {
+        ...result.sessionStateState,
+        startingMetadata: sessionStateState.originalMetadata,
+      }
+    }
+
+    // If there is a current strategy, produce the commands from it.
+    if (strategy != null && workingEditorState.canvas.interactionState != null) {
+      const commands = applyCanvasStrategy(
+        strategy.strategy,
+        canvasState,
+        workingEditorState.canvas.interactionState,
+        sessionStateState,
+      )
+      patchCommands = commands
+    }
+  }
+  return {
+    strategyChanged,
+    partOfSameGroup,
+    strategyName,
+    didResetInteractionData,
+    previousStrategyCurrentFitness,
+    strategyFitness,
+    interactionHardResetNeeded,
+    patchCommands,
+    workingEditorState,
   }
 }
 
