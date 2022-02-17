@@ -8,12 +8,22 @@ import {
   windowPoint,
   WindowRectangle,
 } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
-import { CSSCursor, EdgePosition, resizeDragState, updateResizeDragState } from '../../canvas-types'
+import {
+  CSSCursor,
+  DirectionAll,
+  DirectionHorizontal,
+  DirectionVertical,
+  EdgePosition,
+  resizeDragState,
+  updateResizeDragState,
+} from '../../canvas-types'
+import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
 
 export const AbsoluteResizeControl = React.memo(() => {
@@ -153,29 +163,53 @@ export const AbsoluteResizeControl = React.memo(() => {
           position={{ x: 0, y: 0.5 }}
           cursor={CSSCursor.ResizeNS}
           direction='vertical'
+          enabledDirection={DirectionHorizontal}
         />
         <ResizeEdge
           ref={topRef}
           position={{ x: 0.5, y: 0 }}
           cursor={CSSCursor.ResizeEW}
           direction='horizontal'
+          enabledDirection={DirectionVertical}
         />
         <ResizeEdge
           ref={rightRef}
           position={{ x: 1, y: 0.5 }}
           cursor={CSSCursor.ResizeEW}
           direction='vertical'
+          enabledDirection={DirectionHorizontal}
         />
         <ResizeEdge
           ref={bottomRef}
           position={{ x: 0.5, y: 1 }}
           cursor={CSSCursor.ResizeNS}
           direction='horizontal'
+          enabledDirection={DirectionVertical}
         />
-        <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
-        <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomLeftRef} position={{ x: 0, y: 1 }} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomRightRef} position={{ x: 1, y: 1 }} cursor={CSSCursor.ResizeNWSE} />
+        <ResizePoint
+          ref={topLeftRef}
+          position={{ x: 0, y: 0 }}
+          cursor={CSSCursor.ResizeNWSE}
+          enabledDirection={DirectionAll}
+        />
+        <ResizePoint
+          ref={topRightRef}
+          position={{ x: 1, y: 0 }}
+          cursor={CSSCursor.ResizeNESW}
+          enabledDirection={DirectionAll}
+        />
+        <ResizePoint
+          ref={bottomLeftRef}
+          position={{ x: 0, y: 1 }}
+          cursor={CSSCursor.ResizeNESW}
+          enabledDirection={DirectionAll}
+        />
+        <ResizePoint
+          ref={bottomRightRef}
+          position={{ x: 1, y: 1 }}
+          cursor={CSSCursor.ResizeNWSE}
+          enabledDirection={DirectionAll}
+        />
       </div>
     )
   }
@@ -185,6 +219,7 @@ export const AbsoluteResizeControl = React.memo(() => {
 interface ResizePointProps {
   cursor: CSSCursor
   position: EdgePosition
+  enabledDirection: EdgePosition
 }
 
 const ResizePointMouseAreaSize = 12
@@ -198,12 +233,20 @@ const ResizePoint = React.memo(
 
     const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
     const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
 
     const onPointMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
-        startResizeInteraction(event, props.position, dispatch, jsxMetadataRef.current)
+        startResizeInteraction(
+          event,
+          dispatch,
+          props.position,
+          props.enabledDirection,
+          jsxMetadataRef.current,
+          selectedViewsRef.current,
+        )
       },
-      [dispatch, props.position, jsxMetadataRef],
+      [dispatch, props.position, props.enabledDirection, jsxMetadataRef, selectedViewsRef],
     )
 
     return (
@@ -257,6 +300,7 @@ interface ResizeEdgeProps {
   cursor: CSSCursor
   direction: 'horizontal' | 'vertical'
   position: EdgePosition
+  enabledDirection: EdgePosition
 }
 
 const ResizeMouseAreaSize = 10
@@ -265,12 +309,20 @@ const ResizeEdge = React.memo(
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
     const dispatch = useEditorState((store) => store.dispatch, 'ResizeEdge dispatch')
     const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
 
     const onEdgeMouseDown = React.useCallback(
       (event: React.MouseEvent<HTMLDivElement>) => {
-        startResizeInteraction(event, props.position, dispatch, jsxMetadataRef.current)
+        startResizeInteraction(
+          event,
+          dispatch,
+          props.position,
+          props.enabledDirection,
+          jsxMetadataRef.current,
+          selectedViewsRef.current,
+        )
       },
-      [dispatch, props.position, jsxMetadataRef],
+      [dispatch, props.position, props.enabledDirection, jsxMetadataRef, selectedViewsRef],
     )
 
     const lineSize = ResizeMouseAreaSize / scale
@@ -306,13 +358,14 @@ const ResizeEdge = React.memo(
 
 function startResizeInteraction(
   event: React.MouseEvent<HTMLDivElement>,
-  position: EdgePosition,
   dispatch: EditorDispatch,
+  position: EdgePosition,
+  enabledDirection: EdgePosition,
   metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
 ) {
   event.stopPropagation()
   if (event.buttons === 1) {
-    const beforeOrAfter = position.y === 0.5 ? position.x : position.y
     const centerBasedResize = event.altKey
     const keepAspectRatio = event.shiftKey // || props.elementAspectRatioLocked ???
     const enableSnapping = !event.metaKey
@@ -320,30 +373,34 @@ function startResizeInteraction(
       windowPoint({ x: event.nativeEvent.x, y: event.nativeEvent.y }),
     )
     const start: CanvasPoint = canvasPositions.canvasPositionRaw
-    const originalFrames = this.props.getOriginalFrames()
-    const isMultiSelect = this.props.selectedViews.length !== 1
-    const enabledDirection = this.props.enabledDirection
+    const originalFrames = getOriginalFrames(selectedViews, metadata)
+    const isMultiSelect = selectedViews.length !== 1
 
-    const newDragState = updateResizeDragState(
-      resizeDragState(
-        this.props.measureSize,
-        originalFrames,
-        props.position,
-        this.props.enabledDirection,
-        this.props.metadata,
-        this.props.selectedViews,
-        isMultiSelect,
-        [],
-      ),
-      start,
-      null,
-      targetProperty,
-      enableSnapping,
-      centerBasedResize,
-      keepAspectRatio,
+    const originalSize = boundingRectangleArray(
+      originalFrames.map((frameInfo) => frameInfo.canvasFrame ?? null),
     )
 
-    dispatch([CanvasActions.createDragState(newDragState)], 'canvas')
-    this.props.onResizeStart(this.props.measureSize, this.props.position)
+    if (originalSize != null) {
+      const newDragState = updateResizeDragState(
+        resizeDragState(
+          originalSize,
+          originalFrames,
+          position,
+          enabledDirection,
+          metadata,
+          selectedViews,
+          isMultiSelect,
+          [],
+        ),
+        start,
+        null,
+        undefined,
+        enableSnapping,
+        centerBasedResize,
+        keepAspectRatio,
+      )
+
+      dispatch([CanvasActions.createDragState(newDragState)], 'canvas')
+    }
   }
 }
