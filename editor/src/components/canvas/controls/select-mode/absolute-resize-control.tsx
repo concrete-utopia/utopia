@@ -1,7 +1,12 @@
 import React, { useEffect } from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { windowPoint } from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  windowPoint,
+  WindowRectangle,
+} from '../../../../core/shared/math-utils'
+import { fastForEach } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { CSSCursor } from '../../canvas-types'
@@ -39,44 +44,53 @@ export const AbsoluteResizeControl = React.memo(() => {
   }, 'AbsoluteResizeControl allSelectedElementsAbsolute')
 
   const observerCallback = React.useCallback(() => {
-    // TODO MULTISELECT + BOUNDING BOX
-    if (selectedElementsRef.current.length === 1) {
-      const target = selectedElementsRef.current[0]
+    const frames: Array<WindowRectangle> = []
+    fastForEach(selectedElementsRef.current, (target) => {
       const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(target)}"]`)
       const frame = htmlElement?.getBoundingClientRect()
-      if (frame != null && controlRef.current != null) {
-        const frameInCanvasCoords = windowToCanvasCoordinatesGlobal(
-          windowPoint({ x: frame.left, y: frame.top }),
-        ).canvasPositionRounded
-        controlRef.current.style.left = frameInCanvasCoords.x + 'px'
-        controlRef.current.style.top = frameInCanvasCoords.y + 'px'
-        controlRef.current.style.width = frame.width + 'px'
-        controlRef.current.style.height = frame.height + 'px'
-        if (topRightRef.current != null) {
-          topRightRef.current.style.left = frame.width + 'px'
-        }
-        if (bottomLeftRef.current != null) {
-          bottomLeftRef.current.style.top = frame.height + 'px'
-        }
-        if (bottomRightRef.current != null) {
-          bottomRightRef.current.style.left = frame.width + 'px'
-          bottomRightRef.current.style.top = frame.height + 'px'
-        }
+      if (frame != null) {
+        frames.push({
+          x: frame.x,
+          y: frame.y,
+          width: frame.width,
+          height: frame.height,
+        } as WindowRectangle)
+      }
+    })
 
-        if (leftRef.current != null) {
-          leftRef.current.style.height = frame.height + 'px'
-        }
-        if (topRef.current != null) {
-          topRef.current.style.width = frame.width + 'px'
-        }
-        if (bottomRef.current != null) {
-          bottomRef.current.style.top = frame.height + 'px'
-          bottomRef.current.style.width = frame.width + 'px'
-        }
-        if (rightRef.current != null) {
-          rightRef.current.style.left = frame.width + 'px'
-          rightRef.current.style.height = frame.height + 'px'
-        }
+    const boundingBox = boundingRectangleArray(frames)
+    if (boundingBox != null && controlRef.current != null) {
+      const boundingBoxInCanvasCoords = windowToCanvasCoordinatesGlobal(
+        windowPoint({ x: boundingBox.x, y: boundingBox.y }),
+      ).canvasPositionRounded
+      controlRef.current.style.left = boundingBoxInCanvasCoords.x + 'px'
+      controlRef.current.style.top = boundingBoxInCanvasCoords.y + 'px'
+      controlRef.current.style.width = boundingBox.width + 'px'
+      controlRef.current.style.height = boundingBox.height + 'px'
+      if (topRightRef.current != null) {
+        topRightRef.current.style.left = boundingBox.width + 'px'
+      }
+      if (bottomLeftRef.current != null) {
+        bottomLeftRef.current.style.top = boundingBox.height + 'px'
+      }
+      if (bottomRightRef.current != null) {
+        bottomRightRef.current.style.left = boundingBox.width + 'px'
+        bottomRightRef.current.style.top = boundingBox.height + 'px'
+      }
+
+      if (leftRef.current != null) {
+        leftRef.current.style.height = boundingBox.height + 'px'
+      }
+      if (topRef.current != null) {
+        topRef.current.style.width = boundingBox.width + 'px'
+      }
+      if (bottomRef.current != null) {
+        bottomRef.current.style.top = boundingBox.height + 'px'
+        bottomRef.current.style.width = boundingBox.width + 'px'
+      }
+      if (rightRef.current != null) {
+        rightRef.current.style.left = boundingBox.width + 'px'
+        rightRef.current.style.height = boundingBox.height + 'px'
       }
     }
   }, [selectedElementsRef])
@@ -91,7 +105,7 @@ export const AbsoluteResizeControl = React.memo(() => {
   }, [])
 
   useEffect(() => {
-    if (selectedElements.length === 1) {
+    if (selectedElements.length > 0) {
       // TODO FIND SOMETHING NICER
       // this is a total hack that I found #node-connectors is still changing attributes on scroll. TODO use a HTMLElement that is deliberately for this
       const thisElementRerendersOnScroll = document.getElementById('node-connectors')
@@ -102,17 +116,16 @@ export const AbsoluteResizeControl = React.memo(() => {
         })
       }
 
-      // TODO MULTISELECT, FILTER FOR ABSOLUTE
-      const htmlElement = document.querySelector(
-        `*[data-paths~="${EP.toString(selectedElements[0])}"]`,
-      )
-      if (htmlElement != null && observerRef.current != null) {
-        observerRef.current.observe(htmlElement, {
-          attributes: true,
-          childList: true,
-          subtree: true,
-        })
-      }
+      fastForEach(selectedElements, (path) => {
+        const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(path)}"]`)
+        if (htmlElement != null && observerRef.current != null) {
+          observerRef.current.observe(htmlElement, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+          })
+        }
+      })
 
       observerCallback()
     }
@@ -120,7 +133,7 @@ export const AbsoluteResizeControl = React.memo(() => {
     return function cleanup() {
       observerRef.current?.disconnect()
     }
-  }, [selectedElements, observerCallback])
+  }, [selectedElements, observerCallback, allSelectedElementsAbsolute])
 
   if (allSelectedElementsAbsolute) {
     return (
