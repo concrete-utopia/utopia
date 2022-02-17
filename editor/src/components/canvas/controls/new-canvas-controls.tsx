@@ -314,29 +314,33 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       case 'select':
       case 'select-lite':
       case 'live': {
-        return (
-          <SelectModeControlContainer
-            {...controlProps}
-            startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
-            setSelectedViewsLocally={setLocalSelectedViews}
-            keysPressed={props.editor.keysPressed}
-            windowToCanvasPosition={props.windowToCanvasPosition}
-            isDragging={dragging}
-            isResizing={resizing}
-            selectionEnabled={selectionEnabled}
-            draggingEnabled={draggingEnabled}
-            contextMenuEnabled={contextMenuEnabled}
-            maybeHighlightOnHover={maybeHighlightOnHover}
-            maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-            duplicationState={props.editor.canvas.duplicationState}
-            dragState={
-              dragState?.type === 'MOVE_DRAG_STATE' || dragState?.type === 'RESIZE_DRAG_STATE'
-                ? dragState
-                : null
-            }
-            showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
-          />
-        )
+        if (isFeatureEnabled('Canvas Absolute Resize Controls')) {
+          return null
+        } else {
+          return (
+            <SelectModeControlContainer
+              {...controlProps}
+              startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
+              setSelectedViewsLocally={setLocalSelectedViews}
+              keysPressed={props.editor.keysPressed}
+              windowToCanvasPosition={props.windowToCanvasPosition}
+              isDragging={dragging}
+              isResizing={resizing}
+              selectionEnabled={selectionEnabled}
+              draggingEnabled={draggingEnabled}
+              contextMenuEnabled={contextMenuEnabled}
+              maybeHighlightOnHover={maybeHighlightOnHover}
+              maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+              duplicationState={props.editor.canvas.duplicationState}
+              dragState={
+                dragState?.type === 'MOVE_DRAG_STATE' || dragState?.type === 'RESIZE_DRAG_STATE'
+                  ? dragState
+                  : null
+              }
+              showAdditionalControls={props.editor.interfaceDesigner.additionalControls}
+            />
+          )
+        }
       }
       case 'insert': {
         return (
