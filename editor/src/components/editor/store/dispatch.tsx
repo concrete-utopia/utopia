@@ -104,6 +104,7 @@ import {
 import {
   applyCanvasStrategy,
   findCanvasStrategy,
+  findCanvasStrategyFromDispatchResult,
   getStrategyByName,
   hasModifiersChanged,
   interactionStateHardReset,
@@ -1117,6 +1118,12 @@ function alternativeHandleStrategies(
             return interactionUserChangedStrategy(storedState, result)
           }
         }
+
+        const strategy = findCanvasStrategyFromDispatchResult(result)
+        if (strategy?.strategy.name !== result.sessionStateState.currentStrategy) {
+          return interactionStrategyChangeStacked(storedState, result)
+        }
+
         return handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
       }
     }

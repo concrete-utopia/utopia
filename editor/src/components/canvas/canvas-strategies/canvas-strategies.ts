@@ -13,6 +13,7 @@ import {
   InteractionState,
   SessionStateState,
 } from '../../../interactions_proposal'
+import { DispatchResult } from '../../editor/store/dispatch'
 import { EditorStore } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
@@ -347,4 +348,28 @@ export function hasModifiersChanged(
       interactionData.modifiers.ctrl !== prevInteractionData.modifiers.ctrl ||
       interactionData.modifiers.shift !== prevInteractionData.modifiers.shift)
   )
+}
+
+export function findCanvasStrategyFromDispatchResult(result: DispatchResult) {
+  const newEditorState = result.editor
+  const canvasState: CanvasState = {
+    selectedElements: newEditorState.selectedViews,
+    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
+    projectContents: newEditorState.projectContents,
+    openFile: newEditorState.canvas.openFile?.filename,
+    scale: newEditorState.canvas.scale,
+    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
+  }
+  const interactionState = newEditorState.canvas.interactionState
+  if (interactionState == null) {
+    return null
+  } else {
+    const { strategy } = findCanvasStrategy(
+      canvasState,
+      interactionState,
+      result.sessionStateState,
+      result.sessionStateState.currentStrategy,
+    )
+    return strategy
+  }
 }
