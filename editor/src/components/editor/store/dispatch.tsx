@@ -592,41 +592,49 @@ function interactionFinished(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = forceNotNull('Cannot be null.', newEditorState.canvas.interactionState)
-  // Determine the new canvas strategy to run this time around.
-  const { strategy } = findCanvasStrategy(
-    canvasState,
-    interactionState,
-    result.sessionStateState,
-    result.sessionStateState.currentStrategy,
-  )
-
-  // If there is a current strategy, produce the commands from it.
-  if (strategy == null) {
+  const interactionState = storedState.editor.canvas.interactionState
+  if (interactionState == null) {
     return {
       unpatchedEditorState: newEditorState,
       patchedEditorState: newEditorState,
       newSessionStateState: withClearedSession,
     }
   } else {
-    const commands = applyCanvasStrategy(
-      strategy.strategy,
+    // Determine the new canvas strategy to run this time around.
+    const { strategy } = findCanvasStrategy(
       canvasState,
       interactionState,
       result.sessionStateState,
-    )
-    const commandResult = foldAndApplyCommands(
-      newEditorState,
-      storedState.editor,
-      storedState.sessionStateState.strategyState,
-      [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
-      'permanent',
+      result.sessionStateState.currentStrategy,
     )
 
-    return {
-      unpatchedEditorState: newEditorState,
-      patchedEditorState: commandResult.editorState,
-      newSessionStateState: withClearedSession,
+    // If there is a current strategy, produce the commands from it.
+    if (strategy == null) {
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: newEditorState,
+        newSessionStateState: withClearedSession,
+      }
+    } else {
+      const commands = applyCanvasStrategy(
+        strategy.strategy,
+        canvasState,
+        interactionState,
+        result.sessionStateState,
+      )
+      const commandResult = foldAndApplyCommands(
+        newEditorState,
+        storedState.editor,
+        storedState.sessionStateState.strategyState,
+        [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
+        'permanent',
+      )
+
+      return {
+        unpatchedEditorState: commandResult.editorState,
+        patchedEditorState: commandResult.editorState,
+        newSessionStateState: withClearedSession,
+      }
     }
   }
 }
@@ -873,9 +881,7 @@ function alternativeHandleStrategies(
   storedState: EditorStore,
   result: DispatchResult,
 ): HandleStrategiesResult {
-  const makeChangesPermanent =
-    dispatchedActions.some(shouldApplyClearInteractionStateResult) &&
-    result.editor.canvas.interactionState != null
+  const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const cancelInteraction = dispatchedActions.some(isClearInteractionState) && !makeChangesPermanent
   if (storedState.editor.canvas.interactionState == null) {
     if (result.editor.canvas.interactionState == null) {
