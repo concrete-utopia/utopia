@@ -109,7 +109,7 @@ function useGetApplicableStrategies(): Array<CanvasStrategy> {
   return useEditorState(getApplicableStrategiesSelector, 'useGetApplicableStrategies', arrayEquals)
 }
 
-interface StrategiesWithFitness {
+interface StrategyWithFitness {
   fitness: number
   strategy: CanvasStrategy
 }
@@ -118,7 +118,7 @@ function getApplicableStrategiesOrderedByFitness(
   canvasState: CanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
-): Array<StrategiesWithFitness> {
+): Array<StrategyWithFitness> {
   const applicableStrategies = getApplicableStrategies(
     canvasState,
     interactionState,
@@ -181,9 +181,9 @@ export function useGetApplicableStrategiesOrderedByFitness(): Array<string> {
 }
 
 function pickDefaultCanvasStrategy(
-  sortedApplicableStrategies: Array<StrategiesWithFitness>,
+  sortedApplicableStrategies: Array<StrategyWithFitness>,
   previousStrategyName: string | null,
-): { strategy: StrategiesWithFitness | null; previousStrategy: StrategiesWithFitness | null } {
+): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   const currentBestStrategy = sortedApplicableStrategies[0] ?? null
   const previousStrategy =
     sortedApplicableStrategies.find((s) => s.strategy.name === previousStrategyName) ?? null
@@ -195,10 +195,10 @@ function pickDefaultCanvasStrategy(
 }
 
 function pickStrategy(
-  sortedApplicableStrategies: Array<StrategiesWithFitness>,
+  sortedApplicableStrategies: Array<StrategyWithFitness>,
   interactionState: InteractionState,
   previousStrategyName: string | null,
-): { strategy: StrategiesWithFitness | null; previousStrategy: StrategiesWithFitness | null } {
+): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   // FIXME Explicitly picking a strategy will prevent natural handovers that otherwise should occur
 
   if (interactionState.userPreferredStrategy != null) {
@@ -221,7 +221,7 @@ export function findCanvasStrategy(
   interactionState: InteractionState,
   sessionState: SessionStateState,
   previousStrategyName: string | null,
-): { strategy: StrategiesWithFitness | null; previousStrategy: StrategiesWithFitness | null } {
+): { strategy: StrategyWithFitness | null; previousStrategy: StrategyWithFitness | null } {
   const sortedApplicableStrategies = getApplicableStrategiesOrderedByFitness(
     canvasState,
     interactionState,
