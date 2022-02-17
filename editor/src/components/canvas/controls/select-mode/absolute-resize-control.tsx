@@ -9,7 +9,7 @@ import {
 import { fastForEach } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { CSSCursor } from '../../canvas-types'
+import { CSSCursor, EdgePosition } from '../../canvas-types'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
 
 export const AbsoluteResizeControl = React.memo(() => {
@@ -144,14 +144,34 @@ export const AbsoluteResizeControl = React.memo(() => {
           transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
       >
-        <ResizeEdge ref={leftRef} cursor={CSSCursor.ResizeNS} direction='vertical' />
-        <ResizeEdge ref={topRef} cursor={CSSCursor.ResizeEW} direction='horizontal' />
-        <ResizeEdge ref={rightRef} cursor={CSSCursor.ResizeEW} direction='vertical' />
-        <ResizeEdge ref={bottomRef} cursor={CSSCursor.ResizeNS} direction='horizontal' />
-        <ResizePoint ref={topLeftRef} cursor={CSSCursor.ResizeNWSE} />
-        <ResizePoint ref={topRightRef} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomLeftRef} cursor={CSSCursor.ResizeNESW} />
-        <ResizePoint ref={bottomRightRef} cursor={CSSCursor.ResizeNWSE} />
+        <ResizeEdge
+          ref={leftRef}
+          position={{ x: 0, y: 0.5 }}
+          cursor={CSSCursor.ResizeNS}
+          direction='vertical'
+        />
+        <ResizeEdge
+          ref={topRef}
+          position={{ x: 0.5, y: 0 }}
+          cursor={CSSCursor.ResizeEW}
+          direction='horizontal'
+        />
+        <ResizeEdge
+          ref={rightRef}
+          position={{ x: 1, y: 0.5 }}
+          cursor={CSSCursor.ResizeEW}
+          direction='vertical'
+        />
+        <ResizeEdge
+          ref={bottomRef}
+          position={{ x: 0.5, y: 1 }}
+          cursor={CSSCursor.ResizeNS}
+          direction='horizontal'
+        />
+        <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
+        <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
+        <ResizePoint ref={bottomLeftRef} position={{ x: 0, y: 1 }} cursor={CSSCursor.ResizeNESW} />
+        <ResizePoint ref={bottomRightRef} position={{ x: 1, y: 1 }} cursor={CSSCursor.ResizeNWSE} />
       </div>
     )
   }
@@ -160,6 +180,7 @@ export const AbsoluteResizeControl = React.memo(() => {
 
 interface ResizePointProps {
   cursor: CSSCursor
+  position: EdgePosition
 }
 
 const ResizePointMouseAreaSize = 12
@@ -219,6 +240,7 @@ const ResizePoint = React.memo(
 interface ResizeEdgeProps {
   cursor: CSSCursor
   direction: 'horizontal' | 'vertical'
+  position: EdgePosition
 }
 
 const ResizeMouseAreaSize = 10
