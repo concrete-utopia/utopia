@@ -766,8 +766,8 @@ function interactionUpdate(
         accumulatedCommands: [],
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
-        startingMetadata: newEditorState.jsxMetadata,
-        originalMetadata: newEditorState.jsxMetadata,
+        startingMetadata: result.sessionStateState.startingMetadata,
+        originalMetadata: result.sessionStateState.originalMetadata,
       }
 
       return {
@@ -951,8 +951,8 @@ function interactionUserChangedStrategy(
         ],
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
-        startingMetadata: newEditorState.jsxMetadata,
-        originalMetadata: newEditorState.jsxMetadata,
+        startingMetadata: result.sessionStateState.startingMetadata,
+        originalMetadata: result.sessionStateState.originalMetadata,
       }
 
       return {
