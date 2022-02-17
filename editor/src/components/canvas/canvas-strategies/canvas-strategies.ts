@@ -216,6 +216,19 @@ function pickStrategy(
   return pickDefaultCanvasStrategy(sortedApplicableStrategies, previousStrategyName)
 }
 
+function isStrategyApplicable(
+  strategyName: string,
+  canvasState: CanvasState,
+  interactionState: InteractionState,
+  sessionState: SessionStateState,
+): boolean {
+  const strategy = RegisteredCanvasStrategies.find((s) => s.name === strategyName)
+  if (strategy == null) {
+    return false
+  }
+  return strategy.fitness(canvasState, interactionState, sessionState) > 0
+}
+
 export function findCanvasStrategy(
   canvasState: CanvasState,
   interactionState: InteractionState,
