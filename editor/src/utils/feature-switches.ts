@@ -72,3 +72,10 @@ export function toggleFeatureEnabled(featureName: FeatureName): void {
     localforage.setItem(settingKeyForName(featureName), newValue)
   }
 }
+
+export function setFeatureEnabled(featureName: FeatureName, newValue: boolean): void {
+  FeatureSwitches[featureName] = newValue
+  if (isBrowserEnvironment) {
+    localforage.setItem(settingKeyForName(featureName), newValue)
+  }
+}
