@@ -848,22 +848,49 @@ function interactionStart(
   }
 }
 
+function interactionCancel(
+  storedState: EditorStore,
+  result: DispatchResult,
+): HandleStrategiesResult {
+  const updatedEditorState: EditorState = {
+    ...result.editor,
+    canvas: {
+      ...result.editor.canvas,
+      interactionState: null,
+    },
+  }
+
+  return {
+    unpatchedEditorState: updatedEditorState,
+    patchedEditorState: updatedEditorState,
+    newSessionStateState: createEmptySessionStateState(updatedEditorState.jsxMetadata),
+  }
+}
+
 function alternativeHandleStrategies(
   frozenDerivedState: DerivedState,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStore,
   result: DispatchResult,
 ): HandleStrategiesResult {
-  if (
-    storedState.editor.canvas.interactionState == null &&
+  const makeChangesPermanent =
+    dispatchedActions.some(shouldApplyClearInteractionStateResult) &&
     result.editor.canvas.interactionState != null
-  ) {
-    return interactionStart(storedState, result)
+  const cancelInteraction = dispatchedActions.some(isClearInteractionState) && !makeChangesPermanent
+  if (storedState.editor.canvas.interactionState == null) {
+    if (result.editor.canvas.interactionState == null) {
+      return {
+        unpatchedEditorState: result.editor,
+        patchedEditorState: result.editor,
+        newSessionStateState: result.sessionStateState,
+      }
+    } else {
+      return interactionStart(storedState, result)
+    }
   } else {
-    const makeChangesPermanent =
-      dispatchedActions.some(shouldApplyClearInteractionStateResult) &&
-      result.editor.canvas.interactionState != null
-    if (makeChangesPermanent) {
+    if (cancelInteraction) {
+      return interactionCancel(storedState, result)
+    } else if (makeChangesPermanent) {
       return interactionFinished(storedState, result)
     } else {
       const interactionHardResetNeeded =
