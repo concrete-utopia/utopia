@@ -970,6 +970,113 @@ function interactionUserChangedStrategy(
   }
 }
 
+function interactionStrategyChangeStacked(
+  storedState: EditorStore,
+  result: DispatchResult,
+): HandleStrategiesResult {
+  const newEditorState = result.editor
+  const canvasState: CanvasState = {
+    selectedElements: newEditorState.selectedViews,
+    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
+    projectContents: newEditorState.projectContents,
+    openFile: newEditorState.canvas.openFile?.filename,
+    scale: newEditorState.canvas.scale,
+    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
+  }
+  const interactionState = newEditorState.canvas.interactionState
+  if (interactionState == null) {
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: newEditorState,
+      newSessionStateState: result.sessionStateState,
+    }
+  } else {
+    // Determine the new canvas strategy to run this time around.
+    const { strategy, previousStrategy } = findCanvasStrategy(
+      canvasState,
+      interactionState,
+      result.sessionStateState,
+      result.sessionStateState.currentStrategy,
+    )
+    const strategyName = strategy?.strategy.name
+    if (strategyName === result.sessionStateState.currentStrategy) {
+      console.warn("Entered interactionStrategyChangeStacked but the strategy haven't changed")
+    }
+
+    // If there is a current strategy, produce the commands from it.
+    if (strategy != null && newEditorState.canvas.interactionState != null) {
+      const strategyChangedLogCommands = [
+        {
+          strategy: null,
+          commands: [
+            strategySwitched(
+              'user-input',
+              strategyName!,
+              false,
+              true,
+              previousStrategy?.fitness ?? NaN,
+              strategy.fitness,
+            ),
+          ],
+        },
+      ]
+
+      const commands = applyCanvasStrategy(
+        strategy.strategy,
+        canvasState,
+        newEditorState.canvas.interactionState,
+        result.sessionStateState,
+      )
+      const commandResult = foldAndApplyCommands(
+        newEditorState,
+        storedState.editor,
+        storedState.sessionStateState.strategyState,
+        commands,
+        'transient',
+      )
+      const newSessionStateState: SessionStateState = {
+        currentStrategy: strategy.strategy.name,
+        currentStrategyFitness: strategy.fitness,
+        currentStrategyCommands: commands,
+        accumulatedCommands: [
+          ...result.sessionStateState.accumulatedCommands,
+          {
+            strategy: result.sessionStateState.currentStrategy,
+            commands: result.sessionStateState.currentStrategyCommands,
+          },
+          ...strategyChangedLogCommands,
+        ],
+        commandDescriptions: commandResult.commandDescriptions,
+        strategyState: createEmptyStrategyState(),
+        startingMetadata: result.sessionStateState.startingMetadata,
+        originalMetadata: result.sessionStateState.originalMetadata,
+      }
+
+      const patchedEditorState = {
+        ...newEditorState,
+        canvas: {
+          ...newEditorState.canvas,
+          interactionState: strategySwitchInteractionStateReset(
+            newEditorState.canvas.interactionState,
+          ),
+        },
+      }
+
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: patchedEditorState,
+        newSessionStateState: newSessionStateState,
+      }
+    } else {
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: newEditorState,
+        newSessionStateState: result.sessionStateState,
+      }
+    }
+  }
+}
+
 function alternativeHandleStrategies(
   frozenDerivedState: DerivedState,
   dispatchedActions: readonly EditorAction[],
@@ -1010,7 +1117,6 @@ function alternativeHandleStrategies(
             return interactionUserChangedStrategy(storedState, result)
           }
         }
-
         return handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
       }
     }
