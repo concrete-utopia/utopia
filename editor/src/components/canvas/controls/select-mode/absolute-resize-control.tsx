@@ -53,36 +53,28 @@ export const AbsoluteResizeControl = React.memo(() => {
         controlRef.current.style.width = frame.width + 'px'
         controlRef.current.style.height = frame.height + 'px'
         if (topRightRef.current != null) {
-          topRightRef.current.style.left = frameInCanvasCoords.x + frame.width + 'px'
-          topRightRef.current.style.top = frameInCanvasCoords.y + 'px'
+          topRightRef.current.style.left = frame.width + 'px'
         }
         if (bottomLeftRef.current != null) {
-          bottomLeftRef.current.style.left = frameInCanvasCoords.x + 'px'
-          bottomLeftRef.current.style.top = frameInCanvasCoords.y + frame.height + 'px'
+          bottomLeftRef.current.style.top = frame.height + 'px'
         }
         if (bottomRightRef.current != null) {
-          bottomRightRef.current.style.left = frameInCanvasCoords.x + frame.width + 'px'
-          bottomRightRef.current.style.top = frameInCanvasCoords.y + frame.height + 'px'
+          bottomRightRef.current.style.left = frame.width + 'px'
+          bottomRightRef.current.style.top = frame.height + 'px'
         }
 
         if (leftRef.current != null) {
-          leftRef.current.style.left = frameInCanvasCoords.x + 'px'
-          leftRef.current.style.top = frameInCanvasCoords.y + 'px'
           leftRef.current.style.height = frame.height + 'px'
         }
         if (topRef.current != null) {
-          topRef.current.style.left = frameInCanvasCoords.x + 'px'
-          topRef.current.style.top = frameInCanvasCoords.y + 'px'
           topRef.current.style.width = frame.width + 'px'
         }
         if (bottomRef.current != null) {
-          bottomRef.current.style.left = frameInCanvasCoords.x + 'px'
-          bottomRef.current.style.top = frameInCanvasCoords.y + frame.height + 'px'
+          bottomRef.current.style.top = frame.height + 'px'
           bottomRef.current.style.width = frame.width + 'px'
         }
         if (rightRef.current != null) {
-          rightRef.current.style.left = frameInCanvasCoords.x + frame.width + 'px'
-          rightRef.current.style.top = frameInCanvasCoords.y + 'px'
+          rightRef.current.style.left = frame.width + 'px'
           rightRef.current.style.height = frame.height + 'px'
         }
       }
@@ -220,19 +212,29 @@ const ResizeEdge = React.memo(
     const lineSize = 10 / scale
     const width = props.direction === 'horizontal' ? undefined : lineSize
     const height = props.direction === 'vertical' ? undefined : lineSize
+    const offsetLeft = props.direction === 'horizontal' ? undefined : -lineSize / 2
+    const offsetTop = props.direction === 'vertical' ? undefined : -lineSize / 2
     return (
       <div
-        ref={ref}
         style={{
-          pointerEvents: 'initial',
           position: 'absolute',
-          width: width,
-          height: height,
-          boxSizing: 'border-box',
-          backgroundColor: 'transparent',
-          cursor: props.cursor,
+          top: offsetTop,
+          left: offsetLeft,
         }}
-      ></div>
+      >
+        <div
+          ref={ref}
+          style={{
+            boxSizing: 'border-box',
+            position: 'relative',
+            width: width,
+            height: height,
+            backgroundColor: 'transparent',
+            cursor: props.cursor,
+            pointerEvents: 'initial',
+          }}
+        ></div>
+      </div>
     )
   }),
 )
