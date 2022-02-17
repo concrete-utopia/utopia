@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { LayoutTargetableProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
@@ -159,20 +160,6 @@ export const AbsoluteResizeControl = React.memo(() => {
         }}
       >
         <ResizeEdge
-          ref={leftRef}
-          position={{ x: 0, y: 0.5 }}
-          cursor={CSSCursor.ResizeNS}
-          direction='vertical'
-          enabledDirection={DirectionHorizontal}
-        />
-        <ResizeEdge
-          ref={topRef}
-          position={{ x: 0.5, y: 0 }}
-          cursor={CSSCursor.ResizeEW}
-          direction='horizontal'
-          enabledDirection={DirectionVertical}
-        />
-        <ResizeEdge
           ref={rightRef}
           position={{ x: 1, y: 0.5 }}
           cursor={CSSCursor.ResizeEW}
@@ -182,6 +169,20 @@ export const AbsoluteResizeControl = React.memo(() => {
         <ResizeEdge
           ref={bottomRef}
           position={{ x: 0.5, y: 1 }}
+          cursor={CSSCursor.ResizeNS}
+          direction='horizontal'
+          enabledDirection={DirectionVertical}
+        />
+        <ResizeEdge
+          ref={leftRef}
+          position={{ x: 0, y: 0.5 }}
+          cursor={CSSCursor.ResizeEW}
+          direction='vertical'
+          enabledDirection={DirectionHorizontal}
+        />
+        <ResizeEdge
+          ref={topRef}
+          position={{ x: 0.5, y: 0 }}
           cursor={CSSCursor.ResizeNS}
           direction='horizontal'
           enabledDirection={DirectionVertical}
@@ -285,7 +286,7 @@ const ResizePoint = React.memo(
             position: 'relative',
             width: catcherSize,
             height: catcherSize,
-            top: -catcherSize / 2,
+            top: -catcherSize,
             left: -catcherSize / 2,
             backgroundColor: 'transparent',
             cursor: props.cursor,
@@ -336,9 +337,8 @@ const ResizeEdge = React.memo(
           position: 'absolute',
           top: offsetTop,
           left: offsetLeft,
-          cursor: props.cursor,
+          pointerEvents: 'none',
         }}
-        onMouseDown={onEdgeMouseDown}
       >
         <div
           ref={ref}
@@ -350,6 +350,7 @@ const ResizeEdge = React.memo(
             cursor: props.cursor,
             pointerEvents: 'initial',
           }}
+          onMouseDown={onEdgeMouseDown}
         ></div>
       </div>
     )
@@ -377,8 +378,14 @@ function startResizeInteraction(
     const isMultiSelect = selectedViews.length !== 1
 
     const originalSize = boundingRectangleArray(
-      originalFrames.map((frameInfo) => frameInfo.canvasFrame ?? null),
+      selectedViews.map((path) => MetadataUtils.getFrameInCanvasCoords(path, metadata)),
     )
+    let possibleTargetProperty: LayoutTargetableProp | undefined = undefined
+    if (position.x === 0.5) {
+      possibleTargetProperty = 'height'
+    } else if (position.y === 0.5) {
+      possibleTargetProperty = 'width'
+    }
 
     if (originalSize != null) {
       const newDragState = updateResizeDragState(
@@ -394,7 +401,7 @@ function startResizeInteraction(
         ),
         start,
         null,
-        undefined,
+        possibleTargetProperty,
         enableSnapping,
         centerBasedResize,
         keepAspectRatio,
