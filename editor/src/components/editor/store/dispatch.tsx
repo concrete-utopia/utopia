@@ -849,7 +849,6 @@ function handleStrategies(
     didResetInteractionData,
     previousStrategyCurrentFitness,
     strategyFitness,
-    interactionHardResetNeeded,
     patchCommands,
     workingEditorState,
   } = processInteractionState(storedState, editorFilteredForFiles, result, makeChangesPermanent)
@@ -880,7 +879,6 @@ function handleStrategies(
   // Determine here if the commands should apply to the next pass around this loop.
   const updatedAccumulatedCommands = updateAccumulatedCommands(
     shouldKeepCommands,
-    interactionHardResetNeeded,
     result,
     strategyChangedLogCommands,
   )
@@ -950,20 +948,11 @@ function processInteractionState(
 
   let didResetInteractionData: boolean = false // please if someone is changing the code around strategySwitchInteractionStateReset, make me nicer and not a variable floating around
 
-  // For a a modifier change or if there is no current strategy,
-  const interactionHardResetNeeded =
-    hasModifiersChanged(
-      storedState.editor.canvas.interactionState?.interactionData ?? null,
-      editorState.canvas.interactionState?.interactionData ?? null,
-    ) || result.sessionStateState.currentStrategy == null
-
   // Check if there's an interaction state present.
   let workingEditorState: EditorState = editorState
   if (editorState.canvas.interactionState != null) {
     // Clear the accumulatedCommands if the hard reset is needed.
-    const accumulatedCommands = interactionHardResetNeeded
-      ? []
-      : result.sessionStateState.accumulatedCommands
+    const accumulatedCommands = result.sessionStateState.accumulatedCommands
 
     // From the current strategy get a bunch of editor patches.
     const { editorState: patchedEditorStateCurrent } = foldAndApplyCommands(
@@ -1016,29 +1005,13 @@ function processInteractionState(
       }
     }
 
-    let sessionStateState = result.sessionStateState
-    // Trigger the hard reset of the interaction state here if requested to do so.
-    if (interactionHardResetNeeded && workingEditorState.canvas.interactionState != null) {
-      workingEditorState = {
-        ...workingEditorState,
-        canvas: {
-          ...workingEditorState.canvas,
-          interactionState: interactionStateHardReset(editorState.canvas.interactionState),
-        },
-      }
-      sessionStateState = {
-        ...result.sessionStateState,
-        startingMetadata: sessionStateState.originalMetadata,
-      }
-    }
-
     // If there is a current strategy, produce the commands from it.
     if (strategy != null && workingEditorState.canvas.interactionState != null) {
       const commands = applyCanvasStrategy(
         strategy.strategy,
         canvasState,
         workingEditorState.canvas.interactionState,
-        sessionStateState,
+        result.sessionStateState,
       )
       patchCommands = commands
     }
@@ -1050,7 +1023,6 @@ function processInteractionState(
     didResetInteractionData,
     previousStrategyCurrentFitness,
     strategyFitness,
-    interactionHardResetNeeded,
     patchCommands,
     workingEditorState,
   }
@@ -1058,25 +1030,20 @@ function processInteractionState(
 
 function updateAccumulatedCommands(
   shouldKeepCommands: boolean,
-  interactionHardResetNeeded: boolean,
   result: DispatchResult,
   strategyChangedLogCommands: Array<StrategyAndAccumulatedCommands>,
 ) {
-  if (interactionHardResetNeeded) {
-    return []
+  if (shouldKeepCommands) {
+    return [
+      ...result.sessionStateState.accumulatedCommands,
+      {
+        strategy: result.sessionStateState.currentStrategy,
+        commands: result.sessionStateState.currentStrategyCommands,
+      },
+      ...strategyChangedLogCommands,
+    ]
   } else {
-    if (shouldKeepCommands) {
-      return [
-        ...result.sessionStateState.accumulatedCommands,
-        {
-          strategy: result.sessionStateState.currentStrategy,
-          commands: result.sessionStateState.currentStrategyCommands,
-        },
-        ...strategyChangedLogCommands,
-      ]
-    } else {
-      return [...result.sessionStateState.accumulatedCommands, ...strategyChangedLogCommands]
-    }
+    return [...result.sessionStateState.accumulatedCommands, ...strategyChangedLogCommands]
   }
 }
 
