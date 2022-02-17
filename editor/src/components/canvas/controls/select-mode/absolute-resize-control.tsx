@@ -220,12 +220,12 @@ const ResizeEdge = React.memo(
           position: 'absolute',
           top: offsetTop,
           left: offsetLeft,
+          cursor: props.cursor,
         }}
       >
         <div
           ref={ref}
           style={{
-            boxSizing: 'border-box',
             position: 'relative',
             width: width,
             height: height,
