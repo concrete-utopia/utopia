@@ -631,6 +631,82 @@ function interactionFinished(
   }
 }
 
+function interactionHardReset(storedState: EditorStore, result: DispatchResult) {
+  const newEditorState = result.editor
+  const withClearedSession = {
+    ...storedState.sessionStateState,
+    startingMetadata: storedState.sessionStateState.originalMetadata,
+  }
+  const canvasState: CanvasState = {
+    selectedElements: newEditorState.selectedViews,
+    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
+    projectContents: newEditorState.projectContents,
+    openFile: newEditorState.canvas.openFile?.filename,
+    scale: newEditorState.canvas.scale,
+    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
+  }
+  const interactionState = newEditorState.canvas.interactionState
+  if (interactionState == null) {
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: newEditorState,
+      newSessionStateState: withClearedSession,
+    }
+  } else {
+    const resetInteractionState = interactionStateHardReset(interactionState)
+    const resetSessionState = {
+      ...result.sessionStateState,
+      startingMetadata: result.sessionStateState.originalMetadata,
+    }
+    // Determine the new canvas strategy to run this time around.
+    const { strategy, previousStrategy } = findCanvasStrategy(
+      canvasState,
+      resetInteractionState,
+      resetSessionState,
+      resetSessionState.currentStrategy,
+    )
+
+    // If there is a current strategy, produce the commands from it.
+    if (strategy != null && newEditorState.canvas.interactionState != null) {
+      const commands = applyCanvasStrategy(
+        strategy.strategy,
+        canvasState,
+        newEditorState.canvas.interactionState,
+        resetSessionState,
+      )
+      const commandResult = foldAndApplyCommands(
+        newEditorState,
+        storedState.editor,
+        storedState.sessionStateState.strategyState,
+        commands,
+        'transient',
+      )
+      const newSessionStateState: SessionStateState = {
+        currentStrategy: strategy.strategy.name,
+        currentStrategyFitness: strategy.fitness,
+        currentStrategyCommands: commands,
+        accumulatedCommands: [],
+        commandDescriptions: commandResult.commandDescriptions,
+        strategyState: createEmptyStrategyState(),
+        startingMetadata: resetSessionState.startingMetadata,
+        originalMetadata: resetSessionState.originalMetadata,
+      }
+
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: commandResult.editorState,
+        newSessionStateState: newSessionStateState,
+      }
+    } else {
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: newEditorState,
+        newSessionStateState: withClearedSession,
+      }
+    }
+  }
+}
+
 function interactionStart(
   storedState: EditorStore,
   result: DispatchResult,
@@ -720,6 +796,14 @@ function alternativeHandleStrategies(
     if (makeChangesPermanent) {
       return interactionFinished(storedState, result)
     } else {
+      const interactionHardResetNeeded =
+        hasModifiersChanged(
+          storedState.editor.canvas.interactionState?.interactionData ?? null,
+          result.editor.canvas.interactionState?.interactionData ?? null,
+        ) || result.sessionStateState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
+      if (interactionHardResetNeeded) {
+        return interactionHardReset(storedState, result)
+      }
       return handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
     }
   }
