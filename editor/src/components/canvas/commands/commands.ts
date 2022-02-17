@@ -935,18 +935,20 @@ export const runCanvasCommand: CommandFunction<CanvasCommand> = (
   }
 }
 
+export interface CommandResult {
+  editorState: EditorState
+  editorStatePatches: Array<EditorStatePatch>
+  newStrategyState: StrategyState
+  commandDescriptions: Array<CommandDescription>
+}
+
 export function foldAndApplyCommands(
   editorState: EditorState,
   priorPatchedState: EditorState,
   strategyState: StrategyState,
   commands: Array<CanvasCommand>,
   transient: TransientOrNot,
-): {
-  editorState: EditorState
-  editorStatePatches: Array<EditorStatePatch>
-  newStrategyState: StrategyState
-  commandDescriptions: Array<CommandDescription>
-} {
+): CommandResult {
   const commandResult = foldCommands(editorState, strategyState, commands, transient)
   const updatedEditorState = applyStatePatches(
     editorState,

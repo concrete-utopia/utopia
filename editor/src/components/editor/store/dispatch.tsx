@@ -98,6 +98,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
 import {
   CanvasCommand,
+  CommandResult,
   foldAndApplyCommands,
   strategySwitched,
 } from '../../canvas/commands/commands'
@@ -471,11 +472,26 @@ export function editorDispatch(
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
 
+  const domMetadataStale = result.editor.domMetadata === storedState.editor.domMetadata
+  const createInteractionStateActionDispatched = dispatchedActions.some(isCreateInteractionState)
+  const clearInteractionStateActionDispatched = dispatchedActions.some(isClearInteractionState)
+
+  const skipStrategies =
+    domMetadataStale &&
+    !createInteractionStateActionDispatched &&
+    !clearInteractionStateActionDispatched
+
   const {
     unpatchedEditorState,
     patchedEditorState,
     newSessionStateState,
-  } = alternativeHandleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
+  } = alternativeHandleStrategies(
+    frozenDerivedState,
+    dispatchedActions,
+    storedState,
+    result,
+    skipStrategies,
+  )
 
   const editorWithModelChecked =
     !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
@@ -642,6 +658,7 @@ function alternativeHandleStrategies(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStore,
   result: DispatchResult,
+  skipStrategies: boolean,
 ): HandleStrategiesResult {
   if (
     storedState.editor.canvas.interactionState == null &&
@@ -649,7 +666,13 @@ function alternativeHandleStrategies(
   ) {
     return interactionStart(storedState, result)
   } else {
-    return handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
+    return handleStrategies(
+      frozenDerivedState,
+      dispatchedActions,
+      storedState,
+      result,
+      skipStrategies,
+    )
   }
 }
 
@@ -658,6 +681,7 @@ function handleStrategies(
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStore,
   result: DispatchResult,
+  skipStrategies: boolean,
 ): HandleStrategiesResult {
   const editorFilteredForFiles = filterEditorForFiles(result.editor)
   // Upfront validation.
@@ -685,67 +709,84 @@ function handleStrategies(
     }
   }
 
-  // TODO way too many returned values
-  const {
-    strategyChanged,
-    partOfSameGroup,
-    strategyName,
-    didResetInteractionData,
-    previousStrategyCurrentFitness,
-    strategyFitness,
-    interactionHardResetNeeded,
-    patchCommands,
-    workingEditorState,
-  } = processInteractionState(storedState, editorFilteredForFiles, result, makeChangesPermanent)
+  let commandResult: CommandResult
+  let workingEditorState: EditorState
+  let workingSessionStateState: SessionStateState
+  let accumulatedCommands: Array<StrategyAndAccumulatedCommands>
+  let patchCommands: Array<CanvasCommand>
+  let strategyChanged: boolean
+  if (!skipStrategies) {
+    // TODO way too many returned values
+    const {
+      strategyChanged: processedStrategyChanged,
+      partOfSameGroup,
+      strategyName,
+      didResetInteractionData,
+      previousStrategyCurrentFitness,
+      strategyFitness,
+      interactionHardResetNeeded,
+      patchCommands: processedPatchCommands,
+      workingEditorState: processedWorkingEditorState,
+    } = processInteractionState(storedState, editorFilteredForFiles, result, makeChangesPermanent)
 
-  // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
-  const shouldKeepCommands =
-    (makeChangesPermanent || strategyChanged) && !strategyHasBeenOverriden && !partOfSameGroup
+    strategyChanged = processedStrategyChanged
+    // TODO if the user deliberately changes the strategy, make sure we don't keep any commands around
+    const shouldKeepCommands =
+      (makeChangesPermanent || strategyChanged) && !strategyHasBeenOverriden && !partOfSameGroup
 
-  // Record if the strategy did change.
-  const strategyChangedLogCommands = strategyChanged
-    ? [
-        {
-          strategy: null,
-          commands: [
-            strategySwitched(
-              strategyHasBeenOverriden ? 'user-input' : 'automatic',
-              strategyName!,
-              shouldKeepCommands,
-              didResetInteractionData,
-              previousStrategyCurrentFitness,
-              strategyFitness,
-            ),
-          ],
-        },
-      ]
-    : []
+    // Record if the strategy did change.
+    const strategyChangedLogCommands = strategyChanged
+      ? [
+          {
+            strategy: null,
+            commands: [
+              strategySwitched(
+                strategyHasBeenOverriden ? 'user-input' : 'automatic',
+                strategyName!,
+                shouldKeepCommands,
+                didResetInteractionData,
+                previousStrategyCurrentFitness,
+                strategyFitness,
+              ),
+            ],
+          },
+        ]
+      : []
 
-  // Determine here if the commands should apply to the next pass around this loop.
-  const updatedAccumulatedCommands = updateAccumulatedCommands(
-    shouldKeepCommands,
-    interactionHardResetNeeded,
-    result,
-    strategyChangedLogCommands,
-  )
+    // Determine here if the commands should apply to the next pass around this loop.
+    accumulatedCommands = updateAccumulatedCommands(
+      shouldKeepCommands,
+      interactionHardResetNeeded,
+      result,
+      strategyChangedLogCommands,
+    )
+    patchCommands = processedPatchCommands
 
-  const workingSessionStateState: SessionStateState = {
-    currentStrategy: strategyName,
-    currentStrategyFitness: strategyFitness,
-    currentStrategyCommands: patchCommands,
-    accumulatedCommands: updatedAccumulatedCommands,
-    commandDescriptions: [],
-    strategyState: result.sessionStateState.strategyState,
-    startingMetadata: result.sessionStateState.startingMetadata,
-    originalMetadata: result.sessionStateState.originalMetadata,
+    workingSessionStateState = {
+      currentStrategy: strategyName,
+      currentStrategyFitness: strategyFitness,
+      currentStrategyCommands: patchCommands,
+      accumulatedCommands: accumulatedCommands,
+      commandDescriptions: [],
+      strategyState: result.sessionStateState.strategyState,
+      startingMetadata: result.sessionStateState.startingMetadata,
+      originalMetadata: result.sessionStateState.originalMetadata,
+    }
+    workingEditorState = processedWorkingEditorState
+  } else {
+    workingEditorState = editorFilteredForFiles
+    workingSessionStateState = storedState.sessionStateState
+    accumulatedCommands = workingSessionStateState.accumulatedCommands
+    patchCommands = workingSessionStateState.currentStrategyCommands
+    strategyChanged = false
   }
 
   // Construct commands and then the state patches from them.
-  const commandResult = foldAndApplyCommands(
+  commandResult = foldAndApplyCommands(
     workingEditorState,
     storedState.editor,
     workingSessionStateState.strategyState,
-    [...updatedAccumulatedCommands.flatMap((c) => c.commands), ...patchCommands],
+    [...accumulatedCommands.flatMap((c) => c.commands), ...patchCommands],
     makeChangesPermanent ? 'permanent' : 'transient',
   )
 
