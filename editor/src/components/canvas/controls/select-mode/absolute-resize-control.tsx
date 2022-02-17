@@ -162,19 +162,21 @@ interface ResizePointProps {
   cursor: CSSCursor
 }
 
+const ResizePointMouseAreaSize = 12
+const ResizePointSize = 6
 const ResizePoint = React.memo(
   React.forwardRef<HTMLDivElement, ResizePointProps>((props, ref) => {
     const colorTheme = useColorTheme()
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizePoint scale')
-    const catcherSize = 12
-    const size = 6
+    const catcherSize = ResizePointMouseAreaSize / scale
+    const size = ResizePointSize / scale
     return (
       <div
         ref={ref}
         style={{
           position: 'absolute',
-          width: 6,
-          height: 6,
+          width: size,
+          height: size,
         }}
       >
         <div
@@ -219,10 +221,11 @@ interface ResizeEdgeProps {
   direction: 'horizontal' | 'vertical'
 }
 
+const ResizeMouseAreaSize = 10
 const ResizeEdge = React.memo(
   React.forwardRef<HTMLDivElement, ResizeEdgeProps>((props, ref) => {
     const scale = useEditorState((store) => store.editor.canvas.scale, 'ResizeEdge scale')
-    const lineSize = 10 / scale
+    const lineSize = ResizeMouseAreaSize / scale
     const width = props.direction === 'horizontal' ? undefined : lineSize
     const height = props.direction === 'vertical' ? undefined : lineSize
     const offsetLeft = props.direction === 'horizontal' ? undefined : -lineSize / 2
