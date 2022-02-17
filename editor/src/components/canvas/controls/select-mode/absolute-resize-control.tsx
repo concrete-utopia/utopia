@@ -13,6 +13,7 @@ import { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
+import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import {
@@ -407,7 +408,16 @@ function startResizeInteraction(
         keepAspectRatio,
       )
 
-      dispatch([CanvasActions.createDragState(newDragState)], 'canvas')
+      dispatch(
+        [
+          CanvasActions.createDragState(newDragState),
+          setResizeOptionsTargetOptions(
+            possibleTargetProperty != null ? [possibleTargetProperty] : [],
+            0,
+          ),
+        ],
+        'canvas',
+      )
     }
   }
 }
