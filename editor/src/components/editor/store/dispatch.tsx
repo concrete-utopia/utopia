@@ -707,6 +707,76 @@ function interactionHardReset(storedState: EditorStore, result: DispatchResult) 
   }
 }
 
+function interactionUpdate(
+  storedState: EditorStore,
+  result: DispatchResult,
+): HandleStrategiesResult {
+  const newEditorState = result.editor
+  const canvasState: CanvasState = {
+    selectedElements: newEditorState.selectedViews,
+    // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
+    projectContents: newEditorState.projectContents,
+    openFile: newEditorState.canvas.openFile?.filename,
+    scale: newEditorState.canvas.scale,
+    canvasOffset: newEditorState.canvas.roundedCanvasOffset,
+  }
+  const interactionState = newEditorState.canvas.interactionState
+  if (interactionState == null) {
+    return {
+      unpatchedEditorState: newEditorState,
+      patchedEditorState: newEditorState,
+      newSessionStateState: result.sessionStateState,
+    }
+  } else {
+    // Determine the new canvas strategy to run this time around.
+    const { strategy, previousStrategy } = findCanvasStrategy(
+      canvasState,
+      interactionState,
+      result.sessionStateState,
+      result.sessionStateState.currentStrategy,
+    )
+
+    // If there is a current strategy, produce the commands from it.
+    if (strategy != null && newEditorState.canvas.interactionState != null) {
+      const commands = applyCanvasStrategy(
+        strategy.strategy,
+        canvasState,
+        newEditorState.canvas.interactionState,
+        result.sessionStateState,
+      )
+      const commandResult = foldAndApplyCommands(
+        newEditorState,
+        storedState.editor,
+        storedState.sessionStateState.strategyState,
+        commands,
+        'transient',
+      )
+      const newSessionStateState: SessionStateState = {
+        currentStrategy: strategy.strategy.name,
+        currentStrategyFitness: strategy.fitness,
+        currentStrategyCommands: commands,
+        accumulatedCommands: [],
+        commandDescriptions: commandResult.commandDescriptions,
+        strategyState: createEmptyStrategyState(),
+        startingMetadata: newEditorState.jsxMetadata,
+        originalMetadata: newEditorState.jsxMetadata,
+      }
+
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: commandResult.editorState,
+        newSessionStateState: newSessionStateState,
+      }
+    } else {
+      return {
+        unpatchedEditorState: newEditorState,
+        patchedEditorState: newEditorState,
+        newSessionStateState: result.sessionStateState,
+      }
+    }
+  }
+}
+
 function interactionStart(
   storedState: EditorStore,
   result: DispatchResult,
@@ -733,7 +803,7 @@ function interactionStart(
     const { strategy, previousStrategy } = findCanvasStrategy(
       canvasState,
       interactionState,
-      result.sessionStateState,
+      withClearedSession,
       result.sessionStateState.currentStrategy,
     )
 
@@ -803,8 +873,9 @@ function alternativeHandleStrategies(
         ) || result.sessionStateState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
       if (interactionHardResetNeeded) {
         return interactionHardReset(storedState, result)
+      } else {
+        return handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
       }
-      return handleStrategies(frozenDerivedState, dispatchedActions, storedState, result)
     }
   }
 }
