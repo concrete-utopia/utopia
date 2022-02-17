@@ -155,7 +155,11 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
 
   let optionalDragStateAction: Array<EditorAction> = []
   if ('interactionState' in event && event.interactionState != null) {
-    optionalDragStateAction = [CanvasActions.createInteractionState(event.interactionState)]
+    optionalDragStateAction = [
+      model.editorState.canvas.interactionState != null
+        ? CanvasActions.updateInteractionState(event.interactionState)
+        : CanvasActions.createInteractionState(event.interactionState),
+    ]
   }
 
   const insertMode = model.mode.type === 'insert'
