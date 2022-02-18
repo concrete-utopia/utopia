@@ -220,6 +220,7 @@ export async function renderTestEditorWithModel(
       : createBuiltInDependenciesList(workers)
   const initialEditorStore: EditorStore = {
     unpatchedEditor: emptyEditorState,
+    patchedEditor: emptyEditorState,
     editor: emptyEditorState,
     derived: derivedState,
     history: history,

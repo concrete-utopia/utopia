@@ -46,6 +46,7 @@ export function getStoreHook(
   ])
   const defaultState: EditorStore = {
     unpatchedEditor: editor.editor,
+    patchedEditor: editor.editor,
     editor: editor.editor,
     derived: editor.derivedState,
     history: {
