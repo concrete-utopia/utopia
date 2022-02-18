@@ -1,29 +1,59 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { safeIndex } from '../../../core/shared/array-utils'
-import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
+import { foldEither } from '../../../core/shared/either'
+import {
+  emptyComments,
+  isJSXElement,
+  jsxAttributeValue,
+} from '../../../core/shared/element-template'
+import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { CanvasStrategy } from '../../../interactions_proposal'
+import { ProjectContentTreeRoot } from '../../assets'
+import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { setProperty, wildcardPatch } from '../commands/commands'
 import { ParentPaddingControl } from '../controls/parent-padding-controls'
+import * as EP from '../../../core/shared/element-path'
+
+function getElementPadding(
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
+): number | null {
+  return withUnderlyingTarget(target, projectContents, {}, openFile, null, (_success, element) => {
+    return getNumberPropertyFromProps(element.props, stylePropPathMappingFn('padding', ['style']))
+  })
+}
 
 export const parentPaddingAdjustStrategy: CanvasStrategy = {
   name: 'Change Parent Padding',
   strategyGroups: new Set(),
-  isApplicable: (canvasState, _, metadata) => {
+  isApplicable: (canvasState, interactionState, metadata) => {
     if (canvasState.selectedElements.length === 1) {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         metadata,
         canvasState.selectedElements[0],
       )
 
-      const parentMetadata = MetadataUtils.getParent(metadata, canvasState.selectedElements[0])
       if (
-        elementMetadata?.specialSizeMeasurements.position === 'static' &&
-        parentMetadata?.props?.style?.padding != null
+        elementMetadata == null ||
+        interactionState == null ||
+        interactionState.interactionData.type !== 'DRAG'
       ) {
-        // only return true, if element is static, has no top left bottom right, and parent _has_ a padding prop
-        return true
+        return false
+      } else {
+        const parentPath = EP.parentPath(elementMetadata.elementPath)
+        const parentPadding = getElementPadding(
+          parentPath,
+          canvasState.projectContents,
+          canvasState.openFile ?? null,
+        )
+        const paddingChange = interactionState.interactionData.drag?.x ?? 0
+        const newPadding = Math.max((parentPadding ?? 0) + paddingChange, 0)
+        const hasPositivePadding = parentPadding != null && newPadding > 0
+        return hasPositivePadding && elementMetadata?.specialSizeMeasurements.position === 'static'
       }
     }
     return false
@@ -36,32 +66,13 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
     },
   ], // parent padding control
   fitness: (canvasState, interactionState, sessionState) => {
-    if (
-      canvasState.selectedElements.length === 1 &&
-      interactionState.interactionData.type === 'DRAG'
-    ) {
-      const metadata = MetadataUtils.findElementByElementPath(
-        sessionState.startingMetadata,
-        canvasState.selectedElements[0],
-      )
-
-      // what if the element has margin or margin left only
-      // interaction direction is also important
-      if (metadata?.specialSizeMeasurements.position === 'static') {
-        const parentMetadata = MetadataUtils.getParent(
-          sessionState.startingMetadata,
-          canvasState.selectedElements[0],
-        )
-        const dragDeltaX = interactionState.interactionData.drag?.x ?? 0
-        const parentPaddingTop = parentMetadata?.specialSizeMeasurements.padding.top ?? 0
-
-        // TODO is this too strict?
-        if (parentPaddingTop > 0 || (parentPaddingTop === 0 && dragDeltaX > 0)) {
-          return 2
-        }
-      }
-    }
-    return 0
+    return parentPaddingAdjustStrategy.isApplicable(
+      canvasState,
+      interactionState,
+      sessionState.startingMetadata,
+    )
+      ? 2
+      : 0
   },
   apply: (canvasState, interactionState, sessionState) => {
     if (
@@ -73,16 +84,19 @@ export const parentPaddingAdjustStrategy: CanvasStrategy = {
         'Could not get first element.',
         safeIndex(canvasState.selectedElements, 0),
       )
-      const targetParent = MetadataUtils.getParent(sessionState.startingMetadata, targetedElement)
-      const paddingPath = stylePropPathMappingFn('padding', ['style'])
-      if (targetParent !== null) {
-        const paddingChange = interactionState.interactionData.drag.x
-        const currentPadding = targetParent?.specialSizeMeasurements.padding.top ?? 0
-        const newPadding = Math.max(currentPadding + paddingChange, 0)
+      const parentPath = EP.parentPath(targetedElement)
+      const parentPadding = getElementPadding(
+        parentPath,
+        canvasState.projectContents,
+        canvasState.openFile ?? null,
+      )
+      const paddingChange = interactionState.interactionData.drag.x
+      if (parentPadding !== null) {
+        const newPadding = Math.max(parentPadding + paddingChange, 0)
         const adjustProperty = setProperty(
           'permanent',
-          targetParent.elementPath,
-          paddingPath,
+          parentPath,
+          stylePropPathMappingFn('padding', ['style']),
           jsxAttributeValue(newPadding, emptyComments),
         )
 

@@ -12,6 +12,7 @@ import {
 } from '../../../core/shared/element-template'
 import {
   getJSXAttributeAtPath,
+  getNumberPropertyFromProps,
   jsxSimpleAttributeToValue,
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
@@ -380,16 +381,6 @@ export const runWildcardPatch: CommandFunction<WildcardPatch> = (
     strategyState: strategyState,
     pathMappings: pathMappings,
     commandDescription: `Wildcard Patch: ${JSON.stringify(command.patch, null, 2)}`,
-  }
-}
-
-function getNumberPropertyFromProps(props: JSXAttributes, property: PropertyPath): number | null {
-  const possibleProperty = getJSXAttributeAtPath(props, property)
-  const currentValue = optionalMap(jsxSimpleAttributeToValue, possibleProperty?.attribute)
-  if (currentValue !== null && isRight(currentValue) && typeof currentValue.value === 'number') {
-    return currentValue.value
-  } else {
-    return null
   }
 }
 

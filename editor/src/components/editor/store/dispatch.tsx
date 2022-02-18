@@ -757,14 +757,14 @@ function interactionUpdate(
         newEditorState,
         storedState.editor,
         storedState.sessionStateState.strategyState,
-        commands,
+        [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
       const newSessionStateState: SessionStateState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
-        accumulatedCommands: [],
+        accumulatedCommands: result.sessionStateState.accumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
@@ -935,21 +935,22 @@ function interactionUserChangedStrategy(
         newEditorState.canvas.interactionState,
         result.sessionStateState,
       )
+      const newAccumulatedCommands = [
+        ...result.sessionStateState.accumulatedCommands,
+        ...strategyChangedLogCommands,
+      ]
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.editor,
         storedState.sessionStateState.strategyState,
-        commands,
+        [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
       const newSessionStateState: SessionStateState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
-        accumulatedCommands: [
-          ...result.sessionStateState.accumulatedCommands,
-          ...strategyChangedLogCommands,
-        ],
+        accumulatedCommands: newAccumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
@@ -1028,25 +1029,26 @@ function interactionStrategyChangeStacked(
         newEditorState.canvas.interactionState,
         result.sessionStateState,
       )
+      const newAccumulatedCommands = [
+        ...result.sessionStateState.accumulatedCommands,
+        {
+          strategy: result.sessionStateState.currentStrategy,
+          commands: result.sessionStateState.currentStrategyCommands,
+        },
+        ...strategyChangedLogCommands,
+      ]
       const commandResult = foldAndApplyCommands(
         newEditorState,
         storedState.editor,
         storedState.sessionStateState.strategyState,
-        commands,
+        [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
       )
       const newSessionStateState: SessionStateState = {
         currentStrategy: strategy.strategy.name,
         currentStrategyFitness: strategy.fitness,
         currentStrategyCommands: commands,
-        accumulatedCommands: [
-          ...result.sessionStateState.accumulatedCommands,
-          {
-            strategy: result.sessionStateState.currentStrategy,
-            commands: result.sessionStateState.currentStrategyCommands,
-          },
-          ...strategyChangedLogCommands,
-        ],
+        accumulatedCommands: newAccumulatedCommands,
         commandDescriptions: commandResult.commandDescriptions,
         strategyState: createEmptyStrategyState(),
         startingMetadata: result.sessionStateState.startingMetadata,
