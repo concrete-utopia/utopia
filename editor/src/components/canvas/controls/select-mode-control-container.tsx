@@ -27,7 +27,7 @@ import { getAllTargetsAtPoint } from '../dom-lookup'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isSceneAgainstImports, isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { foldEither, isRight } from '../../../core/shared/either'
-import { unless, when } from '../../../utils/react-conditionals'
+import { when } from '../../../utils/react-conditionals'
 import { InsertionControls } from './insertion-plus-button'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
@@ -504,10 +504,7 @@ export class SelectModeControlContainer extends React.Component<
             <OutlineControls {...this.props} />
             {this.canResizeElements() ? (
               <>
-                {unless(
-                  isFeatureEnabled('Canvas Absolute Resize Controls'),
-                  <ConstraintsControls {...this.props} />,
-                )}
+                <ConstraintsControls {...this.props} />
                 <YogaControls
                   {...this.props}
                   dragState={
