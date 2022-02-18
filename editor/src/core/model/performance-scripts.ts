@@ -25,13 +25,13 @@ import { setFeatureEnabled } from '../../utils/feature-switches'
 const NumberOfIterations = 100
 
 export function useTriggerScrollPerformanceTest(): () => void {
-  setFeatureEnabled('Canvas Absolute Resize Controls', true)
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerScrollPerformanceTest dispatch',
   )
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
+    setFeatureEnabled('Canvas Absolute Resize Controls', true)
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
       return
@@ -67,7 +67,6 @@ export function useTriggerScrollPerformanceTest(): () => void {
 }
 
 export function useTriggerResizePerformanceTest(): () => void {
-  setFeatureEnabled('Canvas Absolute Resize Controls', true)
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerResizePerformanceTest dispatch',
@@ -75,6 +74,7 @@ export function useTriggerResizePerformanceTest(): () => void {
   const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const trigger = React.useCallback(async () => {
+    setFeatureEnabled('Canvas Absolute Resize Controls', true)
     if (selectedViews.current.length === 0) {
       console.info('RESIZE_TEST_MISSING_SELECTEDVIEW')
       return
@@ -135,13 +135,13 @@ export function useTriggerResizePerformanceTest(): () => void {
 }
 
 export function useTriggerSelectionPerformanceTest(): () => void {
-  setFeatureEnabled('Canvas Absolute Resize Controls', true)
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerSelectionPerformanceTest dispatch',
   )
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
+    setFeatureEnabled('Canvas Absolute Resize Controls', true)
     if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_ERROR')
       return
@@ -183,13 +183,13 @@ export function useTriggerSelectionPerformanceTest(): () => void {
 }
 
 export function useTriggerBaselinePerformanceTest(): () => void {
-  setFeatureEnabled('Canvas Absolute Resize Controls', true)
   const dispatch = useEditorState(
     (store) => store.dispatch as DebugDispatch,
     'useTriggerSelectionPerformanceTest dispatch',
   )
 
   const trigger = React.useCallback(async () => {
+    setFeatureEnabled('Canvas Absolute Resize Controls', true)
     let framesPassed = 0
     async function step() {
       performance.mark(`baseline_step_${framesPassed}`)
