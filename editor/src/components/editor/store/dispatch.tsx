@@ -453,7 +453,7 @@ export function editorDispatch(
 
   const patchedEditorState = applyStatePatches(
     frozenEditorState,
-    storedState.unpatchedEditor,
+    storedState.patchedEditor,
     frozenDerivedState.canvas.transientState.editorStatePatch,
   )
 
