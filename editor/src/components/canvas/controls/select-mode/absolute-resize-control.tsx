@@ -1,16 +1,14 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { LayoutTargetableProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import * as EP from '../../../../core/shared/element-path'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
+  CanvasRectangle,
   windowPoint,
-  WindowRectangle,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
-import { fastForEach } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
@@ -27,6 +25,7 @@ import {
 } from '../../canvas-types'
 import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
+import { findFramesFromDOM, useMutationObserver } from '../observer-hooks'
 
 export const AbsoluteResizeControl = React.memo(() => {
   const controlRef = React.useRef<HTMLDivElement>(null)
@@ -40,7 +39,6 @@ export const AbsoluteResizeControl = React.memo(() => {
   const rightRef = React.useRef<HTMLDivElement>(null)
   const bottomRef = React.useRef<HTMLDivElement>(null)
 
-  const observerRef = React.useRef<MutationObserver | null>()
   const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
 
   const selectedElements = useEditorState(
@@ -60,27 +58,11 @@ export const AbsoluteResizeControl = React.memo(() => {
   }, 'AbsoluteResizeControl allSelectedElementsAbsolute')
 
   const observerCallback = React.useCallback(() => {
-    const frames: Array<WindowRectangle> = []
-    fastForEach(selectedElementsRef.current, (target) => {
-      const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(target)}"]`)
-      const frame = htmlElement?.getBoundingClientRect()
-      if (frame != null) {
-        frames.push({
-          x: frame.x,
-          y: frame.y,
-          width: frame.width,
-          height: frame.height,
-        } as WindowRectangle)
-      }
-    })
-
+    const frames: Array<CanvasRectangle> = findFramesFromDOM(selectedElementsRef.current)
     const boundingBox = boundingRectangleArray(frames)
     if (boundingBox != null && controlRef.current != null) {
-      const boundingBoxInCanvasCoords = windowToCanvasCoordinatesGlobal(
-        windowPoint({ x: boundingBox.x, y: boundingBox.y }),
-      ).canvasPositionRounded
-      controlRef.current.style.left = boundingBoxInCanvasCoords.x + 'px'
-      controlRef.current.style.top = boundingBoxInCanvasCoords.y + 'px'
+      controlRef.current.style.left = boundingBox.x + 'px'
+      controlRef.current.style.top = boundingBox.y + 'px'
       controlRef.current.style.width = boundingBox.width + 'px'
       controlRef.current.style.height = boundingBox.height + 'px'
       if (topRightRef.current != null) {
@@ -111,45 +93,8 @@ export const AbsoluteResizeControl = React.memo(() => {
     }
   }, [selectedElementsRef])
 
-  useEffect(() => {
-    const observer = new MutationObserver(observerCallback)
-    observerRef.current = observer
-    return function cleanup() {
-      observer.disconnect()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    if (selectedElements.length > 0) {
-      // TODO FIND SOMETHING NICER
-      // this is a total hack that I found #node-connectors is still changing attributes on scroll. TODO use a HTMLElement that is deliberately for this
-      const thisElementRerendersOnScroll = document.getElementById('node-connectors')
-
-      if (thisElementRerendersOnScroll != null && observerRef.current != null) {
-        observerRef.current.observe(thisElementRerendersOnScroll, {
-          attributes: true,
-        })
-      }
-
-      fastForEach(selectedElements, (path) => {
-        const htmlElement = document.querySelector(`*[data-paths~="${EP.toString(path)}"]`)
-        if (htmlElement != null && observerRef.current != null) {
-          observerRef.current.observe(htmlElement, {
-            attributes: true,
-            childList: true,
-            subtree: true,
-          })
-        }
-      })
-
-      observerCallback()
-    }
-
-    return function cleanup() {
-      observerRef.current?.disconnect()
-    }
-  }, [selectedElements, observerCallback, allSelectedElementsAbsolute])
+  const absoluteElements = allSelectedElementsAbsolute ? selectedElements : []
+  const observerRef = useMutationObserver(absoluteElements, observerCallback)
 
   if (allSelectedElementsAbsolute) {
     return (
