@@ -10,7 +10,7 @@ function findTargetHtmlElement(path: ElementPath): HTMLElement | null {
 }
 
 export function findFramesFromDOM(targets: Array<ElementPath>): Array<CanvasRectangle> {
-  const frames: Array<CanvasRectangle> = []
+  let frames: Array<CanvasRectangle> = []
   fastForEach(targets, (path) => {
     const htmlElement = findTargetHtmlElement(path)
     const frame = htmlElement?.getBoundingClientRect()
