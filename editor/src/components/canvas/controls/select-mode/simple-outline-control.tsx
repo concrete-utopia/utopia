@@ -1,6 +1,7 @@
 import React from 'react'
 import * as EP from '../../../../core/shared/element-path'
 import { boundingRectangleArray } from '../../../../core/shared/math-utils'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { findFramesFromDOM, useMutationObserver } from '../observer-hooks'
@@ -8,14 +9,20 @@ import { getSelectionColor } from '../outline-control'
 
 const OutlineOffset = 0.5
 const OutlineWidthHeightOffset = -OutlineOffset * 3
-export const OutlineControl = React.memo(() => {
+
+interface OutlineControlProps {
+  selectedElements: Array<ElementPath>
+}
+
+export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
-  const selectedElements = useEditorState((store) => store.editor.selectedViews, 'OutlineControl')
+  const selectedElements = props.selectedElements
   const outlineRef = React.useRef<HTMLDivElement>(null)
-  const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const selectedElementsRef = React.useRef(selectedElements) // TODO new-canvas-controls@localSelectedViews should be atom-like so we can get a live ref to it
+  selectedElementsRef.current = selectedElements
 
   const colors = useEditorState((store) => {
-    return store.editor.selectedViews.map((path) =>
+    return selectedElementsRef.current.map((path) =>
       getSelectionColor(
         path,
         store.editor.jsxMetadata,

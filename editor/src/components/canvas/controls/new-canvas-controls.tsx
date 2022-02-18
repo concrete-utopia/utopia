@@ -416,8 +416,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           <FlexGapControls />
         </>,
       )}
-      {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <OutlineControl />)}
-      {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <AbsoluteResizeControl />)}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <OutlineControl selectedElements={localSelectedViews} />,
+      )}
+      {when(
+        isFeatureEnabled('Canvas Absolute Resize Controls'),
+        <AbsoluteResizeControl selectedElements={localSelectedViews} />,
+      )}
     </div>
   )
 }

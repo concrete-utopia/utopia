@@ -27,7 +27,11 @@ import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
 import { findFramesFromDOM, useMutationObserver } from '../observer-hooks'
 
-export const AbsoluteResizeControl = React.memo(() => {
+interface AbsoluteResizeControlProps {
+  selectedElements: Array<ElementPath>
+}
+
+export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((props) => {
   const controlRef = React.useRef<HTMLDivElement>(null)
   const topLeftRef = React.useRef<HTMLDivElement>(null)
   const topRightRef = React.useRef<HTMLDivElement>(null)
@@ -39,16 +43,14 @@ export const AbsoluteResizeControl = React.memo(() => {
   const rightRef = React.useRef<HTMLDivElement>(null)
   const bottomRef = React.useRef<HTMLDivElement>(null)
 
-  const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const selectedElements = props.selectedElements
+  const selectedElementsRef = React.useRef(selectedElements)
+  selectedElementsRef.current = selectedElements // TODO new-canvas-controls@localSelectedViews should be atom-like so we can get a live ref to it
 
-  const selectedElements = useEditorState(
-    (store) => store.editor.selectedViews,
-    'AbsoluteResizeControl selectedElements',
-  )
   const allSelectedElementsAbsolute = useEditorState((store) => {
     return (
-      store.editor.selectedViews.length > 0 &&
-      store.editor.selectedViews.every((path) => {
+      selectedElementsRef.current.length > 0 &&
+      selectedElementsRef.current.every((path) => {
         return (
           MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
             ?.specialSizeMeasurements.position === 'absolute'
