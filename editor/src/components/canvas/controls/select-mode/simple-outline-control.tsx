@@ -21,6 +21,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const selectedElementsRef = React.useRef(selectedElements) // TODO new-canvas-controls@localSelectedViews should be atom-like so we can get a live ref to it
   selectedElementsRef.current = selectedElements
 
+  const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl')
   const colors = useEditorState((store) => {
     return selectedElementsRef.current.map((path) =>
       getSelectionColor(
@@ -53,7 +54,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
         style={{
           position: 'absolute',
           boxSizing: 'border-box',
-          boxShadow: `0px 0px 0px 1px ${colors[0]}`,
+          boxShadow: `0px 0px 0px ${1 / scale}px ${colors[0]}`,
           pointerEvents: 'none',
           transform: `translate(var(--utopia-canvas-offset-x), var(--utopia-canvas-offset-y))`,
         }}
