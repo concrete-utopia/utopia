@@ -5,19 +5,6 @@ import * as EP from '../../../core/shared/element-path'
 import { CanvasRectangle, windowPoint } from '../../../core/shared/math-utils'
 import { windowToCanvasCoordinatesGlobal } from '../dom-lookup'
 
-function attachObserverToScrollingElement(
-  observerRef: React.MutableRefObject<MutationObserver | null | undefined>,
-) {
-  // TODO FIND SOMETHING NICER
-  // TODO use HTMLElement that is changing attributes on scroll (instead of cssvar) specifically for these controls
-  const thisElementRerendersOnScroll = document.getElementById('node-connectors')
-  if (thisElementRerendersOnScroll != null && observerRef.current != null) {
-    observerRef.current.observe(thisElementRerendersOnScroll, {
-      attributes: true,
-    })
-  }
-}
-
 function findTargetHtmlElement(path: ElementPath): HTMLElement | null {
   return document.querySelector(`*[data-paths~="${EP.toString(path)}"]`)
 }
@@ -59,7 +46,6 @@ export function useMutationObserver(
 
   React.useEffect(() => {
     if (selectedElements.length > 0) {
-      attachObserverToScrollingElement(observerRef)
       fastForEach(selectedElements, (path) => {
         const htmlElement = findTargetHtmlElement(path)
         if (htmlElement != null && observerRef.current != null) {
