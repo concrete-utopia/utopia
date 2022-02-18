@@ -53,9 +53,9 @@ export function useMutationObserver(
     observerRef.current = observer
     return function cleanup() {
       observer.disconnect()
+      observerRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [observerCallback])
 
   React.useEffect(() => {
     if (selectedElements.length > 0) {
