@@ -133,30 +133,10 @@ export const AbsoluteResizeControl = React.memo(() => {
           direction='horizontal'
           enabledDirection={DirectionVertical}
         />
-        <ResizePoint
-          ref={topLeftRef}
-          position={{ x: 0, y: 0 }}
-          cursor={CSSCursor.ResizeNWSE}
-          enabledDirection={DirectionAll}
-        />
-        <ResizePoint
-          ref={topRightRef}
-          position={{ x: 1, y: 0 }}
-          cursor={CSSCursor.ResizeNESW}
-          enabledDirection={DirectionAll}
-        />
-        <ResizePoint
-          ref={bottomLeftRef}
-          position={{ x: 0, y: 1 }}
-          cursor={CSSCursor.ResizeNESW}
-          enabledDirection={DirectionAll}
-        />
-        <ResizePoint
-          ref={bottomRightRef}
-          position={{ x: 1, y: 1 }}
-          cursor={CSSCursor.ResizeNWSE}
-          enabledDirection={DirectionAll}
-        />
+        <ResizePoint ref={topLeftRef} position={{ x: 0, y: 0 }} cursor={CSSCursor.ResizeNWSE} />
+        <ResizePoint ref={topRightRef} position={{ x: 1, y: 0 }} cursor={CSSCursor.ResizeNESW} />
+        <ResizePoint ref={bottomLeftRef} position={{ x: 0, y: 1 }} cursor={CSSCursor.ResizeNESW} />
+        <ResizePoint ref={bottomRightRef} position={{ x: 1, y: 1 }} cursor={CSSCursor.ResizeNWSE} />
       </div>
     )
   }
@@ -166,7 +146,6 @@ export const AbsoluteResizeControl = React.memo(() => {
 interface ResizePointProps {
   cursor: CSSCursor
   position: EdgePosition
-  enabledDirection: EdgePosition
 }
 
 const ResizePointMouseAreaSize = 12
@@ -188,12 +167,12 @@ const ResizePoint = React.memo(
           event,
           dispatch,
           props.position,
-          props.enabledDirection,
+          DirectionAll,
           jsxMetadataRef.current,
           selectedViewsRef.current,
         )
       },
-      [dispatch, props.position, props.enabledDirection, jsxMetadataRef, selectedViewsRef],
+      [dispatch, props.position, jsxMetadataRef, selectedViewsRef],
     )
 
     return (
