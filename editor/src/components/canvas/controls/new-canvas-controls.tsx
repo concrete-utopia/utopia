@@ -62,6 +62,7 @@ import { AnimatedPlaceholderBoxes } from './select-mode/animated-placeholder-box
 import { FlexAlignControls } from './select-mode/flex-align-controls'
 import { FlexGapControls } from './select-mode/flex-gap-controls'
 import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
+import { OutlineControl } from './select-mode/simple-outline-control'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -415,6 +416,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           <FlexGapControls />
         </>,
       )}
+      {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <OutlineControl />)}
       {when(isFeatureEnabled('Canvas Absolute Resize Controls'), <AbsoluteResizeControl />)}
     </div>
   )
