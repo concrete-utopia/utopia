@@ -48,6 +48,7 @@ import {
   EditorState,
   EditorStatePatch,
   EditorStore,
+  EditorStoreExplicit,
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
@@ -120,10 +121,13 @@ import {
 } from '../../../interactions_proposal'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 
-export interface DispatchResult extends EditorStore {
+interface DispatchResultFields {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
+
+export interface InnerDispatchResult extends EditorStoreExplicit, DispatchResultFields {}
+export interface DispatchResult extends EditorStore, DispatchResultFields {}
 
 function simpleStringifyAction(action: EditorAction): string {
   switch (action.action) {
@@ -142,10 +146,10 @@ export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): st
 
 function processAction(
   dispatchEvent: EditorDispatch,
-  working: EditorStore,
+  working: EditorStoreExplicit,
   action: EditorAction,
   spyCollector: UiJsxCanvasContextData,
-): EditorStore {
+): EditorStoreExplicit {
   const workingHistory = working.history
   // Sidestep around the local actions so that we definitely run them locally.
   if (action.action === 'TRANSIENT_ACTIONS') {
@@ -215,7 +219,7 @@ function processAction(
 
     return {
       unpatchedEditor: editorAfterNavigator,
-      editor: editorAfterNavigator,
+      patchedEditor: editorAfterNavigator,
       derived: working.derived,
       sessionStateState: working.sessionStateState, // this means the actions cannot update sessionStateState – this piece of state lives outside our "redux" state
       history: newStateHistory,
@@ -231,11 +235,11 @@ function processAction(
 
 function processActions(
   dispatchEvent: EditorDispatch,
-  working: EditorStore,
+  working: EditorStoreExplicit,
   actions: Array<EditorAction>,
   spyCollector: UiJsxCanvasContextData,
-): EditorStore {
-  return actions.reduce((workingFuture: EditorStore, action: EditorAction) => {
+): EditorStoreExplicit {
+  return actions.reduce((workingFuture: EditorStoreExplicit, action: EditorAction) => {
     return processAction(dispatchEvent, workingFuture, action, spyCollector)
   }, working)
 }
@@ -383,7 +387,7 @@ let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
-  storedState: EditorStore,
+  storedState: EditorStoreExplicit,
   spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
@@ -432,15 +436,9 @@ export function editorDispatch(
   }
   const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
 
-  const result: DispatchResult = actionGroupsToProcess.reduce(
-    (working: DispatchResult, actions) => {
-      const newStore = editorDispatchInner(
-        boundDispatch,
-        actions,
-        working,
-        allTransient,
-        spyCollector,
-      )
+  const result: InnerDispatchResult = actionGroupsToProcess.reduce(
+    (working: InnerDispatchResult, actions) => {
+      const newStore = editorDispatchInner(boundDispatch, actions, working, spyCollector)
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
@@ -454,7 +452,7 @@ export function editorDispatch(
     (action) => action.action === 'UPDATE_FROM_WORKER',
   )
 
-  const editorFilteredForFiles = filterEditorForFiles(result.editor)
+  const editorFilteredForFiles = filterEditorForFiles(result.unpatchedEditor)
 
   const frozenDerivedState = result.derived
 
@@ -489,6 +487,7 @@ export function editorDispatch(
 
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
+    patchedEditor: patchedEditorState,
     editor: patchedEditorState,
     derived: frozenDerivedState,
     sessionStateState: optionalDeepFreeze(newSessionStateState),
@@ -529,8 +528,8 @@ export function editorDispatch(
       persistentModelFromEditorModel(frozenEditorState),
       forceSave ? 'force' : 'throttle',
     )
-    const stateToStore = storedEditorStateFromEditorState(storedState.editor)
-    saveStoredState(storedState.editor.id, stateToStore)
+    const stateToStore = storedEditorStateFromEditorState(frozenEditorState)
+    saveStoredState(frozenEditorState.id, stateToStore)
     reduxDevtoolsUpdateState('Save Editor', finalStore)
   }
 
@@ -542,16 +541,17 @@ export function editorDispatch(
     )
   }
 
-  const projectChanges = getProjectChanges(storedState.editor, frozenEditorState)
+  const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
   applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
 
   const shouldUpdatePreview =
-    anySendPreviewModel || frozenEditorState.projectContents !== storedState.editor.projectContents
+    anySendPreviewModel ||
+    frozenEditorState.projectContents !== storedState.unpatchedEditor.projectContents
   if (shouldUpdatePreview) {
     updateEmbeddedPreview(frozenEditorState.id, frozenEditorState.projectContents)
   }
 
-  if (frozenEditorState.id != null && frozenEditorState.id != storedState.editor.id) {
+  if (frozenEditorState.id != null && frozenEditorState.id != storedState.unpatchedEditor.id) {
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
   }
 
@@ -580,10 +580,10 @@ type HowToHandleStrategies =
   | 'interaction-modifier-changed'
 
 function interactionFinished(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
   const canvasState: CanvasState = {
     selectedElements: newEditorState.selectedViews,
@@ -593,7 +593,7 @@ function interactionFinished(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = storedState.editor.canvas.interactionState
+  const interactionState = storedState.unpatchedEditor.canvas.interactionState
   if (interactionState == null) {
     return {
       unpatchedEditorState: newEditorState,
@@ -625,7 +625,7 @@ function interactionFinished(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'permanent',
@@ -640,8 +640,8 @@ function interactionFinished(
   }
 }
 
-function interactionHardReset(storedState: EditorStore, result: DispatchResult) {
-  const newEditorState = result.editor
+function interactionHardReset(storedState: EditorStoreExplicit, result: InnerDispatchResult) {
+  const newEditorState = result.unpatchedEditor
   const withClearedSession = {
     ...storedState.sessionStateState,
     startingMetadata: storedState.sessionStateState.originalMetadata,
@@ -685,7 +685,7 @@ function interactionHardReset(storedState: EditorStore, result: DispatchResult) 
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         commands,
         'transient',
@@ -717,10 +717,10 @@ function interactionHardReset(storedState: EditorStore, result: DispatchResult) 
 }
 
 function interactionUpdate(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const canvasState: CanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -755,7 +755,7 @@ function interactionUpdate(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
@@ -787,10 +787,10 @@ function interactionUpdate(
 }
 
 function interactionStart(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
   const canvasState: CanvasState = {
     selectedElements: newEditorState.selectedViews,
@@ -826,7 +826,7 @@ function interactionStart(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         commands,
         'transient',
@@ -858,13 +858,13 @@ function interactionStart(
 }
 
 function interactionCancel(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const updatedEditorState: EditorState = {
-    ...result.editor,
+    ...result.unpatchedEditor,
     canvas: {
-      ...result.editor.canvas,
+      ...result.unpatchedEditor.canvas,
       interactionState: null,
     },
   }
@@ -877,10 +877,10 @@ function interactionCancel(
 }
 
 function interactionUserChangedStrategy(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const canvasState: CanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -905,7 +905,7 @@ function interactionUserChangedStrategy(
       result.sessionStateState.currentStrategy,
     )
     const strategyName = strategy?.strategy.name
-    if (strategyName != result.editor.canvas.interactionState?.userPreferredStrategy) {
+    if (strategyName != result.unpatchedEditor.canvas.interactionState?.userPreferredStrategy) {
       console.warn(
         'Entered interactionUserChangedStrategy but the user preferred strategy is not applied',
       )
@@ -941,7 +941,7 @@ function interactionUserChangedStrategy(
       ]
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
@@ -973,10 +973,10 @@ function interactionUserChangedStrategy(
 }
 
 function interactionStrategyChangeStacked(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const canvasState: CanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -1039,7 +1039,7 @@ function interactionStrategyChangeStacked(
       ]
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
@@ -1083,16 +1083,16 @@ function interactionStrategyChangeStacked(
 function alternativeHandleStrategies(
   frozenDerivedState: DerivedState,
   dispatchedActions: readonly EditorAction[],
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const cancelInteraction = dispatchedActions.some(isClearInteractionState) && !makeChangesPermanent
-  if (storedState.editor.canvas.interactionState == null) {
-    if (result.editor.canvas.interactionState == null) {
+  if (storedState.unpatchedEditor.canvas.interactionState == null) {
+    if (result.unpatchedEditor.canvas.interactionState == null) {
       return {
-        unpatchedEditorState: result.editor,
-        patchedEditorState: result.editor,
+        unpatchedEditorState: result.unpatchedEditor,
+        patchedEditorState: result.unpatchedEditor,
         newSessionStateState: result.sessionStateState,
       }
     } else {
@@ -1106,16 +1106,16 @@ function alternativeHandleStrategies(
     } else {
       const interactionHardResetNeeded =
         hasModifiersChanged(
-          storedState.editor.canvas.interactionState?.interactionData ?? null,
-          result.editor.canvas.interactionState?.interactionData ?? null,
+          storedState.unpatchedEditor.canvas.interactionState?.interactionData ?? null,
+          result.unpatchedEditor.canvas.interactionState?.interactionData ?? null,
         ) || result.sessionStateState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
       if (interactionHardResetNeeded) {
         return interactionHardReset(storedState, result)
       } else {
-        if (result.editor.canvas.interactionState?.userPreferredStrategy != null) {
+        if (result.unpatchedEditor.canvas.interactionState?.userPreferredStrategy != null) {
           const userChangedStrategy =
-            result.editor.canvas.interactionState?.userPreferredStrategy !=
-            storedState.editor.canvas.interactionState?.userPreferredStrategy
+            result.unpatchedEditor.canvas.interactionState?.userPreferredStrategy !=
+            storedState.unpatchedEditor.canvas.interactionState?.userPreferredStrategy
           if (userChangedStrategy) {
             return interactionUserChangedStrategy(storedState, result)
           }
@@ -1169,10 +1169,9 @@ function applyProjectChanges(
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
-  storedState: DispatchResult,
-  transient: boolean,
+  storedState: InnerDispatchResult,
   spyCollector: UiJsxCanvasContextData,
-): DispatchResult {
+): InnerDispatchResult {
   // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
 
   const MeasureDispatchTime =
@@ -1193,28 +1192,34 @@ function editorDispatchInner(
 
     const editorStayedTheSame =
       storedState.nothingChanged &&
-      storedState.editor === result.editor &&
+      storedState.unpatchedEditor === result.unpatchedEditor &&
       storedState.userState === result.userState
 
-    const domMetadataChanged = storedState.editor.domMetadata !== result.editor.domMetadata
-    const spyMetadataChanged = storedState.editor.spyMetadata !== result.editor.spyMetadata
+    const domMetadataChanged =
+      storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
+    const spyMetadataChanged =
+      storedState.unpatchedEditor.spyMetadata !== result.unpatchedEditor.spyMetadata
     const dragStateLost =
-      storedState.editor.canvas.dragState != null && result.editor.canvas.dragState == null
+      storedState.unpatchedEditor.canvas.dragState != null &&
+      result.unpatchedEditor.canvas.dragState == null
     const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
     // TODO: Should this condition actually be `&&`?
     // Tested quickly and it broke selection, but I'm mostly certain
     // it should only merge when both have changed.
     if (metadataChanged) {
-      if (result.editor.canvas.dragState != null && 'metadata' in result.editor.canvas.dragState) {
+      if (
+        result.unpatchedEditor.canvas.dragState != null &&
+        'metadata' in result.unpatchedEditor.canvas.dragState
+      ) {
         result = {
           ...result,
-          editor: {
-            ...result.editor,
+          unpatchedEditor: {
+            ...result.unpatchedEditor,
             canvas: {
-              ...result.editor.canvas,
+              ...result.unpatchedEditor.canvas,
               dragState: {
-                ...result.editor.canvas.dragState,
-                metadata: reconstructJSXMetadata(result.editor),
+                ...result.unpatchedEditor.canvas.dragState,
+                metadata: reconstructJSXMetadata(result.unpatchedEditor),
               },
             },
           },
@@ -1222,15 +1227,15 @@ function editorDispatchInner(
       } else {
         result = {
           ...result,
-          editor: {
-            ...result.editor,
-            jsxMetadata: reconstructJSXMetadata(result.editor),
+          unpatchedEditor: {
+            ...result.unpatchedEditor,
+            jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
           },
         }
       }
     }
 
-    let frozenEditorState: EditorState = optionalDeepFreeze(result.editor)
+    let frozenEditorState: EditorState = optionalDeepFreeze(result.unpatchedEditor)
 
     let frozenDerivedState: DerivedState
     if (anyUndoOrRedo) {
@@ -1268,7 +1273,7 @@ function editorDispatchInner(
 
     return {
       unpatchedEditor: frozenEditorState,
-      editor: frozenEditorState,
+      patchedEditor: frozenEditorState,
       derived: frozenDerivedState,
       sessionStateState: result.sessionStateState,
       history: result.history,

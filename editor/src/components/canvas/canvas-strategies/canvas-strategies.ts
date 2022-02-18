@@ -13,7 +13,7 @@ import {
   InteractionState,
   SessionStateState,
 } from '../../../interactions_proposal'
-import { DispatchResult } from '../../editor/store/dispatch'
+import { DispatchResult, InnerDispatchResult } from '../../editor/store/dispatch'
 import { EditorStore } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
@@ -350,8 +350,8 @@ export function hasModifiersChanged(
   )
 }
 
-export function findCanvasStrategyFromDispatchResult(result: DispatchResult) {
-  const newEditorState = result.editor
+export function findCanvasStrategyFromDispatchResult(result: InnerDispatchResult) {
+  const newEditorState = result.unpatchedEditor
   const canvasState: CanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
