@@ -19,7 +19,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   defaultElementWarnings,
   DropTargetHint,
-  EditorStore,
+  EditorStorePatched,
   TransientFileState,
 } from '../../editor/store/editor-state'
 import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
@@ -51,15 +51,15 @@ interface NavigatorItemWrapperProps {
 
 const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
   createSelector(
-    (store: EditorStore) => store.editor.jsxMetadata,
-    (store: EditorStore) => store.editor.selectedViews,
-    (store: EditorStore) => store.editor.highlightedViews,
-    (store: EditorStore) => store.derived.canvas.transientState,
-    (store: EditorStore) => store.derived.navigatorTargets,
-    (store: EditorStore) => store.derived.elementWarnings,
-    (store: EditorStore) => store.editor.projectContents,
-    (store: EditorStore) => store.editor.nodeModules.files,
-    (store: EditorStore) => store.editor.canvas.openFile?.filename ?? null,
+    (store: EditorStorePatched) => store.editor.jsxMetadata,
+    (store: EditorStorePatched) => store.editor.selectedViews,
+    (store: EditorStorePatched) => store.editor.highlightedViews,
+    (store: EditorStorePatched) => store.derived.canvas.transientState,
+    (store: EditorStorePatched) => store.derived.navigatorTargets,
+    (store: EditorStorePatched) => store.derived.elementWarnings,
+    (store: EditorStorePatched) => store.editor.projectContents,
+    (store: EditorStorePatched) => store.editor.nodeModules.files,
+    (store: EditorStorePatched) => store.editor.canvas.openFile?.filename ?? null,
     (
       jsxMetadata,
       selectedViews,

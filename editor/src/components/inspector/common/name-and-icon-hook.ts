@@ -9,7 +9,7 @@ import {
   NameAndIconResultKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createSelector } from 'reselect'
-import { EditorStore } from '../../editor/store/editor-state'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import React from 'react'
 
 export interface NameAndIconResult {
@@ -24,7 +24,7 @@ export function useMetadata(): ElementInstanceMetadataMap {
 }
 
 const namesAndIconsAllPathsResultSelector = createSelector(
-  (store: EditorStore) => store.editor.jsxMetadata,
+  (store: EditorStorePatched) => store.editor.jsxMetadata,
   (metadata) => {
     return MetadataUtils.getAllPaths(metadata).map((path) => {
       return getNameAndIconResult(path, metadata)

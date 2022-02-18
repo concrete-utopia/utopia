@@ -13,7 +13,7 @@ import { createEditorStates } from '../../../utils/utils.test-utils'
 import utils from '../../../utils/utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
-  EditorStore,
+  EditorStorePatched,
   modifyOpenJsxElementAtStaticPath,
   defaultUserState,
   StoryboardFilePath,
@@ -34,8 +34,8 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import { NO_OP } from '../../../core/shared/utils'
 
 type UpdateFunctionHelpers = {
-  updateStoreWithImmer: (fn: (store: EditorStore) => void) => void
-  updateStore: (fn: (store: EditorStore) => EditorStore) => void
+  updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
+  updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => void
 }
 
 export function getStoreHook(
@@ -44,9 +44,7 @@ export function getStoreHook(
   const editor = createEditorStates([
     EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
   ])
-  const defaultState: EditorStore = {
-    unpatchedEditor: editor.editor,
-    patchedEditor: editor.editor,
+  const defaultState: EditorStorePatched = {
     editor: editor.editor,
     derived: editor.derivedState,
     history: {
@@ -62,10 +60,10 @@ export function getStoreHook(
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStore & UpdateFunctionHelpers>((set) => ({
+  const storeHook = create<EditorStorePatched & UpdateFunctionHelpers>((set) => ({
     ...defaultState,
-    updateStoreWithImmer: (fn: (store: EditorStore) => void) => set(produce(fn)),
-    updateStore: (fn: (store: EditorStore) => EditorStore) => set(fn),
+    updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => set(produce(fn)),
+    updateStore: (fn: (store: EditorStorePatched) => EditorStorePatched) => set(fn),
   }))
   return {
     api: storeHook,
@@ -89,10 +87,10 @@ export const TestInspectorContextProvider: React.FunctionComponent<{
 }
 
 export function editPropOfSelectedView(
-  store: EditorStore,
+  store: EditorStorePatched,
   path: PropertyPath,
   newValue: number | string,
-): EditorStore {
+): EditorStorePatched {
   return {
     ...store,
     editor: modifyOpenJsxElementAtStaticPath(

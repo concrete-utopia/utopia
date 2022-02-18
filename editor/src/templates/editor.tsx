@@ -39,7 +39,7 @@ import {
 import {
   createEditorState,
   deriveState,
-  EditorStore,
+  EditorStoreFull,
   getMainUIFromModel,
   defaultUserState,
   EditorState,
@@ -48,6 +48,8 @@ import {
   PersistentModel,
   createNewProjectName,
   persistentModelForProjectContents,
+  EditorStorePatched,
+  patchedStoreFromFullStore,
 } from '../components/editor/store/editor-state'
 import {
   EditorStateContext,
@@ -98,10 +100,10 @@ function replaceLoadingMessage(newMessage: string) {
 }
 
 export class Editor {
-  storedState: EditorStore
+  storedState: EditorStoreFull
   utopiaStoreHook: UtopiaStoreHook
   utopiaStoreApi: UtopiaStoreAPI
-  updateStore: (partialState: EditorStore) => void
+  updateStore: (partialState: EditorStorePatched) => void
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   constructor() {
@@ -138,7 +140,6 @@ export class Editor {
     this.storedState = {
       unpatchedEditor: emptyEditorState,
       patchedEditor: emptyEditorState,
-      editor: emptyEditorState,
       derived: derivedState,
       history: history,
       userState: defaultUserState,
@@ -154,7 +155,9 @@ export class Editor {
       alreadySaved: false,
     }
 
-    const storeHook = create<EditorStore>((set) => this.storedState)
+    const storeHook = create<EditorStorePatched>((set) =>
+      patchedStoreFromFullStore(this.storedState),
+    )
 
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
@@ -182,7 +185,7 @@ export class Editor {
           this.storedState.workers.sendHeartbeatResponseMessage(
             msg.id,
             msg.projectId,
-            this.storedState.editor.safeMode,
+            this.storedState.patchedEditor.safeMode,
           )
         }
       }
@@ -291,9 +294,7 @@ export class Editor {
 
       if (!result.nothingChanged) {
         // we update the zustand store with the new editor state. this will trigger a re-render in the EditorComponent
-        this.updateStore({
-          ...result,
-        })
+        this.updateStore(patchedStoreFromFullStore(result))
       }
       return { entireUpdateFinished: result.entireUpdateFinished }
     }
