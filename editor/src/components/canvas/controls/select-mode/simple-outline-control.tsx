@@ -1,6 +1,6 @@
 import React from 'react'
 import * as EP from '../../../../core/shared/element-path'
-import { boundingRectangleArray } from '../../../../core/shared/math-utils'
+import { boundingRectangleArray, CanvasRectangle } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -33,16 +33,17 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
     )
   }, 'OutlineControl colors')
 
-  const observerCallback = React.useCallback(() => {
-    const frames = findFramesFromDOM(selectedElementsRef.current)
-    const boundingBox = boundingRectangleArray(frames)
-    if (boundingBox != null && outlineRef.current != null) {
-      outlineRef.current.style.left = boundingBox.x + outlineOffset + 'px'
-      outlineRef.current.style.top = boundingBox.y + outlineOffset + 'px'
-      outlineRef.current.style.width = boundingBox.width + outlineWidthHeightOffset + 'px'
-      outlineRef.current.style.height = boundingBox.height + outlineWidthHeightOffset + 'px'
-    }
-  }, [selectedElementsRef, outlineWidthHeightOffset, outlineOffset])
+  const observerCallback = React.useCallback(
+    (boundingBox: CanvasRectangle | null) => {
+      if (boundingBox != null && outlineRef.current != null) {
+        outlineRef.current.style.left = boundingBox.x + outlineOffset + 'px'
+        outlineRef.current.style.top = boundingBox.y + outlineOffset + 'px'
+        outlineRef.current.style.width = boundingBox.width + outlineWidthHeightOffset + 'px'
+        outlineRef.current.style.height = boundingBox.height + outlineWidthHeightOffset + 'px'
+      }
+    },
+    [outlineWidthHeightOffset, outlineOffset],
+  )
 
   const observerRef = useMutationObserver(selectedElements, observerCallback)
 

@@ -2,10 +2,19 @@ import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasRectangle, negate, offsetRect, windowPoint } from '../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  CanvasRectangle,
+  negate,
+  offsetRect,
+  windowPoint,
+} from '../../../core/shared/math-utils'
 import { getCanvasRectangleFromElement } from '../../../core/shared/dom-utils'
 import { CanvasScale } from '../../../utils/global-positions'
 import { CanvasContainerID } from '../canvas-types'
+import { useRefEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getMetadata } from '../../editor/store/editor-state'
 
 function findTargetHtmlElement(path: ElementPath): HTMLElement | null {
   return document.querySelector(`*[data-paths~="${EP.toString(path)}"]`)
@@ -40,17 +49,40 @@ function globalFrameForElement(
 
 export function useMutationObserver(
   selectedElements: Array<ElementPath>,
-  observerCallback: () => void,
-) {
+  observerCallback: (boundingRectangle: CanvasRectangle | null) => void,
+): void {
   const observerRef = React.useRef<MutationObserver | null>()
+
+  const metadataRef = useRefEditorState((store) => getMetadata(store.editor))
+
+  const observerCallbackRef = React.useRef(observerCallback)
+  observerCallbackRef.current = observerCallback
+
+  const innerCallback = React.useCallback(() => {
+    // const frames: Array<CanvasRectangle> = findFramesFromDOM(selectedElementsRef.current)
+
+    let frames: Array<CanvasRectangle> = []
+
+    fastForEach(selectedElements, (view) => {
+      const frame = MetadataUtils.getFrameInCanvasCoords(view, metadataRef.current)
+      if (frame != null) {
+        frames.push(frame)
+      }
+    })
+
+    const boundingBox = boundingRectangleArray(frames)
+
+    observerCallbackRef.current(boundingBox)
+  }, [selectedElements, metadataRef])
+
   React.useEffect(() => {
-    const observer = new MutationObserver(observerCallback)
+    const observer = new MutationObserver(innerCallback)
     observerRef.current = observer
     return function cleanup() {
       observer.disconnect()
       observerRef.current = null
     }
-  }, [observerCallback])
+  }, [innerCallback])
 
   React.useEffect(() => {
     if (selectedElements.length > 0) {
@@ -65,12 +97,11 @@ export function useMutationObserver(
         }
       })
 
-      observerCallback()
+      innerCallback()
     }
 
     return function cleanup() {
       observerRef.current?.disconnect()
     }
-  }, [selectedElements, observerCallback])
-  return observerRef
+  }, [selectedElements, innerCallback])
 }

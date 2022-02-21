@@ -59,9 +59,7 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
     )
   }, 'AbsoluteResizeControl allSelectedElementsAbsolute')
 
-  const observerCallback = React.useCallback(() => {
-    const frames: Array<CanvasRectangle> = findFramesFromDOM(selectedElementsRef.current)
-    const boundingBox = boundingRectangleArray(frames)
+  const observerCallback = React.useCallback((boundingBox: CanvasRectangle | null) => {
     if (boundingBox != null && controlRef.current != null) {
       controlRef.current.style.left = boundingBox.x + 'px'
       controlRef.current.style.top = boundingBox.y + 'px'
@@ -93,7 +91,7 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
         rightRef.current.style.height = boundingBox.height + 'px'
       }
     }
-  }, [selectedElementsRef])
+  }, [])
 
   const absoluteElements = allSelectedElementsAbsolute ? selectedElements : []
   const observerRef = useMutationObserver(absoluteElements, observerCallback)
