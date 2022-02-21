@@ -28,18 +28,15 @@ import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
 import { useBoundingBoxControl } from '../bounding-box-hooks'
 
 interface AbsoluteResizeControlProps {
-  selectedElements: Array<ElementPath>
+  localSelectedElements: Array<ElementPath>
 }
 
 export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((props) => {
-  const selectedElements = props.selectedElements
-  const selectedElementsRef = React.useRef(selectedElements)
-  selectedElementsRef.current = selectedElements // TODO new-canvas-controls@localSelectedViews should be atom-like so we can get a live ref to it
-
+  const localSelectedElements = props.localSelectedElements
   const allSelectedElementsAbsolute = useEditorState((store) => {
     return (
-      selectedElementsRef.current.length > 0 &&
-      selectedElementsRef.current.every((path) => {
+      localSelectedElements.length > 0 &&
+      localSelectedElements.every((path) => {
         return (
           MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
             ?.specialSizeMeasurements.position === 'absolute'
@@ -48,7 +45,7 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
     )
   }, 'AbsoluteResizeControl allSelectedElementsAbsolute')
 
-  const absoluteElements = allSelectedElementsAbsolute ? selectedElements : []
+  const absoluteElements = allSelectedElementsAbsolute ? localSelectedElements : []
 
   const controlRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.x + 'px'

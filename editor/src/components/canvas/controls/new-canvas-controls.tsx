@@ -418,11 +418,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
-        <OutlineControl selectedElements={localSelectedViews} />,
+        <OutlineControl localSelectedElements={localSelectedViews} />,
       )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
-        <AbsoluteResizeControl selectedElements={localSelectedViews} />,
+        <AbsoluteResizeControl localSelectedElements={localSelectedViews} />,
       )}
     </div>
   )

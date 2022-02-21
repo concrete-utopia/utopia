@@ -6,21 +6,19 @@ import { useBoundingBoxControl } from '../bounding-box-hooks'
 import { getSelectionColor } from '../outline-control'
 
 interface OutlineControlProps {
-  selectedElements: Array<ElementPath>
+  localSelectedElements: Array<ElementPath>
 }
 
 export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
-  const selectedElements = props.selectedElements
-  const selectedElementsRef = React.useRef(selectedElements) // TODO new-canvas-controls@localSelectedViews should be atom-like so we can get a live ref to it
-  selectedElementsRef.current = selectedElements
+  const localSelectedElements = props.localSelectedElements
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl')
   const outlineOffset = 0.5 / scale
   const outlineWidthHeightOffset = -outlineOffset * 3
 
   const colors = useEditorState((store) => {
-    return selectedElementsRef.current.map((path) =>
+    return localSelectedElements.map((path) =>
       getSelectionColor(
         path,
         store.editor.jsxMetadata,
@@ -30,14 +28,14 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
     )
   }, 'OutlineControl colors')
 
-  const outlineRef = useBoundingBoxControl(selectedElementsRef.current, (ref, boundingBox) => {
+  const outlineRef = useBoundingBoxControl(localSelectedElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.x + outlineOffset + 'px'
     ref.current.style.top = boundingBox.y + outlineOffset + 'px'
     ref.current.style.width = boundingBox.width + outlineWidthHeightOffset + 'px'
     ref.current.style.height = boundingBox.height + outlineWidthHeightOffset + 'px'
   })
 
-  if (selectedElements.length > 0) {
+  if (localSelectedElements.length > 0) {
     return (
       <div
         ref={outlineRef}
