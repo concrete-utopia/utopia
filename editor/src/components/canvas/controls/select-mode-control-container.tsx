@@ -31,7 +31,6 @@ import { when } from '../../../utils/react-conditionals'
 import { InsertionControls } from './insertion-plus-button'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ZeroSizedElementControls } from './zero-sized-element-controls'
-import { AbsoluteResizeControl } from './select-mode/absolute-resize-control'
 
 function getDistanceGuidelines(
   highlightedView: ElementPath,
