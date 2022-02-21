@@ -342,17 +342,17 @@ export const OutlineControls = (props: OutlineControlsProps) => {
       )
     }
 
-    // if (MetadataUtils.isPositionAbsolute(instance)) {
-    //   selectionOutlines.push(
-    //     <PositionOutline
-    //       key={`${keyPrefix}-position-outline`}
-    //       frame={rect}
-    //       path={selectedView}
-    //       scale={props.scale}
-    //       canvasOffset={props.canvasOffset}
-    //     />,
-    //   )
-    // }
+    if (MetadataUtils.isPositionAbsolute(instance)) {
+      selectionOutlines.push(
+        <PositionOutline
+          key={`${keyPrefix}-position-outline`}
+          frame={rect}
+          path={selectedView}
+          scale={props.scale}
+          canvasOffset={props.canvasOffset}
+        />,
+      )
+    }
 
     // FIXME the striped overlay needs to be separated from this
     selectionOutlines.push(
@@ -385,8 +385,8 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   }
   return (
     <>
-      {/* {parentOutlines} */}
-      {/* {parentHighlights} */}
+      {parentOutlines}
+      {parentHighlights}
       {selectionOutlines}
       {multiSelectOutline}
     </>

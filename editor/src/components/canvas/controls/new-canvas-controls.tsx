@@ -418,73 +418,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
-        <>
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-          <OutlineControl selectedElements={localSelectedViews} />
-        </>,
+        <OutlineControl selectedElements={localSelectedViews} />,
       )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
-        <>
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-          <AbsoluteResizeControl selectedElements={localSelectedViews} />
-        </>,
+        <AbsoluteResizeControl selectedElements={localSelectedViews} />,
       )}
     </div>
   )

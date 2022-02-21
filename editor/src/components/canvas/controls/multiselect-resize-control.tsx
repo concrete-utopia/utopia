@@ -177,7 +177,7 @@ export class MultiselectResizeControl extends React.Component<
               flexDirection={null}
               propertyTargetSelectedIndex={this.props.resizeOptions.propertyTargetSelectedIndex}
             />
-            {/* {guidelineElements} */}
+            {guidelineElements}
           </>
         )
       } else {
@@ -189,7 +189,7 @@ export class MultiselectResizeControl extends React.Component<
               obtainOriginalFrames={this.obtainOriginalFrames}
               onResizeStart={this.onResizeStart}
             />
-            {/* {guidelineElements} */}
+            {guidelineElements}
           </>
         )
       }
