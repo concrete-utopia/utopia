@@ -7,8 +7,7 @@ import { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
 import {
   defaultIndexHtmlFilePath,
-  EditorState,
-  EditorStore,
+  EditorStorePatched,
 } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import {
@@ -456,8 +455,8 @@ export function getExternalResourcesInfo(
 }
 
 const getExternalResourcesInfoSelector = createSelector(
-  (store: EditorStore) => store.editor.projectContents,
-  (store: EditorStore) => store.dispatch,
+  (store: EditorStorePatched) => store.editor.projectContents,
+  (store: EditorStorePatched) => store.dispatch,
   getExternalResourcesInfo,
 )
 

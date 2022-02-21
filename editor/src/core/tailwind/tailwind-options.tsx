@@ -10,7 +10,7 @@ import {
 import Highlighter from 'react-highlight-words'
 import { ElementPath, isParseSuccess, isTextFile, NodeModules } from '../shared/project-file-types'
 import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
-import { EditorStore, getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
+import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import {
