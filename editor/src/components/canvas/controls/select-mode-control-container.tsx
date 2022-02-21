@@ -511,8 +511,48 @@ export class SelectModeControlContainer extends React.Component<
             <OutlineControls {...this.props} />
             <OutlineControls {...this.props} />
             <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
             {this.canResizeElements() ? (
               <>
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
                 <ConstraintsControls {...this.props} />
                 <ConstraintsControls {...this.props} />
                 <ConstraintsControls {...this.props} />

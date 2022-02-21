@@ -429,11 +429,51 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           <OutlineControl selectedElements={localSelectedViews} />
           <OutlineControl selectedElements={localSelectedViews} />
           <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
+          <OutlineControl selectedElements={localSelectedViews} />
         </>,
       )}
       {when(
         isFeatureEnabled('Canvas Absolute Resize Controls'),
         <>
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
+          <AbsoluteResizeControl selectedElements={localSelectedViews} />
           <AbsoluteResizeControl selectedElements={localSelectedViews} />
           <AbsoluteResizeControl selectedElements={localSelectedViews} />
           <AbsoluteResizeControl selectedElements={localSelectedViews} />
