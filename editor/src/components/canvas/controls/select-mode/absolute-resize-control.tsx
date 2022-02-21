@@ -31,6 +31,24 @@ interface AbsoluteResizeControlProps {
   selectedElements: Array<ElementPath>
 }
 
+function useControlResize(
+  selectedElements: Array<ElementPath>,
+  resizeCallback: (ref: any, boundingBox: any) => void,
+) {
+  const controlRef = React.useRef<HTMLDivElement>(null)
+  const mutationObserverCallback = React.useCallback(
+    (boundingBox: CanvasRectangle | null) => {
+      if (boundingBox != null) {
+        resizeCallback(controlRef, boundingBox)
+      }
+    },
+    [resizeCallback],
+  )
+
+  useMutationObserver(selectedElements, mutationObserverCallback)
+  return controlRef
+}
+
 export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((props) => {
   const controlRef = React.useRef<HTMLDivElement>(null)
   const topLeftRef = React.useRef<HTMLDivElement>(null)
@@ -41,7 +59,7 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
   const leftRef = React.useRef<HTMLDivElement>(null)
   const topRef = React.useRef<HTMLDivElement>(null)
   const rightRef = React.useRef<HTMLDivElement>(null)
-  const bottomRef = React.useRef<HTMLDivElement>(null)
+  // const bottomRef = React.useRef<HTMLDivElement>(null)
 
   const selectedElements = props.selectedElements
   const selectedElementsRef = React.useRef(selectedElements)
@@ -58,6 +76,11 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
       })
     )
   }, 'AbsoluteResizeControl allSelectedElementsAbsolute')
+
+  const bottomRef = useControlResize(selectedElements, (ref, boundingBox) => {
+    ref.current.style.top = boundingBox.height + 'px'
+    ref.current.style.width = boundingBox.width + 'px'
+  })
 
   const observerCallback = React.useCallback((boundingBox: CanvasRectangle | null) => {
     if (boundingBox != null && controlRef.current != null) {
@@ -81,10 +104,6 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
       }
       if (topRef.current != null) {
         topRef.current.style.width = boundingBox.width + 'px'
-      }
-      if (bottomRef.current != null) {
-        bottomRef.current.style.top = boundingBox.height + 'px'
-        bottomRef.current.style.width = boundingBox.width + 'px'
       }
       if (rightRef.current != null) {
         rightRef.current.style.left = boundingBox.width + 'px'
