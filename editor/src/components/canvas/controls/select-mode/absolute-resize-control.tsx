@@ -92,7 +92,7 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
   })
 
   const topLeftRef = useControlResize(absoluteElements, (ref, boundingBox) => {
-    ref.current.style.left = boundingBox.x + 'px'
+    // ref.current.style.left = boundingBox.x + 'px'
   })
   const topRightRef = useControlResize(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width + 'px'
