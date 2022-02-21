@@ -50,17 +50,6 @@ function useControlResize(
 }
 
 export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((props) => {
-  const controlRef = React.useRef<HTMLDivElement>(null)
-  const topLeftRef = React.useRef<HTMLDivElement>(null)
-  const topRightRef = React.useRef<HTMLDivElement>(null)
-  const bottomLeftRef = React.useRef<HTMLDivElement>(null)
-  const bottomRightRef = React.useRef<HTMLDivElement>(null)
-
-  const leftRef = React.useRef<HTMLDivElement>(null)
-  const topRef = React.useRef<HTMLDivElement>(null)
-  const rightRef = React.useRef<HTMLDivElement>(null)
-  // const bottomRef = React.useRef<HTMLDivElement>(null)
-
   const selectedElements = props.selectedElements
   const selectedElementsRef = React.useRef(selectedElements)
   selectedElementsRef.current = selectedElements // TODO new-canvas-controls@localSelectedViews should be atom-like so we can get a live ref to it
@@ -77,43 +66,44 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
     )
   }, 'AbsoluteResizeControl allSelectedElementsAbsolute')
 
-  const bottomRef = useControlResize(selectedElements, (ref, boundingBox) => {
+  const absoluteElements = allSelectedElementsAbsolute ? selectedElements : []
+
+  const controlRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+    ref.current.style.left = boundingBox.x + 'px'
+    ref.current.style.top = boundingBox.y + 'px'
+    ref.current.style.width = boundingBox.width + 'px'
+    ref.current.style.height = boundingBox.height + 'px'
+  })
+
+  const leftRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+    ref.current.style.height = boundingBox.height + 'px'
+  })
+  const topRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+    ref.current.style.width = boundingBox.width + 'px'
+  })
+  const rightRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+    ref.current.style.left = boundingBox.width + 'px'
+    ref.current.style.height = boundingBox.height + 'px'
+  })
+
+  const bottomRef = useControlResize(absoluteElements, (ref, boundingBox) => {
     ref.current.style.top = boundingBox.height + 'px'
     ref.current.style.width = boundingBox.width + 'px'
   })
 
-  const observerCallback = React.useCallback((boundingBox: CanvasRectangle | null) => {
-    if (boundingBox != null && controlRef.current != null) {
-      controlRef.current.style.left = boundingBox.x + 'px'
-      controlRef.current.style.top = boundingBox.y + 'px'
-      controlRef.current.style.width = boundingBox.width + 'px'
-      controlRef.current.style.height = boundingBox.height + 'px'
-      if (topRightRef.current != null) {
-        topRightRef.current.style.left = boundingBox.width + 'px'
-      }
-      if (bottomLeftRef.current != null) {
-        bottomLeftRef.current.style.top = boundingBox.height + 'px'
-      }
-      if (bottomRightRef.current != null) {
-        bottomRightRef.current.style.left = boundingBox.width + 'px'
-        bottomRightRef.current.style.top = boundingBox.height + 'px'
-      }
-
-      if (leftRef.current != null) {
-        leftRef.current.style.height = boundingBox.height + 'px'
-      }
-      if (topRef.current != null) {
-        topRef.current.style.width = boundingBox.width + 'px'
-      }
-      if (rightRef.current != null) {
-        rightRef.current.style.left = boundingBox.width + 'px'
-        rightRef.current.style.height = boundingBox.height + 'px'
-      }
-    }
-  }, [])
-
-  const absoluteElements = allSelectedElementsAbsolute ? selectedElements : []
-  const observerRef = useMutationObserver(absoluteElements, observerCallback)
+  const topLeftRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+    ref.current.style.left = boundingBox.x + 'px'
+  })
+  const topRightRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+    ref.current.style.left = boundingBox.width + 'px'
+  })
+  const bottomLeftRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+    ref.current.style.top = boundingBox.height + 'px'
+  })
+  const bottomRightRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+    ref.current.style.left = boundingBox.width + 'px'
+    ref.current.style.top = boundingBox.height + 'px'
+  })
 
   if (allSelectedElementsAbsolute) {
     return (
