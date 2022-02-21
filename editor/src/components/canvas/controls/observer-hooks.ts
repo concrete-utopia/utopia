@@ -80,7 +80,6 @@ export function useMutationObserver(
     (newMetadata) => {
       innerCallback()
     },
-    false,
   )
 
   React.useEffect(innerCallback, [innerCallback, selectedElements])
