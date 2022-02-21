@@ -19,7 +19,7 @@ import {
   isClearInteractionState,
 } from '../actions/action-utils'
 import { DispatchResult, InnerDispatchResult } from './dispatch'
-import { EditorStore, DerivedState, EditorState, EditorStoreExplicit } from './editor-state'
+import { DerivedState, EditorState, EditorStoreFull } from './editor-state'
 
 export interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -28,7 +28,7 @@ export interface HandleStrategiesResult {
 }
 
 export function interactionFinished(
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
@@ -89,7 +89,7 @@ export function interactionFinished(
 }
 
 export function interactionHardReset(
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
@@ -168,7 +168,7 @@ export function interactionHardReset(
 }
 
 export function interactionUpdate(
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
@@ -238,7 +238,7 @@ export function interactionUpdate(
 }
 
 export function interactionStart(
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
@@ -309,7 +309,7 @@ export function interactionStart(
 }
 
 export function interactionCancel(
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const updatedEditorState: EditorState = {
@@ -328,7 +328,7 @@ export function interactionCancel(
 }
 
 export function interactionUserChangedStrategy(
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
@@ -424,7 +424,7 @@ export function interactionUserChangedStrategy(
 }
 
 function interactionStrategyChangeStacked(
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
@@ -534,7 +534,7 @@ function interactionStrategyChangeStacked(
 export function handleStrategies(
   frozenDerivedState: DerivedState,
   dispatchedActions: readonly EditorAction[],
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionStateResult)

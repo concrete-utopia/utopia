@@ -15,12 +15,12 @@ import * as History from '../history'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
 import { DispatchResult, editorDispatch } from './dispatch'
 import { interactionCancel } from './dispatch-strategies'
-import { createEditorState, deriveState, EditorStore } from './editor-state'
+import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { emptyComments, jsxAttributeValue } from '../../../core/shared/element-template'
 
-function createEditorStore(): EditorStore {
+function createEditorStore(): EditorStoreFull {
   let emptyEditorState = createEditorState(NO_OP)
   const derivedState = deriveState(emptyEditorState, null)
 
@@ -32,10 +32,9 @@ function createEditorStore(): EditorStore {
     storeHook.setState(result)
   }
 
-  const initialEditorStore: EditorStore = {
+  const initialEditorStore: EditorStoreFull = {
     unpatchedEditor: emptyEditorState,
     patchedEditor: emptyEditorState,
-    editor: emptyEditorState,
     derived: derivedState,
     sessionStateState: createEmptySessionStateState(),
     history: history,
@@ -54,12 +53,12 @@ function createEditorStore(): EditorStore {
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
-  const storeHook = create<EditorStore>((set) => initialEditorStore)
+  const storeHook = create<EditorStoreFull>((set) => initialEditorStore)
 
   return initialEditorStore
 }
 
-function dispatchResultFromEditorStore(editorStore: EditorStore): DispatchResult {
+function dispatchResultFromEditorStore(editorStore: EditorStoreFull): DispatchResult {
   return {
     ...editorStore,
     nothingChanged: true,

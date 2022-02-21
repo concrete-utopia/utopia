@@ -14,7 +14,7 @@ import {
   SessionStateState,
 } from '../../../interactions_proposal'
 import { DispatchResult, InnerDispatchResult } from '../../editor/store/dispatch'
-import { EditorStore } from '../../editor/store/editor-state'
+import { EditorStorePatched } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { CanvasCommand } from '../commands/commands'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
@@ -85,7 +85,7 @@ function getApplicableStrategies(
 }
 
 const getApplicableStrategiesSelector = createSelector(
-  (store: EditorStore): InteractionCanvasState => {
+  (store: EditorStorePatched): InteractionCanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
       // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -95,8 +95,8 @@ const getApplicableStrategiesSelector = createSelector(
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }
   },
-  (store: EditorStore) => store.editor.canvas.interactionState,
-  (store: EditorStore) => store.editor.jsxMetadata,
+  (store: EditorStorePatched) => store.editor.canvas.interactionState,
+  (store: EditorStorePatched) => store.editor.jsxMetadata,
   (
     canvasState: InteractionCanvasState,
     interactionState: InteractionState | null,
@@ -148,7 +148,7 @@ function getApplicableStrategiesOrderedByFitness(
 }
 
 const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
-  (store: EditorStore): InteractionCanvasState => {
+  (store: EditorStorePatched): InteractionCanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
       // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -158,8 +158,8 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
       canvasOffset: store.editor.canvas.roundedCanvasOffset,
     }
   },
-  (store: EditorStore) => store.editor.canvas.interactionState,
-  (store: EditorStore) => store.sessionStateState,
+  (store: EditorStorePatched) => store.editor.canvas.interactionState,
+  (store: EditorStorePatched) => store.sessionStateState,
   (
     canvasState: InteractionCanvasState,
     interactionState: InteractionState | null,

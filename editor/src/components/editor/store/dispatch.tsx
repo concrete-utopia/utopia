@@ -128,7 +128,7 @@ type DispatchResultFields = {
 
 type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor'>
 
-type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
+export type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
 export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
