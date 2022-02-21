@@ -6,9 +6,9 @@ import { ElementInstanceMetadataMap } from '../../../core/shared/element-templat
 import { offsetPoint, pointDifference, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { arrayEquals } from '../../../core/shared/utils'
 import {
-  CanvasState,
   CanvasStrategy,
   ControlWithKey,
+  InteractionCanvasState,
   InteractionData,
   InteractionState,
   SessionStateState,
@@ -75,7 +75,7 @@ export function strategiesPartOfSameGroup(
 }
 
 function getApplicableStrategies(
-  canvasState: CanvasState,
+  canvasState: InteractionCanvasState,
   interactionState: InteractionState | null,
   metadata: ElementInstanceMetadataMap,
 ): Array<CanvasStrategy> {
@@ -85,7 +85,7 @@ function getApplicableStrategies(
 }
 
 const getApplicableStrategiesSelector = createSelector(
-  (store: EditorStore): CanvasState => {
+  (store: EditorStore): InteractionCanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
       // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -98,7 +98,7 @@ const getApplicableStrategiesSelector = createSelector(
   (store: EditorStore) => store.editor.canvas.interactionState,
   (store: EditorStore) => store.editor.jsxMetadata,
   (
-    canvasState: CanvasState,
+    canvasState: InteractionCanvasState,
     interactionState: InteractionState | null,
     metadata: ElementInstanceMetadataMap,
   ): Array<CanvasStrategy> => {
@@ -116,7 +116,7 @@ interface StrategyWithFitness {
 }
 
 function getApplicableStrategiesOrderedByFitness(
-  canvasState: CanvasState,
+  canvasState: InteractionCanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
 ): Array<StrategyWithFitness> {
@@ -148,7 +148,7 @@ function getApplicableStrategiesOrderedByFitness(
 }
 
 const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
-  (store: EditorStore): CanvasState => {
+  (store: EditorStore): InteractionCanvasState => {
     return {
       selectedElements: store.editor.selectedViews,
       // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -161,7 +161,7 @@ const getApplicableStrategiesOrderedByFitnessSelector = createSelector(
   (store: EditorStore) => store.editor.canvas.interactionState,
   (store: EditorStore) => store.sessionStateState,
   (
-    canvasState: CanvasState,
+    canvasState: InteractionCanvasState,
     interactionState: InteractionState | null,
     sessionState: SessionStateState,
   ): Array<string> => {
@@ -219,7 +219,7 @@ function pickStrategy(
 
 function isStrategyApplicable(
   strategyName: string,
-  canvasState: CanvasState,
+  canvasState: InteractionCanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
 ): boolean {
@@ -231,7 +231,7 @@ function isStrategyApplicable(
 }
 
 export function findCanvasStrategy(
-  canvasState: CanvasState,
+  canvasState: InteractionCanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
   previousStrategyName: string | null,
@@ -246,7 +246,7 @@ export function findCanvasStrategy(
 
 export function applyCanvasStrategy(
   strategy: CanvasStrategy,
-  canvasState: CanvasState,
+  canvasState: InteractionCanvasState,
   interactionState: InteractionState,
   sessionState: SessionStateState,
 ): Array<CanvasCommand> {
@@ -352,7 +352,7 @@ export function hasModifiersChanged(
 
 export function findCanvasStrategyFromDispatchResult(result: InnerDispatchResult) {
   const newEditorState = result.unpatchedEditor
-  const canvasState: CanvasState = {
+  const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
     projectContents: newEditorState.projectContents,

@@ -11,8 +11,7 @@ import { ProjectContentTreeRoot } from './components/assets'
 import { CanvasCommand } from './components/canvas/commands/commands'
 import React from 'react'
 
-// FIXME: There's a type with the same name in the dom types.
-export interface CanvasState {
+export interface InteractionCanvasState {
   // The idea here being that we should be restricting the model we're supplying to the interactions system,
   // but that's not a requirement of this proposal
   selectedElements: Array<ElementPath>
@@ -352,7 +351,7 @@ export interface CanvasStrategy {
   strategyGroups: Set<string>
 
   isApplicable: (
-    canvasState: CanvasState,
+    canvasState: InteractionCanvasState,
     interactionState: InteractionState | null,
     metadata: ElementInstanceMetadataMap,
   ) => boolean
@@ -363,14 +362,14 @@ export interface CanvasStrategy {
   // The controls to render when this strategy is applicable, regardless of if it is currently active
 
   fitness: (
-    canvasState: CanvasState,
+    canvasState: InteractionCanvasState,
     interactionState: InteractionState,
     sessionState: SessionStateState,
   ) => number
   // As before, for determining the relative ordering of applicable strategies during an interaction, and therefore which one to apply
 
   apply: (
-    canvasState: CanvasState,
+    canvasState: InteractionCanvasState,
     interactionState: InteractionState,
     sessionState: SessionStateState,
   ) => StrategyApplicationResult

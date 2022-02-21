@@ -113,7 +113,7 @@ import {
   strategySwitchInteractionStateReset,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
-  CanvasState,
+  InteractionCanvasState,
   createEmptySessionStateState,
   createEmptyStrategyState,
   SessionStateState,
@@ -585,7 +585,7 @@ function interactionFinished(
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
-  const canvasState: CanvasState = {
+  const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
     projectContents: newEditorState.projectContents,
@@ -646,7 +646,7 @@ function interactionHardReset(storedState: EditorStoreExplicit, result: InnerDis
     ...storedState.sessionStateState,
     startingMetadata: storedState.sessionStateState.originalMetadata,
   }
-  const canvasState: CanvasState = {
+  const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
     projectContents: newEditorState.projectContents,
@@ -721,7 +721,7 @@ function interactionUpdate(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: CanvasState = {
+  const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
     projectContents: newEditorState.projectContents,
@@ -792,7 +792,7 @@ function interactionStart(
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
-  const canvasState: CanvasState = {
+  const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
     projectContents: newEditorState.projectContents,
@@ -881,7 +881,7 @@ function interactionUserChangedStrategy(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: CanvasState = {
+  const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
     projectContents: newEditorState.projectContents,
@@ -977,7 +977,7 @@ function interactionStrategyChangeStacked(
   result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const newEditorState = result.unpatchedEditor
-  const canvasState: CanvasState = {
+  const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
     projectContents: newEditorState.projectContents,
