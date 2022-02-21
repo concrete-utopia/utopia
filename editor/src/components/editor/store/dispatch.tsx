@@ -94,15 +94,15 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isJsOrTsFile, isCssFile } from '../../../core/shared/file-utils'
 import { applyStatePatches } from '../../canvas/commands/commands'
 
-interface DispatchResultFields {
+type DispatchResultFields = {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
 
 type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor'>
 
-export interface InnerDispatchResult extends EditorStoreUnpatched, DispatchResultFields {}
-export interface DispatchResult extends EditorStoreFull, DispatchResultFields {}
+type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
+export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
   switch (action.action) {
