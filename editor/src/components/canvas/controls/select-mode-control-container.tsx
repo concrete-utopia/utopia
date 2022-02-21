@@ -492,13 +492,13 @@ export class SelectModeControlContainer extends React.Component<
         }}
         onContextMenu={this.onContextMenu}
       >
-        {/* {roots.map((root) => {
+        {roots.map((root) => {
           return (
             <React.Fragment key={`${EP.toComponentId(root)}}-root-controls`}>
               {this.renderLabel(root, allElementsDirectlySelectable)}
             </React.Fragment>
           )
-        })} */}
+        })}
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
