@@ -25,7 +25,7 @@ import {
 } from '../../canvas-types'
 import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
-import { useBoundingBoxControl } from '../bounding-box-hooks'
+import { useBoundingBox } from '../bounding-box-hooks'
 
 interface AbsoluteResizeControlProps {
   localSelectedElements: Array<ElementPath>
@@ -47,37 +47,37 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
 
   const absoluteElements = allSelectedElementsAbsolute ? localSelectedElements : []
 
-  const controlRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
+  const controlRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.x + 'px'
     ref.current.style.top = boundingBox.y + 'px'
     ref.current.style.width = boundingBox.width + 'px'
     ref.current.style.height = boundingBox.height + 'px'
   })
 
-  const leftRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
+  const leftRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
     ref.current.style.height = boundingBox.height + 'px'
   })
-  const topRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
+  const topRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
     ref.current.style.width = boundingBox.width + 'px'
   })
-  const rightRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
+  const rightRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width + 'px'
     ref.current.style.height = boundingBox.height + 'px'
   })
 
-  const bottomRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
+  const bottomRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
     ref.current.style.top = boundingBox.height + 'px'
     ref.current.style.width = boundingBox.width + 'px'
   })
 
-  const topLeftRef = useBoundingBoxControl(absoluteElements, NO_OP)
-  const topRightRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
+  const topLeftRef = useBoundingBox(absoluteElements, NO_OP)
+  const topRightRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width + 'px'
   })
-  const bottomLeftRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
+  const bottomLeftRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
     ref.current.style.top = boundingBox.height + 'px'
   })
-  const bottomRightRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
+  const bottomRightRef = useBoundingBox(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width + 'px'
     ref.current.style.top = boundingBox.height + 'px'
   })

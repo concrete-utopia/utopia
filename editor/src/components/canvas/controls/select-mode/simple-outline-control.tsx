@@ -2,7 +2,7 @@ import React from 'react'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
 import { useEditorState } from '../../../editor/store/store-hook'
-import { useBoundingBoxControl } from '../bounding-box-hooks'
+import { useBoundingBox } from '../bounding-box-hooks'
 import { getSelectionColor } from '../outline-control'
 
 interface OutlineControlProps {
@@ -28,7 +28,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
     )
   }, 'OutlineControl colors')
 
-  const outlineRef = useBoundingBoxControl(localSelectedElements, (ref, boundingBox) => {
+  const outlineRef = useBoundingBox(localSelectedElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.x + outlineOffset + 'px'
     ref.current.style.top = boundingBox.y + outlineOffset + 'px'
     ref.current.style.width = boundingBox.width + outlineWidthHeightOffset + 'px'

@@ -6,7 +6,7 @@ import { useRefEditorState, useSelectorWithCallback } from '../../editor/store/s
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
 
-export function useBoundingBoxControl(
+export function useBoundingBox(
   selectedElements: Array<ElementPath>,
   onChangeCallback: (ref: any, boundingBox: any) => void,
 ): React.RefObject<HTMLDivElement> {
@@ -20,11 +20,11 @@ export function useBoundingBoxControl(
     [onChangeCallback],
   )
 
-  useBoundingBox(selectedElements, boundingBoxCallback)
+  useBoundingBoxFromMetadataRef(selectedElements, boundingBoxCallback)
   return controlRef
 }
 
-export function useBoundingBox(
+function useBoundingBoxFromMetadataRef(
   selectedElements: Array<ElementPath>,
   boundingBoxCallback: (boundingRectangle: CanvasRectangle | null) => void,
 ): void {
