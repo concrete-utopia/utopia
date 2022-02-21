@@ -36,7 +36,7 @@ export function handleMessage(
   switch (workerMessage.type) {
     case 'parseprintfiles': {
       try {
-        const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
+        const alreadyExistingUIDs_MUTABLE: Set<string> = new Set(workerMessage.alreadyExistingUIDs)
         const results = workerMessage.files.map((file) => {
           switch (file.type) {
             case 'parsefile':
