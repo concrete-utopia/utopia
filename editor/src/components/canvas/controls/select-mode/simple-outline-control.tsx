@@ -1,10 +1,8 @@
 import React from 'react'
-import * as EP from '../../../../core/shared/element-path'
-import { boundingRectangleArray, CanvasRectangle } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
-import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { findFramesFromDOM, useMutationObserver } from '../observer-hooks'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { useBoundingBoxControl } from '../bounding-box-hooks'
 import { getSelectionColor } from '../outline-control'
 
 interface OutlineControlProps {
@@ -14,7 +12,6 @@ interface OutlineControlProps {
 export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const colorTheme = useColorTheme()
   const selectedElements = props.selectedElements
-  const outlineRef = React.useRef<HTMLDivElement>(null)
   const selectedElementsRef = React.useRef(selectedElements) // TODO new-canvas-controls@localSelectedViews should be atom-like so we can get a live ref to it
   selectedElementsRef.current = selectedElements
 
@@ -33,19 +30,12 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
     )
   }, 'OutlineControl colors')
 
-  const observerCallback = React.useCallback(
-    (boundingBox: CanvasRectangle | null) => {
-      if (boundingBox != null && outlineRef.current != null) {
-        outlineRef.current.style.left = boundingBox.x + outlineOffset + 'px'
-        outlineRef.current.style.top = boundingBox.y + outlineOffset + 'px'
-        outlineRef.current.style.width = boundingBox.width + outlineWidthHeightOffset + 'px'
-        outlineRef.current.style.height = boundingBox.height + outlineWidthHeightOffset + 'px'
-      }
-    },
-    [outlineWidthHeightOffset, outlineOffset],
-  )
-
-  const observerRef = useMutationObserver(selectedElements, observerCallback)
+  const outlineRef = useBoundingBoxControl(selectedElementsRef.current, (ref, boundingBox) => {
+    ref.current.style.left = boundingBox.x + outlineOffset + 'px'
+    ref.current.style.top = boundingBox.y + outlineOffset + 'px'
+    ref.current.style.width = boundingBox.width + outlineWidthHeightOffset + 'px'
+    ref.current.style.height = boundingBox.height + outlineWidthHeightOffset + 'px'
+  })
 
   if (selectedElements.length > 0) {
     return (

@@ -5,10 +5,10 @@ import { ElementInstanceMetadataMap } from '../../../../core/shared/element-temp
 import {
   boundingRectangleArray,
   CanvasPoint,
-  CanvasRectangle,
   windowPoint,
 } from '../../../../core/shared/math-utils'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { NO_OP } from '../../../../core/shared/utils'
 import { useColorTheme } from '../../../../uuiui'
 import { EditorDispatch } from '../../../editor/action-types'
 import { setResizeOptionsTargetOptions } from '../../../editor/actions/action-creators'
@@ -25,28 +25,10 @@ import {
 } from '../../canvas-types'
 import { getOriginalFrames } from '../../canvas-utils'
 import { windowToCanvasCoordinatesGlobal } from '../../dom-lookup'
-import { findFramesFromDOM, useMutationObserver } from '../observer-hooks'
+import { useBoundingBoxControl } from '../bounding-box-hooks'
 
 interface AbsoluteResizeControlProps {
   selectedElements: Array<ElementPath>
-}
-
-function useControlResize(
-  selectedElements: Array<ElementPath>,
-  resizeCallback: (ref: any, boundingBox: any) => void,
-) {
-  const controlRef = React.useRef<HTMLDivElement>(null)
-  const mutationObserverCallback = React.useCallback(
-    (boundingBox: CanvasRectangle | null) => {
-      if (boundingBox != null) {
-        resizeCallback(controlRef, boundingBox)
-      }
-    },
-    [resizeCallback],
-  )
-
-  useMutationObserver(selectedElements, mutationObserverCallback)
-  return controlRef
 }
 
 export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((props) => {
@@ -68,39 +50,37 @@ export const AbsoluteResizeControl = React.memo<AbsoluteResizeControlProps>((pro
 
   const absoluteElements = allSelectedElementsAbsolute ? selectedElements : []
 
-  const controlRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+  const controlRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.x + 'px'
     ref.current.style.top = boundingBox.y + 'px'
     ref.current.style.width = boundingBox.width + 'px'
     ref.current.style.height = boundingBox.height + 'px'
   })
 
-  const leftRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+  const leftRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.height = boundingBox.height + 'px'
   })
-  const topRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+  const topRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.width = boundingBox.width + 'px'
   })
-  const rightRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+  const rightRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width + 'px'
     ref.current.style.height = boundingBox.height + 'px'
   })
 
-  const bottomRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+  const bottomRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.top = boundingBox.height + 'px'
     ref.current.style.width = boundingBox.width + 'px'
   })
 
-  const topLeftRef = useControlResize(absoluteElements, (ref, boundingBox) => {
-    // ref.current.style.left = boundingBox.x + 'px'
-  })
-  const topRightRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+  const topLeftRef = useBoundingBoxControl(absoluteElements, NO_OP)
+  const topRightRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width + 'px'
   })
-  const bottomLeftRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+  const bottomLeftRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.top = boundingBox.height + 'px'
   })
-  const bottomRightRef = useControlResize(absoluteElements, (ref, boundingBox) => {
+  const bottomRightRef = useBoundingBoxControl(absoluteElements, (ref, boundingBox) => {
     ref.current.style.left = boundingBox.width + 'px'
     ref.current.style.top = boundingBox.height + 'px'
   })
