@@ -11,7 +11,6 @@ import {
   DerivedState,
   EditorState,
   getMetadata,
-  EditorStore,
   getOpenUIJSFileKey,
   TransientCanvasState,
   TransientFilesState,

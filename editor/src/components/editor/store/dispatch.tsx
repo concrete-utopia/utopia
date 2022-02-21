@@ -47,8 +47,7 @@ import {
   deriveState,
   EditorState,
   EditorStatePatch,
-  EditorStore,
-  EditorStoreExplicit,
+  EditorStoreFull,
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
@@ -122,13 +121,15 @@ import {
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { handleStrategies } from './dispatch-strategies'
 
-interface DispatchResultFields {
+type DispatchResultFields = {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
 
-export interface InnerDispatchResult extends EditorStoreExplicit, DispatchResultFields {}
-export interface DispatchResult extends EditorStore, DispatchResultFields {}
+type EditorStoreUnpatched = Omit<EditorStoreFull, 'patchedEditor'>
+
+type InnerDispatchResult = EditorStoreUnpatched & DispatchResultFields
+export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 function simpleStringifyAction(action: EditorAction): string {
   switch (action.action) {
@@ -147,10 +148,10 @@ export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): st
 
 function processAction(
   dispatchEvent: EditorDispatch,
-  working: EditorStoreExplicit,
+  working: EditorStoreUnpatched,
   action: EditorAction,
   spyCollector: UiJsxCanvasContextData,
-): EditorStoreExplicit {
+): EditorStoreUnpatched {
   const workingHistory = working.history
   // Sidestep around the local actions so that we definitely run them locally.
   if (action.action === 'TRANSIENT_ACTIONS') {
@@ -220,7 +221,6 @@ function processAction(
 
     return {
       unpatchedEditor: editorAfterNavigator,
-      patchedEditor: editorAfterNavigator,
       derived: working.derived,
       sessionStateState: working.sessionStateState, // this means the actions cannot update sessionStateState – this piece of state lives outside our "redux" state
       history: newStateHistory,
@@ -236,11 +236,11 @@ function processAction(
 
 function processActions(
   dispatchEvent: EditorDispatch,
-  working: EditorStoreExplicit,
+  working: EditorStoreUnpatched,
   actions: Array<EditorAction>,
   spyCollector: UiJsxCanvasContextData,
-): EditorStoreExplicit {
-  return actions.reduce((workingFuture: EditorStoreExplicit, action: EditorAction) => {
+): EditorStoreUnpatched {
+  return actions.reduce((workingFuture: EditorStoreUnpatched, action: EditorAction) => {
     return processAction(dispatchEvent, workingFuture, action, spyCollector)
   }, working)
 }
@@ -388,7 +388,7 @@ let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
-  storedState: EditorStoreExplicit,
+  storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
@@ -490,7 +490,6 @@ export function editorDispatch(
   const finalStore: DispatchResult = {
     unpatchedEditor: frozenEditorState,
     patchedEditor: patchedEditorState,
-    editor: patchedEditorState,
     derived: frozenDerivedState,
     sessionStateState: optionalDeepFreeze(newSessionStateState),
     history: newHistory,
@@ -701,7 +700,6 @@ function editorDispatchInner(
 
     return {
       unpatchedEditor: frozenEditorState,
-      patchedEditor: frozenEditorState,
       derived: frozenDerivedState,
       sessionStateState: result.sessionStateState,
       history: result.history,
