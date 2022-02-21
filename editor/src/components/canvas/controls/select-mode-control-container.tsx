@@ -492,18 +492,36 @@ export class SelectModeControlContainer extends React.Component<
         }}
         onContextMenu={this.onContextMenu}
       >
-        {roots.map((root) => {
+        {/* {roots.map((root) => {
           return (
             <React.Fragment key={`${EP.toComponentId(root)}}-root-controls`}>
               {this.renderLabel(root, allElementsDirectlySelectable)}
             </React.Fragment>
           )
-        })}
+        })} */}
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
+            <OutlineControls {...this.props} />
             {this.canResizeElements() ? (
               <>
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
+                <ConstraintsControls {...this.props} />
                 <ConstraintsControls {...this.props} />
                 <YogaControls
                   {...this.props}
@@ -520,9 +538,9 @@ export class SelectModeControlContainer extends React.Component<
           </>
         ) : null}
         {when(isFeatureEnabled('Insertion Plus Button'), <InsertionControls {...this.props} />)}
-        {this.getMoveGuidelines()}
-        {this.getDistanceGuidelines()}
-        {this.getBoundingMarks()}
+        {/* {this.getMoveGuidelines()}
+        {this.getDistanceGuidelines()} */}
+        {/* {this.getBoundingMarks()} */}
       </div>
     )
   }
