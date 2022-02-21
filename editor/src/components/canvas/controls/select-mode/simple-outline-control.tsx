@@ -7,9 +7,6 @@ import { useEditorState, useRefEditorState } from '../../../editor/store/store-h
 import { findFramesFromDOM, useMutationObserver } from '../observer-hooks'
 import { getSelectionColor } from '../outline-control'
 
-const OutlineOffset = 0.5
-const OutlineWidthHeightOffset = -OutlineOffset * 3
-
 interface OutlineControlProps {
   selectedElements: Array<ElementPath>
 }
@@ -22,6 +19,9 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   selectedElementsRef.current = selectedElements
 
   const scale = useEditorState((store) => store.editor.canvas.scale, 'OutlineControl')
+  const outlineOffset = 0.5 / scale
+  const outlineWidthHeightOffset = -outlineOffset * 3
+
   const colors = useEditorState((store) => {
     return selectedElementsRef.current.map((path) =>
       getSelectionColor(
@@ -37,12 +37,12 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
     const frames = findFramesFromDOM(selectedElementsRef.current)
     const boundingBox = boundingRectangleArray(frames)
     if (boundingBox != null && outlineRef.current != null) {
-      outlineRef.current.style.left = boundingBox.x + OutlineOffset + 'px'
-      outlineRef.current.style.top = boundingBox.y + OutlineOffset + 'px'
-      outlineRef.current.style.width = boundingBox.width + OutlineWidthHeightOffset + 'px'
-      outlineRef.current.style.height = boundingBox.height + OutlineWidthHeightOffset + 'px'
+      outlineRef.current.style.left = boundingBox.x + outlineOffset + 'px'
+      outlineRef.current.style.top = boundingBox.y + outlineOffset + 'px'
+      outlineRef.current.style.width = boundingBox.width + outlineWidthHeightOffset + 'px'
+      outlineRef.current.style.height = boundingBox.height + outlineWidthHeightOffset + 'px'
     }
-  }, [selectedElementsRef])
+  }, [selectedElementsRef, outlineWidthHeightOffset, outlineOffset])
 
   const observerRef = useMutationObserver(selectedElements, observerCallback)
 

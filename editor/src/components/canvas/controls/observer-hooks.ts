@@ -2,8 +2,10 @@ import React from 'react'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
-import { CanvasRectangle, windowPoint } from '../../../core/shared/math-utils'
-import { windowToCanvasCoordinatesGlobal } from '../dom-lookup'
+import { CanvasRectangle, negate, offsetRect, windowPoint } from '../../../core/shared/math-utils'
+import { getCanvasRectangleFromElement } from '../../../core/shared/dom-utils'
+import { CanvasScale } from '../../../utils/global-positions'
+import { CanvasContainerID } from '../canvas-types'
 
 function findTargetHtmlElement(path: ElementPath): HTMLElement | null {
   return document.querySelector(`*[data-paths~="${EP.toString(path)}"]`)
@@ -11,23 +13,29 @@ function findTargetHtmlElement(path: ElementPath): HTMLElement | null {
 
 export function findFramesFromDOM(targets: Array<ElementPath>): Array<CanvasRectangle> {
   let frames: Array<CanvasRectangle> = []
+  const canvasWrapper = document.getElementById(CanvasContainerID)
+
+  let canvasWrapperRect: CanvasRectangle | null
+  if (canvasWrapper != null) {
+    canvasWrapperRect = getCanvasRectangleFromElement(canvasWrapper, CanvasScale.current)
+  }
   fastForEach(targets, (path) => {
     const htmlElement = findTargetHtmlElement(path)
-    const frame = htmlElement?.getBoundingClientRect()
-    if (frame != null) {
-      const frameInCanvasCoords = windowToCanvasCoordinatesGlobal(
-        windowPoint({ x: frame.x, y: frame.y }),
-      ).canvasPositionRounded
-      frames.push({
-        x: frameInCanvasCoords.x,
-        y: frameInCanvasCoords.y,
-        width: frame.width,
-        height: frame.height,
-      } as CanvasRectangle)
+    if (htmlElement != null && canvasWrapperRect != null) {
+      frames.push(globalFrameForElement(htmlElement, CanvasScale.current, canvasWrapperRect))
     }
   })
 
   return frames
+}
+
+function globalFrameForElement(
+  element: HTMLElement,
+  scale: number,
+  containerRect: CanvasRectangle,
+) {
+  const elementRect = getCanvasRectangleFromElement(element, scale)
+  return offsetRect(elementRect, negate(containerRect))
 }
 
 export function useMutationObserver(
