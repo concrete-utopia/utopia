@@ -12,7 +12,7 @@ import {
 import { getCanvasRectangleFromElement } from '../../../core/shared/dom-utils'
 import { CanvasScale } from '../../../utils/global-positions'
 import { CanvasContainerID } from '../canvas-types'
-import { useRefEditorState } from '../../editor/store/store-hook'
+import { useRefEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
 
@@ -75,33 +75,13 @@ export function useMutationObserver(
     observerCallbackRef.current(boundingBox)
   }, [selectedElements, metadataRef])
 
-  React.useEffect(() => {
-    const observer = new MutationObserver(innerCallback)
-    observerRef.current = observer
-    return function cleanup() {
-      observer.disconnect()
-      observerRef.current = null
-    }
-  }, [innerCallback])
-
-  React.useEffect(() => {
-    if (selectedElements.length > 0) {
-      fastForEach(selectedElements, (path) => {
-        const htmlElement = findTargetHtmlElement(path)
-        if (htmlElement != null && observerRef.current != null) {
-          observerRef.current.observe(htmlElement, {
-            attributes: true,
-            childList: true,
-            subtree: true,
-          })
-        }
-      })
-
+  useSelectorWithCallback(
+    (store) => getMetadata(store.editor),
+    (newMetadata) => {
       innerCallback()
-    }
+    },
+    false,
+  )
 
-    return function cleanup() {
-      observerRef.current?.disconnect()
-    }
-  }, [selectedElements, innerCallback])
+  React.useEffect(innerCallback, [innerCallback, selectedElements])
 }
