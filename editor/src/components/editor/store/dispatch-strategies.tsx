@@ -18,8 +18,8 @@ import {
   shouldApplyClearInteractionStateResult,
   isClearInteractionState,
 } from '../actions/action-utils'
-import { DispatchResult } from './dispatch'
-import { EditorStore, DerivedState, EditorState } from './editor-state'
+import { DispatchResult, InnerDispatchResult } from './dispatch'
+import { EditorStore, DerivedState, EditorState, EditorStoreExplicit } from './editor-state'
 
 export interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -28,10 +28,10 @@ export interface HandleStrategiesResult {
 }
 
 export function interactionFinished(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
@@ -41,7 +41,7 @@ export function interactionFinished(
     scale: newEditorState.canvas.scale,
     canvasOffset: newEditorState.canvas.roundedCanvasOffset,
   }
-  const interactionState = storedState.editor.canvas.interactionState
+  const interactionState = storedState.unpatchedEditor.canvas.interactionState
   if (interactionState == null) {
     return {
       unpatchedEditorState: newEditorState,
@@ -73,7 +73,7 @@ export function interactionFinished(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'permanent',
@@ -89,10 +89,10 @@ export function interactionFinished(
 }
 
 export function interactionHardReset(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const withClearedSession = {
     ...storedState.sessionStateState,
     startingMetadata: storedState.sessionStateState.originalMetadata,
@@ -136,7 +136,7 @@ export function interactionHardReset(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         commands,
         'transient',
@@ -168,10 +168,10 @@ export function interactionHardReset(
 }
 
 export function interactionUpdate(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -206,7 +206,7 @@ export function interactionUpdate(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         [...result.sessionStateState.accumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
@@ -238,10 +238,10 @@ export function interactionUpdate(
 }
 
 export function interactionStart(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const withClearedSession = createEmptySessionStateState(newEditorState.jsxMetadata)
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
@@ -277,7 +277,7 @@ export function interactionStart(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         commands,
         'transient',
@@ -309,13 +309,13 @@ export function interactionStart(
 }
 
 export function interactionCancel(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const updatedEditorState: EditorState = {
-    ...result.editor,
+    ...result.unpatchedEditor,
     canvas: {
-      ...result.editor.canvas,
+      ...result.unpatchedEditor.canvas,
       interactionState: null,
     },
   }
@@ -328,10 +328,10 @@ export function interactionCancel(
 }
 
 export function interactionUserChangedStrategy(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -356,7 +356,7 @@ export function interactionUserChangedStrategy(
       result.sessionStateState.currentStrategy,
     )
     const strategyName = strategy?.strategy.name
-    if (strategyName != result.editor.canvas.interactionState?.userPreferredStrategy) {
+    if (strategyName != result.unpatchedEditor.canvas.interactionState?.userPreferredStrategy) {
       console.warn(
         'Entered interactionUserChangedStrategy but the user preferred strategy is not applied',
       )
@@ -392,7 +392,7 @@ export function interactionUserChangedStrategy(
       ]
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
@@ -424,10 +424,10 @@ export function interactionUserChangedStrategy(
 }
 
 function interactionStrategyChangeStacked(
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
-  const newEditorState = result.editor
+  const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = {
     selectedElements: newEditorState.selectedViews,
     // metadata: store.editor.jsxMetadata, // We can add metadata back if live metadata is necessary
@@ -490,7 +490,7 @@ function interactionStrategyChangeStacked(
       ]
       const commandResult = foldAndApplyCommands(
         newEditorState,
-        storedState.editor,
+        storedState.patchedEditor,
         storedState.sessionStateState.strategyState,
         [...newAccumulatedCommands.flatMap((c) => c.commands), ...commands],
         'transient',
@@ -534,16 +534,16 @@ function interactionStrategyChangeStacked(
 export function handleStrategies(
   frozenDerivedState: DerivedState,
   dispatchedActions: readonly EditorAction[],
-  storedState: EditorStore,
-  result: DispatchResult,
+  storedState: EditorStoreExplicit,
+  result: InnerDispatchResult,
 ): HandleStrategiesResult {
   const makeChangesPermanent = dispatchedActions.some(shouldApplyClearInteractionStateResult)
   const cancelInteraction = dispatchedActions.some(isClearInteractionState) && !makeChangesPermanent
-  if (storedState.editor.canvas.interactionState == null) {
-    if (result.editor.canvas.interactionState == null) {
+  if (storedState.unpatchedEditor.canvas.interactionState == null) {
+    if (result.unpatchedEditor.canvas.interactionState == null) {
       return {
-        unpatchedEditorState: result.editor,
-        patchedEditorState: result.editor,
+        unpatchedEditorState: result.unpatchedEditor,
+        patchedEditorState: result.unpatchedEditor,
         newSessionStateState: result.sessionStateState,
       }
     } else {
@@ -557,16 +557,16 @@ export function handleStrategies(
     } else {
       const interactionHardResetNeeded =
         hasModifiersChanged(
-          storedState.editor.canvas.interactionState?.interactionData ?? null,
-          result.editor.canvas.interactionState?.interactionData ?? null,
+          storedState.unpatchedEditor.canvas.interactionState?.interactionData ?? null,
+          result.unpatchedEditor.canvas.interactionState?.interactionData ?? null,
         ) || result.sessionStateState.currentStrategy == null // TODO: do we really need the currentStrategy == null part?
       if (interactionHardResetNeeded) {
         return interactionHardReset(storedState, result)
       } else {
-        if (result.editor.canvas.interactionState?.userPreferredStrategy != null) {
+        if (result.unpatchedEditor.canvas.interactionState?.userPreferredStrategy != null) {
           const userChangedStrategy =
-            result.editor.canvas.interactionState?.userPreferredStrategy !=
-            storedState.editor.canvas.interactionState?.userPreferredStrategy
+            result.unpatchedEditor.canvas.interactionState?.userPreferredStrategy !=
+            storedState.unpatchedEditor.canvas.interactionState?.userPreferredStrategy
           if (userChangedStrategy) {
             return interactionUserChangedStrategy(storedState, result)
           }
