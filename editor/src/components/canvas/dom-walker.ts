@@ -283,6 +283,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
         }
       })
     },
+    false,
   )
 }
 

@@ -140,6 +140,7 @@ EditorStateContext.displayName = 'EditorStateContext'
 export function useSelectorWithCallback<U>(
   selector: StateSelector<EditorStore, U>,
   callback: (newValue: U) => void,
+  callOnSubscribe: boolean,
   equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
   explainMe: boolean = false,
 ): void {
@@ -189,6 +190,17 @@ export function useSelectorWithCallback<U>(
     console.info('useSelectorWithCallback was executed so we call the callback ourselves')
   }
   innerCallback(selectorRef.current(api.getState()))
+
+  React.useEffect(() => {
+    if (callOnSubscribe) {
+      if (explainMe) {
+        console.info(
+          'useSelectorWithCallback was called for the first time with the flag callOnSubscribe, so we execute the callback immediately',
+        )
+      }
+      callbackRef.current(selectorRef.current(api.getState()))
+    }
+  }, [api, callOnSubscribe, explainMe])
 
   React.useEffect(() => {
     if (explainMe) {
