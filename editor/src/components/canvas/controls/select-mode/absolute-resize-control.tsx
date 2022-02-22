@@ -278,6 +278,7 @@ function startResizeInteraction(
 ) {
   event.stopPropagation()
   if (event.buttons === 1) {
+    // TODO update this to call createInteractionState to use canvas strategies
     const centerBasedResize = event.altKey
     const keepAspectRatio = event.shiftKey // || props.elementAspectRatioLocked ???
     const enableSnapping = !event.metaKey
