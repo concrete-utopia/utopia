@@ -156,11 +156,7 @@ import { v4 as UUID } from 'uuid'
 import { PersistenceMachine } from '../persistence/persistence'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
-import type {
-  FlexAlignControlRectProps,
-  SelectModeCanvasSessionState,
-  FlexGapControlRectProps,
-} from '../../canvas/canvas-strategies/canvas-strategy-types'
+import type { SelectModeCanvasSessionState } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { Spec } from 'immutability-helper'
 
 const ObjectPathImmutable: any = OPI
@@ -465,10 +461,6 @@ export interface EditorState {
       attributesToUpdate: MapLike<JSXAttribute>
     }> | null
     resizeOptions: ResizeOptions
-    controls: {
-      animatedPlaceholderTargetUids: Array<string>
-      flexAlignDropTargets: Array<FlexAlignControlRectProps>
-    }
     domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   }
   floatingInsertMenu: FloatingInsertMenuState
@@ -1245,10 +1237,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         propertyTargetOptions: ['width', 'height'],
         propertyTargetSelectedIndex: 0,
       },
-      controls: {
-        animatedPlaceholderTargetUids: [],
-        flexAlignDropTargets: [],
-      },
       domWalkerAdditionalElementsToUpdate: [],
     },
     floatingInsertMenu: {
@@ -1502,10 +1490,6 @@ export function editorModelFromPersistentModel(
       resizeOptions: {
         propertyTargetOptions: ['width', 'height'],
         propertyTargetSelectedIndex: 0,
-      },
-      controls: {
-        animatedPlaceholderTargetUids: [],
-        flexAlignDropTargets: [],
       },
       domWalkerAdditionalElementsToUpdate: [],
     },
