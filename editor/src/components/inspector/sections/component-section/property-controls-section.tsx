@@ -1,5 +1,6 @@
 import React from 'react'
 import { ElementPath } from '../../../../core/shared/project-file-types'
+import { PropertyControls } from 'utopia-api/core'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { setCursorOverlay } from '../../../editor/actions/action-creators'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
@@ -9,7 +10,6 @@ import { CSSCursor } from '../../../canvas/canvas-types'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { VerySubdued } from '../../../../uuiui'
 import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
-import { PropertyControls } from 'utopia-api/core'
 
 interface PropertyControlsSectionProps {
   targets: ElementPath[]
